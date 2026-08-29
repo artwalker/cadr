@@ -217,6 +217,9 @@
 ;;;; 805. cli_extensions_install llama-format-context-size vs leftover Math.round k
 ;;;; 806. cli_extensions_install llama-js-to-fixed vs leftover Number.toFixed
 ;;;; 807. cli_extensions_install llama-search-exact-query-p vs leftover id regex
+;;;; 808. cli_bootstrap_sessions assistant-tool-call-only-p vs leftover hasTextContent invert
+;;;; 809. cli_bootstrap_sessions session-entry-user-text vs leftover contentText user entry
+;;;; 810. cli_bootstrap_sessions session-compaction-status vs leftover compaction count string
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -1057,6 +1060,9 @@
     ("cli_bootstrap_sessions.session_path" . 50)
     ("cli_bootstrap_sessions.split_command" . 50)
     ("cli_bootstrap_sessions.path_argument" . 50)
+    ("cli_bootstrap_sessions.assistant_tool_call_only" . 50)
+    ("cli_bootstrap_sessions.session_entry_user_text" . 50)
+    ("cli_bootstrap_sessions.session_compaction_status" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -33515,12 +33521,96 @@
     "/import foo.jsonl trailing" "/import")))
 
 
+(defun leftover-assistant-tool-call-only-flag (message)
+  (if (cadr-cli::assistant-tool-call-only-p message) 1 0))
+
+
+(defun run-cli-bootstrap-assistant-tool-call-only ()
+  ;; Leftover on sessions.lisp: tool-call-only hide. Not tree render.
+  (list
+   (leftover-assistant-tool-call-only-flag
+    (cadr-ai:make-assistant-message :content nil))
+   (leftover-assistant-tool-call-only-flag
+    (cadr-ai:make-assistant-message
+     :content (list (cadr-ai:make-text-content :text "hi"))))
+   (leftover-assistant-tool-call-only-flag
+    (cadr-ai:make-assistant-message
+     :content (list (cadr-ai:make-tool-call :id "1" :name "read"))))
+   (leftover-assistant-tool-call-only-flag
+    (cadr-ai:make-assistant-message
+     :content
+     (list
+      (cadr-ai:make-text-content :text "hi")
+      (cadr-ai:make-tool-call :id "2" :name "bash"))))
+   4))
+
+
+(defun leftover-session-entry-user-text (entry)
+  (or (cadr-cli::session-entry-user-text entry) ""))
+
+
+(defun run-cli-bootstrap-session-entry-user-text ()
+  ;; Leftover on sessions.lisp: contentText user entry. Not fork TUI.
+  (list
+   (leftover-session-entry-user-text
+    (cadr-agent::make-session-entry
+     :type :message
+     :message (cadr-ai:make-user-message :content "hello")))
+   (leftover-session-entry-user-text
+    (cadr-agent::make-session-entry
+     :type :message
+     :message
+     (cadr-ai:make-user-message
+      :content
+      (list
+       (cadr-ai:make-text-content :text "a")
+       (cadr-ai:make-text-content :text "b")))))
+   (leftover-session-entry-user-text
+    (cadr-agent::make-session-entry
+     :type :message
+     :message
+     (cadr-ai:make-assistant-message
+      :content (list (cadr-ai:make-text-content :text "nope")))))
+   (leftover-session-entry-user-text
+    (cadr-agent::make-session-entry :type :compaction))
+   4))
+
+
+(defun leftover-session-compaction-status-text (session)
+  (or (cadr-cli::session-compaction-status session) ""))
+
+
+(defun leftover-bootstrap-compaction-session (count)
+  (cadr-agent::%make-session
+   :id "s"
+   :%entries
+   (loop repeat count
+         collect
+         (cadr-agent::make-session-entry :type :compaction))))
+
+
+(defun run-cli-bootstrap-session-compaction-status ()
+  ;; Leftover on sessions.lisp: compaction count string. Not showStatus TUI.
+  (list
+   (leftover-session-compaction-status-text nil)
+   (leftover-session-compaction-status-text
+    (leftover-bootstrap-compaction-session 1))
+   (leftover-session-compaction-status-text
+    (leftover-bootstrap-compaction-session 2))
+   (leftover-session-compaction-status-text
+    (cadr-agent::%make-session :id "s" :%entries nil))
+   4))
+
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
          (auth-observed (run-cli-bootstrap-auth))
          (session-path (run-cli-bootstrap-session-path))
          (split-command (run-cli-bootstrap-split-command))
-         (path-argument (run-cli-bootstrap-path-argument)))
+         (path-argument (run-cli-bootstrap-path-argument))
+         (tool-call-only (run-cli-bootstrap-assistant-tool-call-only))
+         (entry-user-text (run-cli-bootstrap-session-entry-user-text))
+         (compaction-status (run-cli-bootstrap-session-compaction-status)))
     (json-object
      "observed"
      (json-object
@@ -33546,7 +33636,22 @@
       "pa_plain" (nth 0 path-argument)
       "pa_quote" (nth 1 path-argument)
       "pa_empty" (nth 2 path-argument)
-      "pa_miss" (nth 3 path-argument))
+      "pa_miss" (nth 3 path-argument)
+      "atco_none" (nth 0 tool-call-only)
+      "atco_text" (nth 1 tool-call-only)
+      "atco_tool" (nth 2 tool-call-only)
+      "atco_both" (nth 3 tool-call-only)
+      "atco_n" (nth 4 tool-call-only)
+      "seut_str" (nth 0 entry-user-text)
+      "seut_blocks" (nth 1 entry-user-text)
+      "seut_asst" (nth 2 entry-user-text)
+      "seut_empty" (nth 3 entry-user-text)
+      "seut_n" (nth 4 entry-user-text)
+      "scs_none" (nth 0 compaction-status)
+      "scs_one" (nth 1 compaction-status)
+      "scs_two" (nth 2 compaction-status)
+      "scs_zero" (nth 3 compaction-status)
+      "scs_n" (nth 4 compaction-status))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -33571,7 +33676,22 @@
      (collect "cli_bootstrap_sessions.path_argument"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-path-argument)))))))
+                  (run-cli-bootstrap-path-argument))))
+     "assistant_tool_call_only"
+     (collect "cli_bootstrap_sessions.assistant_tool_call_only"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-assistant-tool-call-only))))
+     "session_entry_user_text"
+     (collect "cli_bootstrap_sessions.session_entry_user_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-entry-user-text))))
+     "session_compaction_status"
+     (collect "cli_bootstrap_sessions.session_compaction_status"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-compaction-status)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -35207,6 +35327,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp split-command"
       "cli_bootstrap_sessions.path_argument"
       "src/cadr-cli/bootstrap/sessions.lisp path-command-argument"
+      "cli_bootstrap_sessions.assistant_tool_call_only"
+      "src/cadr-cli/bootstrap/sessions.lisp assistant-tool-call-only-p"
+      "cli_bootstrap_sessions.session_entry_user_text"
+      "src/cadr-cli/bootstrap/sessions.lisp session-entry-user-text"
+      "cli_bootstrap_sessions.session_compaction_status"
+      "src/cadr-cli/bootstrap/sessions.lisp session-compaction-status"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

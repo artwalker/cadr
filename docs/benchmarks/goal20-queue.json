@@ -7744,6 +7744,36 @@
    "piUs": 0.284,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 808,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/bootstrap/sessions.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.assistant_tool_call_only",
+   "branch": "cursor/bootstrap-sessions-tool-user-compact-leftovers-808-810-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 808"
+  },
+  {
+   "pair": 809,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/bootstrap/sessions.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.session_entry_user_text",
+   "branch": "cursor/bootstrap-sessions-tool-user-compact-leftovers-808-810-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 809"
+  },
+  {
+   "pair": 810,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/bootstrap/sessions.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.session_compaction_status",
+   "branch": "cursor/bootstrap-sessions-tool-user-compact-leftovers-808-810-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 810"
   }
  ],
  "mergeQueue": []

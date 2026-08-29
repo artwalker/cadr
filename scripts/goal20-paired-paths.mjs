@@ -559,6 +559,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.extension_custom_ui_visible": 50,
 	"cli_bootstrap_sessions.session_argument_path": 50,
 	"cli_bootstrap_sessions.path_command_argument": 50,
+	"cli_bootstrap_sessions.assistant_tool_call_only": 50,
+	"cli_bootstrap_sessions.session_entry_user_text": 50,
+	"cli_bootstrap_sessions.session_compaction_status": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -34693,6 +34696,86 @@ function runCliBootstrapPathCommandArgument() {
 	};
 }
 
+function leftoverAssistantToolCallOnlyP(content) {
+	const blocks = Array.isArray(content) ? content : [];
+	const hasTool = blocks.some((block) => block && block.type === "toolCall");
+	const hasText = blocks.some(
+		(block) => block && block.type === "text" && typeof block.text === "string" && block.text.length > 0,
+	);
+	return hasTool && !hasText ? 1 : 0;
+}
+
+function runCliBootstrapAssistantToolCallOnly() {
+	return {
+		atco_none: leftoverAssistantToolCallOnlyP(null),
+		atco_text: leftoverAssistantToolCallOnlyP([{ type: "text", text: "hi" }]),
+		atco_tool: leftoverAssistantToolCallOnlyP([{ type: "toolCall", id: "1", name: "read" }]),
+		atco_both: leftoverAssistantToolCallOnlyP([
+			{ type: "text", text: "hi" },
+			{ type: "toolCall", id: "2", name: "bash" },
+		]),
+		atco_n: 4,
+	};
+}
+
+function leftoverSessionEntryUserText(entry) {
+	if (!entry || entry.type !== "message") return "";
+	const message = entry.message;
+	if (!message || message.role !== "user") return "";
+	const content = message.content;
+	if (typeof content === "string") return content;
+	if (!Array.isArray(content)) return "";
+	return content
+		.filter((block) => block && block.type === "text")
+		.map((block) => block.text)
+		.join("\n");
+}
+
+function runCliBootstrapSessionEntryUserText() {
+	return {
+		seut_str: leftoverSessionEntryUserText({
+			type: "message",
+			message: { role: "user", content: "hello" },
+		}),
+		seut_blocks: leftoverSessionEntryUserText({
+			type: "message",
+			message: {
+				role: "user",
+				content: [
+					{ type: "text", text: "a" },
+					{ type: "text", text: "b" },
+				],
+			},
+		}),
+		seut_asst: leftoverSessionEntryUserText({
+			type: "message",
+			message: { role: "assistant", content: [{ type: "text", text: "nope" }] },
+		}),
+		seut_empty: leftoverSessionEntryUserText({ type: "compaction" }),
+		seut_n: 4,
+	};
+}
+
+function leftoverSessionCompactionStatus(session) {
+	if (!session) return "";
+	const entries = session.entries || [];
+	const count = entries.filter((entry) => entry && entry.type === "compaction").length;
+	if (count <= 0) return "";
+	const times = count === 1 ? "1 time" : `${count} times`;
+	return `Session compacted ${times}`;
+}
+
+function runCliBootstrapSessionCompactionStatus() {
+	return {
+		scs_none: leftoverSessionCompactionStatus(null),
+		scs_one: leftoverSessionCompactionStatus({ entries: [{ type: "compaction" }] }),
+		scs_two: leftoverSessionCompactionStatus({
+			entries: [{ type: "compaction" }, { type: "compaction" }],
+		}),
+		scs_zero: leftoverSessionCompactionStatus({ entries: [] }),
+		scs_n: 4,
+	};
+}
 
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
@@ -34700,6 +34783,9 @@ async function measureCliBootstrapCodingTools() {
 	const sessionPathObserved = runCliBootstrapSessionPath();
 	const splitCommandObserved = runCliBootstrapSplitCommand();
 	const pathArgumentObserved = runCliBootstrapPathArgument();
+	const toolCallOnlyObserved = runCliBootstrapAssistantToolCallOnly();
+	const entryUserTextObserved = runCliBootstrapSessionEntryUserText();
+	const compactionStatusObserved = runCliBootstrapSessionCompactionStatus();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -34716,12 +34802,24 @@ async function measureCliBootstrapCodingTools() {
 		path_argument: await collect("cli_bootstrap_sessions.path_argument", () => {
 			return () => runCliBootstrapPathArgument();
 		}),
+		assistant_tool_call_only: await collect("cli_bootstrap_sessions.assistant_tool_call_only", () => {
+			return () => runCliBootstrapAssistantToolCallOnly();
+		}),
+		session_entry_user_text: await collect("cli_bootstrap_sessions.session_entry_user_text", () => {
+			return () => runCliBootstrapSessionEntryUserText();
+		}),
+		session_compaction_status: await collect("cli_bootstrap_sessions.session_compaction_status", () => {
+			return () => runCliBootstrapSessionCompactionStatus();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
 			...sessionPathObserved,
 			...splitCommandObserved,
 			...pathArgumentObserved,
+			...toolCallOnlyObserved,
+			...entryUserTextObserved,
+			...compactionStatusObserved,
 		},
 	};
 }
@@ -36598,6 +36696,12 @@ const result = {
 				"packages/coding-agent/src/cli first-token slash split (cadr split-command)",
 			"cli_bootstrap_sessions.path_argument":
 				"packages/coding-agent/src/cli quoted path after command (cadr path-command-argument)",
+			"cli_bootstrap_sessions.assistant_tool_call_only":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover hasTextContent invert (cadr assistant-tool-call-only-p)",
+			"cli_bootstrap_sessions.session_entry_user_text":
+				"packages/coding-agent/src/core/agent-session.ts leftover contentText user entry (cadr session-entry-user-text)",
+			"cli_bootstrap_sessions.session_compaction_status":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts leftover compaction count string (cadr session-compaction-status)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
