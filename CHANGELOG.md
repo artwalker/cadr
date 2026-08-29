@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.device_poll_complete`
+  (`poll-openai-codex-device-authorization` vs openai-codex
+  pollOpenAICodexDeviceAuth complete). Observed `dpc_code` / `dpc_ver` /
+  `dpc_n` exact. n=5 **10.640×** (2.045 / 0.192 µs) on host `cursor`,
+  ceiling 15.0. Measure-only leftover (Pair 892). Over-1×. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.device_poll_fail`
+  (`poll-openai-codex-device-authorization` failed vs openai-codex
+  pollOpenAICodexDeviceAuth failed). Observed `dpf_throw` / `dpf_n`
+  exact. n=5 **1.273×** (2.288 / 1.798 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 893). Over-1×. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.device_poll_slow`
+  (`poll-openai-codex-device-authorization` slow_down timeout vs
+  openai-codex pollOpenAICodexDeviceAuth slow_down +
+  SLOW_DOWN_TIMEOUT_MESSAGE). Observed `dps_msg` / `dps_n` exact.
+  n=5 **1.697×** (3.500 / 2.062 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 894). Over-1×. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `device_poll_complete` | `poll-openai-codex-device-authorization` (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` complete (`packages/ai/src/auth/oauth/openai-codex.ts`) |
 
-Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openai-device.lisp` (leftover 421–423 measured json_copy / interval_seconds / device_start). Timed work is stub HTTP 200 with authorization_code and code_verifier — not device_start, not browser login. Observed `dpc_code` / `dpc_ver` / `dpc_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openai-device.lisp` (leftover 421–423 measured json_copy / interval_seconds / device_start). Timed work is stub HTTP 200 with authorization_code and code_verifier — not device_start, not browser login. Observed `dpc_code` / `dpc_ver` / `dpc_n` are exact. First n=5 freeze **10.640×** (2.045 / 0.192 µs) on host `cursor`, ceiling 15.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 893 — `oauth_pkce_device` (device_poll_fail)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openai-device.lisp` (lef
 |---|---|---|
 | `device_poll_fail` | `poll-openai-codex-device-authorization` failed (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` failed (`packages/ai/src/auth/oauth/openai-codex.ts`) |
 
-Leftover sibling of Pair 892. Timed work is stub HTTP 200 missing fields throwing — not exact failed-message JSON stringify. Observed `dpf_throw` / `dpf_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 892. Timed work is stub HTTP 200 missing fields throwing — not exact failed-message JSON stringify. Observed `dpf_throw` / `dpf_n` are exact. First n=5 freeze **1.273×** (2.288 / 1.798 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 894 — `oauth_pkce_device` (device_poll_slow)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 892. Timed work is stub HTTP 200 missing fields throwin
 |---|---|---|
 | `device_poll_slow` | `poll-openai-codex-device-authorization` slow_down timeout (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` slow_down + `SLOW_DOWN_TIMEOUT_MESSAGE` (`packages/ai/src/auth/oauth/openai-codex.ts` + `device-code.ts`) |
 
-Leftover sibling of Pairs 892–893. Timed work is stub HTTP error `slow_down` then timeout message — not interval_seconds, not live sleep. Observed `dps_msg` / `dps_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 892–893. Timed work is stub HTTP error `slow_down` then timeout message — not interval_seconds, not live sleep. Observed `dps_msg` / `dps_n` are exact. First n=5 freeze **1.697×** (3.500 / 2.062 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

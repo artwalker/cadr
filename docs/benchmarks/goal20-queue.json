@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 892,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_poll_complete",
+   "branch": "cursor/oauth-openai-device-poll-leftovers-892-894-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 892",
+   "ratio": 10.64,
+   "cadrUs": 2.045,
+   "piUs": 0.192,
+   "ceiling": 15.0,
+   "rc": 2
+  },
+  {
+   "pair": 893,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_poll_fail",
+   "branch": "cursor/oauth-openai-device-poll-leftovers-892-894-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 893",
+   "ratio": 1.273,
+   "cadrUs": 2.288,
+   "piUs": 1.798,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 894,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_poll_slow",
+   "branch": "cursor/oauth-openai-device-poll-leftovers-892-894-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 894",
+   "ratio": 1.697,
+   "cadrUs": 3.5,
+   "piUs": 2.062,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

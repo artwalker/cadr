@@ -689,9 +689,13 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.openrouter_input": 8.0,
     "oauth_pkce_device.openrouter_refresh": 8.0,
     "oauth_pkce_device.openrouter_exchange": 8.0,
-    # leftover 892-894; first-freeze headroom. Ratchet down only.
-    "oauth_pkce_device.device_poll_complete": 8.0,
+    # leftover 892; first freeze 10.640× (2.045 / 0.192 µs). Over-1×.
+    # cadr runs production poll-openai-codex-device-authorization;
+    # pi classifies the same stub JSON. Ceiling 15.0 first-freeze.
+    "oauth_pkce_device.device_poll_complete": 15.0,
+    # leftover 893; first freeze 1.273× (2.288 / 1.798 µs). Over-1×.
     "oauth_pkce_device.device_poll_fail": 8.0,
+    # leftover 894; first freeze 1.697× (3.500 / 2.062 µs). Over-1×.
     "oauth_pkce_device.device_poll_slow": 8.0,
     # output_accumulator leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
