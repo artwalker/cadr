@@ -9142,7 +9142,7 @@ Leftover sibling of Pairs 799–800. Timed work is `[x]` / `[ ]` / `[+]` / `[-]`
 |---|---|---|
 | `string_prefix` | `string-prefix-p` (`src/cadr-cli/extensions/installer.lisp`) | leftover startsWith (`packages/coding-agent/src/utils/git.ts`) |
 
-Leftover sibling of leftover 499–501 on the same `installer.lisp` `cli_extensions_install` hole. Timed work is case-sensitive prefix — not `unsafe-git-source-p`, not git spawn. Observed `sp_git` / `sp_http` / `sp_case` / `sp_empty` / `sp_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 499–501 on the same `installer.lisp` `cli_extensions_install` hole. Timed work is case-sensitive prefix — not `unsafe-git-source-p`, not git spawn. Observed `sp_git` / `sp_http` / `sp_case` / `sp_empty` / `sp_n` are exact. First n=5 freeze **0.686×** (0.144 / 0.209 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 803 — `cli_extensions_install` (split_path_segments)
 
@@ -9150,7 +9150,7 @@ Leftover sibling of leftover 499–501 on the same `installer.lisp` `cli_extensi
 |---|---|---|
 | `split_path_segments` | `split-path-segments` (`src/cadr-cli/extensions/installer.lisp`) | leftover split("/") (`packages/coding-agent/src/utils/git.ts`) |
 
-Leftover sibling of Pair 802. Timed work is slash split including empty segments — not `unsafe-git-source-p`, not git spawn. Observed `sps_dot` / `sps_empty` / `sps_nseg` / `sps_blank` / `sps_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 802. Timed work is slash split including empty segments — not `unsafe-git-source-p`, not git spawn. Observed `sps_dot` / `sps_empty` / `sps_nseg` / `sps_blank` / `sps_n` are exact. First n=5 freeze **2.152×** (0.635 / 0.295 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 804 — `cli_extensions_install` (strip_git_query)
 
@@ -9158,7 +9158,7 @@ Leftover sibling of Pair 802. Timed work is slash split including empty segments
 |---|---|---|
 | `strip_git_query` | `strip-git-query-and-ref` (`src/cadr-cli/extensions/installer.lisp`) | leftover strip query/hash (`packages/coding-agent/src/utils/git.ts`) |
 
-Leftover sibling of Pairs 802–803. Timed work is strip at first `?` or `#` — not git spawn. Observed `sgq_q` / `sgq_hash` / `sgq_plain` / `sgq_both` / `sgq_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 802–803. Timed work is strip at first `?` or `#` — not git spawn. Observed `sgq_q` / `sgq_hash` / `sgq_plain` / `sgq_both` / `sgq_n` are exact. First n=5 freeze **0.364×** (0.473 / 1.299 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

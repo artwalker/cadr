@@ -1089,8 +1089,11 @@ RATIO_CEILINGS = {
     "cli_extensions_install.handle_unknown": 8.0,
     # leftover 802–804 installer.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 802–804.
+    # leftover 802; first freeze 0.686× (0.144 / 0.209 µs). cadr leads.
     "cli_extensions_install.string_prefix": 8.0,
+    # leftover 803; first freeze 2.152× (0.635 / 0.295 µs).
     "cli_extensions_install.split_path_segments": 8.0,
+    # leftover 804; first freeze 0.364× (0.473 / 1.299 µs). cadr leads.
     "cli_extensions_install.strip_git_query": 8.0,
     # cli_bootstrap_sessions.parse_bash leftover (samples=5): observed 0.421x
     # (0.528 / 1.252 us). 8.0 is first-freeze headroom. Ratchet down only.
