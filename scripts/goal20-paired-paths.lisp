@@ -125,6 +125,9 @@
 ;;;; 760. settings_load read-cli-config vs JSON.parse config.json
 ;;;; 761. settings_load provider-config-secrets vs apiKey/oauth/env secrets
 ;;;; 762. settings_load resolve-provider-config vs createProvider/openaiProvider construct
+;;;; 763. settings_load sdk-settings-default-provider vs SettingsManager.getDefaultProvider
+;;;; 764. settings_load sdk-settings-default-model vs SettingsManager.getDefaultModel
+;;;; 765. settings_load sdk-settings-retry-settings vs SettingsManager.getRetrySettings
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 254. agent_conditions error-slot probe vs agent error shapes
 ;;;; 257. execution_env exists/remove/temps vs NodeExecutionEnv exists/remove/createTemp*
@@ -484,6 +487,9 @@
     ("settings_load.read_cli_config" . 50)
     ("settings_load.provider_config_secrets" . 50)
     ("settings_load.resolve_provider_config" . 50)
+    ("settings_load.sdk_default_provider" . 50)
+    ("settings_load.sdk_default_model" . 50)
+    ("settings_load.sdk_retry_settings" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4185,6 +4191,73 @@
             0)
         5)))))
 
+(defun leftover-sdk-settings-fixture ()
+  (cadr-cli::make-memory-sdk-settings-manager
+   (cadr-ai::json-object
+    "defaultProvider" "openai"
+    "defaultModel" "gpt-4"
+    "retry"
+    (cadr-ai::json-object
+     "enabled" t
+     "maxRetries" 5
+     "baseDelayMs" 2000))))
+
+(defun run-settings-load-sdk-default-provider ()
+  ;; Leftover sibling: SDK defaultProvider. Not stream-chat.
+  (let ((manager (leftover-sdk-settings-fixture))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (string=
+          (cadr-cli::sdk-settings-default-provider manager)
+          "openai")
+         1
+         0)
+     (if (null (cadr-cli::sdk-settings-default-provider empty))
+         1
+         0)
+     (length
+      (or (cadr-cli::sdk-settings-default-provider manager) ""))
+     (if (stringp (cadr-cli::sdk-settings-default-provider manager))
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-default-model ()
+  ;; Leftover sibling: SDK defaultModel. Not stream-chat.
+  (let ((manager (leftover-sdk-settings-fixture))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (string=
+          (cadr-cli::sdk-settings-default-model manager)
+          "gpt-4")
+         1
+         0)
+     (if (null (cadr-cli::sdk-settings-default-model empty))
+         1
+         0)
+     (length
+      (or (cadr-cli::sdk-settings-default-model manager) ""))
+     (if (stringp (cadr-cli::sdk-settings-default-model manager))
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-retry-settings ()
+  ;; Leftover sibling: SDK retry plist. Not login I/O.
+  (let* ((hit (cadr-cli::sdk-settings-retry-settings
+               (leftover-sdk-settings-fixture)))
+         (empty (cadr-cli::sdk-settings-retry-settings
+                 (cadr-cli::make-memory-sdk-settings-manager))))
+    (list
+     (if (eq (getf hit :enabled-p) t) 1 0)
+     (if (= (getf hit :max-retries) 5) 1 0)
+     (if (= (getf hit :base-delay-ms) 2000) 1 0)
+     (if (and (eq (getf empty :enabled-p) t)
+              (= (getf empty :max-retries) 3))
+         1
+         0)
+     5)))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4415,7 +4488,13 @@
               (provider-config-secrets
                 (run-settings-load-provider-config-secrets))
               (resolve-provider-config
-                (run-settings-load-resolve-provider-config)))
+                (run-settings-load-resolve-provider-config))
+              (sdk-default-provider
+                (run-settings-load-sdk-default-provider))
+              (sdk-default-model
+                (run-settings-load-sdk-default-model))
+              (sdk-retry-settings
+                (run-settings-load-sdk-retry-settings)))
         (json-object
          "observed"
          (json-object
@@ -4506,7 +4585,22 @@
           "rpc_cli" (nth 1 resolve-provider-config)
           "rpc_model" (nth 2 resolve-provider-config)
           "rpc_type" (nth 3 resolve-provider-config)
-          "rpc_n" (nth 4 resolve-provider-config))
+          "rpc_n" (nth 4 resolve-provider-config)
+          "sdp_hit" (nth 0 sdk-default-provider)
+          "sdp_miss" (nth 1 sdk-default-provider)
+          "sdp_len" (nth 2 sdk-default-provider)
+          "sdp_str" (nth 3 sdk-default-provider)
+          "sdp_n" (nth 4 sdk-default-provider)
+          "sdm_hit" (nth 0 sdk-default-model)
+          "sdm_miss" (nth 1 sdk-default-model)
+          "sdm_len" (nth 2 sdk-default-model)
+          "sdm_str" (nth 3 sdk-default-model)
+          "sdm_n" (nth 4 sdk-default-model)
+          "srs_en" (nth 0 sdk-retry-settings)
+          "srs_max" (nth 1 sdk-retry-settings)
+          "srs_base" (nth 2 sdk-retry-settings)
+          "srs_empty" (nth 3 sdk-retry-settings)
+          "srs_n" (nth 4 sdk-retry-settings))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -4594,7 +4688,22 @@
          (collect "settings_load.resolve_provider_config"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-resolve-provider-config))))))))))
+                      (run-settings-load-resolve-provider-config))))
+         "sdk_default_provider"
+         (collect "settings_load.sdk_default_provider"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-default-provider))))
+         "sdk_default_model"
+         (collect "settings_load.sdk_default_model"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-default-model))))
+         "sdk_retry_settings"
+         (collect "settings_load.sdk_retry_settings"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-retry-settings))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -32227,6 +32336,12 @@
       "src/cadr-cli/config.lisp provider-config-secrets"
       "settings_load.resolve_provider_config"
       "src/cadr-cli/config.lisp resolve-provider-config"
+      "settings_load.sdk_default_provider"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-provider"
+      "settings_load.sdk_default_model"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-model"
+      "settings_load.sdk_retry_settings"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-retry-settings"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"

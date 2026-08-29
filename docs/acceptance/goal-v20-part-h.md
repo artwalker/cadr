@@ -8824,6 +8824,30 @@ Leftover sibling of Pair 760. Timed work is provider plus environment secret col
 
 Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 763 — `settings_load` (sdk_default_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_default_provider` | `sdk-settings-default-provider` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultProvider` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling on a different needs-pair file. Timed work is in-memory defaultProvider lookup — not `stream-chat`. Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 764 — `settings_load` (sdk_default_model)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_default_model` | `sdk-settings-default-model` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultModel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 763. Timed work is in-memory defaultModel lookup — not `stream-chat`. Observed `sdm_hit` / `sdm_miss` / `sdm_len` / `sdm_str` / `sdm_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 765 — `settings_load` (sdk_retry_settings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_retry_settings` | `sdk-settings-retry-settings` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getRetrySettings` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 763–764. Timed work is retry enabled/max/baseDelay defaults — not login I/O. Observed `srs_en` / `srs_max` / `srs_base` / `srs_empty` / `srs_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

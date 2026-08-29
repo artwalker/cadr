@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `settings_load.sdk_default_provider`
+  (`sdk-settings-default-provider` vs SettingsManager.getDefaultProvider).
+  Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` exact.
+  Measure-only leftover (Pair 763). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_default_model`
+  (`sdk-settings-default-model` vs SettingsManager.getDefaultModel).
+  Observed `sdm_hit` / `sdm_miss` / `sdm_len` / `sdm_str` / `sdm_n` exact.
+  Measure-only leftover (Pair 764). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_retry_settings`
+  (`sdk-settings-retry-settings` vs SettingsManager.getRetrySettings).
+  Observed `srs_en` / `srs_max` / `srs_base` / `srs_empty` / `srs_n` exact.
+  Measure-only leftover (Pair 765). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `settings_load.read_cli_config`
   (`read-cli-config` vs JSON.parse settings object). Observed `rcc_miss` /
   `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` exact. n=5 **2.098×**
