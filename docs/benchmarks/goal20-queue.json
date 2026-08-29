@@ -7028,32 +7028,47 @@
   {
    "pair": 760,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/config.lisp",
    "measure": "measure-settings-load",
    "metric": "settings_load.read_cli_config",
    "branch": "cursor/config-read-secrets-resolve-leftovers-760-762-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 760"
+   "note": "nextPairNum left at tip 328; leftover id 760",
+   "ratio": 2.098,
+   "cadrUs": 200.606,
+   "piUs": 95.628,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 761,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/config.lisp",
    "measure": "measure-settings-load",
    "metric": "settings_load.provider_config_secrets",
    "branch": "cursor/config-read-secrets-resolve-leftovers-760-762-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 761"
+   "note": "nextPairNum left at tip 328; leftover id 761",
+   "ratio": 43.688,
+   "cadrUs": 59.914,
+   "piUs": 1.371,
+   "ceiling": 50.0,
+   "rc": 2
   },
   {
    "pair": 762,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/config.lisp",
    "measure": "measure-settings-load",
    "metric": "settings_load.resolve_provider_config",
    "branch": "cursor/config-read-secrets-resolve-leftovers-760-762-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 762"
+   "note": "nextPairNum left at tip 328; leftover id 762",
+   "ratio": 5.300,
+   "cadrUs": 225.982,
+   "piUs": 42.635,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

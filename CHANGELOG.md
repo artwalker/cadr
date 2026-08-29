@@ -11,17 +11,22 @@ tag/Release step.
 
 - Goal 20 leftover: pair `settings_load.read_cli_config`
   (`read-cli-config` vs JSON.parse settings object). Observed `rcc_miss` /
-  `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` exact. Measure-only leftover
-  (Pair 760). Freeze pending. `nextPairNum` left unchanged.
+  `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` exact. n=5 **2.098×**
+  (200.606 / 95.628 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 760). Over-1× booked. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.provider_config_secrets`
   (`provider-config-secrets` vs apiKey/oauth/env collect). Observed
-  `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` exact.
-  Measure-only leftover (Pair 761). Freeze pending. `nextPairNum` left
-  unchanged.
+  `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` exact. n=5
+  **43.688×** (59.914 / 1.371 µs) on host `cursor`, ceiling 50.0
+  first-freeze headroom. Measure-only leftover (Pair 761). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.resolve_provider_config`
   (`resolve-provider-config` vs openaiProvider construct). Observed
-  `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` exact.
-  Measure-only leftover (Pair 762). Freeze pending. `nextPairNum` left
+  `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` exact. n=5
+  **5.300×** (225.982 / 42.635 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 762). Over-1× booked. `nextPairNum` left
   unchanged.
 
 - Goal 20 leftover: pair `package_manager.records_project_first`
