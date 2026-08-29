@@ -257,6 +257,9 @@ const REPETITIONS = {
 	"package_manager.group_less_p": 50,
 	"package_manager.package_entry_has_filters": 50,
 	"package_manager.find_item_index": 50,
+	"package_manager.selected_entry": 50,
+	"package_manager.selector_move": 50,
+	"package_manager.visible_range": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6148,6 +6151,62 @@ function leftoverConfigSelectorFindItemIndex(entries, start, direction) {
 	return start;
 }
 
+function leftoverConfigSelectorState(selected, extras = {}) {
+	const flatItems = extras.itemCount
+		? Array.from({ length: extras.itemCount }, () => ({ kind: "item" }))
+		: [
+				{ kind: "group" },
+				{ kind: "item" },
+				{ kind: "subgroup" },
+				{ kind: "item" },
+			];
+	return {
+		flatItems,
+		selected,
+		maxVisible: extras.maxVisible ?? 16,
+	};
+}
+
+function leftoverConfigSelectorKindCode(entry) {
+	if (entry?.kind === "group") {
+		return 0;
+	}
+	if (entry?.kind === "item") {
+		return 1;
+	}
+	if (entry?.kind === "subgroup") {
+		return 2;
+	}
+	return -1;
+}
+
+function leftoverConfigSelectorSelectedEntry(state) {
+	return state.flatItems[state.selected];
+}
+
+function leftoverConfigSelectorMove(state, delta) {
+	const entries = state.flatItems;
+	let selected = state.selected;
+	const direction = delta < 0 ? -1 : 1;
+	for (let i = 0; i < Math.abs(delta); i++) {
+		selected = leftoverConfigSelectorFindItemIndex(entries, selected, direction);
+	}
+	state.selected = selected;
+	return state;
+}
+
+function leftoverConfigSelectorVisibleRange(state) {
+	const count = state.flatItems.length;
+	const maximum = state.maxVisible;
+	const selected = state.selected;
+	const start = Math.max(
+		0,
+		Math.min(selected - Math.floor(maximum / 2), count - maximum),
+	);
+	const end = Math.min(count, start + maximum);
+	return { start, end, count };
+}
+
 function runPackageManagerGroupLessP() {
 	const pkg = { item: { origin: "package", scope: "user", source: "z" } };
 	const top = { item: { origin: "top-level", scope: "user", source: "a" } };
@@ -6187,6 +6246,55 @@ function runPackageManagerFindItemIndex() {
 		fi_back: leftoverConfigSelectorFindItemIndex(entries, 3, -1) === 1 ? 1 : 0,
 		fi_end: leftoverConfigSelectorFindItemIndex(entries, 3, 1) === 3 ? 1 : 0,
 		fi_n: 5,
+	};
+}
+
+function runPackageManagerSelectedEntry() {
+	return {
+		se_item: leftoverConfigSelectorKindCode(
+			leftoverConfigSelectorSelectedEntry(leftoverConfigSelectorState(1)),
+		),
+		se_group: leftoverConfigSelectorKindCode(
+			leftoverConfigSelectorSelectedEntry(leftoverConfigSelectorState(0)),
+		),
+		se_sub: leftoverConfigSelectorKindCode(
+			leftoverConfigSelectorSelectedEntry(leftoverConfigSelectorState(2)),
+		),
+		se_last: leftoverConfigSelectorKindCode(
+			leftoverConfigSelectorSelectedEntry(leftoverConfigSelectorState(3)),
+		),
+		se_n: 5,
+	};
+}
+
+function runPackageManagerSelectorMove() {
+	return {
+		sm_fwd: leftoverConfigSelectorMove(leftoverConfigSelectorState(0), 1).selected,
+		sm_skip: leftoverConfigSelectorMove(leftoverConfigSelectorState(1), 1).selected,
+		sm_back: leftoverConfigSelectorMove(leftoverConfigSelectorState(3), -1)
+			.selected,
+		sm_end: leftoverConfigSelectorMove(leftoverConfigSelectorState(3), 1).selected,
+		sm_n: 5,
+	};
+}
+
+function runPackageManagerVisibleRange() {
+	const small = leftoverConfigSelectorVisibleRange(leftoverConfigSelectorState(0));
+	const mid = leftoverConfigSelectorVisibleRange(
+		leftoverConfigSelectorState(10, { maxVisible: 5, itemCount: 20 }),
+	);
+	const top = leftoverConfigSelectorVisibleRange(
+		leftoverConfigSelectorState(0, { maxVisible: 5, itemCount: 20 }),
+	);
+	const bot = leftoverConfigSelectorVisibleRange(
+		leftoverConfigSelectorState(19, { maxVisible: 5, itemCount: 20 }),
+	);
+	return {
+		vr_small: small.start === 0 && small.end === 4 && small.count === 4 ? 1 : 0,
+		vr_mid: mid.start === 8 && mid.end === 13 && mid.count === 20 ? 1 : 0,
+		vr_top: top.start === 0 && top.end === 5 && top.count === 20 ? 1 : 0,
+		vr_bot: bot.start === 15 && bot.end === 20 && bot.count === 20 ? 1 : 0,
+		vr_n: 5,
 	};
 }
 
@@ -6295,6 +6403,9 @@ async function measurePackageManager() {
 	const groupLessP = runPackageManagerGroupLessP();
 	const packageEntryHasFilters = runPackageManagerPackageEntryHasFilters();
 	const findItemIndex = runPackageManagerFindItemIndex();
+	const selectedEntry = runPackageManagerSelectedEntry();
+	const selectorMove = runPackageManagerSelectorMove();
+	const visibleRange = runPackageManagerVisibleRange();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6359,6 +6470,15 @@ async function measurePackageManager() {
 		find_item_index: await collect("package_manager.find_item_index", () => {
 			return () => runPackageManagerFindItemIndex();
 		}),
+		selected_entry: await collect("package_manager.selected_entry", () => {
+			return () => runPackageManagerSelectedEntry();
+		}),
+		selector_move: await collect("package_manager.selector_move", () => {
+			return () => runPackageManagerSelectorMove();
+		}),
+		visible_range: await collect("package_manager.visible_range", () => {
+			return () => runPackageManagerVisibleRange();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6385,6 +6505,9 @@ async function measurePackageManager() {
 			...groupLessP,
 			...packageEntryHasFilters,
 			...findItemIndex,
+			...selectedEntry,
+			...selectorMove,
+			...visibleRange,
 		},
 	};
 }
@@ -31921,6 +32044,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package entry filters (cadr config-selector-package-entry-has-filters-p)",
 			"package_manager.find_item_index":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts find item index (cadr config-selector-find-item-index)",
+			"package_manager.selected_entry":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts selected entry (cadr config-selector-selected-entry)",
+			"package_manager.selector_move":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts selector move (cadr config-selector-move)",
+			"package_manager.visible_range":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts visible range (cadr config-selector-visible-range)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

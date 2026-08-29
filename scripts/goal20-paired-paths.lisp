@@ -486,6 +486,9 @@
     ("package_manager.group_less_p" . 50)
     ("package_manager.package_entry_has_filters" . 50)
     ("package_manager.find_item_index" . 50)
+    ("package_manager.selected_entry" . 50)
+    ("package_manager.selector_move" . 50)
+    ("package_manager.visible_range" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4765,6 +4768,40 @@
 (defun leftover-config-selector-find-item-index (entries start direction)
   (cadr-cli::config-selector-find-item-index entries start direction))
 
+(defun leftover-config-selector-state
+    (selected &key (max-visible 16) (item-count nil))
+  (let ((flat
+          (if item-count
+              (loop for i below item-count
+                    collect (list :kind :item))
+              (list
+               (list :kind :group)
+               (list :kind :item)
+               (list :kind :subgroup)
+               (list :kind :item)))))
+    (cadr-cli::%make-config-selector-state
+     :flat-items flat
+     :selected selected
+     :max-visible max-visible)))
+
+(defun leftover-config-selector-kind-code (entry)
+  (let ((kind (getf entry :kind)))
+    (cond
+      ((eq kind :group) 0)
+      ((eq kind :item) 1)
+      ((eq kind :subgroup) 2)
+      (t -1))))
+
+(defun leftover-config-selector-selected-entry (state)
+  (cadr-cli::config-selector-selected-entry state))
+
+(defun leftover-config-selector-move (state delta)
+  (cadr-cli::config-selector-move state delta))
+
+(defun leftover-config-selector-visible-range (state)
+  (multiple-value-list
+   (cadr-cli::config-selector-visible-range state)))
+
 (defun run-package-manager-group-less-p ()
   (let ((pkg (leftover-config-group-plist :package :user "z"))
         (top (leftover-config-group-plist :top-level :user "a"))
@@ -4819,6 +4856,65 @@
      (package-manager-truth
       (= (leftover-config-selector-find-item-index entries 3 1) 3))
      5)))
+
+(defun run-package-manager-selected-entry ()
+  (list
+   (leftover-config-selector-kind-code
+    (leftover-config-selector-selected-entry
+     (leftover-config-selector-state 1)))
+   (leftover-config-selector-kind-code
+    (leftover-config-selector-selected-entry
+     (leftover-config-selector-state 0)))
+   (leftover-config-selector-kind-code
+    (leftover-config-selector-selected-entry
+     (leftover-config-selector-state 2)))
+   (leftover-config-selector-kind-code
+    (leftover-config-selector-selected-entry
+     (leftover-config-selector-state 3)))
+   5))
+
+(defun run-package-manager-selector-move ()
+  (list
+   (cadr-cli::config-selector-state-selected
+    (leftover-config-selector-move
+     (leftover-config-selector-state 0) 1))
+   (cadr-cli::config-selector-state-selected
+    (leftover-config-selector-move
+     (leftover-config-selector-state 1) 1))
+   (cadr-cli::config-selector-state-selected
+    (leftover-config-selector-move
+     (leftover-config-selector-state 3) -1))
+   (cadr-cli::config-selector-state-selected
+    (leftover-config-selector-move
+     (leftover-config-selector-state 3) 1))
+   5))
+
+(defun run-package-manager-visible-range ()
+  (destructuring-bind (small-start small-end small-count)
+      (leftover-config-selector-visible-range
+       (leftover-config-selector-state 0))
+    (destructuring-bind (mid-start mid-end mid-count)
+        (leftover-config-selector-visible-range
+         (leftover-config-selector-state
+          10 :max-visible 5 :item-count 20))
+      (destructuring-bind (top-start top-end top-count)
+          (leftover-config-selector-visible-range
+           (leftover-config-selector-state
+            0 :max-visible 5 :item-count 20))
+        (destructuring-bind (bot-start bot-end bot-count)
+            (leftover-config-selector-visible-range
+             (leftover-config-selector-state
+              19 :max-visible 5 :item-count 20))
+          (list
+           (package-manager-truth
+            (and (= small-start 0) (= small-end 4) (= small-count 4)))
+           (package-manager-truth
+            (and (= mid-start 8) (= mid-end 13) (= mid-count 20)))
+           (package-manager-truth
+            (and (= top-start 0) (= top-end 5) (= top-count 20)))
+           (package-manager-truth
+            (and (= bot-start 15) (= bot-end 20) (= bot-count 20)))
+           5))))))
 
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
@@ -4915,7 +5011,10 @@
            (config-fit-line (run-package-manager-config-fit-line))
            (group-less-p (run-package-manager-group-less-p))
            (package-entry-has-filters (run-package-manager-package-entry-has-filters))
-           (find-item-index (run-package-manager-find-item-index)))
+           (find-item-index (run-package-manager-find-item-index))
+           (selected-entry (run-package-manager-selected-entry))
+           (selector-move (run-package-manager-selector-move))
+           (visible-range (run-package-manager-visible-range)))
       (json-object
        "observed"
        (json-object
@@ -5026,7 +5125,22 @@
         "fi_skip" (nth 1 find-item-index)
         "fi_back" (nth 2 find-item-index)
         "fi_end" (nth 3 find-item-index)
-        "fi_n" (nth 4 find-item-index))
+        "fi_n" (nth 4 find-item-index)
+        "se_item" (nth 0 selected-entry)
+        "se_group" (nth 1 selected-entry)
+        "se_sub" (nth 2 selected-entry)
+        "se_last" (nth 3 selected-entry)
+        "se_n" (nth 4 selected-entry)
+        "sm_fwd" (nth 0 selector-move)
+        "sm_skip" (nth 1 selector-move)
+        "sm_back" (nth 2 selector-move)
+        "sm_end" (nth 3 selector-move)
+        "sm_n" (nth 4 selector-move)
+        "vr_small" (nth 0 visible-range)
+        "vr_mid" (nth 1 visible-range)
+        "vr_top" (nth 2 visible-range)
+        "vr_bot" (nth 3 visible-range)
+        "vr_n" (nth 4 visible-range))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5132,7 +5246,22 @@
        (collect "package_manager.find_item_index"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-find-item-index))))))))
+                    (run-package-manager-find-item-index))))
+       "selected_entry"
+       (collect "package_manager.selected_entry"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-selected-entry))))
+       "selector_move"
+       (collect "package_manager.selector_move"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-selector-move))))
+       "visible_range"
+       (collect "package_manager.visible_range"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-visible-range))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30362,6 +30491,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-package-entry-has-filters-p"
       "package_manager.find_item_index"
       "src/cadr-cli/packages/config-selector.lisp config-selector-find-item-index"
+      "package_manager.selected_entry"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-selected-entry"
+      "package_manager.selector_move"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-move"
+      "package_manager.visible_range"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-visible-range"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
