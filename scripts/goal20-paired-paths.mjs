@@ -562,6 +562,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.assistant_tool_call_only": 50,
 	"cli_bootstrap_sessions.session_entry_user_text": 50,
 	"cli_bootstrap_sessions.session_compaction_status": 50,
+	"cli_bootstrap_sessions.last_assistant_text": 50,
+	"cli_bootstrap_sessions.session_export_basename": 50,
+	"cli_bootstrap_sessions.session_user_messages_for_forking": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -34777,6 +34780,95 @@ function runCliBootstrapSessionCompactionStatus() {
 	};
 }
 
+function leftoverLastAssistantText(messages) {
+	const lastAssistant = [...(messages || [])].reverse().find((message) => {
+		if (!message || message.role !== "assistant") return false;
+		const content = message.content || [];
+		if (message.stopReason === "aborted" && content.length === 0) return false;
+		return true;
+	});
+	if (!lastAssistant) return "";
+	let text = "";
+	for (const block of lastAssistant.content || []) {
+		if (block && block.type === "text") text += block.text || "";
+	}
+	return asciiTrim(text) || "";
+}
+
+function runCliBootstrapLastAssistantText() {
+	return {
+		lat_none: leftoverLastAssistantText([]),
+		lat_hit: leftoverLastAssistantText([
+			{ role: "user", content: "q" },
+			{ role: "assistant", content: [{ type: "text", text: "hello" }] },
+		]),
+		lat_skip: leftoverLastAssistantText([
+			{ role: "assistant", stopReason: "aborted", content: [] },
+			{ role: "user", content: "again" },
+			{ role: "assistant", content: [{ type: "text", text: "kept" }] },
+		]),
+		lat_ws: leftoverLastAssistantText([
+			{ role: "assistant", content: [{ type: "text", text: "  \n " }] },
+		]),
+		lat_n: 4,
+	};
+}
+
+function leftoverSessionExportBasename(timestampMs, id) {
+	const iso = new Date(timestampMs).toISOString().replace(/[:.]/g, "-");
+	return `cadr-session-${iso}_${id}.html`;
+}
+
+function runCliBootstrapSessionExportBasename() {
+	return {
+		seb_epoch: leftoverSessionExportBasename(0, "sid"),
+		seb_ms: leftoverSessionExportBasename(1700000000123, "abc"),
+		seb_sec: leftoverSessionExportBasename(1000, "x"),
+		seb_999: leftoverSessionExportBasename(999, "zid"),
+		seb_n: 4,
+	};
+}
+
+function leftoverSessionUserMessagesForForking(session) {
+	if (!session) return [];
+	const result = [];
+	for (const entry of session.entries || []) {
+		const text = leftoverSessionEntryUserText(entry);
+		if (!text) continue;
+		if (asciiTrim(text).length === 0) continue;
+		result.push({ entryId: entry.id, text });
+	}
+	return result;
+}
+
+function leftoverForkUserFixture() {
+	return {
+		entries: [
+			{ type: "message", id: "e1", message: { role: "user", content: "hello" } },
+			{
+				type: "message",
+				id: "ea",
+				message: { role: "assistant", content: [{ type: "text", text: "nope" }] },
+			},
+			{ type: "compaction", id: "ec" },
+			{ type: "message", id: "ews", message: { role: "user", content: "   " } },
+			{ type: "message", id: "e2", message: { role: "user", content: "world" } },
+		],
+	};
+}
+
+function runCliBootstrapSessionUserMessagesForForking() {
+	const none = leftoverSessionUserMessagesForForking(null);
+	const items = leftoverSessionUserMessagesForForking(leftoverForkUserFixture());
+	return {
+		sumf_none: none.length,
+		sumf_n: items.length,
+		sumf_first: items[0] ? items[0].text : "",
+		sumf_id: items[0] ? items[0].entryId : "",
+		sumf_last: items.length ? items[items.length - 1].text : "",
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -34786,6 +34878,9 @@ async function measureCliBootstrapCodingTools() {
 	const toolCallOnlyObserved = runCliBootstrapAssistantToolCallOnly();
 	const entryUserTextObserved = runCliBootstrapSessionEntryUserText();
 	const compactionStatusObserved = runCliBootstrapSessionCompactionStatus();
+	const lastAssistantTextObserved = runCliBootstrapLastAssistantText();
+	const exportBasenameObserved = runCliBootstrapSessionExportBasename();
+	const forkUsersObserved = runCliBootstrapSessionUserMessagesForForking();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -34811,6 +34906,18 @@ async function measureCliBootstrapCodingTools() {
 		session_compaction_status: await collect("cli_bootstrap_sessions.session_compaction_status", () => {
 			return () => runCliBootstrapSessionCompactionStatus();
 		}),
+		last_assistant_text: await collect("cli_bootstrap_sessions.last_assistant_text", () => {
+			return () => runCliBootstrapLastAssistantText();
+		}),
+		session_export_basename: await collect("cli_bootstrap_sessions.session_export_basename", () => {
+			return () => runCliBootstrapSessionExportBasename();
+		}),
+		session_user_messages_for_forking: await collect(
+			"cli_bootstrap_sessions.session_user_messages_for_forking",
+			() => {
+				return () => runCliBootstrapSessionUserMessagesForForking();
+			},
+		),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -34820,6 +34927,9 @@ async function measureCliBootstrapCodingTools() {
 			...toolCallOnlyObserved,
 			...entryUserTextObserved,
 			...compactionStatusObserved,
+			...lastAssistantTextObserved,
+			...exportBasenameObserved,
+			...forkUsersObserved,
 		},
 	};
 }
@@ -36702,6 +36812,12 @@ const result = {
 				"packages/coding-agent/src/core/agent-session.ts leftover contentText user entry (cadr session-entry-user-text)",
 			"cli_bootstrap_sessions.session_compaction_status":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts leftover compaction count string (cadr session-compaction-status)",
+			"cli_bootstrap_sessions.last_assistant_text":
+				"packages/coding-agent/src/core/agent-session.ts leftover getLastAssistantText (cadr last-assistant-text)",
+			"cli_bootstrap_sessions.session_export_basename":
+				"packages/coding-agent/src/core/export-html/index.ts leftover APP_NAME-session ISO_id.html (cadr session-export-basename)",
+			"cli_bootstrap_sessions.session_user_messages_for_forking":
+				"packages/coding-agent/src/core/agent-session.ts leftover getUserMessagesForForking (cadr session-user-messages-for-forking)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
