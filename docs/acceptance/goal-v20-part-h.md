@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 886 — `cli_support` (threads_absent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_absent` | `cadr-cli::stop-thread-for-cleanup` on `nil` (`src/cadr-cli/support/threads.lisp`) | `node:worker_threads` absent-handle branch |
+
+Leftover trio on unclaimed `src/cadr-cli/support/threads.lisp`. Timed work is the cadr-cli apply wrapper when the thread handle is missing (`:absent`). Observed `cta_eq` / `cta_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 887 — `cli_support` (threads_current)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_current` | `cadr-cli::stop-thread-for-cleanup` on the current thread (`src/cadr-cli/support/threads.lisp`) | `node:worker_threads` `isMainThread` |
+
+Leftover sibling of Pair 886. Timed work is the cadr-cli wrapper on `sb-thread:*current-thread*` (`:current`). Observed `ctc_eq` / `ctc_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 888 — `cli_support` (threads_joined)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_joined` | `cadr-cli::stop-thread-for-cleanup` on a finished thread (`src/cadr-cli/support/threads.lisp`) | `node:worker_threads` Worker eval-exit |
+
+Leftover sibling of Pairs 886–887. Timed work is the cadr-cli wrapper after `join-thread` (`:joined`). Observed `ctj_eq` / `ctj_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

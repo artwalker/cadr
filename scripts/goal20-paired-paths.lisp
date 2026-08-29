@@ -100,6 +100,9 @@
 ;;;;  64. cli_support parse-git-source vs parseGitUrl
 ;;;;  65. cli_support cadr-user-agent vs getPiUserAgent
 ;;;;  66. cli_support parse-changelog vs parseChangelog
+;;;; 886. cli_support cadr-cli stop-thread-for-cleanup nil vs worker_threads absent
+;;;; 887. cli_support cadr-cli stop-thread-for-cleanup current vs isMainThread
+;;;; 888. cli_support cadr-cli stop-thread-for-cleanup joined vs Worker eval-exit
 ;;;;  67. cli_models_rest parse-auth-command vs parseAuthCommand
 ;;;; 255. cli_models_rest classify-post-login-model vs completeProviderAuthentication
 ;;;;  68. cli_sdk detect-cache-miss vs detectCacheMiss
@@ -647,6 +650,9 @@
     ("cli_support.no_models_help" . 50)
     ("cli_support.no_model_selected" . 50)
     ("cli_support.no_api_key" . 50)
+    ("cli_support.threads_absent" . 50)
+    ("cli_support.threads_current" . 50)
+    ("cli_support.threads_joined" . 5)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -16002,6 +16008,36 @@
      (if hit 1 0)
      (if (and (consp hit) (= (length hit) 2)) 1 0))))
 
+(defun run-cli-support-threads-absent ()
+  ;; Leftover 886: cadr-cli wrapper on nil vs worker_threads absent.
+  (list
+   (if (eq (cadr-cli::stop-thread-for-cleanup nil) :absent) 1 0)
+   1))
+
+(defun run-cli-support-threads-current ()
+  ;; Leftover 887: cadr-cli wrapper on the current thread vs isMainThread.
+  (list
+   (if (eq
+        (cadr-cli::stop-thread-for-cleanup sb-thread:*current-thread*)
+        :current)
+       1
+       0)
+   1))
+
+(defun run-cli-support-threads-joined ()
+  ;; Leftover 888: cadr-cli wrapper on a finished thread vs Worker eval-exit.
+  (let* ((done
+           (sb-thread:make-thread
+            (lambda () :done)
+            :name "cadr-cli-support-threads-join"))
+         (joined
+           (progn
+             (sb-thread:join-thread done)
+             (cadr-cli::stop-thread-for-cleanup done))))
+    (list
+     (if (eq joined :joined) 1 0)
+     1)))
+
 
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
@@ -16018,7 +16054,10 @@
         (experimental (run-cli-support-experimental))
         (no-models (run-cli-support-no-models-help))
         (no-selected (run-cli-support-no-model-selected))
-        (no-key (run-cli-support-no-api-key)))
+        (no-key (run-cli-support-no-api-key))
+        (threads-absent (run-cli-support-threads-absent))
+        (threads-current (run-cli-support-threads-current))
+        (threads-joined (run-cli-support-threads-joined)))
     (json-object
      "observed"
      (json-object
@@ -16094,7 +16133,13 @@
       "ns_nl" (nth 2 no-selected)
       "nk_oai" (nth 0 no-key)
       "nk_unk" (nth 1 no-key)
-      "nk_sel" (nth 2 no-key))
+      "nk_sel" (nth 2 no-key)
+      "cta_eq" (nth 0 threads-absent)
+      "cta_n" (nth 1 threads-absent)
+      "ctc_eq" (nth 0 threads-current)
+      "ctc_n" (nth 1 threads-current)
+      "ctj_eq" (nth 0 threads-joined)
+      "ctj_n" (nth 1 threads-joined))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -16164,7 +16209,22 @@
      (collect "cli_support.no_api_key"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-no-api-key)))))))
+                  (run-cli-support-no-api-key))))
+     "threads_absent"
+     (collect "cli_support.threads_absent"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-threads-absent))))
+     "threads_current"
+     (collect "cli_support.threads_current"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-threads-current))))
+     "threads_joined"
+     (collect "cli_support.threads_joined"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-threads-joined)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -32076,6 +32136,12 @@
       "src/cadr-cli/support/model-help.lisp format-no-model-selected-message"
       "cli_support.no_api_key"
       "src/cadr-cli/support/model-help.lisp format-no-api-key-found-message"
+      "cli_support.threads_absent"
+      "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup nil"
+      "cli_support.threads_current"
+      "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup current"
+      "cli_support.threads_joined"
+      "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup joined"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"

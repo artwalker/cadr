@@ -55,6 +55,7 @@ import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { Worker, isMainThread } from "node:worker_threads";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureDirectory = path.join(projectDirectory, "test/fixtures/goal20-paired-paths");
@@ -413,6 +414,12 @@ const REPETITIONS = {
 	"cli_support.watch_retry_delay": 50,
 	"cli_support.close_watcher": 50,
 	"cli_support.watch_signature": 50,
+	/** Leftover 886: cadr-cli ``stop-thread-for-cleanup`` on ``nil``. */
+	"cli_support.threads_absent": 50,
+	/** Leftover 887: cadr-cli wrapper on the current thread. */
+	"cli_support.threads_current": 50,
+	/** Leftover 888: cadr-cli wrapper on a finished worker. */
+	"cli_support.threads_joined": 5,
 	"cli_bootstrap_sessions.model_cycle": 50,
 	"cli_bootstrap_sessions.model_scope_line": 50,
 	"cli_bootstrap_sessions.process_files": 50,
@@ -15441,6 +15448,36 @@ function runCliSupportNoApiKey() {
 	};
 }
 
+/** Leftover 886: worker_threads absent-handle replica of cadr ``:absent``. */
+function runCliSupportThreadsAbsent() {
+	const handle = null;
+	return {
+		cta_eq: handle == null ? 1 : 0,
+		cta_n: 1,
+	};
+}
+
+/** Leftover 887: ``isMainThread`` vs cadr-cli wrapper on the current thread. */
+function runCliSupportThreadsCurrent() {
+	return {
+		ctc_eq: isMainThread ? 1 : 0,
+		ctc_n: 1,
+	};
+}
+
+/** Leftover 888: Worker eval-exit vs cadr-cli wrapper ``:joined``. */
+async function runCliSupportThreadsJoined() {
+	const joined = await new Promise((resolve) => {
+		const worker = new Worker("setImmediate(() => {})", { eval: true });
+		worker.on("exit", () => resolve(1));
+		worker.on("error", () => resolve(0));
+	});
+	return {
+		ctj_eq: joined,
+		ctj_n: 1,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -15457,6 +15494,9 @@ async function measureCliSupportStripAnsi() {
 	const noModels = runCliSupportNoModelsHelp();
 	const noSelected = runCliSupportNoModelSelected();
 	const noKey = runCliSupportNoApiKey();
+	const threadsAbsent = runCliSupportThreadsAbsent();
+	const threadsCurrent = runCliSupportThreadsCurrent();
+	const threadsJoined = await runCliSupportThreadsJoined();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -15500,6 +15540,15 @@ async function measureCliSupportStripAnsi() {
 		no_api_key: await collect("cli_support.no_api_key", () => {
 			return () => runCliSupportNoApiKey();
 		}),
+		threads_absent: await collect("cli_support.threads_absent", () => {
+			return () => runCliSupportThreadsAbsent();
+		}),
+		threads_current: await collect("cli_support.threads_current", () => {
+			return () => runCliSupportThreadsCurrent();
+		}),
+		threads_joined: await collect("cli_support.threads_joined", () => {
+			return () => runCliSupportThreadsJoined();
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -15515,6 +15564,9 @@ async function measureCliSupportStripAnsi() {
 			...noModels,
 			...noSelected,
 			...noKey,
+			...threadsAbsent,
+			...threadsCurrent,
+			...threadsJoined,
 		},
 	};
 }
@@ -33691,6 +33743,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
 			"cli_support.no_api_key":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
+			"cli_support.threads_absent":
+				"node:worker_threads absent-handle branch (cadr-cli::stop-thread-for-cleanup nil; leftover source src/cadr-cli/support/threads.lisp)",
+			"cli_support.threads_current":
+				"node:worker_threads isMainThread (cadr-cli::stop-thread-for-cleanup current; leftover source src/cadr-cli/support/threads.lisp)",
+			"cli_support.threads_joined":
+				"node:worker_threads Worker eval-exit (cadr-cli::stop-thread-for-cleanup joined; leftover source src/cadr-cli/support/threads.lisp)",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":
