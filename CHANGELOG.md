@@ -9,7 +9,8 @@ tag/Release step.
 
 ### Changed
 
-- Aligned with pi **v0.84.4** (`b79e4cc83` +0): terminal capability
+- Aligned with pi **v0.84.4** (`b79e4cc83` +0).
+  cadr 0.2.0 · aligned with pi v0.84.4 (+0, b79e4cc83). Terminal capability
   overrides (`CADR_HYPERLINKS` / `CADR_IMAGE_PROTOCOL` /
   `CADR_TRUE_COLOR`), `fullscreenCopyOnSelect` plus Ctrl+X copy of the
   active selection, `-`/`/` word-selection joiners, RPC `clear_queue`,

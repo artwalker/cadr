@@ -385,7 +385,7 @@
            (cadr-cli::make-cli-settings-selector-state
             manager agent (cadr-cli::make-resource-snapshot)
             :supports-images-p t)))
-    (is (= 31
+    (is (= 32
            (length
             (cadr-cli::settings-selector-state-options with-images))))
     (is
