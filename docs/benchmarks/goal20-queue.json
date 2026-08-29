@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 877,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/kimi.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.kimi_host_default",
+   "branch": "cursor/oauth-kimi-host-leftovers-877-879-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 877",
+   "ratio": 1.122,
+   "cadrUs": 0.208,
+   "piUs": 0.185,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 878,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/kimi.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.kimi_host_code",
+   "branch": "cursor/oauth-kimi-host-leftovers-877-879-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 878",
+   "ratio": 1.729,
+   "cadrUs": 0.332,
+   "piUs": 0.192,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 879,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/kimi.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.kimi_host_trim",
+   "branch": "cursor/oauth-kimi-host-leftovers-877-879-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 879",
+   "ratio": 2.025,
+   "cadrUs": 0.507,
+   "piUs": 0.250,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

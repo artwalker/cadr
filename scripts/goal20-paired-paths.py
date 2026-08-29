@@ -459,11 +459,11 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.provider_key": 8.0,
     "oauth_pkce_device.http_status_text": 8.0,
     "oauth_pkce_device.parse_callback_request": 8.0,
-    # leftover 877; first-freeze headroom. Ratchet down only.
+    # leftover 877; first freeze 1.122× (0.208 / 0.185 µs). Over-1×.
     "oauth_pkce_device.kimi_host_default": 8.0,
-    # leftover 878; first-freeze headroom. Ratchet down only.
+    # leftover 878; first freeze 1.729× (0.332 / 0.192 µs). Over-1×.
     "oauth_pkce_device.kimi_host_code": 8.0,
-    # leftover 879; first-freeze headroom. Ratchet down only.
+    # leftover 879; first freeze 2.025× (0.507 / 0.250 µs). Over-1×.
     "oauth_pkce_device.kimi_host_trim": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed

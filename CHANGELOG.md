@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.kimi_host_default`
+  (`kimi-oauth-host` vs `getOauthHost` default). Observed `khd_eq` /
+  `khd_https` / `khd_n` exact. n=5 **1.122×** (0.208 / 0.185 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 877).
+  Over-1×. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.kimi_host_code`
+  (`KIMI_CODE_OAUTH_HOST` wins over `KIMI_OAUTH_HOST`). Observed
+  `khc_eq` / `khc_win` / `khc_n` exact. n=5 **1.729×** (0.332 /
+  0.192 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 878). Over-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.kimi_host_trim`
+  (trailing-slash trim). Observed `kht_eq` / `kht_noslash` / `kht_n`
+  exact. n=5 **2.025×** (0.507 / 0.250 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 879). Over-1×. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
