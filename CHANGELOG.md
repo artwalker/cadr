@@ -14,7 +14,20 @@ tag/Release step.
   on `src/cadr-cli/repl.lisp`. n=5 freeze on host `Friend-MachineD`.
   Over-1×: `rt_ok` **2.499×**.
   Reclassified last needs-pair file. `needs-pair` 1→0. G.17 stays missing.
-  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.read_cli_config`
+  (`read-cli-config` vs JSON.parse settings object). Observed `rcc_miss` /
+  `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` exact. Measure-only leftover
+  (Pair 760). Freeze pending. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.provider_config_secrets`
+  (`provider-config-secrets` vs apiKey/oauth/env collect). Observed
+  `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` exact.
+  Measure-only leftover (Pair 761). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `settings_load.resolve_provider_config`
+  (`resolve-provider-config` vs openaiProvider construct). Observed
+  `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` exact.
+  Measure-only leftover (Pair 762). Freeze pending. `nextPairNum` left
+  unchanged.
 
 ### Changed
 
