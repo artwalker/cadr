@@ -231,6 +231,9 @@ const REPETITIONS = {
 	"settings_load.provider_symbol": 50,
 	"settings_load.parse_auth_provider": 50,
 	"settings_load.split_command_line": 50,
+	"settings_load.environment_value": 50,
+	"settings_load.configured_provider_name": 50,
+	"settings_load.provider_settings": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -2760,6 +2763,108 @@ function runSettingsLoadSplitCommandLine() {
 	};
 }
 
+function leftoverLispBound(value) {
+	return value !== null && value !== undefined;
+}
+
+function leftoverEnvironmentValue(env, name) {
+	if (!Object.prototype.hasOwnProperty.call(env, name)) {
+		return null;
+	}
+	return env[name];
+}
+
+function leftoverConfiguredProviderName(explicit, env) {
+	if (leftoverLispBound(explicit)) {
+		return explicit;
+	}
+	const cadrProvider = leftoverEnvironmentValue(env, "CADR_PROVIDER");
+	if (leftoverLispBound(cadrProvider)) {
+		return cadrProvider;
+	}
+	if (leftoverLispBound(leftoverEnvironmentValue(env, "ANTHROPIC_API_KEY"))) {
+		return "anthropic";
+	}
+	if (leftoverLispBound(leftoverEnvironmentValue(env, "OPENAI_API_KEY"))) {
+		return "openai";
+	}
+	if (leftoverLispBound(leftoverEnvironmentValue(env, "GEMINI_API_KEY"))) {
+		return "google";
+	}
+	if (leftoverLispBound(leftoverEnvironmentValue(env, "DEEPSEEK_API_KEY"))) {
+		return "deepseek";
+	}
+	return null;
+}
+
+function leftoverJsonGet(object, key) {
+	if (!object || typeof object !== "object" || Array.isArray(object)) {
+		return null;
+	}
+	if (!Object.prototype.hasOwnProperty.call(object, key)) {
+		return null;
+	}
+	return object[key];
+}
+
+function leftoverProviderSettings(config, name) {
+	const providers = leftoverJsonGet(config, "providers");
+	return leftoverJsonGet(providers, name) || {};
+}
+
+function runSettingsLoadEnvironmentValue() {
+	return {
+		ev_hit: leftoverEnvironmentValue({ CADR_FOO: "bar" }, "CADR_FOO") === "bar" ? 1 : 0,
+		ev_miss: leftoverEnvironmentValue({ CADR_FOO: "bar" }, "MISS") === null ? 1 : 0,
+		ev_blank: leftoverEnvironmentValue({ CADR_FOO: "" }, "CADR_FOO") === "" ? 1 : 0,
+		ev_cadr:
+			leftoverEnvironmentValue({ CADR_PROVIDER: "openai" }, "CADR_PROVIDER") ===
+			"openai"
+				? 1
+				: 0,
+		ev_n: 5,
+	};
+}
+
+function runSettingsLoadConfiguredProviderName() {
+	return {
+		cpn_exp:
+			leftoverConfiguredProviderName("xai", { CADR_PROVIDER: "openai" }) === "xai"
+				? 1
+				: 0,
+		cpn_cadr:
+			leftoverConfiguredProviderName(null, { CADR_PROVIDER: "openai" }) === "openai"
+				? 1
+				: 0,
+		cpn_anth:
+			leftoverConfiguredProviderName(null, { ANTHROPIC_API_KEY: "sk" }) ===
+			"anthropic"
+				? 1
+				: 0,
+		cpn_openai:
+			leftoverConfiguredProviderName(null, { OPENAI_API_KEY: "sk" }) === "openai"
+				? 1
+				: 0,
+		cpn_n: 5,
+	};
+}
+
+function runSettingsLoadProviderSettings() {
+	const config = { providers: { openai: { model: "gpt-4" } } };
+	const empty = {};
+	const hit = leftoverProviderSettings(config, "openai");
+	const miss = leftoverProviderSettings(config, "xai");
+	const none = leftoverProviderSettings(empty, "openai");
+	return {
+		pset_hit: leftoverJsonGet(hit, "model") === "gpt-4" ? 1 : 0,
+		pset_miss: leftoverJsonGet(miss, "model") === null ? 1 : 0,
+		pset_none: leftoverJsonGet(none, "model") === null ? 1 : 0,
+		pset_ht:
+			miss !== null && typeof miss === "object" && !Array.isArray(miss) ? 1 : 0,
+		pset_n: 5,
+	};
+}
+
 function sdkSettingsFixtureManager() {
 	return settingsModule.SettingsManager.inMemory(SDK_SETTINGS_FIXTURE);
 }
@@ -2819,6 +2924,9 @@ async function measureSettingsLoad() {
 	const providerSymbol = runSettingsLoadProviderSymbol();
 	const parseAuth = runSettingsLoadParseAuthProvider();
 	const splitLine = runSettingsLoadSplitCommandLine();
+	const environmentValue = runSettingsLoadEnvironmentValue();
+	const configuredProviderName = runSettingsLoadConfiguredProviderName();
+	const providerSettings = runSettingsLoadProviderSettings();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -2844,6 +2952,18 @@ async function measureSettingsLoad() {
 		split_command_line: await collect("settings_load.split_command_line", () => {
 			return () => runSettingsLoadSplitCommandLine();
 		}),
+		environment_value: await collect("settings_load.environment_value", () => {
+			return () => runSettingsLoadEnvironmentValue();
+		}),
+		configured_provider_name: await collect(
+			"settings_load.configured_provider_name",
+			() => {
+				return () => runSettingsLoadConfiguredProviderName();
+			},
+		),
+		provider_settings: await collect("settings_load.provider_settings", () => {
+			return () => runSettingsLoadProviderSettings();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -2853,6 +2973,9 @@ async function measureSettingsLoad() {
 			...providerSymbol,
 			...parseAuth,
 			...splitLine,
+			...environmentValue,
+			...configuredProviderName,
+			...providerSettings,
 		},
 	};
 }
@@ -32882,6 +33005,12 @@ const result = {
 				"packages/coding-agent/src/cli/args.ts OAuth provider must be openai or anthropic",
 			"settings_load.split_command_line":
 				"packages/coding-agent/src/cli space/tab command-line split",
+			"settings_load.environment_value":
+				"packages/coding-agent/src/config.ts env lookup (cadr environment-value)",
+			"settings_load.configured_provider_name":
+				"packages/coding-agent/src/config.ts configured provider name (cadr configured-provider-name)",
+			"settings_load.provider_settings":
+				"packages/coding-agent/src/config.ts provider settings object (cadr provider-settings)",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":

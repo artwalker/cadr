@@ -6709,6 +6709,51 @@
    "piUs": 5.107,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 739,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.environment_value",
+   "branch": "cursor/config-env-provider-settings-leftovers-739-741-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 739",
+   "ratio": 1.090,
+   "cadrUs": 0.299,
+   "piUs": 0.274,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 740,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.configured_provider_name",
+   "branch": "cursor/config-env-provider-settings-leftovers-739-741-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 740",
+   "ratio": 0.760,
+   "cadrUs": 0.376,
+   "piUs": 0.495,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 741,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.provider_settings",
+   "branch": "cursor/config-env-provider-settings-leftovers-739-741-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 741",
+   "ratio": 2.018,
+   "cadrUs": 1.333,
+   "piUs": 0.661,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

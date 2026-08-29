@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `settings_load.environment_value`
+  (`environment-value` vs env lookup). Observed `ev_hit` / `ev_miss` /
+  `ev_blank` / `ev_cadr` / `ev_n` exact. n=5 **1.090×** (0.299 / 0.274 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 739). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.configured_provider_name`
+  (`configured-provider-name` vs configured provider name). Observed
+  `cpn_exp` / `cpn_cadr` / `cpn_anth` / `cpn_openai` / `cpn_n` exact. n=5
+  **0.760×** (0.376 / 0.495 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 740). Under-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.provider_settings`
+  (`provider-settings` vs provider settings object). Observed `pset_hit` /
+  `pset_miss` / `pset_none` / `pset_ht` / `pset_n` exact. n=5 **2.018×**
+  (1.333 / 0.661 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 741). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `package_manager.delta_resource_state`
   (`config-package-delta-resource-state` vs package delta resource state).
   Observed `drs_plus` / `drs_minus` / `drs_bang` / `drs_miss` / `drs_n`

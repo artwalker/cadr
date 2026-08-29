@@ -460,6 +460,9 @@
     ("settings_load.provider_symbol" . 50)
     ("settings_load.parse_auth_provider" . 50)
     ("settings_load.split_command_line" . 50)
+    ("settings_load.environment_value" . 50)
+    ("settings_load.configured_provider_name" . 50)
+    ("settings_load.provider_settings" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -3977,11 +3980,104 @@
    (settings-load-parse-auth-ok "openai-codex" :openai-codex)
    (settings-load-parse-auth-bad "google")))
 
+(defun leftover-call-with-environment (alist thunk)
+  (let ((cadr-cli::*environment-function*
+          (lambda (name)
+            (cdr (assoc name alist :test #'string=)))))
+    (funcall thunk)))
+
+(defun leftover-environment-value (name alist)
+  (leftover-call-with-environment
+   alist
+   (lambda () (cadr-cli::environment-value name))))
+
+(defun leftover-configured-provider-name (explicit alist)
+  (leftover-call-with-environment
+   alist
+   (lambda () (cadr-cli::configured-provider-name explicit))))
+
+(defun leftover-provider-settings (config name)
+  (cadr-cli::provider-settings config name))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
    (length (cadr-cli::split-command-line (format nil "  a~Cb  " #\Tab)))
    (length (cadr-cli::split-command-line "   "))))
+
+(defun run-settings-load-environment-value ()
+  (list
+   (if (string=
+        (leftover-environment-value "CADR_FOO" '(("CADR_FOO" . "bar")))
+        "bar")
+       1
+       0)
+   (if (null (leftover-environment-value "MISS" '(("CADR_FOO" . "bar"))))
+       1
+       0)
+   (if (string=
+        (leftover-environment-value "CADR_FOO" '(("CADR_FOO" . "")))
+        "")
+       1
+       0)
+   (if (string=
+        (leftover-environment-value
+         "CADR_PROVIDER"
+         '(("CADR_PROVIDER" . "openai")))
+        "openai")
+       1
+       0)
+   5))
+
+(defun run-settings-load-configured-provider-name ()
+  (list
+   (if (string=
+        (leftover-configured-provider-name
+         "xai"
+         '(("CADR_PROVIDER" . "openai")))
+        "xai")
+       1
+       0)
+   (if (string=
+        (leftover-configured-provider-name
+         nil
+         '(("CADR_PROVIDER" . "openai")))
+        "openai")
+       1
+       0)
+   (if (string=
+        (leftover-configured-provider-name
+         nil
+         '(("ANTHROPIC_API_KEY" . "sk")))
+        "anthropic")
+       1
+       0)
+   (if (string=
+        (leftover-configured-provider-name
+         nil
+         '(("OPENAI_API_KEY" . "sk")))
+        "openai")
+       1
+       0)
+   5))
+
+(defun run-settings-load-provider-settings ()
+  (let* ((config
+           (cadr-ai::json-object
+            "providers"
+            (cadr-ai::json-object
+             "openai"
+             (cadr-ai::json-object "model" "gpt-4"))))
+         (empty (cadr-ai::json-object))
+         (hit (leftover-provider-settings config "openai"))
+         (miss (leftover-provider-settings config "xai"))
+         (none (leftover-provider-settings empty "openai")))
+    (list
+     (if (string= (cadr-ai::json-get hit "model") "gpt-4") 1 0)
+     (if (null (cadr-ai::json-get miss "model")) 1 0)
+     (if (null (cadr-ai::json-get none "model")) 1 0)
+     (if (hash-table-p miss) 1 0)
+     5)))
 
 (defun sdk-settings-fixture-manager ()
   (cadr-cli::make-memory-sdk-settings-manager
@@ -4056,7 +4152,11 @@
                 (run-settings-load-config-paths config-paths-agent))
               (provider-symbol (run-settings-load-provider-symbol))
               (parse-auth (run-settings-load-parse-auth-provider))
-              (split-line (run-settings-load-split-command-line)))
+              (split-line (run-settings-load-split-command-line))
+              (environment-value (run-settings-load-environment-value))
+              (configured-provider-name
+                (run-settings-load-configured-provider-name))
+              (provider-settings (run-settings-load-provider-settings)))
         (json-object
          "observed"
          (json-object
@@ -4102,7 +4202,22 @@
           "pap_bad" (nth 3 parse-auth)
           "scl_two" (nth 0 split-line)
           "scl_trim" (nth 1 split-line)
-          "scl_empty" (nth 2 split-line))
+          "scl_empty" (nth 2 split-line)
+          "ev_hit" (nth 0 environment-value)
+          "ev_miss" (nth 1 environment-value)
+          "ev_blank" (nth 2 environment-value)
+          "ev_cadr" (nth 3 environment-value)
+          "ev_n" (nth 4 environment-value)
+          "cpn_exp" (nth 0 configured-provider-name)
+          "cpn_cadr" (nth 1 configured-provider-name)
+          "cpn_anth" (nth 2 configured-provider-name)
+          "cpn_openai" (nth 3 configured-provider-name)
+          "cpn_n" (nth 4 configured-provider-name)
+          "pset_hit" (nth 0 provider-settings)
+          "pset_miss" (nth 1 provider-settings)
+          "pset_none" (nth 2 provider-settings)
+          "pset_ht" (nth 3 provider-settings)
+          "pset_n" (nth 4 provider-settings))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -4145,7 +4260,22 @@
          (collect "settings_load.split_command_line"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-split-command-line))))))))))
+                      (run-settings-load-split-command-line))))
+         "environment_value"
+         (collect "settings_load.environment_value"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-environment-value))))
+         "configured_provider_name"
+         (collect "settings_load.configured_provider_name"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-configured-provider-name))))
+         "provider_settings"
+         (collect "settings_load.provider_settings"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-provider-settings))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -31168,6 +31298,12 @@
       "src/cadr-cli/config.lisp parse-auth-provider"
       "settings_load.split_command_line"
       "src/cadr-cli/config.lisp split-command-line"
+      "settings_load.environment_value"
+      "src/cadr-cli/config.lisp environment-value"
+      "settings_load.configured_provider_name"
+      "src/cadr-cli/config.lisp configured-provider-name"
+      "settings_load.provider_settings"
+      "src/cadr-cli/config.lisp provider-settings"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"

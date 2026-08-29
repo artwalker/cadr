@@ -8632,6 +8632,30 @@ Leftover sibling of Pair 736. Timed work is project settings `+hello.lisp` load,
 
 Leftover sibling of Pairs 736–737. Timed work is derived top-level load, derived top-level unload, package origin `npm:foo` empty project packages inherit, and derived miss inherit. Observed `dps_load` / `dps_unload` / `dps_pkg` / `dps_miss` / `dps_n` are exact. First n=5 freeze **6.210×** (31.710 / 5.107 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 739 — `settings_load` (environment_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `environment_value` | `environment-value` (`src/cadr-cli/config.lisp`) | env lookup (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of leftover 454–456 on `src/cadr-cli/config.lisp`. Timed work is bound-env hit, miss, blank string, and `CADR_PROVIDER`. Observed `ev_hit` / `ev_miss` / `ev_blank` / `ev_cadr` / `ev_n` are exact. First n=5 freeze **1.090×** (0.299 / 0.274 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 740 — `settings_load` (configured_provider_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `configured_provider_name` | `configured-provider-name` (`src/cadr-cli/config.lisp`) | configured provider name (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of Pair 739. Timed work is explicit name, `CADR_PROVIDER`, Anthropic key, and OpenAI key. Observed `cpn_exp` / `cpn_cadr` / `cpn_anth` / `cpn_openai` / `cpn_n` are exact. First n=5 freeze **0.760×** (0.376 / 0.495 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 741 — `settings_load` (provider_settings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `provider_settings` | `provider-settings` (`src/cadr-cli/config.lisp`) | provider settings object (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of Pairs 739–740. Timed work is openai model hit, missing provider empty object, missing providers key, and miss result is a hash table. Observed `pset_hit` / `pset_miss` / `pset_none` / `pset_ht` / `pset_n` are exact. First n=5 freeze **2.018×** (1.333 / 0.661 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
