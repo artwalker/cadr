@@ -22660,7 +22660,7 @@
          (previous-user
            (cadr-agent::extension-host-send-user-message-function
             host))
-         (restore)
+         (restore
            (cadr-cli::wrap-extension-host-tui-turn-dispatch
             host
             (lambda (thunk) (funcall thunk))))
@@ -22676,14 +22676,17 @@
             "user"))
          (wrapped-send
            (cadr-agent::extension-host-send-message-function host)))
-    (declare (ignore previous-user))
     (funcall restore)
     (list
      (if (string= sent "msg") 1 0)
      (if (string= user "user") 1 0)
-     (if (eq
-          (cadr-agent::extension-host-send-message-function host)
-          previous-send)
+     (if (and
+          (eq
+           (cadr-agent::extension-host-send-message-function host)
+           previous-send)
+          (eq
+           (cadr-agent::extension-host-send-user-message-function host)
+           previous-user))
          1
          0)
      (if (not (eq wrapped-send previous-send)) 1 0)

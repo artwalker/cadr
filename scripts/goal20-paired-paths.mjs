@@ -20900,6 +20900,7 @@ function runCliInteractiveExtensionHostTurn() {
 function runCliInteractiveWrapExtensionHostTurn() {
 	const host = leftoverExtensionHostFixture();
 	const previousSend = host.sendMessageFunction;
+	const previousUser = host.sendUserMessageFunction;
 	const restore = leftoverWrapExtensionHostTuiTurnDispatch(
 		host,
 		(thunk) => thunk(),
@@ -20913,7 +20914,11 @@ function runCliInteractiveWrapExtensionHostTurn() {
 	return {
 		wet_send: sent === "msg" ? 1 : 0,
 		wet_user: user === "user" ? 1 : 0,
-		wet_restore: host.sendMessageFunction === previousSend ? 1 : 0,
+		wet_restore:
+			host.sendMessageFunction === previousSend &&
+			host.sendUserMessageFunction === previousUser
+				? 1
+				: 0,
 		wet_trig: wrappedSend !== previousSend ? 1 : 0,
 		wet_n: 5,
 	};
