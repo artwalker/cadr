@@ -8416,6 +8416,30 @@ Leftover sibling of Pair 709. Timed work is star, question, plain, and `./` pref
 
 Leftover sibling of Pairs 709–710. Timed work is `!` / `+` / `-` prefixes, plain, and empty. Observed `cet_bang` / `cet_plus` / `cet_minus` / `cet_plain` / `cet_empty` / `cet_n` are exact. First n=5 freeze **0.893×** (0.277 / 0.310 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 712 — `package_manager` (autoload_disabled)
+
+| metric | cadr | pi |
+|---|---|---|
+| `autoload_disabled` | `config-package-entry-autoload-disabled-p` (`src/cadr-cli/packages/config-selector.lisp`) | package autoload disabled (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 709–711 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is autoload nil, autoload true, missing key, and non-table. Observed `ad_nil` / `ad_true` / `ad_miss` / `ad_notht` / `ad_n` are exact. First n=5 freeze **2.181×** (0.758 / 0.347 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 713 — `package_manager` (package_entry_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `package_entry_filter` | `config-package-entry-filter` (`src/cadr-cli/packages/config-selector.lisp`) | package entry filter (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 712. Timed work is vector coerce, list copy, missing key, and non-sequence. Observed `pef_vec` / `pef_list` / `pef_miss` / `pef_bad` / `pef_n` are exact. First n=5 freeze **1.788×** (1.074 / 0.600 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 714 — `package_manager` (item_matches)
+
+| metric | cadr | pi |
+|---|---|---|
+| `item_matches` | `config-selector-item-matches-p` (`src/cadr-cli/packages/config-selector.lisp`) | item query match (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 712–713. Timed work is empty query, display name, path, type symbol, and miss. Observed `im_empty` / `im_name` / `im_path` / `im_type` / `im_miss` / `im_n` are exact. First n=5 freeze **11.092×** (10.553 / 0.951 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
