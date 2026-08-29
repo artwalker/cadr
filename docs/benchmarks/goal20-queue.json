@@ -8875,32 +8875,47 @@
   {
    "pair": 826,
    "lane": "cursor",
-   "status": "in-progress",
+   "status": "done",
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_search_status",
    "branch": "cursor/llama-ui-search-filter-width-leftovers-826-828-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 826"
+   "note": "nextPairNum left at tip 328; leftover id 826",
+   "ratio": 2.908,
+   "cadrUs": 0.456,
+   "piUs": 0.157,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 827,
    "lane": "cursor",
-   "status": "in-progress",
+   "status": "done",
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_search_filter",
    "branch": "cursor/llama-ui-search-filter-width-leftovers-826-828-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 827"
+   "note": "nextPairNum left at tip 328; leftover id 827",
+   "ratio": 0.472,
+   "cadrUs": 3.792,
+   "piUs": 8.027,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 828,
    "lane": "cursor",
-   "status": "in-progress",
+   "status": "done",
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_view_width",
    "branch": "cursor/llama-ui-search-filter-width-leftovers-826-828-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 828"
+   "note": "nextPairNum left at tip 328; leftover id 828",
+   "ratio": 149.278,
+   "cadrUs": 27.079,
+   "piUs": 0.181,
+   "ceiling": 180.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

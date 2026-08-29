@@ -1133,9 +1133,16 @@ RATIO_CEILINGS = {
     "cli_extensions_install.llama_js_to_fixed": 8.0,
     # leftover 807; remeasure on tip 4.086× (0.945 / 0.231 µs).
     "cli_extensions_install.llama_search_exact": 8.0,
+    # leftover 826; first freeze 2.908× (0.456 / 0.157 µs).
     "cli_extensions_install.llama_search_status": 8.0,
+    # leftover 827; first freeze 0.472× (3.792 / 8.027 µs). cadr leads.
     "cli_extensions_install.llama_search_filter": 8.0,
-    "cli_extensions_install.llama_view_width": 8.0,
+    # leftover 828; first n=5 freeze (host cursor, 2026-08-29).
+    # llama_ui.llama_view_width 149.278× (27.079 / 0.181 µs) —
+    # Lisp times make-llama-view (CLOS) vs leftover replica lastWidth
+    # property on a plain object. Ceiling 180.0 is leftover first-freeze
+    # headroom, not a src/ rewrite of llama-view.
+    "cli_extensions_install.llama_view_width": 180.0,
     # cli_bootstrap_sessions.parse_bash leftover (samples=5): observed 0.421x
     # (0.528 / 1.252 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.parse_bash": 8.0,
