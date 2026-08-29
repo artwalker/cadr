@@ -9352,6 +9352,30 @@ Leftover sibling of Pair 826. Timed work is in-memory result filter + selected c
 
 Leftover sibling of Pairs 826–827. Timed work is last-width slot — not frame TUI render. Observed `lvw_def` / `lvw_set` / `lvw_n` / `lvw_pos` / `lvw_eq` are exact. First n=5 freeze **149.278×** (27.079 / 0.181 µs) on host `cursor`, ceiling 180.0 (CLOS `make-llama-view` vs leftover replica lastWidth property). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 829 — `cli_print_rpc` (dialog_default)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dialog_default` | `rpc-dialog-default` (`src/cadr-cli/modes/rpc/ui.lisp`) | leftover createDialogPromise defaultValue (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of leftover 466–468 / 496–498 on the same `rpc/ui.lisp` `cli_print_rpc` hole. Timed work is the dialog default value — not wait, not TUI. Observed `rdd_sel` / `rdd_conf` / `rdd_in` / `rdd_ed` / `rdd_n` are exact. Measure-only leftover 829. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 830 — `cli_print_rpc` (dialog_deadline)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dialog_deadline` | `rpc-dialog-deadline` (`src/cadr-cli/modes/rpc/ui.lisp`) | leftover opts.timeout deadline (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 829. Timed work is timeout-ms → deadline — not condition-wait. Observed `rdl_nil` / `rdl_fut` / `rdl_num` / `rdl_one` / `rdl_n` are exact. Measure-only leftover 830. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 831 — `cli_print_rpc` (close_pending)
+
+| metric | cadr | pi |
+|---|---|---|
+| `close_pending` | `rpc-close-pending-dialogs` (`src/cadr-cli/modes/rpc/ui.lisp`) | leftover pendingExtensionRequests clear (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 829–830. Timed work is closing-p + pending map clear — not listen, not HTTP. Observed `rcp_close` / `rcp_n` / `rcp_empty` / `rcp_empty_n` / `rcp_keys` are exact. Measure-only leftover 831. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
