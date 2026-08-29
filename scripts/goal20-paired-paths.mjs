@@ -360,6 +360,9 @@ const REPETITIONS = {
 	"cli_extensions_install.llama_search_status": 50,
 	"cli_extensions_install.llama_search_filter": 50,
 	"cli_extensions_install.llama_view_width": 50,
+	"cli_extensions_install.http_timeout_p": 50,
+	"cli_extensions_install.same_source": 50,
+	"cli_extensions_install.quiet_manager": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -14108,6 +14111,30 @@ function replicaStripGitQueryAndRef(path) {
 }
 
 
+function leftoverExtensionHttpTimeoutP(err) {
+	if (err == null) return 0;
+	if (err.kind === "timeout" || err.kind === "native") return 1;
+	if (err.cause) return leftoverExtensionHttpTimeoutP(err.cause);
+	return 0;
+}
+
+
+function leftoverSameExtensionSourceP(bundlePath, sourcePath) {
+	return bundlePath && bundlePath === sourcePath ? 1 : 0;
+}
+
+
+function leftoverCallWithQuietManager(manager, fn) {
+	const real = manager.output;
+	manager.output = { text: "" };
+	try {
+		fn(manager);
+	} finally {
+		manager.output = real;
+	}
+}
+
+
 function leftoverStringPrefixP(prefix, value) {
 	return value.startsWith(prefix) ? 1 : 0;
 }
@@ -14605,6 +14632,49 @@ function runCliExtensionsLlamaViewWidth() {
 }
 
 
+function runCliExtensionsHttpTimeoutP() {
+	return {
+		htp_to: leftoverExtensionHttpTimeoutP({ kind: "timeout" }),
+		htp_native: leftoverExtensionHttpTimeoutP({ kind: "native" }),
+		htp_nested: leftoverExtensionHttpTimeoutP({
+			kind: "wrap",
+			cause: { kind: "timeout" },
+		}),
+		htp_plain: leftoverExtensionHttpTimeoutP({ kind: "error" }),
+		htp_nil: leftoverExtensionHttpTimeoutP(null),
+	};
+}
+
+
+function runCliExtensionsSameSource() {
+	return {
+		ses_eq: leftoverSameExtensionSourceP("/tmp/ext-a", "/tmp/ext-a"),
+		ses_neq: leftoverSameExtensionSourceP("/tmp/ext-a", "/tmp/ext-b"),
+		ses_nil: leftoverSameExtensionSourceP(null, "/tmp/ext-a"),
+		ses_slash: leftoverSameExtensionSourceP("/tmp/ext-a", "/tmp/ext-a/"),
+		ses_n: 4,
+	};
+}
+
+
+function runCliExtensionsQuietManager() {
+	const real = { text: "" };
+	const manager = { output: real };
+	leftoverCallWithQuietManager(manager, (current) => {
+		current.output.text += "secret";
+	});
+	const silent = real.text === "" ? 1 : 0;
+	const restored = manager.output === real ? 1 : 0;
+	manager.output.text += "after";
+	return {
+		qm_silent: silent,
+		qm_restored: restored,
+		qm_after: real.text.includes("after") ? 1 : 0,
+		qm_n: 3,
+	};
+}
+
+
 function llamaContextLabelOrEmpty(model) {
 	return llamaUiContextLabel(model) ?? "";
 }
@@ -14693,6 +14763,9 @@ async function measureCliExtensionsInstall() {
 	const searchStatus = runCliExtensionsLlamaSearchStatus();
 	const searchFilter = runCliExtensionsLlamaSearchFilter();
 	const viewWidth = runCliExtensionsLlamaViewWidth();
+	const httpTimeout = runCliExtensionsHttpTimeoutP();
+	const sameSource = runCliExtensionsSameSource();
+	const quietManager = runCliExtensionsQuietManager();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -14742,6 +14815,15 @@ async function measureCliExtensionsInstall() {
 		llama_view_width: await collect("cli_extensions_install.llama_view_width", () => {
 			return () => runCliExtensionsLlamaViewWidth();
 		}),
+		http_timeout_p: await collect("cli_extensions_install.http_timeout_p", () => {
+			return () => runCliExtensionsHttpTimeoutP();
+		}),
+		same_source: await collect("cli_extensions_install.same_source", () => {
+			return () => runCliExtensionsSameSource();
+		}),
+		quiet_manager: await collect("cli_extensions_install.quiet_manager", () => {
+			return () => runCliExtensionsQuietManager();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -14759,6 +14841,9 @@ async function measureCliExtensionsInstall() {
 			...searchStatus,
 			...searchFilter,
 			...viewWidth,
+			...httpTimeout,
+			...sameSource,
+			...quietManager,
 		},
 	};
 }
@@ -37103,6 +37188,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/ui.ts leftover filterResults (cadr llama-search-filter)",
 			"cli_extensions_install.llama_view_width":
 				"packages/coding-agent/src/extensions/llama/ui.ts leftover last width (cadr llama-view-width)",
+			"cli_extensions_install.http_timeout_p":
+				"packages/coding-agent/src/core/extensions/loader.ts leftover timeout error names (cadr extension-http-timeout-condition-p)",
+			"cli_extensions_install.same_source":
+				"packages/coding-agent/src/core/extensions/loader.ts leftover bundle.path === source.path (cadr same-extension-source-p)",
+			"cli_extensions_install.quiet_manager":
+				"packages/coding-agent/src/core/extensions/loader.ts leftover silenced notify stream (cadr call-with-quiet-extension-manager)",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

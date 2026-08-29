@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.http_timeout_p`
+  (`extension-http-timeout-condition-p` vs leftover timeout error names).
+  Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil`.
+  Measure-only leftover (Pair 844). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.same_source`
+  (`same-extension-source-p` vs leftover bundle.path === source.path).
+  Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n`.
+  Measure-only leftover (Pair 845). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.quiet_manager`
+  (`call-with-quiet-extension-manager` vs leftover silenced notify stream).
+  Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n`.
+  Measure-only leftover (Pair 846). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.managed_binary_names`
   (`+managed-binary-names+` vs leftover fd/rg (+ .exe) names). Observed
   `mbn_n` / `mbn_fd` / `mbn_rg` / `mbn_fdexe` / `mbn_rgexe` exact.
