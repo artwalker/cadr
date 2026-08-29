@@ -479,4 +479,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.make_extension_input_dialog` | 0.496 | 0.451 | 1.099× | 8.00× | measure-only leftover 676; `make-extension-input-dialog` vs input dialog constructor | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_extension_editor_dialog` | 1.648 | 0.363 | 4.545× | 8.00× | measure-only leftover 677; `make-extension-editor-dialog` vs editor dialog constructor | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_runtime_auth_input_state` | 0.459 | 0.441 | 1.042× | 8.00× | measure-only leftover 678; `make-runtime-auth-input-state` vs runtime auth input constructor | invent pause；地板优化另刀 |
+| `cli_interactive_controller.runtime_auth_input_handle_event` | 1.040 | 0.916 | 1.135× | 8.00× | measure-only leftover 679; `runtime-auth-input-state-handle-event` vs oauth runtime auth handleEvent | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_runtime_auth_input` | 143.679 | 2.553 | 56.286× | 100.00× | measure-only leftover 680; `render-runtime-auth-input-state` vs oauth runtime auth render; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_extension_custom_entry` | 0.434 | 0.155 | 2.800× | 8.00× | measure-only leftover 681; `render-extension-custom-entry` vs custom entry render nil host | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

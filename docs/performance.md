@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-28T22:02:47Z) on `cursor`, git `887ffcf30130`, ratio_gate=`enforced-only:cli_interactive_controller.make_extension_input_dialog,cli_interactive_controller.make_extension_editor_dialog,cli_interactive_controller.make_runtime_auth_input_state`, quick=no, samples=5
+Current: `paired-paths` (2026-08-28T22:18:46Z) on `cursor`, git `6dfe606f54d2`, ratio_gate=`enforced-only:cli_interactive_controller.runtime_auth_input_handle_event,cli_interactive_controller.render_runtime_auth_input,cli_interactive_controller.render_extension_custom_entry`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-28T21:51:20Z) on `cursor`, git `0c3ce100315b`, ratio_gate=`enforced-only:cli_interactive_controller.make_framed_select_state,cli_interactive_controller.note_component_render_channel,cli_interactive_controller.tui_extension_theme_runtime`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-28T22:02:47Z) on `cursor`, git `887ffcf30130`, ratio_gate=`enforced-only:cli_interactive_controller.make_extension_input_dialog,cli_interactive_controller.make_extension_editor_dialog,cli_interactive_controller.make_runtime_auth_input_state`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -917,9 +917,12 @@ Previous: `paired-paths` (2026-08-28T21:51:20Z) on `cursor`, git `0c3ce100315b`,
 | `cli_interactive_controller.make_framed_select_state` | 0.9 | 0.9 | 1.04× | 1.04× | 8.00× |
 | `cli_interactive_controller.note_component_render_channel` | 0.4 | 0.3 | 1.28× | 1.28× | 8.00× |
 | `cli_interactive_controller.tui_extension_theme_runtime` | 1.4 | 0.4 | 3.38× | 3.38× | 8.00× |
-| `cli_interactive_controller.make_extension_input_dialog` | 0.5 | 0.5 | 1.10× | — | 8.00× |
-| `cli_interactive_controller.make_extension_editor_dialog` | 1.6 | 0.4 | 4.55× | — | 8.00× |
-| `cli_interactive_controller.make_runtime_auth_input_state` | 0.5 | 0.4 | 1.04× | — | 8.00× |
+| `cli_interactive_controller.make_extension_input_dialog` | 0.5 | 0.5 | 1.10× | 1.10× | 8.00× |
+| `cli_interactive_controller.make_extension_editor_dialog` | 1.6 | 0.4 | 4.55× | 4.55× | 8.00× |
+| `cli_interactive_controller.make_runtime_auth_input_state` | 0.5 | 0.4 | 1.04× | 1.04× | 8.00× |
+| `cli_interactive_controller.runtime_auth_input_handle_event` | 1.0 | 0.9 | 1.14× | — | 8.00× |
+| `cli_interactive_controller.render_runtime_auth_input` | 143.7 | 2.6 | 56.29× | — | 100.00× |
+| `cli_interactive_controller.render_extension_custom_entry` | 0.4 | 0.2 | 2.80× | — | 8.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1982,6 +1985,7 @@ Previous: `paired-paths` (2026-08-28T21:51:20Z) on `cursor`, git `0c3ce100315b`,
 | 2026-08-28T21:37:04Z | paired-paths | `20e64bc61156` | no | enforced-only:cli_interactive_controller.extension_dialog_chrome,cli_interactive_controller.tui_component_protocol,cli_interactive_controller.extension_render_value_lines | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T21:51:20Z | paired-paths | `0c3ce100315b` | no | enforced-only:cli_interactive_controller.make_framed_select_state,cli_interactive_controller.note_component_render_channel,cli_interactive_controller.tui_extension_theme_runtime | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T22:02:47Z | paired-paths | `887ffcf30130` | no | enforced-only:cli_interactive_controller.make_extension_input_dialog,cli_interactive_controller.make_extension_editor_dialog,cli_interactive_controller.make_runtime_auth_input_state | 1.17× | 1.02× | 1.10× | 0.08× |
+| 2026-08-28T22:18:46Z | paired-paths | `6dfe606f54d2` | no | enforced-only:cli_interactive_controller.runtime_auth_input_handle_event,cli_interactive_controller.render_runtime_auth_input,cli_interactive_controller.render_extension_custom_entry | 1.17× | 1.02× | 1.10× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
