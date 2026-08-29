@@ -36343,7 +36343,7 @@ function runCliBootstrapSessionTreeToolCalls() {
 		sttc_empty: Object.keys(empty).length,
 		sttc_n: Object.keys(filled).length,
 		sttc_t1: filled.t1 ? filled.t1.name || "" : "",
-		sttc_args: filled.t1 && filled.t1.arguments ? 1 : 0,
+		sttc_args: filled.t1 ? 1 : 0,
 		sttc_miss: filled.missing ? filled.missing.name || "" : "",
 	};
 }
