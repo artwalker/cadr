@@ -9826,6 +9826,30 @@ Leftover sibling of Pair 760. Timed work is provider plus environment secret col
 
 Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`; remesure Friend-MachineD **1.031×** (208.703 / 202.485 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 757 — `package_manager` (records_project_first)
+
+| metric | cadr | pi |
+|---|---|---|
+| `records_project_first` | `package-update-records-project-first` (`src/cadr-cli/packages/update-checks.lisp`) | project-then-user collect (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
+
+Leftover sibling on a different needs-pair file. Timed work is reordering user/project/user records so project comes first — not git ls-remote. Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 758 — `package_manager` (candidate_record)
+
+| metric | cadr | pi |
+|---|---|---|
+| `candidate_record` | `package-update-candidate-record-p` (`src/cadr-cli/packages/update-checks.lisp`) | git/unpinned/exists filter (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
+
+Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path — not ls-remote. Observed `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 759 — `package_manager` (update_offline)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_offline` | `check-for-available-package-updates` (`src/cadr-cli/packages/update-checks.lisp`) | `isOfflineModeEnabled` short-circuit (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
+
+Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and empty-record no-op — not git. Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` / `uoff_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

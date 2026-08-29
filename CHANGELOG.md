@@ -13,6 +13,21 @@ tag/Release step.
   (`settings_load.read_cli_config` **1.188×**, `provider_config_secrets`
   **33.085×**, `resolve_provider_config` **1.031×**). Scoped gate PASS;
   history overlay booked; inventory `pairedMetrics` +3. G.17 stays missing.
+- Goal 20 leftover: pair `package_manager.records_project_first`
+  (`package-update-records-project-first` vs project-then-user collect).
+  Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` exact.
+  Measure-only leftover (Pair 757). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.candidate_record`
+  (`package-update-candidate-record-p` vs git/unpinned/exists). Observed
+  `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` exact.
+  Measure-only leftover (Pair 758). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.update_offline`
+  (`check-for-available-package-updates` offline vs isOfflineModeEnabled).
+  Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` /
+  `uoff_n` exact. Measure-only leftover (Pair 759). Freeze pending.
+  `nextPairNum` left unchanged.
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_bootstrap_sessions.pb_ok` / `rt_ok` / `dp_ok` (pairs 1012–1014)
