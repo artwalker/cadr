@@ -608,4 +608,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.managed_binary_names` | 0.260 | 0.157 | 1.653× | 8.00× | measure-only leftover 841; `+managed-binary-names+` vs leftover fd/rg names | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.migration_guide_url` | 0.313 | 0.190 | 1.651× | 8.00× | measure-only leftover 842; `+migration-guide-url+` vs leftover MIGRATION_GUIDE_URL | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.extensions_doc_url` | 0.302 | 0.190 | 1.593× | 8.00× | measure-only leftover 843; `+extensions-doc-url+` vs leftover EXTENSIONS_DOC_URL | invent pause；地板优化另刀 |
+| `cli_extensions_install.http_timeout_p` | 0.832 | 0.298 | 2.787× | 8.00× | measure-only leftover 844; `extension-http-timeout-condition-p` vs leftover timeout names | invent pause；地板优化另刀 |
+| `cli_extensions_install.same_source` | 0.421 | 0.160 | 2.631× | 8.00× | measure-only leftover 845; `same-extension-source-p` vs leftover path equality | invent pause；地板优化另刀 |
+| `cli_extensions_install.quiet_manager` | 0.680 | 0.248 | 2.740× | 8.00× | measure-only leftover 846; `call-with-quiet-extension-manager` vs leftover silenced notify | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

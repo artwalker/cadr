@@ -11,16 +11,22 @@ tag/Release step.
 
 - Goal 20 leftover: pair `cli_extensions_install.http_timeout_p`
   (`extension-http-timeout-condition-p` vs leftover timeout error names).
-  Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil`.
-  Measure-only leftover (Pair 844). `nextPairNum` left unchanged.
+  Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil` exact.
+  n=5 **2.787×** (0.832 / 0.298 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 844). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.same_source`
   (`same-extension-source-p` vs leftover bundle.path === source.path).
-  Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n`.
-  Measure-only leftover (Pair 845). `nextPairNum` left unchanged.
+  Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n` exact.
+  n=5 **2.631×** (0.421 / 0.160 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 845). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.quiet_manager`
   (`call-with-quiet-extension-manager` vs leftover silenced notify stream).
-  Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n`.
-  Measure-only leftover (Pair 846). `nextPairNum` left unchanged.
+  Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n` exact.
+  n=5 **2.740×** (0.680 / 0.248 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 846). Over-1× booked. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.managed_binary_names`
   (`+managed-binary-names+` vs leftover fd/rg (+ .exe) names). Observed
