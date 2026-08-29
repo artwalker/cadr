@@ -631,6 +631,9 @@
     ("cli_extensions_install.llama_format_context" . 50)
     ("cli_extensions_install.llama_js_to_fixed" . 50)
     ("cli_extensions_install.llama_search_exact" . 50)
+    ("cli_extensions_install.llama_search_status" . 50)
+    ("cli_extensions_install.llama_search_filter" . 50)
+    ("cli_extensions_install.llama_view_width" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -12964,6 +12967,77 @@
    5))
 
 
+(defun run-cli-extensions-llama-search-status ()
+  ;; Leftover on llama/ui.lisp: search status string. Not HF HTTP.
+  (list
+   (cadr-cli::llama-search-status-text
+    (cadr-cli::make-llama-search-state))
+   (cadr-cli::llama-search-status-text
+    (cadr-cli::make-llama-search-state :status :searching))
+   (cadr-cli::llama-search-status-text
+    (cadr-cli::make-llama-search-state :status ""))
+   (cadr-cli::llama-search-status-text
+    (cadr-cli::make-llama-search-state
+     :status "No GGUF models found"))
+   5))
+
+
+(defun leftover-llama-search-models ()
+  (list
+   (list :id "org/alpha")
+   (list :id "org/beta")
+   (list :id "zzz/other")))
+
+
+(defun leftover-llama-filter-search (query selected)
+  (let ((search
+          (cadr-cli::make-llama-search-state
+           :query query
+           :results (leftover-llama-search-models)
+           :selected selected)))
+    (cadr-cli::llama-search-filter search)
+    search))
+
+
+(defun run-cli-extensions-llama-search-filter ()
+  ;; Leftover on llama/ui.lisp: in-memory filterResults. Not scheduleSearch.
+  (let ((empty
+          (leftover-llama-filter-search "" 0))
+        (miss
+          (leftover-llama-filter-search "nope" 0))
+        (hit
+          (leftover-llama-filter-search "org" 0))
+        (clamp
+          (leftover-llama-filter-search "" 9)))
+    (list
+     (length (cadr-cli::llama-search-state-filtered empty))
+     (length (cadr-cli::llama-search-state-filtered miss))
+     (length (cadr-cli::llama-search-state-filtered hit))
+     (cadr-cli::llama-search-state-selected clamp)
+     5)))
+
+
+(defun leftover-llama-view ()
+  (cadr-cli::make-llama-view
+   (cadr-tui:make-keybindings-manager)
+   (lambda (&rest args)
+     (declare (ignore args))
+     nil)))
+
+
+(defun run-cli-extensions-llama-view-width ()
+  ;; Leftover on llama/ui.lisp: last-width slot. Not frame TUI render.
+  (let ((view (leftover-llama-view))
+        (fresh (leftover-llama-view)))
+    (setf (cadr-cli::llama-view-last-width view) 40)
+    (list
+     (cadr-cli::llama-view-width fresh)
+     (cadr-cli::llama-view-width view)
+     5
+     (if (plusp (cadr-cli::llama-view-width fresh)) 1 0)
+     (if (= (cadr-cli::llama-view-width view) 40) 1 0))))
+
+
 (defun measure-cli-extensions-install ()
   (let* ((url (run-cli-extensions-llama-url))
          (token (run-cli-extensions-hf-token))
@@ -12978,7 +13052,10 @@
          (strip-git-query (run-cli-extensions-strip-git-query))
          (format-context (run-cli-extensions-llama-format-context))
          (js-to-fixed (run-cli-extensions-llama-js-to-fixed))
-         (search-exact (run-cli-extensions-llama-search-exact)))
+         (search-exact (run-cli-extensions-llama-search-exact))
+         (search-status (run-cli-extensions-llama-search-status))
+         (search-filter (run-cli-extensions-llama-search-filter))
+         (view-width (run-cli-extensions-llama-view-width)))
     (json-object
      "observed"
      (json-object
@@ -13050,7 +13127,22 @@
       "lseq_tag" (nth 1 search-exact)
       "lseq_space" (nth 2 search-exact)
       "lseq_slash" (nth 3 search-exact)
-      "lseq_n" (nth 4 search-exact))
+      "lseq_n" (nth 4 search-exact)
+      "lss_type" (nth 0 search-status)
+      "lss_search" (nth 1 search-status)
+      "lss_empty" (nth 2 search-status)
+      "lss_found" (nth 3 search-status)
+      "lss_n" (nth 4 search-status)
+      "lsf_empty" (nth 0 search-filter)
+      "lsf_miss" (nth 1 search-filter)
+      "lsf_hit" (nth 2 search-filter)
+      "lsf_sel" (nth 3 search-filter)
+      "lsf_n" (nth 4 search-filter)
+      "lvw_def" (nth 0 view-width)
+      "lvw_set" (nth 1 view-width)
+      "lvw_n" (nth 2 view-width)
+      "lvw_pos" (nth 3 view-width)
+      "lvw_eq" (nth 4 view-width))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -13116,7 +13208,22 @@
      (collect "cli_extensions_install.llama_search_exact"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-llama-search-exact)))))))
+                  (run-cli-extensions-llama-search-exact))))
+     "llama_search_status"
+     (collect "cli_extensions_install.llama_search_status"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-search-status))))
+     "llama_search_filter"
+     (collect "cli_extensions_install.llama_search_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-search-filter))))
+     "llama_view_width"
+     (collect "cli_extensions_install.llama_view_width"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-view-width)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -35174,6 +35281,12 @@
       "src/cadr-cli/extensions/llama/ui.lisp llama-js-to-fixed"
       "cli_extensions_install.llama_search_exact"
       "src/cadr-cli/extensions/llama/ui.lisp llama-search-exact-query-p"
+      "cli_extensions_install.llama_search_status"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-search-status-text"
+      "cli_extensions_install.llama_search_filter"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-search-filter"
+      "cli_extensions_install.llama_view_width"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-view-width"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

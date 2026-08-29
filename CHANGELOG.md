@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.llama_search_status`
+  (`llama-search-status-text` vs leftover HuggingFaceSearch status). Observed
+  `lss_type` / `lss_search` / `lss_empty` / `lss_found` / `lss_n` exact.
+  Measure-only leftover (Pair 826). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_search_filter`
+  (`llama-search-filter` vs leftover filterResults). Observed
+  `lsf_empty` / `lsf_miss` / `lsf_hit` / `lsf_sel` / `lsf_n` exact.
+  Measure-only leftover (Pair 827). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_view_width`
+  (`llama-view-width` vs leftover last width). Observed
+  `lvw_def` / `lvw_set` / `lvw_n` / `lvw_pos` / `lvw_eq` exact.
+  Measure-only leftover (Pair 828). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.validate_cli_session_flags`
   (`validate-cli-session-flags` vs leftover fork/session-id flag conflicts).
   Observed `vcsf_ok` / `vcsf_fork` / `vcsf_fork2` / `vcsf_sid` / `vcsf_sidok`
