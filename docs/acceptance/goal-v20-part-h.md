@@ -7624,6 +7624,30 @@ Leftover sibling of Pair 610 on the same `thinking.lisp` hole. Timed work is des
 
 Leftover sibling of Pairs 610–611 on the same `thinking.lisp` hole. Timed work is `render-thinking-selector` (default / selected-last / query / empty / 12-level scroll at width 80). Observed `tsrd_default` / `tsrd_sel` / `tsrd_query` / `tsrd_empty` / `tsrd_wide` are exact. First n=5 freeze **44.726×** (316.671 / 7.080 µs) on host `cursor`, ceiling 60.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 613 — `cli_selectors` (trust_option_saved_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_option_saved_p` | `trust-option-saved-p` (`src/cadr-cli/interactive/selectors/trust.lisp`) | isSavedOption (`packages/coding-agent/src/modes/interactive/components/trust-selector.ts`) |
+
+Leftover sibling on the `trust.lisp` hole. Timed work is saved-entry match (nil / trust / parent / decision-mismatch / distrust). Observed `tosp_nil` / `tosp_trust` / `tosp_parent` / `tosp_mismatch` / `tosp_distrust` are exact. First n=5 freeze **2.292×** (35.594 / 15.530 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 614 — `cli_selectors` (make_trust_selector_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_trust_selector_state` | `make-trust-selector-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | TrustSelectorComponent constructor (`packages/coding-agent/src/modes/interactive/components/trust-selector.ts`) |
+
+Leftover sibling of Pair 613. Timed work is options + saved-position (child / saved / inherited / distrust / single). Cached keybindings so this pair matches pi (does not time `make-keybindings-manager`). Observed `mtss_child` / `mtss_saved` / `mtss_inherited` / `mtss_distrust` / `mtss_single` are exact. First n=5 freeze **1.715×** (91.097 / 53.106 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 615 — `cli_selectors` (render_trust_selector)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_trust_selector` | `render-trust-selector` (`src/cadr-cli/interactive/selectors/trust.lisp`) | TrustSelectorComponent layout (`packages/coding-agent/src/modes/interactive/components/trust-selector.ts`) |
+
+Leftover sibling of Pairs 613–614. Timed work is `render-trust-selector` (default / saved / inherited / distrust / single at width 80). Observed `rtrs_default` / `rtrs_saved` / `rtrs_inherited` / `rtrs_distrust` / `rtrs_single` are exact. First n=5 freeze **8.798×** (1074.462 / 122.128 µs) on host `cursor`, ceiling 15.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -761,6 +761,9 @@
     ("cli_selectors.thinking_selector_selected_level" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
+    ("cli_selectors.trust_option_saved_p" . 50)
+    ("cli_selectors.make_trust_selector_state" . 50)
+    ("cli_selectors.render_trust_selector" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15779,6 +15782,131 @@
    "tsrd_wide" (nth 4 render)))
 
 
+(defparameter *goal20-trust-keybindings*
+  (cadr-tui:make-keybindings-manager))
+
+
+(defun encode-trust-option-saved-p (option saved-entry)
+  (if (cadr-cli::trust-option-saved-p option saved-entry)
+      "true"
+      "false"))
+
+
+(defun run-cli-selectors-trust-option-saved-p ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let* ((child (namestring (getf fixtures :child)))
+           (parent (namestring (getf fixtures :parent)))
+           (options (cadr-cli::project-trust-options child))
+           (trust (nth 0 options))
+           (parent-option (nth 1 options))
+           (distrust (nth 2 options)))
+      (list
+       (encode-trust-option-saved-p trust nil)
+       (encode-trust-option-saved-p
+        trust `(:path ,child :decision t))
+       (encode-trust-option-saved-p
+        parent-option `(:path ,parent :decision t))
+       (encode-trust-option-saved-p
+        trust `(:path ,child :decision nil))
+       (encode-trust-option-saved-p
+        distrust `(:path ,child :decision nil))))))
+
+
+(defun encode-make-trust-selector-state
+    (cwd &key saved-entry project-trusted-p)
+  (let ((state
+          (cadr-cli::make-trust-selector-state
+           :cwd cwd
+           :saved-entry saved-entry
+           :project-trusted-p project-trusted-p
+           :keybindings *goal20-trust-keybindings*)))
+    (format
+     nil "~D|~D|~A"
+     (cadr-cli::trust-selector-state-selected state)
+     (length (cadr-cli::trust-selector-state-options state))
+     (if (cadr-cli::trust-selector-state-project-trusted-p state)
+         "true"
+         "false"))))
+
+
+(defun run-cli-selectors-make-trust-selector-state ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child)))
+          (parent (namestring (getf fixtures :parent)))
+          (single (namestring (getf fixtures :single))))
+      (list
+       (encode-make-trust-selector-state child)
+       (encode-make-trust-selector-state
+        child :saved-entry `(:path ,child :decision t)
+        :project-trusted-p t)
+       (encode-make-trust-selector-state
+        child :saved-entry `(:path ,parent :decision t)
+        :project-trusted-p t)
+       (encode-make-trust-selector-state
+        child :saved-entry `(:path ,child :decision nil)
+        :project-trusted-p nil)
+       (encode-make-trust-selector-state single)))))
+
+
+(defun encode-render-trust-selector (cwd width &key saved-entry project-trusted-p)
+  (let ((state
+          (cadr-cli::make-trust-selector-state
+           :cwd cwd
+           :saved-entry saved-entry
+           :project-trusted-p project-trusted-p
+           :keybindings *goal20-trust-keybindings*)))
+    (cadr-cli::render-trust-selector state width)
+    (format
+     nil "~D|~D|~D|~A|~A"
+     (cadr-cli::trust-selector-state-selected state)
+     (length (cadr-cli::trust-selector-state-options state))
+     width
+     (if (cadr-cli::trust-selector-state-project-trusted-p state)
+         "true"
+         "false")
+     (encode-trust-decision-description
+      cwd saved-entry))))
+
+
+(defun run-cli-selectors-render-trust-selector ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child)))
+          (parent (namestring (getf fixtures :parent)))
+          (single (namestring (getf fixtures :single))))
+      (list
+       (encode-render-trust-selector child 40)
+       (encode-render-trust-selector
+        child 40 :saved-entry `(:path ,child :decision t)
+        :project-trusted-p t)
+       (encode-render-trust-selector
+        child 40 :saved-entry `(:path ,parent :decision t)
+        :project-trusted-p t)
+       (encode-render-trust-selector
+        child 40 :saved-entry `(:path ,child :decision nil)
+        :project-trusted-p nil)
+       (encode-render-trust-selector single 80)))))
+
+
+(defun trust-saved-make-render-observed-pairs
+    (saved-p make-state render)
+  (list
+   "tosp_nil" (nth 0 saved-p)
+   "tosp_trust" (nth 1 saved-p)
+   "tosp_parent" (nth 2 saved-p)
+   "tosp_mismatch" (nth 3 saved-p)
+   "tosp_distrust" (nth 4 saved-p)
+   "mtss_child" (nth 0 make-state)
+   "mtss_saved" (nth 1 make-state)
+   "mtss_inherited" (nth 2 make-state)
+   "mtss_distrust" (nth 3 make-state)
+   "mtss_single" (nth 4 make-state)
+   "rtrs_default" (nth 0 render)
+   "rtrs_saved" (nth 1 render)
+   "rtrs_inherited" (nth 2 render)
+   "rtrs_distrust" (nth 3 render)
+   "rtrs_single" (nth 4 render)))
+
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list
@@ -21732,6 +21860,12 @@
           (run-cli-selectors-thinking-level-description-line))
         (leftover-thinking-render
           (run-cli-selectors-render-thinking-selector))
+        (leftover-trust-saved-p
+          (run-cli-selectors-trust-option-saved-p))
+        (leftover-make-trust-state
+          (run-cli-selectors-make-trust-selector-state))
+        (leftover-trust-render
+          (run-cli-selectors-render-trust-selector))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -22509,6 +22643,8 @@
               leftover-thinking-move leftover-thinking-handle-raw leftover-thinking-handle-event)
              (thinking-selector-selected-desc-render-observed-pairs
               leftover-thinking-selected-level leftover-thinking-description-line leftover-thinking-render)
+             (trust-saved-make-render-observed-pairs
+              leftover-trust-saved-p leftover-make-trust-state leftover-trust-render)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -23455,7 +23591,22 @@
      (collect "cli_selectors.render_thinking_selector"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-render-thinking-selector)))))))
+                  (run-cli-selectors-render-thinking-selector))))
+     "trust_option_saved_p"
+     (collect "cli_selectors.trust_option_saved_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-option-saved-p))))
+     "make_trust_selector_state"
+     (collect "cli_selectors.make_trust_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-trust-selector-state))))
+     "render_trust_selector"
+     (collect "cli_selectors.render_trust_selector"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-trust-selector)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -26137,6 +26288,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line"
       "cli_selectors.render_thinking_selector"
       "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector"
+      "cli_selectors.trust_option_saved_p"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p"
+      "cli_selectors.make_trust_selector_state"
+      "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
+      "cli_selectors.render_trust_selector"
+      "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
