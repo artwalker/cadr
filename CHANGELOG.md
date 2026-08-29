@@ -12,16 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_tool_calls`
   (`session-tree-tool-calls` vs leftover tool-call id→name map). Observed
   `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` exact.
-  Measure-only leftover (Pair 817). `nextPairNum` left unchanged.
+  n=5 **1.626×** (1.825 / 1.122 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 817). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_compaction_display_state`
   (`session-compaction-display-state` vs leftover display messages + nil
   summary). Observed `scds_empty` / `scds_n` / `scds_sum` / `scds_kept` /
-  `scds_first` exact. Measure-only leftover (Pair 818). `nextPairNum` left
-  unchanged.
+  `scds_first` exact. n=5 **1.968×** (2.152 / 1.094 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 818). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.write_hotkeys_command`
   (`write-hotkeys-command` vs leftover Keyboard Shortcuts list). Observed
   `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` exact.
-  Measure-only leftover (Pair 819). `nextPairNum` left unchanged.
+  n=5 **2.458×** (7.658 / 3.116 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 819). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_command_stats`
   (`session-command-stats` vs leftover getSessionStats). Observed
