@@ -525,6 +525,9 @@
     ("evals_harness.canonical_api" . 50)
     ("evals_harness.legacy_api" . 50)
     ("evals_harness.extension_error_json" . 50)
+    ("evals_harness.required_prompt_boundary" . 50)
+    ("evals_harness.exclude_guidelines" . 50)
+    ("evals_harness.prepare_default_prompt" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -10955,6 +10958,27 @@
 (defun leftover-extension-error-json (error)
   (cadr-evals::extension-error-json error))
 
+(defun leftover-required-prompt-boundary
+    (prompt marker description &key from-end)
+  (cadr-evals::required-prompt-boundary
+   prompt marker description :from-end from-end))
+
+(defun leftover-exclude-guidelines (default-prompt)
+  (cadr-evals::exclude-guidelines-and-documentation
+   default-prompt))
+
+(defun leftover-prepare-default-prompt (default-prompt)
+  (cadr-evals::prepare-default-prompt-override
+   default-prompt))
+
+(defparameter *leftover-default-prompt*
+  (format nil
+          "HEAD~%Guidelines:~%BODY~%Current working directory: /tmp~%TAIL"))
+
+(defparameter *leftover-default-prompt-double-cwd*
+  (format nil
+          "HEAD~%Current working directory: /a~%Guidelines:~%BODY~%Current working directory: /tmp~%TAIL"))
+
 (defun run-evals-harness-canonical-api ()
   (list
    (eval-flag
@@ -10999,6 +11023,60 @@
       (and (hash-table-p hit) (= (hash-table-count hit) 2)))
      5)))
 
+(defun run-evals-harness-required-prompt-boundary ()
+  (list
+   (eval-flag
+    (= (leftover-required-prompt-boundary
+        "xxMARKyy" "MARK" "x")
+       2))
+   (eval-flag
+    (= (leftover-required-prompt-boundary
+        "MARKaaMARK" "MARK" "x" :from-end t)
+       6))
+   (eval-flag
+    (= (leftover-required-prompt-boundary
+        "MARKrest" "MARK" "x")
+       0))
+   (eval-flag
+    (handler-case
+        (progn
+          (leftover-required-prompt-boundary
+           "hello" "MARK" "x")
+          nil)
+      (error () t)))
+   5))
+
+(defun run-evals-harness-exclude-guidelines ()
+  (let ((cut (leftover-exclude-guidelines
+              *leftover-default-prompt*)))
+    (list
+     (eval-flag (string= cut "HEAD"))
+     (eval-flag (= (length cut) 4))
+     (eval-flag
+      (not (search "Guidelines" cut)))
+     (eval-flag
+      (and (>= (length cut) 4)
+           (string= (subseq cut 0 4) "HEAD")))
+     5)))
+
+(defun run-evals-harness-prepare-default-prompt ()
+  (let ((cut (leftover-prepare-default-prompt
+              *leftover-default-prompt*))
+        (double (leftover-prepare-default-prompt
+                 *leftover-default-prompt-double-cwd*)))
+    (list
+     (eval-flag
+      (string= cut
+               (format nil "HEAD~%Guidelines:~%BODY")))
+     (eval-flag
+      (string= double
+               (format nil
+                       "HEAD~%Current working directory: /a~%Guidelines:~%BODY")))
+     (eval-flag
+      (not (search "Current working directory" cut)))
+     (eval-flag (search "Guidelines" cut))
+     5)))
+
 
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
@@ -11031,7 +11109,10 @@
          (validate-smoke (run-evals-harness-validate-smoke))
          (canonical-api (run-evals-harness-canonical-api))
          (legacy-api (run-evals-harness-legacy-api))
-         (extension-error (run-evals-harness-extension-error-json)))
+         (extension-error (run-evals-harness-extension-error-json))
+         (prompt-boundary (run-evals-harness-required-prompt-boundary))
+         (exclude-guidelines (run-evals-harness-exclude-guidelines))
+         (prepare-default (run-evals-harness-prepare-default-prompt)))
     (json-object
      "observed"
      (json-object
@@ -11172,7 +11253,22 @@
       "see_err" (nth 1 extension-error)
       "see_empty" (nth 2 extension-error)
       "see_blank" (nth 3 extension-error)
-      "see_n" (nth 4 extension-error))
+      "see_n" (nth 4 extension-error)
+      "rpb_mid" (nth 0 prompt-boundary)
+      "rpb_end" (nth 1 prompt-boundary)
+      "rpb_zero" (nth 2 prompt-boundary)
+      "rpb_miss" (nth 3 prompt-boundary)
+      "rpb_n" (nth 4 prompt-boundary)
+      "egd_cut" (nth 0 exclude-guidelines)
+      "egd_len" (nth 1 exclude-guidelines)
+      "egd_no_g" (nth 2 exclude-guidelines)
+      "egd_head" (nth 3 exclude-guidelines)
+      "egd_n" (nth 4 exclude-guidelines)
+      "pdp_cut" (nth 0 prepare-default)
+      "pdp_dbl" (nth 1 prepare-default)
+      "pdp_no_cwd" (nth 2 prepare-default)
+      "pdp_keep" (nth 3 prepare-default)
+      "pdp_n" (nth 4 prepare-default))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -11303,7 +11399,22 @@
      (collect "evals_harness.extension_error_json"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-extension-error-json)))))))
+                  (run-evals-harness-extension-error-json))))
+     "required_prompt_boundary"
+     (collect "evals_harness.required_prompt_boundary"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-required-prompt-boundary))))
+     "exclude_guidelines"
+     (collect "evals_harness.exclude_guidelines"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-exclude-guidelines))))
+     "prepare_default_prompt"
+     (collect "evals_harness.prepare_default_prompt"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-prepare-default-prompt)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -29698,6 +29809,12 @@
       "src/cadr-evals/suites.lisp source-uses-legacy-extension-api-p"
       "evals_harness.extension_error_json"
       "src/cadr-evals/suites.lisp extension-error-json"
+      "evals_harness.required_prompt_boundary"
+      "src/cadr-evals/suites.lisp required-prompt-boundary"
+      "evals_harness.exclude_guidelines"
+      "src/cadr-evals/suites.lisp exclude-guidelines-and-documentation"
+      "evals_harness.prepare_default_prompt"
+      "src/cadr-evals/suites.lisp prepare-default-prompt-override"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

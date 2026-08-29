@@ -311,6 +311,9 @@ const REPETITIONS = {
 	"evals_harness.canonical_api": 50,
 	"evals_harness.legacy_api": 50,
 	"evals_harness.extension_error_json": 50,
+	"evals_harness.required_prompt_boundary": 50,
+	"evals_harness.exclude_guidelines": 50,
+	"evals_harness.prepare_default_prompt": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -8622,6 +8625,42 @@ function leftoverExtensionErrorJson(error) {
 }
 
 
+function leftoverRequiredPromptBoundary(prompt, marker, description, fromEnd = false) {
+	const position = fromEnd ? prompt.lastIndexOf(marker) : prompt.indexOf(marker);
+	if (position < 0) {
+		throw new Error(`Default cadr system prompt has no ${description} section.`);
+	}
+	return position;
+}
+
+
+function leftoverExcludeGuidelines(defaultPrompt) {
+	return defaultPrompt.slice(
+		0,
+		leftoverRequiredPromptBoundary(defaultPrompt, "\nGuidelines:\n", "Guidelines"),
+	);
+}
+
+
+function leftoverPrepareDefaultPrompt(defaultPrompt) {
+	return defaultPrompt.slice(
+		0,
+		leftoverRequiredPromptBoundary(
+			defaultPrompt,
+			"\nCurrent working directory: ",
+			"working-directory",
+			true,
+		),
+	);
+}
+
+
+const leftoverDefaultPrompt =
+	"HEAD\nGuidelines:\nBODY\nCurrent working directory: /tmp\nTAIL";
+const leftoverDefaultPromptDoubleCwd =
+	"HEAD\nCurrent working directory: /a\nGuidelines:\nBODY\nCurrent working directory: /tmp\nTAIL";
+
+
 function runEvalsHarnessCanonicalApi() {
 	return {
 		sca_def: leftoverCanonicalApi("(define-tool hello ())") ? 1 : 0,
@@ -8653,6 +8692,48 @@ function runEvalsHarnessExtensionErrorJson() {
 		see_empty: empty.path === "" ? 1 : 0,
 		see_blank: empty.error === "" ? 1 : 0,
 		see_n: Object.keys(hit).length === 2 ? 1 : 0,
+	};
+}
+
+
+function runEvalsHarnessRequiredPromptBoundary() {
+	let miss = 0;
+	try {
+		leftoverRequiredPromptBoundary("hello", "MARK", "x");
+	} catch {
+		miss = 1;
+	}
+	return {
+		rpb_mid: leftoverRequiredPromptBoundary("xxMARKyy", "MARK", "x") === 2 ? 1 : 0,
+		rpb_end: leftoverRequiredPromptBoundary("MARKaaMARK", "MARK", "x", true) === 6 ? 1 : 0,
+		rpb_zero: leftoverRequiredPromptBoundary("MARKrest", "MARK", "x") === 0 ? 1 : 0,
+		rpb_miss: miss,
+		rpb_n: 5,
+	};
+}
+
+
+function runEvalsHarnessExcludeGuidelines() {
+	const cut = leftoverExcludeGuidelines(leftoverDefaultPrompt);
+	return {
+		egd_cut: cut === "HEAD" ? 1 : 0,
+		egd_len: cut.length === 4 ? 1 : 0,
+		egd_no_g: cut.includes("Guidelines") ? 0 : 1,
+		egd_head: cut.startsWith("HEAD") ? 1 : 0,
+		egd_n: 5,
+	};
+}
+
+
+function runEvalsHarnessPrepareDefaultPrompt() {
+	const cut = leftoverPrepareDefaultPrompt(leftoverDefaultPrompt);
+	const double = leftoverPrepareDefaultPrompt(leftoverDefaultPromptDoubleCwd);
+	return {
+		pdp_cut: cut === "HEAD\nGuidelines:\nBODY" ? 1 : 0,
+		pdp_dbl: double === "HEAD\nCurrent working directory: /a\nGuidelines:\nBODY" ? 1 : 0,
+		pdp_no_cwd: cut.includes("Current working directory") ? 0 : 1,
+		pdp_keep: cut.includes("Guidelines") ? 1 : 0,
+		pdp_n: 5,
 	};
 }
 
@@ -8689,6 +8770,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessCanonicalApi(),
 		...runEvalsHarnessLegacyApi(),
 		...runEvalsHarnessExtensionErrorJson(),
+		...runEvalsHarnessRequiredPromptBoundary(),
+		...runEvalsHarnessExcludeGuidelines(),
+		...runEvalsHarnessPrepareDefaultPrompt(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -8768,6 +8852,15 @@ async function measureEvalsHarness() {
 		}),
 		extension_error_json: await collect("evals_harness.extension_error_json", () => {
 			return () => runEvalsHarnessExtensionErrorJson();
+		}),
+		required_prompt_boundary: await collect("evals_harness.required_prompt_boundary", () => {
+			return () => runEvalsHarnessRequiredPromptBoundary();
+		}),
+		exclude_guidelines: await collect("evals_harness.exclude_guidelines", () => {
+			return () => runEvalsHarnessExcludeGuidelines();
+		}),
+		prepare_default_prompt: await collect("evals_harness.prepare_default_prompt", () => {
+			return () => runEvalsHarnessPrepareDefaultPrompt();
 		}),
 		observed,
 	};
@@ -31328,6 +31421,12 @@ const result = {
 				"packages/evals/src/suites.ts legacy extension API probe (cadr source-uses-legacy-extension-api-p)",
 			"evals_harness.extension_error_json":
 				"packages/evals/src/suites.ts extension error JSON (cadr extension-error-json)",
+			"evals_harness.required_prompt_boundary":
+				"packages/evals/src/suites.ts required prompt boundary (cadr required-prompt-boundary)",
+			"evals_harness.exclude_guidelines":
+				"packages/evals/src/suites.ts exclude Guidelines section (cadr exclude-guidelines-and-documentation)",
+			"evals_harness.prepare_default_prompt":
+				"packages/evals/src/suites.ts prepare default prompt override (cadr prepare-default-prompt-override)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
