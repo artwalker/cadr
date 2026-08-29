@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.git_output`
+  (`package-update-git-output` vs leftover git argv runner). Observed
+  `pug_git` / `pug_cwd` / `pug_rev` / `pug_out` / `pug_n` exact.
+  Measure-only leftover (Pair 796). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.remote_ref`
+  (`package-update-remote-ref` vs leftover origin/ upstream ref). Observed
+  `pur_main` / `pur_feat` / `pur_plain` / `pur_empty` / `pur_n` exact.
+  Measure-only leftover (Pair 797). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.update_record_result`
+  (`package-update-record-result` vs leftover host/path result). Observed
+  `prr_hit` / `prr_same` / `prr_err` / `prr_bad` / `prr_n` exact.
+  Measure-only leftover (Pair 798). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `evals_harness.bundle_tool_names`
   (`extension-bundle-tool-names` vs leftover tool-name list). Observed
   `ebt_hello` / `ebt_multi` / `ebt_empty` / `ebt_eq` / `ebt_n` exact.
