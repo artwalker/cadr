@@ -401,6 +401,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_apply_filter": 50,
 	"cli_selectors.thinking_selector_clamp_selected": 50,
 	"cli_selectors.thinking_selector_select_current": 50,
+	"cli_selectors.thinking_selector_move": 50,
+	"cli_selectors.thinking_selector_handle_raw_input": 50,
+	"cli_selectors.thinking_selector_handle_event": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22531,6 +22534,182 @@ function runCliSelectorsThinkingSelectorSelectCurrent() {
 }
 
 
+function thinkingFilledSelectorState({ selected = 0, query = "" } = {}) {
+	const levels = ["off", "low", "high"];
+	return {
+		levels: levels.slice(),
+		currentLevel: "high",
+		defaultLevel: null,
+		query,
+		filteredLevels: levels.slice(),
+		filterQuery: "",
+		filteredCount: 3,
+		selected,
+		keybindings: GOAL20_THINKING_DEFAULT_KB,
+	};
+}
+
+
+function thinkingSelectorMove(state, delta) {
+	state.selected = moveIndex(state.selected, state.filteredCount, delta);
+	return state;
+}
+
+
+function runCliSelectorsThinkingSelectorMove() {
+	const encoded = (selected, count, delta) => {
+		const state = { selected, filteredCount: count };
+		thinkingSelectorMove(state, delta);
+		return String(state.selected);
+	};
+	return {
+		tsmv_down: encoded(0, 3, 1),
+		tsmv_up_wrap: encoded(0, 3, -1),
+		tsmv_down_wrap: encoded(2, 3, 1),
+		tsmv_page: encoded(0, 3, 10),
+		tsmv_empty: encoded(5, 0, 1),
+	};
+}
+
+
+function thinkingSelectorActionName(action) {
+	return action ? String(action) : "null";
+}
+
+
+function thinkingSelectorHandleRawInput(state, data) {
+	const manager = thinkingSelectorKeybindingsPi(state);
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.up")) {
+		thinkingSelectorMove(state, -1);
+		return { action: "changed", level: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.down")) {
+		thinkingSelectorMove(state, 1);
+		return { action: "changed", level: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.pageUp")) {
+		thinkingSelectorMove(state, -10);
+		return { action: "changed", level: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.pageDown")) {
+		thinkingSelectorMove(state, 10);
+		return { action: "changed", level: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.confirm")) {
+		const level = thinkingSelectorSelectedLevel(state);
+		return { action: level ? "select" : null, level, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "app.thinking.save")) {
+		const level = thinkingSelectorSelectedLevel(state);
+		return { action: level ? "persist" : null, level, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "app.thinking.clearSearchOrCancel")) {
+		if (state.query.length > 0) {
+			thinkingSelectorSetQuery(state, "");
+			return { action: "changed", level: null, consumed: true };
+		}
+		return { action: "cancel", level: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.cancel")) {
+		return { action: "cancel", level: null, consumed: true };
+	}
+	return { action: null, level: null, consumed: false };
+}
+
+
+function encodeThinkingSelectorHandleRaw(state, result) {
+	return [
+		thinkingSelectorActionName(result.action),
+		String(state.selected),
+		thinkingLevelName(result.level),
+		result.consumed ? "true" : "false",
+	].join("|");
+}
+
+
+function thinkingSelectorHandleRawEncoded(selected, data, { query } = {}) {
+	const state = thinkingFilledSelectorState({ selected, query: query ?? "" });
+	const result = thinkingSelectorHandleRawInput(state, data);
+	return encodeThinkingSelectorHandleRaw(state, result);
+}
+
+
+function runCliSelectorsThinkingSelectorHandleRawInput() {
+	const arrowDown = "\x1b[B";
+	const arrowUp = "\x1b[A";
+	const enter = "\r";
+	const ctrlS = "\x13";
+	return {
+		tshri_down: thinkingSelectorHandleRawEncoded(0, arrowDown),
+		tshri_up: thinkingSelectorHandleRawEncoded(1, arrowUp),
+		tshri_enter: thinkingSelectorHandleRawEncoded(0, enter),
+		tshri_save: thinkingSelectorHandleRawEncoded(1, ctrlS),
+		tshri_nop: thinkingSelectorHandleRawEncoded(0, "q"),
+	};
+}
+
+
+function thinkingSelectorHandleEvent(state, eventKind, { text } = {}) {
+	switch (eventKind) {
+		case "down":
+			thinkingSelectorMove(state, 1);
+			return { action: "changed", level: null };
+		case "up":
+			thinkingSelectorMove(state, -1);
+			return { action: "changed", level: null };
+		case "page-up":
+			thinkingSelectorMove(state, -10);
+			return { action: "changed", level: null };
+		case "page-down":
+			thinkingSelectorMove(state, 10);
+			return { action: "changed", level: null };
+		case "enter": {
+			const level = thinkingSelectorSelectedLevel(state);
+			return { action: level ? "select" : null, level };
+		}
+		case "escape":
+		case "interrupt":
+			return { action: "cancel", level: null };
+		case "backspace":
+			thinkingSelectorSetQuery(state, deleteQueryChar(state.query));
+			return { action: "changed", level: null };
+		case "text":
+			thinkingSelectorSetQuery(state, state.query + (text ?? ""));
+			return { action: "changed", level: null };
+		default:
+			return { action: null, level: null };
+	}
+}
+
+
+function encodeThinkingSelectorHandleEvent(state, result) {
+	return [
+		thinkingSelectorActionName(result.action),
+		String(state.selected),
+		thinkingLevelName(result.level),
+		String(state.query.length),
+	].join("|");
+}
+
+
+function thinkingSelectorHandleEventEncoded(selected, eventKind, { text, query } = {}) {
+	const state = thinkingFilledSelectorState({ selected, query: query ?? "" });
+	const result = thinkingSelectorHandleEvent(state, eventKind, { text });
+	return encodeThinkingSelectorHandleEvent(state, result);
+}
+
+
+function runCliSelectorsThinkingSelectorHandleEvent() {
+	return {
+		tshe_down: thinkingSelectorHandleEventEncoded(0, "down"),
+		tshe_enter: thinkingSelectorHandleEventEncoded(0, "enter"),
+		tshe_esc: thinkingSelectorHandleEventEncoded(1, "escape"),
+		tshe_text: thinkingSelectorHandleEventEncoded(0, "text", { text: "h" }),
+		tshe_tab: thinkingSelectorHandleEventEncoded(0, "tab"),
+	};
+}
+
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -22728,6 +22907,9 @@ async function measureCliSelectorsSessionSearch() {
 	const thinkingSelectorApplyFilterResults = runCliSelectorsThinkingSelectorApplyFilter();
 	const thinkingSelectorClampSelectedResults = runCliSelectorsThinkingSelectorClampSelected();
 	const thinkingSelectorSelectCurrentResults = runCliSelectorsThinkingSelectorSelectCurrent();
+	const thinkingSelectorMoveResults = runCliSelectorsThinkingSelectorMove();
+	const thinkingSelectorHandleRawInputResults = runCliSelectorsThinkingSelectorHandleRawInput();
+	const thinkingSelectorHandleEventResults = runCliSelectorsThinkingSelectorHandleEvent();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -23086,6 +23268,9 @@ async function measureCliSelectorsSessionSearch() {
 		...thinkingSelectorApplyFilterResults,
 		...thinkingSelectorClampSelectedResults,
 		...thinkingSelectorSelectCurrentResults,
+		...thinkingSelectorMoveResults,
+		...thinkingSelectorHandleRawInputResults,
+		...thinkingSelectorHandleEventResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -23840,6 +24025,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.thinking_selector_select_current",
 			() => {
 				return () => runCliSelectorsThinkingSelectorSelectCurrent();
+			},
+		),
+		thinking_selector_move: await collect(
+			"cli_selectors.thinking_selector_move",
+			() => {
+				return () => runCliSelectorsThinkingSelectorMove();
+			},
+		),
+		thinking_selector_handle_raw_input: await collect(
+			"cli_selectors.thinking_selector_handle_raw_input",
+			() => {
+				return () => runCliSelectorsThinkingSelectorHandleRawInput();
+			},
+		),
+		thinking_selector_handle_event: await collect(
+			"cli_selectors.thinking_selector_handle_event",
+			() => {
+				return () => runCliSelectorsThinkingSelectorHandleEvent();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -26730,6 +26933,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts clamp selected index",
 			"cli_selectors.thinking_selector_select_current":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts select current thinking level",
+			"cli_selectors.thinking_selector_move":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts wrap selected index",
+			"cli_selectors.thinking_selector_handle_raw_input":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts handleInput keybindings",
+			"cli_selectors.thinking_selector_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts typed input event dispatch",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

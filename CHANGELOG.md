@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_move`
+  (`thinking-selector-move` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp` vs wrap selected
+  index). Observed `tsmv_down` / `tsmv_up_wrap` / `tsmv_down_wrap` /
+  `tsmv_page` / `tsmv_empty` exact. n=5 **1.353×** (0.637 / 0.471 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 607). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_handle_raw_input`
+  (`thinking-selector-handle-raw-input` vs handleInput keybindings). Observed
+  `tshri_down` / `tshri_up` / `tshri_enter` / `tshri_save` / `tshri_nop`
+  exact. Raw CSI/CR/ctrl+s bytes. n=5 **20.910×** (144.448 / 6.908 µs) on
+  host `cursor`, ceiling 30.0 first-freeze headroom. Cached
+  `*default-thinking-selector-keybindings*`; do not time
+  `make-thinking-selector-keybindings`. Measure-only leftover (Pair 608).
+  Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_handle_event`
+  (`thinking-selector-handle-event` vs typed input event dispatch). Observed
+  `tshe_down` / `tshe_enter` / `tshe_esc` / `tshe_text` / `tshe_tab` exact.
+  n=5 **0.834×** (3.312 / 3.974 µs) on host `cursor`, ceiling 8.0. cadr
+  leads. Measure-only leftover (Pair 609). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.thinking_selector_apply_filter`
   (`thinking-selector-apply-filter` on
   `src/cadr-cli/interactive/selectors/thinking.lisp` vs `applyFilter`).
