@@ -196,6 +196,9 @@ const REPETITIONS = {
 	"find_tool.glob_regex": 50,
 	"find_tool.glob_special": 50,
 	"find_tool.gitignore_regex": 50,
+	"find_tool.glob_scanner": 50,
+	"find_tool.glob_regex_body": 50,
+	"find_tool.parse_gitignore_line": 50,
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
@@ -3995,6 +3998,73 @@ function runFindGitignoreRegex() {
 	};
 }
 
+function leftoverGlobScanner(pattern, path) {
+	return new RegExp(globRegexSource(pattern)).test(path);
+}
+
+function leftoverGlobRegexBody(pattern) {
+	return globRegexBody(pattern);
+}
+
+function leftoverParseGitignoreLine(line, base = "/tmp") {
+	let text = line;
+	while (text.length > 0 && "\r \t".includes(text[text.length - 1])) {
+		text = text.slice(0, -1);
+	}
+	if (text.length === 0 || text[0] === "#") return null;
+	const escapedMarkerP =
+		text.length > 1 && text[0] === "\\" && "#!".includes(text[1]);
+	const negatedP = !escapedMarkerP && text[0] === "!";
+	let raw;
+	if (escapedMarkerP) raw = text.slice(1);
+	else if (negatedP) raw = text.slice(1);
+	else raw = text;
+	const directoryOnlyP = raw.length > 0 && raw[raw.length - 1] === "/";
+	const withoutTrailing = directoryOnlyP ? raw.slice(0, -1) : raw;
+	const leadingSlashP = withoutTrailing.length > 0 && withoutTrailing[0] === "/";
+	const pattern = leadingSlashP ? withoutTrailing.slice(1) : withoutTrailing;
+	const anchoredP = leadingSlashP || pattern.includes("/");
+	if (pattern.length === 0) return null;
+	return {
+		base,
+		scanner: new RegExp(gitignoreRegexSource(pattern, anchoredP, directoryOnlyP)),
+		negatedP,
+	};
+}
+
+function runFindGlobScanner() {
+	return {
+		gsc_star: leftoverGlobScanner("*", "a.txt") ? 1 : 0,
+		gsc_miss: leftoverGlobScanner("*", "foo/bar") ? 0 : 1,
+		gsc_glob: leftoverGlobScanner("**", "foo/bar") ? 1 : 0,
+		gsc_q: leftoverGlobScanner("?", "a") ? 1 : 0,
+		gsc_dot: leftoverGlobScanner(".a", ".a") ? 1 : 0,
+	};
+}
+
+function runFindGlobRegexBody() {
+	return {
+		grb_star: leftoverGlobRegexBody("*") === "[^/]*" ? 1 : 0,
+		grb_glob: leftoverGlobRegexBody("**") === ".*" ? 1 : 0,
+		grb_q: leftoverGlobRegexBody("?") === "[^/]" ? 1 : 0,
+		grb_dot: leftoverGlobRegexBody(".a") === "\\.a" ? 1 : 0,
+	};
+}
+
+function runFindParseGitignoreLine() {
+	const empty = leftoverParseGitignoreLine("");
+	const hash = leftoverParseGitignoreLine("# comment");
+	const foo = leftoverParseGitignoreLine("foo");
+	const bang = leftoverParseGitignoreLine("!foo");
+	return {
+		pgl_empty: empty === null ? 1 : 0,
+		pgl_hash: hash === null ? 1 : 0,
+		pgl_foo: foo ? 1 : 0,
+		pgl_bang: bang && bang.negatedP ? 1 : 0,
+		pgl_scan: foo && foo.scanner instanceof RegExp ? 1 : 0,
+	};
+}
+
 async function measureFindTool() {
 	ensureFindToolFixture();
 	const patternObserved = runFindPatternMatch();
@@ -4003,6 +4073,9 @@ async function measureFindTool() {
 	const globRegexObserved = runFindGlobRegex();
 	const globSpecialObserved = runFindGlobSpecial();
 	const gitignoreObserved = runFindGitignoreRegex();
+	const globScannerObserved = runFindGlobScanner();
+	const globRegexBodyObserved = runFindGlobRegexBody();
+	const parseGitignoreObserved = runFindParseGitignoreLine();
 	return {
 		pattern_match: await collect("find_tool.pattern_match", () => {
 			return () => runFindPatternMatch();
@@ -4022,6 +4095,15 @@ async function measureFindTool() {
 		gitignore_regex: await collect("find_tool.gitignore_regex", () => {
 			return () => runFindGitignoreRegex();
 		}),
+		glob_scanner: await collect("find_tool.glob_scanner", () => {
+			return () => runFindGlobScanner();
+		}),
+		glob_regex_body: await collect("find_tool.glob_regex_body", () => {
+			return () => runFindGlobRegexBody();
+		}),
+		parse_gitignore_line: await collect("find_tool.parse_gitignore_line", () => {
+			return () => runFindParseGitignoreLine();
+		}),
 		observed: {
 			...patternObserved,
 			...filesObserved,
@@ -4029,6 +4111,9 @@ async function measureFindTool() {
 			...globRegexObserved,
 			...globSpecialObserved,
 			...gitignoreObserved,
+			...globScannerObserved,
+			...globRegexBodyObserved,
+			...parseGitignoreObserved,
 		},
 	};
 }
@@ -30760,6 +30845,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts glob regex metacharacters (cadr regex-special-p)",
 			"find_tool.gitignore_regex":
 				"packages/coding-agent/src/core/tools/find.ts gitignore glob compile (cadr gitignore-regex-source)",
+			"find_tool.glob_scanner":
+				"packages/coding-agent/src/core/tools/find.ts glob scanner compile+test (cadr glob-scanner)",
+			"find_tool.glob_regex_body":
+				"packages/coding-agent/src/core/tools/find.ts glob regex body (cadr glob-regex-body)",
+			"find_tool.parse_gitignore_line":
+				"packages/coding-agent/src/core/tools/find.ts gitignore line parse (cadr parse-gitignore-line)",
 			"write_tool.ensure_parent":
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
 			"write_tool.write_utf8":

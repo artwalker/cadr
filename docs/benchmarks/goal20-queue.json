@@ -5944,6 +5944,51 @@
    "piUs": 1.629,
    "ceiling": 160.0,
    "rc": 2
+  },
+  {
+   "pair": 688,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_scanner",
+   "branch": "cursor/glob-scanner-body-parse-leftovers-688-690-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 688",
+   "ratio": 11.176,
+   "cadrUs": 10.624,
+   "piUs": 0.951,
+   "ceiling": 20.0,
+   "rc": 2
+  },
+  {
+   "pair": 689,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_regex_body",
+   "branch": "cursor/glob-scanner-body-parse-leftovers-688-690-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 689",
+   "ratio": 1.393,
+   "cadrUs": 0.58,
+   "piUs": 0.417,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 690,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.parse_gitignore_line",
+   "branch": "cursor/glob-scanner-body-parse-leftovers-688-690-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 690",
+   "ratio": 5.556,
+   "cadrUs": 7.267,
+   "piUs": 1.308,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

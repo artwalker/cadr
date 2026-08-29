@@ -487,4 +487,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.framed_select_state_handle_raw_input` | 87.360 | 0.953 | 91.669× | 160.00× | measure-only leftover 684; `framed-select-state-handle-raw-input` vs framed select-list handleRawInput; first-freeze headroom 160.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_extension_custom_ui` | 32.260 | 1.416 | 22.775× | 40.00× | measure-only leftover 685; `render-extension-custom-ui` vs custom ui render; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_tui_extension_overlay` | 144.970 | 1.629 | 88.995× | 160.00× | measure-only leftover 687; `render-tui-extension-overlay` vs extension overlay composite; first-freeze headroom 160.0 | invent pause；地板优化另刀 |
+| `find_tool.glob_scanner` | 10.624 | 0.951 | 11.176× | 20.00× | measure-only leftover 688; `glob-scanner` vs glob scanner compile+test; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `find_tool.glob_regex_body` | 0.580 | 0.417 | 1.393× | 8.00× | measure-only leftover 689; `glob-regex-body` vs glob regex body | invent pause；地板优化另刀 |
+| `find_tool.parse_gitignore_line` | 7.267 | 1.308 | 5.556× | 8.00× | measure-only leftover 690; `parse-gitignore-line` vs gitignore line parse | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
