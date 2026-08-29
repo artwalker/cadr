@@ -559,4 +559,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.inherited_enabled` | 44.007 | 2.829 | 15.558× | 20.00× | measure-only leftover 784; `config-selector-inherited-enabled-p` vs leftover inheritedEnabled map; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `package_manager.resource_group_key` | 33.767 | 0.902 | 37.443× | 50.00× | measure-only leftover 785; `config-resource-group-key` vs leftover group key; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `package_manager.package_entry_index` | 37.334 | 2.313 | 16.140× | 20.00× | measure-only leftover 786; `config-selector-package-entry-index` vs leftover npm identity index; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.project_package_entry` | 41.428 | 3.242 | 12.778× | 15.00× | measure-only leftover 787; `config-selector-project-package-entry` vs leftover project identity find; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.project_package_state` | 46.466 | 3.385 | 13.727× | 15.00× | measure-only leftover 788; `config-selector-project-package-state` vs leftover filter walk; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.package_setting_record` | 32.598 | 1.048 | 31.093× | 40.00× | measure-only leftover 789; `config-package-setting-record` vs leftover npm record; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
