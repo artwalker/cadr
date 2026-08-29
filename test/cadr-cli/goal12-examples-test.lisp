@@ -102,7 +102,7 @@
            (goal12-read-project-file
             "docs/acceptance/goal-v12-extension-event-dispatch.md"))
          (events cadr-agent::+extension-hook-events+))
-    (is (= 35 (length events)))
+    (is (= 37 (length events)))
     (dolist (event events)
       (let* ((prefix (format nil "| `:~(~A~)` |" (symbol-name event)))
              (start (search prefix audit))
@@ -159,7 +159,7 @@
               (string-downcase (symbol-name event)))
             cadr-agent::+extension-hook-events+)
            #'string<)))
-    (is (= 34 (length baseline)))
+    (is (= 36 (length baseline)))
     (is (equal expected actual)
         "cadr extension events drifted from the derived baseline set")))
 
@@ -170,10 +170,10 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac source=685/513/169/3 examples=99/99/0"))
+          "GOAL12_LEDGER baseline=b79e4cc834970cca69daebffab7df1da7d1e52c4 source=686/514/169/3 examples=99/99/0"))
     (is (search "| `coding-agent` | 316 | 266 | 47 | 3 |" ledger))
     (is (search "| `tui` | 47 | 40 | 7 | 0 |" ledger))
-    (is (search "| **Total** | **685** | **513** | **169** | **3** |" ledger))
+    (is (search "| **Total** | **686** | **514** | **169** | **3** |" ledger))
     (is (search "Implemented; not measurable on this platform" ledger))
     (is (search "all 99" readme :test #'char-equal))
     ;; Goal 20 Part F adjudication (2026-08-14): the load/behavior gap for

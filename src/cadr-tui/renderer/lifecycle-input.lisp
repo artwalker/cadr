@@ -9,11 +9,11 @@
   (mouse-p t :type boolean)
   (show-hardware-cursor-p nil :type boolean)
   (clear-on-shrink-p nil :type boolean)
-  ;; pi@4e58f324f components/scroll-view.ts:62-70 — :auto shows the
+  ;; pi@b79e4cc83 components/scroll-view.ts:62-70 — :auto shows the
   ;; thumb transiently after scroll activity, :always reserves a
   ;; column, :hidden never paints.
   (scrollbar-mode :auto :type symbol)
-  ;; v0.84.3 fullscreenExitOutput: :transcript replays the document on
+  ;; v0.84.4 fullscreenExitOutput: :transcript replays the document on
   ;; exit (the baseline default); :resume-hint leaves the screen and
   ;; prints only the resume hint.
   (exit-output-mode :transcript :type symbol)
@@ -33,7 +33,7 @@
   selection-focus
   pressed-url
   (selection-dragged-p nil :type boolean)
-  ;; pi@4e58f324f tui-alt-screen.ts:147-149 — multi-click selection
+  ;; pi@b79e4cc83 tui-alt-screen.ts:147-149 — multi-click selection
   ;; state: double click selects the word, triple click the line, and
   ;; drags extend by the same granularity.
   (selection-granularity :character :type symbol)
@@ -43,19 +43,22 @@
   (last-click-row -1 :type integer)
   (last-click-word-start -1 :type integer)
   (last-click-word-end -1 :type integer)
-  ;; pi@4e58f324f components/alt-screen-flash.ts — transient
+  ;; pi@b79e4cc83 components/alt-screen-flash.ts — transient
   ;; reverse-video messages composited top-right in fullscreen mode.
   (flash-entries nil :type list)
   (flash-next-id 0 :type integer)
-  ;; v0.84.3: the transcript search session, while the find bar is open.
+  ;; v0.84.4: the transcript search session, while the find bar is open.
   (alt-search-state nil)
-  ;; v0.84.3 tui-alt-screen.ts copySelection: a host clipboard function
+  ;; v0.84.4 tui-alt-screen.ts copySelection: a host clipboard function
   ;; with a verified success path; nil falls back to an OSC 52 write.
   (copy-selection-function nil)
+  ;; v0.84.4 tui-alt-screen.ts copyOnSelect: default true; when false
+  ;; mouse release leaves the highlight and Ctrl+X copies it.
+  (copy-on-select-p t :type boolean)
   image-protocol
   saved-capabilities
   ;; Stashed main-screen render state for live TUI-mode round-trips
-  ;; (pi@4e58f324f interactive-mode.ts:788-832 switchTuiMode).
+  ;; (pi@b79e4cc83 interactive-mode.ts:788-832 switchTuiMode).
   saved-main-screen-state
   (previous-lines nil :type list)
   (previous-image-ids nil :type list)
@@ -79,6 +82,7 @@
       (scrollbar-mode :auto)
        (exit-output-mode :transcript)
        copy-selection-function
+       (copy-on-select-p t)
        open-url-function)
   (%make-terminal-renderer
    :terminal terminal
@@ -99,6 +103,7 @@
        exit-output-mode
        :transcript)
    :copy-selection-function copy-selection-function
+   :copy-on-select-p (not (null copy-on-select-p))
    :open-url-function open-url-function))
 
 (defun renderer-open-search (renderer)
@@ -113,7 +118,7 @@
   (setf (terminal-renderer-alt-search-state renderer) nil))
 
 (defun renderer-flash (renderer message &optional (duration-ms 1000))
-  ;; pi@4e58f324f components/alt-screen-flash.ts:20-38 — transient
+  ;; pi@b79e4cc83 components/alt-screen-flash.ts:20-38 — transient
   ;; message, expiring DURATION-MS after it is shown.
   (incf (terminal-renderer-flash-next-id renderer))
   (push
@@ -192,7 +197,7 @@ in-place repaint executes.  Production leaves this NIL; the harness
 (defparameter +autowrap-enable+
   (format nil "~C[?7h" #\Escape))
 (defun multiplexer-mouse-environment-p ()
-  ;; pi@4e58f324f tui-alt-screen.ts:236-247 — multiplexers lag when
+  ;; pi@b79e4cc83 tui-alt-screen.ts:236-247 — multiplexers lag when
   ;; every pointer movement is forwarded, so they get button-motion
   ;; tracking (1002) while other terminals get all-motion (1003).
   (let ((term
@@ -382,7 +387,7 @@ in-place repaint executes.  Production leaves this NIL; the harness
                +synchronized-update-begin+
                +alt-screen-exit+
                +autowrap-disable+)
-       ;; v0.84.3 fullscreenExitOutput: resume-hint skips the transcript
+       ;; v0.84.4 fullscreenExitOutput: resume-hint skips the transcript
        ;; replay; the session's resume hint prints instead.
        (unless
            (eq :resume-hint
@@ -558,7 +563,7 @@ controlling mode flag and repaint afterwards."
   renderer)
 
 (defun renderer-scroll-to-top (renderer)
-  ;; pi@4e58f324f components/scroll-view.ts:140-150 — scroll activity
+  ;; pi@b79e4cc83 components/scroll-view.ts:140-150 — scroll activity
   ;; is marked only when the position or the follow-end state actually
   ;; changes.
   (let* ((new-sticky-p
@@ -602,7 +607,7 @@ controlling mode flag and repaint afterwards."
   renderer)
 
 (defun osc133-prompt-start-line-p (line)
-  ;; pi@4e58f324f tui-alt-screen.ts:56 — /^\x1b\]133;A(?:\x07|\x1b\\)/.
+  ;; pi@b79e4cc83 tui-alt-screen.ts:56 — /^\x1b\]133;A(?:\x07|\x1b\\)/.
   (and (>= (length line) 8)
        (char= (char line 0) #\Escape)
        (string= "]133;A" line :start2 1 :end2 7)
@@ -613,7 +618,7 @@ controlling mode flag and repaint afterwards."
                   (char= (char line 8) #\\))))))
 
 (defun renderer-scroll-to-prompt (renderer direction)
-  ;; pi@4e58f324f tui-alt-screen.ts:366-378 — scan the scroll content
+  ;; pi@b79e4cc83 tui-alt-screen.ts:366-378 — scan the scroll content
   ;; from the current viewport edge for the next OSC 133 prompt-start
   ;; marker and land the viewport on it.
   (let* ((terminal
@@ -727,7 +732,7 @@ controlling mode flag and repaint afterwards."
 
 (defun selection-columns (line row bounds
                           &key boundary-end-p)
-  ;; pi@4e58f324f tui-alt-screen.ts:855-869 — a boundary end (word or
+  ;; pi@b79e4cc83 tui-alt-screen.ts:855-869 — a boundary end (word or
   ;; line range edge) is used as-is; a character-drag end extends to
   ;; the grapheme covering it.
   (let* ((start-point (car bounds))
@@ -813,16 +818,20 @@ controlling mode flag and repaint afterwards."
   (cond
     ((navigation-whitespace-p character) :space)
     ((navigation-cjk-p character) :cjk)
+    ((or (char= character #\-) (char= character #\/)) :joiner)
     ((navigation-punctuation-p character) :punct)
     (t :word)))
+
+(defun selection-word-joinable-p (class)
+  ;; pi@b79e4cc83 tui-alt-screen.ts TERMINAL_WORD_SELECTION_JOINERS:
+  ;; keep paths and kebab-case tokens whole under fullscreen selection.
+  (member class '(:word :joiner)))
 
 (defun selection-word-range (line column)
   "The (start . end) cell range of the word segment covering COLUMN in
 LINE, or NIL when no segment covers it.  Segments follow cadr's
-word-navigation character classes: whitespace runs, punctuation runs,
-single CJK characters, and word runs (pi@4e58f324f
-tui-alt-screen.ts:644-658 uses Intl.Segmenter; cadr's editor word
-model is the port's segmentation source)."
+word-navigation character classes, then join word runs across '-' and
+'/' (pi@b79e4cc83 tui-alt-screen.ts:835-868)."
   (let ((segments nil)
         (start 0)
         (class nil))
@@ -833,23 +842,42 @@ model is the port's segmentation source)."
           do (when (or (null class)
                        (not (eq next class))
                        (eq next :cjk)
-                       (eq class :cjk))
+                       (eq class :cjk)
+                       (eq next :joiner)
+                       (eq class :joiner))
                (when class
-                 (push (cons start cells) segments))
+                 (push (list start cells class) segments))
                (setf start cells
                      class next))
              (incf cells width)
           finally
              (when class
-               (push (cons start cells) segments)))
-    (find-if
-     (lambda (segment)
-       (and (>= column (car segment))
-            (< column (cdr segment))))
-     (nreverse segments))))
+               (push (list start cells class) segments)))
+    (let ((ordered (nreverse segments))
+          (merged nil))
+      (dolist (segment ordered)
+        (let ((previous (first merged)))
+          (if (and previous
+                   (selection-word-joinable-p (third previous))
+                   (selection-word-joinable-p (third segment)))
+              (setf (second previous) (second segment)
+                    (third previous)
+                    (if (or (eq (third previous) :joiner)
+                            (eq (third segment) :joiner))
+                        :joiner
+                        :word))
+              (push segment merged))))
+      (let ((covering
+              (find-if
+               (lambda (segment)
+                 (and (>= column (first segment))
+                      (< column (second segment))))
+               (nreverse merged))))
+        (and covering
+             (cons (first covering) (second covering)))))))
 
 (defun renderer-note-click (renderer row word)
-  ;; pi@4e58f324f tui-alt-screen.ts:687-713 getClickCount: the count
+  ;; pi@b79e4cc83 tui-alt-screen.ts:687-713 getClickCount: the count
   ;; advances only for clicks on the same word of the same row within
   ;; 500ms, cycling 1-2-3; a click outside any word resets the streak.
   (let* ((now
@@ -915,12 +943,12 @@ model is the port's segmentation source)."
       (and (= (car left) (car right))
            (< (cdr left) (cdr right)))))
 
-(defun renderer-copy-selection (renderer)
+(defun renderer-active-selection-text (renderer)
   (let ((bounds
           (renderer-selection-bounds
            renderer)))
     (unless bounds
-      (return-from renderer-copy-selection
+      (return-from renderer-active-selection-text
         nil))
     (let ((lines nil))
       (loop for row from
@@ -957,29 +985,40 @@ model is the port's segmentation source)."
               (format
                nil "~{~A~^~%~}"
                (nreverse lines))))
-        (when (plusp (length text))
-          (let ((copier
-                  (terminal-renderer-copy-selection-function
-                   renderer)))
-            (if copier
-                ;; v0.84.3: the host clipboard path reports success; a
-                ;; bare OSC 52 write can flash "Copied!" without
-                ;; reaching the system clipboard.
-                (renderer-flash
-                 renderer
-                 (if (funcall copier text) "Copied!" "Copy failed"))
-                (progn
-                  ;; pi@4e58f324f tui-alt-screen.ts:896 — the fullscreen
-                  ;; copy confirmation is a flash, not a status.
-                  (renderer-flash renderer "Copied!")
-                  (terminal-write
-                   (terminal-renderer-terminal
-                    renderer)
-                   (format nil "~C]52;c;~A~C"
-                           #\Escape
-                           (utf8-base64 text)
-                           (code-char 7)))))))
-          t))))
+        (and (plusp (length text)) text)))))
+
+(defun renderer-has-active-selection-p (renderer)
+  (not (null (renderer-active-selection-text renderer))))
+
+(defun renderer-copy-selection (renderer)
+  (let ((text (renderer-active-selection-text renderer)))
+    (unless text
+      (return-from renderer-copy-selection nil))
+    (let ((copier
+            (terminal-renderer-copy-selection-function
+             renderer)))
+      (if copier
+          ;; v0.84.4: the host clipboard path reports success; a
+          ;; bare OSC 52 write can flash "Copied!" without
+          ;; reaching the system clipboard.
+          (renderer-flash
+           renderer
+           (if (funcall copier text) "Copied!" "Copy failed"))
+          (progn
+            ;; pi@b79e4cc83 tui-alt-screen.ts:896 — the fullscreen
+            ;; copy confirmation is a flash, not a status.
+            (renderer-flash renderer "Copied!")
+            (terminal-write
+             (terminal-renderer-terminal
+              renderer)
+             (format nil "~C]52;c;~A~C"
+                     #\Escape
+                     (utf8-base64 text)
+                     (code-char 7))))))
+    t))
+
+(defun renderer-copy-active-selection (renderer)
+  (renderer-copy-selection renderer))
 
 (defun renderer-handle-mouse
     (renderer event)
@@ -1048,8 +1087,10 @@ model is the port's segmentation source)."
                       (terminal-renderer-open-url-function
                        renderer)
                       url)))
-                 (renderer-copy-selection
-                  renderer)))))
+                 (when (terminal-renderer-copy-on-select-p
+                        renderer)
+                   (renderer-copy-selection
+                    renderer))))))
         ((not
           (zerop (logand button 32)))
          (when
@@ -1066,7 +1107,7 @@ model is the port's segmentation source)."
             ;; lastClick).
             (terminal-renderer-last-click-at renderer)
             nil)
-           ;; pi@4e58f324f tui-alt-screen.ts:665-684
+           ;; pi@b79e4cc83 tui-alt-screen.ts:665-684
            ;; updateSelectionFocus: word/line drags extend from the
            ;; initial range by whole segments.
            (let ((granularity
@@ -1111,7 +1152,7 @@ model is the port's segmentation source)."
                            renderer)
                           (cdr range)))))))))
         (t
-         ;; pi@4e58f324f tui-alt-screen.ts:813-833 — word/line ranges
+         ;; pi@b79e4cc83 tui-alt-screen.ts:813-833 — word/line ranges
          ;; on double/triple click, character selection otherwise;
          ;; range presses never arm URL activation.
          (let* ((word
@@ -1203,7 +1244,7 @@ model is the port's segmentation source)."
           (terminal-rows
            (terminal-renderer-terminal
             renderer))))
-    ;; v0.84.3: while the find bar is open it consumes keyboard input;
+    ;; v0.84.4: while the find bar is open it consumes keyboard input;
     ;; only the four search actions stay live.
     (when (keybinding-matches-p
            keybindings data
@@ -1259,7 +1300,7 @@ model is the port's segmentation source)."
       ((keybinding-matches-p
         keybindings data
         "tui.altScreen.halfPageUp")
-       ;; pi@4e58f324f tui-alt-screen.ts:435-441
+       ;; pi@b79e4cc83 tui-alt-screen.ts:435-441
        (renderer-scroll-by
         renderer (- (max 1 (floor height 2))))
        t)
@@ -1269,7 +1310,7 @@ model is the port's segmentation source)."
        (renderer-scroll-by
         renderer (max 1 (floor height 2)))
        t)
-      ;; v0.84.3: one-line viewport scrolling.
+      ;; v0.84.4: one-line viewport scrolling.
       ((keybinding-matches-p
         keybindings data
         "tui.altScreen.lineUp")

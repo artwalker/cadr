@@ -38,14 +38,14 @@
   (prompt-templates nil :type list)
   (no-prompt-templates-p nil :type boolean)
   (themes nil :type list)
-  ;; Baseline v0.84.3 --use-theme: initial interactive theme for this
+  ;; Baseline v0.84.4 --use-theme: initial interactive theme for this
   ;; run (applied as a startup settings override).
   use-theme
   (no-themes-p nil :type boolean)
   (no-context-files-p nil :type boolean)
   list-models
   (offline-p nil :type boolean)
-  ;; pi@4e58f324f cli/args.ts:180-186: --tui-mode replaces --alt;
+  ;; pi@b79e4cc83 cli/args.ts:180-186: --tui-mode replaces --alt;
   ;; NIL means the settings manager's tuiMode decides.
   tui-mode
   (verbose-p nil :type boolean)
@@ -595,7 +595,7 @@
                      ((and (null equals-name)
                            (eq kind :special)
                            (eq key :tui-mode))
-                      ;; pi@4e58f324f cli/args.ts:180-191 — space form
+                      ;; pi@b79e4cc83 cli/args.ts:180-191 — space form
                       ;; only; a missing or dash-prefixed value is not
                       ;; consumed.
                       (let ((mode (first argv)))
@@ -626,7 +626,7 @@
                      ((and (null equals-name)
                            (eq kind :special)
                            (eq key :use-theme))
-                      ;; Baseline v0.84.3 cli/args.ts: space form only;
+                      ;; Baseline v0.84.4 cli/args.ts: space form only;
                       ;; a missing or dash-prefixed value is not consumed.
                       (let ((theme-name (first argv)))
                         (if (or (null theme-name)

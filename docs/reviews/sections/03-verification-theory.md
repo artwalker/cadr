@@ -15,7 +15,7 @@ automatable oracle the survey classifies is the *pseudo-oracle* — an independe
 whose output defines correctness — and such oracles are rare because independent implementations
 seldom exist.
 
-cadr is that rare case. pi, pinned at commit `4e58f324f` (`BASELINE`), is a complete, executable
+cadr is that rare case. pi, pinned at commit `b79e4cc83` (`BASELINE`), is a complete, executable
 specification: render-diff drives both binaries through identical scripted PTY sessions
 (`test/fixtures/render-diff/scenarios.json`), replays both byte streams through tmux, and
 classifies every checkpoint as raw-equal / `screenEqual` / `requires-disposition`

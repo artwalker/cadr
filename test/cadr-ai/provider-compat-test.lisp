@@ -122,7 +122,7 @@
       (request-spec-payload request)))))
 
 (test openai-completions-baseten-reasoning-matches-reference
-  ;; pi@4e58f324f api/openai-completions.ts:779-793 — the baseten
+  ;; pi@b79e4cc83 api/openai-completions.ts:779-793 — the baseten
   ;; thinking format sends chat_template_args plus reasoning_effort.
   (let* ((model
            (compat-model
@@ -166,7 +166,7 @@
       (request-spec-payload request)))))
 
 (test openai-completions-thinking-token-budget-matches-reference
-  ;; pi@4e58f324f api/openai-completions.ts:847-866 — vLLM caps
+  ;; pi@b79e4cc83 api/openai-completions.ts:847-866 — vLLM caps
   ;; reasoning with a top-level thinking_token_budget; the budget is
   ;; min(level budget, max_tokens - 1024), so 4096-1024=3072 caps high.
   (let ((model
@@ -483,6 +483,30 @@
           "type")))
     (is (string= "required"
                  (cadr-ai::json-get payload "tool_choice")))))
+
+(test completions-omits-tool-choice-when-the-request-has-no-tools
+  (let* ((model
+           (compat-model
+            :id "plain"
+            :provider :openai
+            :api :openai-completions
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 4096))
+         (context
+           (cadr-ai:make-context
+            :system-prompt "sys"
+            :messages
+            (list
+             (cadr-ai:make-user-message :content "hi"))))
+         (payload
+           (request-spec-payload
+            (build-request
+             (cadr-ai:make-openai-completions-provider
+              :api-key "key")
+             model context
+             :tool-choice "none"))))
+    (is (not (cadr-ai::json-present-p payload "tool_choice")))
+    (is (not (cadr-ai::json-present-p payload "tools")))))
 
 (test google-thinking-off-and-tool-mode-cover-non-gemini-3
   (let* ((model

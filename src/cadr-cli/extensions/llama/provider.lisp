@@ -75,15 +75,33 @@
        :supports-strict-mode nil
        :max-tokens-field :max-tokens))))
 
+(defun llama-model-selectable-p (info &optional router-autoload-p)
+  (let ((status (llama-model-info-status info)))
+    (or (eq status :loaded)
+        (eq status :sleeping)
+        (and router-autoload-p
+             (eq status :unloaded)
+             (not (llama-model-info-failed-p info))
+             (equal "preset" (llama-model-info-source info))))))
+
+(defun llama-router-autoload-enabled-p (client catalog)
+  (unless (find-if
+           (lambda (info)
+             (and (eq :unloaded (llama-model-info-status info))
+                  (equal "preset" (llama-model-info-source info))))
+           catalog)
+    (return-from llama-router-autoload-enabled-p nil))
+  (handler-case
+      (eq t (getf (llama-client-props client) :models-autoload))
+    (error () nil)))
+
 (defun llama-provider-set-catalog
-    (controller catalog server-url)
+    (controller catalog server-url &key router-autoload-p)
   (setf
    (cadr-ai:runtime-provider-models
     (llama-provider-controller-provider controller))
    (loop for info in catalog
-         when
-         (eq :loaded
-             (llama-model-info-status info))
+         when (llama-model-selectable-p info router-autoload-p)
            collect
            (llama-model
             info
@@ -284,8 +302,7 @@
                      (llama-credential-server-url
                       credential nil)))
               (when server-url
-                (let ((catalog
-                        (llama-client-list
+                (let* ((client
                          (make-llama-client
                           :server-url server-url
                           :api-key
@@ -298,9 +315,14 @@
                                     credential)))
                              (and
                               (plusp (length key))
-                              key)))))))
+                              key)))))
+                       (catalog (llama-client-list client))
+                       (autoload
+                         (llama-router-autoload-enabled-p
+                          client catalog)))
                   (llama-provider-set-catalog
-                   controller catalog server-url)
+                   controller catalog server-url
+                   :router-autoload-p autoload)
                   (unless
                       (cadr-ai:runtime-refresh-context-aborted-p
                        context)

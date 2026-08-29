@@ -2,7 +2,7 @@
   "schema_version": 2,
   "kind": "pi-goal11-structural-baseline",
   "provenance": {
-    "source_revision": "4e58f324fae8ebfa98a3d45181fb248072a2afac",
+    "source_revision": "b79e4cc834970cca69daebffab7df1da7d1e52c4",
     "tracked_worktree_clean": true,
     "package_lock_object_id": "1f77aa69a44915990ba2e4f41573cb2b7005b0ca",
     "installed_dependency_tree_sha256": "b9847a32b8c1d8a83b1cd76f3b07c29cc7406c414dfb6728862dca12b24796ee",

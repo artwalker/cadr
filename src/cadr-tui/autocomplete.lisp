@@ -390,13 +390,33 @@
         (stable-sort
          items
          (lambda (left right)
-           (if (= (first left) (first right))
-               (string-lessp
-                (autocomplete-item-label
-                 (second left))
-                (autocomplete-item-label
-                 (second right)))
-               (> (first left) (first right)))))
+           (let ((score-left (first left))
+                 (score-right (first right)))
+             (cond
+               ((/= score-left score-right)
+                (> score-left score-right))
+               (t
+                (let* ((item-left (second left))
+                       (item-right (second right))
+                       (path-left
+                         (or
+                          (autocomplete-item-description item-left)
+                          ""))
+                       (path-right
+                         (or
+                          (autocomplete-item-description item-right)
+                          ""))
+                       (depth-left (count #\/ path-left))
+                       (depth-right (count #\/ path-right)))
+                  (cond
+                    ((/= depth-left depth-right)
+                     (< depth-left depth-right))
+                    ((/= (length path-left) (length path-right))
+                     (< (length path-left) (length path-right)))
+                    (t
+                     (string-lessp
+                      (autocomplete-item-label item-left)
+                      (autocomplete-item-label item-right))))))))))
         0 (min 20 (length items)))))))
 
 (defun command-autocomplete-item (command)

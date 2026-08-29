@@ -430,7 +430,9 @@
     ;; write-ascii-downcase.
     ;; +2 Goal 21 task 3: cli-thinking-level-for-model-switch and
     ;; model-thinking-overrides-summary (bootstrap/settings.lisp).
-    (is (= 136 definition-count)
+    ;; +2 v0.84.4: settings-fullscreen-copy-on-select-p and
+    ;; settings-terminal-capability-overrides (bootstrap/settings.lisp).
+    (is (= 138 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -788,7 +790,9 @@
     ;; B7 owner set, so the top-level (def count stays 334.
     ;; +1 Goal 20 P.12.3: renderer-document-line (lifecycle-input.lisp)
     ;; indexes last-document as a vector or list.
-    (is (= 335 definition-count)
+    ;; +4 v0.84.4: fullscreen copy-on-select helpers in
+    ;; renderer/lifecycle-input.lisp.
+    (is (= 339 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -1122,7 +1126,9 @@
                 "~A does not own ~A" (first owner) marker)))))
     ;; +14 Goal 20 K6: extension-definition-bundle methods,
     ;; assert-extension-deliver-as, render-extension-named.
-    (is (= 253 definition-count)
+    ;; +5 v0.84.4: ui prompt events (context.lisp) and custom-message
+    ;; flush helpers (providers.lisp).
+    (is (= 258 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1300,7 +1306,8 @@
     ;; +1 Goal 20 P0: terminal-quota-error-text-p (support/retry.lisp),
     ;; HTTP 429 GoUsageLimit / pi isTerminalRateLimitError set.
     ;; +1 Goal 21 v0.84.3: faux-tool-json-object (runtime/faux-provider.lisp).
-    (is (= 276 definition-count)
+    ;; +1 v0.84.4: openrouter-thinking-level-map (model-data.lisp).
+    (is (= 277 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

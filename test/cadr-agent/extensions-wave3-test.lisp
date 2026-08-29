@@ -10,15 +10,21 @@
     :user-bash))
 
 (test goal10-extension-event-set-is-refrozen-at-thirty-five
-  (is (= 35
+  (is (= 37
          (length
           cadr-agent::+extension-hook-events+)))
-  (is (= 35
+  (is (= 37
          (length
           (remove-duplicates
            cadr-agent::+extension-hook-events+))))
   (is (member
        :session-compact-failed
+       cadr-agent::+extension-hook-events+))
+  (is (member
+       :ui-prompt-start
+       cadr-agent::+extension-hook-events+))
+  (is (member
+       :ui-prompt-end
        cadr-agent::+extension-hook-events+))
   (is (member
        :tool-call-error
@@ -689,3 +695,44 @@
               :exclude-from-context-p nil
               :cwd "/project"))))
       (is (not late-called-p)))))
+
+(test g22-ui-prompt-events-wrap-the-outermost-extension-prompt
+  (let* ((seen nil)
+         (bundle
+           (make-test-extension-bundle
+            "ui-prompt-events"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :ui-prompt-start
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (push
+                  (list :start
+                        (getf
+                         (cadr-agent:extension-event-payload event)
+                         :kind))
+                  seen)
+                 nil))
+              (cadr-agent:define-event-hook
+               :ui-prompt-end
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (push
+                  (list :end
+                        (getf
+                         (cadr-agent:extension-event-payload event)
+                         :kind))
+                  seen)
+                 nil)))))
+         (host (make-test-extension-host (list bundle))))
+    (is
+     (eq 'ok
+         (cadr-agent::call-with-extension-ui-prompt
+          host :select "Outer"
+          (lambda ()
+            (cadr-agent::call-with-extension-ui-prompt
+             host :confirm "Inner"
+             (lambda () 'ok))))))
+    (is (equal '((:end :select) (:start :select)) seen))))

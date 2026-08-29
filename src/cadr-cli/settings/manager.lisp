@@ -371,6 +371,22 @@
    :scope :global)
   model-id)
 
+(defun add-persisted-default-to-non-empty-scope (manager model)
+  ;; pi@b79e4cc83 agent-session.ts _addPersistedDefaultToNonEmptyScope:
+  ;; a Ctrl+S default joins a non-empty enabledModels list so the
+  ;; saved default stays selectable after restart.
+  (let ((enabled (settings-enabled-models manager)))
+    (when (and (listp enabled) (plusp (length enabled)))
+      (let ((reference
+              (model-setting-key
+               (cadr-ai:model-provider model)
+               (cadr-ai:model-id model))))
+        (unless (find reference enabled :test #'string-equal)
+          (settings-set-enabled-models
+           manager
+           (append enabled (list reference)))))))
+  model)
+
 (defun model-setting-key (provider model-id)
   (format nil "~(~A~)/~A"
           (if (symbolp provider)

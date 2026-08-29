@@ -21,7 +21,7 @@
     (:cerebras . 3)
     (:cloudflare-ai-gateway . 43)
     (:cloudflare-workers-ai . 13)
-    (:deepseek . 2)
+    (:deepseek . 3)
     (:fireworks . 17)
     (:github-copilot . 30)
     (:google . 24)

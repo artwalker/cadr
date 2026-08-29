@@ -9,6 +9,17 @@ tag/Release step.
 
 ### Changed
 
+- Aligned with pi **v0.84.4** (`b79e4cc83` +0): terminal capability
+  overrides (`CADR_HYPERLINKS` / `CADR_IMAGE_PROTOCOL` /
+  `CADR_TRUE_COLOR`), `fullscreenCopyOnSelect` plus Ctrl+X copy of the
+  active selection, `-`/`/` word-selection joiners, RPC `clear_queue`,
+  extension `ui_prompt_start`/`ui_prompt_end`, DeepSeek V4 Flash Vision
+  Exp, OpenRouter reasoning-effort mapper, compact-before-next-tool
+  request, queued custom messages during a run, persist-default into a
+  non-empty model scope, llama.cpp autoload presets, JSONL trailing
+  newline repair, and omit `tool_choice` when a completions request has
+  no tools.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

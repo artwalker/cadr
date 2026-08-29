@@ -80,6 +80,10 @@
    #:get-terminal-capabilities
    #:set-terminal-capabilities
    #:reset-terminal-capabilities
+   #:set-capability-overrides
+   #:reset-capability-overrides
+   #:parse-boolean-capability-override
+   #:parse-image-protocol-override
    #:terminal-theme
    #:make-terminal-theme
    #:terminal-theme-name
@@ -316,6 +320,9 @@
    #:terminal-poll-progress
    #:terminal-renderer
    #:make-terminal-renderer
+   #:terminal-renderer-copy-on-select-p
+   #:renderer-has-active-selection-p
+   #:renderer-copy-active-selection
    #:alt-screen-renderer-p
    #:renderer-viewport-top
    #:renderer-following-output-p

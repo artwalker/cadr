@@ -213,7 +213,7 @@
                      effective-call
                      (or reason "Tool execution was blocked")
                      appended-messages)))
-              ;; pi@4e58f324f agent-loop.ts:637-640 — a before-hook
+              ;; pi@b79e4cc83 agent-loop.ts:637-640 — a before-hook
               ;; terminate on a blocked call marks the result so the
               ;; batch termination rule can stop the agent.
               (when (and terminate-supplied-p

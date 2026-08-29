@@ -209,7 +209,7 @@
            (make-string width :initial-element #\─))
          (options
            (cadr-cli::settings-selector-state-options state)))
-    (is (= 29 (length options)))
+    (is (= 30 (length options)))
     (is
      (equal
       '("autocompact" "auto-resize-images" "block-images"
@@ -220,7 +220,8 @@
         "cache-miss-notices" "collapse-changelog" "quiet-startup"
         "install-telemetry" "default-project-trust" "double-escape-action"
         "tree-filter-mode" "warnings" "model-thinking"
-        "tui-mode" "fullscreen-exit-output" "fullscreen-scrollbar" "theme")
+        "tui-mode" "fullscreen-exit-output" "fullscreen-scrollbar"
+        "fullscreen-copy-on-select" "theme")
       (mapcar #'cadr-cli::settings-option-id options)))
     (is
      (uiop:string-prefix-p
@@ -245,7 +246,7 @@
        "  Autocomplete max items          5"
        "  Clear on shrink                 false"
        "  Terminal progress               false"
-       "  (1/29)"
+       "  (1/30)"
        ""
        "  Automatically compact context when it gets too large"
        ""

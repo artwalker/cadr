@@ -12,6 +12,7 @@
   image-id)
 
 (defparameter *terminal-capabilities* nil)
+(defparameter *capability-overrides* nil)
 (defparameter *kitty-image-metadata*
   (make-hash-table))
 (defparameter *kitty-image-metadata-order* nil)
@@ -159,6 +160,42 @@
   (let ((value (environment-value name environment)))
     (and value (plusp (length value)))))
 
+(defun parse-boolean-capability-override (value)
+  ;; pi@b79e4cc83 terminal-image.ts:139-141 — only "1" and "0" override;
+  ;; "auto" and anything else leave detection in place.
+  (cond
+    ((not (stringp value)) :unset)
+    ((string= value "1") t)
+    ((string= value "0") nil)
+    (t :unset)))
+
+(defun parse-image-protocol-override (value)
+  (let ((normalized
+          (string-downcase (or value ""))))
+    (cond
+      ((or (string= normalized "kitty")
+           (string= normalized "iterm2"))
+       (intern (string-upcase normalized) :keyword))
+      ((or (string= normalized "none")
+           (string= normalized "0"))
+       nil)
+      (t :unset))))
+
+(defun apply-capability-overrides (capabilities overrides)
+  (when overrides
+    (let ((images (getf overrides :images :unset))
+          (true-color (getf overrides :true-color-p :unset))
+          (hyperlinks (getf overrides :hyperlinks-p :unset)))
+      (unless (eq images :unset)
+        (setf (terminal-capabilities-images capabilities) images))
+      (unless (eq true-color :unset)
+        (setf (terminal-capabilities-true-color-p capabilities)
+              (not (null true-color))))
+      (unless (eq hyperlinks :unset)
+        (setf (terminal-capabilities-hyperlinks-p capabilities)
+              (not (null hyperlinks))))))
+  capabilities)
+
 (defun detect-terminal-capabilities
     (&key
        (environment
@@ -188,70 +225,106 @@
                 "")))
          (true-color-hint-p
            (member color-term '("truecolor" "24bit")
-                   :test #'string=)))
-    (cond
-      ((or (truthy-environment-p "TMUX" environment)
-           (string-prefix-p "tmux" term))
-       (make-terminal-capabilities
-        :images nil
-        :true-color-p (not (null true-color-hint-p))
-        :hyperlinks-p (not (null tmux-hyperlinks-p))))
-      ((string-prefix-p "screen" term)
-       (make-terminal-capabilities
-        :images nil
-        :true-color-p (not (null true-color-hint-p))
-        :hyperlinks-p nil))
-      ((or (truthy-environment-p "KITTY_WINDOW_ID"
-                                 environment)
-           (string= term-program "kitty")
-           (string= term-program "ghostty")
-           (search "ghostty" term)
-           (truthy-environment-p "GHOSTTY_RESOURCES_DIR"
-                                 environment)
-           (truthy-environment-p "WEZTERM_PANE"
-                                 environment)
-           (string= term-program "wezterm")
-           (string= term-program "warpterminal")
-           (truthy-environment-p "WARP_SESSION_ID"
-                                 environment)
-           (truthy-environment-p
-            "WARP_TERMINAL_SESSION_UUID" environment))
-       (make-terminal-capabilities
-        :images :kitty :true-color-p t
-        :hyperlinks-p t))
-      ((or (truthy-environment-p "ITERM_SESSION_ID"
-                                 environment)
-           (string= term-program "iterm.app"))
-       (make-terminal-capabilities
-        :images :iterm2 :true-color-p t
-        :hyperlinks-p t))
-      ((or (truthy-environment-p "WT_SESSION" environment)
-           (string= term-program "vscode")
-           (string= term-program "alacritty"))
-       (make-terminal-capabilities
-        :images nil :true-color-p t
-        :hyperlinks-p t))
-      ((string= terminal-emulator
-                "jetbrains-jediterm")
-       (make-terminal-capabilities
-        :images nil :true-color-p t
-        :hyperlinks-p nil))
-      (t
-       (make-terminal-capabilities
-        :images nil
-        :true-color-p (not (null true-color-hint-p))
-        :hyperlinks-p nil)))))
+                   :test #'string=))
+         (hyperlinks-override
+           (parse-boolean-capability-override
+            (environment-value "CADR_HYPERLINKS"
+                               environment)))
+         (image-override
+           (parse-image-protocol-override
+            (environment-value "CADR_IMAGE_PROTOCOL"
+                               environment)))
+         (true-color-override
+           (parse-boolean-capability-override
+            (environment-value "CADR_TRUE_COLOR"
+                               environment)))
+         (tmux-hyperlinks
+           (if (eq hyperlinks-override :unset)
+               tmux-hyperlinks-p
+               hyperlinks-override))
+         (detected
+           (cond
+             ((or (truthy-environment-p "TMUX" environment)
+                  (string-prefix-p "tmux" term))
+              (make-terminal-capabilities
+               :images nil
+               :true-color-p (not (null true-color-hint-p))
+               :hyperlinks-p (not (null tmux-hyperlinks))))
+             ((string-prefix-p "screen" term)
+              (make-terminal-capabilities
+               :images nil
+               :true-color-p (not (null true-color-hint-p))
+               :hyperlinks-p nil))
+             ((or (truthy-environment-p "KITTY_WINDOW_ID"
+                                        environment)
+                  (string= term-program "kitty")
+                  (string= term-program "ghostty")
+                  (search "ghostty" term)
+                  (truthy-environment-p "GHOSTTY_RESOURCES_DIR"
+                                        environment)
+                  (truthy-environment-p "WEZTERM_PANE"
+                                        environment)
+                  (string= term-program "wezterm")
+                  (string= term-program "warpterminal")
+                  (truthy-environment-p "WARP_SESSION_ID"
+                                        environment)
+                  (truthy-environment-p
+                   "WARP_TERMINAL_SESSION_UUID" environment))
+              (make-terminal-capabilities
+               :images :kitty :true-color-p t
+               :hyperlinks-p t))
+             ((or (truthy-environment-p "ITERM_SESSION_ID"
+                                        environment)
+                  (string= term-program "iterm.app"))
+              (make-terminal-capabilities
+               :images :iterm2 :true-color-p t
+               :hyperlinks-p t))
+             ((or (truthy-environment-p "WT_SESSION" environment)
+                  (string= term-program "vscode")
+                  (string= term-program "alacritty"))
+              (make-terminal-capabilities
+               :images nil :true-color-p t
+               :hyperlinks-p t))
+             ((string= terminal-emulator
+                       "jetbrains-jediterm")
+              (make-terminal-capabilities
+               :images nil :true-color-p t
+               :hyperlinks-p nil))
+             (t
+              (make-terminal-capabilities
+               :images nil
+               :true-color-p (not (null true-color-hint-p))
+               :hyperlinks-p nil)))))
+    (apply-capability-overrides
+     detected
+     (list :images image-override
+           :true-color-p true-color-override
+           :hyperlinks-p hyperlinks-override))))
 
 (defun get-terminal-capabilities ()
   (or *terminal-capabilities*
       (setf *terminal-capabilities*
-            (detect-terminal-capabilities))))
+            (apply-capability-overrides
+             (detect-terminal-capabilities)
+             *capability-overrides*))))
 
 (defun set-terminal-capabilities (capabilities)
   (setf *terminal-capabilities* capabilities))
 
 (defun reset-terminal-capabilities ()
   (setf *terminal-capabilities* nil))
+
+(defun set-capability-overrides (overrides)
+  ;; pi@b79e4cc83 terminal-image.ts:179-189 — skip work when the three
+  ;; override fields are unchanged; otherwise drop the cached detection.
+  (unless (equal overrides *capability-overrides*)
+    (setf *capability-overrides* (copy-list overrides)
+          *terminal-capabilities* nil))
+  *capability-overrides*)
+
+(defun reset-capability-overrides ()
+  (setf *capability-overrides* nil
+        *terminal-capabilities* nil))
 
 (declaim (inline image-prefix-at-p))
 

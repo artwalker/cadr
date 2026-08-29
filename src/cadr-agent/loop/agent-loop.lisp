@@ -23,6 +23,11 @@
               (emit-agent-end agent)
               (return-from run-agent-loop
                 final-message))))
+        ;; pi@b79e4cc83 agent-loop.ts #8782: compact before the next
+        ;; provider request once a turn has already completed, so
+        ;; threshold compaction runs between tool rounds.
+        (when (> turn 1)
+          (maybe-compact-agent agent))
         (let* ((streamed-message (stream-assistant agent))
                (calls
                  (assistant-tool-calls streamed-message))
@@ -64,6 +69,7 @@
              agent :turn-end
              :message message
              :tool-results results)
+            (flush-agent-pending-custom-messages agent)
             ;; Early terminal exit. LOOP's RETURN would leave the
             ;; whole loop; fall through to the next turn instead.
             (if terminal-p
@@ -121,6 +127,7 @@
         (let ((session (agent-session agent)))
           (when session
             (close-session-journal-stream session)))
+        (flush-agent-pending-custom-messages agent)
         (run-agent-lifecycle agent :agent-settled)
         (emit-agent-event agent :agent-settled)
         (sb-thread:with-mutex
@@ -383,6 +390,7 @@
      agent
      (lambda ()
        (ensure-agent-session-started agent)
+       (flush-agent-pending-custom-messages agent)
        (maybe-compact-agent agent)
        (multiple-value-bind
              (messages system-prompt handled-p)

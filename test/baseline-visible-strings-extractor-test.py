@@ -14,7 +14,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACTOR = ROOT / "test/fixtures/render-diff/baseline-visible-strings.ts"
-BASELINE_NODE_MODULES = Path("/tmp/cadr-render-diff-pi-4e58f324f/node_modules")
+BASELINE_NODE_MODULES = Path("/tmp/cadr-render-diff-pi-b79e4cc83/node_modules")
 
 
 class BaselineVisibleStringsExtractorTest(unittest.TestCase):

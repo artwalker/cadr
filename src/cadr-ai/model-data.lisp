@@ -302,6 +302,30 @@
              (cons level
                    (and (member text effort-values :test #'string=) text)))))))
 
+(defun openrouter-thinking-level-map (reasoning)
+  ;; Baseline packages/ai/scripts/openrouter-reasoning-options.ts
+  ;; getOpenRouterThinkingLevelMap (v0.84.4).
+  (unless reasoning
+    (return-from openrouter-thinking-level-map nil))
+  (let ((mandatory-p (eq t (getf reasoning :mandatory)))
+        (efforts (getf reasoning :supported-efforts))
+        (fallback (and (eq t (getf reasoning :mandatory))
+                       (list (cons :off nil)))))
+    (unless (and (listp efforts) (plusp (length efforts)))
+      (return-from openrouter-thinking-level-map fallback))
+    (let ((map
+            (models-dev-effort-thinking-level-map
+             (list (list :type :effort :values efforts)))))
+      (unless map
+        (return-from openrouter-thinking-level-map fallback))
+      (let ((copy (copy-tree map))
+            (off (assoc :off map)))
+        (if off
+            (setf (cdr (assoc :off copy))
+                  (if mandatory-p nil "none"))
+            (push (cons :off (if mandatory-p nil "none")) copy))
+        copy))))
+
 (defun get-builtin-model-data-generated-at ()
   *generated-model-data-generated-at*)
 

@@ -916,7 +916,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        settings-manager
        (provider-key
         (cadr-ai:model-provider selected))
-       (cadr-ai:model-id selected)))
+       (cadr-ai:model-id selected))
+      (add-persisted-default-to-non-empty-scope
+       settings-manager selected))
     (unless
         (cadr-ai:models-equal-p
          previous-model selected)
@@ -1860,7 +1862,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
              (handler-case
                  (progn
                    (funcall copy-function text)
-                   ;; pi@4e58f324f interactive-mode.ts:5956-5960 —
+                   ;; pi@b79e4cc83 interactive-mode.ts:5956-5960 —
                    ;; fullscreen flashes; regular mode keeps the status.
                    (if *alt-screen-flash-function*
                        (funcall *alt-screen-flash-function*

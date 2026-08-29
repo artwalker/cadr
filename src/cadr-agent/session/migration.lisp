@@ -1748,6 +1748,30 @@
       (session-failure path 1 "Invalid session header")))
   object)
 
+(defun repair-unterminated-session-file (path)
+  ;; pi@b79e4cc83 session-manager.ts #8345: after a valid load, append a
+  ;; trailing newline so the next JSONL entry cannot fuse with a
+  ;; truncated last line.
+  (when (probe-file path)
+    (let ((needs-newline-p
+            (with-open-file
+                (stream path
+                        :direction :input
+                        :element-type '(unsigned-byte 8)
+                        :if-does-not-exist nil)
+              (let ((length (file-length stream)))
+                (when (and (integerp length) (plusp length))
+                  (file-position stream (1- length))
+                  (not (= 10 (read-byte stream))))))))
+      (when needs-newline-p
+        (with-open-file
+            (stream path
+                    :direction :output
+                    :element-type '(unsigned-byte 8)
+                    :if-exists :append)
+          (write-byte 10 stream)))))
+  path)
+
 (defun read-session-objects (path)
   ;; Pairing counterpart of Node 1MiB readSync: one octet
   ;; READ-SEQUENCE per chunk, then split on LF.  Files that
@@ -1873,6 +1897,7 @@
            path line-number "Cannot load session: ~A" cause)))
       (unless objects
         (session-failure path 1 "Session file has no header"))
+      (repair-unterminated-session-file path)
       (nreverse objects))))
 
 (defun migrate-v1-session-objects (objects)

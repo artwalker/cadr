@@ -127,7 +127,11 @@
                    (uiop:run-program command :output nil :error-output nil
                                              :ignore-error-status t)))))
     (if (uiop:os-windows-p)
-        (run (list "taskkill" "/F" "/T" "/PID" (princ-to-string pid)))
+        (run (list
+              (let ((root (or (uiop:getenv "SystemRoot")
+                              "C:\\Windows")))
+                (format nil "~A\\System32\\taskkill.exe" root))
+              "/F" "/T" "/PID" (princ-to-string pid)))
         (multiple-value-bind (stdout stderr status)
             (run (list "/bin/kill" "-KILL" "--" (format nil "-~D" pid)))
           (declare (ignore stdout stderr))

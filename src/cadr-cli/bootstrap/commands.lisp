@@ -435,7 +435,7 @@
              (cadr-core:project-config-directory cwd))
             :project-trusted-p project-trusted-p))
          (_use-theme-override
-           ;; Baseline v0.84.3 main.ts: --use-theme applies a runtime
+           ;; Baseline v0.84.4 main.ts: --use-theme applies a runtime
            ;; (non-persisted) settings override for this invocation.
            (when (cli-arguments-use-theme command)
              (settings-override-runtime-value
@@ -451,7 +451,7 @@
             (make-file-auth-storage
              (default-auth-path))))
          (image-normalizer
-           ;; pi@4e58f324f utils/tool-result-images.ts via
+           ;; pi@b79e4cc83 utils/tool-result-images.ts via
            ;; agent-session.ts:517-520.
            (progn
              (setf
@@ -719,7 +719,7 @@
                   (or
                    (cli-arguments-tools command)
                    (append
-                    ;; Baseline v0.84.3 sdk.ts: the defaultTools setting
+                    ;; Baseline v0.84.4 sdk.ts: the defaultTools setting
                     ;; overrides the built-in default selection.
                     (or
                      (settings-default-tools settings-manager)
@@ -873,7 +873,7 @@
            (let ((provider
                    (provider-config-provider config)))
              (or
-              ;; pi@4e58f324f footer.ts:139-141 — Kimi Coding is
+              ;; pi@b79e4cc83 footer.ts:139-141 — Kimi Coding is
               ;; subscription-backed despite API-key authentication.
               (string-equal
                (provider-key
@@ -1162,7 +1162,7 @@
            (refresh-auth provider :logout)
            (values
             provider
-            ;; pi@4e58f324f model-runtime.ts:532 — non-nil when the
+            ;; pi@b79e4cc83 model-runtime.ts:532 — non-nil when the
             ;; credential was removed but the local snapshot did not
             ;; sync.
             (model-registry-error model-registry)))
@@ -1401,7 +1401,7 @@
          (refresh-model-catalogs ()
            ;; Worker side of the selector-open catalog refresh: re-read
            ;; the registry without holding the TUI lock.  Baseline
-           ;; v0.84.3 model-catalog-refresh.ts: a second caller while one
+           ;; v0.84.4 model-catalog-refresh.ts: a second caller while one
            ;; refresh is in flight shares that run's result.
            (sb-thread:with-mutex (catalog-refresh-lock)
              (when catalog-refresh-in-flight-p
@@ -1516,6 +1516,19 @@
                      (when thinking-level-p
                        (list :thinking-level thinking-level))))))
              (setf config updated)
+             (when persist
+               (unless
+                   (find
+                    model
+                    scoped-model-entries
+                    :key (lambda (entry) (getf entry :model))
+                    :test #'cadr-ai:models-equal-p)
+                 (when scoped-model-entries
+                   (setf
+                    scoped-model-entries
+                    (append
+                     scoped-model-entries
+                     (list (list :model model :thinking nil)))))))
              (let* ((model-id
                       (cadr-ai:model-id
                        (provider-config-model updated)))
@@ -1642,7 +1655,7 @@
               status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
-           ;; v0.84.3: the selector opens even with an empty catalog; the
+           ;; v0.84.4: the selector opens even with an empty catalog; the
            ;; baseline dropped the "No models available" early exit.
            (make-scoped-models-selector-state
             :all-models available-models
@@ -2111,6 +2124,9 @@
                      (cli-extension-manager-startup-issues
                       extension-manager))
                     (values nil nil))
+              (cadr-tui:set-capability-overrides
+               (settings-terminal-capability-overrides
+                settings-manager))
               (run-tui
            #'run-prompt
            :command-function #'handle-command
@@ -2160,7 +2176,7 @@
                (cli-arguments-offline-p command)
                (offline-mode-p))))
            :tool-ensure-function
-           ;; Baseline v0.84.3 interactive-mode.ts: fd/rg are ensured
+           ;; Baseline v0.84.4 interactive-mode.ts: fd/rg are ensured
            ;; after the UI mounts; progress surfaces as a status, not
            ;; stdout noise.
            (lambda ()
@@ -2397,7 +2413,7 @@
                    (file-auth-storage-path
                     (model-registry-credentials model-registry))
                    (default-auth-path)))
-              ;; pi@4e58f324f model-runtime.ts:532 — non-nil when the
+              ;; pi@b79e4cc83 model-runtime.ts:532 — non-nil when the
               ;; credential saved but the local snapshot did not sync.
               (model-registry-error model-registry)))
            :auth-status-function #'authentication-status
@@ -2499,7 +2515,7 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           ;; pi@4e58f324f interactive-mode.ts:530-531 — the CLI flag
+           ;; pi@b79e4cc83 interactive-mode.ts:530-531 — the CLI flag
            ;; wins over the tuiMode setting; default regular.
            (eq :fullscreen
                (or (cli-arguments-tui-mode command)
@@ -2525,6 +2541,12 @@
             :keyword)
            :exit-output-mode
            (settings-fullscreen-exit-output settings-manager)
+           :copy-on-select-p
+           (settings-fullscreen-copy-on-select-p
+            settings-manager)
+           :last-assistant-text-function
+           (lambda ()
+             (last-assistant-text agent))
            :initial-notices
            ;; Baseline interactive-mode.ts:910-911 — the SDK's
            ;; modelFallbackMessage is a startup warning; with no

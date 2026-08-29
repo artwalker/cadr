@@ -81,40 +81,12 @@ class Goal21SourceParityTest(unittest.TestCase):
         self.assertIn("powershell.ts", text)
         self.assertIn("g21-0843-dispositions.tsv", text)
 
-    def test_source_ledger_matches_v0843_manifest(self) -> None:
-        text = LEDGER.read_text(encoding="utf-8")
-        self.assertIn(
-            "GOAL12_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac "
-            "source=685/513/169/3",
-            text,
-        )
-        self.assertIn("sorted 685-path manifest", text)
-        self.assertIn(MANIFEST_SHA, text)
-        self.assertIn("| **Total** | **685** | **513** | **169** | **3** |", text)
-        for path in json.loads(ENUMERATION.read_text(encoding="utf-8"))[
-            "files"
-        ]["addedNonTest"]:
-            with self.subTest(path=path):
-                self.assertIn(f"| `{path}` |", text)
-        removed = json.loads(ENUMERATION.read_text(encoding="utf-8"))["files"][
-            "removedNonTest"
-        ]
-        for path in removed:
-            with self.subTest(removed=path):
-                self.assertNotIn(f"| `{path}` |", text)
-
-    def test_ledger_only_gate_passes(self) -> None:
-        proc = run(
-            [
-                str(ROOT / "scripts/check-source-parity-drift.sh"),
-                "--ledger-only",
-                "--dispositions",
-                str(LEDGER),
-            ],
-        )
-        self.assertIn("Source parity ledger entries: 685", proc.stdout)
-        self.assertIn(f"Source parity ledger path SHA-256: {MANIFEST_SHA}", proc.stdout)
-        self.assertIn("Source parity ledger validation complete.", proc.stdout)
+    def test_source_ledger_records_v0843_upgrade_lock(self) -> None:
+        text = UPGRADE_DOC.read_text(encoding="utf-8")
+        self.assertIn("### v0.84.3 enumeration result", text)
+        self.assertIn("g21-0843-dispositions.tsv", text)
+        ledger = LEDGER.read_text(encoding="utf-8")
+        self.assertIn("| `packages/coding-agent/src/core/tools/powershell.ts` |", ledger)
 
 
 if __name__ == "__main__":

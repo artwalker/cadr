@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac files=297 lines=128849 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=150 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=b79e4cc834970cca69daebffab7df1da7d1e52c4 files=297 lines=128849 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=150 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -558,7 +558,7 @@ collapse the process boundary without removing code and is rejected.
 
 The draft's `82 files / 2,111 lines` excludes baseline `providers/all.ts` and,
 more importantly, excludes all 31 API implementation files.  At fixed baseline
-`4e58f324f` the actual comparison is:
+`b79e4cc83` the actual comparison is:
 
 | Surface | Files | Lines | Meaning |
 |---|---:|---:|---|
@@ -796,7 +796,7 @@ provider declarations, protocol construction, and runtime projection now have
 predictable files loaded in dependency order.
 
 Convergence preceded extraction. The committed fixture generated from pi
-baseline `4e58f324fae8ebfa98a3d45181fb248072a2afac` records all 38 providers and
+baseline `b79e4cc834970cca69daebffab7df1da7d1e52c4` records all 38 providers and
 every declaration field with `file:line` provenance. The validated declaration
 is now the only owner of static provider identity/auth fields and callback
 strategy identities; the ambient environment list is derived from those rows.
@@ -816,10 +816,10 @@ The public package text remains byte-identical at SHA-256
 These are design assets.  Splitting files must not duplicate their decisions
 back into the new modules.
 
-### Part L upgrade routing (v0.84.3, goal 18 runbook step 10)
+### Part L upgrade routing (v0.84.4, goal 18 runbook step 10)
 
-Goal 18 Part L upgraded the fixed baseline from `74caa2649` to `4e58f324f`
-(v0.84.3). This subsection is the required retrospective on how the §1a
+Goal 18 Part L upgraded the fixed baseline from `74caa2649` to `b79e4cc83`
+(v0.84.4). This subsection is the required retrospective on how the §1a
 package boundary map survived that upgrade.  All numbers below were
 re-derived from `git diff --name-status` between the two commits on the
 baseline object (2026-08-12), not taken from the hand-written upgrade table;

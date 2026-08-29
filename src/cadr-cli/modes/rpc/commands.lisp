@@ -94,6 +94,20 @@
        (cadr-agent:agent-abort agent)
        (cadr-agent:agent-wait-for-idle agent)
        (rpc-success id type))
+      ((string= type "clear_queue")
+       (multiple-value-bind (steering follow-up)
+           (cadr-agent::clear-live-agent-queues agent)
+         (rpc-success
+          id type
+          (cadr-ai::json-object
+           "steering"
+           (coerce
+            (mapcar #'tui-queued-message-text steering)
+            'vector)
+           "followUp"
+           (coerce
+            (mapcar #'tui-queued-message-text follow-up)
+            'vector)))))
       ((string= type "new_session")
        (rpc-success
         id type

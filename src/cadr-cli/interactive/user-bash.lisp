@@ -3,7 +3,7 @@
 (defconstant +user-bash-preview-lines+ 20)
 
 (defun render-user-bash-entry (entry width &key now)
-  ;; Fixed pi@4e58f324f BashExecutionComponent is deliberately separate from
+  ;; Fixed pi@b79e4cc83 BashExecutionComponent is deliberately separate from
   ;; agent tool rendering: it has a 20-line tail preview, a framed bash-mode
   ;; shell, and component-local cancelled/exit/truncation status copy.
   (let* ((options (tui-entry-custom-options entry))
