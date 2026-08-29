@@ -489,6 +489,9 @@
     ("package_manager.selected_entry" . 50)
     ("package_manager.selector_move" . 50)
     ("package_manager.visible_range" . 50)
+    ("package_manager.item_ordinal" . 50)
+    ("package_manager.replace_pattern" . 50)
+    ("package_manager.scope_base" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4769,7 +4772,8 @@
   (cadr-cli::config-selector-find-item-index entries start direction))
 
 (defun leftover-config-selector-state
-    (selected &key (max-visible 16) (item-count nil))
+    (selected &key (max-visible 16) (item-count nil)
+     (cwd nil) (agent-directory nil))
   (let ((flat
           (if item-count
               (loop for i below item-count
@@ -4782,7 +4786,11 @@
     (cadr-cli::%make-config-selector-state
      :flat-items flat
      :selected selected
-     :max-visible max-visible)))
+     :max-visible max-visible
+     :cwd (and cwd (uiop:ensure-directory-pathname cwd))
+     :agent-directory
+     (and agent-directory
+          (uiop:ensure-directory-pathname agent-directory)))))
 
 (defun leftover-config-selector-kind-code (entry)
   (let ((kind (getf entry :kind)))
@@ -4801,6 +4809,20 @@
 (defun leftover-config-selector-visible-range (state)
   (multiple-value-list
    (cadr-cli::config-selector-visible-range state)))
+
+(defun leftover-config-selector-item-ordinal (state)
+  (cadr-cli::config-selector-item-ordinal state))
+
+(defun leftover-config-selector-replace-pattern
+    (entries pattern override &key include-source-p)
+  (cadr-cli::config-selector-replace-pattern
+   entries pattern override :include-source-p include-source-p))
+
+(defun leftover-config-selector-scope-base (state scope)
+  (cadr-cli::config-selector-scope-base state scope))
+
+(defun leftover-config-dir-namestring (path)
+  (namestring (uiop:ensure-directory-pathname path)))
 
 (defun run-package-manager-group-less-p ()
   (let ((pkg (leftover-config-group-plist :package :user "z"))
@@ -4916,6 +4938,73 @@
             (and (= bot-start 15) (= bot-end 20) (= bot-count 20)))
            5))))))
 
+(defun run-package-manager-item-ordinal ()
+  (list
+   (leftover-config-selector-item-ordinal
+    (leftover-config-selector-state 0))
+   (leftover-config-selector-item-ordinal
+    (leftover-config-selector-state 1))
+   (leftover-config-selector-item-ordinal
+    (leftover-config-selector-state 3))
+   (leftover-config-selector-item-ordinal
+    (leftover-config-selector-state 2))
+   5))
+
+(defun run-package-manager-replace-pattern ()
+  (let ((entries (list "!foo" "bar")))
+    (list
+     (package-manager-truth
+      (equal
+       (leftover-config-selector-replace-pattern
+        entries "foo" nil)
+       '("bar")))
+     (package-manager-truth
+      (equal
+       (leftover-config-selector-replace-pattern
+        '("bar") "foo" :load)
+       '("bar" "+foo")))
+     (package-manager-truth
+      (equal
+       (leftover-config-selector-replace-pattern
+        '("bar") "foo" :unload)
+       '("bar" "-foo")))
+     (package-manager-truth
+      (equal
+       (leftover-config-selector-replace-pattern
+        entries "foo" nil :include-source-p t)
+       '("bar" "foo")))
+     5)))
+
+(defun run-package-manager-scope-base ()
+  (let* ((state
+           (leftover-config-selector-state
+            0
+            :cwd "/tmp/proj"
+            :agent-directory "/tmp/agent"))
+         (nested
+           (leftover-config-selector-state
+            0
+            :cwd "/tmp/work/src"
+            :agent-directory "/tmp/agent"))
+         (global
+           (leftover-config-dir-namestring
+            (leftover-config-selector-scope-base state :global)))
+         (project
+           (leftover-config-dir-namestring
+            (leftover-config-selector-scope-base state :project)))
+         (nested-project
+           (leftover-config-dir-namestring
+            (leftover-config-selector-scope-base nested :project))))
+    (list
+     (package-manager-truth (string= global "/tmp/agent/"))
+     (package-manager-truth (string= project "/tmp/proj/.cadr/"))
+     (package-manager-truth
+      (string= nested-project "/tmp/work/src/.cadr/"))
+     (package-manager-truth
+      (and (plusp (length project))
+           (char= (char project (1- (length project))) #\/)))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -5014,7 +5103,10 @@
            (find-item-index (run-package-manager-find-item-index))
            (selected-entry (run-package-manager-selected-entry))
            (selector-move (run-package-manager-selector-move))
-           (visible-range (run-package-manager-visible-range)))
+           (visible-range (run-package-manager-visible-range))
+           (item-ordinal (run-package-manager-item-ordinal))
+           (replace-pattern (run-package-manager-replace-pattern))
+           (scope-base (run-package-manager-scope-base)))
       (json-object
        "observed"
        (json-object
@@ -5140,7 +5232,22 @@
         "vr_mid" (nth 1 visible-range)
         "vr_top" (nth 2 visible-range)
         "vr_bot" (nth 3 visible-range)
-        "vr_n" (nth 4 visible-range))
+        "vr_n" (nth 4 visible-range)
+        "io_group" (nth 0 item-ordinal)
+        "io_first" (nth 1 item-ordinal)
+        "io_second" (nth 2 item-ordinal)
+        "io_sub" (nth 3 item-ordinal)
+        "io_n" (nth 4 item-ordinal)
+        "rp_drop" (nth 0 replace-pattern)
+        "rp_load" (nth 1 replace-pattern)
+        "rp_unload" (nth 2 replace-pattern)
+        "rp_keep" (nth 3 replace-pattern)
+        "rp_n" (nth 4 replace-pattern)
+        "sb_global" (nth 0 scope-base)
+        "sb_proj" (nth 1 scope-base)
+        "sb_nested" (nth 2 scope-base)
+        "sb_slash" (nth 3 scope-base)
+        "sb_n" (nth 4 scope-base))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5261,7 +5368,22 @@
        (collect "package_manager.visible_range"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-visible-range))))))))
+                    (run-package-manager-visible-range))))
+       "item_ordinal"
+       (collect "package_manager.item_ordinal"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-item-ordinal))))
+       "replace_pattern"
+       (collect "package_manager.replace_pattern"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-replace-pattern))))
+       "scope_base"
+       (collect "package_manager.scope_base"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-scope-base))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30497,6 +30619,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-move"
       "package_manager.visible_range"
       "src/cadr-cli/packages/config-selector.lisp config-selector-visible-range"
+      "package_manager.item_ordinal"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-item-ordinal"
+      "package_manager.replace_pattern"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-replace-pattern"
+      "package_manager.scope_base"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-scope-base"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
