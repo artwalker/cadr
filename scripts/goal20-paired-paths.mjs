@@ -565,6 +565,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.last_assistant_text": 50,
 	"cli_bootstrap_sessions.session_export_basename": 50,
 	"cli_bootstrap_sessions.session_user_messages_for_forking": 50,
+	"cli_bootstrap_sessions.session_command_stats": 50,
+	"cli_bootstrap_sessions.session_usage_breakdown": 50,
+	"cli_bootstrap_sessions.session_tree_label_timestamps": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -34869,6 +34872,158 @@ function runCliBootstrapSessionUserMessagesForForking() {
 	};
 }
 
+function leftoverSessionCommandStats(session) {
+	let user = 0;
+	let assistant = 0;
+	let toolResults = 0;
+	let toolCalls = 0;
+	let input = 0;
+	let output = 0;
+	const entries = session && session.entries ? session.entries : [];
+	const addUsage = (usage) => {
+		if (!usage) return;
+		input += usage.input || 0;
+		output += usage.output || 0;
+	};
+	for (const entry of entries) {
+		if (entry.type === "compaction" || entry.type === "branch-summary") {
+			addUsage(entry.usage);
+		}
+		if (entry.type !== "message") continue;
+		const message = entry.message;
+		if (!message) continue;
+		if (message.role === "user") user += 1;
+		else if (message.role === "toolResult") toolResults += 1;
+		else if (message.role === "assistant") {
+			assistant += 1;
+			const content = Array.isArray(message.content) ? message.content : [];
+			toolCalls += content.filter((block) => block && block.type === "toolCall").length;
+			addUsage(message.usage);
+		}
+	}
+	return { user, assistant, toolResults, toolCalls, input, output };
+}
+
+function leftoverStatsSession() {
+	return {
+		entries: [
+			{ type: "message", id: "u1", message: { role: "user", content: "hi" } },
+			{
+				type: "message",
+				id: "a1",
+				message: {
+					role: "assistant",
+					provider: "openai",
+					model: "gpt-4",
+					usage: { input: 10, output: 5, cacheRead: 0, cacheWrite: 0, cost: 2 },
+					content: [
+						{ type: "text", text: "ok" },
+						{ type: "toolCall", id: "t1", name: "read" },
+					],
+				},
+			},
+			{
+				type: "message",
+				id: "r1",
+				message: { role: "toolResult", toolCallId: "t1", toolName: "read", content: "done" },
+			},
+			{ type: "compaction", id: "c1", usage: { input: 2, output: 1, cacheRead: 0, cacheWrite: 0, cost: 1 } },
+		],
+	};
+}
+
+function runCliBootstrapSessionCommandStats() {
+	const empty = leftoverSessionCommandStats({ entries: [] });
+	const filled = leftoverSessionCommandStats(leftoverStatsSession());
+	return {
+		sst_empty_user: empty.user,
+		sst_user: filled.user,
+		sst_asst: filled.assistant,
+		sst_tr: filled.toolResults,
+		sst_tc: filled.toolCalls,
+	};
+}
+
+function leftoverSessionUsageBreakdown(session) {
+	const totals = new Map();
+	const order = [];
+	const record = (key, usage) => {
+		if (!key || !usage) return;
+		if (!totals.has(key)) {
+			totals.set(key, { cost: 0, tokens: 0 });
+			order.push(key);
+		}
+		const entry = totals.get(key);
+		entry.cost += usage.cost || 0;
+		entry.tokens +=
+			(usage.input || 0) + (usage.output || 0) + (usage.cacheRead || 0) + (usage.cacheWrite || 0);
+		totals.set(key, entry);
+	};
+	for (const entry of session && session.entries ? session.entries : []) {
+		const message = entry.message;
+		if (message && message.role === "assistant") {
+			const provider = String(message.provider || "").toLowerCase();
+			const model = message.responseModel || message.model || "";
+			record(`${provider}/${model}`, message.usage);
+		} else if (entry.type === "compaction" || entry.type === "branch-summary") {
+			record("Tools/summaries", entry.usage);
+		}
+	}
+	return order
+		.map((key) => ({ key, cost: totals.get(key).cost, tokens: totals.get(key).tokens }))
+		.filter((entry) => entry.cost > 0 || entry.tokens > 0)
+		.sort((a, b) => b.cost - a.cost);
+}
+
+function runCliBootstrapSessionUsageBreakdown() {
+	const empty = leftoverSessionUsageBreakdown({ entries: [] });
+	const filled = leftoverSessionUsageBreakdown(leftoverStatsSession());
+	return {
+		sub_empty: empty.length,
+		sub_n: filled.length,
+		sub_first: filled[0] ? filled[0].key : "",
+		sub_tok: filled[0] ? filled[0].tokens : 0,
+		sub_second: filled[1] ? filled[1].key : "",
+	};
+}
+
+function leftoverSessionTreeLabelTimestamps(session) {
+	const result = {};
+	for (const entry of session && session.entries ? session.entries : []) {
+		if (entry.type !== "label") continue;
+		const target = entry.targetId;
+		const label = entry.label;
+		if (label && label.length > 0) {
+			result[target] = new Date(entry.timestamp || 0).toISOString();
+		} else {
+			delete result[target];
+		}
+	}
+	return result;
+}
+
+function leftoverLabelSession() {
+	return {
+		entries: [
+			{ type: "label", id: "l1", targetId: "a", label: "keep", timestamp: 0 },
+			{ type: "label", id: "l2", targetId: "b", label: "", timestamp: 1000 },
+			{ type: "label", id: "l3", targetId: "c", label: "see", timestamp: 1000 },
+		],
+	};
+}
+
+function runCliBootstrapSessionTreeLabelTimestamps() {
+	const empty = leftoverSessionTreeLabelTimestamps({ entries: [] });
+	const filled = leftoverSessionTreeLabelTimestamps(leftoverLabelSession());
+	return {
+		stl_empty: Object.keys(empty).length,
+		stl_n: Object.keys(filled).length,
+		stl_a: filled.a || "",
+		stl_b: filled.b || "",
+		stl_c: filled.c || "",
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -34881,6 +35036,9 @@ async function measureCliBootstrapCodingTools() {
 	const lastAssistantTextObserved = runCliBootstrapLastAssistantText();
 	const exportBasenameObserved = runCliBootstrapSessionExportBasename();
 	const forkUsersObserved = runCliBootstrapSessionUserMessagesForForking();
+	const commandStatsObserved = runCliBootstrapSessionCommandStats();
+	const usageBreakdownObserved = runCliBootstrapSessionUsageBreakdown();
+	const labelTimestampsObserved = runCliBootstrapSessionTreeLabelTimestamps();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -34918,6 +35076,15 @@ async function measureCliBootstrapCodingTools() {
 				return () => runCliBootstrapSessionUserMessagesForForking();
 			},
 		),
+		session_command_stats: await collect("cli_bootstrap_sessions.session_command_stats", () => {
+			return () => runCliBootstrapSessionCommandStats();
+		}),
+		session_usage_breakdown: await collect("cli_bootstrap_sessions.session_usage_breakdown", () => {
+			return () => runCliBootstrapSessionUsageBreakdown();
+		}),
+		session_tree_label_timestamps: await collect("cli_bootstrap_sessions.session_tree_label_timestamps", () => {
+			return () => runCliBootstrapSessionTreeLabelTimestamps();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -34930,6 +35097,9 @@ async function measureCliBootstrapCodingTools() {
 			...lastAssistantTextObserved,
 			...exportBasenameObserved,
 			...forkUsersObserved,
+			...commandStatsObserved,
+			...usageBreakdownObserved,
+			...labelTimestampsObserved,
 		},
 	};
 }
@@ -36818,6 +36988,12 @@ const result = {
 				"packages/coding-agent/src/core/export-html/index.ts leftover APP_NAME-session ISO_id.html (cadr session-export-basename)",
 			"cli_bootstrap_sessions.session_user_messages_for_forking":
 				"packages/coding-agent/src/core/agent-session.ts leftover getUserMessagesForForking (cadr session-user-messages-for-forking)",
+			"cli_bootstrap_sessions.session_command_stats":
+				"packages/coding-agent/src/core/agent-session.ts leftover getSessionStats (cadr session-command-stats)",
+			"cli_bootstrap_sessions.session_usage_breakdown":
+				"packages/coding-agent/src/core/usage-totals.ts leftover getUsageCostBreakdown (cadr session-usage-breakdown)",
+			"cli_bootstrap_sessions.session_tree_label_timestamps":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover label timestamps (cadr session-tree-label-timestamps)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
