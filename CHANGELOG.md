@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `provider_registry_defs.oauth_login_function`
+  (`built-in-oauth-login-function` vs oauth.login presence). Observed
+  `ologin_copilot` / `ologin_anth` / `ologin_miss` / `ologin_diff` /
+  `ologin_n` exact. n=5 **0.008×** (0.121 / 15.704 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 745). Under-1×. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.oauth_refresh_function`
+  (`built-in-oauth-refresh-function` vs oauth.refresh presence). Observed
+  `orefresh_copilot` / `orefresh_anth` / `orefresh_miss` / `orefresh_diff`
+  / `orefresh_n` exact. n=5 **0.008×** (0.122 / 15.368 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 746). Under-1×.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.oauth_to_auth`
+  (`built-in-oauth-to-auth` vs anthropic/kimi toAuth). Observed `ota_anth`
+  / `ota_kimi` / `ota_miss` / `ota_diff` / `ota_n` exact. n=5 **1.601×**
+  (0.428 / 0.267 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 747). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `settings_load.provider_default_model`
   (`provider-default-model` vs provider default model). Observed `pdm_openai`
   / `pdm_anth` / `pdm_google` / `pdm_miss` / `pdm_n` exact. n=5 **0.410×**

@@ -836,6 +836,9 @@ const REPETITIONS = {
 	"provider_registry_defs.api_key_strategy": 50,
 	"provider_registry_defs.provider_options": 50,
 	"provider_registry_defs.strip_runtime_options": 50,
+	"provider_registry_defs.oauth_login_function": 50,
+	"provider_registry_defs.oauth_refresh_function": 50,
+	"provider_registry_defs.oauth_to_auth": 50,
 	"core_rest.cancellation_abort": 50,
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
@@ -1261,6 +1264,11 @@ const cacheStatsModule = await import(
 	moduleUrl("packages/coding-agent/src/core/cache-stats.ts")
 );
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
+const githubCopilotProviderModule = await import(
+	moduleUrl("packages/ai/src/providers/github-copilot.ts")
+);
+const anthropicProviderModule = await import(moduleUrl("packages/ai/src/providers/anthropic.ts"));
+const googleProviderModule = await import(moduleUrl("packages/ai/src/providers/google.ts"));
 const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
@@ -31514,6 +31522,75 @@ function runProviderStripRuntimeOptions() {
 	};
 }
 
+function leftoverOauthLoginPresent(provider) {
+	return typeof provider?.auth?.oauth?.login === "function" ? 1 : 0;
+}
+
+function leftoverOauthRefreshPresent(provider) {
+	return typeof provider?.auth?.oauth?.refresh === "function" ? 1 : 0;
+}
+
+function leftoverOauthToAuth(providerId, access) {
+	if (providerId === "anthropic") {
+		return { apiKey: access };
+	}
+	if (providerId === "kimi-coding") {
+		return { headers: { Authorization: `Bearer ${access}` } };
+	}
+	return null;
+}
+
+function runProviderOauthLoginFunction() {
+	const copilot = githubCopilotProviderModule.githubCopilotProvider();
+	const anth = anthropicProviderModule.anthropicProvider();
+	const google = googleProviderModule.googleProvider();
+	const copilotLogin = leftoverOauthLoginPresent(copilot);
+	const anthLogin = leftoverOauthLoginPresent(anth);
+	return {
+		ologin_copilot: copilotLogin,
+		ologin_anth: anthLogin,
+		ologin_miss: leftoverOauthLoginPresent(google) ? 0 : 1,
+		ologin_diff:
+			copilot.auth?.oauth?.login &&
+			anth.auth?.oauth?.login &&
+			copilot.auth.oauth.login !== anth.auth.oauth.login
+				? 1
+				: 0,
+		ologin_n: 5,
+	};
+}
+
+function runProviderOauthRefreshFunction() {
+	const copilot = githubCopilotProviderModule.githubCopilotProvider();
+	const anth = anthropicProviderModule.anthropicProvider();
+	const google = googleProviderModule.googleProvider();
+	return {
+		orefresh_copilot: leftoverOauthRefreshPresent(copilot),
+		orefresh_anth: leftoverOauthRefreshPresent(anth),
+		orefresh_miss: leftoverOauthRefreshPresent(google) ? 0 : 1,
+		orefresh_diff:
+			copilot.auth?.oauth?.refresh &&
+			anth.auth?.oauth?.refresh &&
+			copilot.auth.oauth.refresh !== anth.auth.oauth.refresh
+				? 1
+				: 0,
+		orefresh_n: 5,
+	};
+}
+
+function runProviderOauthToAuth() {
+	const anth = leftoverOauthToAuth("anthropic", "tok");
+	const kimi = leftoverOauthToAuth("kimi-coding", "tok");
+	const google = leftoverOauthToAuth("google", "tok");
+	return {
+		ota_anth: anth?.apiKey === "tok" ? 1 : 0,
+		ota_kimi: kimi?.headers?.Authorization === "Bearer tok" ? 1 : 0,
+		ota_miss: google == null ? 1 : 0,
+		ota_diff: anth?.apiKey && !kimi?.apiKey ? 1 : 0,
+		ota_n: 5,
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
@@ -31523,6 +31600,9 @@ async function measureProviderRegistryDefs() {
 	const strategyObserved = runProviderApiKeyStrategy();
 	const optionsObserved = runProviderOptions();
 	const stripObserved = runProviderStripRuntimeOptions();
+	const oauthLoginFunction = runProviderOauthLoginFunction();
+	const oauthRefreshFunction = runProviderOauthRefreshFunction();
+	const oauthToAuth = runProviderOauthToAuth();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -31554,6 +31634,18 @@ async function measureProviderRegistryDefs() {
 				return () => runProviderStripRuntimeOptions();
 			},
 		),
+		oauth_login_function: await collect("provider_registry_defs.oauth_login_function", () => {
+			return () => runProviderOauthLoginFunction();
+		}),
+		oauth_refresh_function: await collect(
+			"provider_registry_defs.oauth_refresh_function",
+			() => {
+				return () => runProviderOauthRefreshFunction();
+			},
+		),
+		oauth_to_auth: await collect("provider_registry_defs.oauth_to_auth", () => {
+			return () => runProviderOauthToAuth();
+		}),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
@@ -31564,6 +31656,9 @@ async function measureProviderRegistryDefs() {
 			...strategyObserved,
 			...optionsObserved,
 			...stripObserved,
+			...oauthLoginFunction,
+			...oauthRefreshFunction,
+			...oauthToAuth,
 		},
 	};
 }
@@ -34036,6 +34131,12 @@ const result = {
 				"AZURE_OPENAI_* / CLOUDFLARE_* / GOOGLE_CLOUD_* option projection (built-in-provider-options counterpart)",
 			"provider_registry_defs.strip_runtime_options":
 				"omit apiKey/headers/environment/authType before stream/complete (remove-runtime-only-options counterpart)",
+			"provider_registry_defs.oauth_login_function":
+				"packages/ai/src/providers/github-copilot.ts + anthropic.ts + google.ts oauth.login presence",
+			"provider_registry_defs.oauth_refresh_function":
+				"packages/ai/src/providers/github-copilot.ts + anthropic.ts + google.ts oauth.refresh presence",
+			"provider_registry_defs.oauth_to_auth":
+				"packages/ai/src/auth/oauth/anthropic.ts toAuth + kimi-coding.ts toAuth (access-token / kimi-bearer / miss)",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"skill_prompt_load.resolve_prompt":
