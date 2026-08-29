@@ -10402,6 +10402,30 @@ Leftover sibling of Pair 832. Timed work is string-stream HTTP write — not soc
 
 Leftover sibling of Pairs 832–833. Timed work is URL print or callback — not browser open, not wait. Observed `pau_fmt` / `pau_url` / `pau_ret` / `pau_cb` / `pau_n` are exact. First n=5 freeze **4.268×** (1.580 / 0.370 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **5.875×** (2.080 / 0.354 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 835 — `cli_selectors` (armin_make_grid)
+
+| metric | cadr | pi |
+|---|---|---|
+| `armin_make_grid` | `make-armin-grid` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover `buildFinalGrid` / `createEmptyGrid` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
+
+Leftover sibling of Pairs 514–516 on the same `armin.lisp` `cli_selectors` hole. Timed work is empty vs final 2d grid construct — not tick, not TUI render. Observed `amg_spaces` / `amg_ink` / `amg_h` / `amg_w` / `amg_empty0` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 836 — `cli_selectors` (armin_copy_grid)
+
+| metric | cadr | pi |
+|---|---|---|
+| `armin_copy_grid` | `copy-armin-grid` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover `finalGrid.map(row => [...row])` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
+
+Leftover sibling of Pair 835. Timed work is independent 2d copy plus mutate-copy — not tick, not render. Observed `acg_orig` / `acg_copy` / `acg_h` / `acg_w` / `acg_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 837 — `cli_selectors` (armin_row_string)
+
+| metric | cadr | pi |
+|---|---|---|
+| `armin_row_string` | `armin-grid-row-string` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover `row.join("")` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
+
+Leftover sibling of Pairs 835–836. Timed work is row join without theme/clip — not `component-render`, not tick. Observed `ars_len` / `ars_empty0` / `ars_ink` / `ars_full` / `ars_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
