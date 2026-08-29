@@ -61,6 +61,20 @@ tag/Release step.
   exact. n=5 **10.522×** (52.464 / 4.986 µs) on host `cursor`, ceiling 15.0.
   Measure-only leftover (Pair 783). Over-1× booked. `nextPairNum` left
   unchanged.
+- Goal 20 leftover: pair `package_manager.inherited_enabled`
+  (`config-selector-inherited-enabled-p` vs leftover inheritedEnabled map).
+  Observed `ie_hash_t` / `ie_hash_f` / `ie_def_t` / `ie_def_f` / `ie_n`
+  exact. Measure-only leftover (Pair 784). Freeze pending. `nextPairNum`
+  left unchanged.
+- Goal 20 leftover: pair `package_manager.resource_group_key`
+  (`config-resource-group-key` vs leftover group key). Observed `rgk_top` /
+  `rgk_pkg` / `rgk_src` / `rgk_diff` / `rgk_n` exact. Measure-only leftover
+  (Pair 785). Freeze pending. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.package_entry_index`
+  (`config-selector-package-entry-index` vs leftover npm identity index).
+  Observed `pei_hit` / `pei_first` / `pei_miss` / `pei_pin` / `pei_n`
+  exact. Measure-only leftover (Pair 786). Freeze pending. `nextPairNum`
+  left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /

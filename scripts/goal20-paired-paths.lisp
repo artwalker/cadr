@@ -210,6 +210,9 @@
 ;;;; 781. package_manager config-resource-item-key vs getResourceItemKey leftover
 ;;;; 782. package_manager config-selector-project-state vs leftover override hash
 ;;;; 783. package_manager config-selector-next-project-state vs nextProjectOverrideState
+;;;; 784. package_manager config-selector-inherited-enabled-p vs leftover inherited map
+;;;; 785. package_manager config-resource-group-key vs leftover group key
+;;;; 786. package_manager config-selector-package-entry-index vs leftover identity index
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -646,6 +649,9 @@
     ("package_manager.resource_item_key" . 50)
     ("package_manager.project_override_state" . 50)
     ("package_manager.next_project_state" . 50)
+    ("package_manager.inherited_enabled" . 50)
+    ("package_manager.resource_group_key" . 50)
+    ("package_manager.package_entry_index" . 50)
     ("package_manager.records_project_first" . 50)
     ("package_manager.candidate_record" . 50)
     ("package_manager.update_offline" . 50)
@@ -6162,6 +6168,15 @@
 (defun leftover-config-selector-next-project-state (state item)
   (cadr-cli::config-selector-next-project-state state item))
 
+(defun leftover-config-selector-inherited-enabled-p (state item)
+  (cadr-cli::config-selector-inherited-enabled-p state item))
+
+(defun leftover-config-resource-group-key (item)
+  (cadr-cli::config-resource-group-key item))
+
+(defun leftover-config-selector-package-entry-index (state item packages scope)
+  (cadr-cli::config-selector-package-entry-index state item packages scope))
+
 (defun leftover-config-resource-item-scoped (path type display-name scope)
   (cadr-cli::make-config-resource-item
    :path (parse-namestring path)
@@ -6777,6 +6792,105 @@
        item))
      5)))
 
+(defun leftover-config-resource-group-key-prefix-p (key prefix)
+  (and (stringp key)
+       (>= (length key) (length prefix))
+       (string= (subseq key 0 (length prefix)) prefix)))
+
+(defun leftover-package-entries (&rest sources)
+  (mapcar
+   (lambda (source)
+     (cadr-ai::json-object "source" source))
+   sources))
+
+(defun run-package-manager-inherited-enabled ()
+  (let ((item (leftover-config-selector-hello-item)))
+    (list
+     (package-manager-leftover-truth
+      (leftover-config-selector-inherited-enabled-p
+       (leftover-config-selector-override-state item nil :inherited t)
+       item))
+     (package-manager-leftover-truth
+      (not
+       (leftover-config-selector-inherited-enabled-p
+        (leftover-config-selector-override-state item nil :inherited nil)
+        item)))
+     (package-manager-leftover-truth
+      (leftover-config-selector-inherited-enabled-p
+       (leftover-config-selector-override-state item nil)
+       item))
+     (package-manager-leftover-truth
+      (not
+       (leftover-config-selector-inherited-enabled-p
+        (leftover-config-selector-override-state item nil :enabled-p nil)
+        item)))
+     5)))
+
+(defun run-package-manager-resource-group-key ()
+  (let* ((top
+          (leftover-config-resource-group-key
+           (leftover-config-selector-hello-item)))
+         (pkg
+          (leftover-config-resource-group-key
+           (leftover-config-resource-item-labeled
+            :package :user "npm:foo"
+            :base-directory "/tmp/agent/pkg/"))))
+    (list
+     (package-manager-leftover-truth
+      (leftover-config-resource-group-key-prefix-p
+       top "top-level:project:auto:"))
+     (package-manager-leftover-truth
+      (and
+       (leftover-config-resource-group-key-prefix-p pkg "package:user:")
+       (search "npm:foo" pkg)))
+     (package-manager-leftover-truth
+      (search ":auto:" top))
+     (package-manager-leftover-truth
+      (not (string= top pkg)))
+     5)))
+
+(defun run-package-manager-package-entry-index ()
+  (let* ((state
+          (leftover-config-selector-state
+           0
+           :cwd "/tmp/proj"
+           :agent-directory "/tmp/agent"))
+         (foo
+          (leftover-config-resource-item-labeled
+           :package :user "npm:foo"
+           :base-directory "/tmp/agent/pkg/"))
+         (pin
+          (leftover-config-resource-item-labeled
+           :package :user "npm:@scope/pkg@1.2.3"
+           :base-directory "/tmp/agent/pkg/"))
+         (hit
+          (leftover-config-selector-package-entry-index
+           state foo
+           (leftover-package-entries "npm:bar" "npm:foo" "npm:baz")
+           :global))
+         (first
+          (leftover-config-selector-package-entry-index
+           state foo
+           (leftover-package-entries "npm:foo" "npm:bar")
+           :global))
+         (miss
+          (leftover-config-selector-package-entry-index
+           state foo
+           (leftover-package-entries "npm:bar" "npm:baz")
+           :global))
+         (scoped
+          (leftover-config-selector-package-entry-index
+           state pin
+           (leftover-package-entries
+            "npm:foo" "npm:@scope/pkg@9.9.9" "npm:bar")
+           :global)))
+    (list
+     (package-manager-leftover-truth (eql hit 1))
+     (package-manager-leftover-truth (eql first 0))
+     (package-manager-leftover-truth (null miss))
+     (package-manager-leftover-truth (eql scoped 1))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -6974,6 +7088,12 @@
              (run-package-manager-project-override-state))
            (next-project-state
              (run-package-manager-next-project-state))
+           (inherited-enabled
+             (run-package-manager-inherited-enabled))
+           (resource-group-key
+             (run-package-manager-resource-group-key))
+           (package-entry-index
+             (run-package-manager-package-entry-index))
            (records-project-first
              (run-package-manager-records-project-first))
            (candidate-record
@@ -7207,6 +7327,21 @@
         "nps_unl" (nth 2 next-project-state)
         "nps_load" (nth 3 next-project-state)
         "nps_n" (nth 4 next-project-state)
+        "ie_hash_t" (nth 0 inherited-enabled)
+        "ie_hash_f" (nth 1 inherited-enabled)
+        "ie_def_t" (nth 2 inherited-enabled)
+        "ie_def_f" (nth 3 inherited-enabled)
+        "ie_n" (nth 4 inherited-enabled)
+        "rgk_top" (nth 0 resource-group-key)
+        "rgk_pkg" (nth 1 resource-group-key)
+        "rgk_src" (nth 2 resource-group-key)
+        "rgk_diff" (nth 3 resource-group-key)
+        "rgk_n" (nth 4 resource-group-key)
+        "pei_hit" (nth 0 package-entry-index)
+        "pei_first" (nth 1 package-entry-index)
+        "pei_miss" (nth 2 package-entry-index)
+        "pei_pin" (nth 3 package-entry-index)
+        "pei_n" (nth 4 package-entry-index)
         "upf_proj" (nth 0 records-project-first)
         "upf_user" (nth 1 records-project-first)
         "upf_tail" (nth 2 records-project-first)
@@ -7448,6 +7583,21 @@
                 (lambda ()
                   (lambda ()
                     (run-package-manager-next-project-state))))
+       "inherited_enabled"
+       (collect "package_manager.inherited_enabled"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-inherited-enabled))))
+       "resource_group_key"
+       (collect "package_manager.resource_group_key"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-group-key))))
+       "package_entry_index"
+       (collect "package_manager.package_entry_index"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-entry-index))))
        "records_project_first"
        (collect "package_manager.records_project_first"
                 (lambda ()
@@ -35187,6 +35337,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-project-state"
       "package_manager.next_project_state"
       "src/cadr-cli/packages/config-selector.lisp config-selector-next-project-state"
+      "package_manager.inherited_enabled"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-inherited-enabled-p"
+      "package_manager.resource_group_key"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-group-key"
+      "package_manager.package_entry_index"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-package-entry-index"
       "package_manager.records_project_first"
       "src/cadr-cli/packages/update-checks.lisp package-update-records-project-first"
       "package_manager.candidate_record"
