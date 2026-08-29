@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.group_less_p`
+  (`config-resource-group-less-p` vs group sort). Observed `gl_pkg`
+  / `gl_user` / `gl_src` / `gl_rev` / `gl_n` exact. n=5 **7.128×**
+  (3.937 / 0.552 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 718). Over-1× booked. Gate `--only-enforce`; py rc=2
+  from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.package_entry_has_filters`
+  (`config-selector-package-entry-has-filters-p` vs package entry
+  filters). Observed `hf_ext` / `hf_miss` / `hf_sk` / `hf_other` /
+  `hf_n` exact. n=5 **1.804×** (1.379 / 0.765 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 719). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.find_item_index`
+  (`config-selector-find-item-index` vs find item index). Observed
+  `fi_fwd` / `fi_skip` / `fi_back` / `fi_end` / `fi_n` exact. n=5
+  **0.569×** (0.242 / 0.426 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 720). cadr leads. Not booked over-1×.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `package_manager.resource_key`
   (`config-selector-resource-key` vs resource type key). Observed
   `crk_ext` / `crk_sk` / `crk_pr` / `crk_th` / `crk_n` exact. n=5

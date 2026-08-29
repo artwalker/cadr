@@ -483,6 +483,9 @@
     ("package_manager.resource_key" . 50)
     ("package_manager.relative_pattern" . 50)
     ("package_manager.config_fit_line" . 50)
+    ("package_manager.group_less_p" . 50)
+    ("package_manager.package_entry_has_filters" . 50)
+    ("package_manager.find_item_index" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4746,6 +4749,77 @@
       (string= (leftover-config-selector-fit-line "hello" 0) ""))
      5)))
 
+(defun leftover-config-group-plist (origin scope source)
+  (let ((item (leftover-config-resource-item "/tmp/x.lisp" :extensions "x")))
+    (setf (cadr-cli::config-resource-item-origin item) origin
+          (cadr-cli::config-resource-item-scope item) scope
+          (cadr-cli::config-resource-item-source item) source)
+    (list :item item)))
+
+(defun leftover-config-resource-group-less-p (left right)
+  (cadr-cli::config-resource-group-less-p left right))
+
+(defun leftover-config-package-entry-has-filters-p (entry)
+  (cadr-cli::config-selector-package-entry-has-filters-p entry))
+
+(defun leftover-config-selector-find-item-index (entries start direction)
+  (cadr-cli::config-selector-find-item-index entries start direction))
+
+(defun run-package-manager-group-less-p ()
+  (let ((pkg (leftover-config-group-plist :package :user "z"))
+        (top (leftover-config-group-plist :top-level :user "a"))
+        (user (leftover-config-group-plist :top-level :user "m"))
+        (proj (leftover-config-group-plist :top-level :project "m"))
+        (src-a (leftover-config-group-plist :top-level :user "a"))
+        (src-b (leftover-config-group-plist :top-level :user "b")))
+    (list
+     (package-manager-truth
+      (leftover-config-resource-group-less-p pkg top))
+     (package-manager-truth
+      (leftover-config-resource-group-less-p user proj))
+     (package-manager-truth
+      (leftover-config-resource-group-less-p src-a src-b))
+     (package-manager-truth
+      (not (leftover-config-resource-group-less-p src-b src-a)))
+     5)))
+
+(defun run-package-manager-package-entry-has-filters ()
+  (let ((ext (make-hash-table :test #'equal))
+        (miss (make-hash-table :test #'equal))
+        (sk (make-hash-table :test #'equal))
+        (other (make-hash-table :test #'equal)))
+    (setf (gethash "extensions" ext) '())
+    (setf (gethash "skills" sk) '("x"))
+    (setf (gethash "foo" other) 1)
+    (list
+     (package-manager-truth
+      (leftover-config-package-entry-has-filters-p ext))
+     (package-manager-truth
+      (not (leftover-config-package-entry-has-filters-p miss)))
+     (package-manager-truth
+      (leftover-config-package-entry-has-filters-p sk))
+     (package-manager-truth
+      (not (leftover-config-package-entry-has-filters-p other)))
+     5)))
+
+(defun run-package-manager-find-item-index ()
+  (let ((entries
+          (list
+           (list :kind :group)
+           (list :kind :item)
+           (list :kind :subgroup)
+           (list :kind :item))))
+    (list
+     (package-manager-truth
+      (= (leftover-config-selector-find-item-index entries 0 1) 1))
+     (package-manager-truth
+      (= (leftover-config-selector-find-item-index entries 1 1) 3))
+     (package-manager-truth
+      (= (leftover-config-selector-find-item-index entries 3 -1) 1))
+     (package-manager-truth
+      (= (leftover-config-selector-find-item-index entries 3 1) 3))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -4838,7 +4912,10 @@
            (item-matches (run-package-manager-item-matches))
            (resource-key (run-package-manager-resource-key))
            (relative-pattern (run-package-manager-relative-pattern))
-           (config-fit-line (run-package-manager-config-fit-line)))
+           (config-fit-line (run-package-manager-config-fit-line))
+           (group-less-p (run-package-manager-group-less-p))
+           (package-entry-has-filters (run-package-manager-package-entry-has-filters))
+           (find-item-index (run-package-manager-find-item-index)))
       (json-object
        "observed"
        (json-object
@@ -4934,7 +5011,22 @@
         "cfl_long" (nth 1 config-fit-line)
         "cfl_dots" (nth 2 config-fit-line)
         "cfl_zero" (nth 3 config-fit-line)
-        "cfl_n" (nth 4 config-fit-line))
+        "cfl_n" (nth 4 config-fit-line)
+        "gl_pkg" (nth 0 group-less-p)
+        "gl_user" (nth 1 group-less-p)
+        "gl_src" (nth 2 group-less-p)
+        "gl_rev" (nth 3 group-less-p)
+        "gl_n" (nth 4 group-less-p)
+        "hf_ext" (nth 0 package-entry-has-filters)
+        "hf_miss" (nth 1 package-entry-has-filters)
+        "hf_sk" (nth 2 package-entry-has-filters)
+        "hf_other" (nth 3 package-entry-has-filters)
+        "hf_n" (nth 4 package-entry-has-filters)
+        "fi_fwd" (nth 0 find-item-index)
+        "fi_skip" (nth 1 find-item-index)
+        "fi_back" (nth 2 find-item-index)
+        "fi_end" (nth 3 find-item-index)
+        "fi_n" (nth 4 find-item-index))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5025,7 +5117,22 @@
        (collect "package_manager.config_fit_line"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-config-fit-line))))))))
+                    (run-package-manager-config-fit-line))))
+       "group_less_p"
+       (collect "package_manager.group_less_p"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-group-less-p))))
+       "package_entry_has_filters"
+       (collect "package_manager.package_entry_has_filters"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-entry-has-filters))))
+       "find_item_index"
+       (collect "package_manager.find_item_index"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-find-item-index))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30249,6 +30356,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-relative-pattern"
       "package_manager.config_fit_line"
       "src/cadr-cli/packages/config-selector.lisp config-selector-fit-line"
+      "package_manager.group_less_p"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-group-less-p"
+      "package_manager.package_entry_has_filters"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-package-entry-has-filters-p"
+      "package_manager.find_item_index"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-find-item-index"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

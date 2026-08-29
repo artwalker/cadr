@@ -8464,6 +8464,30 @@ Leftover sibling of Pair 715. Timed work is file, nested skill path, extensions 
 
 Leftover sibling of Pairs 715–716. Timed work is short fit, overflow with empty ellipsis (CSI reset), overflow with `...`, and zero width. Observed `cfl_short` / `cfl_long` / `cfl_dots` / `cfl_zero` / `cfl_n` are exact. First n=5 freeze **2.793×** (5.200 / 1.862 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 718 — `package_manager` (group_less_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `group_less_p` | `config-resource-group-less-p` (`src/cadr-cli/packages/config-selector.lisp`) | group sort (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 715–717 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is package-before-top-level, user-before-project, source order, and reverse source. Observed `gl_pkg` / `gl_user` / `gl_src` / `gl_rev` / `gl_n` are exact. First n=5 freeze **7.128×** (3.937 / 0.552 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 719 — `package_manager` (package_entry_has_filters)
+
+| metric | cadr | pi |
+|---|---|---|
+| `package_entry_has_filters` | `config-selector-package-entry-has-filters-p` (`src/cadr-cli/packages/config-selector.lisp`) | package entry filters (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 718. Timed work is extensions key, missing, skills key, and unrelated key. Observed `hf_ext` / `hf_miss` / `hf_sk` / `hf_other` / `hf_n` are exact. First n=5 freeze **1.804×** (1.379 / 0.765 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 720 — `package_manager` (find_item_index)
+
+| metric | cadr | pi |
+|---|---|---|
+| `find_item_index` | `config-selector-find-item-index` (`src/cadr-cli/packages/config-selector.lisp`) | find item index (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 718–719. Timed work is forward, skip subgroup, backward, and end stay. Observed `fi_fwd` / `fi_skip` / `fi_back` / `fi_end` / `fi_n` are exact. First n=5 freeze **0.569×** (0.242 / 0.426 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -254,6 +254,9 @@ const REPETITIONS = {
 	"package_manager.resource_key": 50,
 	"package_manager.relative_pattern": 50,
 	"package_manager.config_fit_line": 50,
+	"package_manager.group_less_p": 50,
+	"package_manager.package_entry_has_filters": 50,
+	"package_manager.find_item_index": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6113,6 +6116,80 @@ function runPackageManagerConfigFitLine() {
 	};
 }
 
+function leftoverConfigResourceGroupLessP(left, right) {
+	const a = left.item;
+	const b = right.item;
+	if (a.origin !== b.origin) {
+		return a.origin === "package";
+	}
+	if (a.scope !== b.scope) {
+		return a.scope === "user";
+	}
+	return a.source < b.source;
+}
+
+function leftoverConfigSelectorPackageEntryHasFiltersP(entry) {
+	if (entry == null || typeof entry !== "object" || Array.isArray(entry)) {
+		return false;
+	}
+	return ["extensions", "skills", "prompts", "themes"].some((type) =>
+		Object.prototype.hasOwnProperty.call(entry, type),
+	);
+}
+
+function leftoverConfigSelectorFindItemIndex(entries, start, direction) {
+	let index = start + direction;
+	while (index > -1 && index < entries.length) {
+		if (entries[index].kind === "item") {
+			return index;
+		}
+		index += direction;
+	}
+	return start;
+}
+
+function runPackageManagerGroupLessP() {
+	const pkg = { item: { origin: "package", scope: "user", source: "z" } };
+	const top = { item: { origin: "top-level", scope: "user", source: "a" } };
+	const user = { item: { origin: "top-level", scope: "user", source: "m" } };
+	const proj = { item: { origin: "top-level", scope: "project", source: "m" } };
+	const srcA = { item: { origin: "top-level", scope: "user", source: "a" } };
+	const srcB = { item: { origin: "top-level", scope: "user", source: "b" } };
+	return {
+		gl_pkg: leftoverConfigResourceGroupLessP(pkg, top) ? 1 : 0,
+		gl_user: leftoverConfigResourceGroupLessP(user, proj) ? 1 : 0,
+		gl_src: leftoverConfigResourceGroupLessP(srcA, srcB) ? 1 : 0,
+		gl_rev: leftoverConfigResourceGroupLessP(srcB, srcA) ? 0 : 1,
+		gl_n: 5,
+	};
+}
+
+function runPackageManagerPackageEntryHasFilters() {
+	return {
+		hf_ext: leftoverConfigSelectorPackageEntryHasFiltersP({ extensions: [] }) ? 1 : 0,
+		hf_miss: leftoverConfigSelectorPackageEntryHasFiltersP({}) ? 0 : 1,
+		hf_sk: leftoverConfigSelectorPackageEntryHasFiltersP({ skills: ["x"] }) ? 1 : 0,
+		hf_other: leftoverConfigSelectorPackageEntryHasFiltersP({ foo: 1 }) ? 0 : 1,
+		hf_n: 5,
+	};
+}
+
+function runPackageManagerFindItemIndex() {
+	const entries = [
+		{ kind: "group" },
+		{ kind: "item" },
+		{ kind: "subgroup" },
+		{ kind: "item" },
+	];
+	return {
+		fi_fwd: leftoverConfigSelectorFindItemIndex(entries, 0, 1) === 1 ? 1 : 0,
+		fi_skip: leftoverConfigSelectorFindItemIndex(entries, 1, 1) === 3 ? 1 : 0,
+		fi_back: leftoverConfigSelectorFindItemIndex(entries, 3, -1) === 1 ? 1 : 0,
+		fi_end: leftoverConfigSelectorFindItemIndex(entries, 3, 1) === 3 ? 1 : 0,
+		fi_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6215,6 +6292,9 @@ async function measurePackageManager() {
 	const resourceKey = runPackageManagerResourceKey();
 	const relativePattern = runPackageManagerRelativePattern();
 	const configFitLine = runPackageManagerConfigFitLine();
+	const groupLessP = runPackageManagerGroupLessP();
+	const packageEntryHasFilters = runPackageManagerPackageEntryHasFilters();
+	const findItemIndex = runPackageManagerFindItemIndex();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6270,6 +6350,15 @@ async function measurePackageManager() {
 		config_fit_line: await collect("package_manager.config_fit_line", () => {
 			return () => runPackageManagerConfigFitLine();
 		}),
+		group_less_p: await collect("package_manager.group_less_p", () => {
+			return () => runPackageManagerGroupLessP();
+		}),
+		package_entry_has_filters: await collect("package_manager.package_entry_has_filters", () => {
+			return () => runPackageManagerPackageEntryHasFilters();
+		}),
+		find_item_index: await collect("package_manager.find_item_index", () => {
+			return () => runPackageManagerFindItemIndex();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6293,6 +6382,9 @@ async function measurePackageManager() {
 			...resourceKey,
 			...relativePattern,
 			...configFitLine,
+			...groupLessP,
+			...packageEntryHasFilters,
+			...findItemIndex,
 		},
 	};
 }
@@ -31823,6 +31915,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts relative pattern (cadr config-selector-relative-pattern)",
 			"package_manager.config_fit_line":
 				"packages/tui/src/utils.ts truncateToWidth (cadr config-selector-fit-line)",
+			"package_manager.group_less_p":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts group sort (cadr config-resource-group-less-p)",
+			"package_manager.package_entry_has_filters":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package entry filters (cadr config-selector-package-entry-has-filters-p)",
+			"package_manager.find_item_index":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts find item index (cadr config-selector-find-item-index)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
