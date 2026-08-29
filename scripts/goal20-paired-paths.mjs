@@ -245,6 +245,9 @@ const REPETITIONS = {
 	"package_manager.resource_file_p": 50,
 	"package_manager.resource_display_name": 50,
 	"package_manager.settings_array": 50,
+	"package_manager.resource_specification": 50,
+	"package_manager.config_glob_regex": 50,
+	"package_manager.entry_target": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -5887,6 +5890,89 @@ function runPackageManagerSettingsArray() {
 	};
 }
 
+const PACKAGE_RESOURCE_SPECIFICATIONS = [
+	["extensions", "extensions/", "lisp", null],
+	["skills", "skills/", null, "SKILL.md"],
+	["prompts", "prompts/", "md", null],
+	["themes", "themes/", "json", null],
+];
+
+function leftoverConfigResourceSpecification(type) {
+	const spec = PACKAGE_RESOURCE_SPECIFICATIONS.find((entry) => entry[0] === type);
+	if (!spec) {
+		throw new Error(`Unknown config resource type: ${type}`);
+	}
+	return spec;
+}
+
+function leftoverConfigNormalizePatternPath(value) {
+	const normalized = value.replaceAll("\\", "/");
+	return normalized.startsWith("./") ? normalized.slice(2) : normalized;
+}
+
+function leftoverConfigGlobRegex(pattern) {
+	let out = "^";
+	const escaped = ".+()[]{}^$|\\";
+	for (const character of leftoverConfigNormalizePatternPath(pattern)) {
+		if (character === "*") {
+			out += "[^/]*";
+		} else if (character === "?") {
+			out += "[^/]";
+		} else if (escaped.includes(character)) {
+			out += `\\${character}`;
+		} else {
+			out += character;
+		}
+	}
+	return `${out}$`;
+}
+
+function leftoverConfigSelectorEntryTarget(entry) {
+	if (entry.length > 0 && "!+-".includes(entry[0])) {
+		return entry.slice(1);
+	}
+	return entry;
+}
+
+function runPackageManagerResourceSpecification() {
+	const extensions = leftoverConfigResourceSpecification("extensions");
+	const skills = leftoverConfigResourceSpecification("skills");
+	let missing = 0;
+	try {
+		leftoverConfigResourceSpecification("widgets");
+	} catch {
+		missing = 1;
+	}
+	return {
+		rsp_ext: extensions[2] === "lisp" ? 1 : 0,
+		rsp_sk: skills[3] === "SKILL.md" ? 1 : 0,
+		rsp_rel: extensions[1] === "extensions/" ? 1 : 0,
+		rsp_miss: missing,
+		rsp_n: 5,
+	};
+}
+
+function runPackageManagerConfigGlobRegex() {
+	return {
+		cgr_star: leftoverConfigGlobRegex("*.lisp") === "^[^/]*\\.lisp$" ? 1 : 0,
+		cgr_q: leftoverConfigGlobRegex("a?b") === "^a[^/]b$" ? 1 : 0,
+		cgr_plain: leftoverConfigGlobRegex("foo") === "^foo$" ? 1 : 0,
+		cgr_dot: leftoverConfigGlobRegex("./x*") === "^x[^/]*$" ? 1 : 0,
+		cgr_n: 5,
+	};
+}
+
+function runPackageManagerEntryTarget() {
+	return {
+		cet_bang: leftoverConfigSelectorEntryTarget("!foo") === "foo" ? 1 : 0,
+		cet_plus: leftoverConfigSelectorEntryTarget("+bar") === "bar" ? 1 : 0,
+		cet_minus: leftoverConfigSelectorEntryTarget("-baz") === "baz" ? 1 : 0,
+		cet_plain: leftoverConfigSelectorEntryTarget("qux") === "qux" ? 1 : 0,
+		cet_empty: leftoverConfigSelectorEntryTarget("") === "" ? 1 : 0,
+		cet_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -5980,6 +6066,9 @@ async function measurePackageManager() {
 	const resourceFileP = runPackageManagerResourceFileP();
 	const resourceDisplay = runPackageManagerResourceDisplayName();
 	const settingsArray = runPackageManagerSettingsArray();
+	const resourceSpecification = runPackageManagerResourceSpecification();
+	const configGlobRegex = runPackageManagerConfigGlobRegex();
+	const entryTarget = runPackageManagerEntryTarget();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6008,6 +6097,15 @@ async function measurePackageManager() {
 		settings_array: await collect("package_manager.settings_array", () => {
 			return () => runPackageManagerSettingsArray();
 		}),
+		resource_specification: await collect("package_manager.resource_specification", () => {
+			return () => runPackageManagerResourceSpecification();
+		}),
+		config_glob_regex: await collect("package_manager.config_glob_regex", () => {
+			return () => runPackageManagerConfigGlobRegex();
+		}),
+		entry_target: await collect("package_manager.entry_target", () => {
+			return () => runPackageManagerEntryTarget();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6022,6 +6120,9 @@ async function measurePackageManager() {
 			...resourceFileP,
 			...resourceDisplay,
 			...settingsArray,
+			...resourceSpecification,
+			...configGlobRegex,
+			...entryTarget,
 		},
 	};
 }
@@ -31534,6 +31635,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts resource display name (cadr config-resource-display-name)",
 			"package_manager.settings_array":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts settings array coerce (cadr config-settings-array)",
+			"package_manager.resource_specification":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts RESOURCE_TYPES lookup (cadr config-resource-specification)",
+			"package_manager.config_glob_regex":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts globToRegex (cadr config-glob-regex)",
+			"package_manager.entry_target":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts entry target strip (cadr config-selector-entry-target)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

@@ -8392,6 +8392,30 @@ Leftover sibling of Pair 706. Timed work is SKILL.md parent directory, lisp file
 
 Leftover sibling of Pairs 706–707. Timed work is vector coerce, list copy, missing key, and non-sequence. Observed `csa_vec` / `csa_list` / `csa_miss` / `csa_bad` / `csa_n` are exact. First n=5 freeze **2.393×** (1.161 / 0.485 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 709 — `package_manager` (resource_specification)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_specification` | `config-resource-specification` (`src/cadr-cli/packages/config-selector.lisp`) | RESOURCE_TYPES lookup (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 706–708 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is extensions extension, skills basename, relative directory, and unknown-type error. Observed `rsp_ext` / `rsp_sk` / `rsp_rel` / `rsp_miss` / `rsp_n` are exact. First n=5 freeze **0.190×** (0.428 / 2.249 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 710 — `package_manager` (config_glob_regex)
+
+| metric | cadr | pi |
+|---|---|---|
+| `config_glob_regex` | `config-glob-regex` (`src/cadr-cli/packages/config-selector.lisp`) | globToRegex (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 709. Timed work is star, question, plain, and `./` prefix. Observed `cgr_star` / `cgr_q` / `cgr_plain` / `cgr_dot` / `cgr_n` are exact. First n=5 freeze **0.546×** (0.900 / 1.648 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 711 — `package_manager` (entry_target)
+
+| metric | cadr | pi |
+|---|---|---|
+| `entry_target` | `config-selector-entry-target` (`src/cadr-cli/packages/config-selector.lisp`) | entry target strip (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 709–710. Timed work is `!` / `+` / `-` prefixes, plain, and empty. Observed `cet_bang` / `cet_plus` / `cet_minus` / `cet_plain` / `cet_empty` / `cet_n` are exact. First n=5 freeze **0.893×** (0.277 / 0.310 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
