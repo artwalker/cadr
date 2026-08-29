@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.token_fields`
+  (`token-response-credential` vs openai-codex readTokenResponse field
+  check). Observed `trc_ok` / `trc_miss_acc` / `trc_miss_exp` / `trc_n`
+  exact. n=5 **0.536×** (2.014 / 3.758 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 889). Under-1×. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.openai_exchange`
+  (`exchange-openai-authorization-code` vs openai-codex exchange JSON
+  parse). Observed `oex_ok` / `oex_http` / `oex_miss` / `oex_n` exact.
+  n=5 **4.144×** (19.188 / 4.630 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 890). Over-1×. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.anthropic_exchange`
+  (`exchange-anthropic-authorization-code` vs anthropic exchange JSON
+  parse). Observed `aex_ok` / `aex_http` / `aex_badjson` / `aex_n`
+  exact. n=5 **1.694×** (12.190 / 7.197 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 891). Over-1×. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

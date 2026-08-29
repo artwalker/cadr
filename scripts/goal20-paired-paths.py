@@ -689,9 +689,11 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.openrouter_input": 8.0,
     "oauth_pkce_device.openrouter_refresh": 8.0,
     "oauth_pkce_device.openrouter_exchange": 8.0,
-    # leftover 889-891; first-freeze headroom. Ratchet down only.
+    # leftover 889; first freeze 0.536× (2.014 / 3.758 µs). Under-1×.
     "oauth_pkce_device.token_fields": 8.0,
+    # leftover 890; first freeze 4.144× (19.188 / 4.630 µs). Over-1×.
     "oauth_pkce_device.openai_exchange": 8.0,
+    # leftover 891; first freeze 1.694× (12.190 / 7.197 µs). Over-1×.
     "oauth_pkce_device.anthropic_exchange": 8.0,
     # output_accumulator leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.

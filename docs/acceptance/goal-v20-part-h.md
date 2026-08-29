@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `token_fields` | `token-response-credential` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `readTokenResponse` field check (`packages/ai/src/auth/oauth/openai-codex.ts`) |
 
-Leftover trio on unclaimed `src/cadr-ai/oauth/openai-anthropic.lisp`. Timed work is access/refresh/expires_in presence (ok / missing access / missing expires_in) — not live HTTP, not expiry timestamps, not old-refresh fallback. Observed `trc_ok` / `trc_miss_acc` / `trc_miss_exp` / `trc_n` are exact. Freeze pending. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-ai/oauth/openai-anthropic.lisp`. Timed work is access/refresh/expires_in presence (ok / missing access / missing expires_in) — not live HTTP, not expiry timestamps, not old-refresh fallback. Observed `trc_ok` / `trc_miss_acc` / `trc_miss_exp` / `trc_n` are exact. First n=5 freeze **0.536×** (2.014 / 3.758 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 890 — `oauth_pkce_device` (openai_exchange)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-ai/oauth/openai-anthropic.lisp`. Timed work
 |---|---|---|
 | `openai_exchange` | `exchange-openai-authorization-code` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `exchangeAuthorizationCode` JSON parse (`packages/ai/src/auth/oauth/openai-codex.ts`) |
 
-Leftover sibling of Pair 889. Timed work is stub HTTP 200 token JSON, HTTP 400, and missing refresh_token — not browser login, not PKCE. Observed `oex_ok` / `oex_http` / `oex_miss` / `oex_n` are exact. Freeze pending. `nextPairNum` left at 328.
+Leftover sibling of Pair 889. Timed work is stub HTTP 200 token JSON, HTTP 400, and missing refresh_token — not browser login, not PKCE. Observed `oex_ok` / `oex_http` / `oex_miss` / `oex_n` are exact. First n=5 freeze **4.144×** (19.188 / 4.630 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 891 — `oauth_pkce_device` (anthropic_exchange)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 889. Timed work is stub HTTP 200 token JSON, HTTP 400, 
 |---|---|---|
 | `anthropic_exchange` | `exchange-anthropic-authorization-code` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `exchangeAuthorizationCode` JSON parse (`packages/ai/src/auth/oauth/anthropic.ts`) |
 
-Leftover sibling of Pairs 889–890. Timed work is stub HTTP 200 token JSON, HTTP 400, and invalid JSON — not callback server, not expires skew. Observed `aex_ok` / `aex_http` / `aex_badjson` / `aex_n` are exact. Freeze pending. `nextPairNum` left at 328.
+Leftover sibling of Pairs 889–890. Timed work is stub HTTP 200 token JSON, HTTP 400, and invalid JSON — not callback server, not expires skew. Observed `aex_ok` / `aex_http` / `aex_badjson` / `aex_n` are exact. First n=5 freeze **1.694×** (12.190 / 7.197 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
