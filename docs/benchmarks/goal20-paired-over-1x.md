@@ -621,4 +621,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.default_changelog_path` | 157.292 | 0.185 | 848.759× | 1200.00× | measure-only leftover 855; `default-changelog-path` vs leftover CHANGELOG env/leaf | invent pause；地板优化另刀 |
 | `settings_load.sdk_make_memory` | 22.505 | 4.493 | 5.009× | 8.00× | measure-only leftover 857; `make-memory-sdk-settings-manager` vs leftover SettingsManager.inMemory | invent pause；地板优化另刀 |
 | `settings_load.sdk_effective_thinking_level` | 10.850 | 4.079 | 2.660× | 8.00× | measure-only leftover 858; `sdk-settings-effective-thinking-level` vs leftover thinking precedence | invent pause；地板优化另刀 |
+| `cli_interactive_controller.make_notification_stream` | 0.692 | 0.278 | 2.494× | 8.00× | measure-only leftover 860; `make-notification-output-stream` vs leftover notification buffer construct | invent pause；地板优化另刀 |
+| `cli_interactive_controller.notification_stream_flush` | 0.565 | 0.221 | 2.558× | 8.00× | measure-only leftover 861; `notification-stream-flush` vs leftover notification buffer flush | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

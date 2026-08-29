@@ -8513,32 +8513,47 @@
   {
    "pair": 859,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/controller.lisp",
    "measure": "measure-cli-interactive-controller",
    "metric": "cli_interactive_controller.terminal_title_sequence",
    "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 859"
+   "note": "nextPairNum left at tip 328; leftover id 859",
+   "ratio": 0.817,
+   "cadrUs": 1.909,
+   "piUs": 2.338,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 860,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/controller.lisp",
    "measure": "measure-cli-interactive-controller",
    "metric": "cli_interactive_controller.make_notification_stream",
    "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 860"
+   "note": "nextPairNum left at tip 328; leftover id 860",
+   "ratio": 2.494,
+   "cadrUs": 0.692,
+   "piUs": 0.278,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 861,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/controller.lisp",
    "measure": "measure-cli-interactive-controller",
    "metric": "cli_interactive_controller.notification_stream_flush",
    "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 861"
+   "note": "nextPairNum left at tip 328; leftover id 861",
+   "ratio": 2.558,
+   "cadrUs": 0.565,
+   "piUs": 0.221,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

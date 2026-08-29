@@ -12,17 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_interactive_controller.terminal_title_sequence`
   (`tui-terminal-title-sequence` vs leftover OSC 0 title wrap).
   Observed `tts_osc` / `tts_bel` / `tts_cadr` / `tts_sess` / `tts_n` exact.
-  Measure-only leftover (Pair 859). First freeze pending.
+  n=5 **0.817×** (1.909 / 2.338 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 859). cadr leads.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
   `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.make_notification_stream`
   (`make-notification-output-stream` vs leftover notification buffer construct).
   Observed `mns_type` / `mns_cb` / `mns_empty` / `mns_char` / `mns_n` exact.
-  Measure-only leftover (Pair 860). First freeze pending.
+  n=5 **2.494×** (0.692 / 0.278 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 860). Over-1× booked.
   `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.notification_stream_flush`
   (`notification-stream-flush` vs leftover notification buffer flush).
   Observed `nsf_hi` / `nsf_once` / `nsf_len` / `nsf_again` / `nsf_n` exact.
-  Measure-only leftover (Pair 861). First freeze pending.
+  n=5 **2.558×** (0.565 / 0.221 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 861). Over-1× booked.
   `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_make_manager`
