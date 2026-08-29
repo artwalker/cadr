@@ -266,6 +266,9 @@ const REPETITIONS = {
 	"package_manager.selector_items": 50,
 	"package_manager.item_source_base": 50,
 	"package_manager.package_resource_pattern": 50,
+	"package_manager.package_override_source": 50,
+	"package_manager.resource_group_label": 50,
+	"package_manager.settings_values": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6195,6 +6198,72 @@ function leftoverConfigSelectorPackageResourcePattern(item) {
 	return leftoverConfigSelectorRelativePattern(item.path, item.baseDirectory);
 }
 
+function leftoverPackageSourceIsLocal(source) {
+	const trimmed = String(source).replace(/^[\s\t\n\r]+|[\s\t\n\r]+$/g, "");
+	if (trimmed.startsWith("npm:")) {
+		return false;
+	}
+	if (trimmed.startsWith("git:")) {
+		return false;
+	}
+	if (/^(https?:\/\/|git@)/i.test(trimmed)) {
+		return false;
+	}
+	return true;
+}
+
+function leftoverConfigSelectorPackageOverrideSource(state, item, scope) {
+	const source = item.source;
+	if (leftoverPackageSourceIsLocal(source)) {
+		return leftoverConfigSelectorRelativePattern(
+			leftoverEnsureDir(item.baseDirectory),
+			leftoverConfigSelectorScopeBase(state, scope),
+		);
+	}
+	return source;
+}
+
+function leftoverConfigResourceGroupLabel(_state, item) {
+	if (item.origin === "package") {
+		return `${item.source} (${item.scope})`;
+	}
+	if (item.source === "local") {
+		return item.scope === "user" ? "User settings" : "Project settings";
+	}
+	if (item.scope === "user") {
+		return "";
+	}
+	return "Project (.cadr/)";
+}
+
+function leftoverMemorySettingsManager(globalObject, projectObject = {}) {
+	return { global: globalObject, project: projectObject };
+}
+
+function leftoverConfigSelectorSettingsValues(manager, scope, key) {
+	const object = scope === "project" ? manager.project : manager.global;
+	if (!object || !Object.prototype.hasOwnProperty.call(object, key)) {
+		return null;
+	}
+	const value = object[key];
+	if (Array.isArray(value)) {
+		return value.slice();
+	}
+	return null;
+}
+
+function leftoverConfigResourceItemLabeled(origin, scope, source, extras = {}) {
+	return {
+		path: "/tmp/x.lisp",
+		type: "extensions",
+		scope,
+		baseDirectory: leftoverEnsureDir(extras.baseDirectory ?? "/tmp/"),
+		displayName: "x",
+		origin,
+		source,
+	};
+}
+
 function leftoverEnsureDir(pathname) {
 	if (!pathname) {
 		return pathname;
@@ -6524,6 +6593,110 @@ function runPackageManagerPackageResourcePattern() {
 	};
 }
 
+function runPackageManagerPackageOverrideSource() {
+	const state = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+	});
+	const npmItem = leftoverConfigResourceItemLabeled("package", "user", "npm:foo", {
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const relItem = leftoverConfigResourceItemLabeled(
+		"package",
+		"user",
+		"/tmp/agent/pkg",
+		{ baseDirectory: "/tmp/agent/pkg/" },
+	);
+	const sameItem = leftoverConfigResourceItemLabeled("package", "user", "/tmp/agent", {
+		baseDirectory: "/tmp/agent/",
+	});
+	const pinItem = leftoverConfigResourceItemLabeled(
+		"package",
+		"user",
+		"npm:@scope/pkg@1.2.3",
+		{ baseDirectory: "/tmp/agent/pkg/" },
+	);
+	return {
+		pos_npm:
+			leftoverConfigSelectorPackageOverrideSource(state, npmItem, "global") ===
+			"npm:foo"
+				? 1
+				: 0,
+		pos_rel:
+			leftoverConfigSelectorPackageOverrideSource(state, relItem, "global") ===
+			"pkg/"
+				? 1
+				: 0,
+		pos_same:
+			leftoverConfigSelectorPackageOverrideSource(state, sameItem, "global") ===
+			""
+				? 1
+				: 0,
+		pos_pin:
+			leftoverConfigSelectorPackageOverrideSource(state, pinItem, "global") ===
+			"npm:@scope/pkg@1.2.3"
+				? 1
+				: 0,
+		pos_n: 5,
+	};
+}
+
+function runPackageManagerResourceGroupLabel() {
+	const state = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+	});
+	return {
+		rgl_pkg:
+			leftoverConfigResourceGroupLabel(
+				state,
+				leftoverConfigResourceItemLabeled("package", "user", "zpkg"),
+			) === "zpkg (user)"
+				? 1
+				: 0,
+		rgl_user:
+			leftoverConfigResourceGroupLabel(
+				state,
+				leftoverConfigResourceItemLabeled("top-level", "user", "local"),
+			) === "User settings"
+				? 1
+				: 0,
+		rgl_proj:
+			leftoverConfigResourceGroupLabel(
+				state,
+				leftoverConfigResourceItemLabeled("top-level", "project", "local"),
+			) === "Project settings"
+				? 1
+				: 0,
+		rgl_cadr:
+			leftoverConfigResourceGroupLabel(
+				state,
+				leftoverConfigResourceItemLabeled("top-level", "project", "auto"),
+			) === "Project (.cadr/)"
+				? 1
+				: 0,
+		rgl_n: 5,
+	};
+}
+
+function runPackageManagerSettingsValues() {
+	const ok = leftoverMemorySettingsManager({ theme: ["dark", "light"] });
+	const proj = leftoverMemorySettingsManager({}, { theme: ["x"] });
+	const nums = leftoverMemorySettingsManager({ theme: [1, 2] });
+	const bad = leftoverMemorySettingsManager({ theme: 3 });
+	const okValues = leftoverConfigSelectorSettingsValues(ok, "global", "theme");
+	const projValues = leftoverConfigSelectorSettingsValues(proj, "project", "theme");
+	const numValues = leftoverConfigSelectorSettingsValues(nums, "global", "theme");
+	return {
+		csv_ok: okValues && okValues.length === 2 && okValues[0] === "dark" ? 1 : 0,
+		csv_proj: projValues && projValues.length === 1 && projValues[0] === "x" ? 1 : 0,
+		csv_nums: numValues && numValues.length === 2 && numValues[0] === 1 ? 1 : 0,
+		csv_bad:
+			leftoverConfigSelectorSettingsValues(bad, "global", "theme") === null ? 1 : 0,
+		csv_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6638,6 +6811,9 @@ async function measurePackageManager() {
 	const selectorItems = runPackageManagerSelectorItems();
 	const itemSourceBase = runPackageManagerItemSourceBase();
 	const packageResourcePattern = runPackageManagerPackageResourcePattern();
+	const packageOverrideSource = runPackageManagerPackageOverrideSource();
+	const resourceGroupLabel = runPackageManagerResourceGroupLabel();
+	const settingsValues = runPackageManagerSettingsValues();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6732,6 +6908,18 @@ async function measurePackageManager() {
 				return () => runPackageManagerPackageResourcePattern();
 			},
 		),
+		package_override_source: await collect(
+			"package_manager.package_override_source",
+			() => {
+				return () => runPackageManagerPackageOverrideSource();
+			},
+		),
+		resource_group_label: await collect("package_manager.resource_group_label", () => {
+			return () => runPackageManagerResourceGroupLabel();
+		}),
+		settings_values: await collect("package_manager.settings_values", () => {
+			return () => runPackageManagerSettingsValues();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6767,6 +6955,9 @@ async function measurePackageManager() {
 			...selectorItems,
 			...itemSourceBase,
 			...packageResourcePattern,
+			...packageOverrideSource,
+			...resourceGroupLabel,
+			...settingsValues,
 		},
 	};
 }
@@ -32321,6 +32512,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts item source base (cadr config-selector-item-source-base)",
 			"package_manager.package_resource_pattern":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package resource pattern (cadr config-selector-package-resource-pattern)",
+			"package_manager.package_override_source":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package override source (cadr config-selector-package-override-source)",
+			"package_manager.resource_group_label":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts resource group label (cadr config-resource-group-label)",
+			"package_manager.settings_values":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts settings values (cadr config-selector-settings-values)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
