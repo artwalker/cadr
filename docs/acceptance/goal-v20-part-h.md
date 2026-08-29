@@ -8752,6 +8752,30 @@ Leftover sibling of Pair 751. Timed work is oauth, login function, filterModels,
 
 Leftover sibling of Pairs 751–752. Timed work is installing every built-in runtime-provider, checking openai/anthropic presence, a miss, and explicit `OPENAI_API_KEY` in the merged environment — not `stream-chat`. Observed `mr_oa` / `mr_anth` / `mr_miss` / `mr_env` / `mr_n` are exact. First n=5 freeze **1.519×** (309.041 / 203.473 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 754 — `provider_registry_defs` (protocol_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `protocol_provider` | `make-protocol-provider` openai-responses (`src/cadr-ai/providers/registry.lisp`) | `openAIResponsesApi` (`packages/ai/src/api/openai-responses.lazy.ts`) |
+
+Leftover sibling of leftover 751–753 on a different needs-pair file. Timed work is constructing the openai-responses protocol adapter: stream/simple presence, unsupported protocol miss, and openai vs anthropic not eq — not `stream-chat`. Observed `pp_stream` / `pp_simple` / `pp_miss` / `pp_diff` / `pp_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 755 — `provider_registry_defs` (protocol_provider_anthropic)
+
+| metric | cadr | pi |
+|---|---|---|
+| `protocol_provider_anthropic` | `make-protocol-provider` anthropic-messages (`src/cadr-ai/providers/registry.lisp`) | `anthropicMessagesApi` (`packages/ai/src/api/anthropic-messages.lazy.ts`) |
+
+Leftover sibling of Pair 754. Timed work is native oauth token storage, anthropic id/type, and openai vs anthropic not eq — not login I/O. Observed `ppa_id` / `ppa_oauth` / `ppa_type` / `ppa_diff` / `ppa_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 756 — `provider_registry_defs` (instantiate_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `instantiate_provider` | `instantiate-provider` openai (`src/cadr-ai/providers/registry.lisp`) | `openaiProvider` + `getModels` (`packages/ai/src/providers/openai.ts`) |
+
+Leftover sibling of Pairs 754–755. Timed work is constructing the openai protocol adapter plus default model metadata — not `stream-chat`. Observed `ip_id` / `ip_api` / `ip_model` / `ip_type` / `ip_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

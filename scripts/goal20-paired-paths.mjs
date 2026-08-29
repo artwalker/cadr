@@ -845,6 +845,9 @@ const REPETITIONS = {
 	"provider_registry_defs.runtime_provider": 50,
 	"provider_registry_defs.runtime_provider_copilot": 50,
 	"provider_registry_defs.models_runtime": 5,
+	"provider_registry_defs.protocol_provider": 50,
+	"provider_registry_defs.protocol_provider_anthropic": 50,
+	"provider_registry_defs.instantiate_provider": 50,
 	"core_rest.cancellation_abort": 50,
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
@@ -1274,6 +1277,10 @@ const githubCopilotProviderModule = await import(
 	moduleUrl("packages/ai/src/providers/github-copilot.ts")
 );
 const anthropicProviderModule = await import(moduleUrl("packages/ai/src/providers/anthropic.ts"));
+const openaiProviderModule = await import(moduleUrl("packages/ai/src/providers/openai.ts"));
+const openaiResponsesApiModule = await import(moduleUrl("packages/ai/src/api/openai-responses.lazy.ts"));
+const anthropicMessagesApiModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.lazy.ts"));
+const aiCompatModule = await import(moduleUrl("packages/ai/src/compat.ts"));
 const googleProviderModule = await import(moduleUrl("packages/ai/src/providers/google.ts"));
 const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
@@ -31700,6 +31707,56 @@ function runProviderModelFilterFunction() {
 	};
 }
 
+function leftoverOpenAIResponsesApi() {
+	return openaiResponsesApiModule.openAIResponsesApi();
+}
+
+function leftoverAnthropicMessagesApi() {
+	return anthropicMessagesApiModule.anthropicMessagesApi();
+}
+
+function leftoverUnsupportedProtocol() {
+	return aiCompatModule.getApiProvider("no-such-protocol") ? 0 : 1;
+}
+
+function runProviderProtocolProvider() {
+	const openai = leftoverOpenAIResponsesApi();
+	const anthropic = leftoverAnthropicMessagesApi();
+	return {
+		pp_stream: typeof openai.stream === "function" ? 1 : 0,
+		pp_simple: typeof openai.streamSimple === "function" ? 1 : 0,
+		pp_miss: leftoverUnsupportedProtocol(),
+		pp_diff: openai !== anthropic ? 1 : 0,
+		pp_n: 5,
+	};
+}
+
+function runProviderProtocolProviderAnthropic() {
+	const anthropicApi = leftoverAnthropicMessagesApi();
+	const openaiApi = leftoverOpenAIResponsesApi();
+	const anthropic = anthropicProviderModule.anthropicProvider();
+	return {
+		ppa_id: anthropic.id === "anthropic" ? 1 : 0,
+		ppa_oauth: anthropic.auth?.oauth ? 1 : 0,
+		ppa_type: typeof anthropicApi.stream === "function" ? 1 : 0,
+		ppa_diff: anthropicApi !== openaiApi ? 1 : 0,
+		ppa_n: 5,
+	};
+}
+
+function runProviderInstantiateProvider() {
+	const openai = openaiProviderModule.openaiProvider();
+	const models = openai.getModels();
+	const model = models[0];
+	return {
+		ip_id: openai.id === "openai" ? 1 : 0,
+		ip_api: model?.api === "openai-responses" ? 1 : 0,
+		ip_model: typeof model?.id === "string" && model.id.length > 0 ? 1 : 0,
+		ip_type: typeof openai.stream === "function" ? 1 : 0,
+		ip_n: 5,
+	};
+}
+
 function leftoverMergeExplicitOverAmbient(explicit, ambient) {
 	return { ...ambient, ...explicit };
 }
@@ -31770,6 +31827,9 @@ async function measureProviderRegistryDefs() {
 	const runtimeProvider = runProviderRuntimeProvider();
 	const runtimeProviderCopilot = runProviderRuntimeProviderCopilot();
 	const modelsRuntime = runProviderModelsRuntime();
+	const protocolProvider = runProviderProtocolProvider();
+	const protocolProviderAnthropic = runProviderProtocolProviderAnthropic();
+	const instantiateProvider = runProviderInstantiateProvider();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -31840,6 +31900,18 @@ async function measureProviderRegistryDefs() {
 		models_runtime: await collect("provider_registry_defs.models_runtime", () => {
 			return () => runProviderModelsRuntime();
 		}),
+		protocol_provider: await collect("provider_registry_defs.protocol_provider", () => {
+			return () => runProviderProtocolProvider();
+		}),
+		protocol_provider_anthropic: await collect(
+			"provider_registry_defs.protocol_provider_anthropic",
+			() => {
+				return () => runProviderProtocolProviderAnthropic();
+			},
+		),
+		instantiate_provider: await collect("provider_registry_defs.instantiate_provider", () => {
+			return () => runProviderInstantiateProvider();
+		}),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
@@ -31859,6 +31931,9 @@ async function measureProviderRegistryDefs() {
 			...runtimeProvider,
 			...runtimeProviderCopilot,
 			...modelsRuntime,
+			...protocolProvider,
+			...protocolProviderAnthropic,
+			...instantiateProvider,
 		},
 	};
 }
@@ -34349,6 +34424,12 @@ const result = {
 				"packages/ai/src/providers/github-copilot.ts githubCopilotProvider oauth/login/filterModels/models",
 			"provider_registry_defs.models_runtime":
 				"packages/ai/src/providers/all.ts builtinProviders installed into a Map (make-built-in-models-runtime counterpart)",
+			"provider_registry_defs.protocol_provider":
+				"packages/ai/src/api/openai-responses.lazy.ts openAIResponsesApi (make-protocol-provider openai-responses counterpart)",
+			"provider_registry_defs.protocol_provider_anthropic":
+				"packages/ai/src/api/anthropic-messages.lazy.ts anthropicMessagesApi (make-protocol-provider anthropic-messages counterpart)",
+			"provider_registry_defs.instantiate_provider":
+				"packages/ai/src/providers/openai.ts openaiProvider + getModels (instantiate-provider counterpart)",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"skill_prompt_load.resolve_prompt":

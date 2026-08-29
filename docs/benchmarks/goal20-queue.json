@@ -6934,6 +6934,36 @@
    "piUs": 203.473,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 754,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-ai/providers/registry.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.protocol_provider",
+   "branch": "cursor/registry-protocol-instantiate-leftovers-754-756-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 754"
+  },
+  {
+   "pair": 755,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-ai/providers/registry.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.protocol_provider_anthropic",
+   "branch": "cursor/registry-protocol-instantiate-leftovers-754-756-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 755"
+  },
+  {
+   "pair": 756,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-ai/providers/registry.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.instantiate_provider",
+   "branch": "cursor/registry-protocol-instantiate-leftovers-754-756-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 756"
   }
  ],
  "mergeQueue": []

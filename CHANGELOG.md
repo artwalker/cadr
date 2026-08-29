@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `provider_registry_defs.protocol_provider`
+  (`make-protocol-provider` openai-responses vs openAIResponsesApi). Observed
+  `pp_stream` / `pp_simple` / `pp_miss` / `pp_diff` / `pp_n` exact.
+  Measure-only leftover (Pair 754). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.protocol_provider_anthropic`
+  (`make-protocol-provider` anthropic-messages vs anthropicMessagesApi).
+  Observed `ppa_id` / `ppa_oauth` / `ppa_type` / `ppa_diff` / `ppa_n` exact.
+  Measure-only leftover (Pair 755). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.instantiate_provider`
+  (`instantiate-provider` openai vs openaiProvider). Observed `ip_id` /
+  `ip_api` / `ip_model` / `ip_type` / `ip_n` exact. Measure-only leftover
+  (Pair 756). Freeze pending. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.runtime_provider`
   (`make-built-in-runtime-provider` vs builtinProviders openai). Observed
   `rp_id` / `rp_key` / `rp_no_oauth` / `rp_models` / `rp_n` exact. n=5
