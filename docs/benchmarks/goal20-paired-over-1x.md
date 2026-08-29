@@ -527,4 +527,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.delta_resource_state` | 17.140 | 4.344 | 3.946× | 8.00× | measure-only leftover 736; `config-package-delta-resource-state` vs package delta resource state | invent pause；地板优化另刀 |
 | `package_manager.project_top_level_state` | 31.215 | 5.227 | 5.971× | 8.00× | measure-only leftover 737; `config-selector-project-top-level-state` vs project top-level state | invent pause；地板优化另刀 |
 | `package_manager.derived_project_state` | 31.710 | 5.107 | 6.210× | 8.00× | measure-only leftover 738; `config-selector-derived-project-state` vs derived project state | invent pause；地板优化另刀 |
+| `settings_load.environment_value` | 0.299 | 0.274 | 1.090× | 8.00× | measure-only leftover 739; `environment-value` vs env lookup | invent pause；地板优化另刀 |
+| `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
