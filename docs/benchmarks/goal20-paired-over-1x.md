@@ -583,4 +583,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.last_assistant_text` | 2.947 | 1.585 | 1.859× | 8.00× | measure-only leftover 811; `last-assistant-text` vs leftover getLastAssistantText | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_export_basename` | 10.859 | 2.703 | 4.018× | 8.00× | measure-only leftover 812; `session-export-basename` vs leftover APP_NAME-session ISO_id.html | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_user_messages_for_forking` | 1.726 | 1.296 | 1.332× | 8.00× | measure-only leftover 813; `session-user-messages-for-forking` vs leftover getUserMessagesForForking | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_command_stats` | 1.615 | 1.182 | 1.366× | 8.00× | measure-only leftover 814; `session-command-stats` vs leftover getSessionStats | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_usage_breakdown` | 4.688 | 1.872 | 2.504× | 8.00× | measure-only leftover 815; `session-usage-breakdown` vs leftover getUsageCostBreakdown | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_tree_label_timestamps` | 3.096 | 1.562 | 1.982× | 8.00× | measure-only leftover 816; `session-tree-label-timestamps` vs leftover label timestamps | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

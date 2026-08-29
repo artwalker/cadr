@@ -1460,11 +1460,11 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.session_user_messages_for_forking": 8.0,
     # leftover 814–816 sessions.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 814–816.
-    # leftover 814; first freeze pending.
+    # leftover 814; first freeze 1.366× (1.615 / 1.182 µs).
     "cli_bootstrap_sessions.session_command_stats": 8.0,
-    # leftover 815; first freeze pending.
+    # leftover 815; first freeze 2.504× (4.688 / 1.872 µs).
     "cli_bootstrap_sessions.session_usage_breakdown": 8.0,
-    # leftover 816; first freeze pending.
+    # leftover 816; first freeze 1.982× (3.096 / 1.562 µs).
     "cli_bootstrap_sessions.session_tree_label_timestamps": 8.0,
   # cli_selectors.countdown_seconds leftover 556 (samples=5):
   # observed 2.292x (0.768 / 0.335 us). 8.0 is first-freeze
