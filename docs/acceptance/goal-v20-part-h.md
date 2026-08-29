@@ -7864,6 +7864,30 @@ Leftover sibling of Pair 640. Timed work is string complete (`hello`) plus empty
 
 Leftover sibling of Pairs 640–641. Timed work is stop after a partial append (running / streaming / text kept / cache invalid / missing exit). Observed `st_run` / `st_stream` / `st_text` / `st_cache` / `st_exit` are exact. First n=5 freeze **2.843×** (0.621 / 0.219 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 643 — `cli_interactive_controller` (assistant_has_tools)
+
+| metric | cadr | pi |
+|---|---|---|
+| `assistant_has_tools` | `assistant-message-has-tool-calls-p` (`src/cadr-cli/interactive/transcript.lisp`) | AssistantMessageComponent hasToolCalls (`packages/coding-agent/src/modes/interactive/components/assistant-message.ts`) |
+
+Leftover sibling of Pairs 517–519 on the same `transcript.lisp` hole. Timed work is empty / text / tool-call / text+tool / thinking-only. Observed `aht_empty` / `aht_text` / `aht_tool` / `aht_both` / `aht_think` are exact. First n=5 freeze **1.160×** (1.082 / 0.933 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 644 — `cli_interactive_controller` (assistant_display_blocks)
+
+| metric | cadr | pi |
+|---|---|---|
+| `assistant_display_blocks` | `assistant-display-blocks` (`src/cadr-cli/interactive/transcript.lisp`) | assistant display block flatten (`packages/coding-agent/src/modes/interactive/components/assistant-message.ts`) |
+
+Leftover sibling of Pair 643. Timed work is trim/drop blank text, merge consecutive thinking with a blank line, keep tail text (n / first / think / tail / blank-dropped). Observed `adb_n` / `adb_first` / `adb_think` / `adb_tail` / `adb_blank` are exact. First n=5 freeze **0.686×** (0.948 / 1.383 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 645 — `cli_interactive_controller` (transcript_summary_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `transcript_summary_label` | `transcript-summary-label` (`src/cadr-cli/interactive/transcript.lisp`) | `[skill]` / `[branch]` / `[compaction]` label (`packages/coding-agent/src/modes/interactive/components/skill-invocation-message.ts`) |
+
+Leftover sibling of Pairs 643–644. Timed work is themed `[name]` labels (skill / branch / empty / compaction) with ANSI stripped for observed. Observed `tsl_skill` / `tsl_branch` / `tsl_empty` / `tsl_n` / `tsl_comp` are exact. First n=5 freeze **6.352×** (12.217 / 1.923 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

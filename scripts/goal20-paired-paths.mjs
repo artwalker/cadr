@@ -584,6 +584,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
+	"cli_interactive_controller.assistant_has_tools": 50,
+	"cli_interactive_controller.assistant_display_blocks": 50,
+	"cli_interactive_controller.transcript_summary_label": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13424,6 +13427,109 @@ function runCliInteractiveBashStopEntry() {
 	};
 }
 
+function leftoverAssistantHasToolCalls(message) {
+	return message.content.some((block) => block.type === "toolCall") ? 1 : 0;
+}
+
+function runCliInteractiveAssistantHasTools() {
+	const empty = { content: [] };
+	const text = { content: [{ type: "text", text: "hi" }] };
+	const tool = { content: [{ type: "toolCall", id: "1", name: "bash" }] };
+	const both = {
+		content: [
+			{ type: "text", text: "hi" },
+			{ type: "toolCall", id: "2", name: "read" },
+		],
+	};
+	const think = { content: [{ type: "thinking", thinking: "hmm" }] };
+	leftoverAssistantHasToolCalls(empty);
+	leftoverAssistantHasToolCalls(text);
+	leftoverAssistantHasToolCalls(tool);
+	leftoverAssistantHasToolCalls(both);
+	leftoverAssistantHasToolCalls(think);
+	return {
+		aht_empty: leftoverAssistantHasToolCalls(empty),
+		aht_text: leftoverAssistantHasToolCalls(text),
+		aht_tool: leftoverAssistantHasToolCalls(tool),
+		aht_both: leftoverAssistantHasToolCalls(both),
+		aht_think: leftoverAssistantHasToolCalls(think),
+	};
+}
+
+function leftoverAssistantDisplayBlocks(message) {
+	const result = [];
+	for (const block of message.content) {
+		if (block.type === "text") {
+			const text = String(block.text ?? "").replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
+			if (text.length > 0) {
+				result.push({ type: "assistant", text });
+			}
+		} else if (block.type === "thinking") {
+			const thinking = String(block.thinking ?? "").replace(
+				/^[ \t\n\r]+|[ \t\n\r]+$/g,
+				"",
+			);
+			if (thinking.length > 0) {
+				const last = result[result.length - 1];
+				if (last && last.type === "assistant-thinking") {
+					last.text = `${last.text}\n\n${thinking}`;
+				} else {
+					result.push({ type: "assistant-thinking", text: thinking });
+				}
+			}
+		}
+	}
+	return result;
+}
+
+function runCliInteractiveAssistantDisplayBlocks() {
+	const message = {
+		content: [
+			{ type: "text", text: "  first  " },
+			{ type: "text", text: "   " },
+			{ type: "thinking", thinking: "  one " },
+			{ type: "thinking", thinking: " two  " },
+			{ type: "text", text: " tail " },
+		],
+	};
+	const blocks = leftoverAssistantDisplayBlocks(message);
+	const think = blocks.find((b) => b.type === "assistant-thinking");
+	const assistantCount = blocks.filter((b) => b.type === "assistant").length;
+	return {
+		adb_n: blocks.length,
+		adb_first: blocks[0] ? blocks[0].text : "",
+		adb_think: think ? think.text : "",
+		adb_tail: blocks.length ? blocks[blocks.length - 1].text : "",
+		adb_blank: assistantCount === 2 ? 1 : 0,
+	};
+}
+
+function leftoverStripAnsi(text) {
+	return String(text).replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+function leftoverTranscriptSummaryLabel(name) {
+	return leftoverStripAnsi(`\x1b[1m[${name}]\x1b[22m`);
+}
+
+function runCliInteractiveTranscriptSummaryLabel() {
+	const skill = leftoverTranscriptSummaryLabel("skill");
+	const branch = leftoverTranscriptSummaryLabel("branch");
+	const empty = leftoverTranscriptSummaryLabel("");
+	const compaction = leftoverTranscriptSummaryLabel("compaction");
+	leftoverTranscriptSummaryLabel("skill");
+	leftoverTranscriptSummaryLabel("branch");
+	leftoverTranscriptSummaryLabel("");
+	leftoverTranscriptSummaryLabel("compaction");
+	return {
+		tsl_skill: skill === "[skill]" ? 1 : 0,
+		tsl_branch: branch === "[branch]" ? 1 : 0,
+		tsl_empty: empty === "[]" ? 1 : 0,
+		tsl_n: skill.length,
+		tsl_comp: compaction === "[compaction]" ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -14671,6 +14777,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveBashAppendRunning(),
 		...runCliInteractiveBashCompleteString(),
 		...runCliInteractiveBashStopEntry(),
+		...runCliInteractiveAssistantHasTools(),
+		...runCliInteractiveAssistantDisplayBlocks(),
+		...runCliInteractiveTranscriptSummaryLabel(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -14730,6 +14839,24 @@ async function measureCliInteractiveDecodeEntity() {
 		bash_stop_entry: await collect("cli_interactive_controller.bash_stop_entry", () => {
 			return () => runCliInteractiveBashStopEntry();
 		}),
+		assistant_has_tools: await collect(
+			"cli_interactive_controller.assistant_has_tools",
+			() => {
+				return () => runCliInteractiveAssistantHasTools();
+			},
+		),
+		assistant_display_blocks: await collect(
+			"cli_interactive_controller.assistant_display_blocks",
+			() => {
+				return () => runCliInteractiveAssistantDisplayBlocks();
+			},
+		),
+		transcript_summary_label: await collect(
+			"cli_interactive_controller.transcript_summary_label",
+			() => {
+				return () => runCliInteractiveTranscriptSummaryLabel();
+			},
+		),
 		observed,
 	};
 }
@@ -28602,6 +28729,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts setComplete exit 0 string",
 			"cli_interactive_controller.bash_stop_entry":
 				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts loader.stop without setComplete",
+			"cli_interactive_controller.assistant_has_tools":
+				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts hasToolCalls",
+			"cli_interactive_controller.assistant_display_blocks":
+				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts display block flatten",
+			"cli_interactive_controller.transcript_summary_label":
+				"packages/coding-agent/src/modes/interactive/components/skill-invocation-message.ts [skill] label",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

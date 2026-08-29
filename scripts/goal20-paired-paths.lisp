@@ -228,6 +228,9 @@
 ;;;; 640. cli_interactive_controller append-tui-user-bash-running vs BashExecutionComponent addChild running
 ;;;; 641. cli_interactive_controller complete-tui-user-bash-string vs setComplete exit 0 string
 ;;;; 642. cli_interactive_controller stop-tui-user-bash-entry vs loader.stop without setComplete
+;;;; 643. cli_interactive_controller assistant-message-has-tool-calls-p vs AssistantMessageComponent hasToolCalls
+;;;; 644. cli_interactive_controller assistant-display-blocks vs assistant display block flatten
+;;;; 645. cli_interactive_controller transcript-summary-label vs skill/branch/compaction [name] label
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -581,6 +584,9 @@
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
+    ("cli_interactive_controller.assistant_has_tools" . 50)
+    ("cli_interactive_controller.assistant_display_blocks" . 50)
+    ("cli_interactive_controller.transcript_summary_label" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14354,6 +14360,26 @@
    "st_exit" (nth 4 stop)))
 
 
+(defun leftover-transcript-has-tools-display-label-observed-pairs
+    (has-tools display-blocks summary-label)
+  (list
+   "aht_empty" (nth 0 has-tools)
+   "aht_text" (nth 1 has-tools)
+   "aht_tool" (nth 2 has-tools)
+   "aht_both" (nth 3 has-tools)
+   "aht_think" (nth 4 has-tools)
+   "adb_n" (nth 0 display-blocks)
+   "adb_first" (nth 1 display-blocks)
+   "adb_think" (nth 2 display-blocks)
+   "adb_tail" (nth 3 display-blocks)
+   "adb_blank" (nth 4 display-blocks)
+   "tsl_skill" (nth 0 summary-label)
+   "tsl_branch" (nth 1 summary-label)
+   "tsl_empty" (nth 2 summary-label)
+   "tsl_n" (nth 3 summary-label)
+   "tsl_comp" (nth 4 summary-label)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14809,7 +14835,13 @@
         (leftover-bash-string
           (run-cli-interactive-bash-complete-string))
         (leftover-bash-stop
-          (run-cli-interactive-bash-stop-entry)))
+          (run-cli-interactive-bash-stop-entry))
+        (leftover-assistant-has-tools
+          (run-cli-interactive-assistant-has-tools))
+        (leftover-assistant-display-blocks
+          (run-cli-interactive-assistant-display-blocks))
+        (leftover-transcript-summary-label
+          (run-cli-interactive-transcript-summary-label)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14872,7 +14904,11 @@
              (leftover-user-bash-running-complete-stop-observed-pairs
               leftover-bash-running
               leftover-bash-string
-              leftover-bash-stop)))
+              leftover-bash-stop)
+             (leftover-transcript-has-tools-display-label-observed-pairs
+              leftover-assistant-has-tools
+              leftover-assistant-display-blocks
+              leftover-transcript-summary-label)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -14947,7 +14983,22 @@
      (collect "cli_interactive_controller.bash_stop_entry"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-bash-stop-entry)))))))
+                  (run-cli-interactive-bash-stop-entry))))
+     "assistant_has_tools"
+     (collect "cli_interactive_controller.assistant_has_tools"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-assistant-has-tools))))
+     "assistant_display_blocks"
+     (collect "cli_interactive_controller.assistant_display_blocks"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-assistant-display-blocks))))
+     "transcript_summary_label"
+     (collect "cli_interactive_controller.transcript_summary_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-transcript-summary-label)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15075,6 +15126,72 @@
        (copy-seq (cadr-cli::tui-entry-text entry))
        (if (cadr-cli::tui-entry-render-cache-valid-p entry) 0 1)
        (or (getf opts :exit-code) -1)))))
+
+(defun leftover-assistant-has-tools-flag (message)
+  (if (cadr-cli::assistant-message-has-tool-calls-p message) 1 0))
+
+(defun run-cli-interactive-assistant-has-tools ()
+  (list
+   (leftover-assistant-has-tools-flag
+    (cadr-ai:make-assistant-message :content nil))
+   (leftover-assistant-has-tools-flag
+    (cadr-ai:make-assistant-message
+     :content (list (cadr-ai:make-text-content :text "hi"))))
+   (leftover-assistant-has-tools-flag
+    (cadr-ai:make-assistant-message
+     :content (list (cadr-ai:make-tool-call :id "1" :name "bash"))))
+   (leftover-assistant-has-tools-flag
+    (cadr-ai:make-assistant-message
+     :content
+     (list
+      (cadr-ai:make-text-content :text "hi")
+      (cadr-ai:make-tool-call :id "2" :name "read"))))
+   (leftover-assistant-has-tools-flag
+    (cadr-ai:make-assistant-message
+     :content
+     (list (cadr-ai:make-thinking-content :thinking "hmm"))))))
+
+(defun run-cli-interactive-assistant-display-blocks ()
+  (let* ((message
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-text-content :text "  first  ")
+             (cadr-ai:make-text-content :text "   ")
+             (cadr-ai:make-thinking-content :thinking "  one ")
+             (cadr-ai:make-thinking-content :thinking " two  ")
+             (cadr-ai:make-text-content :text " tail "))))
+         (blocks (cadr-cli::assistant-display-blocks message)))
+    (list
+     (length blocks)
+     (copy-seq (or (cdr (first blocks)) ""))
+     (copy-seq
+      (or
+       (cdr (find :assistant-thinking blocks :key #'car))
+       ""))
+     (copy-seq (or (cdr (car (last blocks))) ""))
+     (if (= (count :assistant blocks :key #'car) 2) 1 0))))
+
+(defun leftover-transcript-summary-label-stripped (name)
+  (cadr-cli::strip-ansi
+   (cadr-cli::transcript-summary-label name)))
+
+(defun run-cli-interactive-transcript-summary-label ()
+  (let ((skill (leftover-transcript-summary-label-stripped "skill"))
+        (branch (leftover-transcript-summary-label-stripped "branch"))
+        (empty (leftover-transcript-summary-label-stripped ""))
+        (compaction
+          (leftover-transcript-summary-label-stripped "compaction")))
+    (cadr-cli::transcript-summary-label "skill")
+    (cadr-cli::transcript-summary-label "branch")
+    (cadr-cli::transcript-summary-label "")
+    (cadr-cli::transcript-summary-label "compaction")
+    (list
+     (if (string= skill "[skill]") 1 0)
+     (if (string= branch "[branch]") 1 0)
+     (if (string= empty "[]") 1 0)
+     (length skill)
+     (if (string= compaction "[compaction]") 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -27359,6 +27476,12 @@
       "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string"
       "cli_interactive_controller.bash_stop_entry"
       "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry"
+      "cli_interactive_controller.assistant_has_tools"
+      "src/cadr-cli/interactive/transcript.lisp assistant-message-has-tool-calls-p"
+      "cli_interactive_controller.assistant_display_blocks"
+      "src/cadr-cli/interactive/transcript.lisp assistant-display-blocks"
+      "cli_interactive_controller.transcript_summary_label"
+      "src/cadr-cli/interactive/transcript.lisp transcript-summary-label"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
