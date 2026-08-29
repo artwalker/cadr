@@ -472,6 +472,9 @@ const REPETITIONS = {
 	"cli_print_rpc.dialog_request": 50,
 	"cli_print_rpc.dialog_result": 50,
 	"cli_print_rpc.dialog_expired": 50,
+	"cli_print_rpc.dialog_default": 50,
+	"cli_print_rpc.dialog_deadline": 50,
+	"cli_print_rpc.close_pending": 50,
 	"settings_load.sdk_nonempty": 50,
 	"settings_load.sdk_boolean": 50,
 	"settings_load.sdk_tools": 50,
@@ -709,12 +712,19 @@ const REPETITIONS = {
 	"cli_print_rpc.rpc_images": 50,
 	"cli_print_rpc.rpc_prompt": 50,
 	"cli_print_rpc.bash_result": 50,
+	"cli_print_rpc.bash_result": 50,
 	"cli_print_rpc.queue_parse": 50,
 	"cli_print_rpc.asst_text": 50,
 	"cli_print_rpc.cmd_list": 50,
 	"cli_print_rpc.bad_line": 50,
 	"cli_print_rpc.array_line": 50,
 	"cli_print_rpc.ui_absent": 50,
+	"cli_print_rpc.dialog_request": 50,
+	"cli_print_rpc.dialog_result": 50,
+	"cli_print_rpc.dialog_expired": 50,
+	"cli_print_rpc.dialog_default": 50,
+	"cli_print_rpc.dialog_deadline": 50,
+	"cli_print_rpc.close_pending": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -16300,6 +16310,74 @@ function runCliPrintRpcDialogExpired() {
 }
 
 
+function leftoverDialogDefault(_method) {
+	return undefined;
+}
+
+
+function leftoverDialogDeadline(timeoutMs, nowMs) {
+	if (timeoutMs == null) {
+		return null;
+	}
+	return nowMs + timeoutMs;
+}
+
+
+function leftoverClosePending(state) {
+	state.closing = true;
+	state.pending.clear();
+}
+
+
+function runCliPrintRpcDialogDefault() {
+	return {
+		rdd_sel: leftoverDialogDefault("select") == null ? 1 : 0,
+		rdd_conf: leftoverDialogDefault("confirm") == null ? 1 : 0,
+		rdd_in: leftoverDialogDefault("input") == null ? 1 : 0,
+		rdd_ed: leftoverDialogDefault("editor") == null ? 1 : 0,
+		rdd_n: 5,
+	};
+}
+
+
+function runCliPrintRpcDialogDeadline() {
+	const now = Date.now();
+	const none = leftoverDialogDeadline(null, now);
+	const ms = leftoverDialogDeadline(1500, now);
+	const one = leftoverDialogDeadline(1, now);
+	return {
+		rdl_nil: none == null ? 1 : 0,
+		rdl_fut: ms != null && ms >= now ? 1 : 0,
+		rdl_num: Number.isInteger(ms) ? 1 : 0,
+		rdl_one: one != null && one >= now ? 1 : 0,
+		rdl_n: 5,
+	};
+}
+
+
+function leftoverRpcPendingState(entries) {
+	return { closing: false, pending: new Map(entries) };
+}
+
+
+function runCliPrintRpcClosePending() {
+	const state = leftoverRpcPendingState([
+		["a", { method: "confirm" }],
+		["b", { method: "select" }],
+	]);
+	const empty = leftoverRpcPendingState([]);
+	leftoverClosePending(state);
+	leftoverClosePending(empty);
+	return {
+		rcp_close: state.closing ? 1 : 0,
+		rcp_n: state.pending.size,
+		rcp_empty: empty.closing ? 1 : 0,
+		rcp_empty_n: empty.pending.size,
+		rcp_keys: 5,
+	};
+}
+
+
 function parseQueueMode(mode, noun) {
 	if (mode === "all") return "all";
 	if (mode === "one-at-a-time") return "one-at-a-time";
@@ -16411,6 +16489,9 @@ async function measureCliPrintRpc() {
 			...runCliPrintRpcDialogRequest(),
 			...runCliPrintRpcDialogResult(),
 			...runCliPrintRpcDialogExpired(),
+			...runCliPrintRpcDialogDefault(),
+			...runCliPrintRpcDialogDeadline(),
+			...runCliPrintRpcClosePending(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -16460,6 +16541,15 @@ async function measureCliPrintRpc() {
 			}),
 			dialog_expired: await collect("cli_print_rpc.dialog_expired", () => {
 				return () => runCliPrintRpcDialogExpired();
+			}),
+			dialog_default: await collect("cli_print_rpc.dialog_default", () => {
+				return () => runCliPrintRpcDialogDefault();
+			}),
+			dialog_deadline: await collect("cli_print_rpc.dialog_deadline", () => {
+				return () => runCliPrintRpcDialogDeadline();
+			}),
+			close_pending: await collect("cli_print_rpc.close_pending", () => {
+				return () => runCliPrintRpcClosePending();
 			}),
 			observed,
 		};
@@ -38166,6 +38256,12 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts createDialogPromise parseResponse (cadr rpc-dialog-result)",
 			"cli_print_rpc.dialog_expired":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts createDialogPromise timeout (cadr rpc-dialog-expired-p)",
+			"cli_print_rpc.dialog_default":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts leftover createDialogPromise defaultValue (cadr rpc-dialog-default)",
+			"cli_print_rpc.dialog_deadline":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts leftover opts.timeout setTimeout (cadr rpc-dialog-deadline)",
+			"cli_print_rpc.close_pending":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts leftover pendingExtensionRequests.clear (cadr rpc-close-pending-dialogs)",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",

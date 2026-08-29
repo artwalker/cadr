@@ -8914,6 +8914,36 @@
    "piUs": 0.244,
    "ceiling": 180.0,
    "rc": 0
+  },
+  {
+   "pair": 829,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_default",
+   "branch": "cursor/rpc-ui-dialog-default-deadline-close-leftovers-829-831-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 829"
+  },
+  {
+   "pair": 830,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_deadline",
+   "branch": "cursor/rpc-ui-dialog-default-deadline-close-leftovers-829-831-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 830"
+  },
+  {
+   "pair": 831,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.close_pending",
+   "branch": "cursor/rpc-ui-dialog-default-deadline-close-leftovers-829-831-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 831"
   }
  ],
  "mergeQueue": []

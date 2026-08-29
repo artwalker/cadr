@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_print_rpc.dialog_default`
+  (`rpc-dialog-default` vs leftover createDialogPromise defaultValue). Observed
+  `rdd_sel` / `rdd_conf` / `rdd_in` / `rdd_ed` / `rdd_n` exact.
+  Measure-only leftover (Pair 829). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.dialog_deadline`
+  (`rpc-dialog-deadline` vs leftover opts.timeout deadline). Observed
+  `rdl_nil` / `rdl_fut` / `rdl_num` / `rdl_one` / `rdl_n` exact.
+  Measure-only leftover (Pair 830). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.close_pending`
+  (`rpc-close-pending-dialogs` vs leftover pending map clear). Observed
+  `rcp_close` / `rcp_n` / `rcp_empty` / `rcp_empty_n` / `rcp_keys` exact.
+  Measure-only leftover (Pair 831). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.llama_search_status`
   (`llama-search-status-text` vs leftover HuggingFaceSearch status). Observed
   `lss_type` / `lss_search` / `lss_empty` / `lss_found` / `lss_n` exact.

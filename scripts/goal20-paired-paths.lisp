@@ -831,6 +831,9 @@
     ("cli_print_rpc.dialog_request" . 50)
     ("cli_print_rpc.dialog_result" . 50)
     ("cli_print_rpc.dialog_expired" . 50)
+    ("cli_print_rpc.dialog_default" . 50)
+    ("cli_print_rpc.dialog_deadline" . 50)
+    ("cli_print_rpc.close_pending" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -17169,6 +17172,53 @@
    (if (cadr-cli::rpc-dialog-expired-p 1000000000000000) 1 0)))
 
 
+(defun run-cli-print-rpc-dialog-default ()
+  ;; Leftover on rpc/ui.lisp: default dialog value. Not wait/TUI.
+  (list
+   (if (null (cadr-cli::rpc-dialog-default :select)) 1 0)
+   (if (null (cadr-cli::rpc-dialog-default :confirm)) 1 0)
+   (if (null (cadr-cli::rpc-dialog-default :input)) 1 0)
+   (if (null (cadr-cli::rpc-dialog-default :editor)) 1 0)
+   5))
+
+
+(defun run-cli-print-rpc-dialog-deadline ()
+  ;; Leftover on rpc/ui.lisp: timeout → internal-time deadline. Not wait.
+  (let* ((now (get-internal-real-time))
+         (none (cadr-cli::rpc-dialog-deadline nil))
+         (ms (cadr-cli::rpc-dialog-deadline 1500))
+         (one (cadr-cli::rpc-dialog-deadline 1)))
+    (list
+     (if (null none) 1 0)
+     (if (and ms (>= ms now)) 1 0)
+     (if (integerp ms) 1 0)
+     (if (and one (>= one now)) 1 0)
+     5)))
+
+
+(defun leftover-rpc-output-state ()
+  (cadr-cli::%make-rpc-state
+   :output (make-string-output-stream)))
+
+
+(defun run-cli-print-rpc-close-pending ()
+  ;; Leftover on rpc/ui.lisp: close pending dialog map. Not listen/HTTP.
+  (let ((state (leftover-rpc-output-state))
+        (empty (leftover-rpc-output-state)))
+    (setf (gethash "a" (cadr-cli::rpc-state-pending state))
+          (cadr-cli::make-rpc-pending-dialog :method :confirm))
+    (setf (gethash "b" (cadr-cli::rpc-state-pending state))
+          (cadr-cli::make-rpc-pending-dialog :method :select))
+    (cadr-cli::rpc-close-pending-dialogs state)
+    (cadr-cli::rpc-close-pending-dialogs empty)
+    (list
+     (if (cadr-cli::rpc-state-closing-p state) 1 0)
+     (hash-table-count (cadr-cli::rpc-state-pending state))
+     (if (cadr-cli::rpc-state-closing-p empty) 1 0)
+     (hash-table-count (cadr-cli::rpc-state-pending empty))
+     5)))
+
+
 (defun run-cli-print-rpc-queue-mode ()
   (list
    (if (eq (cadr-cli::parse-queue-mode "all" "steering") :all) 1 0)
@@ -17375,7 +17425,10 @@
             (run-cli-print-rpc-handle-ui-miss)))
          (dialog-request (run-cli-print-rpc-dialog-request))
          (dialog-result (run-cli-print-rpc-dialog-result))
-         (dialog-expired (run-cli-print-rpc-dialog-expired)))
+         (dialog-expired (run-cli-print-rpc-dialog-expired))
+         (dialog-default (run-cli-print-rpc-dialog-default))
+         (dialog-deadline (run-cli-print-rpc-dialog-deadline))
+         (close-pending (run-cli-print-rpc-close-pending)))
     (json-object
      "observed"
      (json-object
@@ -17449,7 +17502,22 @@
       "rs_num" (nth 4 dialog-result)
       "ex_nil" (nth 0 dialog-expired)
       "ex_zero" (nth 1 dialog-expired)
-      "ex_future" (nth 2 dialog-expired))
+      "ex_future" (nth 2 dialog-expired)
+      "rdd_sel" (nth 0 dialog-default)
+      "rdd_conf" (nth 1 dialog-default)
+      "rdd_in" (nth 2 dialog-default)
+      "rdd_ed" (nth 3 dialog-default)
+      "rdd_n" (nth 4 dialog-default)
+      "rdl_nil" (nth 0 dialog-deadline)
+      "rdl_fut" (nth 1 dialog-deadline)
+      "rdl_num" (nth 2 dialog-deadline)
+      "rdl_one" (nth 3 dialog-deadline)
+      "rdl_n" (nth 4 dialog-deadline)
+      "rcp_close" (nth 0 close-pending)
+      "rcp_n" (nth 1 close-pending)
+      "rcp_empty" (nth 2 close-pending)
+      "rcp_empty_n" (nth 3 close-pending)
+      "rcp_keys" (nth 4 close-pending))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -17532,7 +17600,22 @@
      (collect "cli_print_rpc.dialog_expired"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-dialog-expired)))))))
+                  (run-cli-print-rpc-dialog-expired))))
+     "dialog_default"
+     (collect "cli_print_rpc.dialog_default"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-default))))
+     "dialog_deadline"
+     (collect "cli_print_rpc.dialog_deadline"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-deadline))))
+     "close_pending"
+     (collect "cli_print_rpc.close_pending"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-close-pending)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -37482,6 +37565,8 @@
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-prompt-message"
       "cli_print_rpc.bash_result"
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
+      "cli_print_rpc.bash_result"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
       "cli_print_rpc.queue_parse"
       "src/cadr-cli/modes/rpc/commands.lisp parse-queue-mode"
       "cli_print_rpc.asst_text"
@@ -37500,6 +37585,12 @@
       "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-result"
       "cli_print_rpc.dialog_expired"
       "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-expired-p"
+      "cli_print_rpc.dialog_default"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-default"
+      "cli_print_rpc.dialog_deadline"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-deadline"
+      "cli_print_rpc.close_pending"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-close-pending-dialogs"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"
