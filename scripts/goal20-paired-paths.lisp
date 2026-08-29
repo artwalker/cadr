@@ -752,6 +752,9 @@
     ("cli_selectors.thinking_selector_key_p" . 50)
     ("cli_selectors.thinking_selector_keybindings" . 50)
     ("cli_selectors.make_thinking_selector_state" . 50)
+    ("cli_selectors.thinking_selector_apply_filter" . 50)
+    ("cli_selectors.thinking_selector_clamp_selected" . 50)
+    ("cli_selectors.thinking_selector_select_current" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15423,6 +15426,117 @@
    "tms_default" (nth 4 make-state)))
 
 
+(defun thinking-fresh-selector-state
+    (&optional (levels (list :off :low :high)))
+  (cadr-cli::%make-thinking-selector-state
+   :levels levels
+   :current-level :high
+   :keybindings :bench))
+
+
+(defun encode-thinking-selector-apply-filter (state)
+  (format
+   nil "~D|~A|~A|~D"
+   (cadr-cli::thinking-selector-state-filtered-count state)
+   (or (cadr-cli::thinking-selector-state-filter-query state) "")
+   (thinking-level-name
+    (first (cadr-cli::thinking-selector-state-filtered-levels state)))
+   (cadr-cli::thinking-selector-state-selected state)))
+
+
+(defun thinking-selector-apply-filter-encoded (state query)
+  (setf
+   (cadr-cli::thinking-selector-state-query state)
+   (or query ""))
+  (cadr-cli::thinking-selector-apply-filter state)
+  (encode-thinking-selector-apply-filter state))
+
+
+(defun run-cli-selectors-thinking-selector-apply-filter ()
+  (list
+   (thinking-selector-apply-filter-encoded
+    (thinking-fresh-selector-state) "high")
+   (thinking-selector-apply-filter-encoded
+    (thinking-fresh-selector-state) "off")
+   (thinking-selector-apply-filter-encoded
+    (thinking-fresh-selector-state) "zzzzz")
+   (let ((state (thinking-fresh-selector-state)))
+     (thinking-selector-apply-filter-encoded state "high")
+     (thinking-selector-apply-filter-encoded state ""))
+   (thinking-selector-apply-filter-encoded
+    (thinking-fresh-selector-state) "low")))
+
+
+(defun encode-thinking-selector-clamp (state)
+  (cadr-cli::thinking-selector-clamp-selected state)
+  (format
+   nil "~D|~D"
+   (cadr-cli::thinking-selector-state-selected state)
+   (cadr-cli::thinking-selector-state-filtered-count state)))
+
+
+(defun run-cli-selectors-thinking-selector-clamp-selected ()
+  (flet ((st (count selected)
+           (cadr-cli::%make-thinking-selector-state
+            :levels (list :off :low :high)
+            :filtered-count count
+            :selected selected)))
+    (list
+     (encode-thinking-selector-clamp (st 3 9))
+     (encode-thinking-selector-clamp (st 0 5))
+     (encode-thinking-selector-clamp (st 3 1))
+     (encode-thinking-selector-clamp (st 3 2))
+     (encode-thinking-selector-clamp (st 1 0)))))
+
+
+(defun encode-thinking-selector-select-current (state)
+  (cadr-cli::thinking-selector-select-current state)
+  (format
+   nil "~D|~D|~A"
+   (cadr-cli::thinking-selector-state-selected state)
+   (length (cadr-cli::thinking-selector-state-filtered-levels state))
+   (thinking-level-name
+    (cadr-cli::thinking-selector-selected-level state))))
+
+
+(defun run-cli-selectors-thinking-selector-select-current ()
+  (let ((all (list :off :low :high)))
+    (flet ((st (current filtered)
+             (cadr-cli::%make-thinking-selector-state
+              :levels all
+              :current-level current
+              :filtered-levels filtered
+              :filtered-count (length filtered)
+              :selected 0)))
+      (list
+       (encode-thinking-selector-select-current (st :high all))
+       (encode-thinking-selector-select-current (st :off all))
+       (encode-thinking-selector-select-current (st :medium all))
+       (encode-thinking-selector-select-current (st :high nil))
+       (encode-thinking-selector-select-current
+        (st :high (list :high)))))))
+
+
+(defun thinking-selector-filter-clamp-select-observed-pairs
+    (apply-filter clamp select-current)
+  (list
+   "tsaf_high" (nth 0 apply-filter)
+   "tsaf_off" (nth 1 apply-filter)
+   "tsaf_miss" (nth 2 apply-filter)
+   "tsaf_empty" (nth 3 apply-filter)
+   "tsaf_low" (nth 4 apply-filter)
+   "tscl_high" (nth 0 clamp)
+   "tscl_zero" (nth 1 clamp)
+   "tscl_ok" (nth 2 clamp)
+   "tscl_last" (nth 3 clamp)
+   "tscl_one" (nth 4 clamp)
+   "tssc_high" (nth 0 select-current)
+   "tssc_off" (nth 1 select-current)
+   "tssc_miss" (nth 2 select-current)
+   "tssc_empty" (nth 3 select-current)
+   "tssc_only" (nth 4 select-current)))
+
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list
@@ -21358,6 +21472,12 @@
           (run-cli-selectors-thinking-selector-keybindings))
         (leftover-make-thinking-state
           (run-cli-selectors-make-thinking-selector-state))
+        (leftover-thinking-apply-filter
+          (run-cli-selectors-thinking-selector-apply-filter))
+        (leftover-thinking-clamp
+          (run-cli-selectors-thinking-selector-clamp-selected))
+        (leftover-thinking-select-current
+          (run-cli-selectors-thinking-selector-select-current))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -22129,6 +22249,8 @@
               leftover-thinking-label leftover-thinking-search leftover-thinking-set-query)
              (thinking-selector-key-bindings-state-observed-pairs
               leftover-thinking-key-p leftover-thinking-keybindings leftover-make-thinking-state)
+             (thinking-selector-filter-clamp-select-observed-pairs
+              leftover-thinking-apply-filter leftover-thinking-clamp leftover-thinking-select-current)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -23030,7 +23152,22 @@
      (collect "cli_selectors.make_thinking_selector_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-make-thinking-selector-state)))))))
+                  (run-cli-selectors-make-thinking-selector-state))))
+     "thinking_selector_apply_filter"
+     (collect "cli_selectors.thinking_selector_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-apply-filter))))
+     "thinking_selector_clamp_selected"
+     (collect "cli_selectors.thinking_selector_clamp_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-clamp-selected))))
+     "thinking_selector_select_current"
+     (collect "cli_selectors.thinking_selector_select_current"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-select-current)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -25694,6 +25831,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings"
       "cli_selectors.make_thinking_selector_state"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
+      "cli_selectors.thinking_selector_apply_filter"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter"
+      "cli_selectors.thinking_selector_clamp_selected"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected"
+      "cli_selectors.thinking_selector_select_current"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

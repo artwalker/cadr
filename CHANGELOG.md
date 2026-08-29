@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_apply_filter`
+  (`thinking-selector-apply-filter` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp` vs `applyFilter`).
+  Observed `tsaf_high` / `tsaf_off` / `tsaf_miss` / `tsaf_empty` /
+  `tsaf_low` exact. n=5 **1.149×** (13.399 / 11.664 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 604). Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_clamp_selected`
+  (`thinking-selector-clamp-selected` vs clamp selected index). Observed
+  `tscl_high` / `tscl_zero` / `tscl_ok` / `tscl_last` / `tscl_one` exact.
+  n=5 **0.753×** (0.637 / 0.847 µs) on host `cursor`, ceiling 8.0. cadr
+  leads. Measure-only leftover (Pair 605). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_select_current`
+  (`thinking-selector-select-current` vs select current thinking level).
+  Observed `tssc_high` / `tssc_off` / `tssc_miss` / `tssc_empty` /
+  `tssc_only` exact. n=5 **0.854×** (0.981 / 1.149 µs) on host `cursor`,
+  ceiling 8.0. cadr leads. Measure-only leftover (Pair 606). `nextPairNum`
+  left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.thinking_selector_key_p`
   (`thinking-selector-key-p` on
   `src/cadr-cli/interactive/selectors/thinking.lisp` vs

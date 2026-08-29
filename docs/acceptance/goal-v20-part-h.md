@@ -7552,6 +7552,30 @@ Leftover sibling of Pair 601 on the same `thinking.lisp` hole. Timed work is the
 
 Leftover sibling of Pairs 601–602 on the same `thinking.lisp` hole. Timed work is `%make-thinking-selector-state` plus `thinking-selector-apply-filter` plus `thinking-selector-select-current` (high / off / missing medium / empty levels / default-level). Initial empty query equals `(or filter-query "")`, so apply-filter no-ops and filtered-count stays 0 on both harness sides. Observed encode is `levels-n|current|selected|filtered-count|selected-level|default`. Observed `tms_high` / `tms_off` / `tms_miss` / `tms_empty` / `tms_default` are exact. First n=5 freeze **0.638×** (1.623 / 2.545 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328. Also restores dropped leftover collect wiring for thinking.lisp slugs 532–534.
 
+### Pair 604 — `cli_selectors` (thinking_selector_apply_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_apply_filter` | `thinking-selector-apply-filter` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | `applyFilter` (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 601–603 on the same `thinking.lisp` hole. Timed work is query apply on a fresh `%make-thinking-selector-state` (high / off / miss / empty-after-high / low). Does not time `make-thinking-selector-keybindings`. Observed `tsaf_high` / `tsaf_off` / `tsaf_miss` / `tsaf_empty` / `tsaf_low` are exact. First n=5 freeze **1.149×** (13.399 / 11.664 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 605 — `cli_selectors` (thinking_selector_clamp_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_clamp_selected` | `thinking-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | clamp selected index (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pair 604 on the same `thinking.lisp` hole. Timed work is clamp of selected against filtered-count (over-range / empty / in-range / last / singleton). Observed `tscl_high` / `tscl_zero` / `tscl_ok` / `tscl_last` / `tscl_one` are exact. First n=5 freeze **0.753×** (0.637 / 0.847 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 606 — `cli_selectors` (thinking_selector_select_current)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_select_current` | `thinking-selector-select-current` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | select current thinking level (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 604–605 on the same `thinking.lisp` hole. Timed work is `position`/`indexOf` of current-level in filtered-levels (high / off / missing medium / empty / only-high). Observed `tssc_high` / `tssc_off` / `tssc_miss` / `tssc_empty` / `tssc_only` are exact. First n=5 freeze **0.854×** (0.981 / 1.149 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

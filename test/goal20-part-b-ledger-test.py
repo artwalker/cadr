@@ -2547,6 +2547,27 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertIn("tms_high", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("tms_default", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_apply_filter", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_selector_apply_filter", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.thinking_selector_apply_filter", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tsaf_high", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tsaf_empty", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_clamp_selected", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_selector_clamp_selected", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.thinking_selector_clamp_selected", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tscl_high", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tscl_zero", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_select_current", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_selector_select_current", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.thinking_selector_select_current", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tssc_high", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tssc_only", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])
