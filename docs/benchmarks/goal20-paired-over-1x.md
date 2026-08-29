@@ -580,4 +580,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.assistant_tool_call_only` | 1.038 | 0.790 | 1.314× | 8.00× | measure-only leftover 808; `assistant-tool-call-only-p` vs leftover hasTextContent invert | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_entry_user_text` | 0.934 | 0.747 | 1.250× | 8.00× | measure-only leftover 809; `session-entry-user-text` vs leftover contentText user entry | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_compaction_status` | 1.274 | 0.566 | 2.251× | 8.00× | measure-only leftover 810; `session-compaction-status` vs leftover compaction count string | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.last_assistant_text` | 2.947 | 1.585 | 1.859× | 8.00× | measure-only leftover 811; `last-assistant-text` vs leftover getLastAssistantText | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_export_basename` | 10.859 | 2.703 | 4.018× | 8.00× | measure-only leftover 812; `session-export-basename` vs leftover APP_NAME-session ISO_id.html | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_user_messages_for_forking` | 1.726 | 1.296 | 1.332× | 8.00× | measure-only leftover 813; `session-user-messages-for-forking` vs leftover getUserMessagesForForking | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
