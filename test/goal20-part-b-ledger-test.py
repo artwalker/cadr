@@ -880,6 +880,20 @@ class TestPairedPathRecord(unittest.TestCase):
             for o in obs:
                 self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
 
+    def test_settings_load_sdk_reload_flush_compaction_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("sdk_settings_reload", ("srl_hit", "srl_n")),
+            ("sdk_settings_flush", ("sfl_hit", "sfl_n")),
+            ("sdk_compaction_enabled", ("sce_on", "sce_n")),
+        ):
+            full = f"settings_load.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["settings_load"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
+
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("resource_loader.reload", RECORD.METRIC_KEYS)
