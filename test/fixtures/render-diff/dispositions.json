@@ -5340,6 +5340,1346 @@
         }
       },
       "note": "At overlays-core/overlay-thinking [wide] the /thinking selector and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+    },
+    {
+      "scenario": "autocomplete-surfaces",
+      "checkpoint": "autocomplete-path",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8d8323aa4e252d5eb4bdabd4a5638c0a87bab553fccc2fefcdaafbeb1c53c108",
+          "cadr": "032253f5aedf621818b3d9885de2c980b099677b85c0c74cb945f58bd6003101"
+        }
+      },
+      "note": "At autocomplete-surfaces/autocomplete-path [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "autocomplete-surfaces",
+      "checkpoint": "autocomplete-slash",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "95043fbf3fef4527d9534e7352cb062c91ff03155a6d6b18769175c83ce3fdef",
+          "cadr": "5e6ddc2ecdc02237db9807130fce5f8e52bc5d0d57fd1d1f66068bba1266098e"
+        }
+      },
+      "note": "At autocomplete-surfaces/autocomplete-slash [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "autocomplete-surfaces",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c0e8ffa9b9dc1b9dc529d0129b5eaf0c5d308777dee3d38385c4d46f38db8224",
+          "cadr": "0d176498715a154e3a9b8a06eee4c8273fa44756d7fb6a33433751fe48843de5"
+        }
+      },
+      "note": "At autocomplete-surfaces/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4e6e9d69026f60010bb27472f6df0f558c87782a38986e461c5ac104a8913751",
+          "cadr": "1d32d9f64f2eef117bd20c4ae48a823957608d2b42abeb2525662d44f6ee050e"
+        }
+      },
+      "note": "At commands-empty-lifecycle/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-compact",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b4d158f244018802bc18c9a2345219c0ff4b5261a26c2d4ce09b7edbdd1069d6",
+          "cadr": "bce404b684084b9c1b6bbc98ceca7a270e46d8a4bce1bfd2d7bcd4a9af00e474"
+        }
+      },
+      "note": "At commands-empty-lifecycle/slash-compact [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-copy",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "24c8c79fbb7cbca31c62f57d96f18019c21b6e9ee2deb9c89180966a4ed63198",
+          "cadr": "7872d93f84da0928a7140a6c52d8e9816649a37a8fd800ca5d40b535235f46c1"
+        }
+      },
+      "note": "At commands-empty-lifecycle/slash-copy [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-import",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a3213b4e365940b56bc539c91c3574342be5a80ed022d79a62a9ff66c8edc3dd",
+          "cadr": "9ca155b178a8dc22ae06494720a486eb7c317008246b90251172165a305545a8"
+        }
+      },
+      "note": "At commands-empty-lifecycle/slash-import [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-new",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6ab7d6ab73f9fe3117a15ab8bba2441549ffc7be154227456fc38ef391832691",
+          "cadr": "6c68cdfa0fa34cccdc15fa9a8f7d077ee550ce49ea238316cb342ac43dd445f4"
+        },
+        "wide": {
+          "pi": "3ce6fc149eb980d637a8b5325cc4828203d2f4c07dc8598230dd4208eed87aef",
+          "cadr": "aff1c0a66cd8e2cee253c5bfde9c7cc641676c79c7ead277d64c6d3715b2964d"
+        }
+      },
+      "note": "At commands-empty-lifecycle/slash-new [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-clone",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "48595128d15fda4bbe565715fa9c56b24716b2475b1726c0d1f75170a03a1fc2",
+          "cadr": "6f23d4f1bb3df5a299002a208e743f96dd5cb095832ec4a932cecba613f85028"
+        }
+      },
+      "note": "At commands-informational/slash-clone [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "compaction-status-manual",
+      "checkpoint": "compaction-manual",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f3b43a7b264a087cc72bb83ffe62b42adbf9951c747092c354a4ffbd8b72b118",
+          "cadr": "fd33673f02daa72130596227d829d78998078fd46986ba8ed8a49601d104e2cd"
+        },
+        "wide": {
+          "pi": "e317efc14af218ab6b30b9d5d2b462b3407e2ed6c07a913779f7582f445e2a6b",
+          "cadr": "b8a3085ffbb91bf29916af3088ff9908ea71d20b2e5bfa3401faef84d6683868"
+        }
+      },
+      "note": "At compaction-status-manual/compaction-manual [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "compaction-status-manual",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "fe9827691e6d7d57caacb1a674c7b12a56e039f4ee1cc1014025022094dd23c0",
+          "cadr": "cd3e96a6dcee2dde611ddb6faa2b570547faae7256f0396a99544f7f2677ee1e"
+        }
+      },
+      "note": "At compaction-status-manual/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "compaction-status-overflow",
+      "checkpoint": "compaction-overflow",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "29a966a172b1263f00ddae0fcbd41e30b0d978154a8ca75c1a0cc4cb9617f528",
+          "cadr": "83ced61f5094c11212a4cbeb025cdb3d7b796690d23dfc4dda42a528eb7a38e1"
+        }
+      },
+      "note": "At compaction-status-overflow/compaction-overflow [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "compaction-status-overflow",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "08c8d74467511d15762c9524fa07299c3b983015dd6f6ad47c57d95513df0816",
+          "cadr": "a2306f870509a2e236ac18da50ada02353c2cbe1264baede8db72b24ba1e9202"
+        }
+      },
+      "note": "At compaction-status-overflow/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "compaction-status-threshold",
+      "checkpoint": "compaction-threshold",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "220c5b58c1fad5f0bc0ff99e8a1b1f741beddb28c1a4243d4989d8bf18c5ec99",
+          "cadr": "53789cd9f315f07730a42cc84e317268c1ddcaf4c7485b7c75451db0811429eb"
+        },
+        "wide": {
+          "pi": "0be7ba076ce34ec2c5c273b4d94ecf786dc8f96766d1b101180f40cf392067f6",
+          "cadr": "be58ac21ffa0433475908b91ca75ffc7dee7c6c6a9721b47f0b8247b9134c531"
+        }
+      },
+      "note": "At compaction-status-threshold/compaction-threshold [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "compaction-status-threshold",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ae6a1484d532d80085dd27bb014125595d6a5df46c3c13ce3349af559ef74b4d",
+          "cadr": "2445114f3e97b9aa5e62d257adcf8929c94a049d881c596524ca19b837bc40a7"
+        }
+      },
+      "note": "At compaction-status-threshold/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "conversation-content",
+      "checkpoint": "plain",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5b052104e66dee2304fb92cc0e4b064dff83215471da176798ace4cd997de830",
+          "cadr": "7bcf0012088e46fa86509e3c048d334ac7cfc44a4201435c00ccbd6b82932222"
+        }
+      },
+      "note": "At conversation-content/plain [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "conversation-mermaid",
+      "checkpoint": "mermaid-absent",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3a48e1c9ed11a49cd150a31b519c6b1c3e4dc3f8287850b0aa15415b44f2e412",
+          "cadr": "c5245654d9e5fd64c2696b58e77226c8aa2b2750e3bc4e4cddeb6621eff0fd1a"
+        }
+      },
+      "note": "At conversation-mermaid/mermaid-absent [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "conversation-mermaid",
+      "checkpoint": "mermaid-rendered",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "17b7e89f2b5422989f6261a7637692d930ccb764a65d44a18cfb52cd9a6160e1",
+          "cadr": "b7b86ad4a3ce7aae9c4ae90a9829e7ef7c0581ac0d96b49a535f8cadc2a2f9e7"
+        }
+      },
+      "note": "At conversation-mermaid/mermaid-rendered [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "extension-editor",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b6f2a1e23d4a313d04651689bc2ffb174234ac1f1d4deff929185ab25d012ea4",
+          "cadr": "0b837db245eb9c0e2df3eef716093eb623d154ba0ce696f1e4d955e3b71252a9"
+        }
+      },
+      "note": "At extension-surfaces/extension-editor [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "extension-input",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0bf43646354484571520f99c30e2b9a14a131e8cca406a5795294fefdcc97aa5",
+          "cadr": "1c59444d5148197cad445ee8ef0485d8c1390540103cb80c584d2a974b4cbc78"
+        }
+      },
+      "note": "At extension-surfaces/extension-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "extension-select",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "64a7ed26380064e0c2ad4b2a47d64d813fdd6a8ab357512c0651c8ccda6f1cd3",
+          "cadr": "dd4f5e552664c6018625c44e92f8a0f75ea124360d0c632dbfa89fcaf8112989"
+        }
+      },
+      "note": "At extension-surfaces/extension-select [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "7da85a19bc88c37da434bd1eb2e50eb038a9aa8dafc757f7a0fc5bf7a2569ecb",
+          "cadr": "f538397b9f17abf1a10ccc36c4b54ad517cffd7a426e3158097b343904ed2522"
+        }
+      },
+      "note": "At extension-surfaces/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "auth-method-generic",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e9dd2b666b13e289ee086b26ede459b81a67572b3ad3371c9129b29a005f0832",
+          "cadr": "18c16882bb0c82656aba1aa77ac05360ba2fdeb905f799249ebd0df591bcc2e4"
+        }
+      },
+      "note": "At overlays-auth/auth-method-generic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "login-provider",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "dd65e553ae11be23a9382e5d0d7b878eb16f29e59a8731133f2b2d00e955f920",
+          "cadr": "f5deb0de00ac9144bb4ba78d99ea972f84db343afb62eaf92c281159f2efbff0"
+        }
+      },
+      "note": "At overlays-auth/login-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "63baa8a8678086e4c328d94ff15c6a9ed9a90b42e6a591a99d9000fe4410d13b",
+          "cadr": "f35907dab92a7802cf688f51e56cf8d54eab657b11cf70a57e3b56fbf0e120d6"
+        }
+      },
+      "note": "At overlays-auth/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-api-key",
+      "checkpoint": "api-key-input",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "88b62926e86a13a94c5889dd11fbf1800dfdc2d9b4bcacff2ab4641778da3f16",
+          "cadr": "3e757d432fc8d726ef53436bc12f9124f4ba2b564f9cfb8d227c70bef99aa919"
+        }
+      },
+      "note": "At overlays-auth-api-key/api-key-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-dialog",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0fb2124fd422905675d946bd2b0e76910d2b1e4b04b13e59210c70565ffd826e",
+          "cadr": "87224baf58270895ff6e6fdec5ac100e71236638d21da2b1736ed9d4aaf5c0c7"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-completed",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "57842f30342eb85504f43ac9c5587b2a8f6eb0eac55e07c2c7477dc8fa6056a0",
+          "cadr": "bbd1c39040092e645e8656c9339cb781b094b1034aee91e04882a0637b205140"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-completed [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-dialog",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0fb2124fd422905675d946bd2b0e76910d2b1e4b04b13e59210c70565ffd826e",
+          "cadr": "87224baf58270895ff6e6fdec5ac100e71236638d21da2b1736ed9d4aaf5c0c7"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-post-complete",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8ac0a3576dae0bf30c08b54393a57f5a305e28971c6b9cb54ec4e66d9d37bfa3",
+          "cadr": "1b346d1f1fe68b380ef734b2d6fa9b72067d5cd16098a210adde6f7a96331353"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-post-complete [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "86415ce00514bd8f11a6a4315496ba961264dd7c1769420e5bfc7da52e7af253",
+          "cadr": "b36f7c47c5e6d063845e702697c3f2099f4c923ae5d32c59353f2d8a09b2113f"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-completed",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e2cb41bf549fd532ef4f29ba987d87a3a0ff771375f383642c4f177adb56fef7",
+          "cadr": "cf37819adda618c8adbb95a1d72aa51a806d41a93a3e93af5d535aa11448a4da"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-completed [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-dialog",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "03056dceb0ddb36088de8039cd97af4eb6653cf62f09dd0f1ee7a8d00eceed6e",
+          "cadr": "5e6a5f6865d9ed6ebaabd76464a6e66fa7ff01f7b85d3fc62429a2a7b7ef82ea"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-post-complete",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c4602d956ef5a40ab6904a5ec8fecc7e34632f681a53a79f961909ead5d4f58c",
+          "cadr": "83b075795a8e79025240a59708c841a82378938ded4da5f16a6e25f6d6e9a52f"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-post-complete [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b302f1cbc3c3fbd9a705a5a4fc58c5c5a34e18068666f977c90fc87c495d5dd3",
+          "cadr": "780f405d70ec9972ea1f5d2bf17cca159d27ae12dbe1b05eba96dabc5cca7cae"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "auth-method-provider",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5a9157419795a559c3f3ef0aa8c4beb3a9790a08a52d02766c96ffe7a24c4efe",
+          "cadr": "1c61422e3d5729fdd8bec0331c83f9a822c10e5386e330828e64ed5c0b3c513f"
+        }
+      },
+      "note": "At overlays-auth-oauth/auth-method-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "login-dialog",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "03056dceb0ddb36088de8039cd97af4eb6653cf62f09dd0f1ee7a8d00eceed6e",
+          "cadr": "5e6a5f6865d9ed6ebaabd76464a6e66fa7ff01f7b85d3fc62429a2a7b7ef82ea"
+        }
+      },
+      "note": "At overlays-auth-oauth/login-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-tree-initial",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "674aec5fcff4a36b31d94cf8bb0f0abe71d95b2a1032fd34fcd6f04563ff00aa",
+          "cadr": "c470ad26a4951efe7c6b2a59a8f47232d0fe3c3945bbd954b3f1752eefc44a32"
+        }
+      },
+      "note": "At overlays-core/overlay-tree-initial [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-logout",
+      "checkpoint": "logout-provider",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0b6f2c6fddb93ac8be7d5dc09f279bf7418c1813e724d8809e4abb5779374bea",
+          "cadr": "898627f8e23bb2cf62370225ee5fe0fc86f2ce0f6dc91b24eab9ccc4cd0300ae"
+        }
+      },
+      "note": "At overlays-logout/logout-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-logout",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "63baa8a8678086e4c328d94ff15c6a9ed9a90b42e6a591a99d9000fe4410d13b",
+          "cadr": "f35907dab92a7802cf688f51e56cf8d54eab657b11cf70a57e3b56fbf0e120d6"
+        }
+      },
+      "note": "At overlays-logout/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "import-confirmation",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f9466e4c183a015f7a18f9e107b1294d4de9bc6ed784cbf2f77092acaacbc617",
+          "cadr": "a8f4be70191f3999560f7a523e9a837e79c0c0880bfe708384e021e252595481"
+        }
+      },
+      "note": "At overlays-secondary/import-confirmation [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "7b253a6c62553424668e343fbe4ee88961c5273ca1d4f04abcad1bad0de6285a",
+          "cadr": "4c46d1682274549ee18192a4cb93ffc1d1b02e25a529599800c3c8cfec657d6b"
+        }
+      },
+      "note": "At overlays-secondary/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "719b0c46f3f16abdf531b9bbaa72bd2e60ffab65b41b3fb7ae7e921cd8b86782",
+          "cadr": "df1c1d8db1f2954859a519176e8689cc966be5a5789f9bff448c54bc0c8ec2d1"
+        }
+      },
+      "note": "At overlays-secondary/settings-theme [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-automatic",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b2bdddf89ec244e03a17860c432fa2d86bc929904544c7b44ca72481b7753f34",
+          "cadr": "9a5cb71ad4915156ac9807b98e4116ad9d3c2f6baf80673db032006905f4cdd3"
+        }
+      },
+      "note": "At overlays-secondary/settings-theme-automatic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-dark",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "37f64f81e77467ce47a574892fb28c13d4248d64c6e9dce089e2b77f4e1aeeb6",
+          "cadr": "b1e26e55ff67861825e11163854cb718b590d233e2beebcda7ef823023de1963"
+        }
+      },
+      "note": "At overlays-secondary/settings-theme-dark [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-light",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "7879946411fe72148bd5d3747d8b1ce52246322218ee3f95bdcda6e220ecc4c1",
+          "cadr": "de552453124f528a951565b56067514956263f3e0fd0f4fd2e22255cebdac478"
+        }
+      },
+      "note": "At overlays-secondary/settings-theme-light [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-warnings",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "74399a501fded4372330368c39f32a6975632dcaf6c2b1bc476c0258e89bc66f",
+          "cadr": "372bc47b0bfc0053695ced8325ac8050a9942e8c0b1fc671a2855b38c17aeb55"
+        }
+      },
+      "note": "At overlays-secondary/settings-warnings [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "provider-error",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "04caaab4ff5ffb9eb855df4ac5196019a3ef008a7f91f2303c0d8b00fb7c03b0",
+          "cadr": "274e612868da99dfda05ad0168d5894e5e9029343b0d9ea08e070ee4ca06ab5f"
+        }
+      },
+      "note": "At provider-error/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "provider-error",
+      "checkpoint": "provider-error",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3701acc94b74062a12820d2d38b589483d2770ca6bee298465eff12e2e912e26",
+          "cadr": "5c7070a90770546726041048bcd027ee2d42b5f76852109de90dd006cb55b800"
+        }
+      },
+      "note": "At provider-error/provider-error [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "selector-trust-inherited",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "7da85a19bc88c37da434bd1eb2e50eb038a9aa8dafc757f7a0fc5bf7a2569ecb",
+          "cadr": "f538397b9f17abf1a10ccc36c4b54ad517cffd7a426e3158097b343904ed2522"
+        }
+      },
+      "note": "At selector-trust-inherited/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "selector-trust-inherited",
+      "checkpoint": "trust-inherited-from-parent",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4a1aa67c4ab81895fafd56b6efcbeb8e9e38bd87fd46164a9f879103006e73fb",
+          "cadr": "a8c1b65fa9dff15c2b5bbfcec119f63e677c42d9dec72e53a4bf3d400c7acff4"
+        }
+      },
+      "note": "At selector-trust-inherited/trust-inherited-from-parent [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "startup-existing",
+      "checkpoint": "existing-session",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e0772065d1daa38f7f88b293d9382e1da884b2385750b211712d7cab9a352af8",
+          "cadr": "f088d7f53ee45d8b78f5fcb32364a8357edc2a344dc8935d83bb5ffd02dd799e"
+        }
+      },
+      "note": "At startup-existing/existing-session [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "startup-first",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "2fca3586e9c1ac88a0c67eaea0669ae4332c4a3f4ffa71ac5a1b440569db36ff",
+          "cadr": "25b4f34470852d9b7be143d379f132c41f124edbaa837d5e080130ca9fe1c66c"
+        },
+        "wide": {
+          "pi": "4d99a8977b10cab5aa4493bf4c66cd96a4ba380d24555c3ccfd02c7ba856442e",
+          "cadr": "ebb78f327d417ad468a2a2b38742f9db6639881477dc273b19ad416a29a1a834"
+        }
+      },
+      "note": "At startup-first/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "startup-first",
+      "checkpoint": "startup",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "17c8388b3daaaefa714bc4b49d097d1ad54a90b55a9a09568e454f240641a036",
+          "cadr": "f35d2672507a4cb17a0bb16444631e05aedca4fce9d11d324202801c6a7a2c91"
+        },
+        "wide": {
+          "pi": "68007eba629b25f46148af8e17c8b2b6f927524708905106434e8e882d679c76",
+          "cadr": "ebc85b2f6b5cb6945394149440255b6f61457de31afd021f647025c30e94f3b9"
+        }
+      },
+      "note": "At startup-first/startup [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "busy-queue",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8726f2f8047a96e35367b649a726ebbb59cfbaf49a2cb9bcda6760c6749e395b",
+          "cadr": "a935736b4e4a20cfcf17c6c3a34b69d62007d13cb76fe90c9712259bc7b78ea2"
+        }
+      },
+      "note": "At stream-interrupt-queue/busy-queue [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "80a96eef8f910d82a8b6123c8a05683c4eb28ac79b001761bd7121ca81f052e3",
+          "cadr": "8128ce48ff239015927a39ba0bc19d17b52d8cb99406c22dde45822e6658af2c"
+        }
+      },
+      "note": "At stream-interrupt-queue/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "stream-aborted",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "051ac6e724383ac56fc39ef3e31211caccd5911b535c86cb4a5646fa1cdf22db",
+          "cadr": "d7fedaf3781f4db6745acb56977633b44bd555cce22e80420ee9579585913be2"
+        }
+      },
+      "note": "At stream-interrupt-queue/stream-aborted [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-failure",
+      "checkpoint": "tool-failure",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6bbbc74fc7e55487110b4b771da98586b703bda3494f707a9a0d224e7d1e153c",
+          "cadr": "472d40ca671b282f2778ce6aabc4b3aee07e84a5043026e9dea181139bbfbbb0"
+        }
+      },
+      "note": "At tools-failure/tool-failure [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "find-invalid-arguments",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "583372477963e4773eaefbcef308677b0a67fafc5bc84e4bde057ee82a55be1d",
+          "cadr": "e36568b8e5fe3aa44dc2f1616843f907d2e721de463af62a2697a8a74484ce87"
+        },
+        "wide": {
+          "pi": "4bb0301121fb83def443b83e8961c1bc00c0f21c471cc621479cbaca971b9d2f",
+          "cadr": "17a9fa52dda437a28c0a57750db207edd70c8a13aa6ccffcb7a0d4e96a0ff192"
+        }
+      },
+      "note": "At tools-significant-states/find-invalid-arguments [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "parallel-tool-calls",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "50960ee09d6ade4d6af35fded942f74daffe2d68cdd47d7fbd2542f63beea641",
+          "cadr": "af7c5ffe070e2eda03a231843dea3d8af34396eba6c3815c581bf71f1aa0fff4"
+        },
+        "wide": {
+          "pi": "dfe8940f887a3767b76b27668c10ce2dba3cad1d959306d5fa3604fcea2af561",
+          "cadr": "0608c103326a2bedf0acb72f5ddbd51ecd32165f7b9581a6ba8f96384948aab6"
+        }
+      },
+      "note": "At tools-significant-states/parallel-tool-calls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "aa2c6003f100fa9734ec0badb2d84653505935c281e7b42c7ce07da2210abba4",
+          "cadr": "623fb8f592d88896c865c233a61181794f6bcb3e3e7d0501923a30c2c7db106b"
+        },
+        "wide": {
+          "pi": "b9640e5c239555d4e4d1e641dc23c0dceedcc85d644121f4d1106269afe6c2ad",
+          "cadr": "a6b05544ece7beee662615b80412adfecf7d98e154153c29cc0c54a07c4fa8db"
+        }
+      },
+      "note": "At tools-significant-states/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "bash-long-command",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f3a34c44ac591751cf278b9c3b4b8cf55420d88ea1d3e972dc712e11a1e42432",
+          "cadr": "4647a868217d900e898f80d3aeb77d5e691bd2e40d1d2e6ffa08d21879c4865c"
+        },
+        "wide": {
+          "pi": "6ceee39e851ec76c1f225d2b4b2f7c243aaac52f7b1bbb51cf8bdd491490ad8b",
+          "cadr": "43db59559ba6822d074dcd6c6f3d9572b0a0a260410612e64b334fe296669722"
+        }
+      },
+      "note": "At tools-success/bash-long-command [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "bash-multiline",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "93af23dd5bca5227b5a6e26652a4a650fecb11e0be4147db3b75d9bfdf97e4f4",
+          "cadr": "25cac91b96135a08a2e04ad0f34711069e63784d6a03027924b3f78579876b96"
+        }
+      },
+      "note": "At tools-success/bash-multiline [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "find",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6e910a71cd0f45cc25798552b065283eb28b007e1597735e2a339f7195ece02d",
+          "cadr": "a83e379f37dfde4d3a222746bc1f243697e4cc59001782e99368b35738d503eb"
+        },
+        "wide": {
+          "pi": "96feec0f4a2a9d5bf6e2f2afa2e5b01dc93897ec5e16bb2fafddf1997d720607",
+          "cadr": "4f12576785188567a1f2f920a70c864ad9d7c2286350e93510e843d1b064f35a"
+        }
+      },
+      "note": "At tools-success/find [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "find-default-path",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f9bf93d950ecb3b42b6477ae5d79f21570ac00b814f48191568c7d18c9c27afa",
+          "cadr": "eef5442b65c60a93f2b4e38591d0f3f2d683892b1aa02ec2b2c42bfa54f064e4"
+        },
+        "wide": {
+          "pi": "0fa9e723ec34ed4829b0a77b5e64da35468883fdba0d7215baf64606bdd29853",
+          "cadr": "4877c78531e658216596b403ccf42040c8f936c443fa573ce7c8e50b35f907ed"
+        }
+      },
+      "note": "At tools-success/find-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "grep-default-path",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "0c8e2bb948a06ec717112810e6285513846352cd6ee2c458db1da3fb9b7bda7f",
+          "cadr": "7f87c9bd068226fc4f7a506234c3d21aacac47ea9da704d4a3939c04ec4bf81a"
+        },
+        "wide": {
+          "pi": "af68bbcc5d1750cc2942113a189953243d9f496c6e4307ea6c43107ebda950ea",
+          "cadr": "df898a3166bc5dfc99b32137a8ec1526b3ccf9a953e2c33ce52c8c787c77976d"
+        }
+      },
+      "note": "At tools-success/grep-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "ls",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "9bcbac6ba5e00cc11dfb8496acbd3062f9264ec0073fd2c3f77d2de79ed99f22",
+          "cadr": "0696d606ad739a364ec7a2dc67d749d18ac3d42e08854e79084421b3a0f258b4"
+        },
+        "wide": {
+          "pi": "6db0a571557392c7336847bbcd4e52b46147a48d29df1a88da2ebc9e88394ea9",
+          "cadr": "810f384a483ef1b08f5b6173f9640b485e1ca3e7c9d529361937e389c1f786fa"
+        }
+      },
+      "note": "At tools-success/ls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "4d4a8c7c7ce8b29e241b3d5d065b6aa43ed08c17dda999218b7a33eb51d6455f",
+          "cadr": "fc0043639e5d99208d4534baf79c1d0a31cae78f8bf23044ca517a345f92c020"
+        },
+        "wide": {
+          "pi": "99c0918b7b2497c69ccb07353de6cd35ecf64cfe355b335cc653acf658253218",
+          "cadr": "4b9e198e535cdf72f9307268d138028f22dd7b253acaedffc4660fbaeb3866b1"
+        }
+      },
+      "note": "At tools-success/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "read-offset-without-limit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6f3d1c1b6ce94ca6dbfcf16acf0968fcf4951f6ee44b785fd12fae867e2e1c74",
+          "cadr": "678d35544a1a98aa5120c69b600dc9a8c5fdbd942e1ddd3c6e3c26cfd5f68ca7"
+        },
+        "wide": {
+          "pi": "7c3d6fe1f11dbb0f560ed44a078a514747e2d0dfd7d1708cc17b767224205c69",
+          "cadr": "33d1fb9b179dc5870633ced12b935c74993139756dc0f55c1010cb9f8117e6d6"
+        }
+      },
+      "note": "At tools-success/read-offset-without-limit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "tree-rich-tools",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "a8a8a3713d619e58ea5e532a9f3ba0065f851800e240b8f9ed95d37453378391",
+          "cadr": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d"
+        },
+        "wide": {
+          "pi": "d2b02beb320e9d5cfdd9131b463cca70f5d756ba98278deba4aaec1da888c063",
+          "cadr": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8"
+        }
+      },
+      "note": "At tools-success/tree-rich-tools [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.84.4 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     }
   ]
 }
