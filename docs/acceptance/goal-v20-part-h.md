@@ -9253,7 +9253,7 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 129,396 lines**
+Denominator: **297 files / 129,374 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
@@ -9261,7 +9261,7 @@ Denominator: **297 files / 129,396 lines**
 | `paired` | 188 | 79,562 | 61.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 56 | 24,813 | 19.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 56 | 24,791 | 19.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 61.5% of lines (188 files). This is the share whose `no worse than baseline` claim is a measured pair.
@@ -9531,7 +9531,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_interactive_controller` | 6 | 5,536 |
+| `cli_interactive_controller` | 6 | 5,514 |
 | `cli_bootstrap_sessions` | 4 | 5,247 |
 | `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
