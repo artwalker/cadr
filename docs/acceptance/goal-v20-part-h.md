@@ -10312,7 +10312,7 @@ Leftover sibling of Pairs 820–821. Timed work is tree row plists (id/text/leaf
 |---|---|---|
 | `validate_cli_session_flags` | `validate-cli-session-flags` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover validateForkFlags/validateSessionIdFlags (`packages/coding-agent/src/cli/main.ts`) |
 
-Leftover sibling of leftover 808–822 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is fork/`--session-id` conflict strings — not picker I/O. Observed `vcsf_ok` / `vcsf_fork` / `vcsf_fork2` / `vcsf_sid` / `vcsf_sidok` are exact. Measure-only leftover 823. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 808–822 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is fork/`--session-id` conflict strings — not picker I/O. Observed `vcsf_ok` / `vcsf_fork` / `vcsf_fork2` / `vcsf_sid` / `vcsf_sidok` are exact. First n=5 freeze **3.178×** (1.971 / 0.620 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 824 — `cli_bootstrap_sessions` (session_entry_tree_selector_data)
 
@@ -10320,7 +10320,7 @@ Leftover sibling of leftover 808–822 on the same `sessions.lisp` `cli_bootstra
 |---|---|---|
 | `session_entry_tree_selector_data` | `session-entry-tree-selector-data` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover one tree row (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
 
-Leftover sibling of Pair 823. Timed work is one tree row plist (id/role/text/type) — not tree TUI render. Observed `sets_id` / `sets_role` / `sets_text` / `sets_type` / `sets_asst` are exact. Measure-only leftover 824. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 823. Timed work is one tree row plist (id/role/text/type) — not tree TUI render. Observed `sets_id` / `sets_role` / `sets_text` / `sets_type` / `sets_asst` are exact. First n=5 freeze **2.449×** (2.485 / 1.015 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 825 — `cli_bootstrap_sessions` (session_restored_model)
 
@@ -10328,7 +10328,7 @@ Leftover sibling of Pair 823. Timed work is one tree row plist (id/role/text/typ
 |---|---|---|
 | `session_restored_model` | `session-restored-model` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover restored model lookup (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of Pairs 823–824. Timed work is last assistant/model-change lookup against an in-memory registry — not models.json I/O. Observed `srm_none` / `srm_hit` / `srm_noreg` / `srm_noavail` / `srm_wrong` are exact. Measure-only leftover 825. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 823–824. Timed work is last assistant/model-change lookup against an in-memory registry — not models.json I/O. Observed `srm_none` / `srm_hit` / `srm_noreg` / `srm_noavail` / `srm_wrong` are exact. First n=5 freeze **0.975×** (3.355 / 3.443 µs) on host `cursor`, ceiling 8.0. Under 1× — not booked on over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
