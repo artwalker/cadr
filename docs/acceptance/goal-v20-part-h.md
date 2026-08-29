@@ -8656,6 +8656,30 @@ Leftover sibling of Pair 739. Timed work is explicit name, `CADR_PROVIDER`, Anth
 
 Leftover sibling of Pairs 739–740. Timed work is openai model hit, missing provider empty object, missing providers key, and miss result is a hash table. Observed `pset_hit` / `pset_miss` / `pset_none` / `pset_ht` / `pset_n` are exact. First n=5 freeze **2.018×** (1.333 / 0.661 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 742 — `settings_load` (provider_default_model)
+
+| metric | cadr | pi |
+|---|---|---|
+| `provider_default_model` | `provider-default-model` (`src/cadr-cli/config.lisp`) | provider default model (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of leftover 739–741 on `src/cadr-cli/config.lisp`. Timed work is openai `gpt-5.5`, anthropic `claude-opus-4-8`, google `gemini-3.1-pro-preview`, and unknown provider error. Observed `pdm_openai` / `pdm_anth` / `pdm_google` / `pdm_miss` / `pdm_n` are exact. First n=5 freeze **0.410×** (0.970 / 2.367 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 743 — `settings_load` (oauth_refresh_function)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_refresh_function` | `oauth-refresh-function` (`src/cadr-cli/config.lisp`) | oauth refresh function (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of Pair 742. Timed work is openai-codex refresh symbol, anthropic refresh symbol, google miss, and two providers not eq. Observed `orf_codex` / `orf_anth` / `orf_miss` / `orf_diff` / `orf_n` are exact. First n=5 freeze **0.139×** (0.346 / 2.498 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 744 — `settings_load` (oauth_login_function)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_login_function` | `oauth-login-function` (`src/cadr-cli/config.lisp`) | oauth login function (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of Pairs 742–743. Timed work is openai-codex login function, anthropic login function, google ecase miss, and two providers not eq. Observed `olf_codex` / `olf_anth` / `olf_miss` / `olf_diff` / `olf_n` are exact. First n=5 freeze **1.057×** (2.562 / 2.423 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
