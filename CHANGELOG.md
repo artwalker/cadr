@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.tui_input_thread`
+  (`tui-input-thread-p` vs leftover TUI input-thread sentinel).
+  Observed `tit_nil` / `tit_self` / `tit_other` / `tit_both` / `tit_n` exact.
+  Measure-only leftover (Pair 865). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.extension_host_turn`
+  (`call-extension-host-turn-without-blocking-tui` vs leftover inline vs deferred startTurn).
+  Observed `eht_inline` / `eht_start` / `eht_defer` / `eht_ok` / `eht_n` exact.
+  Measure-only leftover (Pair 866). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.wrap_extension_host_turn`
+  (`wrap-extension-host-tui-turn-dispatch` vs leftover sendCustomMessage wrap/restore).
+  Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` exact.
+  Measure-only leftover (Pair 867). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.armin_copy_cell`
   (`armin-copy-cell` vs leftover typewriter cell assign).
   Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` exact.

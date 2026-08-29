@@ -827,6 +827,9 @@
     ("cli_interactive_controller.terminal_title_sequence" . 50)
     ("cli_interactive_controller.make_notification_stream" . 50)
     ("cli_interactive_controller.notification_stream_flush" . 50)
+    ("cli_interactive_controller.tui_input_thread" . 50)
+    ("cli_interactive_controller.extension_host_turn" . 50)
+    ("cli_interactive_controller.wrap_extension_host_turn" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -20014,6 +20017,26 @@
    "nsf_n" (nth 4 flush)))
 
 
+(defun leftover-extension-ui-tui-thread-observed-pairs
+    (input-thread host-turn wrap-turn)
+  (list
+   "tit_nil" (nth 0 input-thread)
+   "tit_self" (nth 1 input-thread)
+   "tit_other" (nth 2 input-thread)
+   "tit_both" (nth 3 input-thread)
+   "tit_n" (nth 4 input-thread)
+   "eht_inline" (nth 0 host-turn)
+   "eht_start" (nth 1 host-turn)
+   "eht_defer" (nth 2 host-turn)
+   "eht_ok" (nth 3 host-turn)
+   "eht_n" (nth 4 host-turn)
+   "wet_send" (nth 0 wrap-turn)
+   "wet_user" (nth 1 wrap-turn)
+   "wet_restore" (nth 2 wrap-turn)
+   "wet_trig" (nth 3 wrap-turn)
+   "wet_n" (nth 4 wrap-turn)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -20565,7 +20588,13 @@
         (leftover-make-notification-stream
           (run-cli-interactive-make-notification-stream))
         (leftover-notification-stream-flush
-          (run-cli-interactive-notification-stream-flush)))
+          (run-cli-interactive-notification-stream-flush))
+        (leftover-tui-input-thread
+          (run-cli-interactive-tui-input-thread))
+        (leftover-extension-host-turn
+          (run-cli-interactive-extension-host-turn))
+        (leftover-wrap-extension-host-turn
+          (run-cli-interactive-wrap-extension-host-turn)))
     (json-object
      "observed"
      (apply #'json-object
@@ -20692,7 +20721,11 @@
              (leftover-controller-title-notify-observed-pairs
               leftover-terminal-title-sequence
               leftover-make-notification-stream
-              leftover-notification-stream-flush)))
+              leftover-notification-stream-flush)
+             (leftover-extension-ui-tui-thread-observed-pairs
+              leftover-tui-input-thread
+              leftover-extension-host-turn
+              leftover-wrap-extension-host-turn)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -21007,7 +21040,22 @@
      (collect "cli_interactive_controller.notification_stream_flush"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-notification-stream-flush)))))))
+                  (run-cli-interactive-notification-stream-flush))))
+     "tui_input_thread"
+     (collect "cli_interactive_controller.tui_input_thread"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tui-input-thread))))
+     "extension_host_turn"
+     (collect "cli_interactive_controller.extension_host_turn"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-extension-host-turn))))
+     "wrap_extension_host_turn"
+     (collect "cli_interactive_controller.wrap_extension_host_turn"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-wrap-extension-host-turn)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -22538,6 +22586,109 @@
        (length after)
        (if (= n 1) 1 0)
        5))))
+
+
+(defun run-cli-interactive-tui-input-thread ()
+  ;; Leftover sibling: TUI input-thread predicate. Not render, not spawn.
+  (let ((nil-p
+          (let ((cadr-cli::*tui-input-thread* nil))
+            (if (cadr-cli::tui-input-thread-p) 1 0)))
+        (self-p
+          (let ((cadr-cli::*tui-input-thread*
+                  sb-thread:*current-thread*))
+            (if (cadr-cli::tui-input-thread-p) 1 0)))
+        (other-p
+          (let ((cadr-cli::*tui-input-thread* :other))
+            (if (cadr-cli::tui-input-thread-p) 1 0)))
+        (both-p
+          (let ((cadr-cli::*tui-input-thread*
+                  sb-thread:*current-thread*))
+            (if (and cadr-cli::*tui-input-thread*
+                     (cadr-cli::tui-input-thread-p))
+                1
+                0))))
+    (list nil-p self-p other-p both-p 5)))
+
+
+(defun run-cli-interactive-extension-host-turn ()
+  ;; Leftover sibling: inline vs start-turn dispatch. No spawn.
+  (let ((inline-got 0)
+        (start-n 0)
+        (defer-got 0)
+        (ok 0))
+    (let ((cadr-cli::*tui-input-thread* nil))
+      (cadr-cli::call-extension-host-turn-without-blocking-tui
+       (lambda (thunk)
+         (incf start-n)
+         (funcall thunk))
+       (lambda () (setf inline-got 1))))
+    (let ((cadr-cli::*tui-input-thread* sb-thread:*current-thread*))
+      (cadr-cli::call-extension-host-turn-without-blocking-tui
+       (lambda (thunk)
+         (declare (ignore thunk))
+         (incf start-n)
+         (setf defer-got 1))
+       (lambda () (setf ok 1))))
+    (list inline-got start-n defer-got
+          (if (and (= inline-got 1) (= ok 0)) 1 0)
+          5)))
+
+
+(defun leftover-extension-host-fixture ()
+  (cadr-agent::make-extension-host
+   :cwd #p"/tmp/leftover-ext-host/"
+   :mode :tui
+   :notify-function
+   (lambda (message level)
+     (declare (ignore message level))
+     nil)
+   :send-message-function
+   (lambda (message &key trigger-turn-p deliver-as)
+     (declare (ignore trigger-turn-p deliver-as))
+     message)
+   :send-user-message-function
+   (lambda (content &key deliver-as)
+     (declare (ignore deliver-as))
+     content)))
+
+
+(defun run-cli-interactive-wrap-extension-host-turn ()
+  ;; Leftover sibling: wrap send/user and restore. Off TUI thread; no spawn.
+  (let* ((host (leftover-extension-host-fixture))
+         (previous-send
+           (cadr-agent::extension-host-send-message-function host))
+         (previous-user
+           (cadr-agent::extension-host-send-user-message-function
+            host))
+         (restore)
+           (cadr-cli::wrap-extension-host-tui-turn-dispatch
+            host
+            (lambda (thunk) (funcall thunk))))
+         (sent
+           (funcall
+            (cadr-agent::extension-host-send-message-function host)
+            "msg"
+            :trigger-turn-p t))
+         (user
+           (funcall
+            (cadr-agent::extension-host-send-user-message-function
+             host)
+            "user"))
+         (wrapped-send
+           (cadr-agent::extension-host-send-message-function host)))
+    (declare (ignore previous-user))
+    (funcall restore)
+    (list
+     (if (string= sent "msg") 1 0)
+     (if (string= user "user") 1 0)
+     (if (eq
+          (cadr-agent::extension-host-send-message-function host)
+          previous-send)
+         1
+         0)
+     (if (not (eq wrapped-send previous-send)) 1 0)
+     5)))
+
 
 (defun session-search-fixture-records ()
   (list
@@ -36940,6 +37091,12 @@
       "src/cadr-cli/interactive/controller.lisp make-notification-output-stream"
       "cli_interactive_controller.notification_stream_flush"
       "src/cadr-cli/interactive/controller.lisp notification-stream-flush"
+      "cli_interactive_controller.tui_input_thread"
+      "src/cadr-cli/interactive/extension-ui.lisp tui-input-thread-p"
+      "cli_interactive_controller.extension_host_turn"
+      "src/cadr-cli/interactive/extension-ui.lisp call-extension-host-turn-without-blocking-tui"
+      "cli_interactive_controller.wrap_extension_host_turn"
+      "src/cadr-cli/interactive/extension-ui.lisp wrap-extension-host-tui-turn-dispatch"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

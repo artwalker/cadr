@@ -8599,6 +8599,36 @@
    "piUs": 6.361,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 865,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.tui_input_thread",
+   "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 865"
+  },
+  {
+   "pair": 866,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.extension_host_turn",
+   "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 866"
+  },
+  {
+   "pair": 867,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.wrap_extension_host_turn",
+   "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 867"
   }
  ],
  "mergeQueue": []
