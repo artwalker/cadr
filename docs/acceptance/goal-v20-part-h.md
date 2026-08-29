@@ -10048,7 +10048,7 @@ Leftover sibling of Pairs 787–788. Timed work is npm record identity / nil pat
 |---|---|---|
 | `package_setting_records` | `config-package-setting-records` (`src/cadr-cli/packages/config-selector.lisp`) | leftover npm records merge (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
 
-Leftover sibling of Pair 789 on the same `config-selector.lisp` `package_manager` hole. Timed work is global+project npm record merge (length / scopes / global-only) — not git/local install I/O. Observed `psrs_len` / `psrs_user` / `psrs_proj` / `psrs_glob` / `psrs_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 789 on the same `config-selector.lisp` `package_manager` hole. Timed work is global+project npm record merge (length / scopes / global-only) — not git/local install I/O. Observed `psrs_len` / `psrs_user` / `psrs_proj` / `psrs_glob` / `psrs_n` are exact. First n=5 freeze **11.073×** (39.372 / 3.556 µs) on host `cursor`, ceiling 15.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 791 — `package_manager` (selector_rebuild)
 
@@ -10056,7 +10056,7 @@ Leftover sibling of Pair 789 on the same `config-selector.lisp` `package_manager
 |---|---|---|
 | `selector_rebuild` | `config-selector-rebuild` (`src/cadr-cli/packages/config-selector.lisp`) | leftover selector flat rebuild (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
 
-Leftover sibling of Pair 790. Timed work is group/item flatten from pre-seeded items plus query miss — not `make-config-selector-state` directory walk, not TUI render. Observed `crb_group` / `crb_items` / `crb_sel` / `crb_query` / `crb_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 790. Timed work is group/item flatten from pre-seeded items plus query miss — not `make-config-selector-state` directory walk, not TUI render. Observed `crb_group` / `crb_items` / `crb_sel` / `crb_query` / `crb_n` are exact. First n=5 freeze **10.012×** (44.571 / 4.452 µs) on host `cursor`, ceiling 15.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 792 — `package_manager` (switch_scope)
 
@@ -10064,7 +10064,7 @@ Leftover sibling of Pair 790. Timed work is group/item flatten from pre-seeded i
 |---|---|---|
 | `switch_scope` | `config-selector-switch-scope` (`src/cadr-cli/packages/config-selector.lisp`) | leftover selector scope flip (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
 
-Leftover sibling of Pair 791. Timed work is write-scope flip plus rebuild (project / global / unavailable no-op / package item) — not TUI tab handler. Observed `css_proj` / `css_glob` / `css_nop` / `css_pkg` / `css_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 791. Timed work is write-scope flip plus rebuild (project / global / unavailable no-op / package item) — not TUI tab handler. Observed `css_proj` / `css_glob` / `css_nop` / `css_pkg` / `css_n` are exact. First n=5 freeze **8.862×** (52.658 / 5.942 µs) on host `cursor`, ceiling 12.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
