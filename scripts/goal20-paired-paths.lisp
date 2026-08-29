@@ -4133,12 +4133,12 @@
   (list
    (if (leftover-oauth-refresh-ok
         :openai-codex
-        #'cadr-ai:refresh-openai-oauth-credential)
+        'cadr-ai:refresh-openai-oauth-credential)
        1
        0)
    (if (leftover-oauth-refresh-ok
         :anthropic
-        #'cadr-ai:refresh-anthropic-oauth-credential)
+        'cadr-ai:refresh-anthropic-oauth-credential)
        1
        0)
    (if (leftover-oauth-refresh-miss :google) 1 0)
