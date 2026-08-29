@@ -8959,6 +8959,36 @@
    "piUs": 0.714,
    "ceiling": 8.0,
    "rc": 0
+  },
+  {
+   "pair": 832,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-ai/oauth/callback.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.hex_value",
+   "branch": "cursor/oauth-callback-hex-write-present-leftovers-832-834-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 832"
+  },
+  {
+   "pair": 833,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-ai/oauth/callback.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.write_http_response",
+   "branch": "cursor/oauth-callback-hex-write-present-leftovers-832-834-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 833"
+  },
+  {
+   "pair": 834,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-ai/oauth/callback.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.present_auth_url",
+   "branch": "cursor/oauth-callback-hex-write-present-leftovers-832-834-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 834"
   }
  ],
  "mergeQueue": []
