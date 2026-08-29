@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.cli_platform`
+  (`cli-platform` vs leftover process.platform mapping). Observed
+  `cpl_linux` / `cpl_win` / `cpl_darwin`.
+  Measure-only leftover (Pair 853). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_info_style`
+  (`session-info-style` vs leftover heading/label/other style). Observed
+  `sis_head_plain` / `sis_head_bold` / `sis_lab_plain` / `sis_lab_dim` / `sis_other`.
+  Measure-only leftover (Pair 854). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.default_changelog_path`
+  (`default-changelog-path` vs leftover CHANGELOG env/leaf). Observed
+  `dcp_forced` / `dcp_fallback` / `dcp_clean`.
+  Measure-only leftover (Pair 855). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.loaded_model`
   (`llama-loaded-model-p` vs leftover loaded/sleeping predicate). Observed
   `llm_loaded` / `llm_sleep` / `llm_unloaded` / `llm_n` exact.
