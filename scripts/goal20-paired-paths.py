@@ -873,9 +873,12 @@ RATIO_CEILINGS = {
     "package_manager.derived_project_state": 8.0,
     # leftover 781–783 config-selector.lisp (samples=5): first-freeze headroom.
     # Ratchet down only. Measure-only leftover 781–783.
-    "package_manager.resource_item_key": 8.0,
-    "package_manager.project_override_state": 8.0,
-    "package_manager.next_project_state": 8.0,
+    # leftover 781; first freeze 38.223× (34.919 / 0.914 µs).
+    "package_manager.resource_item_key": 50.0,
+    # leftover 782; first freeze 17.903× (52.878 / 2.954 µs).
+    "package_manager.project_override_state": 20.0,
+    # leftover 783; first freeze 10.522× (52.464 / 4.986 µs).
+    "package_manager.next_project_state": 15.0,
     # package_manager leftover trio on update-checks.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
     "package_manager.update_argv": 8.0,

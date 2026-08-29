@@ -108,7 +108,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 261,
@@ -154,7 +154,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 266,
@@ -174,7 +174,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 268,
@@ -184,7 +184,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 269,
@@ -194,7 +194,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 270,
@@ -8198,32 +8198,47 @@
   {
    "pair": 781,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/packages/config-selector.lisp",
    "measure": "measure-package-manager",
    "metric": "package_manager.resource_item_key",
    "branch": "cursor/config-selector-item-key-project-next-leftovers-781-783-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 781"
+   "note": "nextPairNum left at tip 328; leftover id 781",
+   "ratio": 38.223,
+   "cadrUs": 34.919,
+   "piUs": 0.914,
+   "ceiling": 50.0,
+   "rc": 2
   },
   {
    "pair": 782,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/packages/config-selector.lisp",
    "measure": "measure-package-manager",
    "metric": "package_manager.project_override_state",
    "branch": "cursor/config-selector-item-key-project-next-leftovers-781-783-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 782"
+   "note": "nextPairNum left at tip 328; leftover id 782",
+   "ratio": 17.903,
+   "cadrUs": 52.878,
+   "piUs": 2.954,
+   "ceiling": 20.0,
+   "rc": 2
   },
   {
    "pair": 783,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/packages/config-selector.lisp",
    "measure": "measure-package-manager",
    "metric": "package_manager.next_project_state",
    "branch": "cursor/config-selector-item-key-project-next-leftovers-781-783-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 783"
+   "note": "nextPairNum left at tip 328; leftover id 783",
+   "ratio": 10.522,
+   "cadrUs": 52.464,
+   "piUs": 4.986,
+   "ceiling": 15.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
