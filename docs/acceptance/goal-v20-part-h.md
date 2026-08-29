@@ -7696,6 +7696,30 @@ Leftover sibling of Pair 619. Timed work is progress-line append (empty / after-
 
 Leftover sibling of Pairs 619–620. Timed work is manual-input append (empty / after-auth / blank prompt / nil cancel / after-waiting). Observed `ldmi_empty` / `ldmi_auth` / `ldmi_blank` / `ldmi_nocancel` / `ldmi_wait` are exact. First n=5 freeze **1.683×** (5.131 / 3.050 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 622 — `cli_selectors` (login_dialog_show_prompt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_dialog_show_prompt` | `login-dialog-show-prompt` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | LoginDialogComponent.showPrompt (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover sibling on the `login-dialog.lisp` hole after Pairs 619–621 (wait/progress/manual). Timed work is prompt-state append (empty / after-auth / no placeholder / nil cancel / after-waiting). Observed `ldpr_empty` / `ldpr_auth` / `ldpr_noplace` / `ldpr_nocancel` / `ldpr_wait` are exact. First n=5 freeze **1.771×** (6.781 / 3.830 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 623 — `cli_selectors` (login_dialog_show_info)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_dialog_show_info` | `login-dialog-show-info` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | LoginDialogComponent.showInfo (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover sibling of Pair 622. Timed work is info-state append (labeled link / after-auth two links / bare URL / no links no close / after-waiting). Observed `ldi_labeled` / `ldi_auth` / `ldi_bare` / `ldi_nolink` / `ldi_wait` are exact. First n=5 freeze **1.567×** (8.766 / 5.594 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 624 — `cli_selectors` (login_dialog_show_details)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_dialog_show_details` | `login-dialog-show-details` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | LoginDialogComponent.showDetails (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover sibling of Pairs 622–623. Timed work is details replace (two lines / replace-after-auth / empty / muted+accent / replace-after-waiting). Observed `lddt_two` / `lddt_auth` / `lddt_empty` / `lddt_styles` / `lddt_wait` are exact. First n=5 freeze **0.756×** (2.598 / 3.435 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
