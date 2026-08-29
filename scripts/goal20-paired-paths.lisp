@@ -35852,7 +35852,7 @@
        (length rows)
        (or leaf "")
        (leftover-tree-selector-first rows :id)
-       (leftover-tree-selector-first rows :text))))))
+       (leftover-tree-selector-first rows :text)))))
 
 
 (defun run-cli-bootstrap-write-hotkeys-command ()
