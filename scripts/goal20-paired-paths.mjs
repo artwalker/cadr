@@ -237,6 +237,9 @@ const REPETITIONS = {
 	"settings_load.provider_default_model": 50,
 	"settings_load.oauth_refresh_function": 50,
 	"settings_load.oauth_login_function": 50,
+	"settings_load.read_cli_config": 50,
+	"settings_load.provider_config_secrets": 50,
+	"settings_load.resolve_provider_config": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -2940,6 +2943,129 @@ function leftoverFlagCaught(fn) {
 	}
 }
 
+function leftoverWriteFile(name, contents) {
+	const filePath = path.join(scratch, name);
+	mkdirSync(path.dirname(filePath), { recursive: true });
+	writeFileSync(filePath, contents, "utf8");
+	return filePath;
+}
+
+function leftoverReadCliConfig(configPath) {
+	if (!existsSync(configPath)) {
+		return {};
+	}
+	const parsed = JSON.parse(readFileSync(configPath, "utf8"));
+	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+		throw new Error("config.json must contain a JSON object");
+	}
+	return parsed;
+}
+
+function leftoverNonEmptyString(value) {
+	return typeof value === "string" && value.length > 0;
+}
+
+function leftoverProviderConfigSecrets(config, env) {
+	const provider = config && config.provider;
+	const fromProvider = provider ? [provider.apiKey, provider.oauthAccessToken] : [];
+	const fromEnv = [
+		leftoverEnvironmentValue(env, "ANTHROPIC_API_KEY"),
+		leftoverEnvironmentValue(env, "OPENAI_API_KEY"),
+		leftoverEnvironmentValue(env, "GEMINI_API_KEY"),
+		leftoverEnvironmentValue(env, "DEEPSEEK_API_KEY"),
+	];
+	return [...fromProvider, ...fromEnv].filter(leftoverNonEmptyString);
+}
+
+function leftoverResolveProviderConfig(options) {
+	const env = options.env || {};
+	const name = leftoverConfiguredProviderName(options.provider, env);
+	const resolvedName = name ? String(name).toLowerCase() : "openai";
+	const config = leftoverReadCliConfig(options.configPath);
+	const settings = leftoverProviderSettings(config, resolvedName);
+	const model =
+		options.model ||
+		leftoverEnvironmentValue(env, "CADR_MODEL") ||
+		leftoverJsonGet(settings, "model") ||
+		leftoverProviderDefaultModel(resolvedName);
+	let authSource = "none";
+	if (leftoverNonEmptyString(options.apiKey)) {
+		authSource = "cli";
+	}
+	const openai = openaiProviderModule.openaiProvider();
+	return {
+		name: resolvedName,
+		authSource,
+		model,
+		provider: openai,
+	};
+}
+
+function runSettingsLoadReadCliConfig() {
+	const missing = path.join(scratch, "cadr-goal20-no-such-config.json");
+	const hit = leftoverWriteFile(
+		"cadr-goal20-config.json",
+		'{"providers":{"openai":{"model":"gpt-4"}}}',
+	);
+	const bad = leftoverWriteFile("cadr-goal20-config-bad.json", "not-json");
+	const arr = leftoverWriteFile("cadr-goal20-config-arr.json", "[1]");
+	const empty = leftoverReadCliConfig(missing);
+	const object = leftoverReadCliConfig(hit);
+	return {
+		rcc_miss: leftoverJsonGet(empty, "providers") === null ? 1 : 0,
+		rcc_hit:
+			leftoverJsonGet(
+				leftoverJsonGet(leftoverJsonGet(object, "providers"), "openai"),
+				"model",
+			) === "gpt-4"
+				? 1
+				: 0,
+		rcc_bad: leftoverFlagCaught(() => leftoverReadCliConfig(bad)),
+		rcc_arr: leftoverFlagCaught(() => leftoverReadCliConfig(arr)),
+		rcc_n: 5,
+	};
+}
+
+function runSettingsLoadProviderConfigSecrets() {
+	const env = {
+		OPENAI_API_KEY: "sk-env",
+		ANTHROPIC_API_KEY: null,
+		GEMINI_API_KEY: null,
+		DEEPSEEK_API_KEY: null,
+	};
+	const secrets = leftoverProviderConfigSecrets(
+		{ provider: { apiKey: "sk-cfg", oauthAccessToken: "tok" } },
+		env,
+	);
+	const envOnly = leftoverProviderConfigSecrets(null, env);
+	return {
+		pcs_key: secrets.includes("sk-cfg") ? 1 : 0,
+		pcs_oauth: secrets.includes("tok") ? 1 : 0,
+		pcs_env: secrets.includes("sk-env") ? 1 : 0,
+		pcs_nil: envOnly.includes("sk-env") ? 1 : 0,
+		pcs_n: 5,
+	};
+}
+
+function runSettingsLoadResolveProviderConfig() {
+	const configPath = leftoverWriteFile("cadr-goal20-resolve-config.json", "{}");
+	const resolved = leftoverResolveProviderConfig({
+		provider: "openai",
+		apiKey: "sk-cli",
+		configPath,
+		allowMissingAuth: true,
+		env: {},
+	});
+	return {
+		rpc_name: resolved.name === "openai" ? 1 : 0,
+		rpc_cli: resolved.authSource === "cli" ? 1 : 0,
+		rpc_model:
+			typeof resolved.model === "string" && resolved.model.length > 0 ? 1 : 0,
+		rpc_type: resolved.provider?.id === "openai" ? 1 : 0,
+		rpc_n: 5,
+	};
+}
+
 function runSettingsLoadProviderDefaultModel() {
 	return {
 		pdm_openai: leftoverProviderDefaultModel("openai") === "gpt-5.5" ? 1 : 0,
@@ -3051,6 +3177,9 @@ async function measureSettingsLoad() {
 	const providerDefaultModel = runSettingsLoadProviderDefaultModel();
 	const oauthRefreshFunction = runSettingsLoadOauthRefreshFunction();
 	const oauthLoginFunction = runSettingsLoadOauthLoginFunction();
+	const readCliConfig = runSettingsLoadReadCliConfig();
+	const providerConfigSecrets = runSettingsLoadProviderConfigSecrets();
+	const resolveProviderConfig = runSettingsLoadResolveProviderConfig();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3100,6 +3229,15 @@ async function measureSettingsLoad() {
 		oauth_login_function: await collect("settings_load.oauth_login_function", () => {
 			return () => runSettingsLoadOauthLoginFunction();
 		}),
+		read_cli_config: await collect("settings_load.read_cli_config", () => {
+			return () => runSettingsLoadReadCliConfig();
+		}),
+		provider_config_secrets: await collect("settings_load.provider_config_secrets", () => {
+			return () => runSettingsLoadProviderConfigSecrets();
+		}),
+		resolve_provider_config: await collect("settings_load.resolve_provider_config", () => {
+			return () => runSettingsLoadResolveProviderConfig();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3115,6 +3253,9 @@ async function measureSettingsLoad() {
 			...providerDefaultModel,
 			...oauthRefreshFunction,
 			...oauthLoginFunction,
+			...readCliConfig,
+			...providerConfigSecrets,
+			...resolveProviderConfig,
 		},
 	};
 }
@@ -33605,6 +33746,12 @@ const result = {
 				"packages/coding-agent/src/config.ts oauth refresh function (cadr oauth-refresh-function)",
 			"settings_load.oauth_login_function":
 				"packages/coding-agent/src/config.ts oauth login function (cadr oauth-login-function)",
+			"settings_load.read_cli_config":
+				"packages/coding-agent/src/config.ts JSON.parse settings.json object (cadr read-cli-config)",
+			"settings_load.provider_config_secrets":
+				"packages/coding-agent/src/config.ts apiKey/oauth/env secret collect (cadr provider-config-secrets)",
+			"settings_load.resolve_provider_config":
+				"packages/ai/src/providers/openai.ts openaiProvider construct (cadr resolve-provider-config)",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":
