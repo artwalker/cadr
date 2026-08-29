@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `write_hello` | `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
 
-Leftover trio on unclaimed `src/cadr-cli/support/atomic-write.lisp`. Timed work is temp-file + rename of payload `hello` (no extra newline). Observed `awh_hello` / `awh_len` / `awh_file` / `awh_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-cli/support/atomic-write.lisp`. Timed work is temp-file + rename of payload `hello` (no extra newline). Observed `awh_hello` / `awh_len` / `awh_file` / `awh_n` are exact. First n=5 freeze **7.308×** (430.133 / 58.859 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 872 — `cli_support` (write_overwrite)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-cli/support/atomic-write.lisp`. Timed work 
 |---|---|---|
 | `write_overwrite` | `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
 
-Leftover sibling of Pair 871. Timed work is a second write that replaces `first` with `second`. Observed `awo_second` / `awo_no_first` / `awo_len` / `awo_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 871. Timed work is a second write that replaces `first` with `second`. Observed `awo_second` / `awo_no_first` / `awo_len` / `awo_n` are exact. First n=5 freeze **5.941×** (623.946 / 105.021 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 873 — `cli_support` (write_empty)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 871. Timed work is a second write that replaces `first`
 |---|---|---|
 | `write_empty` | `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
 
-Leftover sibling of Pairs 871–872. Timed work is an empty payload that still creates the file. Observed `awe_ok` / `awe_len` / `awe_file` / `awe_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 871–872. Timed work is an empty payload that still creates the file. Observed `awe_ok` / `awe_len` / `awe_file` / `awe_n` are exact. First n=5 freeze **10.337×** (339.971 / 32.889 µs) on host `cursor`, ceiling 15.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

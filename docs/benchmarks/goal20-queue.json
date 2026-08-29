@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 871,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/atomic-write.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.write_hello",
+   "branch": "cursor/cli-support-atomic-write-leftovers-871-873-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 871",
+   "ratio": 7.308,
+   "cadrUs": 430.133,
+   "piUs": 58.859,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 872,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/atomic-write.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.write_overwrite",
+   "branch": "cursor/cli-support-atomic-write-leftovers-871-873-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 872",
+   "ratio": 5.941,
+   "cadrUs": 623.946,
+   "piUs": 105.021,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 873,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/atomic-write.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.write_empty",
+   "branch": "cursor/cli-support-atomic-write-leftovers-871-873-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 873",
+   "ratio": 10.337,
+   "cadrUs": 339.971,
+   "piUs": 32.889,
+   "ceiling": 15.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

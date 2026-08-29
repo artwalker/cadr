@@ -11,16 +11,21 @@ tag/Release step.
 
 - Goal 20 leftover: pair `cli_support.write_hello` (`atomic-write-utf8` vs
   `activateManagedRelease` temp+rename `hello`). Observed `awh_hello` /
-  `awh_len` / `awh_file` / `awh_n` exact. n=5 **RATIO_PLACEHOLDER**.
-  Measure-only leftover (Pair 871). `nextPairNum` left unchanged.
+  `awh_len` / `awh_file` / `awh_n` exact. n=5 **7.308×** (430.133 /
+  58.859 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 871). Over-1×. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_support.write_overwrite` (second write
   replaces first). Observed `awo_second` / `awo_no_first` / `awo_len` /
-  `awo_n` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover
-  (Pair 872). `nextPairNum` left unchanged.
+  `awo_n` exact. n=5 **5.941×** (623.946 / 105.021 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 872). Over-1×. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_support.write_empty` (empty payload still
   creates the file). Observed `awe_ok` / `awe_len` / `awe_file` / `awe_n`
-  exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 873).
-  `nextPairNum` left unchanged.
+  exact. n=5 **10.337×** (339.971 / 32.889 µs) on host `cursor`, ceiling
+  15.0. Measure-only leftover (Pair 873). Over-1×. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
