@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.resource_specification`
+  (`config-resource-specification` vs RESOURCE_TYPES lookup). Observed
+  `rsp_ext` / `rsp_sk` / `rsp_rel` / `rsp_miss` / `rsp_n` exact. n=5
+  **0.190×** (0.428 / 2.249 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 709). cadr leads. Not booked over-1×.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.config_glob_regex`
+  (`config-glob-regex` vs globToRegex). Observed `cgr_star` / `cgr_q`
+  / `cgr_plain` / `cgr_dot` / `cgr_n` exact. n=5 **0.546×** (0.900 /
+  1.648 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 710). cadr leads. Not booked over-1×. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.entry_target`
+  (`config-selector-entry-target` vs entry target strip). Observed
+  `cet_bang` / `cet_plus` / `cet_minus` / `cet_plain` / `cet_empty` /
+  `cet_n` exact. n=5 **0.893×** (0.277 / 0.310 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 711). cadr leads. Not
+  booked over-1×. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `package_manager.resource_file_p`
   (`config-resource-file-p` vs resource file match). Observed `rfp_lisp`
   / `rfp_case` / `rfp_miss` / `rfp_skill` / `rfp_n` exact. n=5
