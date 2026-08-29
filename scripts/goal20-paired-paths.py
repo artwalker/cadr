@@ -1183,8 +1183,11 @@ RATIO_CEILINGS = {
     "cli_print_rpc.ui_absent": 8.0,
     # leftover 829–831 rpc/ui.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 829–831.
+    # leftover 829; first freeze 0.524× (0.072 / 0.137 µs). cadr leads.
     "cli_print_rpc.dialog_default": 8.0,
+    # leftover 830; first freeze 0.593× (0.108 / 0.181 µs). cadr leads.
     "cli_print_rpc.dialog_deadline": 8.0,
+    # leftover 831; first freeze 2.795× (1.526 / 0.546 µs).
     "cli_print_rpc.close_pending": 8.0,
     # Frozen from the first Friend-MachineD leftover
     # cli_extensions_install.unsafe_git pair (samples=5): observed
