@@ -8648,32 +8648,47 @@
   {
    "pair": 811,
    "lane": "cursor",
-   "status": "in-progress",
+   "status": "done",
    "source": "src/cadr-cli/bootstrap/sessions.lisp",
    "measure": "measure-cli-bootstrap-coding-tools",
    "metric": "cli_bootstrap_sessions.last_assistant_text",
    "branch": "cursor/bootstrap-sessions-last-export-fork-leftovers-811-813-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 811"
+   "note": "nextPairNum left at tip 328; leftover id 811",
+   "ratio": 1.859,
+   "cadrUs": 2.947,
+   "piUs": 1.585,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 812,
    "lane": "cursor",
-   "status": "in-progress",
+   "status": "done",
    "source": "src/cadr-cli/bootstrap/sessions.lisp",
    "measure": "measure-cli-bootstrap-coding-tools",
    "metric": "cli_bootstrap_sessions.session_export_basename",
    "branch": "cursor/bootstrap-sessions-last-export-fork-leftovers-811-813-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 812"
+   "note": "nextPairNum left at tip 328; leftover id 812",
+   "ratio": 4.018,
+   "cadrUs": 10.859,
+   "piUs": 2.703,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 813,
    "lane": "cursor",
-   "status": "in-progress",
+   "status": "done",
    "source": "src/cadr-cli/bootstrap/sessions.lisp",
    "measure": "measure-cli-bootstrap-coding-tools",
    "metric": "cli_bootstrap_sessions.session_user_messages_for_forking",
    "branch": "cursor/bootstrap-sessions-last-export-fork-leftovers-811-813-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 813"
+   "note": "nextPairNum left at tip 328; leftover id 813",
+   "ratio": 1.332,
+   "cadrUs": 1.726,
+   "piUs": 1.296,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

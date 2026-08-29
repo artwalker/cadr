@@ -12,16 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.last_assistant_text`
   (`last-assistant-text` vs leftover getLastAssistantText). Observed
   `lat_none` / `lat_hit` / `lat_skip` / `lat_ws` / `lat_n` exact.
-  Measure-only leftover (Pair 811). Gate `--only-enforce`;
-  `nextPairNum` left unchanged.
+  n=5 **1.859×** (2.947 / 1.585 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 811). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_export_basename`
   (`session-export-basename` vs leftover APP_NAME-session ISO_id.html).
   Observed `seb_epoch` / `seb_ms` / `seb_sec` / `seb_999` / `seb_n` exact.
-  Measure-only leftover (Pair 812). `nextPairNum` left unchanged.
+  n=5 **4.018×** (10.859 / 2.703 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 812). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_user_messages_for_forking`
   (`session-user-messages-for-forking` vs leftover getUserMessagesForForking).
   Observed `sumf_none` / `sumf_n` / `sumf_first` / `sumf_id` / `sumf_last` exact.
-  Measure-only leftover (Pair 813). `nextPairNum` left unchanged.
+  n=5 **1.332×** (1.726 / 1.296 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 813). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.assistant_tool_call_only`
   (`assistant-tool-call-only-p` vs leftover hasTextContent invert). Observed
