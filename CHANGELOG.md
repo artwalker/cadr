@@ -12,17 +12,21 @@ tag/Release step.
 - Goal 20 leftover: pair `package_manager.selector_hint`
   (`config-selector-hint` vs leftover keyHint wrap). Observed
   `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` exact.
-  Measure-only leftover (Pair 799). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **16.742×** (11.293 / 0.675 µs) on host `cursor`, ceiling 20.0.
+  Measure-only leftover (Pair 799). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.override_suffix`
   (`config-selector-override-suffix` vs leftover getItemSuffix). Observed
   `cos_load` / `cos_unload` / `cos_global` / `cos_inh` / `cos_n` exact.
-  Measure-only leftover (Pair 800). Freeze pending. `nextPairNum` left
+  n=5 **18.389×** (49.261 / 2.679 µs) on host `cursor`, ceiling 25.0.
+  Measure-only leftover (Pair 800). Over-1× booked. `nextPairNum` left
   unchanged.
 - Goal 20 leftover: pair `package_manager.checkbox`
   (`config-selector-checkbox` vs leftover renderCheckbox). Observed
   `ccb_on` / `ccb_off` / `ccb_plus` / `ccb_minus` / `ccb_n` exact.
-  Measure-only leftover (Pair 801). Freeze pending. `nextPairNum` left
+  n=5 **19.566×** (51.092 / 2.611 µs) on host `cursor`, ceiling 25.0.
+  Measure-only leftover (Pair 801). Over-1× booked. `nextPairNum` left
   unchanged.
 
 - Goal 20 leftover: pair `package_manager.git_output`
