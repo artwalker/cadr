@@ -8488,6 +8488,30 @@ Leftover sibling of Pair 718. Timed work is extensions key, missing, skills key,
 
 Leftover sibling of Pairs 718–719. Timed work is forward, skip subgroup, backward, and end stay. Observed `fi_fwd` / `fi_skip` / `fi_back` / `fi_end` / `fi_n` are exact. First n=5 freeze **0.569×** (0.242 / 0.426 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 721 — `package_manager` (selected_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `selected_entry` | `config-selector-selected-entry` (`src/cadr-cli/packages/config-selector.lisp`) | selected entry (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 718–720 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is selected item, group, subgroup, and last item kind codes. Observed `se_item` / `se_group` / `se_sub` / `se_last` / `se_n` are exact. First n=5 freeze **1.195×** (0.968 / 0.810 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 722 — `package_manager` (selector_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `selector_move` | `config-selector-move` (`src/cadr-cli/packages/config-selector.lisp`) | selector move (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 721. Timed work is forward, skip subgroup, backward, and end stay. Observed `sm_fwd` / `sm_skip` / `sm_back` / `sm_end` / `sm_n` are exact. First n=5 freeze **0.896×** (1.069 / 1.193 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 723 — `package_manager` (visible_range)
+
+| metric | cadr | pi |
+|---|---|---|
+| `visible_range` | `config-selector-visible-range` (`src/cadr-cli/packages/config-selector.lisp`) | visible range (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 721–722. Timed work is small list, mid window, top clamp, and bottom clamp. Observed `vr_small` / `vr_mid` / `vr_top` / `vr_bot` / `vr_n` are exact. First n=5 freeze **0.542×** (1.898 / 3.504 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

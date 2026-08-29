@@ -513,4 +513,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.config_fit_line` | 5.200 | 1.862 | 2.793× | 8.00× | measure-only leftover 717; `config-selector-fit-line` vs truncateToWidth | invent pause；地板优化另刀 |
 | `package_manager.group_less_p` | 3.937 | 0.552 | 7.128× | 8.00× | measure-only leftover 718; `config-resource-group-less-p` vs group sort | invent pause；地板优化另刀 |
 | `package_manager.package_entry_has_filters` | 1.379 | 0.765 | 1.804× | 8.00× | measure-only leftover 719; `config-selector-package-entry-has-filters-p` vs package entry filters | invent pause；地板优化另刀 |
+| `package_manager.selected_entry` | 0.968 | 0.810 | 1.195× | 8.00× | measure-only leftover 721; `config-selector-selected-entry` vs selected entry | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
