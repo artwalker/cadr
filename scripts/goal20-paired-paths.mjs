@@ -246,6 +246,9 @@ const REPETITIONS = {
 	"settings_load.sdk_http_idle_timeout": 50,
 	"settings_load.sdk_apply_overrides": 50,
 	"settings_load.sdk_model_thinking_level": 50,
+	"settings_load.sdk_settings_value": 50,
+	"settings_load.sdk_default_thinking_level": 50,
+	"settings_load.sdk_drain_errors": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -2833,14 +2836,23 @@ function leftoverConfiguredProviderName(explicit, env) {
 	return null;
 }
 
-function leftoverJsonGet(object, key) {
+function leftoverJsonGet(object, key, defaultValue) {
+	const fallback = arguments.length >= 3 ? defaultValue : null;
 	if (!object || typeof object !== "object" || Array.isArray(object)) {
-		return null;
+		return fallback;
 	}
 	if (!Object.prototype.hasOwnProperty.call(object, key)) {
-		return null;
+		return fallback;
 	}
 	return object[key];
+}
+
+function leftoverSdkSettingsValue(manager, key, defaultValue) {
+	const settings = manager.settings;
+	if (arguments.length >= 3) {
+		return leftoverJsonGet(settings, key, defaultValue);
+	}
+	return leftoverJsonGet(settings, key);
 }
 
 function leftoverProviderSettings(config, name) {
@@ -3224,6 +3236,58 @@ function runSettingsLoadSdkModelThinkingLevel() {
 	};
 }
 
+function leftoverSdkSettingsFixtureObject() {
+	return {
+		defaultProvider: "openai",
+		defaultModel: "gpt-4",
+		retry: { enabled: true, maxRetries: 5, baseDelayMs: 2000 },
+	};
+}
+
+function runSettingsLoadSdkSettingsValue() {
+	const settings = leftoverSdkSettingsFixtureObject();
+	const hit = leftoverSdkSettingsValue({ settings }, "defaultProvider");
+	const miss = leftoverSdkSettingsValue({ settings }, "nope");
+	const def = leftoverSdkSettingsValue({ settings }, "nope", "fb");
+	return {
+		ssv_hit: hit === "openai" ? 1 : 0,
+		ssv_miss: miss == null ? 1 : 0,
+		ssv_def: def === "fb" ? 1 : 0,
+		ssv_ok: hit === "openai" && miss == null && def === "fb" ? 1 : 0,
+		ssv_n: 5,
+	};
+}
+
+function runSettingsLoadSdkDefaultThinkingLevel() {
+	const high = settingsModule.SettingsManager.inMemory({
+		defaultThinkingLevel: "high",
+	}).getDefaultThinkingLevel();
+	const off = settingsModule.SettingsManager.inMemory({
+		defaultThinkingLevel: "off",
+	}).getDefaultThinkingLevel();
+	const empty = leftoverSdkSettingsEmpty().getDefaultThinkingLevel();
+	return {
+		sdt_high: high === "high" ? 1 : 0,
+		sdt_off: off === "off" ? 1 : 0,
+		sdt_empty: empty == null ? 1 : 0,
+		sdt_ok: high === "high" && off === "off" && empty == null ? 1 : 0,
+		sdt_n: 5,
+	};
+}
+
+function runSettingsLoadSdkDrainErrors() {
+	const mgr = leftoverSdkSettingsEmpty();
+	const first = mgr.drainErrors();
+	const again = mgr.drainErrors();
+	return {
+		sde_len: first.length,
+		sde_empty: first.length === 0 ? 1 : 0,
+		sde_again: again.length === 0 ? 1 : 0,
+		sde_ok: first.length === 0 && again.length === 0 ? 1 : 0,
+		sde_n: 5,
+	};
+}
+
 function runSettingsLoadSdkDefaultProvider() {
 	const manager = leftoverSdkSettingsFixture();
 	const empty = leftoverSdkSettingsEmpty();
@@ -3289,6 +3353,9 @@ async function measureSettingsLoad() {
 	const sdkHttpIdleTimeout = runSettingsLoadSdkHttpIdleTimeout();
 	const sdkApplyOverrides = runSettingsLoadSdkApplyOverrides();
 	const sdkModelThinkingLevel = runSettingsLoadSdkModelThinkingLevel();
+	const sdkSettingsValue = runSettingsLoadSdkSettingsValue();
+	const sdkDefaultThinkingLevel = runSettingsLoadSdkDefaultThinkingLevel();
+	const sdkDrainErrors = runSettingsLoadSdkDrainErrors();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3365,6 +3432,15 @@ async function measureSettingsLoad() {
 		sdk_model_thinking_level: await collect("settings_load.sdk_model_thinking_level", () => {
 			return () => runSettingsLoadSdkModelThinkingLevel();
 		}),
+		sdk_settings_value: await collect("settings_load.sdk_settings_value", () => {
+			return () => runSettingsLoadSdkSettingsValue();
+		}),
+		sdk_default_thinking_level: await collect("settings_load.sdk_default_thinking_level", () => {
+			return () => runSettingsLoadSdkDefaultThinkingLevel();
+		}),
+		sdk_drain_errors: await collect("settings_load.sdk_drain_errors", () => {
+			return () => runSettingsLoadSdkDrainErrors();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3389,6 +3465,9 @@ async function measureSettingsLoad() {
 			...sdkHttpIdleTimeout,
 			...sdkApplyOverrides,
 			...sdkModelThinkingLevel,
+			...sdkSettingsValue,
+			...sdkDefaultThinkingLevel,
+			...sdkDrainErrors,
 		},
 	};
 }
@@ -33897,6 +33976,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.applyOverrides",
 			"settings_load.sdk_model_thinking_level":
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getModelThinkingLevel",
+			"settings_load.sdk_settings_value":
+				"packages/coding-agent/src/core/settings-manager.ts Settings object json-get replica (cadr sdk-settings-value)",
+			"settings_load.sdk_default_thinking_level":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getDefaultThinkingLevel",
+			"settings_load.sdk_drain_errors":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.drainErrors",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":
