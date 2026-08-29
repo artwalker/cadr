@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.llama_format_context`
+  (`llama-format-context-size` vs leftover Math.round k). Observed
+  `lfc_small` / `lfc_1k` / `lfc_8k` / `lfc_round` / `lfc_n` exact.
+  Measure-only leftover (Pair 805). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_js_to_fixed`
+  (`llama-js-to-fixed` vs leftover Number.toFixed). Observed
+  `ltf_one` / `ltf_zero` / `ltf_pi` / `ltf_ten` / `ltf_n` exact.
+  Measure-only leftover (Pair 806). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_search_exact`
+  (`llama-search-exact-query-p` vs leftover org/name regex). Observed
+  `lseq_ok` / `lseq_tag` / `lseq_space` / `lseq_slash` / `lseq_n` exact.
+  Measure-only leftover (Pair 807). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.string_prefix`
   (`string-prefix-p` vs leftover startsWith). Observed
   `sp_git` / `sp_http` / `sp_case` / `sp_empty` / `sp_n` exact.

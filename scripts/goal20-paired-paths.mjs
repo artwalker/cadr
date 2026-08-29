@@ -351,6 +351,9 @@ const REPETITIONS = {
 	"cli_extensions_install.string_prefix": 50,
 	"cli_extensions_install.split_path_segments": 50,
 	"cli_extensions_install.strip_git_query": 50,
+	"cli_extensions_install.llama_format_context": 50,
+	"cli_extensions_install.llama_js_to_fixed": 50,
+	"cli_extensions_install.llama_search_exact": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -14320,6 +14323,57 @@ function llamaUiCompactCount(value) {
 }
 
 
+function leftoverLlamaFormatContextSize(value) {
+	return value >= 1000 ? `${Math.round(value / 1000)}k` : String(value);
+}
+
+
+function leftoverLlamaJsToFixed(value, digits) {
+	return Number(value).toFixed(digits);
+}
+
+
+function leftoverLlamaSearchExactQueryP(query) {
+	return /^[^/\s]+\/[^:\s]+(?::[^\s:]+)?$/u.test(query) ? 1 : 0;
+}
+
+
+function runCliExtensionsLlamaFormatContext() {
+	const fmt = leftoverLlamaFormatContextSize;
+	return {
+		lfc_small: fmt(512) === "512" ? 1 : 0,
+		lfc_1k: fmt(1000) === "1k" ? 1 : 0,
+		lfc_8k: fmt(8192) === "8k" ? 1 : 0,
+		lfc_round: fmt(1500) === "2k" ? 1 : 0,
+		lfc_n: 5,
+	};
+}
+
+
+function runCliExtensionsLlamaJsToFixed() {
+	const fixed = leftoverLlamaJsToFixed;
+	return {
+		ltf_one: fixed(1.2, 1) === "1.2" ? 1 : 0,
+		ltf_zero: fixed(42, 0) === "42" ? 1 : 0,
+		ltf_pi: fixed(3.14159, 2) === "3.14" ? 1 : 0,
+		ltf_ten: fixed(10, 1) === "10.0" ? 1 : 0,
+		ltf_n: 5,
+	};
+}
+
+
+function runCliExtensionsLlamaSearchExact() {
+	const exact = leftoverLlamaSearchExactQueryP;
+	return {
+		lseq_ok: exact("user/repo"),
+		lseq_tag: exact("user/repo:Q4_K_M"),
+		lseq_space: exact("user repo"),
+		lseq_slash: exact("/bad"),
+		lseq_n: 5,
+	};
+}
+
+
 function llamaContextLabelOrEmpty(model) {
 	return llamaUiContextLabel(model) ?? "";
 }
@@ -14402,6 +14456,9 @@ async function measureCliExtensionsInstall() {
 	const stringPrefix = runCliExtensionsStringPrefix();
 	const splitPathSegments = runCliExtensionsSplitPathSegments();
 	const stripGitQuery = runCliExtensionsStripGitQuery();
+	const formatContext = runCliExtensionsLlamaFormatContext();
+	const jsToFixed = runCliExtensionsLlamaJsToFixed();
+	const searchExact = runCliExtensionsLlamaSearchExact();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -14433,6 +14490,15 @@ async function measureCliExtensionsInstall() {
 		strip_git_query: await collect("cli_extensions_install.strip_git_query", () => {
 			return () => runCliExtensionsStripGitQuery();
 		}),
+		llama_format_context: await collect("cli_extensions_install.llama_format_context", () => {
+			return () => runCliExtensionsLlamaFormatContext();
+		}),
+		llama_js_to_fixed: await collect("cli_extensions_install.llama_js_to_fixed", () => {
+			return () => runCliExtensionsLlamaJsToFixed();
+		}),
+		llama_search_exact: await collect("cli_extensions_install.llama_search_exact", () => {
+			return () => runCliExtensionsLlamaSearchExact();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -14444,6 +14510,9 @@ async function measureCliExtensionsInstall() {
 			...stringPrefix,
 			...splitPathSegments,
 			...stripGitQuery,
+			...formatContext,
+			...jsToFixed,
+			...searchExact,
 		},
 	};
 }
@@ -35704,6 +35773,12 @@ const result = {
 				"packages/coding-agent/src/utils/git.ts leftover split(\"/\") (cadr split-path-segments)",
 			"cli_extensions_install.strip_git_query":
 				"packages/coding-agent/src/utils/git.ts leftover strip query/hash (cadr strip-git-query-and-ref)",
+			"cli_extensions_install.llama_format_context":
+				"packages/coding-agent/src/extensions/llama/ui.ts leftover Math.round k (cadr llama-format-context-size)",
+			"cli_extensions_install.llama_js_to_fixed":
+				"packages/coding-agent/src/extensions/llama/ui.ts leftover Number.toFixed (cadr llama-js-to-fixed)",
+			"cli_extensions_install.llama_search_exact":
+				"packages/coding-agent/src/extensions/llama/ui.ts leftover org/name regex (cadr llama-search-exact-query-p)",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":
