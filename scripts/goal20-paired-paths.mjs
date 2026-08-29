@@ -839,6 +839,9 @@ const REPETITIONS = {
 	"provider_registry_defs.oauth_login_function": 50,
 	"provider_registry_defs.oauth_refresh_function": 50,
 	"provider_registry_defs.oauth_to_auth": 50,
+	"provider_registry_defs.api_key_login_function": 50,
+	"provider_registry_defs.api_key_auth": 50,
+	"provider_registry_defs.model_filter_function": 50,
 	"core_rest.cancellation_abort": 50,
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
@@ -31591,6 +31594,109 @@ function runProviderOauthToAuth() {
 	};
 }
 
+function leftoverApiKeyLoginPresent(provider) {
+	const login = provider?.auth?.apiKey?.login;
+	if (typeof login !== "function") {
+		return 0;
+	}
+	return Function.prototype.toString.call(login).includes("select") ? 1 : 0;
+}
+
+function leftoverEnvApiKeyResolve(envVars, credential, envMap) {
+	if (credential?.key) {
+		return { apiKey: credential.key, source: "stored credential" };
+	}
+	for (const name of envVars) {
+		const value = envMap[name];
+		if (value) {
+			return { apiKey: value, source: name };
+		}
+	}
+	return null;
+}
+
+function leftoverFixtureModels() {
+	return [
+		{ id: "keep-me", name: "Keep" },
+		{ id: "drop-me", name: "Drop" },
+	];
+}
+
+function leftoverApplyModelFilter(provider, models, credential) {
+	if (typeof provider?.filterModels !== "function") {
+		return models;
+	}
+	return provider.filterModels(models, credential);
+}
+
+function runProviderApiKeyLoginFunction() {
+	const providersById = new Map(
+		builtinProvidersModule.builtinProviders().map((provider) => [provider.id, provider]),
+	);
+	const bedrock = providersById.get("amazon-bedrock");
+	const vertex = providersById.get("google-vertex");
+	const openai = providersById.get("openai");
+	const bedrockLogin = leftoverApiKeyLoginPresent(bedrock);
+	const vertexLogin = leftoverApiKeyLoginPresent(vertex);
+	return {
+		alk_bedrock: bedrockLogin,
+		alk_vertex: vertexLogin,
+		alk_openai: leftoverApiKeyLoginPresent(openai) ? 0 : 1,
+		alk_diff:
+			bedrock?.auth?.apiKey?.login &&
+			vertex?.auth?.apiKey?.login &&
+			bedrock.auth.apiKey.login !== vertex.auth.apiKey.login
+				? 1
+				: 0,
+		alk_n: 5,
+	};
+}
+
+function runProviderApiKeyAuth() {
+	const providersById = new Map(
+		builtinProvidersModule.builtinProviders().map((provider) => [provider.id, provider]),
+	);
+	const explicit = leftoverEnvApiKeyResolve(["OPENAI_API_KEY"], { key: "sk-explicit" }, {});
+	const stored = leftoverEnvApiKeyResolve(["OPENAI_API_KEY"], { key: "sk-stored" }, {});
+	const fromEnv = leftoverEnvApiKeyResolve(
+		["OPENAI_API_KEY"],
+		null,
+		{ OPENAI_API_KEY: "sk-env" },
+	);
+	const miss = leftoverEnvApiKeyResolve(["OPENAI_API_KEY"], null, {});
+	const noStrategy = providersById.get("openai-codex")?.auth?.apiKey;
+	return {
+		aka_explicit: explicit?.apiKey === "sk-explicit" ? 1 : 0,
+		aka_stored: stored?.apiKey === "sk-stored" ? 1 : 0,
+		aka_env: fromEnv?.apiKey === "sk-env" ? 1 : 0,
+		aka_miss: miss == null && noStrategy == null ? 1 : 0,
+		aka_n: 5,
+	};
+}
+
+function runProviderModelFilterFunction() {
+	const copilot = githubCopilotProviderModule.githubCopilotProvider();
+	const openai = builtinProvidersModule
+		.builtinProviders()
+		.find((provider) => provider.id === "openai");
+	const models = leftoverFixtureModels();
+	const kept = leftoverApplyModelFilter(copilot, models, {
+		type: "oauth",
+		availableModelIds: ["keep-me"],
+	});
+	const emptied = leftoverApplyModelFilter(copilot, models, {
+		type: "oauth",
+		availableModelIds: [],
+	});
+	return {
+		mff_copilot: typeof copilot.filterModels === "function" ? 1 : 0,
+		mff_openai: typeof openai?.filterModels === "function" ? 0 : 1,
+		mff_keep: kept.length === 1 && kept[0].id === "keep-me" ? 1 : 0,
+		mff_empty: emptied.length === 0 ? 1 : 0,
+		mff_n: 5,
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
@@ -31603,6 +31709,9 @@ async function measureProviderRegistryDefs() {
 	const oauthLoginFunction = runProviderOauthLoginFunction();
 	const oauthRefreshFunction = runProviderOauthRefreshFunction();
 	const oauthToAuth = runProviderOauthToAuth();
+	const apiKeyLoginFunction = runProviderApiKeyLoginFunction();
+	const apiKeyAuth = runProviderApiKeyAuth();
+	const modelFilterFunction = runProviderModelFilterFunction();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -31646,6 +31755,21 @@ async function measureProviderRegistryDefs() {
 		oauth_to_auth: await collect("provider_registry_defs.oauth_to_auth", () => {
 			return () => runProviderOauthToAuth();
 		}),
+		api_key_login_function: await collect(
+			"provider_registry_defs.api_key_login_function",
+			() => {
+				return () => runProviderApiKeyLoginFunction();
+			},
+		),
+		api_key_auth: await collect("provider_registry_defs.api_key_auth", () => {
+			return () => runProviderApiKeyAuth();
+		}),
+		model_filter_function: await collect(
+			"provider_registry_defs.model_filter_function",
+			() => {
+				return () => runProviderModelFilterFunction();
+			},
+		),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
@@ -31659,6 +31783,9 @@ async function measureProviderRegistryDefs() {
 			...oauthLoginFunction,
 			...oauthRefreshFunction,
 			...oauthToAuth,
+			...apiKeyLoginFunction,
+			...apiKeyAuth,
+			...modelFilterFunction,
 		},
 	};
 }
@@ -34137,6 +34264,12 @@ const result = {
 				"packages/ai/src/providers/github-copilot.ts + anthropic.ts + google.ts oauth.refresh presence",
 			"provider_registry_defs.oauth_to_auth":
 				"packages/ai/src/auth/oauth/anthropic.ts toAuth + kimi-coding.ts toAuth (access-token / kimi-bearer / miss)",
+			"provider_registry_defs.api_key_login_function":
+				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login presence (select flow); openai env login is not the cadr table",
+			"provider_registry_defs.api_key_auth":
+				"packages/ai/src/auth/helpers.ts envApiKeyAuth.resolve (explicit/stored/env/miss; openai-codex has no apiKey)",
+			"provider_registry_defs.model_filter_function":
+				"packages/ai/src/providers/github-copilot.ts filterModels availableModelIds",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"skill_prompt_load.resolve_prompt":
