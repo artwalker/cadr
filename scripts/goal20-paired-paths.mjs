@@ -55,6 +55,7 @@ import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { Worker, isMainThread } from "node:worker_threads";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureDirectory = path.join(projectDirectory, "test/fixtures/goal20-paired-paths");
@@ -14208,7 +14209,7 @@ async function measureAiSupportEstimate() {
 	const uuid = runAiSupportUuidV7();
 	const auth = runAiSupportAuthGuidance();
 	const threadsAbsent = runAiSupportThreadsAbsent();
-	const threadsCurrent = await runAiSupportThreadsCurrent();
+	const threadsCurrent = runAiSupportThreadsCurrent();
 	const threadsJoined = await runAiSupportThreadsJoined();
 	return {
 		estimate_text: await collect("ai_support.estimate_text", () => {
@@ -14278,8 +14279,7 @@ function runAiSupportThreadsAbsent() {
 }
 
 /** Leftover 884: ``isMainThread`` vs cadr-ai wrapper on the current thread (``:current``). */
-async function runAiSupportThreadsCurrent() {
-	const { isMainThread } = await import("node:worker_threads");
+function runAiSupportThreadsCurrent() {
 	return {
 		thc_eq: isMainThread ? 1 : 0,
 		thc_n: 1,
@@ -14291,7 +14291,6 @@ async function runAiSupportThreadsCurrent() {
  * Same Worker spawn as ``core_rest.threads_cleanup``.
  */
 async function runAiSupportThreadsJoined() {
-	const { Worker } = await import("node:worker_threads");
 	const joined = await new Promise((resolve) => {
 		const worker = new Worker("setImmediate(() => {})", { eval: true });
 		worker.on("exit", () => resolve(1));
