@@ -234,6 +234,9 @@
 ;;;; 646. cli_interactive_controller transcript-summary-text vs customMessageText
 ;;;; 647. cli_interactive_controller assistant-stop-error-lines vs AssistantMessageComponent stopReason
 ;;;; 648. cli_interactive_controller update-notification-border-line vs warning DynamicBorder
+;;;; 649. cli_interactive_controller theme-message-background-lines vs theme.bg message background
+;;;; 650. cli_interactive_controller update-notification-text-lines vs warning body text
+;;;; 651. cli_interactive_controller tui-syntax-highlight vs syntaxHighlight keyword/number
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -593,6 +596,9 @@
     ("cli_interactive_controller.transcript_summary_text" . 50)
     ("cli_interactive_controller.assistant_stop_error" . 50)
     ("cli_interactive_controller.update_notification_border" . 50)
+    ("cli_interactive_controller.theme_message_background" . 50)
+    ("cli_interactive_controller.update_notification_text" . 50)
+    ("cli_interactive_controller.syntax_highlight" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14406,6 +14412,26 @@
    "unb_n" (nth 4 border)))
 
 
+(defun leftover-transcript-theme-notify-syntax-observed-pairs
+    (theme-bg notify-text syntax)
+  (list
+   "tmb_hi" (nth 0 theme-bg)
+   "tmb_empty" (nth 1 theme-bg)
+   "tmb_n" (nth 2 theme-bg)
+   "tmb_keep" (nth 3 theme-bg)
+   "tmb_tok" (nth 4 theme-bg)
+   "unt_hi" (nth 0 notify-text)
+   "unt_empty" (nth 1 notify-text)
+   "unt_cjk" (nth 2 notify-text)
+   "unt_n" (nth 3 notify-text)
+   "unt_pad" (nth 4 notify-text)
+   "syn_plain" (nth 0 syntax)
+   "syn_empty" (nth 1 syntax)
+   "syn_keep" (nth 2 syntax)
+   "syn_n" (nth 3 syntax)
+   "syn_json" (nth 4 syntax)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14873,7 +14899,13 @@
         (leftover-assistant-stop-error
           (run-cli-interactive-assistant-stop-error))
         (leftover-update-notification-border
-          (run-cli-interactive-update-notification-border)))
+          (run-cli-interactive-update-notification-border))
+        (leftover-theme-message-background
+          (run-cli-interactive-theme-message-background))
+        (leftover-update-notification-text
+          (run-cli-interactive-update-notification-text))
+        (leftover-syntax-highlight
+          (run-cli-interactive-syntax-highlight)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14944,7 +14976,11 @@
              (leftover-transcript-text-stop-border-observed-pairs
               leftover-transcript-summary-text
               leftover-assistant-stop-error
-              leftover-update-notification-border)))
+              leftover-update-notification-border)
+             (leftover-transcript-theme-notify-syntax-observed-pairs
+              leftover-theme-message-background
+              leftover-update-notification-text
+              leftover-syntax-highlight)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15049,7 +15085,22 @@
      (collect "cli_interactive_controller.update_notification_border"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-update-notification-border)))))))
+                  (run-cli-interactive-update-notification-border))))
+     "theme_message_background"
+     (collect "cli_interactive_controller.theme_message_background"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-message-background))))
+     "update_notification_text"
+     (collect "cli_interactive_controller.update_notification_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-update-notification-text))))
+     "syntax_highlight"
+     (collect "cli_interactive_controller.syntax_highlight"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-syntax-highlight)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15336,6 +15387,94 @@
      (if (string= zero "") 1 0)
      (if (= (length one) 1) 1 0)
      (length forty))))
+
+(defun leftover-theme-message-background-stripped (lines token)
+  (mapcar
+   (lambda (line)
+     (cadr-cli::strip-ansi line))
+   (cadr-cli::theme-message-background-lines lines token)))
+
+(defun run-cli-interactive-theme-message-background ()
+  (let ((hello
+          (leftover-theme-message-background-stripped
+           (list "hello") :custom-message-bg))
+        (empty
+          (leftover-theme-message-background-stripped
+           nil :custom-message-bg))
+        (two
+          (leftover-theme-message-background-stripped
+           (list "a" "x") :custom-message-bg))
+        (user
+          (leftover-theme-message-background-stripped
+           (list "hi") :user-message-bg)))
+    (cadr-cli::theme-message-background-lines
+     (list "hello") :custom-message-bg)
+    (cadr-cli::theme-message-background-lines nil :custom-message-bg)
+    (cadr-cli::theme-message-background-lines
+     (list "a" "x") :custom-message-bg)
+    (cadr-cli::theme-message-background-lines
+     (list "hi") :user-message-bg)
+    (list
+     (if (equal hello (list "hello")) 1 0)
+     (if (null empty) 1 0)
+     (length two)
+     (if (equal two (list "a" "x")) 1 0)
+     (if (equal user (list "hi")) 1 0))))
+
+(defun leftover-update-notification-text-joined (text width)
+  (cadr-cli::strip-ansi
+   (format
+    nil "~{~A~^~%~}"
+    (cadr-cli::update-notification-text-lines text width))))
+
+(defun run-cli-interactive-update-notification-text ()
+  (let ((hello
+          (leftover-update-notification-text-joined "hello" 40))
+        (empty
+          (leftover-update-notification-text-joined "" 40))
+        (cjk
+          (leftover-update-notification-text-joined "你好" 40))
+        (narrow
+          (leftover-update-notification-text-joined "abcdefghij" 8)))
+    (cadr-cli::update-notification-text-lines "hello" 40)
+    (cadr-cli::update-notification-text-lines "" 40)
+    (cadr-cli::update-notification-text-lines "你好" 40)
+    (cadr-cli::update-notification-text-lines "abcdefghij" 8)
+    (list
+     (if (search "hello" hello) 1 0)
+     (if (not (search "hello" empty)) 1 0)
+     (if (search "你好" cjk) 1 0)
+     (if
+         (plusp
+          (length
+           (cadr-cli::update-notification-text-lines "abcdefghij" 8)))
+         1
+         0)
+     (if (>= (length hello) 5) 1 0))))
+
+(defun leftover-syntax-highlight-stripped (language source)
+  (cadr-cli::strip-ansi
+   (cadr-cli::tui-syntax-highlight language source)))
+
+(defun run-cli-interactive-syntax-highlight ()
+  (let ((plain
+          (leftover-syntax-highlight-stripped "zz" "hello"))
+        (empty
+          (leftover-syntax-highlight-stripped "lisp" ""))
+        (keep
+          (leftover-syntax-highlight-stripped "lisp" "(+ 1 2)"))
+        (json
+          (leftover-syntax-highlight-stripped "json" "{}")))
+    (cadr-cli::tui-syntax-highlight "zz" "hello")
+    (cadr-cli::tui-syntax-highlight "lisp" "")
+    (cadr-cli::tui-syntax-highlight "lisp" "(+ 1 2)")
+    (cadr-cli::tui-syntax-highlight "json" "{}")
+    (list
+     (if (string= plain "hello") 1 0)
+     (if (string= empty "") 1 0)
+     (if (string= keep "(+ 1 2)") 1 0)
+     (length keep)
+     (if (string= json "{}") 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -27632,6 +27771,12 @@
       "src/cadr-cli/interactive/transcript.lisp assistant-stop-error-lines"
       "cli_interactive_controller.update_notification_border"
       "src/cadr-cli/interactive/transcript.lisp update-notification-border-line"
+      "cli_interactive_controller.theme_message_background"
+      "src/cadr-cli/interactive/transcript.lisp theme-message-background-lines"
+      "cli_interactive_controller.update_notification_text"
+      "src/cadr-cli/interactive/transcript.lisp update-notification-text-lines"
+      "cli_interactive_controller.syntax_highlight"
+      "src/cadr-cli/interactive/transcript.lisp tui-syntax-highlight"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

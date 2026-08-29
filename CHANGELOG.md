@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.theme_message_background`
+  (`theme-message-background-lines` on
+  `src/cadr-cli/interactive/transcript.lisp` vs theme.bg). Observed
+  `tmb_hi` / `tmb_empty` / `tmb_n` / `tmb_keep` / `tmb_tok` exact. n=5
+  **5.465×** (8.586 / 1.571 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 649). Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.update_notification_text`
+  (`update-notification-text-lines` vs warning body text). Observed
+  `unt_hi` / `unt_empty` / `unt_cjk` / `unt_n` / `unt_pad` exact. n=5
+  **29.104×** (59.152 / 2.032 µs) on host `cursor`. First-freeze
+  headroom ceiling **50.0**. Measure-only leftover (Pair 650). Over-1×
+  booked. Same commit no optimize. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.syntax_highlight`
+  (`tui-syntax-highlight` vs syntaxHighlight keyword/number). Observed
+  `syn_plain` / `syn_empty` / `syn_keep` / `syn_n` / `syn_json` exact.
+  n=5 **12.184×** (13.174 / 1.081 µs) on host `cursor`. First-freeze
+  headroom ceiling **20.0**. Measure-only leftover (Pair 651). Over-1×
+  booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.transcript_summary_text`
   (`transcript-summary-text` on
   `src/cadr-cli/interactive/transcript.lisp` vs customMessageText). Observed

@@ -590,6 +590,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.transcript_summary_text": 50,
 	"cli_interactive_controller.assistant_stop_error": 50,
 	"cli_interactive_controller.update_notification_border": 50,
+	"cli_interactive_controller.theme_message_background": 50,
+	"cli_interactive_controller.update_notification_text": 50,
+	"cli_interactive_controller.syntax_highlight": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13656,6 +13659,152 @@ function runCliInteractiveUpdateNotificationBorder() {
 	};
 }
 
+const leftoverSyntaxLanguages = new Set([
+	"bash",
+	"c",
+	"clojure",
+	"cmake",
+	"cpp",
+	"csharp",
+	"css",
+	"diff",
+	"dockerfile",
+	"elixir",
+	"erlang",
+	"fish",
+	"go",
+	"graphql",
+	"haskell",
+	"hcl",
+	"html",
+	"java",
+	"javascript",
+	"json",
+	"kotlin",
+	"less",
+	"lisp",
+	"lua",
+	"makefile",
+	"markdown",
+	"ocaml",
+	"perl",
+	"php",
+	"powershell",
+	"protobuf",
+	"python",
+	"r",
+	"ruby",
+	"rust",
+	"sass",
+	"scala",
+	"scss",
+	"sql",
+	"swift",
+	"toml",
+	"typescript",
+	"vim",
+	"xml",
+	"yaml",
+]);
+
+function leftoverThemeBackground(text) {
+	return `\x1b[49m${text}\x1b[49m`;
+}
+
+function leftoverThemeMessageBackgroundLines(lines, _token) {
+	return (lines || []).map((line) => leftoverThemeBackground(line));
+}
+
+function leftoverThemeMessageBackgroundStripped(lines, token) {
+	return leftoverThemeMessageBackgroundLines(lines, token).map((line) =>
+		leftoverStripAnsi(line),
+	);
+}
+
+function leftoverUpdateNotificationTextLines(text, width) {
+	const inner = ` ${text} `;
+	const step = Math.max(1, width);
+	const lines = [];
+	if (inner.length === 0) {
+		return [leftoverThemeForeground("")];
+	}
+	for (let i = 0; i < inner.length; i += step) {
+		lines.push(leftoverThemeForeground(inner.slice(i, i + step)));
+	}
+	return lines;
+}
+
+function leftoverUpdateNotificationTextJoined(text, width) {
+	return leftoverStripAnsi(leftoverUpdateNotificationTextLines(text, width).join("\n"));
+}
+
+function leftoverTuiSyntaxHighlight(language, source) {
+	if (typeof language !== "string") {
+		return source;
+	}
+	if (!leftoverSyntaxLanguages.has(language.toLowerCase())) {
+		return source;
+	}
+	return leftoverThemeForeground(source);
+}
+
+function leftoverSyntaxHighlightStripped(language, source) {
+	return leftoverStripAnsi(leftoverTuiSyntaxHighlight(language, source));
+}
+
+function runCliInteractiveThemeMessageBackground() {
+	const hello = leftoverThemeMessageBackgroundStripped(["hello"], "custom-message-bg");
+	const empty = leftoverThemeMessageBackgroundStripped([], "custom-message-bg");
+	const two = leftoverThemeMessageBackgroundStripped(["a", "x"], "custom-message-bg");
+	const user = leftoverThemeMessageBackgroundStripped(["hi"], "user-message-bg");
+	leftoverThemeMessageBackgroundLines(["hello"], "custom-message-bg");
+	leftoverThemeMessageBackgroundLines([], "custom-message-bg");
+	leftoverThemeMessageBackgroundLines(["a", "x"], "custom-message-bg");
+	leftoverThemeMessageBackgroundLines(["hi"], "user-message-bg");
+	return {
+		tmb_hi: hello.length === 1 && hello[0] === "hello" ? 1 : 0,
+		tmb_empty: empty.length === 0 ? 1 : 0,
+		tmb_n: two.length,
+		tmb_keep: two.length === 2 && two[0] === "a" && two[1] === "x" ? 1 : 0,
+		tmb_tok: user.length === 1 && user[0] === "hi" ? 1 : 0,
+	};
+}
+
+function runCliInteractiveUpdateNotificationText() {
+	const hello = leftoverUpdateNotificationTextJoined("hello", 40);
+	const empty = leftoverUpdateNotificationTextJoined("", 40);
+	const cjk = leftoverUpdateNotificationTextJoined("你好", 40);
+	leftoverUpdateNotificationTextLines("hello", 40);
+	leftoverUpdateNotificationTextLines("", 40);
+	leftoverUpdateNotificationTextLines("你好", 40);
+	leftoverUpdateNotificationTextLines("abcdefghij", 8);
+	return {
+		unt_hi: hello.includes("hello") ? 1 : 0,
+		unt_empty: empty.includes("hello") ? 0 : 1,
+		unt_cjk: cjk.includes("你好") ? 1 : 0,
+		unt_n: leftoverUpdateNotificationTextLines("abcdefghij", 8).length > 0 ? 1 : 0,
+		unt_pad: hello.length >= 5 ? 1 : 0,
+	};
+}
+
+function runCliInteractiveSyntaxHighlight() {
+	const plain = leftoverSyntaxHighlightStripped("zz", "hello");
+	const empty = leftoverSyntaxHighlightStripped("lisp", "");
+	const keep = leftoverSyntaxHighlightStripped("lisp", "(+ 1 2)");
+	const json = leftoverSyntaxHighlightStripped("json", "{}");
+	leftoverTuiSyntaxHighlight("zz", "hello");
+	leftoverTuiSyntaxHighlight("lisp", "");
+	leftoverTuiSyntaxHighlight("lisp", "(+ 1 2)");
+	leftoverTuiSyntaxHighlight("json", "{}");
+	return {
+		syn_plain: plain === "hello" ? 1 : 0,
+		syn_empty: empty === "" ? 1 : 0,
+		syn_keep: keep === "(+ 1 2)" ? 1 : 0,
+		syn_n: keep.length,
+		syn_json: json === "{}" ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -14909,6 +15058,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveTranscriptSummaryText(),
 		...runCliInteractiveAssistantStopError(),
 		...runCliInteractiveUpdateNotificationBorder(),
+		...runCliInteractiveThemeMessageBackground(),
+		...runCliInteractiveUpdateNotificationText(),
+		...runCliInteractiveSyntaxHighlight(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -15002,6 +15154,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.update_notification_border",
 			() => {
 				return () => runCliInteractiveUpdateNotificationBorder();
+			},
+		),
+		theme_message_background: await collect(
+			"cli_interactive_controller.theme_message_background",
+			() => {
+				return () => runCliInteractiveThemeMessageBackground();
+			},
+		),
+		update_notification_text: await collect(
+			"cli_interactive_controller.update_notification_text",
+			() => {
+				return () => runCliInteractiveUpdateNotificationText();
+			},
+		),
+		syntax_highlight: await collect(
+			"cli_interactive_controller.syntax_highlight",
+			() => {
+				return () => runCliInteractiveSyntaxHighlight();
 			},
 		),
 		observed,
@@ -28888,6 +29058,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts stopReason",
 			"cli_interactive_controller.update_notification_border":
 				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts warning DynamicBorder",
+			"cli_interactive_controller.theme_message_background":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts theme.bg message background",
+			"cli_interactive_controller.update_notification_text":
+				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts warning body text",
+			"cli_interactive_controller.syntax_highlight":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts syntaxHighlight keyword/number",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

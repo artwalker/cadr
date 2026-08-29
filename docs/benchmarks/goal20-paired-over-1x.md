@@ -454,4 +454,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.transcript_summary_text` | 8.866 | 1.632 | 5.434× | 8.00× | measure-only leftover 646; `transcript-summary-text` vs customMessageText | invent pause；地板优化另刀 |
 | `cli_interactive_controller.assistant_stop_error` | 24.257 | 2.323 | 10.444× | 20.00× | measure-only leftover 647; `assistant-stop-error-lines` vs AssistantMessageComponent stopReason; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.update_notification_border` | 6.319 | 1.484 | 4.259× | 8.00× | measure-only leftover 648; `update-notification-border-line` vs warning DynamicBorder | invent pause；地板优化另刀 |
+| `cli_interactive_controller.theme_message_background` | 8.586 | 1.571 | 5.465× | 8.00× | measure-only leftover 649; `theme-message-background-lines` vs theme.bg | invent pause；地板优化另刀 |
+| `cli_interactive_controller.update_notification_text` | 59.152 | 2.032 | 29.104× | 50.00× | measure-only leftover 650; `update-notification-text-lines` vs warning body text; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.syntax_highlight` | 13.174 | 1.081 | 12.184× | 20.00× | measure-only leftover 651; `tui-syntax-highlight` vs syntaxHighlight; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
