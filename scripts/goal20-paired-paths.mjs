@@ -314,6 +314,9 @@ const REPETITIONS = {
 	"package_manager.records_project_first": 50,
 	"package_manager.candidate_record": 50,
 	"package_manager.update_offline": 50,
+	"package_manager.git_output": 50,
+	"package_manager.remote_ref": 50,
+	"package_manager.update_record_result": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -8614,6 +8617,148 @@ function leftoverCheckForAvailableUpdates(records, offline) {
 	return null;
 }
 
+function leftoverPackageUpdateGitOutput(runner, path, ...args) {
+	return runner(["git", "-C", String(path), ...args]);
+}
+
+function leftoverPackageUpdateRemoteRef(runner, path) {
+	let upstream;
+	try {
+		upstream = String(
+			leftoverPackageUpdateGitOutput(
+				runner,
+				path,
+				"rev-parse",
+				"--abbrev-ref",
+				"@{upstream}",
+			),
+		).trim();
+	} catch {
+		return null;
+	}
+	if (upstream.startsWith("origin/") && upstream.length > "origin/".length) {
+		return `refs/heads/${upstream.slice("origin/".length)}`;
+	}
+	return null;
+}
+
+function leftoverPackageGitUpdateAvailable(record, runner) {
+	const path = record.path;
+	const local = packageUpdateGitObjectId(
+		leftoverPackageUpdateGitOutput(runner, path, "rev-parse", "HEAD"),
+	);
+	const remoteRef = leftoverPackageUpdateRemoteRef(runner, path);
+	const remote =
+		(remoteRef
+			? packageUpdateGitObjectId(
+					leftoverPackageUpdateGitOutput(
+						runner,
+						path,
+						"ls-remote",
+						"origin",
+						remoteRef,
+					),
+				)
+			: null) ||
+		packageUpdateGitObjectId(
+			leftoverPackageUpdateGitOutput(runner, path, "ls-remote", "origin", "HEAD"),
+		);
+	return Boolean(local && remote && local !== remote);
+}
+
+function leftoverPackageUpdateRecordResult(record, runner) {
+	try {
+		if (!leftoverPackageGitUpdateAvailable(record, runner)) {
+			return null;
+		}
+		const source = record.parsed;
+		return `${source.host}/${source.path}`;
+	} catch {
+		return null;
+	}
+}
+
+function leftoverUpdateAvailRunner(local, upstream, remote) {
+	return (argv) => {
+		if (argv.includes("--abbrev-ref")) {
+			return upstream;
+		}
+		if (argv.includes("ls-remote")) {
+			return remote;
+		}
+		if (argv.includes("rev-parse")) {
+			return local;
+		}
+		return "";
+	};
+}
+
+function runPackageManagerGitOutput() {
+	let captured = null;
+	const out = leftoverPackageUpdateGitOutput(
+		(argv) => {
+			captured = argv;
+			return "ok";
+		},
+		"/tmp/pkg",
+		"rev-parse",
+		"HEAD",
+	);
+	return {
+		pug_git: captured?.[0] === "git" ? 1 : 0,
+		pug_cwd: captured?.[1] === "-C" ? 1 : 0,
+		pug_rev: captured?.[2] === "/tmp/pkg" ? 1 : 0,
+		pug_out: out === "ok" ? 1 : 0,
+		pug_n: 5,
+	};
+}
+
+function runPackageManagerRemoteRef() {
+	return {
+		pur_main:
+			leftoverPackageUpdateRemoteRef(() => "origin/main\n", "/tmp/pkg") ===
+			"refs/heads/main"
+				? 1
+				: 0,
+		pur_feat:
+			leftoverPackageUpdateRemoteRef(() => "origin/feat/x", "/tmp/pkg") ===
+			"refs/heads/feat/x"
+				? 1
+				: 0,
+		pur_plain: leftoverPackageUpdateRemoteRef(() => "main", "/tmp/pkg") == null ? 1 : 0,
+		pur_empty: leftoverPackageUpdateRemoteRef(() => "", "/tmp/pkg") == null ? 1 : 0,
+		pur_n: 5,
+	};
+}
+
+function runPackageManagerUpdateRecordResult() {
+	const oidA = "0123456789abcdef0123456789abcdef01234567";
+	const oidB = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+	const rec = leftoverUpdateCheckRecord("project", "/tmp/pkg", "git");
+	const hit = leftoverPackageUpdateRecordResult(
+		rec,
+		leftoverUpdateAvailRunner(oidA, "origin/main", oidB),
+	);
+	const same = leftoverPackageUpdateRecordResult(
+		rec,
+		leftoverUpdateAvailRunner(oidA, "origin/main", oidA),
+	);
+	const boom = leftoverPackageUpdateRecordResult(rec, () => {
+		throw new Error("boom");
+	});
+	const bad = leftoverPackageUpdateRecordResult(
+		rec,
+		leftoverUpdateAvailRunner(oidA, "origin/main", "notasha"),
+	);
+	return {
+		prr_hit: hit === "github.com/acme/pkg" ? 1 : 0,
+		prr_same: same == null ? 1 : 0,
+		prr_err: boom == null ? 1 : 0,
+		prr_bad: bad == null ? 1 : 0,
+		prr_n: 5,
+	};
+}
+
 function leftoverRunPackageUpdateChecks(records) {
 	if (!records || records.length === 0) {
 		return [];
@@ -8730,6 +8875,9 @@ async function measurePackageManager() {
 	const recordsProjectFirst = runPackageManagerRecordsProjectFirst();
 	const candidateRecord = runPackageManagerCandidateRecord();
 	const updateOffline = runPackageManagerUpdateOffline();
+	const gitOutput = runPackageManagerGitOutput();
+	const remoteRef = runPackageManagerRemoteRef();
+	const updateRecordResult = runPackageManagerUpdateRecordResult();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -8902,6 +9050,15 @@ async function measurePackageManager() {
 		update_offline: await collect("package_manager.update_offline", () => {
 			return () => runPackageManagerUpdateOffline();
 		}),
+		git_output: await collect("package_manager.git_output", () => {
+			return () => runPackageManagerGitOutput();
+		}),
+		remote_ref: await collect("package_manager.remote_ref", () => {
+			return () => runPackageManagerRemoteRef();
+		}),
+		update_record_result: await collect("package_manager.update_record_result", () => {
+			return () => runPackageManagerUpdateRecordResult();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -8961,6 +9118,9 @@ async function measurePackageManager() {
 			...recordsProjectFirst,
 			...candidateRecord,
 			...updateOffline,
+			...gitOutput,
+			...remoteRef,
+			...updateRecordResult,
 		},
 	};
 }
@@ -35260,6 +35420,12 @@ const result = {
 				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates git/unpinned/exists filter (cadr package-update-candidate-record-p)",
 			"package_manager.update_offline":
 				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates isOfflineModeEnabled short-circuit (cadr check-for-available-package-updates)",
+			"package_manager.git_output":
+				"packages/coding-agent/src/core/package-manager.ts leftover git argv runner (cadr package-update-git-output)",
+			"package_manager.remote_ref":
+				"packages/coding-agent/src/core/package-manager.ts leftover origin/ upstream ref (cadr package-update-remote-ref)",
+			"package_manager.update_record_result":
+				"packages/coding-agent/src/core/package-manager.ts leftover host/path update result (cadr package-update-record-result)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

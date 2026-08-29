@@ -7564,6 +7564,36 @@
    "piUs": 0.218,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 796,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.git_output",
+   "branch": "cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 796"
+  },
+  {
+   "pair": 797,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.remote_ref",
+   "branch": "cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 797"
+  },
+  {
+   "pair": 798,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.update_record_result",
+   "branch": "cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 798"
   }
  ],
  "mergeQueue": []
