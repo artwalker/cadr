@@ -42,6 +42,21 @@ tag/Release step.
   `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` exact.
   n=5 **0.465×** (0.776 / 1.671 µs) on host `cursor`, ceiling 8.0.
   Measure-only leftover (Pair 780). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.resource_item_key`
+  (`config-resource-item-key` vs leftover getResourceItemKey). Observed
+  `rik_ext` / `rik_skill` / `rik_diff` / `rik_hello` / `rik_n` exact.
+  Measure-only leftover (Pair 781). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.project_override_state`
+  (`config-selector-project-state` vs leftover override hash). Observed
+  `cps_load` / `cps_unload` / `cps_miss` / `cps_eq` / `cps_n` exact.
+  Measure-only leftover (Pair 782). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.next_project_state`
+  (`config-selector-next-project-state` vs leftover nextProjectOverrideState).
+  Observed `nps_inh_t` / `nps_inh_f` / `nps_unl` / `nps_load` / `nps_n`
+  exact. Measure-only leftover (Pair 783). Freeze pending. `nextPairNum`
+  left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /

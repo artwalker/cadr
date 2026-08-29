@@ -301,6 +301,9 @@ const REPETITIONS = {
 	"package_manager.delta_resource_state": 50,
 	"package_manager.project_top_level_state": 50,
 	"package_manager.derived_project_state": 50,
+	"package_manager.resource_item_key": 50,
+	"package_manager.project_override_state": 50,
+	"package_manager.next_project_state": 50,
 	"package_manager.records_project_first": 50,
 	"package_manager.candidate_record": 50,
 	"package_manager.update_offline": 50,
@@ -6985,8 +6988,70 @@ function leftoverConfigSelectorHelloItem(extras = {}) {
 		{
 			path: "/tmp/proj/.cadr/hello.lisp",
 			baseDirectory: "/tmp/proj/.cadr/",
+			type: extras.type ?? "extensions",
 		},
 	);
+}
+
+function leftoverConfigResourceItemKey(item) {
+	const type = String(item.type || "extensions")
+		.replace(/^:/, "")
+		.toLowerCase();
+	let file = String(item.path || "").replaceAll("\\", "/");
+	if (!file.startsWith("/")) {
+		file = path.resolve(file);
+	}
+	return `${type}:${file}`;
+}
+
+function leftoverConfigSelectorOverrideState(item, override, extras = {}) {
+	const state = leftoverConfigSelectorState(0);
+	const key = leftoverConfigResourceItemKey(item);
+	state.projectOverrides = new Map();
+	state.inheritedEnabled = new Map();
+	item.enabledP = Object.prototype.hasOwnProperty.call(extras, "enabledP")
+		? extras.enabledP
+		: true;
+	if (override) {
+		state.projectOverrides.set(key, override);
+	}
+	if (Object.prototype.hasOwnProperty.call(extras, "inherited")) {
+		state.inheritedEnabled.set(key, extras.inherited);
+	}
+	return state;
+}
+
+function leftoverConfigSelectorProjectState(state, item) {
+	const key = leftoverConfigResourceItemKey(item);
+	const overrides = state.projectOverrides;
+	if (overrides && overrides.has(key)) {
+		return overrides.get(key);
+	}
+	return "inherit";
+}
+
+function leftoverConfigSelectorInheritedEnabledP(state, item) {
+	const key = leftoverConfigResourceItemKey(item);
+	const table = state.inheritedEnabled;
+	if (table && table.has(key)) {
+		return table.get(key);
+	}
+	return item.enabledP !== false;
+}
+
+function leftoverConfigSelectorNextProjectState(state, item) {
+	const current = leftoverConfigSelectorProjectState(state, item);
+	const inherited = leftoverConfigSelectorInheritedEnabledP(state, item);
+	if (current === "inherit") {
+		return inherited ? "unload" : "load";
+	}
+	if (current === "unload") {
+		return inherited ? "load" : "inherit";
+	}
+	if (current === "load") {
+		return inherited ? "inherit" : "unload";
+	}
+	return current;
 }
 
 function leftoverConfigSelectorProjectExtensionsState(patterns) {
@@ -7957,6 +8022,97 @@ function runPackageManagerDerivedProjectState() {
 	};
 }
 
+function leftoverConfigResourceItemKeyCode(key, kind) {
+	if (typeof key !== "string") {
+		return 0;
+	}
+	if (
+		kind === "extensions" &&
+		key.startsWith("extensions:") &&
+		key.includes("hello.lisp")
+	) {
+		return 1;
+	}
+	if (kind === "skills" && key.startsWith("skills:") && key.includes("hello.lisp")) {
+		return 1;
+	}
+	return 0;
+}
+
+function runPackageManagerResourceItemKey() {
+	const extItem = leftoverConfigSelectorHelloItem({ type: "extensions" });
+	const skillItem = leftoverConfigSelectorHelloItem({ type: "skills" });
+	const extKey = leftoverConfigResourceItemKey(extItem);
+	const skillKey = leftoverConfigResourceItemKey(skillItem);
+	return {
+		rik_ext: leftoverConfigResourceItemKeyCode(extKey, "extensions"),
+		rik_skill: leftoverConfigResourceItemKeyCode(skillKey, "skills"),
+		rik_diff: extKey === skillKey ? 0 : 1,
+		rik_hello: extKey.includes("hello.lisp") && skillKey.includes("hello.lisp") ? 1 : 0,
+		rik_n: 5,
+	};
+}
+
+function runPackageManagerProjectOverrideState() {
+	const item = leftoverConfigSelectorHelloItem();
+	const load = leftoverConfigSelectorStateCode(
+		leftoverConfigSelectorProjectState(
+			leftoverConfigSelectorOverrideState(item, "load"),
+			item,
+		),
+	);
+	const unload = leftoverConfigSelectorStateCode(
+		leftoverConfigSelectorProjectState(
+			leftoverConfigSelectorOverrideState(item, "unload"),
+			item,
+		),
+	);
+	const miss = leftoverConfigSelectorStateCode(
+		leftoverConfigSelectorProjectState(
+			leftoverConfigSelectorOverrideState(item, null),
+			item,
+		),
+	);
+	return {
+		cps_load: load,
+		cps_unload: unload,
+		cps_miss: miss,
+		cps_eq: load === 1 && unload === 2 && miss === 0 ? 1 : 0,
+		cps_n: 5,
+	};
+}
+
+function runPackageManagerNextProjectState() {
+	const item = leftoverConfigSelectorHelloItem();
+	return {
+		nps_inh_t: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorNextProjectState(
+				leftoverConfigSelectorOverrideState(item, "inherit"),
+				item,
+			),
+		),
+		nps_inh_f: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorNextProjectState(
+				leftoverConfigSelectorOverrideState(item, "inherit", { enabledP: false }),
+				item,
+			),
+		),
+		nps_unl: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorNextProjectState(
+				leftoverConfigSelectorOverrideState(item, "unload"),
+				item,
+			),
+		),
+		nps_load: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorNextProjectState(
+				leftoverConfigSelectorOverrideState(item, "load"),
+				item,
+			),
+		),
+		nps_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -8168,6 +8324,9 @@ async function measurePackageManager() {
 	const updateArgv = runPackageManagerUpdateArgv();
 	const updateEnv = runPackageManagerUpdateEnv();
 	const gitObjectId = runPackageManagerGitObjectId();
+	const resourceItemKey = runPackageManagerResourceItemKey();
+	const projectOverrideState = runPackageManagerProjectOverrideState();
+	const nextProjectState = runPackageManagerNextProjectState();
 	const recordsProjectFirst = runPackageManagerRecordsProjectFirst();
 	const candidateRecord = runPackageManagerCandidateRecord();
 	const updateOffline = runPackageManagerUpdateOffline();
@@ -8306,6 +8465,14 @@ async function measurePackageManager() {
 		}),
 		git_object_id: await collect("package_manager.git_object_id", () => {
 			return () => runPackageManagerGitObjectId();
+		resource_item_key: await collect("package_manager.resource_item_key", () => {
+			return () => runPackageManagerResourceItemKey();
+		}),
+		project_override_state: await collect("package_manager.project_override_state", () => {
+			return () => runPackageManagerProjectOverrideState();
+		}),
+		next_project_state: await collect("package_manager.next_project_state", () => {
+			return () => runPackageManagerNextProjectState();
 		}),
 		records_project_first: await collect("package_manager.records_project_first", () => {
 			return () => runPackageManagerRecordsProjectFirst();
@@ -8363,6 +8530,9 @@ async function measurePackageManager() {
 			...updateArgv,
 			...updateEnv,
 			...gitObjectId,
+			...resourceItemKey,
+			...projectOverrideState,
+			...nextProjectState,
 			...recordsProjectFirst,
 			...candidateRecord,
 			...updateOffline,
@@ -35760,6 +35930,12 @@ const result = {
 				"packages/coding-agent/src/core/package-manager.ts GIT_TERMINAL_PROMPT=0 (cadr package-update-check-environment)",
 			"package_manager.git_object_id":
 				"packages/coding-agent/src/core/package-manager.ts getRemoteGitHead 40-hex extract (cadr package-update-git-object-id)",
+			"package_manager.resource_item_key":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts getResourceItemKey leftover (cadr config-resource-item-key)",
+			"package_manager.project_override_state":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover override hash (cadr config-selector-project-state)",
+			"package_manager.next_project_state":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts nextProjectOverrideState leftover (cadr config-selector-next-project-state)",
 			"package_manager.records_project_first":
 				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates project-then-user collect (cadr package-update-records-project-first)",
 			"package_manager.candidate_record":
