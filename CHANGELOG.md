@@ -64,17 +64,21 @@ tag/Release step.
 - Goal 20 leftover: pair `package_manager.inherited_enabled`
   (`config-selector-inherited-enabled-p` vs leftover inheritedEnabled map).
   Observed `ie_hash_t` / `ie_hash_f` / `ie_def_t` / `ie_def_f` / `ie_n`
-  exact. Measure-only leftover (Pair 784). Freeze pending. `nextPairNum`
-  left unchanged.
+  exact. n=5 **15.558×** (44.007 / 2.829 µs) on host `cursor`, ceiling 20.0.
+  Measure-only leftover (Pair 784). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.resource_group_key`
   (`config-resource-group-key` vs leftover group key). Observed `rgk_top` /
-  `rgk_pkg` / `rgk_src` / `rgk_diff` / `rgk_n` exact. Measure-only leftover
-  (Pair 785). Freeze pending. `nextPairNum` left unchanged.
+  `rgk_pkg` / `rgk_src` / `rgk_diff` / `rgk_n` exact. n=5 **37.443×**
+  (33.767 / 0.902 µs) on host `cursor`, ceiling 50.0. Measure-only leftover
+  (Pair 785). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.package_entry_index`
   (`config-selector-package-entry-index` vs leftover npm identity index).
   Observed `pei_hit` / `pei_first` / `pei_miss` / `pei_pin` / `pei_n`
-  exact. Measure-only leftover (Pair 786). Freeze pending. `nextPairNum`
-  left unchanged.
+  exact. n=5 **16.140×** (37.334 / 2.313 µs) on host `cursor`, ceiling 20.0.
+  Measure-only leftover (Pair 786). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /
