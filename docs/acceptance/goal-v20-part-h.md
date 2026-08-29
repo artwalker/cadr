@@ -9234,14 +9234,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 182 | 78,265 | 60.7% | `no worse than baseline` is falsifiable |
+| `paired` | 188 | 79,248 | 61.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
-| `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 63 | 25,732 | 20.0% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 29 | 17,444 | 13.5% | on a named paired thunk; no own bench |
+| `needs-pair` | 56 | 24,732 | 19.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.7% of lines (182 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 66.5% of lines.
+- **Falsifiable vs baseline:** 61.5% of lines (188 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 67.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -9279,6 +9279,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/compaction.lisp` | 943 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
+| `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue`, `file_mutation_queue.queue_key`, `file_mutation_queue.lock`, `file_mutation_queue.register`, `file_mutation_queue.wait_turn`, `file_mutation_queue.release_turn`, `file_mutation_queue.ensure_state`, `file_mutation_queue.call_with`, `file_mutation_queue.make_state`, `file_mutation_queue.state_key`, `file_mutation_queue.pending_count`, `file_mutation_queue.next_ticket`, `file_mutation_queue.serving_ticket`, `file_mutation_queue.waitqueue`, `file_mutation_queue.registry`, `file_mutation_queue.state_p` |
+| `src/cadr-agent/harness-events.lisp` | 75 | `harness_events.emit`, `harness_events.on`, `harness_events.watch`, `harness_events.make_start`, `harness_events.make_end`, `harness_events.event_type`, `harness_events.make_bus` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 445 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
@@ -9383,7 +9385,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
-| `src/cadr-cli/resource-loader.lisp` | 376 | `resource_loader.reload`, `resource_loader.dedupe_by_name` |
+| `src/cadr-cli/resource-loader.lisp` | 376 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
@@ -9391,7 +9393,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
-| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images` |
+| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
@@ -9401,15 +9403,18 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 147 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
-| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
+| `src/cadr-cli/system-prompt.lisp` | 53 | `skill_prompt_load.resolve_prompt`, `skill_prompt_load.node_read_error`, `skill_prompt_load.prompt_appends` |
+| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
+| `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
+| `src/cadr-cli/tools/ls.lisp` | 100 | `ls_tool.directory_entry_name`, `ls_tool.list_directory`, `ls_tool.make_tool` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/tools/write.lisp` | 70 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
-| `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort` |
-| `src/cadr-core/redacted-print.lisp` | 44 | `core_rest.redacted_secrets` |
+| `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort`, `core_rest.cancellation_predicate` |
+| `src/cadr-core/redacted-print.lisp` | 44 | `core_rest.redacted_secrets`, `core_rest.redacted_register`, `core_rest.redacted_replace` |
 | `src/cadr-core/threads.lisp` | 47 | `core_rest.threads_cleanup` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
@@ -9425,7 +9430,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/select-list.lisp` | 305 | `tui_select_settings_loaders.filter` |
 | `src/cadr-tui/components/tool-block.lisp` | 623 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/composition/loaders.lisp` | 235 | `tui_select_settings_loaders.update_display`, `tui_select_settings_loaders.make_cancellable_loader`, `tui_select_settings_loaders.cancellation_token_aborted` |
+| `src/cadr-tui/composition/loaders.lisp` | 235 | `tui_select_settings_loaders.loader_frames`, `tui_select_settings_loaders.loader_interval`, `tui_select_settings_loaders.loader_step` |
 | `src/cadr-tui/composition/protocol.lisp` | 143 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -9483,6 +9488,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-evals/package.lisp` | 100 | `evals_harness.summarize` |
 | `src/cadr-protocol/package.lisp` | 33 | `protocol_cbor.roundtrip`, `protocol_codec.roundtrip` |
 | `src/cadr-tui/components/status.lisp` | 253 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/mermaid/ansi.lisp` | 17 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/canvas.lisp` | 336 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/graph.lisp` | 106 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/labels.lisp` | 332 | `tui_mermaid.render` |
@@ -9507,14 +9513,13 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 5 | 2,200 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
-| `agent_tool_loop` | 7 | 1,292 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
+| `agent_tool_loop` | 3 | 924 |
 | `settings_load` | 2 | 479 |
 | `provider_registry_defs` | 2 | 454 |
-| `skill_prompt_load` | 2 | 423 |
+| `skill_prompt_load` | 1 | 370 |
 | `cli_support` | 5 | 123 |
-| `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

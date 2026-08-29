@@ -217,7 +217,40 @@
   "write_tool.make_tool",
   "tui_theme_overlay.rgb_to_ansi_256",
   "tui_theme_overlay.parse_hex_color",
-  "tui_theme_overlay.theme_foreground_ansi" ],
+  "tui_theme_overlay.theme_foreground_ansi",
+  "file_mutation_queue.with_queue",
+  "file_mutation_queue.queue_key",
+  "file_mutation_queue.lock",
+  "file_mutation_queue.register",
+  "file_mutation_queue.wait_turn",
+  "file_mutation_queue.release_turn",
+  "file_mutation_queue.ensure_state",
+  "file_mutation_queue.call_with",
+  "file_mutation_queue.make_state",
+  "file_mutation_queue.state_key",
+  "file_mutation_queue.pending_count",
+  "file_mutation_queue.next_ticket",
+  "file_mutation_queue.serving_ticket",
+  "file_mutation_queue.waitqueue",
+  "file_mutation_queue.registry",
+  "file_mutation_queue.state_p",
+  "harness_events.emit",
+  "harness_events.on",
+  "harness_events.watch",
+  "harness_events.make_start",
+  "harness_events.make_end",
+  "harness_events.event_type",
+  "harness_events.make_bus",
+  "skill_prompt_load.resolve_prompt",
+  "skill_prompt_load.node_read_error",
+  "skill_prompt_load.prompt_appends",
+  "find_tool.pattern_match",
+  "find_tool.find_files",
+  "find_tool.make_tool",
+  "ls_tool.directory_entry_name",
+  "ls_tool.list_directory",
+  "ls_tool.make_tool"
+ ],
  "unpairablePaths": [
   {
    "id": "slynk_repl",
@@ -813,17 +846,47 @@
   {
    "prefix": "src/cadr-agent/execution-env.lisp",
    "class": "paired",
-   "metrics": ["execution_env.exists_remove_temps", "execution_env.absolute_path", "execution_env.join_path", "execution_env.file_info"]
+   "metrics": [
+    "execution_env.exists_remove_temps",
+    "execution_env.absolute_path",
+    "execution_env.join_path",
+    "execution_env.file_info"
+   ]
   },
   {
    "prefix": "src/cadr-agent/file-mutation-queue.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "file_mutation_queue.with_queue",
+    "file_mutation_queue.queue_key",
+    "file_mutation_queue.lock",
+    "file_mutation_queue.register",
+    "file_mutation_queue.wait_turn",
+    "file_mutation_queue.release_turn",
+    "file_mutation_queue.ensure_state",
+    "file_mutation_queue.call_with",
+    "file_mutation_queue.make_state",
+    "file_mutation_queue.state_key",
+    "file_mutation_queue.pending_count",
+    "file_mutation_queue.next_ticket",
+    "file_mutation_queue.serving_ticket",
+    "file_mutation_queue.waitqueue",
+    "file_mutation_queue.registry",
+    "file_mutation_queue.state_p"
+   ]
   },
   {
    "prefix": "src/cadr-agent/harness-events.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "harness_events.emit",
+    "harness_events.on",
+    "harness_events.watch",
+    "harness_events.make_start",
+    "harness_events.make_end",
+    "harness_events.event_type",
+    "harness_events.make_bus"
+   ]
   },
   {
    "prefix": "src/cadr-agent/package.lisp",
@@ -1738,8 +1801,12 @@
   },
   {
    "prefix": "src/cadr-cli/system-prompt.lisp",
-   "class": "needs-pair",
-   "hole": "skill_prompt_load"
+   "class": "paired",
+   "metrics": [
+    "skill_prompt_load.resolve_prompt",
+    "skill_prompt_load.node_read_error",
+    "skill_prompt_load.prompt_appends"
+   ]
   },
   {
    "prefix": "src/cadr-cli/tool-manager.lisp",
@@ -1772,8 +1839,12 @@
   },
   {
    "prefix": "src/cadr-cli/tools/find.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "find_tool.pattern_match",
+    "find_tool.find_files",
+    "find_tool.make_tool"
+   ]
   },
   {
    "prefix": "src/cadr-cli/tools/glob.lisp",
@@ -1782,8 +1853,12 @@
   },
   {
    "prefix": "src/cadr-cli/tools/ls.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "ls_tool.directory_entry_name",
+    "ls_tool.list_directory",
+    "ls_tool.make_tool"
+   ]
   },
   {
    "prefix": "src/cadr-cli/tools/path.lisp",
@@ -2016,8 +2091,10 @@
   },
   {
    "prefix": "src/cadr-tui/mermaid/ansi.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/canvas.lisp",
