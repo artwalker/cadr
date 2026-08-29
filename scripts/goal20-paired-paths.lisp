@@ -5338,7 +5338,7 @@
    (package-manager-truth
     (leftover-config-enabled-by-patterns-p
      "/tmp/hello.lisp" '("*.md" "+hello.lisp") "/tmp/"))
-   5)))
+   5))
 
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
