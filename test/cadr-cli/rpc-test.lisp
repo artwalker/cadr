@@ -450,8 +450,15 @@
        state
        "{\"id\":\"cq1\",\"type\":\"clear_queue\"}")
       (let* ((records (rpc-output-records output))
-             (record (first records))
-             (data (cadr-ai::json-get record "data")))
+             (record
+               (find
+                "cq1" records
+                :key
+                (lambda (candidate)
+                  (cadr-ai::json-get candidate "id"))
+                :test #'string=))
+             (data (and record (cadr-ai::json-get record "data"))))
+        (is (not (null record)))
         (is (eq t (cadr-ai::json-get record "success")))
         (is (string= "clear_queue"
                      (cadr-ai::json-get record "command")))
