@@ -1260,7 +1260,16 @@
            (path (cadr-agent:session-path session)))
       (cadr-agent:session-append-message
        session
-       (cadr-ai:make-user-message :content "one" :timestamp 101))
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "persist"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 101))
+      (cadr-agent::close-session-journal-stream session)
       (let ((text (uiop:read-file-string path)))
         (with-open-file
             (stream path :direction :output :if-exists :supersede
@@ -1275,4 +1284,5 @@
                                     :element-type '(unsigned-byte 8))))
                   (read-sequence buffer stream)
                   buffer))))
+        (is (plusp (length octets)))
         (is (= 10 (aref octets (1- (length octets)))))))))
