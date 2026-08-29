@@ -436,4 +436,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.login_dialog_complete_input` | 5.722 | 3.482 | 1.643× | 8.00× | measure-only leftover 625; `login-dialog-complete-input` vs replaceInputWithSubmittedText | invent pause；地板优化另刀 |
 | `cli_selectors.login_dialog_handle_event` | 6.392 | 3.325 | 1.923× | 8.00× | measure-only leftover 626; `login-dialog-state-handle-event` vs handleInput | invent pause；地板优化另刀 |
 | `cli_selectors.render_login_dialog` | 135.552 | 4.147 | 32.688× | 50.00× | measure-only leftover 627; `render-login-dialog-state` vs LoginDialogComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `cli_selectors.user_message_handle_raw` | 85.983 | 5.433 | 15.827× | 30.00× | measure-only leftover 629; `user-message-selector-handle-raw-input` vs UserMessageList.handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `cli_selectors.render_user_message_selector` | 265.302 | 4.081 | 65.009× | 100.00× | measure-only leftover 630; `render-user-message-selector` vs UserMessageSelectorComponent layout; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

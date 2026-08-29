@@ -7744,6 +7744,30 @@ Leftover sibling of Pair 625. Timed work is typed event dispatch (escape / cance
 
 Leftover sibling of Pairs 625–626. Timed work is selector-frame layout (waiting / auth / manual cursor / prompt cursor / details). Observed `ldrd_wait` / `ldrd_auth` / `ldrd_manual` / `ldrd_prompt` / `ldrd_details` are exact. First n=5 freeze **32.688×** (135.552 / 4.147 µs) on host `cursor`, ceiling 50.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 628 — `cli_selectors` (user_message_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_message_handle_event` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | UserMessageList.handleInput structured events (`packages/coding-agent/src/modes/interactive/components/user-message-selector.ts`) |
+
+Leftover sibling on the `fork.lisp` hole after Pairs 526–528 (make/move/selection). Timed work is typed event dispatch (down wrap / enter select / escape cancel / text no-op / empty enter). Observed `umhe_down` / `umhe_enter` / `umhe_esc` / `umhe_text` / `umhe_empty` are exact. First n=5 freeze **0.766×** (1.754 / 2.288 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 629 — `cli_selectors` (user_message_handle_raw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_message_handle_raw` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | UserMessageList.handleInput raw key dispatch (`packages/coding-agent/src/modes/interactive/components/user-message-selector.ts`) |
+
+Leftover sibling of Pair 628. Timed work is raw key dispatch (arrow-down / arrow-up / enter / escape / nop `q`). Observed `umhr_down` / `umhr_up` / `umhr_enter` / `umhr_esc` / `umhr_nop` are exact. First n=5 freeze **15.827×** (85.983 / 5.433 µs) on host `cursor`, ceiling 30.0 first-freeze headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 630 — `cli_selectors` (render_user_message_selector)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_user_message_selector` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | UserMessageSelectorComponent layout (`packages/coding-agent/src/modes/interactive/components/user-message-selector.ts`) |
+
+Leftover sibling of Pairs 628–629. Timed work is selector-frame layout (three items / one / empty / narrow / hit initial). Observed `umrd_three` / `umrd_one` / `umrd_empty` / `umrd_narrow` / `umrd_hit` are exact. First n=5 freeze **65.009×** (265.302 / 4.081 µs) on host `cursor`, ceiling 100.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

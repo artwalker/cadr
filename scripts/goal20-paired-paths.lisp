@@ -776,6 +776,9 @@
     ("cli_selectors.login_dialog_complete_input" . 50)
     ("cli_selectors.login_dialog_handle_event" . 50)
     ("cli_selectors.render_login_dialog" . 50)
+    ("cli_selectors.user_message_handle_event" . 50)
+    ("cli_selectors.user_message_handle_raw" . 50)
+    ("cli_selectors.render_user_message_selector" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15133,6 +15136,147 @@
    "ums_miss" (nth 4 selection)
    "ums_one" (nth 5 selection)))
 
+(defparameter *goal20-user-message-keybindings*
+  (cadr-tui:make-keybindings-manager))
+
+(defun goal20-user-message-state
+    (&key items initial-selected-value (max-visible 10))
+  (cadr-cli::make-user-message-selector-state
+   :items items
+   :initial-selected-value initial-selected-value
+   :max-visible max-visible
+   :keybindings *goal20-user-message-keybindings*))
+
+(defun encode-user-message-handle-event (action value state)
+  (format
+   nil "~A|~A|~D"
+   (if action
+       (string-downcase (symbol-name action))
+       "null")
+   (if (stringp value) value "null")
+   (cadr-cli::user-message-selector-state-selected state)))
+
+(defun user-message-handle-event-encoded (state event-kind)
+  (let ((event (cadr-tui:make-input-event :kind event-kind)))
+    (multiple-value-bind (action value)
+        (cadr-cli::user-message-selector-handle-event state event)
+      (encode-user-message-handle-event action value state))))
+
+(defun run-cli-selectors-user-message-handle-event ()
+  (list
+   (user-message-handle-event-encoded
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b" "c"))
+    :down)
+   (user-message-handle-event-encoded
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b"))
+    :enter)
+   (user-message-handle-event-encoded
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b"))
+    :escape)
+   (user-message-handle-event-encoded
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b"))
+    :text)
+   (user-message-handle-event-encoded
+    (goal20-user-message-state :items nil)
+    :enter)))
+
+(defun encode-user-message-handle-raw (action value consumed state)
+  (format
+   nil "~A|~A|~D|~A"
+   (if action
+       (string-downcase (symbol-name action))
+       "null")
+   (if (stringp value) value "null")
+   (cadr-cli::user-message-selector-state-selected state)
+   (if consumed "true" "false")))
+
+(defun user-message-handle-raw-encoded (state data)
+  (multiple-value-bind (action value consumed)
+      (cadr-cli::user-message-selector-handle-raw-input state data)
+    (encode-user-message-handle-raw action value consumed state)))
+
+(defun run-cli-selectors-user-message-handle-raw ()
+  (let ((arrow-down (format nil "~C[B" #\Escape))
+        (arrow-up (format nil "~C[A" #\Escape))
+        (enter (string #\Return))
+        (escape (string #\Escape)))
+    (list
+     (user-message-handle-raw-encoded
+      (goal20-user-message-state
+       :items (goal20-user-message-items "a" "b" "c"))
+      arrow-down)
+     (user-message-handle-raw-encoded
+      (goal20-user-message-state
+       :items (goal20-user-message-items "a" "b" "c"))
+      arrow-up)
+     (user-message-handle-raw-encoded
+      (goal20-user-message-state
+       :items (goal20-user-message-items "a" "b"))
+      enter)
+     (user-message-handle-raw-encoded
+      (goal20-user-message-state
+       :items (goal20-user-message-items "a" "b"))
+      escape)
+     (user-message-handle-raw-encoded
+      (goal20-user-message-state
+       :items (goal20-user-message-items "a" "b"))
+      "q"))))
+
+(defun encode-render-user-message-selector (state width)
+  (cadr-cli::render-user-message-selector state width)
+  (format
+   nil "~D|~D|~D|~A"
+   (cadr-cli::user-message-selector-state-selected state)
+   (length (cadr-cli::user-message-selector-state-items state))
+   width
+   (user-message-selector-selection-text state)))
+
+(defun run-cli-selectors-render-user-message-selector ()
+  (list
+   (encode-render-user-message-selector
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b" "c"))
+    80)
+   (encode-render-user-message-selector
+    (goal20-user-message-state
+     :items (goal20-user-message-items "only"))
+    80)
+   (encode-render-user-message-selector
+    (goal20-user-message-state :items nil)
+    80)
+   (encode-render-user-message-selector
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b" "c"))
+    40)
+   (encode-render-user-message-selector
+    (goal20-user-message-state
+     :items (goal20-user-message-items "a" "b" "c")
+     :initial-selected-value "a")
+    80)))
+
+(defun user-message-handle-raw-render-observed-pairs
+    (handle-event handle-raw render)
+  (list
+   "umhe_down" (nth 0 handle-event)
+   "umhe_enter" (nth 1 handle-event)
+   "umhe_esc" (nth 2 handle-event)
+   "umhe_text" (nth 3 handle-event)
+   "umhe_empty" (nth 4 handle-event)
+   "umhr_down" (nth 0 handle-raw)
+   "umhr_up" (nth 1 handle-raw)
+   "umhr_enter" (nth 2 handle-raw)
+   "umhr_esc" (nth 3 handle-raw)
+   "umhr_nop" (nth 4 handle-raw)
+   "umrd_three" (nth 0 render)
+   "umrd_one" (nth 1 render)
+   "umrd_empty" (nth 2 render)
+   "umrd_narrow" (nth 3 render)
+   "umrd_hit" (nth 4 render)))
+
 (defparameter *session-format-age-now* 1700000000000)
 
 (defun login-dialog-sections-encoded (state)
@@ -22465,6 +22609,12 @@
           (run-cli-selectors-login-dialog-handle-event))
         (leftover-login-render
           (run-cli-selectors-render-login-dialog))
+        (leftover-user-message-handle-event
+          (run-cli-selectors-user-message-handle-event))
+        (leftover-user-message-handle-raw
+          (run-cli-selectors-user-message-handle-raw))
+        (leftover-user-message-render
+          (run-cli-selectors-render-user-message-selector))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -23252,6 +23402,10 @@
               leftover-login-prompt leftover-login-info leftover-login-details)
              (login-dialog-complete-handle-render-observed-pairs
               leftover-login-complete leftover-login-handle leftover-login-render)
+             (user-message-handle-raw-render-observed-pairs
+              leftover-user-message-handle-event
+              leftover-user-message-handle-raw
+              leftover-user-message-render)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -24273,7 +24427,22 @@
      (collect "cli_selectors.render_login_dialog"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-render-login-dialog)))))))
+                  (run-cli-selectors-render-login-dialog))))
+     "user_message_handle_event"
+     (collect "cli_selectors.user_message_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-event))))
+     "user_message_handle_raw"
+     (collect "cli_selectors.user_message_handle_raw"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-raw))))
+     "render_user_message_selector"
+     (collect "cli_selectors.render_user_message_selector"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-user-message-selector)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -27025,6 +27194,12 @@
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-move"
       "cli_selectors.user_message_selection"
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-selection"
+      "cli_selectors.user_message_handle_event"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-event"
+      "cli_selectors.user_message_handle_raw"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input"
+      "cli_selectors.render_user_message_selector"
+      "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
