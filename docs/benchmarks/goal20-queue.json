@@ -6893,32 +6893,47 @@
   {
    "pair": 751,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.runtime_provider",
    "branch": "cursor/runtime-provider-models-leftovers-751-753-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 751"
+   "note": "nextPairNum left at tip 328; leftover id 751",
+   "ratio": 0.035,
+   "cadrUs": 7.382,
+   "piUs": 210.961,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 752,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.runtime_provider_copilot",
    "branch": "cursor/runtime-provider-models-leftovers-751-753-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 752"
+   "note": "nextPairNum left at tip 328; leftover id 752",
+   "ratio": 0.688,
+   "cadrUs": 7.192,
+   "piUs": 10.457,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 753,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.models_runtime",
    "branch": "cursor/runtime-provider-models-leftovers-751-753-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 753"
+   "note": "nextPairNum left at tip 328; leftover id 753",
+   "ratio": 1.519,
+   "cadrUs": 309.041,
+   "piUs": 203.473,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

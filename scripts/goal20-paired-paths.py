@@ -651,8 +651,11 @@ RATIO_CEILINGS = {
     "provider_registry_defs.model_filter_function": 8.0,
     # leftover 751–753 runtime-projection construct (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 751–753.
+    # leftover 751; first freeze 0.035× (7.382 / 210.961 µs). cadr leads.
     "provider_registry_defs.runtime_provider": 8.0,
+    # leftover 752; first freeze 0.688× (7.192 / 10.457 µs). cadr leads.
     "provider_registry_defs.runtime_provider_copilot": 8.0,
+    # leftover 753; first freeze 1.519× (309.041 / 203.473 µs).
     "provider_registry_defs.models_runtime": 8.0,
     "tool_manager.release_asset": 8.0,
     "tool_manager.find_binary": 8.0,

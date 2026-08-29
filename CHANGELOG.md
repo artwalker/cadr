@@ -11,18 +11,22 @@ tag/Release step.
 
 - Goal 20 leftover: pair `provider_registry_defs.runtime_provider`
   (`make-built-in-runtime-provider` vs builtinProviders openai). Observed
-  `rp_id` / `rp_key` / `rp_no_oauth` / `rp_models` / `rp_n` exact.
-  Measure-only leftover (Pair 751). Freeze pending. `nextPairNum` left
-  unchanged.
+  `rp_id` / `rp_key` / `rp_no_oauth` / `rp_models` / `rp_n` exact. n=5
+  **0.035×** (7.382 / 210.961 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 751). Under-1×. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.runtime_provider_copilot`
   (`make-built-in-runtime-provider` github-copilot vs githubCopilotProvider).
   Observed `rpc_oauth` / `rpc_login` / `rpc_filter` / `rpc_models` /
-  `rpc_n` exact. Measure-only leftover (Pair 752). Freeze pending.
-  `nextPairNum` left unchanged.
+  `rpc_n` exact. n=5 **0.688×** (7.192 / 10.457 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 752). Under-1×. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.models_runtime`
   (`make-built-in-models-runtime` vs builtinProviders Map). Observed
-  `mr_oa` / `mr_anth` / `mr_miss` / `mr_env` / `mr_n` exact.
-  Measure-only leftover (Pair 753). Freeze pending. `nextPairNum` left
+  `mr_oa` / `mr_anth` / `mr_miss` / `mr_env` / `mr_n` exact. n=5
+  **1.519×** (309.041 / 203.473 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 753). Over-1× booked. `nextPairNum` left
   unchanged.
 
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
