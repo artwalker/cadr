@@ -920,8 +920,11 @@ RATIO_CEILINGS = {
     "package_manager.update_offline": 8.0,
     # leftover 796–798 update-checks.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 796–798.
-    "package_manager.git_output": 8.0,
-    "package_manager.remote_ref": 8.0,
+    # leftover 796; first freeze 95.093× (24.678 / 0.260 µs).
+    "package_manager.git_output": 120.0,
+    # leftover 797; first freeze 20.001× (26.081 / 1.304 µs).
+    "package_manager.remote_ref": 25.0,
+    # leftover 798; first freeze 4.640× (32.630 / 7.033 µs).
     "package_manager.update_record_result": 8.0,
     # find_tool leftover trio on glob.lisp (samples=5): first-freeze
     # headroom. Ratchet down only.
