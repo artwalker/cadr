@@ -1222,6 +1222,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("pcr_ok", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("pcr_state", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("pcr_n", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.anth_oauth_name", RECORD.METRIC_KEYS)
+        self.assertIn("anth_oauth_name", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.anth_oauth_name", paired.RATIO_CEILINGS)
+        self.assertIn("anm_eq", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.anth_oauth_sub", RECORD.METRIC_KEYS)
+        self.assertIn("anth_oauth_sub", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.anth_oauth_sub", paired.RATIO_CEILINGS)
+        self.assertIn("ans_sub", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.anth_oauth_instructions", RECORD.METRIC_KEYS)
+        self.assertIn("anth_oauth_instructions", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.anth_oauth_instructions", paired.RATIO_CEILINGS)
+        self.assertIn("ani_eq", paired.OBSERVED_EXACT["oauth_pkce_device"])
 
     def test_cli_extensions_install_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 880 — `oauth_pkce_device` (anth_oauth_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `anth_oauth_name` | `oauth-provider-metadata-method-name` via `login-anthropic-runtime-oauth` (`src/cadr-ai/oauth/providers/anthropic.lisp`) | `anthropicOAuth.name` (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/anthropic.lisp`. Timed work is the Anthropic OAuth display name. Observed `anm_eq` / `anm_claude` / `anm_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 881 — `oauth_pkce_device` (anth_oauth_sub)
+
+| metric | cadr | pi |
+|---|---|---|
+| `anth_oauth_sub` | `oauth-provider-metadata-is-subscription-p` via `login-anthropic-runtime-oauth` (`src/cadr-ai/oauth/providers/anthropic.lisp`) | `anthropicOAuth.isSubscription` (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover sibling of Pair 880. Timed work is the subscription flag. Observed `ans_sub` / `ans_t` / `ans_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 882 — `oauth_pkce_device` (anth_oauth_instructions)
+
+| metric | cadr | pi |
+|---|---|---|
+| `anth_oauth_instructions` | `oauth-provider-metadata-auth-url-instructions` via `login-anthropic-runtime-oauth` (`src/cadr-ai/oauth/providers/anthropic.lisp`) | login notify instructions (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover sibling of Pairs 880–881. Timed work is the browser-redirect paste copy. Observed `ani_eq` / `ani_paste` / `ani_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

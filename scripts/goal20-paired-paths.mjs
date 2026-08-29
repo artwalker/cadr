@@ -302,6 +302,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.provider_key": 50,
 	"oauth_pkce_device.http_status_text": 50,
 	"oauth_pkce_device.parse_callback_request": 50,
+	"oauth_pkce_device.anth_oauth_name": 50,
+	"oauth_pkce_device.anth_oauth_sub": 50,
+	"oauth_pkce_device.anth_oauth_instructions": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -11608,6 +11611,49 @@ function runOauthPkceDeviceOpenrouterExchange() {
 }
 
 
+const leftoverAnthropicOAuth = {
+	// Replica of packages/ai/src/auth/oauth/anthropic.ts anthropicOAuth
+	// name / isSubscription. Login notify instructions are a hardcoded
+	// string there, not an exported field.
+	name: "Anthropic (Claude Pro/Max)",
+	isSubscription: true,
+};
+
+const leftoverAnthropicInstructions =
+	"Complete login in your browser. If the browser is on another machine, paste the final redirect URL here.";
+
+function runOauthAnthOauthName() {
+	const name = leftoverAnthropicOAuth.name;
+	return {
+		anm_eq: name === "Anthropic (Claude Pro/Max)" ? 1 : 0,
+		anm_claude: name.includes("Claude") ? 1 : 0,
+		anm_n: 2,
+	};
+}
+
+function runOauthAnthOauthSub() {
+	const flag = leftoverAnthropicOAuth.isSubscription;
+	return {
+		ans_sub: flag ? 1 : 0,
+		ans_t: flag === true ? 1 : 0,
+		ans_n: 2,
+	};
+}
+
+function runOauthAnthOauthInstructions() {
+	const text = leftoverAnthropicInstructions;
+	return {
+		ani_eq:
+			text ===
+			"Complete login in your browser. If the browser is on another machine, paste the final redirect URL here."
+				? 1
+				: 0,
+		ani_paste: text.includes("paste") ? 1 : 0,
+		ani_n: 2,
+	};
+}
+
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -11658,6 +11704,15 @@ async function measureOauthPkceDevice() {
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
 		}),
+		anth_oauth_name: await collect("oauth_pkce_device.anth_oauth_name", () => {
+			return () => runOauthAnthOauthName();
+		}),
+		anth_oauth_sub: await collect("oauth_pkce_device.anth_oauth_sub", () => {
+			return () => runOauthAnthOauthSub();
+		}),
+		anth_oauth_instructions: await collect("oauth_pkce_device.anth_oauth_instructions", () => {
+			return () => runOauthAnthOauthInstructions();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -11671,6 +11726,9 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...runOauthAnthOauthName(),
+			...runOauthAnthOauthSub(),
+			...runOauthAnthOauthInstructions(),
 		},
 	};
 }
@@ -33479,6 +33537,12 @@ const result = {
 				"node:http STATUS_CODES (cadr oauth-http-status-text)",
 			"oauth_pkce_device.parse_callback_request":
 				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
+			"oauth_pkce_device.anth_oauth_name":
+				"packages/ai/src/auth/oauth/anthropic.ts anthropicOAuth.name",
+			"oauth_pkce_device.anth_oauth_sub":
+				"packages/ai/src/auth/oauth/anthropic.ts anthropicOAuth.isSubscription",
+			"oauth_pkce_device.anth_oauth_instructions":
+				"packages/ai/src/auth/oauth/anthropic.ts loginAnthropic notify instructions",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

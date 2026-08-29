@@ -298,6 +298,9 @@
 ;;;; 334. oauth_pkce_device oauth-callback-provider-key vs Anthropic/Radius display-name map
 ;;;; 335. oauth_pkce_device oauth-http-status-text vs node:http STATUS_CODES
 ;;;; 336. oauth_pkce_device parse-oauth-callback-request vs openai-codex startLocalOAuthServer handler
+;;;; 880. oauth_pkce_device anthropic method-name vs anthropicOAuth.name
+;;;; 881. oauth_pkce_device anthropic is-subscription-p vs anthropicOAuth.isSubscription
+;;;; 882. oauth_pkce_device anthropic auth-url-instructions vs login notify instructions
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -534,6 +537,9 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.anth_oauth_name" . 50)
+    ("oauth_pkce_device.anth_oauth_sub" . 50)
+    ("oauth_pkce_device.anth_oauth_instructions" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10444,6 +10450,45 @@
    3))
 
 
+(defun run-oauth-anth-oauth-name ()
+  ;; Leftover 880: method-name vs anthropicOAuth.name. The leftover
+  ;; source is login-anthropic-runtime-oauth's metadata in
+  ;; src/cadr-ai/oauth/providers/anthropic.lisp.
+  (let ((name
+          (cadr-ai:oauth-provider-metadata-method-name
+           cadr-ai::+anthropic-oauth-metadata+)))
+    (list
+     (if (string= name "Anthropic (Claude Pro/Max)") 1 0)
+     (if (search "Claude" name) 1 0)
+     2)))
+
+
+(defun run-oauth-anth-oauth-sub ()
+  ;; Leftover 881: is-subscription-p vs anthropicOAuth.isSubscription.
+  (let ((flag
+          (cadr-ai::oauth-provider-metadata-is-subscription-p
+           cadr-ai::+anthropic-oauth-metadata+)))
+    (list
+     (if flag 1 0)
+     (if (eq flag t) 1 0)
+     2)))
+
+
+(defun run-oauth-anth-oauth-instructions ()
+  ;; Leftover 882: auth-url-instructions vs login notify copy.
+  (let ((text
+          (cadr-ai:oauth-provider-metadata-auth-url-instructions
+           cadr-ai::+anthropic-oauth-metadata+)))
+    (list
+     (if (string=
+          text
+          "Complete login in your browser. If the browser is on another machine, paste the final redirect URL here.")
+         1
+         0)
+     (if (search "paste" text) 1 0)
+     2)))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -10456,7 +10501,10 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (anth-oauth-name (run-oauth-anth-oauth-name))
+        (anth-oauth-sub (run-oauth-anth-oauth-sub))
+        (anth-oauth-instructions (run-oauth-anth-oauth-instructions)))
     (json-object
      "observed"
      (json-object
@@ -10513,7 +10561,16 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "anm_eq" (nth 0 anth-oauth-name)
+      "anm_claude" (nth 1 anth-oauth-name)
+      "anm_n" (nth 2 anth-oauth-name)
+      "ans_sub" (nth 0 anth-oauth-sub)
+      "ans_t" (nth 1 anth-oauth-sub)
+      "ans_n" (nth 2 anth-oauth-sub)
+      "ani_eq" (nth 0 anth-oauth-instructions)
+      "ani_paste" (nth 1 anth-oauth-instructions)
+      "ani_n" (nth 2 anth-oauth-instructions))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10573,7 +10630,22 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "anth_oauth_name"
+     (collect "oauth_pkce_device.anth_oauth_name"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-anth-oauth-name))))
+     "anth_oauth_sub"
+     (collect "oauth_pkce_device.anth_oauth_sub"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-anth-oauth-sub))))
+     "anth_oauth_instructions"
+     (collect "oauth_pkce_device.anth_oauth_instructions"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-anth-oauth-instructions)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -31850,6 +31922,12 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.anth_oauth_name"
+      "src/cadr-ai/oauth/providers/anthropic.lisp login-anthropic-runtime-oauth method-name"
+      "oauth_pkce_device.anth_oauth_sub"
+      "src/cadr-ai/oauth/providers/anthropic.lisp login-anthropic-runtime-oauth is-subscription-p"
+      "oauth_pkce_device.anth_oauth_instructions"
+      "src/cadr-ai/oauth/providers/anthropic.lisp login-anthropic-runtime-oauth auth-url-instructions"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
