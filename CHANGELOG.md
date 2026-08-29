@@ -9,6 +9,20 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_tool_calls`
+  (`session-tree-tool-calls` vs leftover tool-call id→name map). Observed
+  `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` exact.
+  Measure-only leftover (Pair 817). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_compaction_display_state`
+  (`session-compaction-display-state` vs leftover display messages + nil
+  summary). Observed `scds_empty` / `scds_n` / `scds_sum` / `scds_kept` /
+  `scds_first` exact. Measure-only leftover (Pair 818). `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.write_hotkeys_command`
+  (`write-hotkeys-command` vs leftover Keyboard Shortcuts list). Observed
+  `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` exact.
+  Measure-only leftover (Pair 819). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_command_stats`
   (`session-command-stats` vs leftover getSessionStats). Observed
   `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` exact.
