@@ -89,6 +89,9 @@
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
+;;;; 883. ai_support cadr-ai stop-thread-for-cleanup nil vs worker_threads absent
+;;;; 884. ai_support cadr-ai stop-thread-for-cleanup current vs isMainThread
+;;;; 885. ai_support cadr-ai stop-thread-for-cleanup joined vs Worker eval-exit
 ;;;;  56. ai_capabilities make-event-stream vs EventStream
 ;;;;  57. cli_support reset-timings + record-timing + print-timings vs resetTimings/time/printTimings
 ;;;;  58. ai_capabilities resolve-http-proxy-url-for-target vs resolveHttpProxyUrlForTarget
@@ -611,6 +614,9 @@
     ("ai_support.grammar_delta" . 50)
     ("ai_support.uuid_v7" . 50)
     ("ai_support.auth_guidance" . 50)
+    ("ai_support.threads_absent" . 50)
+    ("ai_support.threads_current" . 50)
+    ("ai_support.threads_joined" . 5)
     ("tui_select_settings_loaders.filter" . 50)
     ("tui_select_settings_loaders.loader_frames" . 50)
     ("tui_select_settings_loaders.loader_interval" . 50)
@@ -14709,12 +14715,48 @@
      (auth-flag models "providers.md")
      (auth-flag models "models.md"))))
 
+(defun run-ai-support-threads-absent ()
+  ;; Leftover 883: cadr-ai wrapper on nil vs worker_threads absent.
+  (list
+   (if (eq (cadr-ai::stop-thread-for-cleanup nil) :absent) 1 0)
+   1))
+
+
+(defun run-ai-support-threads-current ()
+  ;; Leftover 884: cadr-ai wrapper on the current thread vs isMainThread.
+  (list
+   (if (eq
+        (cadr-ai::stop-thread-for-cleanup sb-thread:*current-thread*)
+        :current)
+       1
+       0)
+   1))
+
+
+(defun run-ai-support-threads-joined ()
+  ;; Leftover 885: cadr-ai wrapper on a finished thread vs Worker eval-exit.
+  (let* ((done
+           (sb-thread:make-thread
+            (lambda () :done)
+            :name "cadr-ai-support-threads-join"))
+         (joined
+           (progn
+             (sb-thread:join-thread done)
+             (cadr-ai::stop-thread-for-cleanup done))))
+    (list
+     (if (eq joined :joined) 1 0)
+     1)))
+
+
 (defun measure-ai-support-estimate ()
   (let ((estimate (run-ai-support-estimate))
         (overflow (run-ai-support-context-overflow))
         (grammar (run-ai-support-grammar-delta))
         (uuid (run-ai-support-uuid-v7))
-        (auth (run-ai-support-auth-guidance)))
+        (auth (run-ai-support-auth-guidance))
+        (threads-absent (run-ai-support-threads-absent))
+        (threads-current (run-ai-support-threads-current))
+        (threads-joined (run-ai-support-threads-joined)))
     (json-object
      "observed"
      (json-object
@@ -14741,7 +14783,13 @@
       "no_unknown" (fourth auth)
       "has_login" (fifth auth)
       "has_providers" (sixth auth)
-      "has_models" (seventh auth))
+      "has_models" (seventh auth)
+      "tha_eq" (nth 0 threads-absent)
+      "tha_n" (nth 1 threads-absent)
+      "thc_eq" (nth 0 threads-current)
+      "thc_n" (nth 1 threads-current)
+      "thj_eq" (nth 0 threads-joined)
+      "thj_n" (nth 1 threads-joined))
      "estimate_text"
      (collect "ai_support.estimate_text"
               (lambda ()
@@ -14766,7 +14814,22 @@
      (collect "ai_support.auth_guidance"
               (lambda ()
                 (lambda ()
-                  (run-ai-support-auth-guidance)))))))
+                  (run-ai-support-auth-guidance))))
+     "threads_absent"
+     (collect "ai_support.threads_absent"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-threads-absent))))
+     "threads_current"
+     (collect "ai_support.threads_current"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-threads-current))))
+     "threads_joined"
+     (collect "ai_support.threads_joined"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-threads-joined)))))))
 
 (defun select-list-fixture ()
   (cadr-tui:make-select-list
@@ -32004,6 +32067,12 @@
       "src/cadr-ai/support/uuid.lisp uuid-v7"
       "ai_support.auth_guidance"
       "src/cadr-ai/support/release.lisp no-models-available-message"
+      "ai_support.threads_absent"
+      "src/cadr-ai/support/threads.lisp stop-thread-for-cleanup nil"
+      "ai_support.threads_current"
+      "src/cadr-ai/support/threads.lisp stop-thread-for-cleanup current"
+      "ai_support.threads_joined"
+      "src/cadr-ai/support/threads.lisp stop-thread-for-cleanup joined"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
       "tui_select_settings_loaders.loader_frames"
