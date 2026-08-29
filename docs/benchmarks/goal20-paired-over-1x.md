@@ -728,4 +728,18 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.manager_notify` | 3.618 | 1.235 | 2.930× | 8.00× | measure-only leftover 847; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.startup_issues` | 3.989 | 0.828 | 4.819× | 8.00× | measure-only leftover 848; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.output_boundary` | 1.196 | 0.230 | 5.208× | 8.00× | measure-only leftover 849; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_format_context` | 0.586 | 0.299 | 1.959× | 8.00× | measure-only leftover 805; `llama-format-context-size` vs leftover Math.round k | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_js_to_fixed` | 0.807 | 0.511 | 1.577× | 8.00× | measure-only leftover 806; `llama-js-to-fixed` vs leftover Number.toFixed | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_search_exact` | 0.678 | 0.284 | 2.389× | 8.00× | measure-only leftover 807; `llama-search-exact-query-p` vs leftover org/name regex | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_search_status` | 0.456 | 0.157 | 2.908× | 8.00× | measure-only leftover 826; `llama-search-status-text` vs leftover HuggingFaceSearch status | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_view_width` | 27.079 | 0.181 | 149.278× | 180.00× | measure-only leftover 828; `llama-view-width` vs leftover lastWidth (CLOS view vs property) | invent pause；地板优化另刀 |
+| `cli_extensions_install.http_timeout_p` | 0.832 | 0.298 | 2.787× | 8.00× | measure-only leftover 844; `extension-http-timeout-condition-p` vs leftover timeout names | invent pause；地板优化另刀 |
+| `cli_extensions_install.same_source` | 0.421 | 0.160 | 2.631× | 8.00× | measure-only leftover 845; `same-extension-source-p` vs leftover path equality | invent pause；地板优化另刀 |
+| `cli_extensions_install.quiet_manager` | 0.680 | 0.248 | 2.740× | 8.00× | measure-only leftover 846; `call-with-quiet-extension-manager` vs leftover silenced notify | invent pause；地板优化另刀 |
+| `cli_extensions_install.manager_notify` | 3.324 | 1.328 | 2.503× | 8.00× | measure-only leftover 847; `extension-manager-notify` vs leftover notify format | invent pause；地板优化另刀 |
+| `cli_extensions_install.startup_issues` | 2.919 | 1.137 | 2.567× | 8.00× | measure-only leftover 848; `report-startup-extension-issues` vs leftover reportDiagnostics | invent pause；地板优化另刀 |
+| `cli_extensions_install.output_boundary` | 0.740 | 0.268 | 2.759× | 8.00× | measure-only leftover 849; `call-with-extension-output-boundary` vs leftover stdout/stderr bind | invent pause；地板优化另刀 |
+| `cli_extensions_install.loaded_model` | 0.211 | 0.140 | 1.511× | 8.00× | measure-only leftover 850; `llama-loaded-model-p` vs leftover loaded/sleeping predicate | invent pause；地板优化另刀 |
+| `cli_extensions_install.catalog_notify` | 28.921 | 0.720 | 40.150× | 60.00× | measure-only leftover 851; `notify-llama-catalog` vs leftover catalog notify | invent pause；地板优化另刀 |
+| `cli_extensions_install.progress_notify` | 29.267 | 0.616 | 47.472× | 60.00× | measure-only leftover 852; `llama-progress-notifier` vs leftover progress notify | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
