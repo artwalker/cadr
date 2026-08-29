@@ -705,8 +705,11 @@ RATIO_CEILINGS = {
     "evals_harness.json_string": 8.0,
     # evals_harness leftover trio on suites.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 697–699.
+    # leftover 697; first freeze 1.842× (0.944 / 0.512 µs).
     "evals_harness.canonical_api": 8.0,
+    # leftover 698; first freeze 3.666× (1.903 / 0.519 µs).
     "evals_harness.legacy_api": 8.0,
+    # leftover 699; first freeze 4.784× (0.860 / 0.180 µs).
     "evals_harness.extension_error_json": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

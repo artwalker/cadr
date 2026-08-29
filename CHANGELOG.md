@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `evals_harness.canonical_api`
+  (`source-uses-canonical-extension-api-p` vs canonical extension API
+  probe). Observed `sca_def` / `sca_pkg` / `sca_case` / `sca_miss` /
+  `sca_leg` exact. n=5 **1.842×** (0.944 / 0.512 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 697). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.legacy_api`
+  (`source-uses-legacy-extension-api-p` vs legacy extension API probe).
+  Observed `sla_mz` / `sla_tb` / `sla_pi` / `sla_case` / `sla_miss`
+  exact. n=5 **3.666×** (1.903 / 0.519 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 698). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.extension_error_json`
+  (`extension-error-json` vs extension error JSON). Observed `see_path`
+  / `see_err` / `see_empty` / `see_blank` / `see_n` exact. n=5
+  **4.784×** (0.860 / 0.180 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 699). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `bash_tool.process_deadline`
   (`process-deadline` vs timeout deadline). Observed `pd_nil` /
   `pd_int` / `pd_ord` / `pd_zero` exact. n=5 **0.272×** (0.124 /

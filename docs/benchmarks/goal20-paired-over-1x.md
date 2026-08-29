@@ -495,4 +495,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.make_glob_tool` | 193.915 | 0.276 | 701.525× | 1200.00× | measure-only leftover 693; `make-glob-tool` vs glob tool constructor; first-freeze headroom 1200.0 | invent pause；地板优化另刀 |
 | `bash_tool.user_bash_result` | 2.616 | 1.264 | 2.070× | 8.00× | measure-only leftover 695; `make-user-bash-result-from-execution` vs user bash result from execution | invent pause；地板优化另刀 |
 | `bash_tool.normalized_extension` | 0.840 | 0.464 | 1.812× | 8.00× | measure-only leftover 696; `normalized-extension-bash-result` vs extension bash result normalize | invent pause；地板优化另刀 |
+| `evals_harness.canonical_api` | 0.944 | 0.512 | 1.842× | 8.00× | measure-only leftover 697; `source-uses-canonical-extension-api-p` vs canonical extension API probe | invent pause；地板优化另刀 |
+| `evals_harness.legacy_api` | 1.903 | 0.519 | 3.666× | 8.00× | measure-only leftover 698; `source-uses-legacy-extension-api-p` vs legacy extension API probe | invent pause；地板优化另刀 |
+| `evals_harness.extension_error_json` | 0.860 | 0.180 | 4.784× | 8.00× | measure-only leftover 699; `extension-error-json` vs extension error JSON | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
