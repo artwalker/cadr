@@ -10192,7 +10192,7 @@ Leftover sibling of Pairs 805–806. Timed work is org/name(:quant) regex — no
 |---|---|---|
 | `assistant_tool_call_only` | `assistant-tool-call-only-p` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover hasTextContent invert (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
 
-Leftover sibling of leftover 553–555 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is tool-call-only hide (tool present, no nonempty text) — not tree render. Observed `atco_none` / `atco_text` / `atco_tool` / `atco_both` / `atco_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 553–555 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is tool-call-only hide (tool present, no nonempty text) — not tree render. Observed `atco_none` / `atco_text` / `atco_tool` / `atco_both` / `atco_n` are exact. First n=5 freeze **1.314×** (1.038 / 0.790 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 809 — `cli_bootstrap_sessions` (session_entry_user_text)
 
@@ -10200,7 +10200,7 @@ Leftover sibling of leftover 553–555 on the same `sessions.lisp` `cli_bootstra
 |---|---|---|
 | `session_entry_user_text` | `session-entry-user-text` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover contentText user entry (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of Pair 808. Timed work is string or text-block join for user message entries — not fork TUI. Observed `seut_str` / `seut_blocks` / `seut_asst` / `seut_empty` / `seut_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 808. Timed work is string or text-block join for user message entries — not fork TUI. Observed `seut_str` / `seut_blocks` / `seut_asst` / `seut_empty` / `seut_n` are exact. First n=5 freeze **1.250×** (0.934 / 0.747 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 810 — `cli_bootstrap_sessions` (session_compaction_status)
 
@@ -10208,7 +10208,7 @@ Leftover sibling of Pair 808. Timed work is string or text-block join for user m
 |---|---|---|
 | `session_compaction_status` | `session-compaction-status` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover compaction count string (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
 
-Leftover sibling of Pairs 808–809. Timed work is `Session compacted N time(s)` — not `showStatus` TUI. Observed `scs_none` / `scs_one` / `scs_two` / `scs_zero` / `scs_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 808–809. Timed work is `Session compacted N time(s)` — not `showStatus` TUI. Observed `scs_none` / `scs_one` / `scs_two` / `scs_zero` / `scs_n` are exact. First n=5 freeze **2.251×** (1.274 / 0.566 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
