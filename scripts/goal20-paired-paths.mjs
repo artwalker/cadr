@@ -419,6 +419,9 @@ const REPETITIONS = {
 	"cli_selectors.login_dialog_show_prompt": 50,
 	"cli_selectors.login_dialog_show_info": 50,
 	"cli_selectors.login_dialog_show_details": 50,
+	"cli_selectors.login_dialog_complete_input": 50,
+	"cli_selectors.login_dialog_handle_event": 50,
+	"cli_selectors.render_login_dialog": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22298,6 +22301,8 @@ function loginDialogSectionsEncoded(state) {
 					return `muted:${section.text}`;
 				case "accent":
 					return `accent:${section.text}`;
+				case "submitted":
+					return `sub:${section.text}`;
 				default:
 					return section.kind;
 			}
@@ -22733,6 +22738,217 @@ function runCliSelectorsLoginDialogShowDetails() {
 				loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
 				[["dim", "After wait"]],
 			),
+		),
+	};
+}
+
+function loginDialogCompleteInput(state, value) {
+	state.input = null;
+	state.sections = state.sections.map((section) =>
+		section.kind === "input" ? { kind: "submitted", text: value } : section,
+	);
+	return state;
+}
+
+function encodeLoginDialogHandleEvent(action, value, state, cancelled) {
+	const inputValue = state.input ? state.input.value : "";
+	return `${action ?? "null"}|${typeof value === "string" ? value : "null"}|${encodeLoginDialogMutated(state)}|${cancelled}|${inputValue}`;
+}
+
+function loginDialogHandleEvent(state, kind, text, cancelledRef) {
+	if (["escape", "cancel", "clear", "interrupt", "eof"].includes(kind)) {
+		if (state.cancelFunction) {
+			try {
+				state.cancelFunction();
+			} catch {
+				/* ignore */
+			}
+		}
+		return { action: "cancel", value: null };
+	}
+	if (state.input) {
+		if (kind === "text") {
+			state.input.value += text ?? "";
+			return { action: null, value: null };
+		}
+		if (kind === "enter") {
+			return { action: "select", value: state.input.value };
+		}
+		return { action: null, value: null };
+	}
+	return { action: "changed", value: null };
+}
+
+function loginDialogHandleEventEncoded(state, kind, { text } = {}) {
+	const cancelledRef = { n: 0 };
+	if (state.cancelFunction) {
+		state.cancelFunction = () => {
+			cancelledRef.n += 1;
+		};
+	}
+	const { action, value } = loginDialogHandleEvent(
+		state,
+		kind,
+		text,
+		cancelledRef,
+	);
+	return encodeLoginDialogHandleEvent(action, value, state, cancelledRef.n);
+}
+
+function loginDialogRenderLineCount(state) {
+	let n = 3;
+	for (const section of state.sections) {
+		n += section.kind === "url" ? 2 : 1;
+	}
+	return n;
+}
+
+function renderLoginDialogState(state, width) {
+	const n = loginDialogRenderLineCount(state);
+	const hasInput = Boolean(state.input);
+	return {
+		n,
+		row: hasInput ? n - 3 : -1,
+		column: hasInput ? 2 : -1,
+		width,
+	};
+}
+
+function encodeLoginDialogRender(state, width) {
+	const rendered = renderLoginDialogState(state, width);
+	return `${encodeLoginDialogMutated(state)}|${width}|${rendered.n}|${rendered.row}|${rendered.column}`;
+}
+
+function runCliSelectorsLoginDialogCompleteInput() {
+	return {
+		ldci_manual: encodeLoginDialogMutated(
+			loginDialogCompleteInput(
+				loginDialogShowManualInput(
+					makeLoginDialogState("OpenAI"),
+					"Paste the code",
+					LOGIN_DIALOG_NOOP_CANCEL,
+				),
+				"code-123",
+			),
+		),
+		ldci_prompt: encodeLoginDialogMutated(
+			loginDialogCompleteInput(
+				loginDialogShowPrompt(
+					makeLoginDialogState("OpenAI"),
+					"Enter API key",
+					"sk-...",
+					LOGIN_DIALOG_NOOP_CANCEL,
+				),
+				"sk-test",
+			),
+		),
+		ldci_none: encodeLoginDialogMutated(
+			loginDialogCompleteInput(
+				loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+				"ignored",
+			),
+		),
+		ldci_blank: encodeLoginDialogMutated(
+			loginDialogCompleteInput(
+				loginDialogShowManualInput(
+					makeLoginDialogState("OpenAI"),
+					"Paste the code",
+					LOGIN_DIALOG_NOOP_CANCEL,
+				),
+				"",
+			),
+		),
+		ldci_auth: encodeLoginDialogMutated(
+			loginDialogCompleteInput(
+				loginDialogShowManualInput(
+					loginDialogShowAuth(
+						makeLoginDialogState("OpenAI"),
+						"https://example.invalid/auth",
+						null,
+					),
+					"Paste the code",
+					LOGIN_DIALOG_NOOP_CANCEL,
+				),
+				"tok",
+			),
+		),
+	};
+}
+
+function runCliSelectorsLoginDialogHandleEvent() {
+	const waitingCancel = loginDialogShowWaiting(
+		makeLoginDialogState("OpenAI"),
+		"Waiting...",
+	);
+	waitingCancel.cancelFunction = LOGIN_DIALOG_NOOP_CANCEL;
+	return {
+		ldhe_esc: loginDialogHandleEventEncoded(
+			loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+			"escape",
+		),
+		ldhe_cancel: loginDialogHandleEventEncoded(waitingCancel, "escape"),
+		ldhe_enter: loginDialogHandleEventEncoded(
+			loginDialogShowManualInput(
+				makeLoginDialogState("OpenAI"),
+				"Paste the code",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+			"enter",
+		),
+		ldhe_type: loginDialogHandleEventEncoded(
+			loginDialogShowPrompt(
+				makeLoginDialogState("OpenAI"),
+				"Enter API key",
+				"sk-...",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+			"text",
+			{ text: "ab" },
+		),
+		ldhe_down: loginDialogHandleEventEncoded(
+			loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+			"down",
+		),
+	};
+}
+
+function runCliSelectorsRenderLoginDialog() {
+	return {
+		ldrd_wait: encodeLoginDialogRender(
+			loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+			80,
+		),
+		ldrd_auth: encodeLoginDialogRender(
+			loginDialogShowAuth(
+				makeLoginDialogState("OpenAI"),
+				"https://ex.invalid/a",
+				null,
+			),
+			80,
+		),
+		ldrd_manual: encodeLoginDialogRender(
+			loginDialogShowManualInput(
+				makeLoginDialogState("OpenAI"),
+				"Paste the code",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+			80,
+		),
+		ldrd_prompt: encodeLoginDialogRender(
+			loginDialogShowPrompt(
+				makeLoginDialogState("OpenAI"),
+				"Enter API key",
+				"sk-...",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+			80,
+		),
+		ldrd_details: encodeLoginDialogRender(
+			loginDialogShowDetails(makeLoginDialogState("OpenAI"), [
+				["dim", "Status"],
+				["text", "Ready"],
+			]),
+			80,
 		),
 	};
 }
@@ -23679,6 +23895,10 @@ async function measureCliSelectorsSessionSearch() {
 	const loginDialogShowPromptResults = runCliSelectorsLoginDialogShowPrompt();
 	const loginDialogShowInfoResults = runCliSelectorsLoginDialogShowInfo();
 	const loginDialogShowDetailsResults = runCliSelectorsLoginDialogShowDetails();
+	const loginDialogCompleteInputResults =
+		runCliSelectorsLoginDialogCompleteInput();
+	const loginDialogHandleEventResults = runCliSelectorsLoginDialogHandleEvent();
+	const renderLoginDialogResults = runCliSelectorsRenderLoginDialog();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -24055,6 +24275,9 @@ async function measureCliSelectorsSessionSearch() {
 		...loginDialogShowPromptResults,
 		...loginDialogShowInfoResults,
 		...loginDialogShowDetailsResults,
+		...loginDialogCompleteInputResults,
+		...loginDialogHandleEventResults,
+		...renderLoginDialogResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -24917,6 +25140,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.login_dialog_show_details",
 			() => {
 				return () => runCliSelectorsLoginDialogShowDetails();
+			},
+		),
+		login_dialog_complete_input: await collect(
+			"cli_selectors.login_dialog_complete_input",
+			() => {
+				return () => runCliSelectorsLoginDialogCompleteInput();
+			},
+		),
+		login_dialog_handle_event: await collect(
+			"cli_selectors.login_dialog_handle_event",
+			() => {
+				return () => runCliSelectorsLoginDialogHandleEvent();
+			},
+		),
+		render_login_dialog: await collect(
+			"cli_selectors.render_login_dialog",
+			() => {
+				return () => runCliSelectorsRenderLoginDialog();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -27843,6 +28084,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showInfo",
 			"cli_selectors.login_dialog_show_details":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showDetails",
+			"cli_selectors.login_dialog_complete_input":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.replaceInputWithSubmittedText",
+			"cli_selectors.login_dialog_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.handleInput",
+			"cli_selectors.render_login_dialog":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent layout",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
