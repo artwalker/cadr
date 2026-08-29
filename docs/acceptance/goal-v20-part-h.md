@@ -9592,6 +9592,30 @@ Leftover sibling of Pair 856. Timed work is in-memory SDK manager construct with
 
 Leftover sibling of Pairs 856–857. Timed work is thinking-level precedence — not login I/O. Do not compare keyword vs string. Observed `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` are exact. First n=5 freeze **2.660×** (10.850 / 4.079 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 859 — `cli_interactive_controller` (terminal_title_sequence)
+
+| metric | cadr | pi |
+|---|---|---|
+| `terminal_title_sequence` | `tui-terminal-title-sequence` (`src/cadr-cli/interactive/controller.lisp`) | leftover OSC 0 title wrap (`ESC]0;…BEL`) |
+
+Leftover sibling of Pairs 511–513 on the same `controller.lisp` hole. Timed work is OSC 0 wrap of the already-paired title — not TUI render. Observed `tts_osc` / `tts_bel` / `tts_cadr` / `tts_sess` / `tts_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 860 — `cli_interactive_controller` (make_notification_stream)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_notification_stream` | `make-notification-output-stream` (`src/cadr-cli/interactive/controller.lisp`) | leftover notification buffer construct |
+
+Leftover sibling of Pair 859. Timed work is gray-stream construct plus one write/flush — not TUI. Observed `mns_type` / `mns_cb` / `mns_empty` / `mns_char` / `mns_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 861 — `cli_interactive_controller` (notification_stream_flush)
+
+| metric | cadr | pi |
+|---|---|---|
+| `notification_stream_flush` | `notification-stream-flush` (`src/cadr-cli/interactive/controller.lisp`) | leftover notification buffer flush |
+
+Leftover sibling of Pairs 859–860. Timed work is flush of buffered chars; empty flush is a no-op. Observed `nsf_hi` / `nsf_once` / `nsf_len` / `nsf_again` / `nsf_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

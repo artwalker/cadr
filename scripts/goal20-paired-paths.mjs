@@ -788,6 +788,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.render_extension_custom_ui": 50,
 	"cli_interactive_controller.extension_custom_ui_handle_event": 50,
 	"cli_interactive_controller.render_tui_extension_overlay": 50,
+	"cli_interactive_controller.terminal_title_sequence": 50,
+	"cli_interactive_controller.make_notification_stream": 50,
+	"cli_interactive_controller.notification_stream_flush": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -20679,6 +20682,83 @@ function runCliInteractiveRenderTuiExtensionOverlay() {
 	};
 }
 
+function leftoverTuiTerminalTitleSequence(cwd, sessionName) {
+	return `\x1b]0;${replicaTuiTerminalTitle(cwd, sessionName)}\x07`;
+}
+
+function leftoverMakeNotificationStream(callback) {
+	return { callback, buf: "" };
+}
+
+function leftoverNotificationStreamFlush(stream) {
+	const text = stream.buf;
+	stream.buf = "";
+	if (text.length > 0) {
+		stream.callback(text);
+	}
+}
+
+function leftoverNotificationWriteChar(stream, ch) {
+	stream.buf += ch;
+	return ch;
+}
+
+function runCliInteractiveTerminalTitleSequence() {
+	const plain = leftoverTuiTerminalTitleSequence("/tmp/project/", undefined);
+	const sess = leftoverTuiTerminalTitleSequence("/tmp/project/", "branch work");
+	const title = replicaTuiTerminalTitle("/tmp/project/", "branch work");
+	return {
+		tts_osc: plain.startsWith("\x1b]0;") ? 1 : 0,
+		tts_bel: plain.endsWith("\x07") ? 1 : 0,
+		tts_cadr: plain.includes("cadr - ") ? 1 : 0,
+		tts_sess: sess.includes(title) ? 1 : 0,
+		tts_n: 5,
+	};
+}
+
+function runCliInteractiveMakeNotificationStream() {
+	let got = null;
+	const stream = leftoverMakeNotificationStream((text) => {
+		got = text;
+	});
+	const ch = leftoverNotificationWriteChar(stream, "x");
+	leftoverNotificationStreamFlush(stream);
+	let emptyGot = null;
+	const empty = leftoverMakeNotificationStream((text) => {
+		emptyGot = text;
+	});
+	leftoverNotificationStreamFlush(empty);
+	return {
+		mns_type: stream && typeof stream.callback === "function" ? 1 : 0,
+		mns_cb: got === "x" ? 1 : 0,
+		mns_empty: emptyGot == null ? 1 : 0,
+		mns_char: ch === "x" ? 1 : 0,
+		mns_n: 5,
+	};
+}
+
+function runCliInteractiveNotificationStreamFlush() {
+	let got = null;
+	let n = 0;
+	const stream = leftoverMakeNotificationStream((text) => {
+		n += 1;
+		got = text;
+	});
+	leftoverNotificationWriteChar(stream, "h");
+	leftoverNotificationWriteChar(stream, "i");
+	leftoverNotificationStreamFlush(stream);
+	const after = got;
+	const n1 = n;
+	leftoverNotificationStreamFlush(stream);
+	return {
+		nsf_hi: after === "hi" ? 1 : 0,
+		nsf_once: n1 === 1 ? 1 : 0,
+		nsf_len: after ? after.length : 0,
+		nsf_again: n === 1 ? 1 : 0,
+		nsf_n: 5,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -21971,6 +22051,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRenderExtensionCustomUi(),
 		...runCliInteractiveExtensionCustomUiHandleEvent(),
 		...runCliInteractiveRenderTuiExtensionOverlay(),
+		...runCliInteractiveTerminalTitleSequence(),
+		...runCliInteractiveMakeNotificationStream(),
+		...runCliInteractiveNotificationStreamFlush(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -22295,6 +22378,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_tui_extension_overlay",
 			() => {
 				return () => runCliInteractiveRenderTuiExtensionOverlay();
+			},
+		),
+		terminal_title_sequence: await collect(
+			"cli_interactive_controller.terminal_title_sequence",
+			() => {
+				return () => runCliInteractiveTerminalTitleSequence();
+			},
+		),
+		make_notification_stream: await collect(
+			"cli_interactive_controller.make_notification_stream",
+			() => {
+				return () => runCliInteractiveMakeNotificationStream();
+			},
+		),
+		notification_stream_flush: await collect(
+			"cli_interactive_controller.notification_stream_flush",
+			() => {
+				return () => runCliInteractiveNotificationStreamFlush();
 			},
 		),
 		observed,
@@ -37934,6 +38035,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom ui handleEvent",
 			"cli_interactive_controller.render_tui_extension_overlay":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts extension overlay composite",
+			"cli_interactive_controller.terminal_title_sequence":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts OSC 0 title sequence (cadr tui-terminal-title-sequence)",
+			"cli_interactive_controller.make_notification_stream":
+				"packages/coding-agent/src/modes/interactive leftover notification buffer construct (cadr make-notification-output-stream)",
+			"cli_interactive_controller.notification_stream_flush":
+				"packages/coding-agent/src/modes/interactive leftover notification buffer flush (cadr notification-stream-flush)",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.terminal_title_sequence`
+  (`tui-terminal-title-sequence` vs leftover OSC 0 title wrap).
+  Observed `tts_osc` / `tts_bel` / `tts_cadr` / `tts_sess` / `tts_n` exact.
+  Measure-only leftover (Pair 859). First freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.make_notification_stream`
+  (`make-notification-output-stream` vs leftover notification buffer construct).
+  Observed `mns_type` / `mns_cb` / `mns_empty` / `mns_char` / `mns_n` exact.
+  Measure-only leftover (Pair 860). First freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.notification_stream_flush`
+  (`notification-stream-flush` vs leftover notification buffer flush).
+  Observed `nsf_hi` / `nsf_once` / `nsf_len` / `nsf_again` / `nsf_n` exact.
+  Measure-only leftover (Pair 861). First freeze pending.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `settings_load.sdk_make_manager`
   (`make-sdk-settings-manager` vs leftover inMemory empty construct).
   Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` exact.

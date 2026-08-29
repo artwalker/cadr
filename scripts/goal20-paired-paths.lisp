@@ -824,6 +824,9 @@
     ("cli_interactive_controller.render_extension_custom_ui" . 50)
     ("cli_interactive_controller.extension_custom_ui_handle_event" . 50)
     ("cli_interactive_controller.render_tui_extension_overlay" . 50)
+    ("cli_interactive_controller.terminal_title_sequence" . 50)
+    ("cli_interactive_controller.make_notification_stream" . 50)
+    ("cli_interactive_controller.notification_stream_flush" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -19988,6 +19991,25 @@
    "rto_vn" (nth 3 overlay)
    "rto_row" (nth 4 overlay)))
 
+(defun leftover-controller-title-notify-observed-pairs
+    (title-sequence make-stream flush)
+  (list
+   "tts_osc" (nth 0 title-sequence)
+   "tts_bel" (nth 1 title-sequence)
+   "tts_cadr" (nth 2 title-sequence)
+   "tts_sess" (nth 3 title-sequence)
+   "tts_n" (nth 4 title-sequence)
+   "mns_type" (nth 0 make-stream)
+   "mns_cb" (nth 1 make-stream)
+   "mns_empty" (nth 2 make-stream)
+   "mns_char" (nth 3 make-stream)
+   "mns_n" (nth 4 make-stream)
+   "nsf_hi" (nth 0 flush)
+   "nsf_once" (nth 1 flush)
+   "nsf_len" (nth 2 flush)
+   "nsf_again" (nth 3 flush)
+   "nsf_n" (nth 4 flush)))
+
 
 (defun encode-clipboard-command-candidates (candidates)
   (format
@@ -20534,7 +20556,13 @@
         (leftover-extension-custom-ui-handle-event
           (run-cli-interactive-extension-custom-ui-handle-event))
         (leftover-render-tui-extension-overlay
-          (run-cli-interactive-render-tui-extension-overlay)))
+          (run-cli-interactive-render-tui-extension-overlay))
+        (leftover-terminal-title-sequence
+          (run-cli-interactive-terminal-title-sequence))
+        (leftover-make-notification-stream
+          (run-cli-interactive-make-notification-stream))
+        (leftover-notification-stream-flush
+          (run-cli-interactive-notification-stream-flush)))
     (json-object
      "observed"
      (apply #'json-object
@@ -20657,7 +20685,11 @@
              (leftover-extension-ui-custom-ui-overlay-observed-pairs
               leftover-render-extension-custom-ui
               leftover-extension-custom-ui-handle-event
-              leftover-render-tui-extension-overlay)))
+              leftover-render-tui-extension-overlay)
+             (leftover-controller-title-notify-observed-pairs
+              leftover-terminal-title-sequence
+              leftover-make-notification-stream
+              leftover-notification-stream-flush)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -20957,7 +20989,22 @@
      (collect "cli_interactive_controller.render_tui_extension_overlay"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-tui-extension-overlay)))))))
+                  (run-cli-interactive-render-tui-extension-overlay))))
+     "terminal_title_sequence"
+     (collect "cli_interactive_controller.terminal_title_sequence"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-terminal-title-sequence))))
+     "make_notification_stream"
+     (collect "cli_interactive_controller.make_notification_stream"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-make-notification-stream))))
+     "notification_stream_flush"
+     (collect "cli_interactive_controller.notification_stream_flush"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-notification-stream-flush)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -22418,6 +22465,76 @@
            (if (>= (length hid-lines) 1) 1 0)
            (if (>= (length vis-lines) 1) 1 0)
            (if (and (integerp hid-row) (>= hid-row 0)) 1 0)))))))
+
+(defun run-cli-interactive-terminal-title-sequence ()
+  ;; Leftover sibling: OSC 0 title wrap. Not TUI render.
+  (let ((plain
+          (cadr-cli::tui-terminal-title-sequence
+           "/tmp/project/" nil))
+        (sess
+          (cadr-cli::tui-terminal-title-sequence
+           "/tmp/project/" "branch work"))
+        (title
+          (cadr-cli::tui-terminal-title
+           "/tmp/project/" "branch work")))
+    (list
+     (if (and (>= (length plain) 4)
+              (char= (char plain 0) #\Escape)
+              (char= (char plain 1) #\])
+              (char= (char plain 2) #\0)
+              (char= (char plain 3) #\;))
+         1
+         0)
+     (if (and (plusp (length plain))
+              (char= (char plain (1- (length plain)))
+                     (code-char 7)))
+         1
+         0)
+     (if (search "cadr - " plain) 1 0)
+     (if (search title sess) 1 0)
+     5)))
+
+(defun run-cli-interactive-make-notification-stream ()
+  ;; Leftover sibling: construct gray notification stream. Not TUI.
+  (let* ((got nil)
+         (stream
+           (cadr-cli::make-notification-output-stream
+            (lambda (text) (setf got text))))
+         (ch (write-char #\x stream)))
+    (finish-output stream)
+    (let ((empty-got nil)
+          (empty
+            (cadr-cli::make-notification-output-stream
+             (lambda (text) (setf empty-got text)))))
+      (cadr-cli::notification-stream-flush empty)
+      (list
+       (if (streamp stream) 1 0)
+       (if (string= got "x") 1 0)
+       (if (null empty-got) 1 0)
+       (if (eql ch #\x) 1 0)
+       5))))
+
+(defun run-cli-interactive-notification-stream-flush ()
+  ;; Leftover sibling: flush buffered chars. Empty flush is a no-op.
+  (let* ((got nil)
+         (n 0)
+         (stream
+           (cadr-cli::make-notification-output-stream
+            (lambda (text)
+              (incf n)
+              (setf got text)))))
+    (write-char #\h stream)
+    (write-char #\i stream)
+    (cadr-cli::notification-stream-flush stream)
+    (let ((after got)
+          (n1 n))
+      (cadr-cli::notification-stream-flush stream)
+      (list
+       (if (string= after "hi") 1 0)
+       (if (= n1 1) 1 0)
+       (length after)
+       (if (= n 1) 1 0)
+       5))))
 
 (defun session-search-fixture-records ()
   (list
@@ -36715,6 +36832,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp extension-custom-ui-handle-event"
       "cli_interactive_controller.render_tui_extension_overlay"
       "src/cadr-cli/interactive/extension-ui.lisp render-tui-extension-overlay"
+      "cli_interactive_controller.terminal_title_sequence"
+      "src/cadr-cli/interactive/controller.lisp tui-terminal-title-sequence"
+      "cli_interactive_controller.make_notification_stream"
+      "src/cadr-cli/interactive/controller.lisp make-notification-output-stream"
+      "cli_interactive_controller.notification_stream_flush"
+      "src/cadr-cli/interactive/controller.lisp notification-stream-flush"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
