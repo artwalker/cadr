@@ -428,4 +428,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.make_login_method_selector_state` | 2.654 | 2.323 | 1.143× | 8.00× | measure-only leftover 616; `make-login-method-selector-state` vs ExtensionSelectorComponent constructor | invent pause；地板优化另刀 |
 | `cli_selectors.make_api_key_input_state` | 2.203 | 1.222 | 1.803× | 8.00× | measure-only leftover 617; `make-api-key-input-state` vs login-dialog api key Input constructor | invent pause；地板优化另刀 |
 | `cli_selectors.make_oauth_selector_state` | 7.245 | 6.020 | 1.204× | 8.00× | measure-only leftover 618; `make-oauth-selector-state` vs OauthSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.login_dialog_show_waiting` | 5.469 | 4.088 | 1.338× | 8.00× | measure-only leftover 619; `login-dialog-show-waiting` vs LoginDialogComponent.showWaiting | invent pause；地板优化另刀 |
+| `cli_selectors.login_dialog_show_progress` | 3.159 | 2.466 | 1.281× | 8.00× | measure-only leftover 620; `login-dialog-show-progress` vs LoginDialogComponent.showProgress | invent pause；地板优化另刀 |
+| `cli_selectors.login_dialog_show_manual_input` | 5.131 | 3.050 | 1.683× | 8.00× | measure-only leftover 621; `login-dialog-show-manual-input` vs LoginDialogComponent.showManualInput | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

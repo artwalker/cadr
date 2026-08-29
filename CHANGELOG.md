@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.login_dialog_show_waiting`
+  (`login-dialog-show-waiting` on
+  `src/cadr-cli/interactive/selectors/login-dialog.lisp` vs
+  LoginDialogComponent.showWaiting). Observed `ldw_empty` / `ldw_auth` /
+  `ldw_twice` / `ldw_blank` / `ldw_device` exact. n=5 **1.338×** (5.469 /
+  4.088 µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 619).
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.login_dialog_show_progress`
+  (`login-dialog-show-progress` vs LoginDialogComponent.showProgress).
+  Observed `ldp_empty` / `ldp_auth` / `ldp_two` / `ldp_blank` / `ldp_wait`
+  exact. n=5 **1.281×** (3.159 / 2.466 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 620). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.login_dialog_show_manual_input`
+  (`login-dialog-show-manual-input` vs LoginDialogComponent.showManualInput).
+  Observed `ldmi_empty` / `ldmi_auth` / `ldmi_blank` / `ldmi_nocancel` /
+  `ldmi_wait` exact. n=5 **1.683×** (5.131 / 3.050 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 621). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.make_login_method_selector_state`
   (`make-login-method-selector-state` on
   `src/cadr-cli/interactive/selectors/auth.lisp` vs ExtensionSelectorComponent
