@@ -970,7 +970,8 @@
     ;; quote-or-bs-mask + ctrl-mask + find-quote-or-backslash.
     ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
     ;; SeqOneByteString word; not empty SWAR).
-    (is (= 309 definition-count)
+    ;; +1 v0.84.4: repair-unterminated-session-file (session/migration.lisp).
+    (is (= 310 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1174,7 +1175,7 @@
           (events
             (goal14-source-block
              registration "(defparameter +extension-hook-events+"
-             "    :user-bash))")))
+             "    :ui-prompt-end))")))
       (is (and exports
                (string=
                 "61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18"
@@ -1182,9 +1183,9 @@
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "47299ec9ea88222a91482ef44a767112c797a04b58b93a589f146062bd24109d"
+                "61428b4487f768838bc1d660490d9957337c308c9e57be4c5a651548483b6e07"
                 (goal14-sha256 events)))
-          "B9 changed the frozen 35-event source block"))))
+          "B9 changed the frozen 37-event source block"))))
 
 (test goal14-b9-asdf-loads-extension-host-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-agent"))
@@ -1307,8 +1308,7 @@
     ;; +1 Goal 20 P0: terminal-quota-error-text-p (support/retry.lisp),
     ;; HTTP 429 GoUsageLimit / pi isTerminalRateLimitError set.
     ;; +1 Goal 21 v0.84.3: faux-tool-json-object (runtime/faux-provider.lisp).
-    ;; +1 v0.84.4: openrouter-thinking-level-map (model-data.lisp).
-    (is (= 277 definition-count)
+    (is (= 276 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
