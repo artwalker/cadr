@@ -8926,7 +8926,7 @@ Leftover sibling of Pairs 772–773. Timed work is memory remhash; pi has no gen
 |---|---|---|
 | `sdk_settings_reload` | `sdk-settings-reload` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.reload` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 772–774. Timed work is in-memory reload (nil path; no `settings.json` read). cadr returns the manager; pi resolves to `undefined` — encoded as cadr `eq` manager → 1 and pi `== null` → 1. Observed `srl_hit` / `srl_model` / `srl_same` / `srl_empty` / `srl_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 772–774. Timed work is in-memory reload (nil path; no `settings.json` read). cadr returns the manager; pi resolves to `undefined` — encoded as cadr `eq` manager → 1 and pi `== null` → 1. Observed `srl_hit` / `srl_model` / `srl_same` / `srl_empty` / `srl_n` are exact. First n=5 freeze **3.545×** (22.742 / 6.416 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 776 — `settings_load` (sdk_settings_flush)
 
@@ -8934,7 +8934,7 @@ Leftover sibling of Pairs 772–774. Timed work is in-memory reload (nil path; n
 |---|---|---|
 | `sdk_settings_flush` | `sdk-settings-flush` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.flush` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pair 775. Timed work is flush identity vs `await flush()`. Do not compare manager vs Promise. Observed `sfl_hit` / `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 775. Timed work is flush identity vs `await flush()`. Do not compare manager vs Promise. Observed `sfl_hit` / `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` are exact. First n=5 freeze **4.385×** (22.538 / 5.139 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 777 — `settings_load` (sdk_compaction_enabled)
 
@@ -8942,7 +8942,7 @@ Leftover sibling of Pair 775. Timed work is flush identity vs `await flush()`. D
 |---|---|---|
 | `sdk_compaction_enabled` | `sdk-settings-compaction-enabled-p` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getCompactionEnabled` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 775–776. Timed work is compaction enabled default/true/false — not login I/O. Observed `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 775–776. Timed work is compaction enabled default/true/false — not login I/O. Observed `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` are exact. First n=5 freeze **2.808×** (15.262 / 5.436 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

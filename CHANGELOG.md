@@ -11,19 +11,21 @@ tag/Release step.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /
-  `srl_model` / `srl_same` / `srl_empty` / `srl_n` exact. Measure-only
-  leftover (Pair 775). Freeze pending n=5 `--only-enforce`. `nextPairNum`
-  left unchanged.
+  `srl_model` / `srl_same` / `srl_empty` / `srl_n` exact. n=5 **3.545×**
+  (22.742 / 6.416 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 775). Over-1× booked. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_settings_flush`
   (`sdk-settings-flush` vs SettingsManager.flush). Observed `sfl_hit` /
-  `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` exact. Measure-only
-  leftover (Pair 776). Freeze pending n=5 `--only-enforce`. `nextPairNum`
-  left unchanged.
+  `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` exact. n=5 **4.385×**
+  (22.538 / 5.139 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 776). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_compaction_enabled`
   (`sdk-settings-compaction-enabled-p` vs getCompactionEnabled). Observed
-  `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` exact. Measure-only
-  leftover (Pair 777). Freeze pending n=5 `--only-enforce`. `nextPairNum`
-  left unchanged.
+  `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` exact. n=5 **2.808×**
+  (15.262 / 5.436 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 777). Over-1× booked. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_effective_object`
   (`sdk-settings-effective-object` vs Settings object merge replica).
