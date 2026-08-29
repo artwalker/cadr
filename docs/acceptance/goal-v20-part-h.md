@@ -8560,6 +8560,30 @@ Leftover sibling of Pair 727. Timed work is global item, project item, user item
 
 Leftover sibling of Pairs 727–728. Timed work is file, nested skill path, extensions path, and bare name. Observed `prp_file` / `prp_nested` / `prp_ext` / `prp_plain` / `prp_n` are exact. First n=5 freeze **13.804×** (15.247 / 1.105 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 730 — `package_manager` (package_override_source)
+
+| metric | cadr | pi |
+|---|---|---|
+| `package_override_source` | `config-selector-package-override-source` (`src/cadr-cli/packages/config-selector.lisp`) | package override source (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 727–729 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is npm source as-is, local nested `enough-namestring`, same-directory empty relative, and pinned npm spec. Observed `pos_npm` / `pos_rel` / `pos_same` / `pos_pin` / `pos_n` are exact. First n=5 freeze **12.402×** (18.871 / 1.522 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 731 — `package_manager` (resource_group_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_group_label` | `config-resource-group-label` (`src/cadr-cli/packages/config-selector.lisp`) | resource group label (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 730. Timed work is package source+scope, local user settings, local project settings, and project `.cadr/` label. Observed `rgl_pkg` / `rgl_user` / `rgl_proj` / `rgl_cadr` / `rgl_n` are exact. First n=5 freeze **31.609×** (17.081 / 0.540 µs) on host `cursor`, ceiling 50.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 732 — `package_manager` (settings_values)
+
+| metric | cadr | pi |
+|---|---|---|
+| `settings_values` | `config-selector-settings-values` (`src/cadr-cli/packages/config-selector.lisp`) | settings values (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 730–731. Timed work is global string vector, project string vector, numeric vector, and non-array miss. Observed `csv_ok` / `csv_proj` / `csv_nums` / `csv_bad` / `csv_n` are exact. First n=5 freeze **6.444×** (5.209 / 0.808 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
