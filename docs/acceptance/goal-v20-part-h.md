@@ -8440,6 +8440,30 @@ Leftover sibling of Pair 712. Timed work is vector coerce, list copy, missing ke
 
 Leftover sibling of Pairs 712–713. Timed work is empty query, display name, path, type symbol, and miss. Observed `im_empty` / `im_name` / `im_path` / `im_type` / `im_miss` / `im_n` are exact. First n=5 freeze **11.092×** (10.553 / 0.951 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 715 — `package_manager` (resource_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_key` | `config-selector-resource-key` (`src/cadr-cli/packages/config-selector.lisp`) | resource type key (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 712–714 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is extensions, skills, prompts, and themes type keys. Observed `crk_ext` / `crk_sk` / `crk_pr` / `crk_th` / `crk_n` are exact. First n=5 freeze **11.643×** (2.758 / 0.237 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 716 — `package_manager` (relative_pattern)
+
+| metric | cadr | pi |
+|---|---|---|
+| `relative_pattern` | `config-selector-relative-pattern` (`src/cadr-cli/packages/config-selector.lisp`) | relative pattern (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 715. Timed work is file, nested skill path, extensions path, and bare name. Observed `rel_file` / `rel_nested` / `rel_ext` / `rel_plain` / `rel_n` are exact. First n=5 freeze **17.574×** (15.709 / 0.894 µs) on host `cursor`, ceiling 30.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 717 — `package_manager` (config_fit_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `config_fit_line` | `config-selector-fit-line` (`src/cadr-cli/packages/config-selector.lisp`) | truncateToWidth (`packages/tui/src/utils.ts`) |
+
+Leftover sibling of Pairs 715–716. Timed work is short fit, overflow with empty ellipsis (CSI reset), overflow with `...`, and zero width. Observed `cfl_short` / `cfl_long` / `cfl_dots` / `cfl_zero` / `cfl_n` are exact. First n=5 freeze **2.793×** (5.200 / 1.862 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -480,6 +480,9 @@
     ("package_manager.autoload_disabled" . 50)
     ("package_manager.package_entry_filter" . 50)
     ("package_manager.item_matches" . 50)
+    ("package_manager.resource_key" . 50)
+    ("package_manager.relative_pattern" . 50)
+    ("package_manager.config_fit_line" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4686,6 +4689,63 @@
       (not (leftover-config-selector-item-matches-p item "zzz")))
      5)))
 
+(defun leftover-config-selector-resource-key (type)
+  (cadr-cli::config-selector-resource-key
+   (leftover-config-resource-item "/tmp/x.lisp" type "x")))
+
+(defun leftover-config-selector-relative-pattern (path)
+  (cadr-cli::config-selector-relative-pattern
+   (leftover-config-resource-item path :extensions "x")))
+
+(defun leftover-config-selector-fit-line (line width &optional ellipsis)
+  (cadr-cli::config-selector-fit-line line width ellipsis))
+
+(defun run-package-manager-resource-key ()
+  (list
+   (package-manager-truth
+    (string= (leftover-config-selector-resource-key :extensions) "extensions"))
+   (package-manager-truth
+    (string= (leftover-config-selector-resource-key :skills) "skills"))
+   (package-manager-truth
+    (string= (leftover-config-selector-resource-key :prompts) "prompts"))
+   (package-manager-truth
+    (string= (leftover-config-selector-resource-key :themes) "themes"))
+   5))
+
+(defun run-package-manager-relative-pattern ()
+  (list
+   (package-manager-truth
+    (string= (leftover-config-selector-relative-pattern "/tmp/hello.lisp")
+             "hello.lisp"))
+   (package-manager-truth
+    (string=
+     (leftover-config-selector-relative-pattern "/tmp/skills/hello/SKILL.md")
+     "skills/hello/SKILL.md"))
+   (package-manager-truth
+    (string=
+     (leftover-config-selector-relative-pattern "/tmp/extensions/foo.lisp")
+     "extensions/foo.lisp"))
+   (package-manager-truth
+    (string= (leftover-config-selector-relative-pattern "/tmp/x") "x"))
+   5))
+
+(defun run-package-manager-config-fit-line ()
+  (let ((reset (format nil "~C[0m" #\Escape)))
+    (list
+     (package-manager-truth
+      (string= (leftover-config-selector-fit-line "hello" 10) "hello"))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-fit-line "hello world" 5)
+       (format nil "hello~A" reset)))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-fit-line "hello world" 8 "...")
+       (format nil "hello~A...~A" reset reset)))
+     (package-manager-truth
+      (string= (leftover-config-selector-fit-line "hello" 0) ""))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -4775,7 +4835,10 @@
            (entry-target (run-package-manager-entry-target))
            (autoload-disabled (run-package-manager-autoload-disabled))
            (package-entry-filter (run-package-manager-package-entry-filter))
-           (item-matches (run-package-manager-item-matches)))
+           (item-matches (run-package-manager-item-matches))
+           (resource-key (run-package-manager-resource-key))
+           (relative-pattern (run-package-manager-relative-pattern))
+           (config-fit-line (run-package-manager-config-fit-line)))
       (json-object
        "observed"
        (json-object
@@ -4856,7 +4919,22 @@
         "im_path" (nth 2 item-matches)
         "im_type" (nth 3 item-matches)
         "im_miss" (nth 4 item-matches)
-        "im_n" (nth 5 item-matches))
+        "im_n" (nth 5 item-matches)
+        "crk_ext" (nth 0 resource-key)
+        "crk_sk" (nth 1 resource-key)
+        "crk_pr" (nth 2 resource-key)
+        "crk_th" (nth 3 resource-key)
+        "crk_n" (nth 4 resource-key)
+        "rel_file" (nth 0 relative-pattern)
+        "rel_nested" (nth 1 relative-pattern)
+        "rel_ext" (nth 2 relative-pattern)
+        "rel_plain" (nth 3 relative-pattern)
+        "rel_n" (nth 4 relative-pattern)
+        "cfl_short" (nth 0 config-fit-line)
+        "cfl_long" (nth 1 config-fit-line)
+        "cfl_dots" (nth 2 config-fit-line)
+        "cfl_zero" (nth 3 config-fit-line)
+        "cfl_n" (nth 4 config-fit-line))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -4932,7 +5010,22 @@
        (collect "package_manager.item_matches"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-item-matches))))))))
+                    (run-package-manager-item-matches))))
+       "resource_key"
+       (collect "package_manager.resource_key"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-key))))
+       "relative_pattern"
+       (collect "package_manager.relative_pattern"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-relative-pattern))))
+       "config_fit_line"
+       (collect "package_manager.config_fit_line"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-config-fit-line))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30150,6 +30243,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-package-entry-filter"
       "package_manager.item_matches"
       "src/cadr-cli/packages/config-selector.lisp config-selector-item-matches-p"
+      "package_manager.resource_key"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-resource-key"
+      "package_manager.relative_pattern"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-relative-pattern"
+      "package_manager.config_fit_line"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-fit-line"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

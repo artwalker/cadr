@@ -251,6 +251,9 @@ const REPETITIONS = {
 	"package_manager.autoload_disabled": 50,
 	"package_manager.package_entry_filter": 50,
 	"package_manager.item_matches": 50,
+	"package_manager.resource_key": 50,
+	"package_manager.relative_pattern": 50,
+	"package_manager.config_fit_line": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6050,6 +6053,66 @@ function runPackageManagerItemMatches() {
 	};
 }
 
+function leftoverConfigSelectorResourceKey(type) {
+	return String(type).toLowerCase();
+}
+
+function leftoverConfigSelectorRelativePattern(filePath, baseDirectory = "/tmp/") {
+	const file = filePath.replaceAll("\\", "/");
+	let base = baseDirectory.replaceAll("\\", "/");
+	if (!base.endsWith("/")) {
+		base += "/";
+	}
+	return file.startsWith(base) ? file.slice(base.length) : file;
+}
+
+function leftoverConfigSelectorFitLine(line, width, ellipsis) {
+	return tuiUtilsModule.truncateToWidth(line, Math.max(0, width), ellipsis ?? "");
+}
+
+function runPackageManagerResourceKey() {
+	return {
+		crk_ext: leftoverConfigSelectorResourceKey("extensions") === "extensions" ? 1 : 0,
+		crk_sk: leftoverConfigSelectorResourceKey("skills") === "skills" ? 1 : 0,
+		crk_pr: leftoverConfigSelectorResourceKey("prompts") === "prompts" ? 1 : 0,
+		crk_th: leftoverConfigSelectorResourceKey("themes") === "themes" ? 1 : 0,
+		crk_n: 5,
+	};
+}
+
+function runPackageManagerRelativePattern() {
+	return {
+		rel_file:
+			leftoverConfigSelectorRelativePattern("/tmp/hello.lisp") === "hello.lisp" ? 1 : 0,
+		rel_nested:
+			leftoverConfigSelectorRelativePattern("/tmp/skills/hello/SKILL.md") ===
+			"skills/hello/SKILL.md"
+				? 1
+				: 0,
+		rel_ext:
+			leftoverConfigSelectorRelativePattern("/tmp/extensions/foo.lisp") ===
+			"extensions/foo.lisp"
+				? 1
+				: 0,
+		rel_plain: leftoverConfigSelectorRelativePattern("/tmp/x") === "x" ? 1 : 0,
+		rel_n: 5,
+	};
+}
+
+function runPackageManagerConfigFitLine() {
+	const reset = "\x1b[0m";
+	return {
+		cfl_short: leftoverConfigSelectorFitLine("hello", 10) === "hello" ? 1 : 0,
+		cfl_long: leftoverConfigSelectorFitLine("hello world", 5) === `hello${reset}` ? 1 : 0,
+		cfl_dots:
+			leftoverConfigSelectorFitLine("hello world", 8, "...") === `hello${reset}...${reset}`
+				? 1
+				: 0,
+		cfl_zero: leftoverConfigSelectorFitLine("hello", 0) === "" ? 1 : 0,
+		cfl_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6149,6 +6212,9 @@ async function measurePackageManager() {
 	const autoloadDisabled = runPackageManagerAutoloadDisabled();
 	const packageEntryFilter = runPackageManagerPackageEntryFilter();
 	const itemMatches = runPackageManagerItemMatches();
+	const resourceKey = runPackageManagerResourceKey();
+	const relativePattern = runPackageManagerRelativePattern();
+	const configFitLine = runPackageManagerConfigFitLine();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6195,6 +6261,15 @@ async function measurePackageManager() {
 		item_matches: await collect("package_manager.item_matches", () => {
 			return () => runPackageManagerItemMatches();
 		}),
+		resource_key: await collect("package_manager.resource_key", () => {
+			return () => runPackageManagerResourceKey();
+		}),
+		relative_pattern: await collect("package_manager.relative_pattern", () => {
+			return () => runPackageManagerRelativePattern();
+		}),
+		config_fit_line: await collect("package_manager.config_fit_line", () => {
+			return () => runPackageManagerConfigFitLine();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6215,6 +6290,9 @@ async function measurePackageManager() {
 			...autoloadDisabled,
 			...packageEntryFilter,
 			...itemMatches,
+			...resourceKey,
+			...relativePattern,
+			...configFitLine,
 		},
 	};
 }
@@ -31739,6 +31817,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package entry filter (cadr config-package-entry-filter)",
 			"package_manager.item_matches":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts item query match (cadr config-selector-item-matches-p)",
+			"package_manager.resource_key":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts resource type key (cadr config-selector-resource-key)",
+			"package_manager.relative_pattern":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts relative pattern (cadr config-selector-relative-pattern)",
+			"package_manager.config_fit_line":
+				"packages/tui/src/utils.ts truncateToWidth (cadr config-selector-fit-line)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
