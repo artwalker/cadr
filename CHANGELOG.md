@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.loaded_model`
+  (`llama-loaded-model-p` vs leftover loaded/sleeping predicate). Observed
+  `llm_loaded` / `llm_sleep` / `llm_unloaded` / `llm_n`.
+  Measure-only leftover (Pair 850). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.catalog_notify`
+  (`notify-llama-catalog` vs leftover catalog notify lines). Observed
+  `lnc_empty` / `lnc_loaded` / `lnc_sleep` / `lnc_n`.
+  Measure-only leftover (Pair 851). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.progress_notify`
+  (`llama-progress-notifier` vs leftover progress notify text). Observed
+  `lpn_plain` / `lpn_pct` / `lpn_detail` / `lpn_n`.
+  Measure-only leftover (Pair 852). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.manager_notify`
   (`extension-manager-notify` vs leftover notify format). Observed
   `enm_info` / `enm_error` / `enm_redact` / `enm_nl` / `enm_n` exact.
