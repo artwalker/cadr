@@ -9430,7 +9430,7 @@ Leftover sibling of Pairs 835–836. Timed work is row join without theme/clip �
 |---|---|---|
 | `data_directory` | `data-directory` (`src/cadr-cli/migration.lisp`) | leftover `join(home, CONFIG_DIR_NAME)` (`packages/coding-agent/src/config.ts`) |
 
-Leftover sibling of Pairs 457–459 on the same `migration.lisp` `cli_bootstrap_sessions` hole. Timed work is join under an explicit home — not disk migrate, not `user-homedir-pathname`. Observed `dd_under` / `dd_neq` / `dd_dot` are exact (leaf names `.cadr` vs `.pi` are not exacted). Measure-only leftover. `nextPairNum` left at 328.
+Leftover sibling of Pairs 457–459 on the same `migration.lisp` `cli_bootstrap_sessions` hole. Timed work is join under an explicit home — not disk migrate, not `user-homedir-pathname`. Observed `dd_under` / `dd_neq` / `dd_dot` are exact (leaf names `.cadr` vs `.pi` are not exacted). First n=5 freeze **30.561×** (28.934 / 0.947 µs) on host `cursor`, ceiling 40.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 839 — `cli_bootstrap_sessions` (legacy_data_directory)
 
@@ -9438,7 +9438,7 @@ Leftover sibling of Pairs 457–459 on the same `migration.lisp` `cli_bootstrap_
 |---|---|---|
 | `legacy_data_directory` | `legacy-data-directory` (`src/cadr-cli/migration.lisp`) | leftover `join(home, "." + legacy product)` (`packages/coding-agent/src/migrations.ts`) |
 
-Leftover sibling of Pair 838. Timed work is `.` plus `legacy-product-name` under home — not rename, not probe. Observed `ldd_under` / `ldd_neq` / `ldd_leaf` are exact (leaf `.pi-cl`). Measure-only leftover. `nextPairNum` left at 328.
+Leftover sibling of Pair 838. Timed work is `.` plus `legacy-product-name` under home — not rename, not probe. Observed `ldd_under` / `ldd_neq` / `ldd_leaf` are exact (leaf `.pi-cl`). First n=5 freeze **28.797×** (29.041 / 1.008 µs) on host `cursor`, ceiling 40.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 840 — `cli_bootstrap_sessions` (manual_migration_command)
 
@@ -9446,7 +9446,7 @@ Leftover sibling of Pair 838. Timed work is `.` plus `legacy-product-name` under
 |---|---|---|
 | `manual_migration_command` | `manual-migration-command` (`src/cadr-cli/migration.lisp`) | leftover `` `mv --` `` plus POSIX quotes (`packages/coding-agent/src/migrations.ts`) |
 
-Leftover sibling of Pairs 838–839. Timed work is command string assembly — not `rename-file`, not refuse. Observed `mmc_mv` / `mmc_old` / `mmc_new` / `mmc_space` / `mmc_quote` are exact. Measure-only leftover. `nextPairNum` left at 328.
+Leftover sibling of Pairs 838–839. Timed work is command string assembly — not `rename-file`, not refuse. Observed `mmc_mv` / `mmc_old` / `mmc_new` / `mmc_space` / `mmc_quote` are exact. First n=5 freeze **17.746×** (28.375 / 1.599 µs) on host `cursor`, ceiling 24.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

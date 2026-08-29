@@ -11,16 +11,22 @@ tag/Release step.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.data_directory`
   (`data-directory` vs leftover join(home, CONFIG_DIR_NAME)). Observed
-  `dd_under` / `dd_neq` / `dd_dot` exact. Measure-only leftover (Pair 838).
+  `dd_under` / `dd_neq` / `dd_dot` exact.
+  n=5 **30.561×** (28.934 / 0.947 µs) on host `cursor`, ceiling 40.0.
+  Measure-only leftover (Pair 838). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
   `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.legacy_data_directory`
   (`legacy-data-directory` vs leftover join(home, '.' + legacy product)).
   Observed `ldd_under` / `ldd_neq` / `ldd_leaf` exact.
-  Measure-only leftover (Pair 839). `nextPairNum` left unchanged.
+  n=5 **28.797×** (29.041 / 1.008 µs) on host `cursor`, ceiling 40.0.
+  Measure-only leftover (Pair 839). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.manual_migration_command`
   (`manual-migration-command` vs leftover mv -- quoted paths). Observed
   `mmc_mv` / `mmc_old` / `mmc_new` / `mmc_space` / `mmc_quote` exact.
-  Measure-only leftover (Pair 840). `nextPairNum` left unchanged.
+  n=5 **17.746×** (28.375 / 1.599 µs) on host `cursor`, ceiling 24.0.
+  Measure-only leftover (Pair 840). Over-1× booked. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_selectors.armin_make_grid`
   (`make-armin-grid` vs leftover buildFinalGrid/createEmptyGrid). Observed

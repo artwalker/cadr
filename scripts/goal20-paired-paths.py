@@ -1519,11 +1519,14 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.validate_cli_session_flags": 8.0,
     "cli_bootstrap_sessions.session_entry_tree_selector_data": 8.0,
     "cli_bootstrap_sessions.session_restored_model": 8.0,
-    # leftover 838–840 migration.lisp (samples=5): first-freeze
-    # headroom. Ratchet down only. Measure-only leftover 838–840.
-    "cli_bootstrap_sessions.data_directory": 8.0,
-    "cli_bootstrap_sessions.legacy_data_directory": 8.0,
-    "cli_bootstrap_sessions.manual_migration_command": 8.0,
+    # leftover 838–840 migration.lisp (samples=5): first freeze
+    # data_directory 30.561× (28.934 / 0.947 µs),
+    # legacy_data_directory 28.797× (29.041 / 1.008 µs),
+    # manual_migration_command 17.746× (28.375 / 1.599 µs).
+    # Headroom ceilings; ratchet down only. Measure-only leftover 838–840.
+    "cli_bootstrap_sessions.data_directory": 40.0,
+    "cli_bootstrap_sessions.legacy_data_directory": 40.0,
+    "cli_bootstrap_sessions.manual_migration_command": 24.0,
   # cli_selectors.countdown_seconds leftover 556 (samples=5):
   # observed 2.292x (0.768 / 0.335 us). 8.0 is first-freeze
   # headroom. Ratchet down only.

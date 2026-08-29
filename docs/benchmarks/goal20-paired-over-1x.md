@@ -602,4 +602,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.armin_make_grid` | 27.332 | 6.763 | 4.041× | 8.00× | measure-only leftover 835; `make-armin-grid` vs leftover buildFinalGrid/createEmptyGrid | invent pause；地板优化另刀 |
 | `cli_selectors.armin_copy_grid` | 24.123 | 3.977 | 6.066× | 8.00× | measure-only leftover 836; `copy-armin-grid` vs leftover 2d row copy | invent pause；地板优化另刀 |
 | `cli_selectors.armin_row_string` | 23.245 | 5.676 | 4.095× | 8.00× | measure-only leftover 837; `armin-grid-row-string` vs leftover row.join | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.data_directory` | 28.934 | 0.947 | 30.561× | 40.00× | measure-only leftover 838; `data-directory` vs leftover join(home, CONFIG_DIR_NAME) | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.legacy_data_directory` | 29.041 | 1.008 | 28.797× | 40.00× | measure-only leftover 839; `legacy-data-directory` vs leftover join(home, '.' + legacy product) | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.manual_migration_command` | 28.375 | 1.599 | 17.746× | 24.00× | measure-only leftover 840; `manual-migration-command` vs leftover mv -- quoted paths | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
