@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.armin_copy_cell`
+  (`armin-copy-cell` vs leftover typewriter cell assign).
+  Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` exact.
+  Measure-only leftover (Pair 862). First freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_copy_row`
+  (`armin-copy-row` vs leftover scanline row copy).
+  Observed `acr_eq` / `acr_indep` / `acr_w` / `acr_h` / `acr_n` exact.
+  Measure-only leftover (Pair 863). First freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_rotate_row`
+  (`armin-rotate-row` vs leftover glitch slice/concat rotate).
+  Observed `arr_len` / `arr_zero` / `arr_shift` / `arr_mod` / `arr_n` exact.
+  Measure-only leftover (Pair 864). First freeze pending.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_interactive_controller.terminal_title_sequence`
   (`tui-terminal-title-sequence` vs leftover OSC 0 title wrap).
   Observed `tts_osc` / `tts_bel` / `tts_cadr` / `tts_sess` / `tts_n` exact.

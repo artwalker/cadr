@@ -927,6 +927,9 @@ const REPETITIONS = {
 	"cli_selectors.armin_make_grid": 50,
 	"cli_selectors.armin_copy_grid": 50,
 	"cli_selectors.armin_row_string": 50,
+	"cli_selectors.armin_copy_cell": 50,
+	"cli_selectors.armin_copy_row": 50,
+	"cli_selectors.armin_rotate_row": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -28201,6 +28204,82 @@ function runCliSelectorsArminRowString() {
 	};
 }
 
+function leftoverArminCopyCell(component, position) {
+	const row = Math.floor(position / ARMIN_WIDTH);
+	const column = position % ARMIN_WIDTH;
+	if (row >= component.finalGrid.length) {
+		return false;
+	}
+	component.currentGrid[row][column] = component.finalGrid[row][column];
+	return true;
+}
+
+function leftoverArminCopyRow(destination, source, row) {
+	for (let column = 0; column < ARMIN_WIDTH; column++) {
+		destination[row][column] = source[row][column];
+	}
+}
+
+function leftoverArminRotateRow(source, row, offset) {
+	const shift = ((offset % ARMIN_WIDTH) + ARMIN_WIDTH) % ARMIN_WIDTH;
+	const result = [];
+	for (let column = 0; column < ARMIN_WIDTH; column++) {
+		result.push(source[row][(column + shift) % ARMIN_WIDTH]);
+	}
+	return result;
+}
+
+function leftoverArminComponentFixture() {
+	return {
+		finalGrid: replicaBuildFinalArminGrid(),
+		currentGrid: replicaCreateEmptyArminGrid(),
+	};
+}
+
+function runCliSelectorsArminCopyCell() {
+	const component = leftoverArminComponentFixture();
+	const ok = leftoverArminCopyCell(component, 0);
+	const match = component.currentGrid[0][0] === component.finalGrid[0][0];
+	const oob = leftoverArminCopyCell(component, 558);
+	const mid = leftoverArminCopyCell(component, 31);
+	return {
+		acc_ok: ok ? 1 : 0,
+		acc_match: match ? 1 : 0,
+		acc_oob: oob ? 0 : 1,
+		acc_mid: mid ? 1 : 0,
+		acc_n: 5,
+	};
+}
+
+function runCliSelectorsArminCopyRow() {
+	const source = replicaBuildFinalArminGrid();
+	const dest = replicaCreateEmptyArminGrid();
+	const saved = source[2][0];
+	leftoverArminCopyRow(dest, source, 2);
+	dest[2][0] = "X";
+	return {
+		acr_eq: dest[2][1] === source[2][1] ? 1 : 0,
+		acr_indep: source[2][0] === saved ? 1 : 0,
+		acr_w: ARMIN_WIDTH,
+		acr_h: source.length,
+		acr_n: 5,
+	};
+}
+
+function runCliSelectorsArminRotateRow() {
+	const source = replicaBuildFinalArminGrid();
+	const zero = leftoverArminRotateRow(source, 2, 0);
+	const one = leftoverArminRotateRow(source, 2, 1);
+	const full = leftoverArminRotateRow(source, 2, 31);
+	return {
+		arr_len: zero.length,
+		arr_zero: zero[0] === source[2][0] ? 1 : 0,
+		arr_shift: one[0] === source[2][1] && one[30] === source[2][0] ? 1 : 0,
+		arr_mod: full[0] === zero[0] ? 1 : 0,
+		arr_n: 5,
+	};
+}
+
 let cachedDaxnutsHex;
 let cachedDaxnutsPixels;
 
@@ -32461,6 +32540,9 @@ async function measureCliSelectorsSessionSearch() {
 	const arminMakeGridResults = runCliSelectorsArminMakeGrid();
 	const arminCopyGridResults = runCliSelectorsArminCopyGrid();
 	const arminRowStringResults = runCliSelectorsArminRowString();
+	const arminCopyCellResults = runCliSelectorsArminCopyCell();
+	const arminCopyRowResults = runCliSelectorsArminCopyRow();
+	const arminRotateRowResults = runCliSelectorsArminRotateRow();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -32855,6 +32937,9 @@ async function measureCliSelectorsSessionSearch() {
 		...arminMakeGridResults,
 		...arminCopyGridResults,
 		...arminRowStringResults,
+		...arminCopyCellResults,
+		...arminCopyRowResults,
+		...arminRotateRowResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -33802,6 +33887,15 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		armin_row_string: await collect("cli_selectors.armin_row_string", () => {
 			return () => runCliSelectorsArminRowString();
+		}),
+		armin_copy_cell: await collect("cli_selectors.armin_copy_cell", () => {
+			return () => runCliSelectorsArminCopyCell();
+		}),
+		armin_copy_row: await collect("cli_selectors.armin_copy_row", () => {
+			return () => runCliSelectorsArminCopyRow();
+		}),
+		armin_rotate_row: await collect("cli_selectors.armin_rotate_row", () => {
+			return () => runCliSelectorsArminRotateRow();
 		}),
 		observed,
 	};
@@ -38427,6 +38521,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover finalGrid.map(row => [...row]) (cadr copy-armin-grid)",
 			"cli_selectors.armin_row_string":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover row.join(\"\") (cadr armin-grid-row-string)",
+			"cli_selectors.armin_copy_cell":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover typewriter currentGrid[row][x]=finalGrid (cadr armin-copy-cell)",
+			"cli_selectors.armin_copy_row":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover scanline row copy (cadr armin-copy-row)",
+			"cli_selectors.armin_rotate_row":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover glitch slice/concat rotate (cadr armin-rotate-row)",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
