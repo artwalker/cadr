@@ -33,7 +33,7 @@
 //     scripts/goal20-paired-paths.mjs "$BASELINE_WORKTREE"
 
 import { execFileSync } from "node:child_process";
-import { createHash, createHmac } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 import { STATUS_CODES } from "node:http";
 import {
 	copyFileSync,
@@ -314,6 +314,9 @@ const REPETITIONS = {
 	"evals_harness.required_prompt_boundary": 50,
 	"evals_harness.exclude_guidelines": 50,
 	"evals_harness.prepare_default_prompt": 50,
+	"evals_harness.reporter_run_id": 50,
+	"evals_harness.artifact_reference_json": 50,
+	"evals_harness.reporter_artifacts": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -8162,6 +8165,7 @@ function makeEvalResult(fields = {}) {
 		events: fields.events ?? [],
 		usage: fields.usage,
 		errors: fields.errors ?? [],
+		recordedArtifacts: fields.recordedArtifacts ?? [],
 		artifacts: fields.artifacts ?? {},
 		timings: fields.timings ?? {},
 	};
@@ -8738,6 +8742,109 @@ function runEvalsHarnessPrepareDefaultPrompt() {
 }
 
 
+function leftoverReporterRunId(result) {
+	const runId = result?.artifacts?.runId;
+	return typeof runId === "string" ? runId : randomUUID();
+}
+
+
+function leftoverArtifactReferenceJson(name, path) {
+	return { name, path };
+}
+
+
+function leftoverRecordEvalSessionArtifact(artifacts) {
+	const snapshotKey = evalsArtifactsModule.PI_SESSION_SNAPSHOT_ARTIFACT;
+	const snapshot = artifacts?.[snapshotKey];
+	if (snapshot === undefined) {
+		return null;
+	}
+	const runId = artifacts?.runId;
+	if (typeof runId !== "string" || typeof snapshot !== "string") {
+		throw new TypeError("eval session artifact metadata is invalid.");
+	}
+	return {
+		type: "session",
+		runId,
+		attachments: [
+			{
+				name: "session.jsonl",
+				contentType: "application/jsonl",
+				body: snapshot,
+			},
+		],
+	};
+}
+
+
+function leftoverReporterArtifacts(caseObj, result) {
+	return [
+		leftoverRecordEvalSessionArtifact(result.artifacts),
+		...(result.recordedArtifacts ?? []),
+		...(caseObj.artifacts ?? []),
+	].filter((item) => item != null);
+}
+
+
+function runEvalsHarnessReporterRunId() {
+	const hit = leftoverReporterRunId(makeEvalResult({ artifacts: { runId: "run-1" } }));
+	const empty = leftoverReporterRunId(makeEvalResult({ artifacts: { runId: "" } }));
+	const custom = leftoverReporterRunId(makeEvalResult({ artifacts: { runId: "abc-def" } }));
+	const generated = leftoverReporterRunId(makeEvalResult());
+	return {
+		rid_hit: hit === "run-1" ? 1 : 0,
+		rid_empty: empty === "" ? 1 : 0,
+		rid_custom: custom === "abc-def" ? 1 : 0,
+		rid_gen: typeof generated === "string" && generated.length >= 32 ? 1 : 0,
+		rid_n: 5,
+	};
+}
+
+
+function runEvalsHarnessArtifactReferenceJson() {
+	const hit = leftoverArtifactReferenceJson("session.jsonl", "a/session.jsonl");
+	const empty = leftoverArtifactReferenceJson("", "");
+	return {
+		arj_name: hit.name === "session.jsonl" ? 1 : 0,
+		arj_path: hit.path === "a/session.jsonl" ? 1 : 0,
+		arj_empty: empty.name === "" ? 1 : 0,
+		arj_keys: Object.keys(hit).length === 2 ? 1 : 0,
+		arj_n: 5,
+	};
+}
+
+
+function runEvalsHarnessReporterArtifacts() {
+	const emptyOut = leftoverReporterArtifacts({ id: "c" }, makeEvalResult());
+	const snapshot = evalsArtifactsModule.PI_SESSION_SNAPSHOT_ARTIFACT;
+	const sessionOut = leftoverReporterArtifacts(
+		{ id: "c" },
+		makeEvalResult({ artifacts: { runId: "run-1", [snapshot]: "snap" } }),
+	);
+	const recorded = { type: "source", runId: "run-1" };
+	const recordedOut = leftoverReporterArtifacts(
+		{ id: "c" },
+		makeEvalResult({ recordedArtifacts: [recorded] }),
+	);
+	const caseOut = leftoverReporterArtifacts(
+		{ id: "c", artifacts: ["case-art"] },
+		makeEvalResult(),
+	);
+	return {
+		ra_empty: emptyOut.length === 0 ? 1 : 0,
+		ra_sess:
+			sessionOut.length === 1 &&
+			sessionOut[0].type === "session" &&
+			sessionOut[0].runId === "run-1"
+				? 1
+				: 0,
+		ra_rec: recordedOut.length === 1 && recordedOut[0] === recorded ? 1 : 0,
+		ra_case: caseOut.length === 1 && caseOut[0] === "case-art" ? 1 : 0,
+		ra_n: 5,
+	};
+}
+
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -8773,6 +8880,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessRequiredPromptBoundary(),
 		...runEvalsHarnessExcludeGuidelines(),
 		...runEvalsHarnessPrepareDefaultPrompt(),
+		...runEvalsHarnessReporterRunId(),
+		...runEvalsHarnessArtifactReferenceJson(),
+		...runEvalsHarnessReporterArtifacts(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -8861,6 +8971,15 @@ async function measureEvalsHarness() {
 		}),
 		prepare_default_prompt: await collect("evals_harness.prepare_default_prompt", () => {
 			return () => runEvalsHarnessPrepareDefaultPrompt();
+		}),
+		reporter_run_id: await collect("evals_harness.reporter_run_id", () => {
+			return () => runEvalsHarnessReporterRunId();
+		}),
+		artifact_reference_json: await collect("evals_harness.artifact_reference_json", () => {
+			return () => runEvalsHarnessArtifactReferenceJson();
+		}),
+		reporter_artifacts: await collect("evals_harness.reporter_artifacts", () => {
+			return () => runEvalsHarnessReporterArtifacts();
 		}),
 		observed,
 	};
@@ -31427,6 +31546,12 @@ const result = {
 				"packages/evals/src/suites.ts exclude Guidelines section (cadr exclude-guidelines-and-documentation)",
 			"evals_harness.prepare_default_prompt":
 				"packages/evals/src/suites.ts prepare default prompt override (cadr prepare-default-prompt-override)",
+			"evals_harness.reporter_run_id":
+				"packages/evals/src/vitest-evals/reporter.ts artifact runId (cadr reporter-run-id)",
+			"evals_harness.artifact_reference_json":
+				"packages/evals/src/vitest-evals/artifacts.ts persist name/path (cadr artifact-reference-json)",
+			"evals_harness.reporter_artifacts":
+				"packages/evals/src/vitest-evals/reporter.ts test.artifacts assemble (cadr reporter-artifacts)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
