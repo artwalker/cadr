@@ -302,6 +302,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.provider_key": 50,
 	"oauth_pkce_device.http_status_text": 50,
 	"oauth_pkce_device.parse_callback_request": 50,
+	"oauth_pkce_device.device_poll_complete": 50,
+	"oauth_pkce_device.device_poll_fail": 50,
+	"oauth_pkce_device.device_poll_slow": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -11608,6 +11611,91 @@ function runOauthPkceDeviceOpenrouterExchange() {
 }
 
 
+const OPENAI_DEVICE_SLOW_DOWN_TIMEOUT_MESSAGE =
+	"Device flow timed out after one or more slow_down responses. This is often caused by clock drift in WSL or VM environments. Please sync or restart the VM clock and try again.";
+
+
+function classifyOpenAICodexDevicePoll(status, json) {
+	if (status >= 200 && status <= 299) {
+		if (json?.authorization_code && json.code_verifier) {
+			return {
+				status: "complete",
+				value: {
+					authorizationCode: json.authorization_code,
+					codeVerifier: json.code_verifier,
+				},
+			};
+		}
+		return { status: "failed" };
+	}
+	if (status === 403 || status === 404) {
+		return { status: "pending" };
+	}
+	const error = json?.error;
+	const errorCode = typeof error === "object" && error ? error.code : error;
+	if (errorCode === "deviceauth_authorization_pending") {
+		return { status: "pending" };
+	}
+	if (errorCode === "slow_down") {
+		return { status: "slow_down" };
+	}
+	return { status: "failed" };
+}
+
+
+function runOauthPkceDevicePollComplete() {
+	const result = classifyOpenAICodexDevicePoll(200, {
+		authorization_code: "ac-ok",
+		code_verifier: "cv-ok",
+	});
+	const code = result.value?.authorizationCode === "ac-ok" ? 1 : 0;
+	const verifier = result.value?.codeVerifier === "cv-ok" ? 1 : 0;
+	return {
+		dpc_code: code,
+		dpc_ver: verifier,
+		dpc_n: 2,
+	};
+}
+
+
+function runOauthPkceDevicePollFail() {
+	let dpfThrow = 0;
+	try {
+		const result = classifyOpenAICodexDevicePoll(200, {});
+		if (result.status === "failed") {
+			throw new Error("Device authorization failed");
+		}
+	} catch {
+		dpfThrow = 1;
+	}
+	return {
+		dpf_throw: dpfThrow,
+		dpf_n: 1,
+	};
+}
+
+
+function runOauthPkceDevicePollSlow() {
+	const result = classifyOpenAICodexDevicePoll(400, { error: "slow_down" });
+	let dpsMsg = 0;
+	if (result.status === "slow_down") {
+		try {
+			throw new Error(OPENAI_DEVICE_SLOW_DOWN_TIMEOUT_MESSAGE);
+		} catch (error) {
+			dpsMsg =
+				error instanceof Error &&
+				error.message === OPENAI_DEVICE_SLOW_DOWN_TIMEOUT_MESSAGE
+					? 1
+					: 0;
+		}
+	}
+	return {
+		dps_msg: dpsMsg,
+		dps_n: 1,
+	};
+}
+
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -11621,6 +11709,9 @@ async function measureOauthPkceDevice() {
 	const providerKey = runOauthPkceDeviceProviderKey();
 	const statusText = runOauthPkceDeviceHttpStatusText();
 	const callbackRequest = runOauthPkceDeviceParseCallbackRequest();
+	const devicePollComplete = runOauthPkceDevicePollComplete();
+	const devicePollFail = runOauthPkceDevicePollFail();
+	const devicePollSlow = runOauthPkceDevicePollSlow();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -11658,6 +11749,15 @@ async function measureOauthPkceDevice() {
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
 		}),
+		device_poll_complete: await collect("oauth_pkce_device.device_poll_complete", () => {
+			return () => runOauthPkceDevicePollComplete();
+		}),
+		device_poll_fail: await collect("oauth_pkce_device.device_poll_fail", () => {
+			return () => runOauthPkceDevicePollFail();
+		}),
+		device_poll_slow: await collect("oauth_pkce_device.device_poll_slow", () => {
+			return () => runOauthPkceDevicePollSlow();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -11671,6 +11771,9 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...devicePollComplete,
+			...devicePollFail,
+			...devicePollSlow,
 		},
 	};
 }
@@ -33479,6 +33582,12 @@ const result = {
 				"node:http STATUS_CODES (cadr oauth-http-status-text)",
 			"oauth_pkce_device.parse_callback_request":
 				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
+			"oauth_pkce_device.device_poll_complete":
+				"packages/ai/src/auth/oauth/openai-codex.ts pollOpenAICodexDeviceAuth complete (cadr poll-openai-codex-device-authorization)",
+			"oauth_pkce_device.device_poll_fail":
+				"packages/ai/src/auth/oauth/openai-codex.ts pollOpenAICodexDeviceAuth failed (cadr poll-openai-codex-device-authorization)",
+			"oauth_pkce_device.device_poll_slow":
+				"packages/ai/src/auth/oauth/openai-codex.ts pollOpenAICodexDeviceAuth slow_down + device-code.ts SLOW_DOWN_TIMEOUT_MESSAGE (cadr openai-device slow-down timeout)",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":
