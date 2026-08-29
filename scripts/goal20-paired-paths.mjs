@@ -626,6 +626,9 @@ const REPETITIONS = {
 	"cli_support.no_models_help": 50,
 	"cli_support.no_model_selected": 50,
 	"cli_support.no_api_key": 50,
+	"cli_support.editor_success": 5,
+	"cli_support.editor_fail": 5,
+	"cli_support.editor_empty": 5,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
@@ -1253,6 +1256,9 @@ const changelogModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/changelog.ts")
 );
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
+const externalEditorModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/external-editor.ts")
+);
 const clipboardImageModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/clipboard-image.ts")
 );
@@ -15441,6 +15447,83 @@ function runCliSupportNoApiKey() {
 	};
 }
 
+async function withSilentStdout(fn) {
+	const write = process.stdout.write.bind(process.stdout);
+	process.stdout.write = () => true;
+	try {
+		return await fn();
+	} finally {
+		process.stdout.write = write;
+	}
+}
+
+async function runCliSupportEditorSuccess() {
+	return withSilentStdout(async () => {
+		const hello = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "hello",
+		});
+		const again = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "hello",
+		});
+		const noNl = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "hello",
+		});
+		return {
+			eed_hello: hello.status === "complete" && hello.content === "hello" ? 1 : 0,
+			eed_len: hello.status === "complete" && hello.content.length === 5 ? 1 : 0,
+			eed_round: again.status === "complete" && again.content === "hello" ? 1 : 0,
+			eed_nonl: noNl.status === "complete" && noNl.content === "hello" ? 1 : 0,
+			eed_n: 4,
+		};
+	});
+}
+
+async function runCliSupportEditorFail() {
+	return withSilentStdout(async () => {
+		const keep = await externalEditorModule.editInExternalEditor({
+			command: "false",
+			content: "keep-me",
+		});
+		const empty = await externalEditorModule.editInExternalEditor({
+			command: "false",
+			content: "",
+		});
+		const twice = await externalEditorModule.editInExternalEditor({
+			command: "false",
+			content: "keep-me",
+		});
+		return {
+			eef_orig: keep.status === "failed" ? 1 : 0,
+			eef_empty: empty.status === "failed" ? 1 : 0,
+			eef_twice: twice.status === "failed" ? 1 : 0,
+			eef_n: 3,
+		};
+	});
+}
+
+async function runCliSupportEditorEmpty() {
+	return withSilentStdout(async () => {
+		const empty = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "",
+		});
+		const one = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "x",
+		});
+		return {
+			eee_ok: empty.status === "complete" && empty.content === "" ? 1 : 0,
+			eee_len: empty.status === "complete" && empty.content.length === 0 ? 1 : 0,
+			eee_x: one.status === "complete" && one.content === "x" ? 1 : 0,
+			eee_xlen: one.status === "complete" && one.content.length === 1 ? 1 : 0,
+			eee_n: 4,
+		};
+	});
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -15457,6 +15540,9 @@ async function measureCliSupportStripAnsi() {
 	const noModels = runCliSupportNoModelsHelp();
 	const noSelected = runCliSupportNoModelSelected();
 	const noKey = runCliSupportNoApiKey();
+	const editorSuccess = await runCliSupportEditorSuccess();
+	const editorFail = await runCliSupportEditorFail();
+	const editorEmpty = await runCliSupportEditorEmpty();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -15500,6 +15586,15 @@ async function measureCliSupportStripAnsi() {
 		no_api_key: await collect("cli_support.no_api_key", () => {
 			return () => runCliSupportNoApiKey();
 		}),
+		editor_success: await collect("cli_support.editor_success", () => {
+			return async () => runCliSupportEditorSuccess();
+		}),
+		editor_fail: await collect("cli_support.editor_fail", () => {
+			return async () => runCliSupportEditorFail();
+		}),
+		editor_empty: await collect("cli_support.editor_empty", () => {
+			return async () => runCliSupportEditorEmpty();
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -15515,6 +15610,9 @@ async function measureCliSupportStripAnsi() {
 			...noModels,
 			...noSelected,
 			...noKey,
+			...editorSuccess,
+			...editorFail,
+			...editorEmpty,
 		},
 	};
 }
@@ -33691,6 +33789,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
 			"cli_support.no_api_key":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
+			"cli_support.editor_success":
+				"packages/coding-agent/src/modes/interactive/external-editor.ts editInExternalEditor",
+			"cli_support.editor_fail":
+				"packages/coding-agent/src/modes/interactive/external-editor.ts editInExternalEditor",
+			"cli_support.editor_empty":
+				"packages/coding-agent/src/modes/interactive/external-editor.ts editInExternalEditor",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":

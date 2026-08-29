@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_support.editor_success` (`edit-in-external-editor`
+  vs `editInExternalEditor` zero-exit `hello`). Observed `eed_hello` /
+  `eed_len` / `eed_round` / `eed_nonl` / `eed_n` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 868). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_support.editor_fail` (non-zero runner vs
+  `false` failed status). Observed `eef_orig` / `eef_empty` / `eef_twice` /
+  `eef_n` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 869).
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_support.editor_empty` (empty and one-cell
+  success payloads). Observed `eee_ok` / `eee_len` / `eee_x` / `eee_xlen` /
+  `eee_n` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 870).
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

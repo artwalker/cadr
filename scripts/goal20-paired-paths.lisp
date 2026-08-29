@@ -647,6 +647,9 @@
     ("cli_support.no_models_help" . 50)
     ("cli_support.no_model_selected" . 50)
     ("cli_support.no_api_key" . 50)
+    ("cli_support.editor_success" . 5)
+    ("cli_support.editor_fail" . 5)
+    ("cli_support.editor_empty" . 5)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -16003,6 +16006,61 @@
      (if (and (consp hit) (= (length hit) 2)) 1 0))))
 
 
+(defun run-cli-support-editor-success ()
+  ;; Leftover 868: edit-in-external-editor success vs pi true-exit complete.
+  (flet ((ok (text)
+           (cadr-cli::edit-in-external-editor
+            text
+            (lambda (path)
+              (declare (ignore path))
+              0))))
+    (let ((hello (ok "hello"))
+          (again (ok "hello"))
+          (no-nl (ok "hello")))
+      (list
+       (if (string= hello "hello") 1 0)
+       (if (= (length hello) 5) 1 0)
+       (if (string= again "hello") 1 0)
+       (if (string= no-nl "hello") 1 0)
+       4))))
+
+
+(defun run-cli-support-editor-fail ()
+  ;; Leftover 869: non-zero runner keeps original; pi false-exit is failed.
+  (flet ((bad (text)
+           (cadr-cli::edit-in-external-editor
+            text
+            (lambda (path)
+              (declare (ignore path))
+              1))))
+    (let ((keep (bad "keep-me"))
+          (empty (bad ""))
+          (twice (bad "keep-me")))
+      (list
+       (if (string= keep "keep-me") 1 0)
+       (if (string= empty "") 1 0)
+       (if (string= twice "keep-me") 1 0)
+       3))))
+
+
+(defun run-cli-support-editor-empty ()
+  ;; Leftover 870: empty and one-cell success payloads.
+  (flet ((ok (text)
+           (cadr-cli::edit-in-external-editor
+            text
+            (lambda (path)
+              (declare (ignore path))
+              0))))
+    (let ((empty (ok ""))
+          (one (ok "x")))
+      (list
+       (if (string= empty "") 1 0)
+       (if (zerop (length empty)) 1 0)
+       (if (string= one "x") 1 0)
+       (if (= (length one) 1) 1 0)
+       4))))
+
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))
@@ -16018,7 +16076,10 @@
         (experimental (run-cli-support-experimental))
         (no-models (run-cli-support-no-models-help))
         (no-selected (run-cli-support-no-model-selected))
-        (no-key (run-cli-support-no-api-key)))
+        (no-key (run-cli-support-no-api-key))
+        (editor-success (run-cli-support-editor-success))
+        (editor-fail (run-cli-support-editor-fail))
+        (editor-empty (run-cli-support-editor-empty)))
     (json-object
      "observed"
      (json-object
@@ -16094,7 +16155,21 @@
       "ns_nl" (nth 2 no-selected)
       "nk_oai" (nth 0 no-key)
       "nk_unk" (nth 1 no-key)
-      "nk_sel" (nth 2 no-key))
+      "nk_sel" (nth 2 no-key)
+      "eed_hello" (nth 0 editor-success)
+      "eed_len" (nth 1 editor-success)
+      "eed_round" (nth 2 editor-success)
+      "eed_nonl" (nth 3 editor-success)
+      "eed_n" (nth 4 editor-success)
+      "eef_orig" (nth 0 editor-fail)
+      "eef_empty" (nth 1 editor-fail)
+      "eef_twice" (nth 2 editor-fail)
+      "eef_n" (nth 3 editor-fail)
+      "eee_ok" (nth 0 editor-empty)
+      "eee_len" (nth 1 editor-empty)
+      "eee_x" (nth 2 editor-empty)
+      "eee_xlen" (nth 3 editor-empty)
+      "eee_n" (nth 4 editor-empty))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -16164,7 +16239,22 @@
      (collect "cli_support.no_api_key"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-no-api-key)))))))
+                  (run-cli-support-no-api-key))))
+     "editor_success"
+     (collect "cli_support.editor_success"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-editor-success))))
+     "editor_fail"
+     (collect "cli_support.editor_fail"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-editor-fail))))
+     "editor_empty"
+     (collect "cli_support.editor_empty"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-editor-empty)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -32076,6 +32166,12 @@
       "src/cadr-cli/support/model-help.lisp format-no-model-selected-message"
       "cli_support.no_api_key"
       "src/cadr-cli/support/model-help.lisp format-no-api-key-found-message"
+      "cli_support.editor_success"
+      "src/cadr-cli/support/external-editor.lisp edit-in-external-editor"
+      "cli_support.editor_fail"
+      "src/cadr-cli/support/external-editor.lisp edit-in-external-editor"
+      "cli_support.editor_empty"
+      "src/cadr-cli/support/external-editor.lisp edit-in-external-editor"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"
