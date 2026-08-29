@@ -9262,7 +9262,7 @@ Leftover sibling of Pairs 814–815. Timed work is nonempty label ISO map (empty
 |---|---|---|
 | `session_tree_tool_calls` | `session-tree-tool-calls` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover tool-call id→name map (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
 
-Leftover sibling of leftover 808–816 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is assistant tool-call id→name/arguments hash — not tree TUI. Observed `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` are exact. Measure-only leftover 817. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 808–816 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is assistant tool-call id→name/arguments hash — not tree TUI. Observed `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` are exact. First n=5 freeze **1.626×** (1.825 / 1.122 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 818 — `cli_bootstrap_sessions` (session_compaction_display_state)
 
@@ -9270,7 +9270,7 @@ Leftover sibling of leftover 808–816 on the same `sessions.lisp` `cli_bootstra
 |---|---|---|
 | `session_compaction_display_state` | `session-compaction-display-state` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover display messages + nil summary/kept (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
 
-Leftover sibling of Pair 817. Timed work is message-only display projection returning `(messages nil nil)` — not `/compact` TUI. Fixture has no compaction entry (invalid first-kept-id errors). Observed `scds_empty` / `scds_n` / `scds_sum` / `scds_kept` / `scds_first` are exact. Measure-only leftover 818. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 817. Timed work is message-only display projection returning `(messages nil nil)` — not `/compact` TUI. Fixture has no compaction entry (invalid first-kept-id errors). Observed `scds_empty` / `scds_n` / `scds_sum` / `scds_kept` / `scds_first` are exact. First n=5 freeze **1.968×** (2.152 / 1.094 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 819 — `cli_bootstrap_sessions` (write_hotkeys_command)
 
@@ -9278,7 +9278,7 @@ Leftover sibling of Pair 817. Timed work is message-only display projection retu
 |---|---|---|
 | `write_hotkeys_command` | `write-hotkeys-command` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover Keyboard Shortcuts list (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
 
-Leftover sibling of Pairs 817–818. Timed work is fixed `Keyboard Shortcuts` plus `+interactive-hotkey-definitions+` (optional configured bindings) — not markdown keybinding tables. Observed `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` are exact. Measure-only leftover 819. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 817–818. Timed work is fixed `Keyboard Shortcuts` plus `+interactive-hotkey-definitions+` (optional configured bindings) — not markdown keybinding tables. Observed `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` are exact. First n=5 freeze **2.458×** (7.658 / 3.116 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

@@ -586,4 +586,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.session_command_stats` | 1.615 | 1.182 | 1.366× | 8.00× | measure-only leftover 814; `session-command-stats` vs leftover getSessionStats | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_usage_breakdown` | 4.688 | 1.872 | 2.504× | 8.00× | measure-only leftover 815; `session-usage-breakdown` vs leftover getUsageCostBreakdown | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_tree_label_timestamps` | 3.096 | 1.562 | 1.982× | 8.00× | measure-only leftover 816; `session-tree-label-timestamps` vs leftover label timestamps | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_tree_tool_calls` | 1.825 | 1.122 | 1.626× | 8.00× | measure-only leftover 817; `session-tree-tool-calls` vs leftover tool-call id→name map | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_compaction_display_state` | 2.152 | 1.094 | 1.968× | 8.00× | measure-only leftover 818; `session-compaction-display-state` vs leftover display messages + nil summary | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.write_hotkeys_command` | 7.658 | 3.116 | 2.458× | 8.00× | measure-only leftover 819; `write-hotkeys-command` vs leftover Keyboard Shortcuts list | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
