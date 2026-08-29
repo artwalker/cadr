@@ -8368,6 +8368,30 @@ Leftover sibling of Pair 703. Timed work is name, path, empty strings, and key c
 
 Leftover sibling of Pairs 703–704. Timed work is empty assemble, session snapshot artifact, recorded artifact keep, and case artifact keep. Observed `ra_empty` / `ra_sess` / `ra_rec` / `ra_case` / `ra_n` are exact. First n=5 freeze **0.927×** (1.620 / 1.747 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 706 — `package_manager` (resource_file_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_file_p` | `config-resource-file-p` (`src/cadr-cli/packages/config-selector.lisp`) | resource file match (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of earlier `package_manager` leftovers on `src/cadr-cli/packages/config-selector.lisp`. Timed work is lisp extension, case-insensitive type, miss, and SKILL.md basename. Observed `rfp_lisp` / `rfp_case` / `rfp_miss` / `rfp_skill` / `rfp_n` are exact. First n=5 freeze **6.124×** (10.973 / 1.792 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 707 — `package_manager` (resource_display_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_display_name` | `config-resource-display-name` (`src/cadr-cli/packages/config-selector.lisp`) | resource display name (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 706. Timed work is SKILL.md parent directory, lisp filename, markdown filename, and json filename. Observed `rdn_skill` / `rdn_lisp` / `rdn_md` / `rdn_json` / `rdn_n` are exact. First n=5 freeze **33.631×** (15.082 / 0.448 µs) on host `cursor`, ceiling 60.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 708 — `package_manager` (settings_array)
+
+| metric | cadr | pi |
+|---|---|---|
+| `settings_array` | `config-settings-array` (`src/cadr-cli/packages/config-selector.lisp`) | settings array coerce (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 706–707. Timed work is vector coerce, list copy, missing key, and non-sequence. Observed `csa_vec` / `csa_list` / `csa_miss` / `csa_bad` / `csa_n` are exact. First n=5 freeze **2.393×** (1.161 / 0.485 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.resource_file_p`
+  (`config-resource-file-p` vs resource file match). Observed `rfp_lisp`
+  / `rfp_case` / `rfp_miss` / `rfp_skill` / `rfp_n` exact. n=5
+  **6.124×** (10.973 / 1.792 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 706). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.resource_display_name`
+  (`config-resource-display-name` vs resource display name). Observed
+  `rdn_skill` / `rdn_lisp` / `rdn_md` / `rdn_json` / `rdn_n` exact.
+  n=5 **33.631×** (15.082 / 0.448 µs) on host `cursor`, ceiling 60.0
+  (first-freeze headroom). Measure-only leftover (Pair 707). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.settings_array`
+  (`config-settings-array` vs settings array coerce). Observed
+  `csa_vec` / `csa_list` / `csa_miss` / `csa_bad` / `csa_n` exact.
+  n=5 **2.393×** (1.161 / 0.485 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 708). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `evals_harness.reporter_run_id`
   (`reporter-run-id` vs artifact runId). Observed `rid_hit` /
   `rid_empty` / `rid_custom` / `rid_gen` / `rid_n` exact. n=5
