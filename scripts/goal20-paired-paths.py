@@ -942,11 +942,11 @@ RATIO_CEILINGS = {
     "cli_support.watch_retry_delay": 8.0,
     "cli_support.close_watcher": 8.0,
     "cli_support.watch_signature": 8.0,
-    # leftover 886; first-freeze headroom. Ratchet down only.
+    # leftover 886; first freeze 1.127× (0.084 / 0.074 µs). Over-1×.
     "cli_support.threads_absent": 8.0,
-    # leftover 887; first-freeze headroom. Ratchet down only.
+    # leftover 887; first freeze 1.257× (0.084 / 0.067 µs). Over-1×.
     "cli_support.threads_current": 8.0,
-    # leftover 888; first-freeze headroom. Ratchet down only.
+    # leftover 888; first freeze 0.007× (177.023 / 24734.943 µs). Under-1×.
     "cli_support.threads_joined": 8.0,
     # Leftover trio on src/cadr-cli/bootstrap/commands.lisp (pairs 484-486):
     # model_cycle 0.622x (0.632 / 1.017 us), model_scope_line 1.608x

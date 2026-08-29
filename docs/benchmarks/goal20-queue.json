@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 886,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/threads.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.threads_absent",
+   "branch": "cursor/cli-support-threads-leftovers-886-888-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 886",
+   "ratio": 1.127,
+   "cadrUs": 0.084,
+   "piUs": 0.074,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 887,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/threads.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.threads_current",
+   "branch": "cursor/cli-support-threads-leftovers-886-888-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 887",
+   "ratio": 1.257,
+   "cadrUs": 0.084,
+   "piUs": 0.067,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 888,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/threads.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.threads_joined",
+   "branch": "cursor/cli-support-threads-leftovers-886-888-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 888",
+   "ratio": 0.007,
+   "cadrUs": 177.023,
+   "piUs": 24734.943,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
