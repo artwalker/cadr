@@ -6034,6 +6034,51 @@
    "piUs": 0.276,
    "ceiling": 1200.0,
    "rc": 2
+  },
+  {
+   "pair": 694,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-bash-tool",
+   "metric": "bash_tool.process_deadline",
+   "branch": "cursor/bash-deadline-result-norm-leftovers-694-696-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 694",
+   "ratio": 0.272,
+   "cadrUs": 0.124,
+   "piUs": 0.457,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 695,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-bash-tool",
+   "metric": "bash_tool.user_bash_result",
+   "branch": "cursor/bash-deadline-result-norm-leftovers-694-696-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 695",
+   "ratio": 2.07,
+   "cadrUs": 2.616,
+   "piUs": 1.264,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 696,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-bash-tool",
+   "metric": "bash_tool.normalized_extension",
+   "branch": "cursor/bash-deadline-result-norm-leftovers-694-696-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 696",
+   "ratio": 1.812,
+   "cadrUs": 0.84,
+   "piUs": 0.464,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

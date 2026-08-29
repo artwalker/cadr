@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `bash_tool.process_deadline`
+  (`process-deadline` vs timeout deadline). Observed `pd_nil` /
+  `pd_int` / `pd_ord` / `pd_zero` exact. n=5 **0.272×** (0.124 /
+  0.457 µs) on host `cursor`, ceiling 8.0. cadr leads. Measure-only
+  leftover (Pair 694). Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `bash_tool.user_bash_result`
+  (`make-user-bash-result-from-execution` vs user bash result from
+  execution). Observed `ubr_cmd` / `ubr_out` / `ubr_exit` / `ubr_can` /
+  `ubr_ex` exact. n=5 **2.070×** (2.616 / 1.264 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 695). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `bash_tool.normalized_extension`
+  (`normalized-extension-bash-result` vs extension bash result
+  normalize). Observed `neb_text` / `neb_nl` / `neb_code` / `neb_can` /
+  `neb_path` exact. n=5 **1.812×** (0.840 / 0.464 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 696). Over-1×
+  booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `find_tool.ignored_directory`
   (`ignored-directory-p` vs ignored directory names). Observed
   `igd_git` / `igd_nm` / `igd_src` / `igd_hub` / `igd_slash` exact.

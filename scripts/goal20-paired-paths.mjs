@@ -178,6 +178,9 @@ const REPETITIONS = {
 	"bash_tool.live_output": 50,
 	"bash_tool.strip_status": 50,
 	"bash_tool.strip_truncation": 50,
+	"bash_tool.process_deadline": 50,
+	"bash_tool.user_bash_result": 50,
+	"bash_tool.normalized_extension": 50,
 	"output_accumulator.append": 50,
 	"output_accumulator.snapshot": 50,
 	"output_accumulator.finish": 50,
@@ -5057,6 +5060,98 @@ function runBashStripTruncationFooter() {
 	};
 }
 
+function leftoverProcessDeadline(timeout, nowMs = Date.now()) {
+	if (timeout == null) return null;
+	return nowMs + Math.round(timeout * 1000);
+}
+
+function leftoverUserBashResult(command, exclude, contentText, details) {
+	const raw = contentText == null ? "" : contentText;
+	const exitCode = details.exitCode;
+	const withoutExit =
+		typeof exitCode === "number" ? stripExitFooter(raw, exitCode) : raw;
+	return {
+		command,
+		output: replicaBashStripTruncationFooter(withoutExit),
+		exitCode,
+		cancelledP: Boolean(details.cancelled),
+		truncatedP: Boolean(details.truncated),
+		fullOutputPath: details.fullOutputPath,
+		excludeFromContextP: Boolean(exclude),
+	};
+}
+
+function leftoverNormalizedExtension(result) {
+	const output = result.output ?? "";
+	const exitCode = result.exitCode ?? 0;
+	const text = `${output}${output.length > 0 ? "\n" : ""}Process exited with code ${exitCode}`;
+	return {
+		text,
+		exitCode,
+		cancelled: result.cancelledP,
+		truncated: result.truncatedP,
+		fullOutputPath: result.fullOutputPath,
+	};
+}
+
+function runBashProcessDeadline() {
+	const none = leftoverProcessDeadline(null);
+	const zero = leftoverProcessDeadline(0);
+	const one = leftoverProcessDeadline(1);
+	const two = leftoverProcessDeadline(2);
+	return {
+		pd_nil: none === null ? 1 : 0,
+		pd_int: Number.isInteger(one) ? 1 : 0,
+		pd_ord: Number.isInteger(one) && Number.isInteger(two) && one < two ? 1 : 0,
+		pd_zero: Number.isInteger(zero) ? 1 : 0,
+	};
+}
+
+function runBashUserBashResult() {
+	const plain = leftoverUserBashResult("echo", false, "hello", { exitCode: 0 });
+	const footer = leftoverUserBashResult("ls", false, "hi\nProcess exited with code 1", {
+		exitCode: 1,
+	});
+	const empty = leftoverUserBashResult("true", false, null, { exitCode: 0 });
+	const cancelled = leftoverUserBashResult("sleep", true, "x", {
+		exitCode: null,
+		cancelled: true,
+	});
+	const trunc = leftoverUserBashResult(
+		"cat",
+		false,
+		"keep\n\n[Showing last 1 of line 2. Full output: /tmp/x]",
+		{ exitCode: 0, truncated: true, fullOutputPath: "/tmp/x" },
+	);
+	return {
+		ubr_cmd: plain.command === "echo" && plain.output === "hello" ? 1 : 0,
+		ubr_out: footer.output === "hi" && footer.exitCode === 1 ? 1 : 0,
+		ubr_exit: empty.output === "" ? 1 : 0,
+		ubr_can: cancelled.cancelledP && cancelled.excludeFromContextP ? 1 : 0,
+		ubr_ex: trunc.output === "keep" && trunc.truncatedP ? 1 : 0,
+		ubr_n: 5,
+	};
+}
+
+function runBashNormalizedExtension() {
+	const hit = leftoverNormalizedExtension({
+		output: "out",
+		exitCode: 2,
+		cancelledP: true,
+		truncatedP: false,
+		fullOutputPath: "/tmp/f",
+	});
+	const empty = leftoverNormalizedExtension({ output: "", exitCode: 0 });
+	return {
+		neb_text: hit.text === "out\nProcess exited with code 2" ? 1 : 0,
+		neb_nl: empty.text === "Process exited with code 0" ? 1 : 0,
+		neb_code: hit.exitCode === 2 ? 1 : 0,
+		neb_can: hit.cancelled ? 1 : 0,
+		neb_path: hit.fullOutputPath === "/tmp/f" ? 1 : 0,
+		neb_n: 5,
+	};
+}
+
 async function measureBashTool() {
 	const stripObserved = runBashStripExitFooter();
 	const appendObserved = runBashAppendStatus();
@@ -5064,6 +5159,9 @@ async function measureBashTool() {
 	const liveObserved = runBashLiveOutput();
 	const statusObserved = runBashStripStatusFooter();
 	const truncObserved = runBashStripTruncationFooter();
+	const deadlineObserved = runBashProcessDeadline();
+	const userResultObserved = runBashUserBashResult();
+	const normalizedObserved = runBashNormalizedExtension();
 	return {
 		strip_exit_footer: await collect("bash_tool.strip_exit_footer", () => {
 			return () => runBashStripExitFooter();
@@ -5083,6 +5181,15 @@ async function measureBashTool() {
 		strip_truncation: await collect("bash_tool.strip_truncation", () => {
 			return () => runBashStripTruncationFooter();
 		}),
+		process_deadline: await collect("bash_tool.process_deadline", () => {
+			return () => runBashProcessDeadline();
+		}),
+		user_bash_result: await collect("bash_tool.user_bash_result", () => {
+			return () => runBashUserBashResult();
+		}),
+		normalized_extension: await collect("bash_tool.normalized_extension", () => {
+			return () => runBashNormalizedExtension();
+		}),
 		observed: {
 			...stripObserved,
 			...appendObserved,
@@ -5090,6 +5197,9 @@ async function measureBashTool() {
 			...liveObserved,
 			...statusObserved,
 			...truncObserved,
+			...deadlineObserved,
+			...userResultObserved,
+			...normalizedObserved,
 		},
 	};
 }
@@ -30922,6 +31032,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/bash.ts status-footer suffix strip",
 			"bash_tool.strip_truncation":
 				"packages/coding-agent/src/core/tools/bash.ts [Showing … Full output:] suffix strip",
+			"bash_tool.process_deadline":
+				"packages/coding-agent/src/core/tools/bash.ts timeout deadline (cadr process-deadline)",
+			"bash_tool.user_bash_result":
+				"packages/coding-agent/src/core/tools/bash.ts user bash result from execution (cadr make-user-bash-result-from-execution)",
+			"bash_tool.normalized_extension":
+				"packages/coding-agent/src/core/tools/bash.ts extension bash result normalize (cadr normalized-extension-bash-result)",
 			"output_accumulator.append":
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.append",
 			"output_accumulator.snapshot":

@@ -407,6 +407,9 @@
     ("bash_tool.live_output" . 50)
     ("bash_tool.strip_status" . 50)
     ("bash_tool.strip_truncation" . 50)
+    ("bash_tool.process_deadline" . 50)
+    ("bash_tool.user_bash_result" . 50)
+    ("bash_tool.normalized_extension" . 50)
     ("output_accumulator.append" . 50)
     ("output_accumulator.snapshot" . 50)
     ("output_accumulator.finish" . 50)
@@ -5951,6 +5954,90 @@
                (format nil "keep~%~%[Showing last 1 of line 2.]")))
      (bash-tool-truth (string= plain "")))))
 
+(defun leftover-process-deadline (timeout)
+  (cadr-cli::process-deadline timeout))
+
+(defun leftover-user-bash-result (command exclude content-text details)
+  (cadr-cli::make-user-bash-result-from-execution
+   command exclude
+   (and content-text
+        (list (cadr-ai:make-text-content :text content-text)))
+   details))
+
+(defun leftover-normalized-extension (result)
+  (cadr-cli::normalized-extension-bash-result result))
+
+(defun run-bash-process-deadline ()
+  (let ((none (leftover-process-deadline nil))
+        (zero (leftover-process-deadline 0))
+        (one (leftover-process-deadline 1))
+        (two (leftover-process-deadline 2)))
+    (list
+     (bash-tool-truth (null none))
+     (bash-tool-truth (integerp one))
+     (bash-tool-truth (and (integerp one) (integerp two) (< one two)))
+     (bash-tool-truth (integerp zero))
+     4)))
+
+(defun run-bash-user-bash-result ()
+  (let* ((plain
+           (leftover-user-bash-result
+            "echo" nil "hello"
+            (list :exit-code 0)))
+         (footer
+           (leftover-user-bash-result
+            "ls" nil
+            (format nil "hi~%Process exited with code 1")
+            (list :exit-code 1)))
+         (empty
+           (leftover-user-bash-result
+            "true" nil nil (list :exit-code 0)))
+         (cancelled
+           (leftover-user-bash-result
+            "sleep" t "x"
+            (list :exit-code nil :cancelled t)))
+         (trunc
+           (leftover-user-bash-result
+            "cat" nil
+            (format nil "keep~%~%[Showing last 1 of line 2. Full output: /tmp/x]")
+            (list :exit-code 0 :truncated t :full-output-path "/tmp/x"))))
+    (list
+     (bash-tool-truth
+      (and (string= (cadr-cli::user-bash-result-command plain) "echo")
+           (string= (cadr-cli::user-bash-result-output plain) "hello")))
+     (bash-tool-truth
+      (and (string= (cadr-cli::user-bash-result-output footer) "hi")
+           (eql (cadr-cli::user-bash-result-exit-code footer) 1)))
+     (bash-tool-truth
+      (string= (cadr-cli::user-bash-result-output empty) ""))
+     (bash-tool-truth
+      (and (cadr-cli::user-bash-result-cancelled-p cancelled)
+           (cadr-cli::user-bash-result-exclude-from-context-p cancelled)))
+     (bash-tool-truth
+      (and (string= (cadr-cli::user-bash-result-output trunc) "keep")
+           (cadr-cli::user-bash-result-truncated-p trunc)))
+     5)))
+
+(defun run-bash-normalized-extension ()
+  (multiple-value-bind (content details)
+      (leftover-normalized-extension
+       (list :output "out" :exit-code 2 :cancelled-p t
+             :truncated-p nil :full-output-path "/tmp/f"))
+    (multiple-value-bind (empty-content empty-details)
+        (leftover-normalized-extension (list :output "" :exit-code 0))
+      (let ((text (cadr-ai:text-content-text (first content)))
+            (empty-text (cadr-ai:text-content-text (first empty-content))))
+        (list
+         (bash-tool-truth
+          (string= text (format nil "out~%Process exited with code 2")))
+         (bash-tool-truth
+          (string= empty-text "Process exited with code 0"))
+         (bash-tool-truth (eql (getf details :exit-code) 2))
+         (bash-tool-truth (getf details :cancelled))
+         (bash-tool-truth
+          (string= (getf details :full-output-path) "/tmp/f"))
+         5)))))
+
 (defun measure-bash-tool ()
   (destructuring-bind (sef-exact sef-nl sef-no-nl sef-plain sef-empty sef-n)
       (run-bash-strip-exit-footer)
@@ -5961,67 +6048,107 @@
         (let ((live (run-bash-live-output))
               (status (run-bash-strip-status-footer))
               (trunc (run-bash-strip-truncation-footer)))
-          (json-object
-           "observed"
-           (json-object
-            "sef_exact" sef-exact
-            "sef_nl" sef-nl
-            "sef_no_nl" sef-no-nl
-            "sef_plain" sef-plain
-            "sef_empty" sef-empty
-            "sef_n" sef-n
-            "abs_empty" abs-empty
-            "abs_abort" abs-abort
-            "abs_exit" abs-exit
-            "abs_timeout" abs-timeout
-            "abs_n" abs-n
-            "btn_none" btn-none
-            "btn_partial" btn-partial
-            "btn_lines" btn-lines
-            "btn_bytes" btn-bytes
-            "btn_n" btn-n
-            "lo_repl" (nth 0 live)
-            "lo_tui" (nth 1 live)
-            "lo_print" (nth 2 live)
-            "lo_rpc" (nth 3 live)
-            "ss_exact" (nth 0 status)
-            "ss_nl" (nth 1 status)
-            "ss_plain" (nth 2 status)
-            "ss_trim" (nth 3 status)
-            "st_none" (nth 0 trunc)
-            "st_footer" (nth 1 trunc)
-            "st_no_full" (nth 2 trunc)
-            "st_plain" (nth 3 trunc))
-           "strip_exit_footer"
-           (collect "bash_tool.strip_exit_footer"
-                    (lambda ()
-                      (lambda ()
-                        (run-bash-strip-exit-footer))))
-           "append_status"
-           (collect "bash_tool.append_status"
-                    (lambda ()
-                      (lambda ()
-                        (run-bash-append-status))))
-           "truncation_notice"
-           (collect "bash_tool.truncation_notice"
-                    (lambda ()
-                      (lambda ()
-                        (run-bash-truncation-notice))))
-           "live_output"
-           (collect "bash_tool.live_output"
-                    (lambda ()
-                      (lambda ()
-                        (run-bash-live-output))))
-           "strip_status"
-           (collect "bash_tool.strip_status"
-                    (lambda ()
-                      (lambda ()
-                        (run-bash-strip-status-footer))))
-           "strip_truncation"
-           (collect "bash_tool.strip_truncation"
-                    (lambda ()
-                      (lambda ()
-                        (run-bash-strip-truncation-footer))))))))))
+          (destructuring-bind (pd-nil pd-int pd-ord pd-zero pd-n)
+              (run-bash-process-deadline)
+            (destructuring-bind
+                (ubr-cmd ubr-out ubr-exit ubr-can ubr-ex ubr-n)
+                (run-bash-user-bash-result)
+              (destructuring-bind
+                  (neb-text neb-nl neb-code neb-can neb-path neb-n)
+                  (run-bash-normalized-extension)
+                (declare (ignore pd-n))
+                (json-object
+                 "observed"
+                 (json-object
+                  "sef_exact" sef-exact
+                  "sef_nl" sef-nl
+                  "sef_no_nl" sef-no-nl
+                  "sef_plain" sef-plain
+                  "sef_empty" sef-empty
+                  "sef_n" sef-n
+                  "abs_empty" abs-empty
+                  "abs_abort" abs-abort
+                  "abs_exit" abs-exit
+                  "abs_timeout" abs-timeout
+                  "abs_n" abs-n
+                  "btn_none" btn-none
+                  "btn_partial" btn-partial
+                  "btn_lines" btn-lines
+                  "btn_bytes" btn-bytes
+                  "btn_n" btn-n
+                  "lo_repl" (nth 0 live)
+                  "lo_tui" (nth 1 live)
+                  "lo_print" (nth 2 live)
+                  "lo_rpc" (nth 3 live)
+                  "ss_exact" (nth 0 status)
+                  "ss_nl" (nth 1 status)
+                  "ss_plain" (nth 2 status)
+                  "ss_trim" (nth 3 status)
+                  "st_none" (nth 0 trunc)
+                  "st_footer" (nth 1 trunc)
+                  "st_no_full" (nth 2 trunc)
+                  "st_plain" (nth 3 trunc)
+                  "pd_nil" pd-nil
+                  "pd_int" pd-int
+                  "pd_ord" pd-ord
+                  "pd_zero" pd-zero
+                  "ubr_cmd" ubr-cmd
+                  "ubr_out" ubr-out
+                  "ubr_exit" ubr-exit
+                  "ubr_can" ubr-can
+                  "ubr_ex" ubr-ex
+                  "ubr_n" ubr-n
+                  "neb_text" neb-text
+                  "neb_nl" neb-nl
+                  "neb_code" neb-code
+                  "neb_can" neb-can
+                  "neb_path" neb-path
+                  "neb_n" neb-n)
+                 "strip_exit_footer"
+                 (collect "bash_tool.strip_exit_footer"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-strip-exit-footer))))
+                 "append_status"
+                 (collect "bash_tool.append_status"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-append-status))))
+                 "truncation_notice"
+                 (collect "bash_tool.truncation_notice"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-truncation-notice))))
+                 "live_output"
+                 (collect "bash_tool.live_output"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-live-output))))
+                 "strip_status"
+                 (collect "bash_tool.strip_status"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-strip-status-footer))))
+                 "strip_truncation"
+                 (collect "bash_tool.strip_truncation"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-strip-truncation-footer))))
+                 "process_deadline"
+                 (collect "bash_tool.process_deadline"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-process-deadline))))
+                 "user_bash_result"
+                 (collect "bash_tool.user_bash_result"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-user-bash-result))))
+                 "normalized_extension"
+                 (collect "bash_tool.normalized_extension"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-normalized-extension)))))))))))))
 
 (defun find-tool-truth (value)
   (if value 1 0))
@@ -29245,6 +29372,12 @@
       "src/cadr-cli/tools/bash.lisp bash-strip-status-footer"
       "bash_tool.strip_truncation"
       "src/cadr-cli/tools/bash.lisp bash-strip-truncation-footer"
+      "bash_tool.process_deadline"
+      "src/cadr-cli/tools/bash.lisp process-deadline"
+      "bash_tool.user_bash_result"
+      "src/cadr-cli/tools/bash.lisp make-user-bash-result-from-execution"
+      "bash_tool.normalized_extension"
+      "src/cadr-cli/tools/bash.lisp normalized-extension-bash-result"
       "output_accumulator.append"
       "src/cadr-cli/output-accumulator.lisp output-accumulator-append"
       "output_accumulator.snapshot"

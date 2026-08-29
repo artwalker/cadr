@@ -8272,6 +8272,30 @@ Leftover sibling of Pair 691. Timed work is empty rules, `foo` hit, `bar` miss, 
 
 Leftover sibling of Pairs 691–692. Timed work is constructing the glob tool (name / description / required `pattern` / `:parallel`). Observed `mgt_name` / `mgt_desc` / `mgt_req` / `mgt_par` / `mgt_n` are exact. First n=5 freeze **701.525×** (193.915 / 0.276 µs) on host `cursor`, ceiling 1200.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 694 — `bash_tool` (process_deadline)
+
+| metric | cadr | pi |
+|---|---|---|
+| `process_deadline` | `process-deadline` (`src/cadr-cli/tools/bash.lisp`) | timeout deadline (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of earlier `bash_tool` leftovers on `src/cadr-cli/tools/bash.lisp`. Timed work is nil timeout, integer deadline, 1s vs 2s ordering, and zero timeout. Observed `pd_nil` / `pd_int` / `pd_ord` / `pd_zero` are exact. First n=5 freeze **0.272×** (0.124 / 0.457 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 695 — `bash_tool` (user_bash_result)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_bash_result` | `make-user-bash-result-from-execution` (`src/cadr-cli/tools/bash.lisp`) | user bash result from execution (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pair 694. Timed work is command/output, exit-footer strip, empty content, cancelled+exclude, and truncation-footer strip. Observed `ubr_cmd` / `ubr_out` / `ubr_exit` / `ubr_can` / `ubr_ex` are exact. First n=5 freeze **2.070×** (2.616 / 1.264 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 696 — `bash_tool` (normalized_extension)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalized_extension` | `normalized-extension-bash-result` (`src/cadr-cli/tools/bash.lisp`) | extension bash result normalize (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pairs 694–695. Timed work is output+exit footer, empty output, exit code, cancelled flag, and full-output path. Observed `neb_text` / `neb_nl` / `neb_code` / `neb_can` / `neb_path` are exact. First n=5 freeze **1.812×** (0.840 / 0.464 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

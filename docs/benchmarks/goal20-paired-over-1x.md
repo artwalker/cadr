@@ -493,4 +493,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.ignored_directory` | 16.582 | 1.923 | 8.621× | 16.00× | measure-only leftover 691; `ignored-directory-p` vs ignored directory names; first-freeze headroom 16.0 | invent pause；地板优化另刀 |
 | `find_tool.gitignored` | 37.755 | 3.671 | 10.286× | 20.00× | measure-only leftover 692; `gitignored-p` vs gitignore rule apply; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `find_tool.make_glob_tool` | 193.915 | 0.276 | 701.525× | 1200.00× | measure-only leftover 693; `make-glob-tool` vs glob tool constructor; first-freeze headroom 1200.0 | invent pause；地板优化另刀 |
+| `bash_tool.user_bash_result` | 2.616 | 1.264 | 2.070× | 8.00× | measure-only leftover 695; `make-user-bash-result-from-execution` vs user bash result from execution | invent pause；地板优化另刀 |
+| `bash_tool.normalized_extension` | 0.840 | 0.464 | 1.812× | 8.00× | measure-only leftover 696; `normalized-extension-bash-result` vs extension bash result normalize | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
