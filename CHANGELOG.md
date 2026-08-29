@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.selector_hint`
+  (`config-selector-hint` vs leftover keyHint wrap). Observed
+  `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` exact.
+  Measure-only leftover (Pair 799). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.override_suffix`
+  (`config-selector-override-suffix` vs leftover getItemSuffix). Observed
+  `cos_load` / `cos_unload` / `cos_global` / `cos_inh` / `cos_n` exact.
+  Measure-only leftover (Pair 800). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.checkbox`
+  (`config-selector-checkbox` vs leftover renderCheckbox). Observed
+  `ccb_on` / `ccb_off` / `ccb_plus` / `ccb_minus` / `ccb_n` exact.
+  Measure-only leftover (Pair 801). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `package_manager.git_output`
   (`package-update-git-output` vs leftover git argv runner). Observed
   `pug_git` / `pug_cwd` / `pug_rev` / `pug_out` / `pug_n` exact.

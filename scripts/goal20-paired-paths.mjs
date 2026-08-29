@@ -319,6 +319,9 @@ const REPETITIONS = {
 	"package_manager.git_output": 50,
 	"package_manager.remote_ref": 50,
 	"package_manager.update_record_result": 50,
+	"package_manager.selector_hint": 50,
+	"package_manager.override_suffix": 50,
+	"package_manager.checkbox": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -7036,6 +7039,52 @@ function leftoverConfigSelectorOverrideState(item, override, extras = {}) {
 	return state;
 }
 
+function leftoverConfigSelectorProjectWriteState(item, override, extras = {}) {
+	const state = leftoverConfigSelectorOverrideState(item, override, extras);
+	state.writeScope = "project";
+	return state;
+}
+
+function leftoverConfigVisibleHas(text, needle) {
+	return typeof text === "string" && text.includes(needle) ? 1 : 0;
+}
+
+function leftoverConfigSelectorHint(key, description) {
+	return leftoverThemeForeground(key) + leftoverThemeForeground(` ${description}`);
+}
+
+function leftoverConfigSelectorOverrideSuffix(state, item) {
+	if (state.writeScope !== "project") {
+		return "";
+	}
+	const projectState = leftoverConfigSelectorProjectState(state, item);
+	if (projectState === "load") {
+		return leftoverThemeForeground("  project load");
+	}
+	if (projectState === "unload") {
+		return leftoverThemeForeground("  project unload");
+	}
+	return item.scope === "user"
+		? leftoverThemeForeground("  inherited global")
+		: "";
+}
+
+function leftoverConfigSelectorCheckbox(state, item) {
+	if (state.writeScope === "project") {
+		const projectState = leftoverConfigSelectorProjectState(state, item);
+		if (projectState === "load") {
+			return leftoverThemeForeground("[+]");
+		}
+		if (projectState === "unload") {
+			return leftoverThemeForeground("[-]");
+		}
+		return leftoverThemeForeground(
+			leftoverConfigSelectorInheritedEnabledP(state, item) ? "[x]" : "[ ]",
+		);
+	}
+	return leftoverThemeForeground(item.enabledP !== false ? "[x]" : "[ ]");
+}
+
 function leftoverConfigSelectorProjectState(state, item) {
 	const key = leftoverConfigResourceItemKey(item);
 	const overrides = state.projectOverrides;
@@ -8871,6 +8920,83 @@ function runPackageManagerUpdateRecordResult() {
 	};
 }
 
+function runPackageManagerSelectorHint() {
+	const tab = leftoverConfigSelectorHint("tab", "switch mode");
+	const space = leftoverConfigSelectorHint("space", "toggle");
+	const esc = leftoverConfigSelectorHint("esc", "close");
+	const empty = leftoverConfigSelectorHint("", "");
+	return {
+		csh_tab: leftoverConfigVisibleHas(tab, "tab"),
+		csh_space: leftoverConfigVisibleHas(space, " toggle"),
+		csh_esc: leftoverConfigVisibleHas(esc, "esc"),
+		csh_empty: leftoverConfigVisibleHas(empty, " "),
+		csh_n: 5,
+	};
+}
+
+function runPackageManagerOverrideSuffix() {
+	const item = leftoverConfigSelectorHelloItem();
+	const user = leftoverConfigResourceItemLabeled("top-level", "user", "auto", {
+		path: "/tmp/proj/.cadr/hello.lisp",
+		baseDirectory: "/tmp/proj/.cadr/",
+	});
+	const load = leftoverConfigSelectorOverrideSuffix(
+		leftoverConfigSelectorProjectWriteState(item, "load"),
+		item,
+	);
+	const unload = leftoverConfigSelectorOverrideSuffix(
+		leftoverConfigSelectorProjectWriteState(item, "unload"),
+		item,
+	);
+	const global = leftoverConfigSelectorOverrideSuffix(
+		leftoverConfigSelectorOverrideState(item, "load"),
+		item,
+	);
+	const inherited = leftoverConfigSelectorOverrideSuffix(
+		leftoverConfigSelectorProjectWriteState(user, null),
+		user,
+	);
+	return {
+		cos_load: leftoverConfigVisibleHas(load, "  project load"),
+		cos_unload: leftoverConfigVisibleHas(unload, "  project unload"),
+		cos_global: global === "" ? 1 : 0,
+		cos_inh: leftoverConfigVisibleHas(inherited, "  inherited global"),
+		cos_n: 5,
+	};
+}
+
+function runPackageManagerCheckbox() {
+	const onItem = leftoverConfigSelectorHelloItem();
+	const offItem = leftoverConfigSelectorHelloItem();
+	const plusItem = leftoverConfigSelectorHelloItem();
+	const minusItem = leftoverConfigSelectorHelloItem();
+	const onState = leftoverConfigSelectorOverrideState(onItem, null);
+	const offState = leftoverConfigSelectorOverrideState(offItem, null, {
+		enabledP: false,
+	});
+	const plus = leftoverConfigSelectorCheckbox(
+		leftoverConfigSelectorProjectWriteState(plusItem, "load"),
+		plusItem,
+	);
+	const minus = leftoverConfigSelectorCheckbox(
+		leftoverConfigSelectorProjectWriteState(minusItem, "unload"),
+		minusItem,
+	);
+	return {
+		ccb_on: leftoverConfigVisibleHas(
+			leftoverConfigSelectorCheckbox(onState, onItem),
+			"[x]",
+		),
+		ccb_off: leftoverConfigVisibleHas(
+			leftoverConfigSelectorCheckbox(offState, offItem),
+			"[ ]",
+		),
+		ccb_plus: leftoverConfigVisibleHas(plus, "[+]"),
+		ccb_minus: leftoverConfigVisibleHas(minus, "[-]"),
+		ccb_n: 5,
+	};
+}
+
 function leftoverRunPackageUpdateChecks(records) {
 	if (!records || records.length === 0) {
 		return [];
@@ -8993,6 +9119,9 @@ async function measurePackageManager() {
 	const gitOutput = runPackageManagerGitOutput();
 	const remoteRef = runPackageManagerRemoteRef();
 	const updateRecordResult = runPackageManagerUpdateRecordResult();
+	const selectorHint = runPackageManagerSelectorHint();
+	const overrideSuffix = runPackageManagerOverrideSuffix();
+	const checkbox = runPackageManagerCheckbox();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -9183,6 +9312,15 @@ async function measurePackageManager() {
 		update_record_result: await collect("package_manager.update_record_result", () => {
 			return () => runPackageManagerUpdateRecordResult();
 		}),
+		selector_hint: await collect("package_manager.selector_hint", () => {
+			return () => runPackageManagerSelectorHint();
+		}),
+		override_suffix: await collect("package_manager.override_suffix", () => {
+			return () => runPackageManagerOverrideSuffix();
+		}),
+		checkbox: await collect("package_manager.checkbox", () => {
+			return () => runPackageManagerCheckbox();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -9248,6 +9386,9 @@ async function measurePackageManager() {
 			...gitOutput,
 			...remoteRef,
 			...updateRecordResult,
+			...selectorHint,
+			...overrideSuffix,
+			...checkbox,
 		},
 	};
 }
@@ -36771,6 +36912,12 @@ const result = {
 				"packages/coding-agent/src/core/package-manager.ts leftover origin/ upstream ref (cadr package-update-remote-ref)",
 			"package_manager.update_record_result":
 				"packages/coding-agent/src/core/package-manager.ts leftover host/path update result (cadr package-update-record-result)",
+			"package_manager.selector_hint":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover keyHint wrap (cadr config-selector-hint)",
+			"package_manager.override_suffix":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover getItemSuffix (cadr config-selector-override-suffix)",
+			"package_manager.checkbox":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover renderCheckbox (cadr config-selector-checkbox)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
