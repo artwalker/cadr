@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.pattern_candidates`
+  (`config-pattern-candidates` vs pattern candidates). Observed
+  `cpc_plain` / `cpc_abs` / `cpc_skill` / `cpc_hello` / `cpc_n` exact.
+  n=5 **5.911×** (15.875 / 2.686 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 733). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.pattern_matches`
+  (`config-pattern-matches-p` vs pattern matches). Observed `cpm_lisp` /
+  `cpm_miss` / `cpm_exact` / `cpm_q` / `cpm_n` exact. n=5 **7.155×**
+  (32.598 / 4.556 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 734). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.enabled_by_patterns`
+  (`config-enabled-by-patterns-p` vs enabled by patterns). Observed
+  `ebp_def` / `ebp_inc` / `ebp_exc` / `ebp_load` / `ebp_n` exact. n=5
+  **4.820×** (31.989 / 6.637 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 735). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `package_manager.package_override_source`
   (`config-selector-package-override-source` vs package override source).
   Observed `pos_npm` / `pos_rel` / `pos_same` / `pos_pin` / `pos_n` exact.

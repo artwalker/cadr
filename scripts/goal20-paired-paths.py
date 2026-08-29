@@ -810,8 +810,11 @@ RATIO_CEILINGS = {
     "package_manager.settings_values": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 733–735.
+    # leftover 733; first freeze 5.911× (15.875 / 2.686 µs).
     "package_manager.pattern_candidates": 8.0,
+    # leftover 734; first freeze 7.155× (32.598 / 4.556 µs).
     "package_manager.pattern_matches": 8.0,
+    # leftover 735; first freeze 4.820× (31.989 / 6.637 µs).
     "package_manager.enabled_by_patterns": 8.0,
     # package_manager leftover trio on update-checks.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

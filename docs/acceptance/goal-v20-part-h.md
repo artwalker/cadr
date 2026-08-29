@@ -8584,6 +8584,30 @@ Leftover sibling of Pair 730. Timed work is package source+scope, local user set
 
 Leftover sibling of Pairs 730–731. Timed work is global string vector, project string vector, numeric vector, and non-array miss. Observed `csv_ok` / `csv_proj` / `csv_nums` / `csv_bad` / `csv_n` are exact. First n=5 freeze **6.444×** (5.209 / 0.808 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 733 — `package_manager` (pattern_candidates)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pattern_candidates` | `config-pattern-candidates` (`src/cadr-cli/packages/config-selector.lisp`) | pattern candidates (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 730–732 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is plain file candidate count, absolute namestring membership, skill parent extras, and skill directory name. Observed `cpc_plain` / `cpc_abs` / `cpc_skill` / `cpc_hello` / `cpc_n` are exact. First n=5 freeze **5.911×** (15.875 / 2.686 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 734 — `package_manager` (pattern_matches)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pattern_matches` | `config-pattern-matches-p` (`src/cadr-cli/packages/config-selector.lisp`) | pattern matches (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 733. Timed work is glob `*.lisp` hit, `*.md` miss, exact `SKILL.md`, and `a?b`. Observed `cpm_lisp` / `cpm_miss` / `cpm_exact` / `cpm_q` / `cpm_n` are exact. First n=5 freeze **7.155×** (32.598 / 4.556 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 735 — `package_manager` (enabled_by_patterns)
+
+| metric | cadr | pi |
+|---|---|---|
+| `enabled_by_patterns` | `config-enabled-by-patterns-p` (`src/cadr-cli/packages/config-selector.lisp`) | enabled by patterns (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 733–734. Timed work is default-on with no includes, include glob, exclude bang, and `+` exact load after a miss include. Observed `ebp_def` / `ebp_inc` / `ebp_exc` / `ebp_load` / `ebp_n` are exact. First n=5 freeze **4.820×** (31.989 / 6.637 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

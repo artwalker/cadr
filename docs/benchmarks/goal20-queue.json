@@ -6619,6 +6619,51 @@
    "piUs": 0.808,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 733,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.pattern_candidates",
+   "branch": "cursor/config-selector-pattern-enabled-leftovers-733-735-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 733",
+   "ratio": 5.911,
+   "cadrUs": 15.875,
+   "piUs": 2.686,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 734,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.pattern_matches",
+   "branch": "cursor/config-selector-pattern-enabled-leftovers-733-735-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 734",
+   "ratio": 7.155,
+   "cadrUs": 32.598,
+   "piUs": 4.556,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 735,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.enabled_by_patterns",
+   "branch": "cursor/config-selector-pattern-enabled-leftovers-733-735-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 735",
+   "ratio": 4.820,
+   "cadrUs": 31.989,
+   "piUs": 6.637,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
