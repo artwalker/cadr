@@ -1075,6 +1075,9 @@
     ("cli_bootstrap_sessions.find_session_by_id_or_prefix" . 50)
     ("cli_bootstrap_sessions.session_display_messages" . 50)
     ("cli_bootstrap_sessions.session_tree_selector_data" . 50)
+    ("cli_bootstrap_sessions.validate_cli_session_flags" . 50)
+    ("cli_bootstrap_sessions.session_entry_tree_selector_data" . 50)
+    ("cli_bootstrap_sessions.session_restored_model" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -34006,6 +34009,95 @@
        (leftover-tree-selector-first rows :text)))))
 
 
+(defun leftover-validate-cli-session-flags-message (&rest args)
+  (handler-case
+      (progn
+        (apply #'cadr-cli::validate-cli-session-flags args)
+        "")
+    (cadr-ai:configuration-error (condition)
+      (cadr-ai:cadr-error-message condition))))
+
+
+(defun run-cli-bootstrap-validate-cli-session-flags ()
+  ;; Leftover on sessions.lisp: fork/session-id conflict messages. Not picker I/O.
+  (list
+   (leftover-validate-cli-session-flags-message)
+   (leftover-validate-cli-session-flags-message
+    :fork-source t :session-path t)
+   (leftover-validate-cli-session-flags-message
+    :fork-source t :continue-p t :resume-selector-p t)
+   (leftover-validate-cli-session-flags-message
+    :session-id "x" :session-path t)
+   (leftover-validate-cli-session-flags-message
+    :session-id "x")))
+
+
+(defun leftover-symbol-string (value)
+  (cond
+    ((null value) "")
+    ((symbolp value) (string-downcase (symbol-name value)))
+    (t (princ-to-string value))))
+
+
+(defun run-cli-bootstrap-session-entry-tree-selector-data ()
+  ;; Leftover on sessions.lisp: one tree row plist. Not tree TUI.
+  (let* ((session (leftover-display-session))
+         (entries (cadr-agent:session-entries session))
+         (labels (cadr-cli::session-tree-label-timestamps session))
+         (calls (cadr-cli::session-tree-tool-calls session))
+         (user
+           (cadr-cli::session-entry-tree-selector-data
+            session (first entries) labels calls))
+         (asst
+           (cadr-cli::session-entry-tree-selector-data
+            session (second entries) labels calls)))
+    (list
+     (or (getf user :id) "")
+     (leftover-symbol-string (getf user :role))
+     (or (getf user :text) "")
+     (leftover-symbol-string (getf user :type))
+     (or (getf asst :id) ""))))
+
+
+(defun leftover-openai-model ()
+  (cadr-ai:make-model
+   :id "gpt-4"
+   :name "GPT-4"
+   :provider :openai
+   :api :openai-completions))
+
+
+(defun leftover-restored-model-id (session registry available)
+  (let ((model
+          (cadr-cli::session-restored-model
+           session registry available)))
+    (if model (cadr-ai:model-id model) "")))
+
+
+(defun run-cli-bootstrap-session-restored-model ()
+  ;; Leftover on sessions.lisp: last assistant/model-change lookup.
+  ;; In-memory registry only — not models.json I/O.
+  (let* ((model (leftover-openai-model))
+         (registry (cadr-cli::%make-model-registry :models (list model)))
+         (empty-registry (cadr-cli::%make-model-registry :models nil))
+         (wrong
+           (cadr-ai:make-model
+            :id "other"
+            :name "Other"
+            :provider :openai
+            :api :openai-completions))
+         (wrong-registry
+           (cadr-cli::%make-model-registry :models (list wrong)))
+         (filled (leftover-display-session))
+         (empty (cadr-agent::%make-session :id "e" :%entries nil)))
+    (list
+     (leftover-restored-model-id empty registry (list model))
+     (leftover-restored-model-id filled registry (list model))
+     (leftover-restored-model-id filled empty-registry (list model))
+     (leftover-restored-model-id filled registry nil)
+     (leftover-restored-model-id filled wrong-registry (list wrong)))))
+
+
 (defun run-cli-bootstrap-write-hotkeys-command ()
   ;; Leftover on sessions.lisp: Keyboard Shortcuts + definitions.
   ;; Not hotkeys-command-markdown (keybinding display can drift).
@@ -34056,7 +34148,10 @@
          (write-hotkeys (run-cli-bootstrap-write-hotkeys-command))
          (find-session (run-cli-bootstrap-find-session-by-id-or-prefix))
          (display-messages (run-cli-bootstrap-session-display-messages))
-         (tree-selector (run-cli-bootstrap-session-tree-selector-data)))
+         (tree-selector (run-cli-bootstrap-session-tree-selector-data))
+         (validate-flags (run-cli-bootstrap-validate-cli-session-flags))
+         (entry-selector (run-cli-bootstrap-session-entry-tree-selector-data))
+         (restored-model (run-cli-bootstrap-session-restored-model)))
     (json-object
      "observed"
      (json-object
@@ -34157,7 +34252,22 @@
       "stsd_n" (nth 1 tree-selector)
       "stsd_leaf" (nth 2 tree-selector)
       "stsd_id" (nth 3 tree-selector)
-      "stsd_text" (nth 4 tree-selector))
+      "stsd_text" (nth 4 tree-selector)
+      "vcsf_ok" (nth 0 validate-flags)
+      "vcsf_fork" (nth 1 validate-flags)
+      "vcsf_fork2" (nth 2 validate-flags)
+      "vcsf_sid" (nth 3 validate-flags)
+      "vcsf_sidok" (nth 4 validate-flags)
+      "sets_id" (nth 0 entry-selector)
+      "sets_role" (nth 1 entry-selector)
+      "sets_text" (nth 2 entry-selector)
+      "sets_type" (nth 3 entry-selector)
+      "sets_asst" (nth 4 entry-selector)
+      "srm_none" (nth 0 restored-model)
+      "srm_hit" (nth 1 restored-model)
+      "srm_noreg" (nth 2 restored-model)
+      "srm_noavail" (nth 3 restored-model)
+      "srm_wrong" (nth 4 restored-model))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -34257,7 +34367,22 @@
      (collect "cli_bootstrap_sessions.session_tree_selector_data"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-session-tree-selector-data)))))))
+                  (run-cli-bootstrap-session-tree-selector-data))))
+     "validate_cli_session_flags"
+     (collect "cli_bootstrap_sessions.validate_cli_session_flags"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-validate-cli-session-flags))))
+     "session_entry_tree_selector_data"
+     (collect "cli_bootstrap_sessions.session_entry_tree_selector_data"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-entry-tree-selector-data))))
+     "session_restored_model"
+     (collect "cli_bootstrap_sessions.session_restored_model"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-restored-model)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -35923,6 +36048,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-display-messages"
       "cli_bootstrap_sessions.session_tree_selector_data"
       "src/cadr-cli/bootstrap/sessions.lisp session-tree-selector-data"
+      "cli_bootstrap_sessions.validate_cli_session_flags"
+      "src/cadr-cli/bootstrap/sessions.lisp validate-cli-session-flags"
+      "cli_bootstrap_sessions.session_entry_tree_selector_data"
+      "src/cadr-cli/bootstrap/sessions.lisp session-entry-tree-selector-data"
+      "cli_bootstrap_sessions.session_restored_model"
+      "src/cadr-cli/bootstrap/sessions.lisp session-restored-model"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
