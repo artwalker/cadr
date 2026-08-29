@@ -8374,6 +8374,36 @@
    "piUs": 0.268,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 850,
+   "lane": "cursor",
+   "status": "open",
+   "source": "src/cadr-cli/extensions/llama/extension.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.loaded_model",
+   "branch": "cursor/llama-ext-loaded-catalog-progress-leftovers-850-852-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 850"
+  },
+  {
+   "pair": 851,
+   "lane": "cursor",
+   "status": "open",
+   "source": "src/cadr-cli/extensions/llama/extension.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.catalog_notify",
+   "branch": "cursor/llama-ext-loaded-catalog-progress-leftovers-850-852-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 851"
+  },
+  {
+   "pair": 852,
+   "lane": "cursor",
+   "status": "open",
+   "source": "src/cadr-cli/extensions/llama/extension.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.progress_notify",
+   "branch": "cursor/llama-ext-loaded-catalog-progress-leftovers-850-852-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 852"
   }
  ],
  "mergeQueue": []
