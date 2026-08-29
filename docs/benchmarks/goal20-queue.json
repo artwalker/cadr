@@ -6799,6 +6799,51 @@
    "piUs": 2.423,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 745,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.oauth_login_function",
+   "branch": "cursor/runtime-oauth-login-refresh-toauth-leftovers-745-747-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 745",
+   "ratio": 0.008,
+   "cadrUs": 0.121,
+   "piUs": 15.704,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 746,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.oauth_refresh_function",
+   "branch": "cursor/runtime-oauth-login-refresh-toauth-leftovers-745-747-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 746",
+   "ratio": 0.008,
+   "cadrUs": 0.122,
+   "piUs": 15.368,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 747,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.oauth_to_auth",
+   "branch": "cursor/runtime-oauth-login-refresh-toauth-leftovers-745-747-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 747",
+   "ratio": 1.601,
+   "cadrUs": 0.428,
+   "piUs": 0.267,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

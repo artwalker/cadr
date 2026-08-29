@@ -8680,6 +8680,30 @@ Leftover sibling of Pair 742. Timed work is openai-codex refresh symbol, anthrop
 
 Leftover sibling of Pairs 742–743. Timed work is openai-codex login function, anthropic login function, google ecase miss, and two providers not eq. Observed `olf_codex` / `olf_anth` / `olf_miss` / `olf_diff` / `olf_n` are exact. First n=5 freeze **1.057×** (2.562 / 2.423 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 745 — `provider_registry_defs` (oauth_login_function)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_login_function` | `built-in-oauth-login-function` (`src/cadr-ai/providers/runtime-projection.lisp`) | oauth.login presence (`packages/ai/src/providers/github-copilot.ts` + `anthropic.ts` + `google.ts`) |
+
+Leftover sibling of leftover 742–744 on a different needs-pair file. Timed work is github-copilot login function, anthropic login function, google miss, and two providers not eq. Observed `ologin_copilot` / `ologin_anth` / `ologin_miss` / `ologin_diff` / `ologin_n` are exact. First n=5 freeze **0.008×** (0.121 / 15.704 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 746 — `provider_registry_defs` (oauth_refresh_function)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_refresh_function` | `built-in-oauth-refresh-function` (`src/cadr-ai/providers/runtime-projection.lisp`) | oauth.refresh presence (`packages/ai/src/providers/github-copilot.ts` + `anthropic.ts` + `google.ts`) |
+
+Leftover sibling of Pair 745. Timed work is github-copilot refresh function, anthropic refresh function, google miss, and two providers not eq. Observed `orefresh_copilot` / `orefresh_anth` / `orefresh_miss` / `orefresh_diff` / `orefresh_n` are exact. First n=5 freeze **0.008×** (0.122 / 15.368 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 747 — `provider_registry_defs` (oauth_to_auth)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_to_auth` | `built-in-oauth-to-auth` (`src/cadr-ai/providers/runtime-projection.lisp`) | anthropic toAuth + kimi-coding toAuth (`packages/ai/src/auth/oauth/anthropic.ts` + `kimi-coding.ts`) |
+
+Leftover sibling of Pairs 745–746. Timed work is anthropic access-token api-key, kimi-bearer Authorization header, google miss, and access-token vs bearer not sharing api-key. Observed `ota_anth` / `ota_kimi` / `ota_miss` / `ota_diff` / `ota_n` are exact. First n=5 freeze **1.601×** (0.428 / 0.267 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

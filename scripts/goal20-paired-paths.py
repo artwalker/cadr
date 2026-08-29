@@ -635,8 +635,11 @@ RATIO_CEILINGS = {
     "provider_registry_defs.strip_runtime_options": 8.0,
     # leftover 745–747 runtime-projection oauth (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 745–747.
+    # leftover 745; first freeze 0.008× (0.121 / 15.704 µs).
     "provider_registry_defs.oauth_login_function": 8.0,
+    # leftover 746; first freeze 0.008× (0.122 / 15.368 µs).
     "provider_registry_defs.oauth_refresh_function": 8.0,
+    # leftover 747; first freeze 1.601× (0.428 / 0.267 µs).
     "provider_registry_defs.oauth_to_auth": 8.0,
     "tool_manager.release_asset": 8.0,
     "tool_manager.find_binary": 8.0,
