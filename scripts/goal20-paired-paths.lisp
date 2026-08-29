@@ -1295,6 +1295,9 @@
     ("cli_bootstrap_sessions.session_tree_tool_calls" . 50)
     ("cli_bootstrap_sessions.session_compaction_display_state" . 50)
     ("cli_bootstrap_sessions.write_hotkeys_command" . 50)
+    ("cli_bootstrap_sessions.find_session_by_id_or_prefix" . 50)
+    ("cli_bootstrap_sessions.session_display_messages" . 50)
+    ("cli_bootstrap_sessions.session_tree_selector_data" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -35790,6 +35793,68 @@
     (cadr-cli::write-hotkeys-command out bindings)))
 
 
+(defun leftover-find-sessions ()
+  (list
+   (cadr-agent::%make-session :id "abc")
+   (cadr-agent::%make-session :id "abcd")
+   (cadr-agent::%make-session :id "xyz")))
+
+
+(defun leftover-find-session-id (argument sessions)
+  (let ((hit
+          (cadr-cli::find-session-by-id-or-prefix
+           argument sessions)))
+    (if hit (cadr-agent:session-id hit) "")))
+
+
+(defun run-cli-bootstrap-find-session-by-id-or-prefix ()
+  ;; Leftover on sessions.lisp: exact id then prefix. Not disk list-sessions.
+  (let ((sessions (leftover-find-sessions)))
+    (list
+     (leftover-find-session-id "abc" sessions)
+     (leftover-find-session-id "ab" sessions)
+     (leftover-find-session-id "xy" sessions)
+     (leftover-find-session-id "no" sessions)
+     (leftover-find-session-id "abc" nil))))
+
+
+(defun run-cli-bootstrap-session-display-messages ()
+  ;; Leftover on sessions.lisp: context-entries message projection.
+  ;; Message-only parent chain (same fixture as leftover 818).
+  (let ((empty
+          (cadr-cli::session-display-messages
+           (cadr-agent::%make-session :id "e" :%entries nil)))
+        (filled
+          (cadr-cli::session-display-messages
+           (leftover-display-session))))
+    (list
+     (length empty)
+     (length filled)
+     (leftover-first-message-role filled)
+     (leftover-first-message-role (cdr filled))
+     (leftover-first-message-role (cddr filled)))))
+
+
+(defun leftover-tree-selector-first (rows key)
+  (or (getf (first rows) key) ""))
+
+
+(defun run-cli-bootstrap-session-tree-selector-data ()
+  ;; Leftover on sessions.lisp: tree row plists. Not tree TUI render.
+  (multiple-value-bind (nil-rows nil-leaf)
+      (cadr-cli::session-tree-selector-data nil)
+    (declare (ignore nil-leaf))
+    (multiple-value-bind (rows leaf)
+        (cadr-cli::session-tree-selector-data
+         (leftover-display-session))
+      (list
+       (length nil-rows)
+       (length rows)
+       (or leaf "")
+       (leftover-tree-selector-first rows :id)
+       (leftover-tree-selector-first rows :text))))))
+
+
 (defun run-cli-bootstrap-write-hotkeys-command ()
   ;; Leftover on sessions.lisp: Keyboard Shortcuts + definitions.
   ;; Not hotkeys-command-markdown (keybinding display can drift).
@@ -35853,7 +35918,10 @@
          (tree-tool-calls (run-cli-bootstrap-session-tree-tool-calls))
          (compaction-display
           (run-cli-bootstrap-session-compaction-display-state))
-         (write-hotkeys (run-cli-bootstrap-write-hotkeys-command)))
+         (write-hotkeys (run-cli-bootstrap-write-hotkeys-command))
+         (find-session (run-cli-bootstrap-find-session-by-id-or-prefix))
+         (display-messages (run-cli-bootstrap-session-display-messages))
+         (tree-selector (run-cli-bootstrap-session-tree-selector-data)))
     (json-object
      "observed"
      (json-object
@@ -36002,7 +36070,22 @@
       "whc_hdr" (nth 1 write-hotkeys)
       "whc_ctrlc" (nth 2 write-hotkeys)
       "whc_bound" (nth 3 write-hotkeys)
-      "whc_cfg" (nth 4 write-hotkeys))
+      "whc_cfg" (nth 4 write-hotkeys)
+      "fsb_exact" (nth 0 find-session)
+      "fsb_prefix" (nth 1 find-session)
+      "fsb_xy" (nth 2 find-session)
+      "fsb_miss" (nth 3 find-session)
+      "fsb_empty" (nth 4 find-session)
+      "sdm_empty" (nth 0 display-messages)
+      "sdm_n" (nth 1 display-messages)
+      "sdm_first" (nth 2 display-messages)
+      "sdm_asst" (nth 3 display-messages)
+      "sdm_tool" (nth 4 display-messages)
+      "stsd_nil" (nth 0 tree-selector)
+      "stsd_n" (nth 1 tree-selector)
+      "stsd_leaf" (nth 2 tree-selector)
+      "stsd_id" (nth 3 tree-selector)
+      "stsd_text" (nth 4 tree-selector))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -36148,7 +36231,22 @@
      (collect "cli_bootstrap_sessions.write_hotkeys_command"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-write-hotkeys-command)))))))
+                  (run-cli-bootstrap-write-hotkeys-command))))
+     "find_session_by_id_or_prefix"
+     (collect "cli_bootstrap_sessions.find_session_by_id_or_prefix"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-find-session-by-id-or-prefix))))
+     "session_display_messages"
+     (collect "cli_bootstrap_sessions.session_display_messages"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-display-messages))))
+     "session_tree_selector_data"
+     (collect "cli_bootstrap_sessions.session_tree_selector_data"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-tree-selector-data)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -38084,6 +38182,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-compaction-display-state"
       "cli_bootstrap_sessions.write_hotkeys_command"
       "src/cadr-cli/bootstrap/sessions.lisp write-hotkeys-command"
+      "cli_bootstrap_sessions.find_session_by_id_or_prefix"
+      "src/cadr-cli/bootstrap/sessions.lisp find-session-by-id-or-prefix"
+      "cli_bootstrap_sessions.session_display_messages"
+      "src/cadr-cli/bootstrap/sessions.lisp session-display-messages"
+      "cli_bootstrap_sessions.session_tree_selector_data"
+      "src/cadr-cli/bootstrap/sessions.lisp session-tree-selector-data"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

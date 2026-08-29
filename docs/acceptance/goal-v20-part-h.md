@@ -10282,6 +10282,30 @@ Leftover sibling of Pair 817. Timed work is message-only display projection retu
 
 Leftover sibling of Pairs 817–818. Timed work is fixed `Keyboard Shortcuts` plus `+interactive-hotkey-definitions+` (optional configured bindings) — not markdown keybinding tables. Observed `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` are exact. First n=5 freeze **3.421×** (8.281 / 2.421 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 820 — `cli_bootstrap_sessions` (find_session_by_id_or_prefix)
+
+| metric | cadr | pi |
+|---|---|---|
+| `find_session_by_id_or_prefix` | `find-session-by-id-or-prefix` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover find by id or prefix (`packages/coding-agent/src/core/session-manager.ts`) |
+
+Leftover sibling of leftover 808–819 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is exact session-id then prefix match over an in-memory list — not `list-sessions` disk I/O. Observed `fsb_exact` / `fsb_prefix` / `fsb_xy` / `fsb_miss` / `fsb_empty` are exact. Measure-only leftover 820. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 821 — `cli_bootstrap_sessions` (session_display_messages)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_display_messages` | `session-display-messages` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover display message projection (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of Pair 820. Timed work is message-only context projection (parent chain + leaf/by-id) — not TUI. Observed `sdm_empty` / `sdm_n` / `sdm_first` / `sdm_asst` / `sdm_tool` are exact. Measure-only leftover 821. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 822 — `cli_bootstrap_sessions` (session_tree_selector_data)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_tree_selector_data` | `session-tree-selector-data` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover tree row map (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
+
+Leftover sibling of Pairs 820–821. Timed work is tree row plists (id/text/leaf) — not tree TUI render. Observed `stsd_nil` / `stsd_n` / `stsd_leaf` / `stsd_id` / `stsd_text` are exact. Measure-only leftover 822. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

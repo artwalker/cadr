@@ -149,7 +149,7 @@ METRICS = {
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime", "beta", "eq", "older", "newer_flag", "equal_flag", "cm_tok", "cm_idle", "cm_chg", "cm_hit", "sw_tok", "sw_idle", "sw_chg", "sw_hit", "healthy_hit", "empty_hit", "cw_tok", "cw_n", "cw_healthy", "cw_reset", "cw_sw_tok", "cw_sw_n", "cw_nocache", "tl_off", "tl_min", "tl_low", "tl_med", "tl_high", "tl_xhigh", "tl_max", "tl_miss", "sl_n", "sl_id", "sl_empty", "as_ok", "as_model", "as_fb", "ss_ok", "ss_cwd", "ss_snap", "mr_oa", "mr_an", "mr_missp", "mr_gpt", "mr_missm"),
     "provider_registry_defs": ("lookup", "definition_ids", "merge_environment", "runtime_models", "structured_api_key_login", "openai", "anthropic", "google", "unknown", "count", "sorted_digest", "me_oa", "me_gemini", "me_azure", "me_miss", "rm_openai", "rm_anthropic", "rm_google", "rm_unknown", "sl_openai", "sl_anthropic", "sl_google", "sl_bedrock", "sl_vertex", "api_key_strategy", "provider_options", "strip_runtime_options", "oauth_login_function", "oauth_refresh_function", "oauth_to_auth", "api_key_login_function", "api_key_auth", "model_filter_function", "runtime_provider", "runtime_provider_copilot", "models_runtime", "protocol_provider", "protocol_provider_anthropic", "instantiate_provider"),
     "skill_prompt_load": ("build_prompt", "custom_len", "append_len", "ctx_len", "has_cwd", "has_extra", "has_agents", "resolve_prompt", "node_read_error", "prompt_appends", "sdk_prompt_input", "sdk_list_override", "sdk_context_files"),
-    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "count", "baseline", "snippet_count", "read_first", "option_count", "auth_pairs_digest", "vertex_structured", "bedrock_structured", "session_path", "split_command", "path_argument", "legacy_product", "shell_quote", "affirmative", "model_cycle", "model_scope_line", "process_files", "parse_bash", "response_text", "dispatch_plain", "session_argument_path", "path_command_argument", "cycle_wrap", "scope_hint", "file_tags", "data_directory", "legacy_data_directory", "manual_migration_command", "managed_binary_names", "migration_guide_url", "extensions_doc_url", "pb_ok", "rt_ok", "dp_ok", "assistant_tool_call_only", "session_entry_user_text", "session_compaction_status", "last_assistant_text", "session_export_basename", "session_user_messages_for_forking", "session_command_stats", "session_usage_breakdown", "session_tree_label_timestamps", "session_tree_tool_calls", "session_compaction_display_state", "write_hotkeys_command"),
+    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "count", "baseline", "snippet_count", "read_first", "option_count", "auth_pairs_digest", "vertex_structured", "bedrock_structured", "session_path", "split_command", "path_argument", "legacy_product", "shell_quote", "affirmative", "model_cycle", "model_scope_line", "process_files", "parse_bash", "response_text", "dispatch_plain", "session_argument_path", "path_command_argument", "cycle_wrap", "scope_hint", "file_tags", "data_directory", "legacy_data_directory", "manual_migration_command", "managed_binary_names", "migration_guide_url", "extensions_doc_url", "pb_ok", "rt_ok", "dp_ok", "assistant_tool_call_only", "session_entry_user_text", "session_compaction_status", "last_assistant_text", "session_export_basename", "session_user_messages_for_forking", "session_command_stats", "session_usage_breakdown", "session_tree_label_timestamps", "session_tree_tool_calls", "session_compaction_display_state", "write_hotkeys_command", "find_session_by_id_or_prefix", "session_display_messages", "session_tree_selector_data"),
     "ai_runtime_faux": ("blocks", "text_len", "text", "think_len", "think"),
     "http_transport": ("parse_url", "https_scheme", "https_host", "https_path", "http_scheme", "http_host", "http_port", "http_path"),
     "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join", "ca_live", "ca_abort", "ca_clear", "ca_pred", "rd_keep", "rd_secret", "rd_token", "rd_mark", "th_absent", "th_current", "th_joined", "cancellation_make", "cancellation_aborted", "cancellation_set", "cancellation_predicate", "redacted_register", "redacted_replace"),
@@ -1541,6 +1541,11 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.session_compaction_display_state": 8.0,
     # leftover 819; first freeze 3.421× (8.281 / 2.421 µs).
     "cli_bootstrap_sessions.write_hotkeys_command": 8.0,
+    # leftover 820–822 sessions.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only. Measure-only leftover 820–822.
+    "cli_bootstrap_sessions.find_session_by_id_or_prefix": 8.0,
+    "cli_bootstrap_sessions.session_display_messages": 8.0,
+    "cli_bootstrap_sessions.session_tree_selector_data": 8.0,
   # cli_selectors.countdown_seconds leftover 556 (samples=5):
   # observed 2.292x (0.768 / 0.335 us). 8.0 is first-freeze
   # headroom. Ratchet down only.
@@ -6290,6 +6295,21 @@ OBSERVED_EXACT = {
         "whc_ctrlc",
         "whc_bound",
         "whc_cfg",
+        "fsb_exact",
+        "fsb_prefix",
+        "fsb_xy",
+        "fsb_miss",
+        "fsb_empty",
+        "sdm_empty",
+        "sdm_n",
+        "sdm_first",
+        "sdm_asst",
+        "sdm_tool",
+        "stsd_nil",
+        "stsd_n",
+        "stsd_leaf",
+        "stsd_id",
+        "stsd_text",
     ),
     "ai_runtime_faux": (
         "text_len",

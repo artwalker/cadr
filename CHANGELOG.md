@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.find_session_by_id_or_prefix`
+  (`find-session-by-id-or-prefix` vs leftover find by id or prefix). Observed
+  `fsb_exact` / `fsb_prefix` / `fsb_xy` / `fsb_miss` / `fsb_empty` exact.
+  Measure-only leftover (Pair 820). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_display_messages`
+  (`session-display-messages` vs leftover display message projection). Observed
+  `sdm_empty` / `sdm_n` / `sdm_first` / `sdm_asst` / `sdm_tool` exact.
+  Measure-only leftover (Pair 821). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_selector_data`
+  (`session-tree-selector-data` vs leftover tree row map). Observed
+  `stsd_nil` / `stsd_n` / `stsd_leaf` / `stsd_id` / `stsd_text` exact.
+  Measure-only leftover (Pair 822). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_tool_calls`
   (`session-tree-tool-calls` vs leftover tool-call id→name map). Observed
   `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` exact.
