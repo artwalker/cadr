@@ -623,6 +623,9 @@
     ("cli_interactive_controller.render_assistant_blocks" . 50)
     ("cli_interactive_controller.render_version_notification" . 50)
     ("cli_interactive_controller.render_package_notification" . 50)
+    ("cli_interactive_controller.render_tui_entry_uncached" . 50)
+    ("cli_interactive_controller.render_tui_entry" . 50)
+    ("cli_interactive_controller.render_tui_entries" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14536,6 +14539,26 @@
    "rpn_dash" (nth 4 package-note)))
 
 
+(defun leftover-transcript-tui-entry-observed-pairs
+    (entry-uncached entry-cached entries)
+  (list
+   "rteu_user" (nth 0 entry-uncached)
+   "rteu_asst" (nth 1 entry-uncached)
+   "rteu_err" (nth 2 entry-uncached)
+   "rteu_ver" (nth 3 entry-uncached)
+   "rteu_empty" (nth 4 entry-uncached)
+   "rte_user" (nth 0 entry-cached)
+   "rte_n" (nth 1 entry-cached)
+   "rte_hit" (nth 2 entry-cached)
+   "rte_err" (nth 3 entry-cached)
+   "rte_ver" (nth 4 entry-cached)
+   "rtes_user" (nth 0 entries)
+   "rtes_asst" (nth 1 entries)
+   "rtes_gap" (nth 2 entries)
+   "rtes_n" (nth 3 entries)
+   "rtes_empty" (nth 4 entries)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15033,7 +15056,13 @@
         (leftover-render-version-notification
           (run-cli-interactive-render-version-notification))
         (leftover-render-package-notification
-          (run-cli-interactive-render-package-notification)))
+          (run-cli-interactive-render-package-notification))
+        (leftover-render-tui-entry-uncached
+          (run-cli-interactive-render-tui-entry-uncached))
+        (leftover-render-tui-entry
+          (run-cli-interactive-render-tui-entry))
+        (leftover-render-tui-entries
+          (run-cli-interactive-render-tui-entries)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15124,7 +15153,11 @@
              (leftover-transcript-blocks-version-package-observed-pairs
               leftover-render-assistant-blocks
               leftover-render-version-notification
-              leftover-render-package-notification)))
+              leftover-render-package-notification)
+             (leftover-transcript-tui-entry-observed-pairs
+              leftover-render-tui-entry-uncached
+              leftover-render-tui-entry
+              leftover-render-tui-entries)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15304,7 +15337,22 @@
      (collect "cli_interactive_controller.render_package_notification"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-package-notification)))))))
+                  (run-cli-interactive-render-package-notification))))
+     "render_tui_entry_uncached"
+     (collect "cli_interactive_controller.render_tui_entry_uncached"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-tui-entry-uncached))))
+     "render_tui_entry"
+     (collect "cli_interactive_controller.render_tui_entry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-tui-entry))))
+     "render_tui_entries"
+     (collect "cli_interactive_controller.render_tui_entries"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-tui-entries)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16069,6 +16117,100 @@
      (if (search "update" text) 1 0)
      (if (>= (length lines) 3) 1 0)
      (if (search "─" text) 1 0))))
+
+(defun run-cli-interactive-render-tui-entry-uncached ()
+  (let* ((user
+           (cadr-cli::make-tui-entry :type :user :text "hello"))
+         (asst
+           (cadr-cli::make-tui-entry :type :assistant :text "hello"))
+         (err
+           (cadr-cli::make-tui-entry :type :error :text "boom"))
+         (ver
+           (cadr-cli::make-tui-entry
+            :type :version-update
+            :text "1.2.3"))
+         (unknown
+           (cadr-cli::make-tui-entry :type :unknown :text "x"))
+         (user-text
+           (leftover-notification-joined
+            (cadr-cli::render-tui-entry-uncached user 80)))
+         (asst-text
+           (leftover-notification-joined
+            (cadr-cli::render-tui-entry-uncached asst 80)))
+         (err-text
+           (leftover-notification-joined
+            (cadr-cli::render-tui-entry-uncached err 80)))
+         (ver-text
+           (leftover-notification-joined
+            (cadr-cli::render-tui-entry-uncached ver 80)))
+         (empty-lines
+           (cadr-cli::render-tui-entry-uncached unknown 80)))
+    (cadr-cli::render-tui-entry-uncached user 80)
+    (cadr-cli::render-tui-entry-uncached asst 80)
+    (cadr-cli::render-tui-entry-uncached err 80)
+    (cadr-cli::render-tui-entry-uncached ver 80)
+    (cadr-cli::render-tui-entry-uncached unknown 80)
+    (list
+     (if (search "hello" user-text) 1 0)
+     (if (search "hello" asst-text) 1 0)
+     (if (search "Error:" err-text) 1 0)
+     (if (search "Update Available" ver-text) 1 0)
+     (if (null empty-lines) 1 0))))
+
+(defun run-cli-interactive-render-tui-entry ()
+  (let* ((user
+           (cadr-cli::make-tui-entry :type :user :text "hello"))
+         (err
+           (cadr-cli::make-tui-entry :type :error :text "boom"))
+         (ver
+           (cadr-cli::make-tui-entry
+            :type :version-update
+            :text "1.2.3"))
+         (first (cadr-cli::render-tui-entry user 80))
+         (second (cadr-cli::render-tui-entry user 80))
+         (user-text (leftover-notification-joined first))
+         (err-text
+           (leftover-notification-joined
+            (cadr-cli::render-tui-entry err 80)))
+         (ver-text
+           (leftover-notification-joined
+            (cadr-cli::render-tui-entry ver 80))))
+    (cadr-cli::render-tui-entry user 80)
+    (cadr-cli::render-tui-entry err 80)
+    (cadr-cli::render-tui-entry ver 80)
+    (list
+     (if (search "hello" user-text) 1 0)
+     (if (>= (length first) 1) 1 0)
+     (if (and first second (= (length first) (length second))) 1 0)
+     (if (search "Error:" err-text) 1 0)
+     (if (search "Update Available" ver-text) 1 0))))
+
+(defun run-cli-interactive-render-tui-entries ()
+  (let* ((user
+           (cadr-cli::make-tui-entry :type :user :text "hello"))
+         (asst
+           (cadr-cli::make-tui-entry :type :assistant :text "world"))
+         (user-b
+           (cadr-cli::make-tui-entry :type :user :text "again"))
+         (one
+           (cadr-cli::render-tui-entries (list user) 80))
+         (two
+           (cadr-cli::render-tui-entries (list user asst) 80))
+         (gapped
+           (cadr-cli::render-tui-entries (list user user-b) 80))
+         (empty
+           (cadr-cli::render-tui-entries nil 80))
+         (two-text (leftover-notification-joined two)))
+    (cadr-cli::render-tui-entries (list user) 80)
+    (cadr-cli::render-tui-entries (list user asst) 80)
+    (cadr-cli::render-tui-entries (list user user-b) 80)
+    (cadr-cli::render-tui-entries nil 80)
+    (list
+     (if (search "hello" two-text) 1 0)
+     (if (search "world" two-text) 1 0)
+     (if (find "" gapped :test #'string=) 1 0)
+     (if (>= (length two) (length one)) 1 0)
+     (if (null empty) 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -28395,6 +28537,12 @@
       "src/cadr-cli/interactive/transcript.lisp render-version-update-notification"
       "cli_interactive_controller.render_package_notification"
       "src/cadr-cli/interactive/transcript.lisp render-package-update-notification"
+      "cli_interactive_controller.render_tui_entry_uncached"
+      "src/cadr-cli/interactive/transcript.lisp render-tui-entry-uncached"
+      "cli_interactive_controller.render_tui_entry"
+      "src/cadr-cli/interactive/transcript.lisp render-tui-entry"
+      "cli_interactive_controller.render_tui_entries"
+      "src/cadr-cli/interactive/transcript.lisp render-tui-entries"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

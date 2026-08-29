@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.render_tui_entry_uncached`
+  (`render-tui-entry-uncached` on
+  `src/cadr-cli/interactive/transcript.lisp` vs chat-log render entry
+  uncached). Observed `rteu_user` / `rteu_asst` / `rteu_err` /
+  `rteu_ver` / `rteu_empty` exact. n=5 **27.525×** (200.288 / 7.276 µs)
+  on host `cursor`. First-freeze headroom ceiling **50.0** (ratchet down
+  only). Measure-only leftover (Pair 664). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_tui_entry`
+  (`render-tui-entry` vs chat-log render entry cache). Observed
+  `rte_user` / `rte_n` / `rte_hit` / `rte_err` / `rte_ver` exact. n=5
+  **17.083×** (102.484 / 5.999 µs) on host `cursor`. First-freeze
+  headroom ceiling **30.0** (ratchet down only). Measure-only leftover
+  (Pair 665). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_tui_entries`
+  (`render-tui-entries` vs chat-log render entries + user gap). Observed
+  `rtes_user` / `rtes_asst` / `rtes_gap` / `rtes_n` / `rtes_empty`
+  exact. n=5 **5.530×** (42.711 / 7.723 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 666). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.render_assistant_blocks`
   (`render-assistant-blocks` on
   `src/cadr-cli/interactive/transcript.lisp` vs assistant markdown
