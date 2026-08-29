@@ -599,4 +599,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.close_pending` | 1.526 | 0.546 | 2.795× | 8.00× | measure-only leftover 831; `rpc-close-pending-dialogs` vs leftover pending map clear | invent pause；地板优化另刀 |
 | `oauth_pkce_device.write_http_response` | 5.964 | 0.672 | 8.881× | 12.00× | measure-only leftover 833; `write-oauth-http-response` vs leftover writeHead+end | invent pause；地板优化另刀 |
 | `oauth_pkce_device.present_auth_url` | 1.580 | 0.370 | 4.268× | 8.00× | measure-only leftover 834; `present-oauth-auth-url` vs leftover auth_url notify | invent pause；地板优化另刀 |
+| `cli_selectors.armin_make_grid` | 27.332 | 6.763 | 4.041× | 8.00× | measure-only leftover 835; `make-armin-grid` vs leftover buildFinalGrid/createEmptyGrid | invent pause；地板优化另刀 |
+| `cli_selectors.armin_copy_grid` | 24.123 | 3.977 | 6.066× | 8.00× | measure-only leftover 836; `copy-armin-grid` vs leftover 2d row copy | invent pause；地板优化另刀 |
+| `cli_selectors.armin_row_string` | 23.245 | 5.676 | 4.095× | 8.00× | measure-only leftover 837; `armin-grid-row-string` vs leftover row.join | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
