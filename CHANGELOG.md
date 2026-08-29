@@ -11,18 +11,21 @@ tag/Release step.
 
 - Goal 20 leftover: pair `provider_registry_defs.protocol_provider`
   (`make-protocol-provider` openai-responses vs openAIResponsesApi). Observed
-  `pp_stream` / `pp_simple` / `pp_miss` / `pp_diff` / `pp_n` exact.
-  Measure-only leftover (Pair 754). Freeze pending. `nextPairNum` left
-  unchanged.
+  `pp_stream` / `pp_simple` / `pp_miss` / `pp_diff` / `pp_n` exact. n=5
+  **0.852×** (0.936 / 1.099 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 754). Under-1×. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.protocol_provider_anthropic`
   (`make-protocol-provider` anthropic-messages vs anthropicMessagesApi).
   Observed `ppa_id` / `ppa_oauth` / `ppa_type` / `ppa_diff` / `ppa_n` exact.
-  Measure-only leftover (Pair 755). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **0.092×** (0.407 / 4.417 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 755). Under-1×. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.instantiate_provider`
   (`instantiate-provider` openai vs openaiProvider). Observed `ip_id` /
-  `ip_api` / `ip_model` / `ip_type` / `ip_n` exact. Measure-only leftover
-  (Pair 756). Freeze pending. `nextPairNum` left unchanged.
+  `ip_api` / `ip_model` / `ip_type` / `ip_n` exact. n=5 **0.111×**
+  (0.599 / 5.395 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 756). Under-1×. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `provider_registry_defs.runtime_provider`
   (`make-built-in-runtime-provider` vs builtinProviders openai). Observed

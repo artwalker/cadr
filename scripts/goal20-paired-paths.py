@@ -659,8 +659,11 @@ RATIO_CEILINGS = {
     "provider_registry_defs.models_runtime": 8.0,
     # leftover 754–756 registry protocol/instantiate (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 754–756.
+    # leftover 754; first freeze 0.852× (0.936 / 1.099 µs). cadr leads.
     "provider_registry_defs.protocol_provider": 8.0,
+    # leftover 755; first freeze 0.092× (0.407 / 4.417 µs). cadr leads.
     "provider_registry_defs.protocol_provider_anthropic": 8.0,
+    # leftover 756; first freeze 0.111× (0.599 / 5.395 µs). cadr leads.
     "provider_registry_defs.instantiate_provider": 8.0,
     "tool_manager.release_asset": 8.0,
     "tool_manager.find_binary": 8.0,
