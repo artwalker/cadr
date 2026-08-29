@@ -8296,6 +8296,30 @@ Leftover sibling of Pair 694. Timed work is command/output, exit-footer strip, e
 
 Leftover sibling of Pairs 694–695. Timed work is output+exit footer, empty output, exit code, cancelled flag, and full-output path. Observed `neb_text` / `neb_nl` / `neb_code` / `neb_can` / `neb_path` are exact. First n=5 freeze **1.812×** (0.840 / 0.464 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 697 — `evals_harness` (canonical_api)
+
+| metric | cadr | pi |
+|---|---|---|
+| `canonical_api` | `source-uses-canonical-extension-api-p` (`src/cadr-evals/suites.lisp`) | canonical extension API probe (`packages/evals/src/suites.ts`) |
+
+Leftover sibling of earlier `evals_harness` leftovers on `src/cadr-evals/suites.lisp`. Timed work is `(define-tool`, packaged `define-tool`, case-insensitive `DEFINE-TOOL`, miss on `hello`, and miss on `@mariozechner/pi`. Observed `sca_def` / `sca_pkg` / `sca_case` / `sca_miss` / `sca_leg` are exact. First n=5 freeze **1.842×** (0.944 / 0.512 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 698 — `evals_harness` (legacy_api)
+
+| metric | cadr | pi |
+|---|---|---|
+| `legacy_api` | `source-uses-legacy-extension-api-p` (`src/cadr-evals/suites.lisp`) | legacy extension API probe (`packages/evals/src/suites.ts`) |
+
+Leftover sibling of Pair 697. Timed work is `@mariozechner/`, `@sinclair/typebox`, `@earendil-works/pi-coding-agent`, case-insensitive `@MarioZechner/`, and miss on `(define-tool`. Observed `sla_mz` / `sla_tb` / `sla_pi` / `sla_case` / `sla_miss` are exact. First n=5 freeze **3.666×** (1.903 / 0.519 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 699 — `evals_harness` (extension_error_json)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_error_json` | `extension-error-json` (`src/cadr-evals/suites.lisp`) | extension error JSON (`packages/evals/src/suites.ts`) |
+
+Leftover sibling of Pairs 697–698. Timed work is path, error text, empty path/error, blank strings, and hash-table count. Observed `see_path` / `see_err` / `see_empty` / `see_blank` / `see_n` are exact. First n=5 freeze **4.784×** (0.860 / 0.180 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
