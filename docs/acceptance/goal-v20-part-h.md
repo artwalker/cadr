@@ -7888,6 +7888,30 @@ Leftover sibling of Pair 643. Timed work is trim/drop blank text, merge consecut
 
 Leftover sibling of Pairs 643–644. Timed work is themed `[name]` labels (skill / branch / empty / compaction) with ANSI stripped for observed. Observed `tsl_skill` / `tsl_branch` / `tsl_empty` / `tsl_n` / `tsl_comp` are exact. First n=5 freeze **6.352×** (12.217 / 1.923 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 646 — `cli_interactive_controller` (transcript_summary_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `transcript_summary_text` | `transcript-summary-text` (`src/cadr-cli/interactive/transcript.lisp`) | `customMessageText` (`packages/coding-agent/src/modes/interactive/components/custom-message.ts`) |
+
+Leftover sibling of Pairs 643–645 on the same `transcript.lisp` hole. Timed work is themed summary body text (hello / empty / CJK / spaced) with ANSI stripped for observed. Observed `tst_hi` / `tst_empty` / `tst_cjk` / `tst_n` / `tst_space` are exact. First n=5 freeze **5.434×** (8.866 / 1.632 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 647 — `cli_interactive_controller` (assistant_stop_error)
+
+| metric | cadr | pi |
+|---|---|---|
+| `assistant_stop_error` | `assistant-stop-error-lines` (`src/cadr-cli/interactive/transcript.lisp`) | AssistantMessageComponent `stopReason` (`packages/coding-agent/src/modes/interactive/components/assistant-message.ts`) |
+
+Leftover sibling of Pair 646. Timed work is length/aborted/error stop lines (truncated / Operation aborted / custom abort / tool-calls skip / Error: boom). Observed `ase_len` / `ase_abort` / `ase_custom` / `ase_tool` / `ase_err` are exact. First n=5 freeze **10.444×** (24.257 / 2.323 µs) on host `cursor`. First-freeze headroom ceiling **20.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 648 — `cli_interactive_controller` (update_notification_border)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_notification_border` | `update-notification-border-line` (`src/cadr-cli/interactive/transcript.lisp`) | warning `DynamicBorder` (`packages/coding-agent/src/modes/interactive/components/dynamic-border.ts`) |
+
+Leftover sibling of Pairs 646–647. Timed work is warning-themed `─` border at widths 8 / 0 / 1 / 40 with ANSI stripped. Observed `unb_w` / `unb_ch` / `unb_0` / `unb_1` / `unb_n` are exact. First n=5 freeze **4.259×** (6.319 / 1.484 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

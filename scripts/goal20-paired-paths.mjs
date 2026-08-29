@@ -587,6 +587,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.assistant_has_tools": 50,
 	"cli_interactive_controller.assistant_display_blocks": 50,
 	"cli_interactive_controller.transcript_summary_label": 50,
+	"cli_interactive_controller.transcript_summary_text": 50,
+	"cli_interactive_controller.assistant_stop_error": 50,
+	"cli_interactive_controller.update_notification_border": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13512,6 +13515,67 @@ function leftoverTranscriptSummaryLabel(name) {
 	return leftoverStripAnsi(`\x1b[1m[${name}]\x1b[22m`);
 }
 
+function leftoverTranscriptSummaryText(text) {
+	return leftoverStripAnsi(`\x1b[39m${text}\x1b[39m`);
+}
+
+function leftoverThemeForeground(text) {
+	return `\x1b[31m${text}\x1b[39m`;
+}
+
+function leftoverAssistantStopErrorLines(entry, width) {
+	let message;
+	switch (entry.stopReason) {
+		case "length":
+			message = "Response was truncated before completion.";
+			break;
+		case "aborted": {
+			const errorMessage = entry.errorMessage;
+			message =
+				errorMessage && errorMessage !== "Request was aborted"
+					? errorMessage
+					: "Operation aborted";
+			break;
+		}
+		case "error":
+			if (!entry.hasToolCalls) {
+				message = `Error: ${entry.errorMessage || "Unknown error"}`;
+			}
+			break;
+		default:
+			break;
+	}
+	if (!message) {
+		return [];
+	}
+	const inner = Math.max(1, width - 2);
+	const wrapped = [];
+	for (let i = 0; i < message.length; i += inner) {
+		wrapped.push(leftoverThemeForeground(message.slice(i, i + inner)));
+	}
+	return ["", ...wrapped];
+}
+
+function leftoverAssistantStopErrorStripped(entry, width) {
+	const lines = leftoverAssistantStopErrorLines(entry, width);
+	if (lines.length === 0) {
+		return "";
+	}
+	return leftoverStripAnsi(lines.join("\n"));
+}
+
+function leftoverStopErrorContains(entry, width, fragment) {
+	return leftoverAssistantStopErrorStripped(entry, width).includes(fragment) ? 1 : 0;
+}
+
+function leftoverUpdateNotificationBorderLine(width) {
+	return leftoverThemeForeground("─".repeat(width));
+}
+
+function leftoverNotificationBorderStripped(width) {
+	return leftoverStripAnsi(leftoverUpdateNotificationBorderLine(width));
+}
+
 function runCliInteractiveTranscriptSummaryLabel() {
 	const skill = leftoverTranscriptSummaryLabel("skill");
 	const branch = leftoverTranscriptSummaryLabel("branch");
@@ -13527,6 +13591,68 @@ function runCliInteractiveTranscriptSummaryLabel() {
 		tsl_empty: empty === "[]" ? 1 : 0,
 		tsl_n: skill.length,
 		tsl_comp: compaction === "[compaction]" ? 1 : 0,
+	};
+}
+
+function runCliInteractiveTranscriptSummaryText() {
+	const hello = leftoverTranscriptSummaryText("hello");
+	const empty = leftoverTranscriptSummaryText("");
+	const cjk = leftoverTranscriptSummaryText("你好");
+	const space = leftoverTranscriptSummaryText("  x  ");
+	leftoverTranscriptSummaryText("hello");
+	leftoverTranscriptSummaryText("");
+	leftoverTranscriptSummaryText("你好");
+	leftoverTranscriptSummaryText("  x  ");
+	return {
+		tst_hi: hello === "hello" ? 1 : 0,
+		tst_empty: empty === "" ? 1 : 0,
+		tst_cjk: cjk === "你好" ? 1 : 0,
+		tst_n: hello.length,
+		tst_space: space === "  x  " ? 1 : 0,
+	};
+}
+
+function runCliInteractiveAssistantStopError() {
+	const width = 80;
+	const lengthEntry = { stopReason: "length" };
+	const abortEntry = {
+		stopReason: "aborted",
+		errorMessage: "Request was aborted",
+	};
+	const customEntry = {
+		stopReason: "aborted",
+		errorMessage: "provider cancelled",
+	};
+	const toolEntry = {
+		stopReason: "error",
+		errorMessage: "boom",
+		hasToolCalls: true,
+	};
+	const errorEntry = { stopReason: "error", errorMessage: "boom" };
+	return {
+		ase_len: leftoverStopErrorContains(lengthEntry, width, "truncated"),
+		ase_abort: leftoverStopErrorContains(abortEntry, width, "Operation aborted"),
+		ase_custom: leftoverStopErrorContains(customEntry, width, "provider cancelled"),
+		ase_tool: leftoverAssistantStopErrorStripped(toolEntry, width) === "" ? 1 : 0,
+		ase_err: leftoverStopErrorContains(errorEntry, width, "Error: boom"),
+	};
+}
+
+function runCliInteractiveUpdateNotificationBorder() {
+	const eight = leftoverNotificationBorderStripped(8);
+	const zero = leftoverNotificationBorderStripped(0);
+	const one = leftoverNotificationBorderStripped(1);
+	const forty = leftoverNotificationBorderStripped(40);
+	leftoverUpdateNotificationBorderLine(8);
+	leftoverUpdateNotificationBorderLine(0);
+	leftoverUpdateNotificationBorderLine(1);
+	leftoverUpdateNotificationBorderLine(40);
+	return {
+		unb_w: eight.length === 8 ? 1 : 0,
+		unb_ch: eight.length > 0 && [...eight].every((ch) => ch === "─") ? 1 : 0,
+		unb_0: zero === "" ? 1 : 0,
+		unb_1: one.length === 1 ? 1 : 0,
+		unb_n: forty.length,
 	};
 }
 
@@ -14780,6 +14906,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAssistantHasTools(),
 		...runCliInteractiveAssistantDisplayBlocks(),
 		...runCliInteractiveTranscriptSummaryLabel(),
+		...runCliInteractiveTranscriptSummaryText(),
+		...runCliInteractiveAssistantStopError(),
+		...runCliInteractiveUpdateNotificationBorder(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -14855,6 +14984,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.transcript_summary_label",
 			() => {
 				return () => runCliInteractiveTranscriptSummaryLabel();
+			},
+		),
+		transcript_summary_text: await collect(
+			"cli_interactive_controller.transcript_summary_text",
+			() => {
+				return () => runCliInteractiveTranscriptSummaryText();
+			},
+		),
+		assistant_stop_error: await collect(
+			"cli_interactive_controller.assistant_stop_error",
+			() => {
+				return () => runCliInteractiveAssistantStopError();
+			},
+		),
+		update_notification_border: await collect(
+			"cli_interactive_controller.update_notification_border",
+			() => {
+				return () => runCliInteractiveUpdateNotificationBorder();
 			},
 		),
 		observed,
@@ -28735,6 +28882,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts display block flatten",
 			"cli_interactive_controller.transcript_summary_label":
 				"packages/coding-agent/src/modes/interactive/components/skill-invocation-message.ts [skill] label",
+			"cli_interactive_controller.transcript_summary_text":
+				"packages/coding-agent/src/modes/interactive/components/custom-message.ts customMessageText",
+			"cli_interactive_controller.assistant_stop_error":
+				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts stopReason",
+			"cli_interactive_controller.update_notification_border":
+				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts warning DynamicBorder",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

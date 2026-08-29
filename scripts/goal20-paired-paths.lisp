@@ -231,6 +231,9 @@
 ;;;; 643. cli_interactive_controller assistant-message-has-tool-calls-p vs AssistantMessageComponent hasToolCalls
 ;;;; 644. cli_interactive_controller assistant-display-blocks vs assistant display block flatten
 ;;;; 645. cli_interactive_controller transcript-summary-label vs skill/branch/compaction [name] label
+;;;; 646. cli_interactive_controller transcript-summary-text vs customMessageText
+;;;; 647. cli_interactive_controller assistant-stop-error-lines vs AssistantMessageComponent stopReason
+;;;; 648. cli_interactive_controller update-notification-border-line vs warning DynamicBorder
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -587,6 +590,9 @@
     ("cli_interactive_controller.assistant_has_tools" . 50)
     ("cli_interactive_controller.assistant_display_blocks" . 50)
     ("cli_interactive_controller.transcript_summary_label" . 50)
+    ("cli_interactive_controller.transcript_summary_text" . 50)
+    ("cli_interactive_controller.assistant_stop_error" . 50)
+    ("cli_interactive_controller.update_notification_border" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14380,6 +14386,26 @@
    "tsl_comp" (nth 4 summary-label)))
 
 
+(defun leftover-transcript-text-stop-border-observed-pairs
+    (summary-text stop-error border)
+  (list
+   "tst_hi" (nth 0 summary-text)
+   "tst_empty" (nth 1 summary-text)
+   "tst_cjk" (nth 2 summary-text)
+   "tst_n" (nth 3 summary-text)
+   "tst_space" (nth 4 summary-text)
+   "ase_len" (nth 0 stop-error)
+   "ase_abort" (nth 1 stop-error)
+   "ase_custom" (nth 2 stop-error)
+   "ase_tool" (nth 3 stop-error)
+   "ase_err" (nth 4 stop-error)
+   "unb_w" (nth 0 border)
+   "unb_ch" (nth 1 border)
+   "unb_0" (nth 2 border)
+   "unb_1" (nth 3 border)
+   "unb_n" (nth 4 border)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14841,7 +14867,13 @@
         (leftover-assistant-display-blocks
           (run-cli-interactive-assistant-display-blocks))
         (leftover-transcript-summary-label
-          (run-cli-interactive-transcript-summary-label)))
+          (run-cli-interactive-transcript-summary-label))
+        (leftover-transcript-summary-text
+          (run-cli-interactive-transcript-summary-text))
+        (leftover-assistant-stop-error
+          (run-cli-interactive-assistant-stop-error))
+        (leftover-update-notification-border
+          (run-cli-interactive-update-notification-border)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14908,7 +14940,11 @@
              (leftover-transcript-has-tools-display-label-observed-pairs
               leftover-assistant-has-tools
               leftover-assistant-display-blocks
-              leftover-transcript-summary-label)))
+              leftover-transcript-summary-label)
+             (leftover-transcript-text-stop-border-observed-pairs
+              leftover-transcript-summary-text
+              leftover-assistant-stop-error
+              leftover-update-notification-border)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -14998,7 +15034,22 @@
      (collect "cli_interactive_controller.transcript_summary_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-transcript-summary-label)))))))
+                  (run-cli-interactive-transcript-summary-label))))
+     "transcript_summary_text"
+     (collect "cli_interactive_controller.transcript_summary_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-transcript-summary-text))))
+     "assistant_stop_error"
+     (collect "cli_interactive_controller.assistant_stop_error"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-assistant-stop-error))))
+     "update_notification_border"
+     (collect "cli_interactive_controller.update_notification_border"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-update-notification-border)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15192,6 +15243,99 @@
      (if (string= empty "[]") 1 0)
      (length skill)
      (if (string= compaction "[compaction]") 1 0))))
+
+(defun leftover-transcript-summary-text-stripped (text)
+  (cadr-cli::strip-ansi
+   (cadr-cli::transcript-summary-text text)))
+
+(defun run-cli-interactive-transcript-summary-text ()
+  (let ((hello (leftover-transcript-summary-text-stripped "hello"))
+        (empty (leftover-transcript-summary-text-stripped ""))
+        (cjk (leftover-transcript-summary-text-stripped "你好"))
+        (space (leftover-transcript-summary-text-stripped "  x  ")))
+    (cadr-cli::transcript-summary-text "hello")
+    (cadr-cli::transcript-summary-text "")
+    (cadr-cli::transcript-summary-text "你好")
+    (cadr-cli::transcript-summary-text "  x  ")
+    (list
+     (if (string= hello "hello") 1 0)
+     (if (string= empty "") 1 0)
+     (if (string= cjk "你好") 1 0)
+     (length hello)
+     (if (string= space "  x  ") 1 0))))
+
+(defun leftover-assistant-stop-error-stripped (entry width)
+  (let ((lines
+          (cadr-cli::assistant-stop-error-lines entry width)))
+    (if (null lines)
+        ""
+        (cadr-cli::strip-ansi
+         (format nil "~{~A~^~%~}" lines)))))
+
+(defun leftover-stop-error-contains (entry width fragment)
+  (if (search fragment
+              (leftover-assistant-stop-error-stripped entry width))
+      1
+      0))
+
+(defun run-cli-interactive-assistant-stop-error ()
+  (let ((width 80)
+        (length-entry
+          (cadr-cli::make-tui-entry :stop-reason :length))
+        (abort-entry
+          (cadr-cli::make-tui-entry
+           :stop-reason :aborted
+           :error-message "Request was aborted"))
+        (custom-entry
+          (cadr-cli::make-tui-entry
+           :stop-reason :aborted
+           :error-message "provider cancelled"))
+        (tool-entry
+          (cadr-cli::make-tui-entry
+           :stop-reason :error
+           :error-message "boom"
+           :has-tool-calls-p t))
+        (error-entry
+          (cadr-cli::make-tui-entry
+           :stop-reason :error
+           :error-message "boom")))
+    (list
+     (leftover-stop-error-contains
+      length-entry width "truncated")
+     (leftover-stop-error-contains
+      abort-entry width "Operation aborted")
+     (leftover-stop-error-contains
+      custom-entry width "provider cancelled")
+     (if (string=
+          (leftover-assistant-stop-error-stripped tool-entry width)
+          "")
+         1
+         0)
+     (leftover-stop-error-contains
+      error-entry width "Error: boom"))))
+
+(defun leftover-notification-border-stripped (width)
+  (cadr-cli::strip-ansi
+   (cadr-cli::update-notification-border-line width)))
+
+(defun run-cli-interactive-update-notification-border ()
+  (let ((eight (leftover-notification-border-stripped 8))
+        (zero (leftover-notification-border-stripped 0))
+        (one (leftover-notification-border-stripped 1))
+        (forty (leftover-notification-border-stripped 40)))
+    (cadr-cli::update-notification-border-line 8)
+    (cadr-cli::update-notification-border-line 0)
+    (cadr-cli::update-notification-border-line 1)
+    (cadr-cli::update-notification-border-line 40)
+    (list
+     (if (= (length eight) 8) 1 0)
+     (if (and (plusp (length eight))
+              (every (lambda (ch) (char= ch #\─)) eight))
+         1
+         0)
+     (if (string= zero "") 1 0)
+     (if (= (length one) 1) 1 0)
+     (length forty))))
 
 (defun session-search-fixture-records ()
   (list
@@ -27482,6 +27626,12 @@
       "src/cadr-cli/interactive/transcript.lisp assistant-display-blocks"
       "cli_interactive_controller.transcript_summary_label"
       "src/cadr-cli/interactive/transcript.lisp transcript-summary-label"
+      "cli_interactive_controller.transcript_summary_text"
+      "src/cadr-cli/interactive/transcript.lisp transcript-summary-text"
+      "cli_interactive_controller.assistant_stop_error"
+      "src/cadr-cli/interactive/transcript.lisp assistant-stop-error-lines"
+      "cli_interactive_controller.update_notification_border"
+      "src/cadr-cli/interactive/transcript.lisp update-notification-border-line"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
