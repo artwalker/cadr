@@ -404,6 +404,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_move": 50,
 	"cli_selectors.thinking_selector_handle_raw_input": 50,
 	"cli_selectors.thinking_selector_handle_event": 50,
+	"cli_selectors.thinking_selector_selected_level": 50,
+	"cli_selectors.thinking_level_description_line": 50,
+	"cli_selectors.render_thinking_selector": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22710,6 +22713,133 @@ function runCliSelectorsThinkingSelectorHandleEvent() {
 }
 
 
+function thinkingLevelDescriptionLine(level, defaultLevel) {
+	const base = thinkingDescriptionsPi[level] ?? "";
+	if (defaultLevel && level === defaultLevel) {
+		return `${base} · default`;
+	}
+	return base;
+}
+
+
+function runCliSelectorsThinkingSelectorSelectedLevel() {
+	const st = (selected, levels = ["off", "low", "high"]) => ({
+		levels: levels.slice(),
+		filteredLevels: levels.slice(),
+		filteredCount: levels.length,
+		selected,
+	});
+	return {
+		tssl_first: thinkingLevelName(thinkingSelectorSelectedLevel(st(0))),
+		tssl_mid: thinkingLevelName(thinkingSelectorSelectedLevel(st(1))),
+		tssl_last: thinkingLevelName(thinkingSelectorSelectedLevel(st(2))),
+		tssl_empty: thinkingLevelName(thinkingSelectorSelectedLevel(st(0, []))),
+		tssl_oob: thinkingLevelName(thinkingSelectorSelectedLevel(st(9))),
+	};
+}
+
+
+function runCliSelectorsThinkingLevelDescriptionLine() {
+	return {
+		tsdl_off_def: thinkingLevelDescriptionLine("off", "off"),
+		tsdl_high: thinkingLevelDescriptionLine("high", "off"),
+		tsdl_high_def: thinkingLevelDescriptionLine("high", "high"),
+		tsdl_bogus: thinkingLevelDescriptionLine("bogus", null),
+		tsdl_min: thinkingLevelDescriptionLine("minimal", "high"),
+	};
+}
+
+
+function thinkingRenderSelectorState({
+	selected = 0,
+	query = "",
+	defaultLevel = null,
+	levels = ["off", "low", "high"],
+} = {}) {
+	return {
+		levels: levels.slice(),
+		currentLevel: "high",
+		defaultLevel,
+		query,
+		filteredLevels: levels.slice(),
+		filterQuery: "",
+		filteredCount: levels.length,
+		selected,
+		keybindings: GOAL20_THINKING_DEFAULT_KB,
+	};
+}
+
+
+function renderThinkingSelector(state, width) {
+	const levels = state.filteredLevels || [];
+	const count = levels.length;
+	const slice = visibleSliceSummary(count, state.selected, 10);
+	const start = slice[0];
+	const visible = levels.slice(start, slice[1]);
+	const body = [];
+	if (visible.length === 0) {
+		body.push("  No matching levels");
+	} else {
+		visible.forEach((level, i) => {
+			const index = start + i;
+			const selectedP = index === state.selected;
+			const currentP = level === state.currentLevel;
+			const label = thinkingLevelLabel(level);
+			const description = thinkingLevelDescriptionLine(level, state.defaultLevel);
+			body.push(
+				`${selectedP ? "→ " : "  "}${label}  ${description}${currentP ? " ✓" : ""}`,
+			);
+		});
+	}
+	if (state.filteredCount > visible.length) {
+		body.push(`  (${state.selected + 1}/${state.filteredCount})`);
+	}
+	const selectedLevel = thinkingSelectorSelectedLevel(state);
+	if (selectedLevel) {
+		body.push("");
+		body.push(`  ${thinkingLevelDescriptionLine(selectedLevel, state.defaultLevel)}`);
+	}
+	const kb = thinkingSelectorKeybindingsPi(state);
+	const cycleKeys = kb.getKeys("app.thinking.cycle");
+	const cycle = cycleKeys.length ? cycleKeys[0] : "ctrl+t";
+	return `Thinking Level|${cycle}|${state.query}|${body.join(";")}|${width}`;
+}
+
+
+function thinkingSelectorRenderEncoded(state, width) {
+	renderThinkingSelector(state, width);
+	return `${thinkingLevelName(thinkingSelectorSelectedLevel(state))}|${state.selected}|${width}|${state.query.length}|${state.filteredCount}`;
+}
+
+
+function runCliSelectorsRenderThinkingSelector() {
+	const many = [
+		"off",
+		"minimal",
+		"low",
+		"medium",
+		"high",
+		"xhigh",
+		"max",
+		"foo",
+		"bar",
+		"baz",
+		"qux",
+		"zzz",
+	];
+	return {
+		tsrd_default: thinkingSelectorRenderEncoded(thinkingRenderSelectorState(), 40),
+		tsrd_sel: thinkingSelectorRenderEncoded(thinkingRenderSelectorState({ selected: 2 }), 40),
+		tsrd_query: thinkingSelectorRenderEncoded(thinkingRenderSelectorState({ query: "hi" }), 40),
+		tsrd_empty: thinkingSelectorRenderEncoded(thinkingRenderSelectorState({ levels: [] }), 40),
+		tsrd_wide: thinkingSelectorRenderEncoded(
+			thinkingRenderSelectorState({ levels: many, selected: 11 }),
+			80,
+		),
+	};
+}
+
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -22910,6 +23040,9 @@ async function measureCliSelectorsSessionSearch() {
 	const thinkingSelectorMoveResults = runCliSelectorsThinkingSelectorMove();
 	const thinkingSelectorHandleRawInputResults = runCliSelectorsThinkingSelectorHandleRawInput();
 	const thinkingSelectorHandleEventResults = runCliSelectorsThinkingSelectorHandleEvent();
+	const thinkingSelectorSelectedLevelResults = runCliSelectorsThinkingSelectorSelectedLevel();
+	const thinkingLevelDescriptionLineResults = runCliSelectorsThinkingLevelDescriptionLine();
+	const renderThinkingSelectorResults = runCliSelectorsRenderThinkingSelector();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -23271,6 +23404,9 @@ async function measureCliSelectorsSessionSearch() {
 		...thinkingSelectorMoveResults,
 		...thinkingSelectorHandleRawInputResults,
 		...thinkingSelectorHandleEventResults,
+		...thinkingSelectorSelectedLevelResults,
+		...thinkingLevelDescriptionLineResults,
+		...renderThinkingSelectorResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -24043,6 +24179,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.thinking_selector_handle_event",
 			() => {
 				return () => runCliSelectorsThinkingSelectorHandleEvent();
+			},
+		),
+		thinking_selector_selected_level: await collect(
+			"cli_selectors.thinking_selector_selected_level",
+			() => {
+				return () => runCliSelectorsThinkingSelectorSelectedLevel();
+			},
+		),
+		thinking_level_description_line: await collect(
+			"cli_selectors.thinking_level_description_line",
+			() => {
+				return () => runCliSelectorsThinkingLevelDescriptionLine();
+			},
+		),
+		render_thinking_selector: await collect(
+			"cli_selectors.render_thinking_selector",
+			() => {
+				return () => runCliSelectorsRenderThinkingSelector();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -26939,6 +27093,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts handleInput keybindings",
 			"cli_selectors.thinking_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts typed input event dispatch",
+			"cli_selectors.thinking_selector_selected_level":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts selected SelectList item",
+			"cli_selectors.thinking_level_description_line":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts LEVEL_DESCRIPTIONS · default suffix",
+			"cli_selectors.render_thinking_selector":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts ThinkingSelectorComponent layout",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

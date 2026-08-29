@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_selected_level`
+  (`thinking-selector-selected-level` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp` vs selected SelectList
+  item). Observed `tssl_first` / `tssl_mid` / `tssl_last` / `tssl_empty` /
+  `tssl_oob` exact. n=5 **0.608×** (0.467 / 0.768 µs) on host `cursor`,
+  ceiling 8.0. cadr leads. Measure-only leftover (Pair 610). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thinking_level_description_line`
+  (`thinking-level-description-line` vs LEVEL_DESCRIPTIONS · default
+  suffix). Observed `tsdl_off_def` / `tsdl_high` / `tsdl_high_def` /
+  `tsdl_bogus` / `tsdl_min` exact. n=5 **1.155×** (0.268 / 0.232 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 611). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.render_thinking_selector`
+  (`render-thinking-selector` vs ThinkingSelectorComponent layout). Observed
+  `tsrd_default` / `tsrd_sel` / `tsrd_query` / `tsrd_empty` / `tsrd_wide`
+  exact. n=5 **44.726×** (316.671 / 7.080 µs) on host `cursor`, ceiling
+  60.0 first-freeze headroom. Measure-only leftover (Pair 612). Over-1×
+  booked. Same commit no optimize. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.thinking_selector_move`
   (`thinking-selector-move` on
   `src/cadr-cli/interactive/selectors/thinking.lisp` vs wrap selected

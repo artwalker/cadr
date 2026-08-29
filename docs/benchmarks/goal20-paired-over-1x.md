@@ -420,4 +420,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thinking_selector_apply_filter` | 13.399 | 11.664 | 1.149× | 8.00× | measure-only leftover 604; `thinking-selector-apply-filter` vs applyFilter | invent pause；地板优化另刀 |
 | `cli_selectors.thinking_selector_move` | 0.637 | 0.471 | 1.353× | 8.00× | measure-only leftover 607; `thinking-selector-move` vs wrap selected index | invent pause；地板优化另刀 |
 | `cli_selectors.thinking_selector_handle_raw_input` | 144.448 | 6.908 | 20.910× | 30.00× | measure-only leftover 608; `thinking-selector-handle-raw-input` vs handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `cli_selectors.thinking_level_description_line` | 0.268 | 0.232 | 1.155× | 8.00× | measure-only leftover 611; `thinking-level-description-line` vs LEVEL_DESCRIPTIONS · default | invent pause；地板优化另刀 |
+| `cli_selectors.render_thinking_selector` | 316.671 | 7.080 | 44.726× | 60.00× | measure-only leftover 612; `render-thinking-selector` vs ThinkingSelectorComponent layout; first-freeze headroom 60.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -758,6 +758,9 @@
     ("cli_selectors.thinking_selector_move" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
+    ("cli_selectors.thinking_selector_selected_level" . 50)
+    ("cli_selectors.thinking_level_description_line" . 50)
+    ("cli_selectors.render_thinking_selector" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15668,6 +15671,114 @@
    "tshe_tab" (nth 4 handle-event)))
 
 
+(defun thinking-selected-level-state (selected &optional (levels (list :off :low :high)))
+  (cadr-cli::%make-thinking-selector-state
+   :levels levels
+   :filtered-levels levels
+   :filtered-count (length levels)
+   :selected selected))
+
+
+(defun encode-thinking-selector-selected-level (state)
+  (thinking-level-name
+   (cadr-cli::thinking-selector-selected-level state)))
+
+
+(defun run-cli-selectors-thinking-selector-selected-level ()
+  (list
+   (encode-thinking-selector-selected-level
+    (thinking-selected-level-state 0))
+   (encode-thinking-selector-selected-level
+    (thinking-selected-level-state 1))
+   (encode-thinking-selector-selected-level
+    (thinking-selected-level-state 2))
+   (encode-thinking-selector-selected-level
+    (thinking-selected-level-state 0 nil))
+   (encode-thinking-selector-selected-level
+    (thinking-selected-level-state 9))))
+
+
+(defun encode-thinking-level-description-line (level default-level)
+  (or
+   (cadr-cli::thinking-level-description-line level default-level)
+   ""))
+
+
+(defun run-cli-selectors-thinking-level-description-line ()
+  (list
+   (encode-thinking-level-description-line :off :off)
+   (encode-thinking-level-description-line :high :off)
+   (encode-thinking-level-description-line :high :high)
+   (encode-thinking-level-description-line :bogus nil)
+   (encode-thinking-level-description-line :minimal :high)))
+
+
+(defun thinking-render-selector-state
+    (&key (selected 0) (query "") default-level
+       (levels (list :off :low :high)))
+  (cadr-cli::%make-thinking-selector-state
+   :levels levels
+   :current-level :high
+   :default-level default-level
+   :query query
+   :filtered-levels levels
+   :filter-query ""
+   :filtered-count (length levels)
+   :selected selected
+   :keybindings
+   cadr-cli::*default-thinking-selector-keybindings*))
+
+
+(defun encode-thinking-selector-render (state width)
+  (cadr-cli::render-thinking-selector state width)
+  (format
+   nil "~A|~D|~D|~D|~D"
+   (thinking-level-name
+    (cadr-cli::thinking-selector-selected-level state))
+   (cadr-cli::thinking-selector-state-selected state)
+   width
+   (length (cadr-cli::thinking-selector-state-query state))
+   (cadr-cli::thinking-selector-state-filtered-count state)))
+
+
+(defun run-cli-selectors-render-thinking-selector ()
+  (let ((many
+          (list :off :minimal :low :medium :high :xhigh :max
+                :foo :bar :baz :qux :zzz)))
+    (list
+     (encode-thinking-selector-render
+      (thinking-render-selector-state) 40)
+     (encode-thinking-selector-render
+      (thinking-render-selector-state :selected 2) 40)
+     (encode-thinking-selector-render
+      (thinking-render-selector-state :query "hi") 40)
+     (encode-thinking-selector-render
+      (thinking-render-selector-state :levels nil) 40)
+     (encode-thinking-selector-render
+      (thinking-render-selector-state :levels many :selected 11)
+      80))))
+
+
+(defun thinking-selector-selected-desc-render-observed-pairs
+    (selected-level description-line render)
+  (list
+   "tssl_first" (nth 0 selected-level)
+   "tssl_mid" (nth 1 selected-level)
+   "tssl_last" (nth 2 selected-level)
+   "tssl_empty" (nth 3 selected-level)
+   "tssl_oob" (nth 4 selected-level)
+   "tsdl_off_def" (nth 0 description-line)
+   "tsdl_high" (nth 1 description-line)
+   "tsdl_high_def" (nth 2 description-line)
+   "tsdl_bogus" (nth 3 description-line)
+   "tsdl_min" (nth 4 description-line)
+   "tsrd_default" (nth 0 render)
+   "tsrd_sel" (nth 1 render)
+   "tsrd_query" (nth 2 render)
+   "tsrd_empty" (nth 3 render)
+   "tsrd_wide" (nth 4 render)))
+
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list
@@ -21615,6 +21726,12 @@
           (run-cli-selectors-thinking-selector-handle-raw-input))
         (leftover-thinking-handle-event
           (run-cli-selectors-thinking-selector-handle-event))
+        (leftover-thinking-selected-level
+          (run-cli-selectors-thinking-selector-selected-level))
+        (leftover-thinking-description-line
+          (run-cli-selectors-thinking-level-description-line))
+        (leftover-thinking-render
+          (run-cli-selectors-render-thinking-selector))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -22390,6 +22507,8 @@
               leftover-thinking-apply-filter leftover-thinking-clamp leftover-thinking-select-current)
              (thinking-selector-move-handle-observed-pairs
               leftover-thinking-move leftover-thinking-handle-raw leftover-thinking-handle-event)
+             (thinking-selector-selected-desc-render-observed-pairs
+              leftover-thinking-selected-level leftover-thinking-description-line leftover-thinking-render)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -23321,7 +23440,22 @@
      (collect "cli_selectors.thinking_selector_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-thinking-selector-handle-event)))))))
+                  (run-cli-selectors-thinking-selector-handle-event))))
+     "thinking_selector_selected_level"
+     (collect "cli_selectors.thinking_selector_selected_level"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-selected-level))))
+     "thinking_level_description_line"
+     (collect "cli_selectors.thinking_level_description_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-description-line))))
+     "render_thinking_selector"
+     (collect "cli_selectors.render_thinking_selector"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-thinking-selector)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -25997,6 +26131,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input"
       "cli_selectors.thinking_selector_handle_event"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event"
+      "cli_selectors.thinking_selector_selected_level"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
+      "cli_selectors.thinking_level_description_line"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line"
+      "cli_selectors.render_thinking_selector"
+      "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

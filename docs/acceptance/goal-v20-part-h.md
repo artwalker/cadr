@@ -7600,6 +7600,30 @@ Leftover sibling of Pair 607 on the same `thinking.lisp` hole. Timed work is raw
 
 Leftover sibling of Pairs 607–608 on the same `thinking.lisp` hole. Timed work is `:down` / `:enter` / `:escape` / `:text "h"` / `:tab` otherwise. Observed `tshe_down` / `tshe_enter` / `tshe_esc` / `tshe_text` / `tshe_tab` are exact. First n=5 freeze **0.834×** (3.312 / 3.974 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 610 — `cli_selectors` (thinking_selector_selected_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_selected_level` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | selected SelectList item (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 607–609 on the same `thinking.lisp` hole. Timed work is `nth`/`[]` of filtered-levels at selected (first / mid / last / empty / out-of-range). Observed `tssl_first` / `tssl_mid` / `tssl_last` / `tssl_empty` / `tssl_oob` are exact. First n=5 freeze **0.608×** (0.467 / 0.768 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 611 — `cli_selectors` (thinking_level_description_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_level_description_line` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | LEVEL_DESCRIPTIONS · default suffix (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pair 610 on the same `thinking.lisp` hole. Timed work is description plus optional ` · default` (off-as-default / high / high-as-default / unknown / minimal). Observed `tsdl_off_def` / `tsdl_high` / `tsdl_high_def` / `tsdl_bogus` / `tsdl_min` are exact. First n=5 freeze **1.155×** (0.268 / 0.232 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 612 — `cli_selectors` (render_thinking_selector)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_thinking_selector` | `render-thinking-selector` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | ThinkingSelectorComponent layout (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 610–611 on the same `thinking.lisp` hole. Timed work is `render-thinking-selector` (default / selected-last / query / empty / 12-level scroll at width 80). Observed `tsrd_default` / `tsrd_sel` / `tsrd_query` / `tsrd_empty` / `tsrd_wide` are exact. First n=5 freeze **44.726×** (316.671 / 7.080 µs) on host `cursor`, ceiling 60.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
