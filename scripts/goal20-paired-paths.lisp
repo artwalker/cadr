@@ -477,6 +477,9 @@
     ("package_manager.resource_specification" . 50)
     ("package_manager.config_glob_regex" . 50)
     ("package_manager.entry_target" . 50)
+    ("package_manager.autoload_disabled" . 50)
+    ("package_manager.package_entry_filter" . 50)
+    ("package_manager.item_matches" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4613,6 +4616,76 @@
     (string= (leftover-config-selector-entry-target "") ""))
    5))
 
+(defun leftover-config-package-entry-autoload-disabled-p (entry)
+  (cadr-cli::config-package-entry-autoload-disabled-p entry))
+
+(defun leftover-config-package-entry-filter (entry type)
+  (cadr-cli::config-package-entry-filter entry type))
+
+(defun leftover-config-selector-item-matches-p (item query)
+  (cadr-cli::config-selector-item-matches-p item query))
+
+(defun leftover-config-resource-item (path type display-name)
+  (cadr-cli::make-config-resource-item
+   :path (parse-namestring path)
+   :type type
+   :scope :global
+   :base-directory (parse-namestring "/tmp/")
+   :display-name display-name))
+
+(defun run-package-manager-autoload-disabled ()
+  (let ((disabled (make-hash-table :test #'equal))
+        (enabled (make-hash-table :test #'equal))
+        (missing (make-hash-table :test #'equal)))
+    (setf (gethash "autoload" disabled) nil)
+    (setf (gethash "autoload" enabled) t)
+    (list
+     (package-manager-truth
+      (leftover-config-package-entry-autoload-disabled-p disabled))
+     (package-manager-truth
+      (not (leftover-config-package-entry-autoload-disabled-p enabled)))
+     (package-manager-truth
+      (not (leftover-config-package-entry-autoload-disabled-p missing)))
+     (package-manager-truth
+      (not (leftover-config-package-entry-autoload-disabled-p "x")))
+     5)))
+
+(defun run-package-manager-package-entry-filter ()
+  (let ((vec (make-hash-table :test #'equal))
+        (lst (make-hash-table :test #'equal))
+        (miss (make-hash-table :test #'equal))
+        (bad (make-hash-table :test #'equal)))
+    (setf (gethash "extensions" vec) (vector "a" "b"))
+    (setf (gethash "skills" lst) '("x"))
+    (setf (gethash "extensions" bad) 3)
+    (list
+     (package-manager-truth
+      (= (length (leftover-config-package-entry-filter vec :extensions)) 2))
+     (package-manager-truth
+      (= (length (leftover-config-package-entry-filter lst :skills)) 1))
+     (package-manager-truth
+      (null (leftover-config-package-entry-filter miss :extensions)))
+     (package-manager-truth
+      (null (leftover-config-package-entry-filter bad :extensions)))
+     5)))
+
+(defun run-package-manager-item-matches ()
+  (let ((item
+          (leftover-config-resource-item
+           "/tmp/hello.lisp" :extensions "hello.lisp")))
+    (list
+     (package-manager-truth
+      (leftover-config-selector-item-matches-p item ""))
+     (package-manager-truth
+      (leftover-config-selector-item-matches-p item "HELLO"))
+     (package-manager-truth
+      (leftover-config-selector-item-matches-p item "tmp"))
+     (package-manager-truth
+      (leftover-config-selector-item-matches-p item "ext"))
+     (package-manager-truth
+      (not (leftover-config-selector-item-matches-p item "zzz")))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -4699,7 +4772,10 @@
            (settings-array (run-package-manager-settings-array))
            (resource-specification (run-package-manager-resource-specification))
            (config-glob-regex (run-package-manager-config-glob-regex))
-           (entry-target (run-package-manager-entry-target)))
+           (entry-target (run-package-manager-entry-target))
+           (autoload-disabled (run-package-manager-autoload-disabled))
+           (package-entry-filter (run-package-manager-package-entry-filter))
+           (item-matches (run-package-manager-item-matches)))
       (json-object
        "observed"
        (json-object
@@ -4764,7 +4840,23 @@
         "cet_minus" (nth 2 entry-target)
         "cet_plain" (nth 3 entry-target)
         "cet_empty" (nth 4 entry-target)
-        "cet_n" (nth 5 entry-target))
+        "cet_n" (nth 5 entry-target)
+        "ad_nil" (nth 0 autoload-disabled)
+        "ad_true" (nth 1 autoload-disabled)
+        "ad_miss" (nth 2 autoload-disabled)
+        "ad_notht" (nth 3 autoload-disabled)
+        "ad_n" (nth 4 autoload-disabled)
+        "pef_vec" (nth 0 package-entry-filter)
+        "pef_list" (nth 1 package-entry-filter)
+        "pef_miss" (nth 2 package-entry-filter)
+        "pef_bad" (nth 3 package-entry-filter)
+        "pef_n" (nth 4 package-entry-filter)
+        "im_empty" (nth 0 item-matches)
+        "im_name" (nth 1 item-matches)
+        "im_path" (nth 2 item-matches)
+        "im_type" (nth 3 item-matches)
+        "im_miss" (nth 4 item-matches)
+        "im_n" (nth 5 item-matches))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -4825,7 +4917,22 @@
        (collect "package_manager.entry_target"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-entry-target))))))))
+                    (run-package-manager-entry-target))))
+       "autoload_disabled"
+       (collect "package_manager.autoload_disabled"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-autoload-disabled))))
+       "package_entry_filter"
+       (collect "package_manager.package_entry_filter"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-entry-filter))))
+       "item_matches"
+       (collect "package_manager.item_matches"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-item-matches))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30037,6 +30144,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-glob-regex"
       "package_manager.entry_target"
       "src/cadr-cli/packages/config-selector.lisp config-selector-entry-target"
+      "package_manager.autoload_disabled"
+      "src/cadr-cli/packages/config-selector.lisp config-package-entry-autoload-disabled-p"
+      "package_manager.package_entry_filter"
+      "src/cadr-cli/packages/config-selector.lisp config-package-entry-filter"
+      "package_manager.item_matches"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-item-matches-p"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
