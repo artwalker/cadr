@@ -7768,6 +7768,30 @@ Leftover sibling of Pair 628. Timed work is raw key dispatch (arrow-down / arrow
 
 Leftover sibling of Pairs 628–629. Timed work is selector-frame layout (three items / one / empty / narrow / hit initial). Observed `umrd_three` / `umrd_one` / `umrd_empty` / `umrd_narrow` / `umrd_hit` are exact. First n=5 freeze **65.009×** (265.302 / 4.081 µs) on host `cursor`, ceiling 100.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 631 — `cli_selectors` (make_models_selector_keybindings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_models_selector_keybindings` | `make-models-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | KEYBINDINGS `app.models.*` KeybindingsManager constructor (`packages/coding-agent/src/core/keybindings.ts`) |
+
+Leftover sibling on the `models.lisp` hole after Pair 600 (`make-model-selector-state`). Timed work is default/custom first-key lookup (save / enableAll / confirm / custom save / reorderUp). Observed `mmskb_save` / `mmskb_enable` / `mmskb_confirm` / `mmskb_custom` / `mmskb_reorder` are exact. First n=5 freeze **1.496×** (32.105 / 21.468 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 632 — `cli_selectors` (make_scoped_models_selector_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_scoped_models_selector_state` | `make-scoped-models-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | ScopedModelsSelectorComponent constructor (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 631. Timed work is constructor copy/isolation (all / partial enabled / empty / refresh status / copy length). Observed `msmksc_all` / `msmksc_partial` / `msmksc_empty` / `msmksc_status` / `msmksc_copy` are exact. First n=5 freeze **20.997×** (97.005 / 4.620 µs) on host `cursor`, ceiling 40.0 first-freeze headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 633 — `cli_selectors` (render_model_selector)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_model_selector` | `render-model-selector` (`src/cadr-cli/interactive/selectors/models.lisp`) | ModelSelectorComponent layout (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pairs 631–632. Timed work is selector-frame layout (default / selected-2 / scoped / narrow / miss query). Observed `rms_default` / `rms_sel2` / `rms_scoped` / `rms_narrow` / `rms_miss` are exact. First n=5 freeze **26.593×** (247.317 / 9.300 µs) on host `cursor`, ceiling 50.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

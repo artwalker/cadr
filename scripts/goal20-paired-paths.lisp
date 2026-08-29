@@ -779,6 +779,9 @@
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
+    ("cli_selectors.make_models_selector_keybindings" . 50)
+    ("cli_selectors.make_scoped_models_selector_state" . 50)
+    ("cli_selectors.render_model_selector" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -22101,6 +22104,118 @@
      (encode-make-model-selector-state one))))
 
 
+(defun models-selector-keybindings-first-key (manager name)
+  (or (first (cadr-tui:keybinding-keys manager name)) name))
+
+
+(defun run-cli-selectors-make-models-selector-keybindings ()
+  (let ((default (cadr-cli::make-models-selector-keybindings))
+        (custom
+          (cadr-cli::make-models-selector-keybindings
+           '(("app.models.save" . ("ctrl+k"))))))
+    (list
+     (models-selector-keybindings-first-key default "app.models.save")
+     (models-selector-keybindings-first-key default "app.models.enableAll")
+     (models-selector-keybindings-first-key default "tui.select.confirm")
+     (models-selector-keybindings-first-key custom "app.models.save")
+     (models-selector-keybindings-first-key default "app.models.reorderUp"))))
+
+
+(defun encode-make-scoped-models-selector-state
+    (models &key (enabled-ids :all) refresh-status-message)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids
+           :refresh-status-message refresh-status-message)))
+    (format
+     nil "~D|~D|~D|~A|~A"
+     (length (cadr-cli::scoped-models-selector-state-items state))
+     (cadr-cli::scoped-models-selector-state-selected state)
+     (length (cadr-cli::scoped-models-selector-state-all-ids state))
+     (let ((enabled
+             (cadr-cli::scoped-models-selector-state-enabled-ids state)))
+       (if (eq enabled :all)
+           "all"
+           (format nil "~{~A~^,~}" enabled)))
+     (or (cadr-cli::scoped-models-selector-state-refresh-status-message
+          state)
+         ""))))
+
+
+(defun run-cli-selectors-make-scoped-models-selector-state ()
+  (let* ((models (make-model-selector-test-models))
+         (orig (copy-list models))
+         (extra
+           (make-model-selector-search-fixture
+            :id "grok" :provider :xai :name "Grok"))
+         (copy-state
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models orig)))
+    (setf (cdr orig) (list extra))
+    (list
+     (encode-make-scoped-models-selector-state models)
+     (encode-make-scoped-models-selector-state
+      models
+      :enabled-ids
+      (list "google/gemini-2.5-pro" "openai/gpt-4o"))
+     (encode-make-scoped-models-selector-state nil)
+     (encode-make-scoped-models-selector-state
+      models :refresh-status-message "Refreshing…")
+     (write-to-string
+      (length
+       (cadr-cli::scoped-models-selector-state-all-models copy-state))))))
+
+
+(defun encode-render-model-selector (state width)
+  (cadr-cli::render-model-selector state width)
+  (format
+   nil "~D|~D|~D|~A|~A"
+   (cadr-cli::model-selector-state-selected state)
+   (cadr-cli::model-selector-state-filtered-count state)
+   width
+   (string-downcase
+    (symbol-name (cadr-cli::model-selector-state-scope state)))
+   (let ((model
+           (cadr-cli::model-selector-state-current-model state)))
+     (if model
+         (cadr-cli::qualified-model-id model)
+         ""))))
+
+
+(defun run-cli-selectors-render-model-selector ()
+  (let ((scoped (make-model-selector-scoped-test-models)))
+    (list
+     (encode-render-model-selector (make-model-selector-ui-state) 80)
+     (encode-render-model-selector
+      (make-model-selector-ui-state :selected 2) 80)
+     (encode-render-model-selector
+      (make-model-selector-ui-state :scoped-models scoped) 80)
+     (encode-render-model-selector (make-model-selector-ui-state) 40)
+     (encode-render-model-selector
+      (make-model-selector-ui-state :query "nope") 80))))
+
+
+(defun models-keybindings-scoped-render-observed-pairs
+    (keybindings scoped-state render)
+  (list
+   "mmskb_save" (nth 0 keybindings)
+   "mmskb_enable" (nth 1 keybindings)
+   "mmskb_confirm" (nth 2 keybindings)
+   "mmskb_custom" (nth 3 keybindings)
+   "mmskb_reorder" (nth 4 keybindings)
+   "msmksc_all" (nth 0 scoped-state)
+   "msmksc_partial" (nth 1 scoped-state)
+   "msmksc_empty" (nth 2 scoped-state)
+   "msmksc_status" (nth 3 scoped-state)
+   "msmksc_copy" (nth 4 scoped-state)
+   "rms_default" (nth 0 render)
+   "rms_sel2" (nth 1 render)
+   "rms_scoped" (nth 2 render)
+   "rms_narrow" (nth 3 render)
+   "rms_miss" (nth 4 render)))
+
+
 (defun scoped-models-finish-key-binding-observed-pairs
     (finish-refresh key-p binding-label)
   (list
@@ -22615,6 +22730,12 @@
           (run-cli-selectors-user-message-handle-raw))
         (leftover-user-message-render
           (run-cli-selectors-render-user-message-selector))
+        (leftover-make-models-kb
+          (run-cli-selectors-make-models-selector-keybindings))
+        (leftover-make-scoped-state
+          (run-cli-selectors-make-scoped-models-selector-state))
+        (leftover-render-model-selector
+          (run-cli-selectors-render-model-selector))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -23406,6 +23527,10 @@
               leftover-user-message-handle-event
               leftover-user-message-handle-raw
               leftover-user-message-render)
+             (models-keybindings-scoped-render-observed-pairs
+              leftover-make-models-kb
+              leftover-make-scoped-state
+              leftover-render-model-selector)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -24442,7 +24567,22 @@
      (collect "cli_selectors.render_user_message_selector"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-render-user-message-selector)))))))
+                  (run-cli-selectors-render-user-message-selector))))
+     "make_models_selector_keybindings"
+     (collect "cli_selectors.make_models_selector_keybindings"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-models-selector-keybindings))))
+     "make_scoped_models_selector_state"
+     (collect "cli_selectors.make_scoped_models_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-scoped-models-selector-state))))
+     "render_model_selector"
+     (collect "cli_selectors.render_model_selector"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-model-selector)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -27200,6 +27340,12 @@
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input"
       "cli_selectors.render_user_message_selector"
       "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector"
+      "cli_selectors.make_models_selector_keybindings"
+      "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings"
+      "cli_selectors.make_scoped_models_selector_state"
+      "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state"
+      "cli_selectors.render_model_selector"
+      "src/cadr-cli/interactive/selectors/models.lisp render-model-selector"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

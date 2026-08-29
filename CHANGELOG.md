@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.make_models_selector_keybindings`
+  (`make-models-selector-keybindings` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs
+  KEYBINDINGS `app.models.*` KeybindingsManager constructor). Observed
+  `mmskb_save` / `mmskb_enable` / `mmskb_confirm` / `mmskb_custom` /
+  `mmskb_reorder` exact. n=5 **1.496×** (32.105 / 21.468 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 631). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_scoped_models_selector_state`
+  (`make-scoped-models-selector-state` vs ScopedModelsSelectorComponent
+  constructor). Observed `msmksc_all` / `msmksc_partial` / `msmksc_empty` /
+  `msmksc_status` / `msmksc_copy` exact. n=5 **20.997×** (97.005 / 4.620 µs)
+  on host `cursor`, ceiling 40.0 first-freeze headroom. Measure-only leftover
+  (Pair 632). Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.render_model_selector`
+  (`render-model-selector` vs ModelSelectorComponent layout). Observed
+  `rms_default` / `rms_sel2` / `rms_scoped` / `rms_narrow` / `rms_miss`
+  exact. n=5 **26.593×** (247.317 / 9.300 µs) on host `cursor`, ceiling
+  50.0 first-freeze headroom. Measure-only leftover (Pair 633). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.user_message_handle_event`
   (`user-message-selector-handle-event` on
   `src/cadr-cli/interactive/selectors/fork.lisp` vs
