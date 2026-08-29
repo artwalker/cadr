@@ -33838,35 +33838,46 @@
 
 
 (defun leftover-display-session ()
-  ;; Message-only: session-display-messages walks context-entries, which
-  ;; errors on compaction without a valid first-kept-id.
-  (cadr-agent::%make-session
-   :id "s"
-   :%entries
-   (list
-    (cadr-agent::make-session-entry
-     :type :message
-     :id "u1"
-     :message (cadr-ai:make-user-message :content "hi"))
-    (cadr-agent::make-session-entry
-     :type :message
-     :id "a1"
-     :message
-     (cadr-ai:make-assistant-message
-      :provider :openai
-      :model "gpt-4"
-      :content
-      (list
-       (cadr-ai:make-text-content :text "ok")
-       (cadr-ai:make-tool-call :id "t1" :name "read"))))
-    (cadr-agent::make-session-entry
-     :type :message
-     :id "r1"
-     :message
-     (cadr-ai:make-tool-result-message
-      :tool-call-id "t1"
-      :tool-name "read"
-      :content nil)))))
+  ;; Message-only parent chain: session-display-messages walks
+  ;; session-context-entries (leaf + by-id). No compaction entry
+  ;; (invalid first-kept-id errors).
+  (let* ((u1
+           (cadr-agent::make-session-entry
+            :type :message
+            :id "u1"
+            :message (cadr-ai:make-user-message :content "hi")))
+         (a1
+           (cadr-agent::make-session-entry
+            :type :message
+            :id "a1"
+            :parent-id "u1"
+            :message
+            (cadr-ai:make-assistant-message
+             :provider :openai
+             :model "gpt-4"
+             :content
+             (list
+              (cadr-ai:make-text-content :text "ok")
+              (cadr-ai:make-tool-call :id "t1" :name "read")))))
+         (r1
+           (cadr-agent::make-session-entry
+            :type :message
+            :id "r1"
+            :parent-id "a1"
+            :message
+            (cadr-ai:make-tool-result-message
+             :tool-call-id "t1"
+             :tool-name "read"
+             :content nil)))
+         (session
+           (cadr-agent::%make-session
+            :id "s"
+            :%entries (list u1 a1 r1)
+            :leaf-id "r1")))
+    (setf (gethash "u1" (cadr-agent::session-by-id session)) u1
+          (gethash "a1" (cadr-agent::session-by-id session)) a1
+          (gethash "r1" (cadr-agent::session-by-id session)) r1)
+    session))
 
 
 (defun leftover-first-message-role (messages)
@@ -33894,7 +33905,7 @@
      (hash-table-count empty)
      (hash-table-count filled)
      (leftover-tool-call-name filled "t1")
-     (if (getf (gethash "t1" filled) :arguments) 1 0)
+     (if (gethash "t1" filled) 1 0)
      (leftover-tool-call-name filled "missing"))))
 
 
