@@ -502,6 +502,9 @@
     ("settings_load.sdk_effective_object" . 50)
     ("settings_load.sdk_settings_set" . 50)
     ("settings_load.sdk_settings_remove" . 50)
+    ("settings_load.sdk_settings_reload" . 50)
+    ("settings_load.sdk_settings_flush" . 50)
+    ("settings_load.sdk_compaction_enabled" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4454,6 +4457,62 @@
      (if (null (cadr-cli::sdk-settings-value mgr "defaultProvider")) 1 0)
      5)))
 
+(defun run-settings-load-sdk-settings-reload ()
+  ;; Leftover sibling: memory sdk-settings-reload vs reload().
+  ;; Memory path is nil so this does not read settings.json.
+  ;; cadr returns the manager; pi reload() resolves to undefined.
+  (let* ((mgr (leftover-sdk-settings-fixture))
+         (same (eq (cadr-cli::sdk-settings-reload mgr) mgr))
+         (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (cadr-cli::sdk-settings-reload empty)
+    (list
+     (if (equal (cadr-cli::sdk-settings-default-provider mgr) "openai")
+         1
+         0)
+     (if (equal (cadr-cli::sdk-settings-default-model mgr) "gpt-4") 1 0)
+     (if same 1 0)
+     (if (null (cadr-cli::sdk-settings-default-provider empty)) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-settings-flush ()
+  ;; Leftover sibling: sdk-settings-flush identity vs await flush().
+  ;; Do not compare manager vs Promise.
+  (let* ((mgr (leftover-sdk-settings-fixture))
+         (same (eq (cadr-cli::sdk-settings-flush mgr) mgr)))
+    (list
+     (if (equal (cadr-cli::sdk-settings-default-provider mgr) "openai")
+         1
+         0)
+     (if (equal (cadr-cli::sdk-settings-default-model mgr) "gpt-4") 1 0)
+     (if same 1 0)
+     (if (null
+          (cadr-cli::sdk-settings-default-provider
+           (cadr-cli::sdk-settings-flush
+            (cadr-cli::make-memory-sdk-settings-manager))))
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-compaction-enabled ()
+  ;; Leftover sibling: compaction enabled vs getCompactionEnabled.
+  (let ((on
+          (cadr-cli::make-memory-sdk-settings-manager
+           (cadr-ai::json-object
+            "compaction"
+            (cadr-ai::json-object "enabled" t))))
+        (off
+          (cadr-cli::make-memory-sdk-settings-manager
+           (cadr-ai::json-object
+            "compaction"
+            (cadr-ai::json-object "enabled" nil))))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (cadr-cli::sdk-settings-compaction-enabled-p on) 1 0)
+     (if (cadr-cli::sdk-settings-compaction-enabled-p off) 0 1)
+     (if (cadr-cli::sdk-settings-compaction-enabled-p empty) 1 0)
+     (if (eq (cadr-cli::sdk-settings-compaction-enabled-p on) t) 1 0)
+     5)))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4708,7 +4767,13 @@
               (sdk-settings-set
                 (run-settings-load-sdk-settings-set))
               (sdk-settings-remove
-                (run-settings-load-sdk-settings-remove)))
+                (run-settings-load-sdk-settings-remove))
+              (sdk-settings-reload
+                (run-settings-load-sdk-settings-reload))
+              (sdk-settings-flush
+                (run-settings-load-sdk-settings-flush))
+              (sdk-compaction-enabled
+                (run-settings-load-sdk-compaction-enabled)))
         (json-object
          "observed"
          (json-object
@@ -4859,7 +4924,22 @@
           "ssr_keep" (nth 1 sdk-settings-remove)
           "ssr_ret" (nth 2 sdk-settings-remove)
           "ssr_val" (nth 3 sdk-settings-remove)
-          "ssr_n" (nth 4 sdk-settings-remove))
+          "ssr_n" (nth 4 sdk-settings-remove)
+          "srl_hit" (nth 0 sdk-settings-reload)
+          "srl_model" (nth 1 sdk-settings-reload)
+          "srl_same" (nth 2 sdk-settings-reload)
+          "srl_empty" (nth 3 sdk-settings-reload)
+          "srl_n" (nth 4 sdk-settings-reload)
+          "sfl_hit" (nth 0 sdk-settings-flush)
+          "sfl_model" (nth 1 sdk-settings-flush)
+          "sfl_same" (nth 2 sdk-settings-flush)
+          "sfl_empty" (nth 3 sdk-settings-flush)
+          "sfl_n" (nth 4 sdk-settings-flush)
+          "sce_on" (nth 0 sdk-compaction-enabled)
+          "sce_off" (nth 1 sdk-compaction-enabled)
+          "sce_def" (nth 2 sdk-compaction-enabled)
+          "sce_eq" (nth 3 sdk-compaction-enabled)
+          "sce_n" (nth 4 sdk-compaction-enabled))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -5007,7 +5087,22 @@
          (collect "settings_load.sdk_settings_remove"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-sdk-settings-remove))))))))))
+                      (run-settings-load-sdk-settings-remove))))
+         "sdk_settings_reload"
+         (collect "settings_load.sdk_settings_reload"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-settings-reload))))
+         "sdk_settings_flush"
+         (collect "settings_load.sdk_settings_flush"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-settings-flush))))
+         "sdk_compaction_enabled"
+         (collect "settings_load.sdk_compaction_enabled"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-compaction-enabled))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -32664,6 +32759,12 @@
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-set"
       "settings_load.sdk_settings_remove"
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-remove"
+      "settings_load.sdk_settings_reload"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-reload"
+      "settings_load.sdk_settings_flush"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-flush"
+      "settings_load.sdk_compaction_enabled"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-compaction-enabled-p"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"

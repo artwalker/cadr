@@ -252,6 +252,9 @@ const REPETITIONS = {
 	"settings_load.sdk_effective_object": 50,
 	"settings_load.sdk_settings_set": 50,
 	"settings_load.sdk_settings_remove": 50,
+	"settings_load.sdk_settings_reload": 50,
+	"settings_load.sdk_settings_flush": 50,
+	"settings_load.sdk_compaction_enabled": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -3292,6 +3295,51 @@ function runSettingsLoadSdkSettingsRemove() {
 	};
 }
 
+async function runSettingsLoadSdkSettingsReload() {
+	const mgr = leftoverSdkSettingsFixture();
+	const ret = await mgr.reload();
+	const empty = leftoverSdkSettingsEmpty();
+	await empty.reload();
+	return {
+		srl_hit: mgr.getDefaultProvider() === "openai" ? 1 : 0,
+		srl_model: mgr.getDefaultModel() === "gpt-4" ? 1 : 0,
+		srl_same: ret == null ? 1 : 0,
+		srl_empty: empty.getDefaultProvider() == null ? 1 : 0,
+		srl_n: 5,
+	};
+}
+
+async function runSettingsLoadSdkSettingsFlush() {
+	const mgr = leftoverSdkSettingsFixture();
+	const ret = await mgr.flush();
+	const empty = leftoverSdkSettingsEmpty();
+	await empty.flush();
+	return {
+		sfl_hit: mgr.getDefaultProvider() === "openai" ? 1 : 0,
+		sfl_model: mgr.getDefaultModel() === "gpt-4" ? 1 : 0,
+		sfl_same: ret == null ? 1 : 0,
+		sfl_empty: empty.getDefaultProvider() == null ? 1 : 0,
+		sfl_n: 5,
+	};
+}
+
+function runSettingsLoadSdkCompactionEnabled() {
+	const on = settingsModule.SettingsManager.inMemory({
+		compaction: { enabled: true },
+	});
+	const off = settingsModule.SettingsManager.inMemory({
+		compaction: { enabled: false },
+	});
+	const empty = leftoverSdkSettingsEmpty();
+	return {
+		sce_on: on.getCompactionEnabled() === true ? 1 : 0,
+		sce_off: off.getCompactionEnabled() === false ? 1 : 0,
+		sce_def: empty.getCompactionEnabled() === true ? 1 : 0,
+		sce_eq: on.getCompactionEnabled() === true ? 1 : 0,
+		sce_n: 5,
+	};
+}
+
 function runSettingsLoadSdkSettingsValue() {
 	const settings = leftoverSdkSettingsFixtureObject();
 	const hit = leftoverSdkSettingsValue({ settings }, "defaultProvider");
@@ -3407,6 +3455,9 @@ async function measureSettingsLoad() {
 	const sdkEffectiveObject = runSettingsLoadSdkEffectiveObject();
 	const sdkSettingsSet = runSettingsLoadSdkSettingsSet();
 	const sdkSettingsRemove = runSettingsLoadSdkSettingsRemove();
+	const sdkSettingsReload = await runSettingsLoadSdkSettingsReload();
+	const sdkSettingsFlush = await runSettingsLoadSdkSettingsFlush();
+	const sdkCompactionEnabled = runSettingsLoadSdkCompactionEnabled();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3501,6 +3552,15 @@ async function measureSettingsLoad() {
 		sdk_settings_remove: await collect("settings_load.sdk_settings_remove", () => {
 			return () => runSettingsLoadSdkSettingsRemove();
 		}),
+		sdk_settings_reload: await collect("settings_load.sdk_settings_reload", () => {
+			return () => runSettingsLoadSdkSettingsReload();
+		}),
+		sdk_settings_flush: await collect("settings_load.sdk_settings_flush", () => {
+			return () => runSettingsLoadSdkSettingsFlush();
+		}),
+		sdk_compaction_enabled: await collect("settings_load.sdk_compaction_enabled", () => {
+			return () => runSettingsLoadSdkCompactionEnabled();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3531,6 +3591,9 @@ async function measureSettingsLoad() {
 			...sdkEffectiveObject,
 			...sdkSettingsSet,
 			...sdkSettingsRemove,
+			...sdkSettingsReload,
+			...sdkSettingsFlush,
+			...sdkCompactionEnabled,
 		},
 	};
 }
@@ -34051,6 +34114,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.setDefaultProvider/setDefaultModel/setTheme",
 			"settings_load.sdk_settings_remove":
 				"packages/coding-agent/src/core/settings-manager.ts Settings object delete-key replica (cadr sdk-settings-remove)",
+			"settings_load.sdk_settings_reload":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.reload",
+			"settings_load.sdk_settings_flush":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.flush",
+			"settings_load.sdk_compaction_enabled":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getCompactionEnabled",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":
