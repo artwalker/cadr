@@ -425,4 +425,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.trust_option_saved_p` | 35.594 | 15.530 | 2.292× | 8.00× | measure-only leftover 613; `trust-option-saved-p` vs isSavedOption | invent pause；地板优化另刀 |
 | `cli_selectors.make_trust_selector_state` | 91.097 | 53.106 | 1.715× | 8.00× | measure-only leftover 614; `make-trust-selector-state` vs TrustSelectorComponent constructor | invent pause；地板优化另刀 |
 | `cli_selectors.render_trust_selector` | 1074.462 | 122.128 | 8.798× | 15.00× | measure-only leftover 615; `render-trust-selector` vs TrustSelectorComponent layout; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `cli_selectors.make_login_method_selector_state` | 2.654 | 2.323 | 1.143× | 8.00× | measure-only leftover 616; `make-login-method-selector-state` vs ExtensionSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.make_api_key_input_state` | 2.203 | 1.222 | 1.803× | 8.00× | measure-only leftover 617; `make-api-key-input-state` vs login-dialog api key Input constructor | invent pause；地板优化另刀 |
+| `cli_selectors.make_oauth_selector_state` | 7.245 | 6.020 | 1.204× | 8.00× | measure-only leftover 618; `make-oauth-selector-state` vs OauthSelectorComponent constructor | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

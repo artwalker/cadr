@@ -7648,6 +7648,30 @@ Leftover sibling of Pair 613. Timed work is options + saved-position (child / sa
 
 Leftover sibling of Pairs 613–614. Timed work is `render-trust-selector` (default / saved / inherited / distrust / single at width 80). Observed `rtrs_default` / `rtrs_saved` / `rtrs_inherited` / `rtrs_distrust` / `rtrs_single` are exact. First n=5 freeze **8.798×** (1074.462 / 122.128 µs) on host `cursor`, ceiling 15.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 616 — `cli_selectors` (make_login_method_selector_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_login_method_selector_state` | `make-login-method-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | ExtensionSelectorComponent constructor (`packages/coding-agent/src/modes/interactive/components/extension-selector.ts`) |
+
+Leftover sibling on the `auth.lisp` hole. Timed work is login-method constructor (default / custom title / custom labels / one item / three items). Observed `mlms_default` / `mlms_title` / `mlms_custom` / `mlms_one` / `mlms_three` are exact. First n=5 freeze **1.143×** (2.654 / 2.323 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 617 — `cli_selectors` (make_api_key_input_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_api_key_input_state` | `make-api-key-input-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | showPrompt api key Input constructor (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover sibling of Pair 616. Timed work is api-key input constructor (anthropic / openai / google / oauth-typed option / named vertex). Observed `makis_anth` / `makis_openai` / `makis_google` / `makis_oauth_opt` / `makis_named` are exact. First n=5 freeze **1.803×** (2.203 / 1.222 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 618 — `cli_selectors` (make_oauth_selector_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_oauth_selector_state` | `make-oauth-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | OauthSelectorComponent constructor (`packages/coding-agent/src/modes/interactive/components/oauth-selector.ts`) |
+
+Leftover sibling of Pairs 616–617. Timed work is oauth selector constructor (default / filter / miss / logout-empty / logout). Cached keybindings so this pair matches pi (does not time `make-keybindings-manager`). Observed `moss_default` / `moss_filter` / `moss_miss` / `moss_logout_empty` / `moss_logout` are exact. First n=5 freeze **1.204×** (7.245 / 6.020 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
