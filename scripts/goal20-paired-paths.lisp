@@ -428,6 +428,9 @@
     ("find_tool.glob_scanner" . 50)
     ("find_tool.glob_regex_body" . 50)
     ("find_tool.parse_gitignore_line" . 50)
+    ("find_tool.ignored_directory" . 50)
+    ("find_tool.gitignored" . 50)
+    ("find_tool.make_glob_tool" . 50)
     ("write_tool.ensure_parent" . 50)
     ("write_tool.write_utf8" . 50)
     ("write_tool.make_tool" . 50)
@@ -6151,6 +6154,28 @@
 (defun leftover-parse-gitignore-line (line)
   (cadr-cli::parse-gitignore-line line "/tmp"))
 
+(defparameter *leftover-gitignored-base*
+  (uiop:ensure-directory-pathname "/tmp/goal20-gitignored-base/"))
+
+(defun leftover-ignored-directory (directory)
+  (cadr-cli::ignored-directory-p directory))
+
+(defun leftover-gitignored-rules (lines)
+  (remove
+   nil
+   (mapcar
+    (lambda (line)
+      (cadr-cli::parse-gitignore-line line *leftover-gitignored-base*))
+    lines)))
+
+(defun leftover-gitignored (relative rules)
+  (cadr-cli::gitignored-p
+   (merge-pathnames relative *leftover-gitignored-base*)
+   rules))
+
+(defun leftover-make-glob-tool (cwd)
+  (cadr-cli::make-glob-tool cwd))
+
 (defun run-find-glob-scanner ()
   (list
    (find-tool-truth (leftover-glob-scanner "*" "a.txt"))
@@ -6187,6 +6212,52 @@
       (and foo (cadr-cli::gitignore-rule-scanner foo)))
      5)))
 
+(defun run-find-ignored-directory ()
+  (list
+   (find-tool-truth (leftover-ignored-directory "/tmp/.git"))
+   (find-tool-truth (leftover-ignored-directory "/tmp/node_modules"))
+   (find-tool-truth (not (leftover-ignored-directory "/tmp/src")))
+   (find-tool-truth (not (leftover-ignored-directory "/tmp/.github")))
+   (find-tool-truth (leftover-ignored-directory "/tmp/proj/.git/"))
+   5))
+
+(defun run-find-gitignored ()
+  (let* ((empty (leftover-gitignored-rules '()))
+         (foo (leftover-gitignored-rules '("foo")))
+         (bang (leftover-gitignored-rules '("foo" "!foo")))
+         (outside
+           (cadr-cli::gitignored-p
+            (pathname "/var/tmp/goal20-gitignored-outside/foo")
+            foo)))
+    (list
+     (find-tool-truth (not (leftover-gitignored "foo" empty)))
+     (find-tool-truth (leftover-gitignored "foo" foo))
+     (find-tool-truth (not (leftover-gitignored "bar" foo)))
+     (find-tool-truth (not (leftover-gitignored "foo" bang)))
+     (find-tool-truth (not outside))
+     5)))
+
+(defun run-find-make-glob-tool ()
+  (let* ((cwd (ensure-find-tool-fixture))
+         (tool (leftover-make-glob-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (find-tool-truth (string= (cadr-ai:tool-name tool) "glob"))
+     (find-tool-truth
+      (and (search "Find files recursively with a glob pattern"
+                   description)
+           (search ".gitignore" description)))
+     (find-tool-truth
+      (and required-list
+           (find "pattern" required-list :test #'string=)))
+     (find-tool-truth
+      (eq (cadr-ai:tool-execution-mode tool) :parallel))
+     4)))
+
 (defun measure-find-tool ()
   (ensure-find-tool-fixture)
   (destructuring-bind
@@ -6213,97 +6284,140 @@
                       (pgl-empty pgl-hash pgl-foo pgl-bang pgl-scan
                        pgl-n)
                       (run-find-parse-gitignore-line)
-                    (declare
-                     (ignore gr-n gs-n gi-n gsc-n grb-n pgl-n))
-                    (json-object
-                     "observed"
-                     (json-object
-                      "fpm_star_a" fpm-star-a
-                      "fpm_star_src" fpm-star-src
-                      "fpm_star_txt" fpm-star-txt
-                      "fpm_path_src" fpm-path-src
-                      "fpm_path_root" fpm-path-root
-                      "fpm_src_star" fpm-src-star
-                      "fpm_n" fpm-n
-                      "ff_empty" ff-empty
-                      "ff_lisp" ff-lisp
-                      "ff_path" ff-path
-                      "ff_src_star" ff-src-star
-                      "ff_n" ff-n
-                      "fmt_name" fmt-name
-                      "fmt_desc" fmt-desc
-                      "fmt_req" fmt-req
-                      "fmt_n" fmt-n
-                      "gr_star" gr-star
-                      "gr_glob" gr-glob
-                      "gr_q" gr-q
-                      "gr_dot" gr-dot
-                      "gs_dot" gs-dot
-                      "gs_star" gs-star
-                      "gs_pipe" gs-pipe
-                      "gs_bs" gs-bs
-                      "gi_plain" gi-plain
-                      "gi_anch" gi-anch
-                      "gi_dir" gi-dir
-                      "gsc_star" gsc-star
-                      "gsc_miss" gsc-miss
-                      "gsc_glob" gsc-glob
-                      "gsc_q" gsc-q
-                      "gsc_dot" gsc-dot
-                      "grb_star" grb-star
-                      "grb_glob" grb-glob
-                      "grb_q" grb-q
-                      "grb_dot" grb-dot
-                      "pgl_empty" pgl-empty
-                      "pgl_hash" pgl-hash
-                      "pgl_foo" pgl-foo
-                      "pgl_bang" pgl-bang
-                      "pgl_scan" pgl-scan)
-                     "pattern_match"
-                     (collect "find_tool.pattern_match"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-pattern-match))))
-                     "find_files"
-                     (collect "find_tool.find_files"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-files))))
-                     "make_tool"
-                     (collect "find_tool.make_tool"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-make-tool))))
-                     "glob_regex"
-                     (collect "find_tool.glob_regex"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-glob-regex))))
-                     "glob_special"
-                     (collect "find_tool.glob_special"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-glob-special))))
-                     "gitignore_regex"
-                     (collect "find_tool.gitignore_regex"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-gitignore-regex))))
-                     "glob_scanner"
-                     (collect "find_tool.glob_scanner"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-glob-scanner))))
-                     "glob_regex_body"
-                     (collect "find_tool.glob_regex_body"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-glob-regex-body))))
-                     "parse_gitignore_line"
-                     (collect "find_tool.parse_gitignore_line"
-                              (lambda ()
-                                (lambda ()
-                                  (run-find-parse-gitignore-line)))))))))))))))
+                    (destructuring-bind
+                        (igd-git igd-nm igd-src igd-hub igd-slash
+                         igd-n)
+                        (run-find-ignored-directory)
+                      (destructuring-bind
+                          (gig-empty gig-hit gig-miss gig-bang gig-out
+                           gig-n)
+                          (run-find-gitignored)
+                        (destructuring-bind
+                            (mgt-name mgt-desc mgt-req mgt-par mgt-n)
+                            (run-find-make-glob-tool)
+                          (declare
+                           (ignore
+                            gr-n gs-n gi-n gsc-n grb-n pgl-n igd-n
+                            gig-n))
+                          (json-object
+                           "observed"
+                           (json-object
+                            "fpm_star_a" fpm-star-a
+                            "fpm_star_src" fpm-star-src
+                            "fpm_star_txt" fpm-star-txt
+                            "fpm_path_src" fpm-path-src
+                            "fpm_path_root" fpm-path-root
+                            "fpm_src_star" fpm-src-star
+                            "fpm_n" fpm-n
+                            "ff_empty" ff-empty
+                            "ff_lisp" ff-lisp
+                            "ff_path" ff-path
+                            "ff_src_star" ff-src-star
+                            "ff_n" ff-n
+                            "fmt_name" fmt-name
+                            "fmt_desc" fmt-desc
+                            "fmt_req" fmt-req
+                            "fmt_n" fmt-n
+                            "gr_star" gr-star
+                            "gr_glob" gr-glob
+                            "gr_q" gr-q
+                            "gr_dot" gr-dot
+                            "gs_dot" gs-dot
+                            "gs_star" gs-star
+                            "gs_pipe" gs-pipe
+                            "gs_bs" gs-bs
+                            "gi_plain" gi-plain
+                            "gi_anch" gi-anch
+                            "gi_dir" gi-dir
+                            "gsc_star" gsc-star
+                            "gsc_miss" gsc-miss
+                            "gsc_glob" gsc-glob
+                            "gsc_q" gsc-q
+                            "gsc_dot" gsc-dot
+                            "grb_star" grb-star
+                            "grb_glob" grb-glob
+                            "grb_q" grb-q
+                            "grb_dot" grb-dot
+                            "pgl_empty" pgl-empty
+                            "pgl_hash" pgl-hash
+                            "pgl_foo" pgl-foo
+                            "pgl_bang" pgl-bang
+                            "pgl_scan" pgl-scan
+                            "igd_git" igd-git
+                            "igd_nm" igd-nm
+                            "igd_src" igd-src
+                            "igd_hub" igd-hub
+                            "igd_slash" igd-slash
+                            "gig_empty" gig-empty
+                            "gig_hit" gig-hit
+                            "gig_miss" gig-miss
+                            "gig_bang" gig-bang
+                            "gig_out" gig-out
+                            "mgt_name" mgt-name
+                            "mgt_desc" mgt-desc
+                            "mgt_req" mgt-req
+                            "mgt_par" mgt-par
+                            "mgt_n" mgt-n)
+                           "pattern_match"
+                           (collect "find_tool.pattern_match"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-pattern-match))))
+                           "find_files"
+                           (collect "find_tool.find_files"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-files))))
+                           "make_tool"
+                           (collect "find_tool.make_tool"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-make-tool))))
+                           "glob_regex"
+                           (collect "find_tool.glob_regex"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-glob-regex))))
+                           "glob_special"
+                           (collect "find_tool.glob_special"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-glob-special))))
+                           "gitignore_regex"
+                           (collect "find_tool.gitignore_regex"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-gitignore-regex))))
+                           "glob_scanner"
+                           (collect "find_tool.glob_scanner"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-glob-scanner))))
+                           "glob_regex_body"
+                           (collect "find_tool.glob_regex_body"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-glob-regex-body))))
+                           "parse_gitignore_line"
+                           (collect "find_tool.parse_gitignore_line"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-parse-gitignore-line))))
+                           "ignored_directory"
+                           (collect "find_tool.ignored_directory"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-ignored-directory))))
+                           "gitignored"
+                           (collect "find_tool.gitignored"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-gitignored))))
+                           "make_glob_tool"
+                           (collect "find_tool.make_glob_tool"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-make-glob-tool))))))))))))))))))
 
 (defun ls-tool-truth (value)
   (if value 1 0))
@@ -29173,6 +29287,12 @@
       "src/cadr-cli/tools/glob.lisp glob-regex-body"
       "find_tool.parse_gitignore_line"
       "src/cadr-cli/tools/glob.lisp parse-gitignore-line"
+      "find_tool.ignored_directory"
+      "src/cadr-cli/tools/glob.lisp ignored-directory-p"
+      "find_tool.gitignored"
+      "src/cadr-cli/tools/glob.lisp gitignored-p"
+      "find_tool.make_glob_tool"
+      "src/cadr-cli/tools/glob.lisp make-glob-tool"
       "write_tool.ensure_parent"
       "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
       "write_tool.write_utf8"
