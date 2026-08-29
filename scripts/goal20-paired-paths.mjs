@@ -614,6 +614,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.extension_dialog_chrome": 50,
 	"cli_interactive_controller.tui_component_protocol": 50,
 	"cli_interactive_controller.extension_render_value_lines": 50,
+	"cli_interactive_controller.make_framed_select_state": 50,
+	"cli_interactive_controller.note_component_render_channel": 50,
+	"cli_interactive_controller.tui_extension_theme_runtime": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -14997,6 +15000,80 @@ function runCliInteractiveExtensionRenderValueLines() {
 	};
 }
 
+function leftoverMakeFramedSelectState(title, labels, values, timeoutMs) {
+	const items = labels.map((label, i) => ({
+		label,
+		value: values[i],
+	}));
+	const deadline =
+		timeoutMs == null || timeoutMs <= 0 ? null : Date.now() + timeoutMs;
+	return { title, items, deadline };
+}
+
+function runCliInteractiveMakeFramedSelectState() {
+	leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2], 5000);
+	leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]);
+	const st = leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2], 5000);
+	const open = leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]);
+	return {
+		mfs_title: st.title === "Pick" ? 1 : 0,
+		mfs_n: st.items.length === 2 ? 1 : 0,
+		mfs_a: st.items[0] && st.items[0].label === "a" ? 1 : 0,
+		mfs_dead: st.deadline != null ? 1 : 0,
+		mfs_open: open.deadline == null ? 1 : 0,
+	};
+}
+
+function leftoverNoteComponentRenderChannel(component, fn) {
+	if (component == null) {
+		return null;
+	}
+	if (component.kind === "render-aware") {
+		component.requestRender = fn;
+	}
+	return component;
+}
+
+function runCliInteractiveNoteComponentRenderChannel() {
+	const fn = () => null;
+	const aware = { kind: "render-aware" };
+	const noted = leftoverNoteComponentRenderChannel(aware, fn);
+	const plain = { kind: "component" };
+	const notedPlain = leftoverNoteComponentRenderChannel(plain, fn);
+	leftoverNoteComponentRenderChannel(null, fn);
+	leftoverNoteComponentRenderChannel(aware, fn);
+	leftoverNoteComponentRenderChannel(plain, fn);
+	return {
+		ncr_nil: leftoverNoteComponentRenderChannel(null, fn) == null ? 1 : 0,
+		ncr_eq: noted === aware ? 1 : 0,
+		ncr_set: noted.requestRender === fn ? 1 : 0,
+		ncr_plain: notedPlain === plain ? 1 : 0,
+		ncr_ret: leftoverTuiComponentProtocolP(notedPlain) ? 1 : 0,
+	};
+}
+
+function leftoverTuiExtensionThemeRuntime() {
+	return {
+		fg: (_token, text) => leftoverThemeForeground(text),
+		bg: (_token, text) => leftoverThemeBackground(text),
+		bold: (text) => leftoverThemeForeground(text),
+		italic: (text) => leftoverThemeForeground(text),
+	};
+}
+
+function runCliInteractiveTuiExtensionThemeRuntime() {
+	const rt = leftoverTuiExtensionThemeRuntime();
+	leftoverTuiExtensionThemeRuntime();
+	leftoverTuiExtensionThemeRuntime();
+	return {
+		tet_fg: typeof rt.fg === "function" ? 1 : 0,
+		tet_bg: typeof rt.bg === "function" ? 1 : 0,
+		tet_bold: typeof rt.bold === "function" ? 1 : 0,
+		tet_italic: typeof rt.italic === "function" ? 1 : 0,
+		tet_hi: leftoverStripAnsi(rt.fg("accent", "hi")).includes("hi") ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -16274,6 +16351,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveExtensionDialogChrome(),
 		...runCliInteractiveTuiComponentProtocol(),
 		...runCliInteractiveExtensionRenderValueLines(),
+		...runCliInteractiveMakeFramedSelectState(),
+		...runCliInteractiveNoteComponentRenderChannel(),
+		...runCliInteractiveTuiExtensionThemeRuntime(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16508,6 +16588,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.extension_render_value_lines",
 			() => {
 				return () => runCliInteractiveExtensionRenderValueLines();
+			},
+		),
+		make_framed_select_state: await collect(
+			"cli_interactive_controller.make_framed_select_state",
+			() => {
+				return () => runCliInteractiveMakeFramedSelectState();
+			},
+		),
+		note_component_render_channel: await collect(
+			"cli_interactive_controller.note_component_render_channel",
+			() => {
+				return () => runCliInteractiveNoteComponentRenderChannel();
+			},
+		),
+		tui_extension_theme_runtime: await collect(
+			"cli_interactive_controller.tui_extension_theme_runtime",
+			() => {
+				return () => runCliInteractiveTuiExtensionThemeRuntime();
 			},
 		),
 		observed,
@@ -30442,6 +30540,12 @@ const result = {
 				"packages/tui/src/tui.ts Component protocol predicate",
 			"cli_interactive_controller.extension_render_value_lines":
 				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom value lines",
+			"cli_interactive_controller.make_framed_select_state":
+				"packages/tui/src/select-list.ts framed select-list constructor",
+			"cli_interactive_controller.note_component_render_channel":
+				"packages/tui/src/tui.ts requestRender inject on render-aware mixin",
+			"cli_interactive_controller.tui_extension_theme_runtime":
+				"packages/tui/src/theme.ts theme fg/bg/bold/italic runtime",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
