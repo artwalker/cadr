@@ -196,6 +196,9 @@
 ;;;; 778. evals_harness matching-hello-tool-call-p vs ExtensionAuthoringJudge hello-call
 ;;;; 779. evals_harness judge-extension-authoring-result vs ExtensionAuthoringJudge
 ;;;; 780. evals_harness extension-source-bundle vs hello-tool bundle pick
+;;;; 781. package_manager config-resource-item-key vs getResourceItemKey leftover
+;;;; 782. package_manager config-selector-project-state vs leftover override hash
+;;;; 783. package_manager config-selector-next-project-state vs nextProjectOverrideState
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -552,6 +555,9 @@
     ("package_manager.delta_resource_state" . 50)
     ("package_manager.project_top_level_state" . 50)
     ("package_manager.derived_project_state" . 50)
+    ("package_manager.resource_item_key" . 50)
+    ("package_manager.project_override_state" . 50)
+    ("package_manager.next_project_state" . 50)
     ("package_manager.records_project_first" . 50)
     ("package_manager.candidate_record" . 50)
     ("package_manager.update_offline" . 50)
@@ -5880,11 +5886,35 @@
     item))
 
 (defun leftover-config-selector-hello-item
-    (&key (origin :top-level) (source "auto"))
+    (&key (origin :top-level) (source "auto") (type :extensions))
   (leftover-config-resource-item-labeled
    origin :project source
    :path "/tmp/proj/.cadr/hello.lisp"
-   :base-directory "/tmp/proj/.cadr/"))
+   :base-directory "/tmp/proj/.cadr/"
+   :type type))
+
+(defun leftover-config-resource-item-key (item)
+  (cadr-cli::config-resource-item-key item))
+
+(defun leftover-config-selector-override-state
+    (item override &key (inherited nil inherited-p)
+     (enabled-p t))
+  (let* ((state (leftover-config-selector-state 0))
+         (key (leftover-config-resource-item-key item)))
+    (setf (cadr-cli::config-resource-item-enabled-p item) enabled-p)
+    (when override
+      (setf
+       (gethash
+        key
+        (cadr-cli::config-selector-state-project-overrides state))
+       override))
+    (when inherited-p
+      (setf
+       (gethash
+        key
+        (cadr-cli::config-selector-state-inherited-enabled state))
+       inherited))
+    state))
 
 (defun leftover-config-selector-project-extensions-state (patterns)
   (leftover-config-selector-state
@@ -5903,6 +5933,12 @@
 
 (defun leftover-config-selector-derived-project-state (state item)
   (cadr-cli::config-selector-derived-project-state state item))
+
+(defun leftover-config-selector-project-state (state item)
+  (cadr-cli::config-selector-project-state state item))
+
+(defun leftover-config-selector-next-project-state (state item)
+  (cadr-cli::config-selector-next-project-state state item))
 
 (defun leftover-config-resource-item-scoped (path type display-name scope)
   (cadr-cli::make-config-resource-item
@@ -6433,6 +6469,92 @@
        item))
      5)))
 
+(defun leftover-config-resource-item-key-code (key kind)
+  (cond
+    ((and (stringp key)
+          (string= kind "extensions")
+          (>= (length key) 11)
+          (string= (subseq key 0 11) "extensions:")
+          (search "hello.lisp" key))
+     1)
+    ((and (stringp key)
+          (string= kind "skills")
+          (>= (length key) 7)
+          (string= (subseq key 0 7) "skills:")
+          (search "hello.lisp" key))
+     1)
+    (t 0)))
+
+(defun run-package-manager-resource-item-key ()
+  (let* ((ext-item (leftover-config-selector-hello-item :type :extensions))
+         (skill-item (leftover-config-selector-hello-item :type :skills))
+         (ext-key (leftover-config-resource-item-key ext-item))
+         (skill-key (leftover-config-resource-item-key skill-item)))
+    (list
+     (leftover-config-resource-item-key-code ext-key "extensions")
+     (leftover-config-resource-item-key-code skill-key "skills")
+     (if (string= ext-key skill-key) 0 1)
+     (if (and (search "hello.lisp" ext-key)
+              (search "hello.lisp" skill-key))
+         1
+         0)
+     5)))
+
+(defun run-package-manager-project-override-state ()
+  (let ((item (leftover-config-selector-hello-item)))
+    (list
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-state
+       (leftover-config-selector-override-state item :load)
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-state
+       (leftover-config-selector-override-state item :unload)
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-state
+       (leftover-config-selector-override-state item nil)
+       item))
+     (if (and (= (leftover-config-selector-state-code
+                  (leftover-config-selector-project-state
+                   (leftover-config-selector-override-state item :load)
+                   item))
+                 1)
+              (= (leftover-config-selector-state-code
+                  (leftover-config-selector-project-state
+                   (leftover-config-selector-override-state item :unload)
+                   item))
+                 2)
+              (= (leftover-config-selector-state-code
+                  (leftover-config-selector-project-state
+                   (leftover-config-selector-override-state item nil)
+                   item))
+                 0))
+         1
+         0)
+     5)))
+
+(defun run-package-manager-next-project-state ()
+  (let ((item (leftover-config-selector-hello-item)))
+    (list
+     (leftover-config-selector-state-code
+      (leftover-config-selector-next-project-state
+       (leftover-config-selector-override-state item :inherit)
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-next-project-state
+       (leftover-config-selector-override-state item :inherit :enabled-p nil)
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-next-project-state
+       (leftover-config-selector-override-state item :unload)
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-next-project-state
+       (leftover-config-selector-override-state item :load)
+       item))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -6621,6 +6743,12 @@
              (run-package-manager-project-top-level-state))
            (derived-project-state
              (run-package-manager-derived-project-state))
+           (resource-item-key
+             (run-package-manager-resource-item-key))
+           (project-override-state
+             (run-package-manager-project-override-state))
+           (next-project-state
+             (run-package-manager-next-project-state))
            (records-project-first
              (run-package-manager-records-project-first))
            (candidate-record
@@ -6828,6 +6956,21 @@
         "dps_pkg" (nth 2 derived-project-state)
         "dps_miss" (nth 3 derived-project-state)
         "dps_n" (nth 4 derived-project-state)
+        "rik_ext" (nth 0 resource-item-key)
+        "rik_skill" (nth 1 resource-item-key)
+        "rik_diff" (nth 2 resource-item-key)
+        "rik_hello" (nth 3 resource-item-key)
+        "rik_n" (nth 4 resource-item-key)
+        "cps_load" (nth 0 project-override-state)
+        "cps_unload" (nth 1 project-override-state)
+        "cps_miss" (nth 2 project-override-state)
+        "cps_eq" (nth 3 project-override-state)
+        "cps_n" (nth 4 project-override-state)
+        "nps_inh_t" (nth 0 next-project-state)
+        "nps_inh_f" (nth 1 next-project-state)
+        "nps_unl" (nth 2 next-project-state)
+        "nps_load" (nth 3 next-project-state)
+        "nps_n" (nth 4 next-project-state)
         "upf_proj" (nth 0 records-project-first)
         "upf_user" (nth 1 records-project-first)
         "upf_tail" (nth 2 records-project-first)
@@ -7039,6 +7182,21 @@
                 (lambda ()
                   (lambda ()
                     (run-package-manager-derived-project-state))))
+       "resource_item_key"
+       (collect "package_manager.resource_item_key"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-item-key))))
+       "project_override_state"
+       (collect "package_manager.project_override_state"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-project-override-state))))
+       "next_project_state"
+       (collect "package_manager.next_project_state"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-next-project-state))))
        "records_project_first"
        (collect "package_manager.records_project_first"
                 (lambda ()
@@ -33028,6 +33186,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-project-top-level-state"
       "package_manager.derived_project_state"
       "src/cadr-cli/packages/config-selector.lisp config-selector-derived-project-state"
+      "package_manager.resource_item_key"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-item-key"
+      "package_manager.project_override_state"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-project-state"
+      "package_manager.next_project_state"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-next-project-state"
       "package_manager.records_project_first"
       "src/cadr-cli/packages/update-checks.lisp package-update-records-project-first"
       "package_manager.candidate_record"
