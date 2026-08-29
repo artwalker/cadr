@@ -4458,6 +4458,7 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("srm_hit", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("srm_noreg", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
 
+
     def test_cli_bootstrap_sessions_migration_leftovers_wired(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         for key, obs in (
@@ -4474,6 +4475,21 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn(full, paired.RATIO_CEILINGS)
             for o in obs:
                 self.assertIn(o, paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+
+    def test_cli_bootstrap_sessions_platform_style_changelog_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("cli_platform", ("cpl_linux", "cpl_darwin")),
+            ("session_info_style", ("sis_head_plain", "sis_lab_dim")),
+            ("default_changelog_path", ("dcp_forced", "dcp_fallback")),
+        ):
+            full = f"cli_bootstrap_sessions.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["cli_bootstrap_sessions"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+
 
     def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -4647,6 +4663,15 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_selectors.armin_make_grid`", section)
             self.assertIn("`cli_selectors.armin_copy_grid`", section)
             self.assertIn("`cli_selectors.armin_row_string`", section)
+            self.assertIn("`cli_bootstrap_sessions.data_directory`", section)
+            self.assertIn("`cli_bootstrap_sessions.legacy_data_directory`", section)
+            self.assertIn("`cli_bootstrap_sessions.manual_migration_command`", section)
+            self.assertIn("`cli_bootstrap_sessions.managed_binary_names`", section)
+            self.assertIn("`cli_bootstrap_sessions.migration_guide_url`", section)
+            self.assertIn("`cli_bootstrap_sessions.extensions_doc_url`", section)
+            self.assertIn("`cli_bootstrap_sessions.cli_platform`", section)
+            self.assertIn("`cli_bootstrap_sessions.session_info_style`", section)
+            self.assertIn("`cli_bootstrap_sessions.default_changelog_path`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`resource_loader.dedupe_by_name`", section)
             self.assertIn("`resource_loader.context_from_dir`", section)
