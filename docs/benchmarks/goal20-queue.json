@@ -5674,6 +5674,51 @@
    "piUs": 0.527,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 670,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.extension_dialog_chrome",
+   "branch": "cursor/extension-ui-chrome-protocol-lines-leftovers-670-672-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 670; first-freeze headroom ceiling 30.0",
+   "ratio": 14.268,
+   "cadrUs": 21.804,
+   "piUs": 1.528,
+   "ceiling": 30.0,
+   "rc": 2
+  },
+  {
+   "pair": 671,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.tui_component_protocol",
+   "branch": "cursor/extension-ui-chrome-protocol-lines-leftovers-670-672-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 671",
+   "ratio": 1.527,
+   "cadrUs": 0.587,
+   "piUs": 0.384,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 672,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.extension_render_value_lines",
+   "branch": "cursor/extension-ui-chrome-protocol-lines-leftovers-670-672-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 672",
+   "ratio": 2.452,
+   "cadrUs": 2.505,
+   "piUs": 1.022,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

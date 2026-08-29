@@ -629,6 +629,9 @@
     ("cli_interactive_controller.should_use_tui" . 50)
     ("cli_interactive_controller.tui_command_error" . 50)
     ("cli_interactive_controller.route_tui_submission" . 50)
+    ("cli_interactive_controller.extension_dialog_chrome" . 50)
+    ("cli_interactive_controller.tui_component_protocol" . 50)
+    ("cli_interactive_controller.extension_render_value_lines" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14582,6 +14585,26 @@
    "rsub_qline" (nth 4 route-submit)))
 
 
+(defun leftover-extension-ui-chrome-protocol-lines-observed-pairs
+    (dialog-chrome component-protocol render-value-lines)
+  (list
+   "edc_hi" (nth 0 dialog-chrome)
+   "edc_body" (nth 1 dialog-chrome)
+   "edc_sub" (nth 2 dialog-chrome)
+   "edc_n" (nth 3 dialog-chrome)
+   "edc_dash" (nth 4 dialog-chrome)
+   "tcp_nil" (nth 0 component-protocol)
+   "tcp_in" (nth 1 component-protocol)
+   "tcp_str" (nth 2 component-protocol)
+   "tcp_dlg" (nth 3 component-protocol)
+   "tcp_ed" (nth 4 component-protocol)
+   "erv_nil" (nth 0 render-value-lines)
+   "erv_hi" (nth 1 render-value-lines)
+   "erv_list" (nth 2 render-value-lines)
+   "erv_num" (nth 3 render-value-lines)
+   "erv_n" (nth 4 render-value-lines)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15091,7 +15114,13 @@
         (leftover-tui-command-error
           (run-cli-interactive-tui-command-error))
         (leftover-route-tui-submission
-          (run-cli-interactive-route-tui-submission)))
+          (run-cli-interactive-route-tui-submission))
+        (leftover-extension-dialog-chrome
+          (run-cli-interactive-extension-dialog-chrome))
+        (leftover-tui-component-protocol
+          (run-cli-interactive-tui-component-protocol))
+        (leftover-extension-render-value-lines
+          (run-cli-interactive-extension-render-value-lines)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15190,7 +15219,11 @@
              (leftover-controller-tui-error-route-observed-pairs
               leftover-should-use-tui
               leftover-tui-command-error
-              leftover-route-tui-submission)))
+              leftover-route-tui-submission)
+             (leftover-extension-ui-chrome-protocol-lines-observed-pairs
+              leftover-extension-dialog-chrome
+              leftover-tui-component-protocol
+              leftover-extension-render-value-lines)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15400,7 +15433,22 @@
      (collect "cli_interactive_controller.route_tui_submission"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-route-tui-submission)))))))
+                  (run-cli-interactive-route-tui-submission))))
+     "extension_dialog_chrome"
+     (collect "cli_interactive_controller.extension_dialog_chrome"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-extension-dialog-chrome))))
+     "tui_component_protocol"
+     (collect "cli_interactive_controller.tui_component_protocol"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tui-component-protocol))))
+     "extension_render_value_lines"
+     (collect "cli_interactive_controller.extension_render_value_lines"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-extension-render-value-lines)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16372,6 +16420,58 @@
      (if (null busy) 1 0)
      (if (string= started "hi") 1 0)
      (if (string= queued "x") 1 0))))
+
+(defun run-cli-interactive-extension-dialog-chrome ()
+  (multiple-value-bind (lines row column)
+      (cadr-cli::extension-dialog-chrome
+       "Hello" 40 '("body") 0 1 "submit")
+    (declare (ignore row column))
+    (let ((text (leftover-notification-joined lines)))
+      (cadr-cli::extension-dialog-chrome
+       "Hello" 40 '("body") 0 1 "submit")
+      (cadr-cli::extension-dialog-chrome
+       "X" 20 '("y") 0 0 "z")
+      (list
+       (if (search "Hello" text) 1 0)
+       (if (search "body" text) 1 0)
+       (if (search "submit" text) 1 0)
+       (if (>= (length lines) 3) 1 0)
+       (if (search "─" text) 1 0)))))
+
+(defun run-cli-interactive-tui-component-protocol ()
+  (let ((input (cadr-tui:make-single-line-input :prompt "> "))
+        (dialog (cadr-cli::make-extension-input-dialog "t"))
+        (editor (cadr-tui:make-multiline-editor)))
+    (cadr-cli::tui-component-protocol-p nil)
+    (cadr-cli::tui-component-protocol-p input)
+    (cadr-cli::tui-component-protocol-p "x")
+    (cadr-cli::tui-component-protocol-p dialog)
+    (cadr-cli::tui-component-protocol-p editor)
+    (list
+     (if (cadr-cli::tui-component-protocol-p nil) 1 0)
+     (if (cadr-cli::tui-component-protocol-p input) 1 0)
+     (if (cadr-cli::tui-component-protocol-p "x") 1 0)
+     (if (cadr-cli::tui-component-protocol-p dialog) 1 0)
+     (if (cadr-cli::tui-component-protocol-p editor) 1 0))))
+
+(defun run-cli-interactive-extension-render-value-lines ()
+  (let* ((empty (cadr-cli::extension-render-value-lines nil 80))
+         (hello (cadr-cli::extension-render-value-lines "hello" 80))
+         (listed
+           (cadr-cli::extension-render-value-lines '("aa" "bb") 80))
+         (num (cadr-cli::extension-render-value-lines 42 80))
+         (hello-text (leftover-notification-joined hello))
+         (listed-text (leftover-notification-joined listed)))
+    (cadr-cli::extension-render-value-lines nil 80)
+    (cadr-cli::extension-render-value-lines "hello" 80)
+    (cadr-cli::extension-render-value-lines '("aa" "bb") 80)
+    (cadr-cli::extension-render-value-lines 42 80)
+    (list
+     (if (null empty) 1 0)
+     (if (search "hello" hello-text) 1 0)
+     (if (and (search "aa" listed-text) (search "bb" listed-text)) 1 0)
+     (if (null num) 1 0)
+     (if (>= (length hello) 1) 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -28710,6 +28810,12 @@
       "src/cadr-cli/interactive/controller.lisp call-with-tui-command-error-notice"
       "cli_interactive_controller.route_tui_submission"
       "src/cadr-cli/interactive/controller.lisp route-tui-submission"
+      "cli_interactive_controller.extension_dialog_chrome"
+      "src/cadr-cli/interactive/extension-ui.lisp extension-dialog-chrome"
+      "cli_interactive_controller.tui_component_protocol"
+      "src/cadr-cli/interactive/extension-ui.lisp tui-component-protocol-p"
+      "cli_interactive_controller.extension_render_value_lines"
+      "src/cadr-cli/interactive/extension-ui.lisp extension-render-value-lines"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

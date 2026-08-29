@@ -611,6 +611,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.should_use_tui": 50,
 	"cli_interactive_controller.tui_command_error": 50,
 	"cli_interactive_controller.route_tui_submission": 50,
+	"cli_interactive_controller.extension_dialog_chrome": 50,
+	"cli_interactive_controller.tui_component_protocol": 50,
+	"cli_interactive_controller.extension_render_value_lines": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -14907,6 +14910,93 @@ function runCliInteractiveRouteTuiSubmission() {
 	};
 }
 
+function leftoverExtensionDialogChrome(title, width, bodyLines, footer) {
+	const border = leftoverUpdateNotificationBorderLine(width);
+	const titleLine = leftoverThemeForeground(title);
+	const foot = leftoverWrapTextSlice(String(footer || ""), width);
+	return [border, "", titleLine, "", ...(bodyLines || []), "", ...foot, "", border];
+}
+
+function runCliInteractiveExtensionDialogChrome() {
+	const lines = leftoverExtensionDialogChrome("Hello", 40, ["body"], "submit");
+	const text = leftoverNotificationJoined(lines);
+	leftoverExtensionDialogChrome("Hello", 40, ["body"], "submit");
+	leftoverExtensionDialogChrome("X", 20, ["y"], "z");
+	return {
+		edc_hi: text.includes("Hello") ? 1 : 0,
+		edc_body: text.includes("body") ? 1 : 0,
+		edc_sub: text.includes("submit") ? 1 : 0,
+		edc_n: lines.length >= 3 ? 1 : 0,
+		edc_dash: text.includes("─") ? 1 : 0,
+	};
+}
+
+function leftoverTuiComponentProtocolP(value) {
+	if (!value || typeof value !== "object") {
+		return false;
+	}
+	return (
+		value.kind === "component" ||
+		value.kind === "input" ||
+		value.kind === "editor"
+	);
+}
+
+function runCliInteractiveTuiComponentProtocol() {
+	const input = { kind: "input" };
+	const dialog = { kind: "component" };
+	const editor = { kind: "editor" };
+	leftoverTuiComponentProtocolP(null);
+	leftoverTuiComponentProtocolP(input);
+	leftoverTuiComponentProtocolP("x");
+	leftoverTuiComponentProtocolP(dialog);
+	leftoverTuiComponentProtocolP(editor);
+	return {
+		tcp_nil: leftoverTuiComponentProtocolP(null) ? 1 : 0,
+		tcp_in: leftoverTuiComponentProtocolP(input) ? 1 : 0,
+		tcp_str: leftoverTuiComponentProtocolP("x") ? 1 : 0,
+		tcp_dlg: leftoverTuiComponentProtocolP(dialog) ? 1 : 0,
+		tcp_ed: leftoverTuiComponentProtocolP(editor) ? 1 : 0,
+	};
+}
+
+function leftoverExtensionRenderValueLines(value, width) {
+	if (value == null) {
+		return null;
+	}
+	if (typeof value === "string") {
+		return leftoverWrapTextSlice(value, width);
+	}
+	if (Array.isArray(value) && value.every((line) => typeof line === "string")) {
+		let lines = [];
+		for (const line of value) {
+			lines = lines.concat(leftoverWrapTextSlice(line, width));
+		}
+		return lines;
+	}
+	return null;
+}
+
+function runCliInteractiveExtensionRenderValueLines() {
+	const empty = leftoverExtensionRenderValueLines(null, 80);
+	const hello = leftoverExtensionRenderValueLines("hello", 80);
+	const listed = leftoverExtensionRenderValueLines(["aa", "bb"], 80);
+	const num = leftoverExtensionRenderValueLines(42, 80);
+	const helloText = leftoverNotificationJoined(hello);
+	const listedText = leftoverNotificationJoined(listed);
+	leftoverExtensionRenderValueLines(null, 80);
+	leftoverExtensionRenderValueLines("hello", 80);
+	leftoverExtensionRenderValueLines(["aa", "bb"], 80);
+	leftoverExtensionRenderValueLines(42, 80);
+	return {
+		erv_nil: !empty || empty.length === 0 ? 1 : 0,
+		erv_hi: helloText.includes("hello") ? 1 : 0,
+		erv_list: listedText.includes("aa") && listedText.includes("bb") ? 1 : 0,
+		erv_num: !num || num.length === 0 ? 1 : 0,
+		erv_n: hello && hello.length >= 1 ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -16181,6 +16271,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveShouldUseTui(),
 		...runCliInteractiveTuiCommandError(),
 		...runCliInteractiveRouteTuiSubmission(),
+		...runCliInteractiveExtensionDialogChrome(),
+		...runCliInteractiveTuiComponentProtocol(),
+		...runCliInteractiveExtensionRenderValueLines(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16397,6 +16490,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.route_tui_submission",
 			() => {
 				return () => runCliInteractiveRouteTuiSubmission();
+			},
+		),
+		extension_dialog_chrome: await collect(
+			"cli_interactive_controller.extension_dialog_chrome",
+			() => {
+				return () => runCliInteractiveExtensionDialogChrome();
+			},
+		),
+		tui_component_protocol: await collect(
+			"cli_interactive_controller.tui_component_protocol",
+			() => {
+				return () => runCliInteractiveTuiComponentProtocol();
+			},
+		),
+		extension_render_value_lines: await collect(
+			"cli_interactive_controller.extension_render_value_lines",
+			() => {
+				return () => runCliInteractiveExtensionRenderValueLines();
 			},
 		),
 		observed,
@@ -30325,6 +30436,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts command error notice skip auth cancel",
 			"cli_interactive_controller.route_tui_submission":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts busy submit queue vs start",
+			"cli_interactive_controller.extension_dialog_chrome":
+				"packages/coding-agent/src/modes/interactive/components/extension-editor.ts dialog chrome border",
+			"cli_interactive_controller.tui_component_protocol":
+				"packages/tui/src/tui.ts Component protocol predicate",
+			"cli_interactive_controller.extension_render_value_lines":
+				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom value lines",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

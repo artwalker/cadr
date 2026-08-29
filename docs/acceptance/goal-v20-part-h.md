@@ -8080,6 +8080,30 @@ Leftover sibling of Pair 667. Timed work is success, `authentication-cancelled` 
 
 Leftover sibling of Pairs 667–668. Timed work is idle start, busy queue, and busy-without-callback. Observed `rsub_start` / `rsub_queue` / `rsub_busy` / `rsub_line` / `rsub_qline` are exact. First n=5 freeze **0.360×** (0.190 / 0.527 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 670 — `cli_interactive_controller` (extension_dialog_chrome)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_dialog_chrome` | `extension-dialog-chrome` (`src/cadr-cli/interactive/extension-ui.lisp`) | dialog chrome border (`packages/coding-agent/src/modes/interactive/components/extension-editor.ts`) |
+
+Leftover sibling on the `extension-ui.lisp` hole. Timed work is title/body/footer chrome with selector border. Observed `edc_hi` / `edc_body` / `edc_sub` / `edc_n` / `edc_dash` are exact. First n=5 freeze **14.268×** (21.804 / 1.528 µs) on host `cursor`. First-freeze headroom ceiling **30.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 671 — `cli_interactive_controller` (tui_component_protocol)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tui_component_protocol` | `tui-component-protocol-p` (`src/cadr-cli/interactive/extension-ui.lisp`) | Component protocol predicate (`packages/tui/src/tui.ts`) |
+
+Leftover sibling of Pair 670. Timed work is nil/string negatives plus input/dialog/editor positives. Observed `tcp_nil` / `tcp_in` / `tcp_str` / `tcp_dlg` / `tcp_ed` are exact. First n=5 freeze **1.527×** (0.587 / 0.384 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 672 — `cli_interactive_controller` (extension_render_value_lines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_render_value_lines` | `extension-render-value-lines` (`src/cadr-cli/interactive/extension-ui.lisp`) | custom value lines (`packages/coding-agent/src/modes/interactive/components/custom-message.ts`) |
+
+Leftover sibling of Pairs 670–671. Timed work is nil/string/list wrap plus non-string skip. Observed `erv_nil` / `erv_hi` / `erv_list` / `erv_num` / `erv_n` are exact. First n=5 freeze **2.452×** (2.505 / 1.022 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

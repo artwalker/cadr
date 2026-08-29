@@ -470,4 +470,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.render_tui_entry_uncached` | 200.288 | 7.276 | 27.525× | 50.00× | measure-only leftover 664; `render-tui-entry-uncached` vs chat-log render entry uncached; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_tui_entry` | 102.484 | 5.999 | 17.083× | 30.00× | measure-only leftover 665; `render-tui-entry` vs chat-log render entry cache; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_tui_entries` | 42.711 | 7.723 | 5.530× | 8.00× | measure-only leftover 666; `render-tui-entries` vs chat-log render entries + user gap | invent pause；地板优化另刀 |
+| `cli_interactive_controller.extension_dialog_chrome` | 21.804 | 1.528 | 14.268× | 30.00× | measure-only leftover 670; `extension-dialog-chrome` vs dialog chrome border; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.tui_component_protocol` | 0.587 | 0.384 | 1.527× | 8.00× | measure-only leftover 671; `tui-component-protocol-p` vs Component protocol predicate | invent pause；地板优化另刀 |
+| `cli_interactive_controller.extension_render_value_lines` | 2.505 | 1.022 | 2.452× | 8.00× | measure-only leftover 672; `extension-render-value-lines` vs custom value lines | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
