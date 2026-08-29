@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.selected_entry`
+  (`config-selector-selected-entry` vs selected entry). Observed `se_item`
+  / `se_group` / `se_sub` / `se_last` / `se_n` exact. n=5 **1.195×**
+  (0.968 / 0.810 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 721). Over-1× booked. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.selector_move`
+  (`config-selector-move` vs selector move). Observed `sm_fwd` / `sm_skip`
+  / `sm_back` / `sm_end` / `sm_n` exact. n=5 **0.896×** (1.069 / 1.193 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 722). cadr
+  leads. Not booked over-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.visible_range`
+  (`config-selector-visible-range` vs visible range). Observed `vr_small`
+  / `vr_mid` / `vr_top` / `vr_bot` / `vr_n` exact. n=5 **0.542×**
+  (1.898 / 3.504 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 723). cadr leads. Not booked over-1×. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `package_manager.group_less_p`
   (`config-resource-group-less-p` vs group sort). Observed `gl_pkg`
   / `gl_user` / `gl_src` / `gl_rev` / `gl_n` exact. n=5 **7.128×**
