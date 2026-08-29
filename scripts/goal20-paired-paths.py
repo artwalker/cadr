@@ -942,8 +942,11 @@ RATIO_CEILINGS = {
     "cli_support.watch_retry_delay": 8.0,
     "cli_support.close_watcher": 8.0,
     "cli_support.watch_signature": 8.0,
+    # leftover 868; first freeze 0.043× (409.893 / 9588.340 µs). cadr leads.
     "cli_support.editor_success": 8.0,
+    # leftover 869; first freeze 0.040× (380.497 / 9443.119 µs). cadr leads.
     "cli_support.editor_fail": 8.0,
+    # leftover 870; first freeze 0.056× (353.054 / 6331.558 µs). cadr leads.
     "cli_support.editor_empty": 8.0,
     # Leftover trio on src/cadr-cli/bootstrap/commands.lisp (pairs 484-486):
     # model_cycle 0.622x (0.632 / 1.017 us), model_scope_line 1.608x

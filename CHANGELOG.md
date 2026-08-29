@@ -11,16 +11,21 @@ tag/Release step.
 
 - Goal 20 leftover: pair `cli_support.editor_success` (`edit-in-external-editor`
   vs `editInExternalEditor` zero-exit `hello`). Observed `eed_hello` /
-  `eed_len` / `eed_round` / `eed_nonl` / `eed_n` exact. n=5 **RATIO_PLACEHOLDER**.
-  Measure-only leftover (Pair 868). `nextPairNum` left unchanged.
+  `eed_len` / `eed_round` / `eed_nonl` / `eed_n` exact. n=5 **0.043×**
+  (409.893 / 9588.340 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 868). Under-1×. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_support.editor_fail` (non-zero runner vs
   `false` failed status). Observed `eef_orig` / `eef_empty` / `eef_twice` /
-  `eef_n` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 869).
-  `nextPairNum` left unchanged.
+  `eef_n` exact. n=5 **0.040×** (380.497 / 9443.119 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 869). Under-1×. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_support.editor_empty` (empty and one-cell
   success payloads). Observed `eee_ok` / `eee_len` / `eee_x` / `eee_xlen` /
-  `eee_n` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 870).
-  `nextPairNum` left unchanged.
+  `eee_n` exact. n=5 **0.056×** (353.054 / 6331.558 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 870). Under-1×. `nextPairNum`
+  left unchanged.
 
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login

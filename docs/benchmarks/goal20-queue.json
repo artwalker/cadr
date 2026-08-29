@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 868,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/external-editor.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.editor_success",
+   "branch": "cursor/cli-support-external-editor-leftovers-868-870-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 868",
+   "ratio": 0.043,
+   "cadrUs": 409.893,
+   "piUs": 9588.340,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 869,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/external-editor.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.editor_fail",
+   "branch": "cursor/cli-support-external-editor-leftovers-868-870-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 869",
+   "ratio": 0.040,
+   "cadrUs": 380.497,
+   "piUs": 9443.119,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 870,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/external-editor.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.editor_empty",
+   "branch": "cursor/cli-support-external-editor-leftovers-868-870-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 870",
+   "ratio": 0.056,
+   "cadrUs": 353.054,
+   "piUs": 6331.558,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

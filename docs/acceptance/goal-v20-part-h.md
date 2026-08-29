@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `editor_success` | `edit-in-external-editor` (`src/cadr-cli/support/external-editor.lisp`) | `editInExternalEditor` (`packages/coding-agent/src/modes/interactive/external-editor.ts`) |
 
-Leftover trio on unclaimed `src/cadr-cli/support/external-editor.lisp`. Timed work is a zero-exit runner / `true` that leaves `hello` in the temp file (no trailing newline, no BOM). Observed `eed_hello` / `eed_len` / `eed_round` / `eed_nonl` / `eed_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-cli/support/external-editor.lisp`. Timed work is a zero-exit runner / `true` that leaves `hello` in the temp file (no trailing newline, no BOM). Observed `eed_hello` / `eed_len` / `eed_round` / `eed_nonl` / `eed_n` are exact. First n=5 freeze **0.043×** (409.893 / 9588.340 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 869 — `cli_support` (editor_fail)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-cli/support/external-editor.lisp`. Timed wo
 |---|---|---|
 | `editor_fail` | `edit-in-external-editor` (`src/cadr-cli/support/external-editor.lisp`) | `editInExternalEditor` (`packages/coding-agent/src/modes/interactive/external-editor.ts`) |
 
-Leftover sibling of Pair 868. Timed work is non-zero runner / `false`: cadr returns the original string, pi returns `{status: "failed"}`. Observed `eef_orig` / `eef_empty` / `eef_twice` / `eef_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 868. Timed work is non-zero runner / `false`: cadr returns the original string, pi returns `{status: "failed"}`. Observed `eef_orig` / `eef_empty` / `eef_twice` / `eef_n` are exact. First n=5 freeze **0.040×** (380.497 / 9443.119 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 870 — `cli_support` (editor_empty)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 868. Timed work is non-zero runner / `false`: cadr retu
 |---|---|---|
 | `editor_empty` | `edit-in-external-editor` (`src/cadr-cli/support/external-editor.lisp`) | `editInExternalEditor` (`packages/coding-agent/src/modes/interactive/external-editor.ts`) |
 
-Leftover sibling of Pairs 868–869. Timed work is zero-exit / `true` on empty and one-cell payloads. Observed `eee_ok` / `eee_len` / `eee_x` / `eee_xlen` / `eee_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 868–869. Timed work is zero-exit / `true` on empty and one-cell payloads. Observed `eee_ok` / `eee_len` / `eee_x` / `eee_xlen` / `eee_n` are exact. First n=5 freeze **0.056×** (353.054 / 6331.558 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
