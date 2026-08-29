@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.records_project_first`
+  (`package-update-records-project-first` vs project-then-user collect).
+  Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` exact.
+  Measure-only leftover (Pair 757). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.candidate_record`
+  (`package-update-candidate-record-p` vs git/unpinned/exists). Observed
+  `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` exact.
+  Measure-only leftover (Pair 758). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.update_offline`
+  (`check-for-available-package-updates` offline vs isOfflineModeEnabled).
+  Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` /
+  `uoff_n` exact. Measure-only leftover (Pair 759). Freeze pending.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.protocol_provider`
   (`make-protocol-provider` openai-responses vs openAIResponsesApi). Observed
   `pp_stream` / `pp_simple` / `pp_miss` / `pp_diff` / `pp_n` exact. n=5

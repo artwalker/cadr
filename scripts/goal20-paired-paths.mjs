@@ -281,6 +281,9 @@ const REPETITIONS = {
 	"package_manager.delta_resource_state": 50,
 	"package_manager.project_top_level_state": 50,
 	"package_manager.derived_project_state": 50,
+	"package_manager.records_project_first": 50,
+	"package_manager.candidate_record": 50,
+	"package_manager.update_offline": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -7439,6 +7442,91 @@ function runPackageManagerGitObjectId() {
 	};
 }
 
+function leftoverPackageUpdateRecordsProjectFirst(records) {
+	return [
+		...records.filter((record) => record.scope === "project"),
+		...records.filter((record) => record.scope !== "project"),
+	];
+}
+
+function leftoverPackageUpdateCandidate(record) {
+	const source = record.parsed;
+	return Boolean(
+		source &&
+			source.type === "git" &&
+			!source.pinned &&
+			record.path &&
+			existsSync(record.path),
+	);
+}
+
+function leftoverCheckForAvailableUpdates(records, offline) {
+	if (offline) {
+		return [];
+	}
+	if (!records || records.length === 0) {
+		return [];
+	}
+	return null;
+}
+
+function leftoverRunPackageUpdateChecks(records) {
+	if (!records || records.length === 0) {
+		return [];
+	}
+	return null;
+}
+
+function leftoverUpdateCheckRecord(scope, path, type, pinned = false) {
+	return {
+		scope,
+		path,
+		parsed: { type, pinned, host: "github.com", path: "acme/pkg" },
+	};
+}
+
+function runPackageManagerRecordsProjectFirst() {
+	const user = leftoverUpdateCheckRecord("user", "/tmp", "git");
+	const proj = leftoverUpdateCheckRecord("project", "/tmp", "git");
+	const user2 = leftoverUpdateCheckRecord("user", "/var", "git");
+	const ordered = leftoverPackageUpdateRecordsProjectFirst([user, proj, user2]);
+	return {
+		upf_proj: ordered[0]?.scope === "project" ? 1 : 0,
+		upf_user: ordered[1]?.scope === "user" ? 1 : 0,
+		upf_tail: ordered[2]?.scope === "user" ? 1 : 0,
+		upf_len: ordered.length === 3 ? 1 : 0,
+		upf_n: 5,
+	};
+}
+
+function runPackageManagerCandidateRecord() {
+	const hit = leftoverUpdateCheckRecord("project", "/tmp", "git");
+	const pin = leftoverUpdateCheckRecord("project", "/tmp", "git", true);
+	const npm = leftoverUpdateCheckRecord("project", "/tmp", "npm");
+	const miss = leftoverUpdateCheckRecord(
+		"project",
+		"/tmp/cadr-goal20-no-such-update-pkg",
+		"git",
+	);
+	return {
+		upc_git: leftoverPackageUpdateCandidate(hit) ? 1 : 0,
+		upc_pin: leftoverPackageUpdateCandidate(pin) ? 0 : 1,
+		upc_npm: leftoverPackageUpdateCandidate(npm) ? 0 : 1,
+		upc_miss: leftoverPackageUpdateCandidate(miss) ? 0 : 1,
+		upc_n: 5,
+	};
+}
+
+function runPackageManagerUpdateOffline() {
+	const records = [leftoverUpdateCheckRecord("project", "/tmp", "git")];
+	return {
+		uoff_off: leftoverCheckForAvailableUpdates(records, true).length === 0 ? 1 : 0,
+		uoff_empty_off: leftoverCheckForAvailableUpdates([], true).length === 0 ? 1 : 0,
+		uoff_empty: leftoverCheckForAvailableUpdates([], false).length === 0 ? 1 : 0,
+		uoff_run: leftoverRunPackageUpdateChecks([]).length === 0 ? 1 : 0,
+		uoff_n: 5,
+	};
+}
 
 async function measurePackageManager() {
 	const manager = makePackageManager();
@@ -7483,6 +7571,9 @@ async function measurePackageManager() {
 	const deltaResourceState = runPackageManagerDeltaResourceState();
 	const projectTopLevelState = runPackageManagerProjectTopLevelState();
 	const derivedProjectState = runPackageManagerDerivedProjectState();
+	const recordsProjectFirst = runPackageManagerRecordsProjectFirst();
+	const candidateRecord = runPackageManagerCandidateRecord();
+	const updateOffline = runPackageManagerUpdateOffline();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -7610,6 +7701,15 @@ async function measurePackageManager() {
 		derived_project_state: await collect("package_manager.derived_project_state", () => {
 			return () => runPackageManagerDerivedProjectState();
 		}),
+		records_project_first: await collect("package_manager.records_project_first", () => {
+			return () => runPackageManagerRecordsProjectFirst();
+		}),
+		candidate_record: await collect("package_manager.candidate_record", () => {
+			return () => runPackageManagerCandidateRecord();
+		}),
+		update_offline: await collect("package_manager.update_offline", () => {
+			return () => runPackageManagerUpdateOffline();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -7654,6 +7754,9 @@ async function measurePackageManager() {
 			...deltaResourceState,
 			...projectTopLevelState,
 			...derivedProjectState,
+			...recordsProjectFirst,
+			...candidateRecord,
+			...updateOffline,
 		},
 	};
 }
@@ -33587,6 +33690,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts project top-level state (cadr config-selector-project-top-level-state)",
 			"package_manager.derived_project_state":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts derived project state (cadr config-selector-derived-project-state)",
+			"package_manager.records_project_first":
+				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates project-then-user collect (cadr package-update-records-project-first)",
+			"package_manager.candidate_record":
+				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates git/unpinned/exists filter (cadr package-update-candidate-record-p)",
+			"package_manager.update_offline":
+				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates isOfflineModeEnabled short-circuit (cadr check-for-available-package-updates)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

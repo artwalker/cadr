@@ -68,6 +68,9 @@
 ;;;; 754. provider_registry_defs make-protocol-provider openai-responses vs openAIResponsesApi
 ;;;; 755. provider_registry_defs make-protocol-provider anthropic-messages vs anthropicMessagesApi
 ;;;; 756. provider_registry_defs instantiate-provider openai vs openaiProvider
+;;;; 757. package_manager package-update-records-project-first vs project-then-user
+;;;; 758. package_manager package-update-candidate-record-p vs git/unpinned/exists
+;;;; 759. package_manager check-for-available-package-updates offline vs isOfflineModeEnabled
 ;;;; 748. provider_registry_defs built-in-api-key-login-function vs bedrock/vertex ApiKeyAuth.login
 ;;;; 749. provider_registry_defs built-in-api-key-auth vs envApiKeyAuth.resolve (in-memory env)
 ;;;; 750. provider_registry_defs built-in-model-filter-function vs github-copilot filterModels
@@ -519,6 +522,9 @@
     ("package_manager.delta_resource_state" . 50)
     ("package_manager.project_top_level_state" . 50)
     ("package_manager.derived_project_state" . 50)
+    ("package_manager.records_project_first" . 50)
+    ("package_manager.candidate_record" . 50)
+    ("package_manager.update_offline" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -5806,6 +5812,70 @@
       (null (cadr-cli::package-update-git-object-id "notasha")))
      5)))
 
+(defun leftover-update-check-record (scope path type &key pinned-p)
+  (list :scope scope
+        :path path
+        :parsed
+        (cadr-cli::make-package-source
+         :type type
+         :host "github.com"
+         :path "acme/pkg"
+         :pinned-p pinned-p)))
+
+(defun run-package-manager-records-project-first ()
+  ;; Leftover sibling: project records before user. Not git ls-remote.
+  (let* ((user (leftover-update-check-record :user "/tmp" :git))
+         (proj (leftover-update-check-record :project "/tmp" :git))
+         (user2 (leftover-update-check-record :user "/var" :git))
+         (ordered
+           (cadr-cli::package-update-records-project-first
+            (list user proj user2))))
+    (list
+     (package-manager-leftover-truth
+      (eq (getf (first ordered) :scope) :project))
+     (package-manager-leftover-truth
+      (eq (getf (second ordered) :scope) :user))
+     (package-manager-leftover-truth
+      (eq (getf (third ordered) :scope) :user))
+     (package-manager-leftover-truth (= (length ordered) 3))
+     5)))
+
+(defun run-package-manager-candidate-record ()
+  ;; Leftover sibling: git/unpinned/exists. Not ls-remote.
+  (let ((hit (leftover-update-check-record :project "/tmp" :git))
+        (pin (leftover-update-check-record :project "/tmp" :git :pinned-p t))
+        (npm (leftover-update-check-record :project "/tmp" :npm))
+        (miss
+          (leftover-update-check-record
+           :project "/tmp/cadr-goal20-no-such-update-pkg" :git)))
+    (list
+     (package-manager-leftover-truth
+      (cadr-cli::package-update-candidate-record-p hit))
+     (package-manager-leftover-truth
+      (not (cadr-cli::package-update-candidate-record-p pin)))
+     (package-manager-leftover-truth
+      (not (cadr-cli::package-update-candidate-record-p npm)))
+     (package-manager-leftover-truth
+      (not (cadr-cli::package-update-candidate-record-p miss)))
+     5)))
+
+(defun run-package-manager-update-offline ()
+  ;; Leftover sibling: offline short-circuit + empty records. Not git.
+  (let ((records (list (leftover-update-check-record :project "/tmp" :git))))
+    (list
+     (package-manager-leftover-truth
+      (null
+       (cadr-cli::check-for-available-package-updates
+        records :offline-p t)))
+     (package-manager-leftover-truth
+      (null
+       (cadr-cli::check-for-available-package-updates nil :offline-p t)))
+     (package-manager-leftover-truth
+      (null
+       (cadr-cli::check-for-available-package-updates nil :offline-p nil)))
+     (package-manager-leftover-truth
+      (null (cadr-cli::run-package-update-checks nil #'identity 4)))
+     5)))
 
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
@@ -5872,7 +5942,13 @@
            (project-top-level-state
              (run-package-manager-project-top-level-state))
            (derived-project-state
-             (run-package-manager-derived-project-state)))
+             (run-package-manager-derived-project-state))
+           (records-project-first
+             (run-package-manager-records-project-first))
+           (candidate-record
+             (run-package-manager-candidate-record))
+           (update-offline
+             (run-package-manager-update-offline)))
       (json-object
        "observed"
        (json-object
@@ -6073,7 +6149,22 @@
         "dps_unload" (nth 1 derived-project-state)
         "dps_pkg" (nth 2 derived-project-state)
         "dps_miss" (nth 3 derived-project-state)
-        "dps_n" (nth 4 derived-project-state))
+        "dps_n" (nth 4 derived-project-state)
+        "upf_proj" (nth 0 records-project-first)
+        "upf_user" (nth 1 records-project-first)
+        "upf_tail" (nth 2 records-project-first)
+        "upf_len" (nth 3 records-project-first)
+        "upf_n" (nth 4 records-project-first)
+        "upc_git" (nth 0 candidate-record)
+        "upc_pin" (nth 1 candidate-record)
+        "upc_npm" (nth 2 candidate-record)
+        "upc_miss" (nth 3 candidate-record)
+        "upc_n" (nth 4 candidate-record)
+        "uoff_off" (nth 0 update-offline)
+        "uoff_empty_off" (nth 1 update-offline)
+        "uoff_empty" (nth 2 update-offline)
+        "uoff_run" (nth 3 update-offline)
+        "uoff_n" (nth 4 update-offline))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -6269,7 +6360,22 @@
        (collect "package_manager.derived_project_state"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-derived-project-state))))))))
+                    (run-package-manager-derived-project-state))))
+       "records_project_first"
+       (collect "package_manager.records_project_first"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-records-project-first))))
+       "candidate_record"
+       (collect "package_manager.candidate_record"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-candidate-record))))
+       "update_offline"
+       (collect "package_manager.update_offline"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-update-offline))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -32039,6 +32145,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-project-top-level-state"
       "package_manager.derived_project_state"
       "src/cadr-cli/packages/config-selector.lisp config-selector-derived-project-state"
+      "package_manager.records_project_first"
+      "src/cadr-cli/packages/update-checks.lisp package-update-records-project-first"
+      "package_manager.candidate_record"
+      "src/cadr-cli/packages/update-checks.lisp package-update-candidate-record-p"
+      "package_manager.update_offline"
+      "src/cadr-cli/packages/update-checks.lisp check-for-available-package-updates"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
