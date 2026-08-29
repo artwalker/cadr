@@ -12,15 +12,23 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_interactive_controller.tui_input_thread`
   (`tui-input-thread-p` vs leftover TUI input-thread sentinel).
   Observed `tit_nil` / `tit_self` / `tit_other` / `tit_both` / `tit_n` exact.
-  Measure-only leftover (Pair 865). `nextPairNum` left unchanged.
+  n=5 **0.426×** (0.080 / 0.188 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 865). cadr leads.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.extension_host_turn`
   (`call-extension-host-turn-without-blocking-tui` vs leftover inline vs deferred startTurn).
   Observed `eht_inline` / `eht_start` / `eht_defer` / `eht_ok` / `eht_n` exact.
-  Measure-only leftover (Pair 866). `nextPairNum` left unchanged.
+  n=5 **0.698×** (0.175 / 0.251 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 866). cadr leads.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.wrap_extension_host_turn`
   (`wrap-extension-host-tui-turn-dispatch` vs leftover sendCustomMessage wrap/restore).
   Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` exact.
-  Measure-only leftover (Pair 867). `nextPairNum` left unchanged.
+  n=5 **1.459×** (0.764 / 0.524 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 867). Over-1× booked.
+  `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_selectors.armin_copy_cell`
   (`armin-copy-cell` vs leftover typewriter cell assign).

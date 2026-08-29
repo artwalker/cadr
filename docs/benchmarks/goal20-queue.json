@@ -8603,32 +8603,47 @@
   {
    "pair": 865,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/extension-ui.lisp",
    "measure": "measure-cli-interactive-controller",
    "metric": "cli_interactive_controller.tui_input_thread",
    "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 865"
+   "note": "nextPairNum left at tip 328; leftover id 865",
+   "ratio": 0.426,
+   "cadrUs": 0.080,
+   "piUs": 0.188,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 866,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/extension-ui.lisp",
    "measure": "measure-cli-interactive-controller",
    "metric": "cli_interactive_controller.extension_host_turn",
    "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 866"
+   "note": "nextPairNum left at tip 328; leftover id 866",
+   "ratio": 0.698,
+   "cadrUs": 0.175,
+   "piUs": 0.251,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 867,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/extension-ui.lisp",
    "measure": "measure-cli-interactive-controller",
    "metric": "cli_interactive_controller.wrap_extension_host_turn",
    "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 867"
+   "note": "nextPairNum left at tip 328; leftover id 867",
+   "ratio": 1.459,
+   "cadrUs": 0.764,
+   "piUs": 0.524,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
