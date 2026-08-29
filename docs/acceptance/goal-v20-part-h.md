@@ -10258,6 +10258,30 @@ Leftover sibling of Pair 814. Timed work is provider/model and Tools/summaries t
 
 Leftover sibling of Pairs 814–815. Timed work is nonempty label ISO map (empty label remhash) — not tree TUI. Observed `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` are exact. First n=5 freeze **2.873×** (4.218 / 1.468 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 817 — `cli_bootstrap_sessions` (session_tree_tool_calls)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_tree_tool_calls` | `session-tree-tool-calls` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover tool-call id→name map (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
+
+Leftover sibling of leftover 808–816 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is assistant tool-call id→name/arguments hash — not tree TUI. Observed `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` are exact. Measure-only leftover 817. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 818 — `cli_bootstrap_sessions` (session_compaction_display_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_compaction_display_state` | `session-compaction-display-state` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover display messages + nil summary/kept (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 817. Timed work is message-only display projection returning `(messages nil nil)` — not `/compact` TUI. Fixture has no compaction entry (invalid first-kept-id errors). Observed `scds_empty` / `scds_n` / `scds_sum` / `scds_kept` / `scds_first` are exact. Measure-only leftover 818. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 819 — `cli_bootstrap_sessions` (write_hotkeys_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_hotkeys_command` | `write-hotkeys-command` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover Keyboard Shortcuts list (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 817–818. Timed work is fixed `Keyboard Shortcuts` plus `+interactive-hotkey-definitions+` (optional configured bindings) — not markdown keybinding tables. Observed `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` are exact. Measure-only leftover 819. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

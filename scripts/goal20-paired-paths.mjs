@@ -630,6 +630,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.session_command_stats": 50,
 	"cli_bootstrap_sessions.session_usage_breakdown": 50,
 	"cli_bootstrap_sessions.session_tree_label_timestamps": 50,
+	"cli_bootstrap_sessions.session_tree_tool_calls": 50,
+	"cli_bootstrap_sessions.session_compaction_display_state": 50,
+	"cli_bootstrap_sessions.write_hotkeys_command": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -36293,6 +36296,110 @@ function runCliBootstrapSessionTreeLabelTimestamps() {
 	};
 }
 
+function leftoverSessionTreeToolCalls(session) {
+	const result = {};
+	for (const entry of session && session.entries ? session.entries : []) {
+		if (entry.type !== "message") continue;
+		const message = entry.message;
+		if (!message || message.role !== "assistant") continue;
+		const content = Array.isArray(message.content) ? message.content : [];
+		for (const block of content) {
+			if (block && block.type === "toolCall") {
+				result[block.id] = { name: block.name, arguments: block.arguments };
+			}
+		}
+	}
+	return result;
+}
+
+function leftoverDisplaySession() {
+	return {
+		entries: leftoverStatsSession().entries.filter((entry) => entry.type === "message"),
+	};
+}
+
+function leftoverSessionDisplayMessages(session) {
+	const out = [];
+	for (const entry of session && session.entries ? session.entries : []) {
+		if (entry.type === "message" && entry.message) out.push(entry.message);
+	}
+	return out;
+}
+
+function leftoverSessionCompactionDisplayState(session) {
+	return [leftoverSessionDisplayMessages(session), null, null];
+}
+
+function leftoverFirstMessageRole(messages) {
+	const message = messages[0];
+	if (!message) return "";
+	return message.role || "";
+}
+
+function runCliBootstrapSessionTreeToolCalls() {
+	const empty = leftoverSessionTreeToolCalls({ entries: [] });
+	const filled = leftoverSessionTreeToolCalls(leftoverStatsSession());
+	return {
+		sttc_empty: Object.keys(empty).length,
+		sttc_n: Object.keys(filled).length,
+		sttc_t1: filled.t1 ? filled.t1.name || "" : "",
+		sttc_args: filled.t1 && filled.t1.arguments ? 1 : 0,
+		sttc_miss: filled.missing ? filled.missing.name || "" : "",
+	};
+}
+
+function runCliBootstrapSessionCompactionDisplayState() {
+	const empty = leftoverSessionCompactionDisplayState({ entries: [] });
+	const filled = leftoverSessionCompactionDisplayState(leftoverDisplaySession());
+	return {
+		scds_empty: empty[0].length,
+		scds_n: filled[0].length,
+		scds_sum: filled[1] ? 1 : 0,
+		scds_kept: filled[2] ? 1 : 0,
+		scds_first: leftoverFirstMessageRole(filled[0]),
+	};
+}
+
+const LEFTOVER_HOTKEY_DEFINITIONS = [
+	["escape", "Cancel or abort"],
+	["ctrl+c", "Clear editor; press again to exit"],
+	["ctrl+d", "Exit when the editor is empty"],
+	["ctrl+z", "Suspend to background"],
+	["ctrl+o", "Toggle tool output"],
+	["ctrl+v", "Paste image or text from clipboard"],
+	["/", "Slash commands"],
+	["!", "Run bash command"],
+	["!!", "Run bash command without adding it to context"],
+];
+
+function leftoverWriteHotkeysCommand(userBindings) {
+	let out = "Keyboard Shortcuts\n\n";
+	for (const [key, desc] of LEFTOVER_HOTKEY_DEFINITIONS) {
+		out += `${key}  ${desc}\n`;
+	}
+	if (userBindings && userBindings.length) {
+		out += "\nConfigured bindings\n";
+		for (const binding of userBindings) {
+			const keys = binding.slice(1);
+			const action = binding[0];
+			out += `${keys.join(", ")}  ${action}\n`;
+		}
+	}
+	return out;
+}
+
+function runCliBootstrapWriteHotkeysCommand() {
+	const plain = leftoverWriteHotkeysCommand();
+	const bound = leftoverWriteHotkeysCommand([["save", "ctrl+s"]]);
+	return {
+		whc_plain: plain.length,
+		whc_hdr: plain.includes("Keyboard Shortcuts") ? 1 : 0,
+		whc_ctrlc: plain.includes("ctrl+c") ? 1 : 0,
+		whc_bound: bound.length,
+		whc_cfg: bound.includes("Configured bindings") ? 1 : 0,
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -36321,6 +36428,9 @@ async function measureCliBootstrapCodingTools() {
 	const commandStatsObserved = runCliBootstrapSessionCommandStats();
 	const usageBreakdownObserved = runCliBootstrapSessionUsageBreakdown();
 	const labelTimestampsObserved = runCliBootstrapSessionTreeLabelTimestamps();
+	const treeToolCallsObserved = runCliBootstrapSessionTreeToolCalls();
+	const compactionDisplayObserved = runCliBootstrapSessionCompactionDisplayState();
+	const writeHotkeysObserved = runCliBootstrapWriteHotkeysCommand();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -36403,6 +36513,18 @@ async function measureCliBootstrapCodingTools() {
 		session_tree_label_timestamps: await collect("cli_bootstrap_sessions.session_tree_label_timestamps", () => {
 			return () => runCliBootstrapSessionTreeLabelTimestamps();
 		}),
+		session_tree_tool_calls: await collect("cli_bootstrap_sessions.session_tree_tool_calls", () => {
+			return () => runCliBootstrapSessionTreeToolCalls();
+		}),
+		session_compaction_display_state: await collect(
+			"cli_bootstrap_sessions.session_compaction_display_state",
+			() => {
+				return () => runCliBootstrapSessionCompactionDisplayState();
+			},
+		),
+		write_hotkeys_command: await collect("cli_bootstrap_sessions.write_hotkeys_command", () => {
+			return () => runCliBootstrapWriteHotkeysCommand();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -36430,6 +36552,9 @@ async function measureCliBootstrapCodingTools() {
 			...commandStatsObserved,
 			...usageBreakdownObserved,
 			...labelTimestampsObserved,
+			...treeToolCallsObserved,
+			...compactionDisplayObserved,
+			...writeHotkeysObserved,
 		},
 	};
 }
@@ -38582,6 +38707,12 @@ const result = {
 				"packages/coding-agent/src/core/usage-totals.ts leftover getUsageCostBreakdown (cadr session-usage-breakdown)",
 			"cli_bootstrap_sessions.session_tree_label_timestamps":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover label timestamps (cadr session-tree-label-timestamps)",
+			"cli_bootstrap_sessions.session_tree_tool_calls":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover tool-call map (cadr session-tree-tool-calls)",
+			"cli_bootstrap_sessions.session_compaction_display_state":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts leftover display messages + nil summary (cadr session-compaction-display-state)",
+			"cli_bootstrap_sessions.write_hotkeys_command":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts leftover Keyboard Shortcuts list (cadr write-hotkeys-command)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
