@@ -9454,7 +9454,7 @@ Leftover sibling of Pairs 838–839. Timed work is command string assembly — n
 |---|---|---|
 | `managed_binary_names` | `+managed-binary-names+` (`src/cadr-cli/migration.lisp`) | leftover `fd`/`rg`/`fd.exe`/`rg.exe` (`packages/coding-agent/src/migrations.ts`) |
 
-Leftover sibling of Pairs 838–840 on the same `migration.lisp` hole. Timed work is the four managed binary names — not `renameSync`, not tools/→bin/. Observed `mbn_n` / `mbn_fd` / `mbn_rg` / `mbn_fdexe` / `mbn_rgexe` are exact. Measure-only leftover. `nextPairNum` left at 328.
+Leftover sibling of Pairs 838–840 on the same `migration.lisp` hole. Timed work is the four managed binary names — not `renameSync`, not tools/→bin/. Observed `mbn_n` / `mbn_fd` / `mbn_rg` / `mbn_fdexe` / `mbn_rgexe` are exact. First n=5 freeze **1.653×** (0.260 / 0.157 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 842 — `cli_bootstrap_sessions` (migration_guide_url)
 
@@ -9462,7 +9462,7 @@ Leftover sibling of Pairs 838–840 on the same `migration.lisp` hole. Timed wor
 |---|---|---|
 | `migration_guide_url` | `+migration-guide-url+` (`src/cadr-cli/migration.lisp`) | leftover `MIGRATION_GUIDE_URL` (`packages/coding-agent/src/migrations.ts`) |
 
-Leftover sibling of Pair 841. Timed work is the changelog URL constant — not stdin wait, not print. Observed `mgu_eq` / `mgu_https` / `mgu_gh` / `mgu_n` are exact. Measure-only leftover. `nextPairNum` left at 328.
+Leftover sibling of Pair 841. Timed work is the changelog URL constant — not stdin wait, not print. Observed `mgu_eq` / `mgu_https` / `mgu_gh` / `mgu_n` are exact. First n=5 freeze **1.651×** (0.313 / 0.190 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 843 — `cli_bootstrap_sessions` (extensions_doc_url)
 
@@ -9470,7 +9470,7 @@ Leftover sibling of Pair 841. Timed work is the changelog URL constant — not s
 |---|---|---|
 | `extensions_doc_url` | `+extensions-doc-url+` (`src/cadr-cli/migration.lisp`) | leftover `EXTENSIONS_DOC_URL` (`packages/coding-agent/src/migrations.ts`) |
 
-Leftover sibling of Pairs 841–842. Timed work is the extensions.md URL constant — not keypress, not warn. Observed `edu_eq` / `edu_https` / `edu_gh` / `edu_n` are exact. Measure-only leftover. `nextPairNum` left at 328.
+Leftover sibling of Pairs 841–842. Timed work is the extensions.md URL constant — not keypress, not warn. Observed `edu_eq` / `edu_https` / `edu_gh` / `edu_n` are exact. First n=5 freeze **1.593×** (0.302 / 0.190 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

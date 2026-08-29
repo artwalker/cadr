@@ -8243,32 +8243,47 @@
   {
    "pair": 841,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/migration.lisp",
    "measure": "measure-cli-bootstrap-coding-tools",
    "metric": "cli_bootstrap_sessions.managed_binary_names",
    "branch": "cursor/migration-binaries-guide-docs-leftovers-841-843-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 841"
+   "note": "nextPairNum left at tip 328; leftover id 841",
+   "ratio": 1.653,
+   "cadrUs": 0.260,
+   "piUs": 0.157,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 842,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/migration.lisp",
    "measure": "measure-cli-bootstrap-coding-tools",
    "metric": "cli_bootstrap_sessions.migration_guide_url",
    "branch": "cursor/migration-binaries-guide-docs-leftovers-841-843-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 842"
+   "note": "nextPairNum left at tip 328; leftover id 842",
+   "ratio": 1.651,
+   "cadrUs": 0.313,
+   "piUs": 0.190,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 843,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/migration.lisp",
    "measure": "measure-cli-bootstrap-coding-tools",
    "metric": "cli_bootstrap_sessions.extensions_doc_url",
    "branch": "cursor/migration-binaries-guide-docs-leftovers-841-843-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 843"
+   "note": "nextPairNum left at tip 328; leftover id 843",
+   "ratio": 1.593,
+   "cadrUs": 0.302,
+   "piUs": 0.190,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

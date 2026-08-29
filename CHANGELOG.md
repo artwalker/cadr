@@ -12,15 +12,21 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.managed_binary_names`
   (`+managed-binary-names+` vs leftover fd/rg (+ .exe) names). Observed
   `mbn_n` / `mbn_fd` / `mbn_rg` / `mbn_fdexe` / `mbn_rgexe` exact.
-  Measure-only leftover (Pair 841). `nextPairNum` left unchanged.
+  n=5 **1.653×** (0.260 / 0.157 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 841). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.migration_guide_url`
   (`+migration-guide-url+` vs leftover MIGRATION_GUIDE_URL). Observed
   `mgu_eq` / `mgu_https` / `mgu_gh` / `mgu_n` exact.
-  Measure-only leftover (Pair 842). `nextPairNum` left unchanged.
+  n=5 **1.651×** (0.313 / 0.190 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 842). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.extensions_doc_url`
   (`+extensions-doc-url+` vs leftover EXTENSIONS_DOC_URL). Observed
   `edu_eq` / `edu_https` / `edu_gh` / `edu_n` exact.
-  Measure-only leftover (Pair 843). `nextPairNum` left unchanged.
+  n=5 **1.593×** (0.302 / 0.190 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 843). Over-1× booked. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.data_directory`
   (`data-directory` vs leftover join(home, CONFIG_DIR_NAME)). Observed

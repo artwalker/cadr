@@ -605,4 +605,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.data_directory` | 28.934 | 0.947 | 30.561× | 40.00× | measure-only leftover 838; `data-directory` vs leftover join(home, CONFIG_DIR_NAME) | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.legacy_data_directory` | 29.041 | 1.008 | 28.797× | 40.00× | measure-only leftover 839; `legacy-data-directory` vs leftover join(home, '.' + legacy product) | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.manual_migration_command` | 28.375 | 1.599 | 17.746× | 24.00× | measure-only leftover 840; `manual-migration-command` vs leftover mv -- quoted paths | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.managed_binary_names` | 0.260 | 0.157 | 1.653× | 8.00× | measure-only leftover 841; `+managed-binary-names+` vs leftover fd/rg names | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.migration_guide_url` | 0.313 | 0.190 | 1.651× | 8.00× | measure-only leftover 842; `+migration-guide-url+` vs leftover MIGRATION_GUIDE_URL | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.extensions_doc_url` | 0.302 | 0.190 | 1.593× | 8.00× | measure-only leftover 843; `+extensions-doc-url+` vs leftover EXTENSIONS_DOC_URL | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
