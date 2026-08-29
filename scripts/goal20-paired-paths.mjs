@@ -581,6 +581,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_object_overrides": 50,
 	"cli_interactive_controller.apply_tui_theme_summary": 50,
 	"cli_interactive_controller.load_tui_theme_file": 50,
+	"cli_interactive_controller.bash_append_running": 50,
+	"cli_interactive_controller.bash_complete_string": 50,
+	"cli_interactive_controller.bash_stop_entry": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13264,7 +13267,7 @@ function makeTuiUserBashEntry(command, exclude, running, expanded = false) {
 		running: running ? 1 : 0,
 		exclude: exclude ? 1 : 0,
 		cacheValid: 0,
-		exitCode: 0,
+		exitCode: -1,
 		cancelled: 0,
 		truncated: 0,
 		fullOutputPath: "",
@@ -13352,6 +13355,72 @@ function runCliInteractiveBashCompleteEntry() {
 		ce_run: ok.running,
 		ce_err: err.exitCode,
 		ce_err_cancel: err.cancelled,
+	};
+}
+
+function appendTuiUserBashRunning(state, command, exclude) {
+	const entry = makeTuiUserBashEntry(command, exclude, true, false);
+	state.entries.push(entry);
+	return entry;
+}
+
+function runCliInteractiveBashAppendRunning() {
+	const state = { entries: [] };
+	appendTuiUserBashRunning(state, "ls", false);
+	appendTuiUserBashRunning(state, "echo hi", true);
+	const first = state.entries[0];
+	const second = state.entries[1];
+	return {
+		bar_n: state.entries.length,
+		bar_label: first.label,
+		bar_run: first.running,
+		bar_stream: first.streaming,
+		bar_ex: second.exclude,
+		bar_run2: second.running,
+	};
+}
+
+function completeTuiUserBashString(entry, text) {
+	entry.text = text;
+	entry.streaming = 0;
+	entry.running = 0;
+	entry.exitCode = 0;
+	entry.cacheValid = 0;
+	return entry;
+}
+
+function runCliInteractiveBashCompleteString() {
+	const ok = makeTuiUserBashEntry("ls", false, true, false);
+	const empty = makeTuiUserBashEntry("true", true, true, false);
+	completeTuiUserBashString(ok, "hello");
+	completeTuiUserBashString(empty, "");
+	return {
+		cs_text: ok.text,
+		cs_run: ok.running,
+		cs_stream: ok.streaming,
+		cs_exit: ok.exitCode,
+		cs_cache: ok.cacheValid ? 0 : 1,
+		cs_empty: empty.text.length,
+	};
+}
+
+function stopTuiUserBashEntry(entry) {
+	entry.streaming = 0;
+	entry.running = 0;
+	entry.cacheValid = 0;
+	return entry;
+}
+
+function runCliInteractiveBashStopEntry() {
+	const entry = makeTuiUserBashEntry("sleep", false, true, false);
+	appendTuiUserBashOutput(entry, "partial");
+	stopTuiUserBashEntry(entry);
+	return {
+		st_run: entry.running,
+		st_stream: entry.streaming,
+		st_text: entry.text,
+		st_cache: entry.cacheValid ? 0 : 1,
+		st_exit: entry.exitCode,
 	};
 }
 
@@ -14599,6 +14668,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveThemeObjectOverrides(),
 		...runCliInteractiveApplyTuiThemeSummary(),
 		...runCliInteractiveLoadTuiThemeFile(),
+		...runCliInteractiveBashAppendRunning(),
+		...runCliInteractiveBashCompleteString(),
+		...runCliInteractiveBashStopEntry(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -14642,6 +14714,21 @@ async function measureCliInteractiveDecodeEntity() {
 		),
 		load_tui_theme_file: await collect("cli_interactive_controller.load_tui_theme_file", () => {
 			return () => runCliInteractiveLoadTuiThemeFile();
+		}),
+		bash_append_running: await collect(
+			"cli_interactive_controller.bash_append_running",
+			() => {
+				return () => runCliInteractiveBashAppendRunning();
+			},
+		),
+		bash_complete_string: await collect(
+			"cli_interactive_controller.bash_complete_string",
+			() => {
+				return () => runCliInteractiveBashCompleteString();
+			},
+		),
+		bash_stop_entry: await collect("cli_interactive_controller.bash_stop_entry", () => {
+			return () => runCliInteractiveBashStopEntry();
 		}),
 		observed,
 	};
@@ -28509,6 +28596,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts setTheme",
 			"cli_interactive_controller.load_tui_theme_file":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts loadThemeFromPath",
+			"cli_interactive_controller.bash_append_running":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
+			"cli_interactive_controller.bash_complete_string":
+				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts setComplete exit 0 string",
+			"cli_interactive_controller.bash_stop_entry":
+				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts loader.stop without setComplete",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

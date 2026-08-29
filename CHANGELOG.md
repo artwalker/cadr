@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.bash_append_running`
+  (`append-tui-user-bash-running` on
+  `src/cadr-cli/interactive/user-bash.lisp` vs BashExecutionComponent
+  addChild running). Observed `bar_n` / `bar_label` / `bar_run` /
+  `bar_stream` / `bar_ex` / `bar_run2` exact. n=5 **2.059×** (0.735 /
+  0.357 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 640). Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bash_complete_string`
+  (`complete-tui-user-bash-string` vs setComplete exit 0 string). Observed
+  `cs_text` / `cs_run` / `cs_stream` / `cs_exit` / `cs_cache` / `cs_empty`
+  exact. n=5 **2.719×** (0.745 / 0.274 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 641). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bash_stop_entry`
+  (`stop-tui-user-bash-entry` vs loader.stop without setComplete). Observed
+  `st_run` / `st_stream` / `st_text` / `st_cache` / `st_exit` exact. n=5
+  **2.843×** (0.621 / 0.219 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 642). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.theme_object_overrides`
   (`theme-object-overrides` on
   `src/cadr-cli/interactive/themes.lisp` vs
