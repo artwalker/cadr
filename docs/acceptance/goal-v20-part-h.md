@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 751 — `provider_registry_defs` (runtime_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_provider` | `make-built-in-runtime-provider` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` openai (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling of leftover 748–750 on the same needs-pair file. Timed work is constructing the openai runtime-provider: id, api-key auth, no oauth, and a non-empty model list — not `stream-chat`. Observed `rp_id` / `rp_key` / `rp_no_oauth` / `rp_models` / `rp_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 752 — `provider_registry_defs` (runtime_provider_copilot)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_provider_copilot` | `make-built-in-runtime-provider` github-copilot (`src/cadr-ai/providers/runtime-projection.lisp`) | `githubCopilotProvider` (`packages/ai/src/providers/github-copilot.ts`) |
+
+Leftover sibling of Pair 751. Timed work is oauth, login function, filterModels, and a non-empty model list — not login I/O. Observed `rpc_oauth` / `rpc_login` / `rpc_filter` / `rpc_models` / `rpc_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 753 — `provider_registry_defs` (models_runtime)
+
+| metric | cadr | pi |
+|---|---|---|
+| `models_runtime` | `make-built-in-models-runtime` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` installed into a Map (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling of Pairs 751–752. Timed work is installing every built-in runtime-provider, checking openai/anthropic presence, a miss, and explicit `OPENAI_API_KEY` in the merged environment — not `stream-chat`. Observed `mr_oa` / `mr_anth` / `mr_miss` / `mr_env` / `mr_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

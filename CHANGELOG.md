@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `provider_registry_defs.runtime_provider`
+  (`make-built-in-runtime-provider` vs builtinProviders openai). Observed
+  `rp_id` / `rp_key` / `rp_no_oauth` / `rp_models` / `rp_n` exact.
+  Measure-only leftover (Pair 751). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.runtime_provider_copilot`
+  (`make-built-in-runtime-provider` github-copilot vs githubCopilotProvider).
+  Observed `rpc_oauth` / `rpc_login` / `rpc_filter` / `rpc_models` /
+  `rpc_n` exact. Measure-only leftover (Pair 752). Freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.models_runtime`
+  (`make-built-in-models-runtime` vs builtinProviders Map). Observed
+  `mr_oa` / `mr_anth` / `mr_miss` / `mr_env` / `mr_n` exact.
+  Measure-only leftover (Pair 753). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

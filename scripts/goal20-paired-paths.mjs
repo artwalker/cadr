@@ -842,6 +842,9 @@ const REPETITIONS = {
 	"provider_registry_defs.api_key_login_function": 50,
 	"provider_registry_defs.api_key_auth": 50,
 	"provider_registry_defs.model_filter_function": 50,
+	"provider_registry_defs.runtime_provider": 50,
+	"provider_registry_defs.runtime_provider_copilot": 50,
+	"provider_registry_defs.models_runtime": 5,
 	"core_rest.cancellation_abort": 50,
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
@@ -31697,6 +31700,58 @@ function runProviderModelFilterFunction() {
 	};
 }
 
+function leftoverMergeExplicitOverAmbient(explicit, ambient) {
+	return { ...ambient, ...explicit };
+}
+
+function leftoverMakeModelsRuntime() {
+	const runtime = {
+		providers: new Map(),
+		env: leftoverMergeExplicitOverAmbient({ OPENAI_API_KEY: "sk-fixture" }, {}),
+	};
+	for (const provider of builtinProvidersModule.builtinProviders()) {
+		runtime.providers.set(provider.id, provider);
+	}
+	return runtime;
+}
+
+function runProviderRuntimeProvider() {
+	const openai = builtinProvidersModule
+		.builtinProviders()
+		.find((provider) => provider.id === "openai");
+	const models = builtinProvidersModule.getBuiltinModels("openai");
+	return {
+		rp_id: openai?.id === "openai" ? 1 : 0,
+		rp_key: openai?.auth?.apiKey ? 1 : 0,
+		rp_no_oauth: openai?.auth?.oauth ? 0 : 1,
+		rp_models: Array.isArray(models) && models.length > 0 ? 1 : 0,
+		rp_n: 5,
+	};
+}
+
+function runProviderRuntimeProviderCopilot() {
+	const copilot = githubCopilotProviderModule.githubCopilotProvider();
+	const models = builtinProvidersModule.getBuiltinModels("github-copilot");
+	return {
+		rpc_oauth: copilot?.auth?.oauth ? 1 : 0,
+		rpc_login: typeof copilot?.auth?.oauth?.login === "function" ? 1 : 0,
+		rpc_filter: typeof copilot?.filterModels === "function" ? 1 : 0,
+		rpc_models: Array.isArray(models) && models.length > 0 ? 1 : 0,
+		rpc_n: 5,
+	};
+}
+
+function runProviderModelsRuntime() {
+	const runtime = leftoverMakeModelsRuntime();
+	return {
+		mr_oa: runtime.providers.has("openai") ? 1 : 0,
+		mr_anth: runtime.providers.has("anthropic") ? 1 : 0,
+		mr_miss: runtime.providers.has("no-such") ? 0 : 1,
+		mr_env: runtime.env.OPENAI_API_KEY === "sk-fixture" ? 1 : 0,
+		mr_n: 5,
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
@@ -31712,6 +31767,9 @@ async function measureProviderRegistryDefs() {
 	const apiKeyLoginFunction = runProviderApiKeyLoginFunction();
 	const apiKeyAuth = runProviderApiKeyAuth();
 	const modelFilterFunction = runProviderModelFilterFunction();
+	const runtimeProvider = runProviderRuntimeProvider();
+	const runtimeProviderCopilot = runProviderRuntimeProviderCopilot();
+	const modelsRuntime = runProviderModelsRuntime();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -31770,6 +31828,18 @@ async function measureProviderRegistryDefs() {
 				return () => runProviderModelFilterFunction();
 			},
 		),
+		runtime_provider: await collect("provider_registry_defs.runtime_provider", () => {
+			return () => runProviderRuntimeProvider();
+		}),
+		runtime_provider_copilot: await collect(
+			"provider_registry_defs.runtime_provider_copilot",
+			() => {
+				return () => runProviderRuntimeProviderCopilot();
+			},
+		),
+		models_runtime: await collect("provider_registry_defs.models_runtime", () => {
+			return () => runProviderModelsRuntime();
+		}),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
@@ -31786,6 +31856,9 @@ async function measureProviderRegistryDefs() {
 			...apiKeyLoginFunction,
 			...apiKeyAuth,
 			...modelFilterFunction,
+			...runtimeProvider,
+			...runtimeProviderCopilot,
+			...modelsRuntime,
 		},
 	};
 }
@@ -34270,6 +34343,12 @@ const result = {
 				"packages/ai/src/auth/helpers.ts envApiKeyAuth.resolve (explicit/stored/env/miss; openai-codex has no apiKey)",
 			"provider_registry_defs.model_filter_function":
 				"packages/ai/src/providers/github-copilot.ts filterModels availableModelIds",
+			"provider_registry_defs.runtime_provider":
+				"packages/ai/src/providers/all.ts builtinProviders openai (apiKey, no oauth, models)",
+			"provider_registry_defs.runtime_provider_copilot":
+				"packages/ai/src/providers/github-copilot.ts githubCopilotProvider oauth/login/filterModels/models",
+			"provider_registry_defs.models_runtime":
+				"packages/ai/src/providers/all.ts builtinProviders installed into a Map (make-built-in-models-runtime counterpart)",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"skill_prompt_load.resolve_prompt":
