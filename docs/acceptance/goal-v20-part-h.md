@@ -10330,6 +10330,30 @@ Leftover sibling of Pair 823. Timed work is one tree row plist (id/role/text/typ
 
 Leftover sibling of Pairs 823–824. Timed work is last assistant/model-change lookup against an in-memory registry — not models.json I/O. Observed `srm_none` / `srm_hit` / `srm_noreg` / `srm_noavail` / `srm_wrong` are exact. First n=5 freeze **1.559×** (4.808 / 3.084 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 826 — `cli_extensions_install` (llama_search_status)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_search_status` | `llama-search-status-text` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover HuggingFaceSearch status (`packages/coding-agent/src/extensions/llama/ui.ts`) |
+
+Leftover sibling of leftover 805–807 on the same `llama/ui.lisp` `cli_extensions_install` hole. Timed work is search status copy — not HF HTTP, not search TUI. Observed `lss_type` / `lss_search` / `lss_empty` / `lss_found` / `lss_n` are exact. Measure-only leftover 826. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 827 — `cli_extensions_install` (llama_search_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_search_filter` | `llama-search-filter` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover filterResults (`packages/coding-agent/src/extensions/llama/ui.ts`) |
+
+Leftover sibling of Pair 826. Timed work is in-memory result filter + selected clamp — not scheduleSearch debounce/HTTP. Observed `lsf_empty` / `lsf_miss` / `lsf_hit` / `lsf_sel` / `lsf_n` are exact. Measure-only leftover 827. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 828 — `cli_extensions_install` (llama_view_width)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_view_width` | `llama-view-width` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover last width (`packages/coding-agent/src/extensions/llama/ui.ts`) |
+
+Leftover sibling of Pairs 826–827. Timed work is last-width slot — not frame TUI render. Observed `lvw_def` / `lvw_set` / `lvw_n` / `lvw_pos` / `lvw_eq` are exact. Measure-only leftover 828. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
