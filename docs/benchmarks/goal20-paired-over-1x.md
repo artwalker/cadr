@@ -589,4 +589,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.session_tree_tool_calls` | 1.825 | 1.122 | 1.626× | 8.00× | measure-only leftover 817; `session-tree-tool-calls` vs leftover tool-call id→name map | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_compaction_display_state` | 2.152 | 1.094 | 1.968× | 8.00× | measure-only leftover 818; `session-compaction-display-state` vs leftover display messages + nil summary | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.write_hotkeys_command` | 7.658 | 3.116 | 2.458× | 8.00× | measure-only leftover 819; `write-hotkeys-command` vs leftover Keyboard Shortcuts list | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.find_session_by_id_or_prefix` | 1.086 | 0.957 | 1.135× | 8.00× | measure-only leftover 820; `find-session-by-id-or-prefix` vs leftover find by id or prefix | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_display_messages` | 2.106 | 0.986 | 2.136× | 8.00× | measure-only leftover 821; `session-display-messages` vs leftover display message projection | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_tree_selector_data` | 2.739 | 1.204 | 2.275× | 8.00× | measure-only leftover 822; `session-tree-selector-data` vs leftover tree row map | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
