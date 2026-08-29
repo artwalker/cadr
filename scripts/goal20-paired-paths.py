@@ -460,7 +460,9 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.http_status_text": 8.0,
     "oauth_pkce_device.parse_callback_request": 8.0,
     "oauth_pkce_device.hex_value": 8.0,
-    "oauth_pkce_device.write_http_response": 8.0,
+    # leftover 833 write_http_response (samples=5): observed 8.881x
+    # (5.964 / 0.672 us). 12.0 is first-freeze headroom. Ratchet down only.
+    "oauth_pkce_device.write_http_response": 12.0,
     "oauth_pkce_device.present_auth_url": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed

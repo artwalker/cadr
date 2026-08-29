@@ -597,4 +597,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.llama_search_status` | 0.456 | 0.157 | 2.908× | 8.00× | measure-only leftover 826; `llama-search-status-text` vs leftover HuggingFaceSearch status | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_view_width` | 27.079 | 0.181 | 149.278× | 180.00× | measure-only leftover 828; `llama-view-width` vs leftover lastWidth (CLOS view vs property) | invent pause；地板优化另刀 |
 | `cli_print_rpc.close_pending` | 1.526 | 0.546 | 2.795× | 8.00× | measure-only leftover 831; `rpc-close-pending-dialogs` vs leftover pending map clear | invent pause；地板优化另刀 |
+| `oauth_pkce_device.write_http_response` | 5.964 | 0.672 | 8.881× | 12.00× | measure-only leftover 833; `write-oauth-http-response` vs leftover writeHead+end | invent pause；地板优化另刀 |
+| `oauth_pkce_device.present_auth_url` | 1.580 | 0.370 | 4.268× | 8.00× | measure-only leftover 834; `present-oauth-auth-url` vs leftover auth_url notify | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
