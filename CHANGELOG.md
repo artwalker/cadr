@@ -12,15 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.validate_cli_session_flags`
   (`validate-cli-session-flags` vs leftover fork/session-id flag conflicts).
   Observed `vcsf_ok` / `vcsf_fork` / `vcsf_fork2` / `vcsf_sid` / `vcsf_sidok`
-  exact. Measure-only leftover (Pair 823). `nextPairNum` left unchanged.
+  exact. n=5 **3.178×** (1.971 / 0.620 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 823). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_entry_tree_selector_data`
   (`session-entry-tree-selector-data` vs leftover one tree row). Observed
   `sets_id` / `sets_role` / `sets_text` / `sets_type` / `sets_asst` exact.
-  Measure-only leftover (Pair 824). `nextPairNum` left unchanged.
+  n=5 **2.449×** (2.485 / 1.015 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 824). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_restored_model`
   (`session-restored-model` vs leftover restored model lookup). Observed
   `srm_none` / `srm_hit` / `srm_noreg` / `srm_noavail` / `srm_wrong` exact.
-  Measure-only leftover (Pair 825). `nextPairNum` left unchanged.
+  n=5 **0.975×** (3.355 / 3.443 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 825). Under 1× — not booked on over-1×.
+  `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.find_session_by_id_or_prefix`
   (`find-session-by-id-or-prefix` vs leftover find by id or prefix). Observed
