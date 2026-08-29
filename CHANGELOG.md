@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.project_package_entry`
+  (`config-selector-project-package-entry` vs leftover project identity find).
+  Observed `ppe_hit` / `ppe_miss` / `ppe_pin` / `ppe_eq` / `ppe_n` exact.
+  Measure-only leftover (Pair 787). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.project_package_state`
+  (`config-selector-project-package-state` vs leftover filter walk). Observed
+  `pps_load` / `pps_unload` / `pps_miss` / `pps_nofilter` / `pps_n` exact.
+  Measure-only leftover (Pair 788). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.package_setting_record`
+  (`config-package-setting-record` vs leftover npm record). Observed
+  `psr_npm` / `psr_id` / `psr_path` / `psr_auto` / `psr_n` exact.
+  Measure-only leftover (Pair 789). Freeze pending. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `evals_harness.matching_hello_call`
   (`matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call).
   Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` exact.
