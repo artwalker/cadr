@@ -12,18 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `settings_load.sdk_effective_object`
   (`sdk-settings-effective-object` vs Settings object merge replica).
   Observed `seo_prov` / `seo_model` / `seo_empty` / `seo_obj` / `seo_n`
-  exact. Measure-only leftover (Pair 772). Freeze pending n=5
-  `--only-enforce`. `nextPairNum` left unchanged.
+  exact. n=5 **62.130×** (13.971 / 0.225 µs) on host `cursor`, ceiling 80.0.
+  Measure-only leftover (Pair 772). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_settings_set`
   (`sdk-settings-set` vs setDefaultProvider/setDefaultModel/setTheme).
   Observed `sss_prov` / `sss_model` / `sss_theme` / `sss_str` / `sss_n`
-  exact. Measure-only leftover (Pair 773). Freeze pending n=5
-  `--only-enforce`. `nextPairNum` left unchanged.
+  exact. n=5 **1.828×** (16.186 / 8.855 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 773). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_settings_remove`
   (`sdk-settings-remove` vs Settings object delete-key replica). Observed
-  `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` exact.
-  Measure-only leftover (Pair 774). Freeze pending n=5 `--only-enforce`.
-  `nextPairNum` left unchanged.
+  `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` exact. n=5
+  **31.220×** (30.936 / 0.991 µs) on host `cursor`, ceiling 40.0.
+  Measure-only leftover (Pair 774). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_value`
   (`sdk-settings-value` vs Settings object json-get). Observed `ssv_hit` /

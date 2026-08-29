@@ -8902,7 +8902,7 @@ Leftover sibling of Pairs 769–770. Timed work is empty-memory drain by length 
 |---|---|---|
 | `sdk_effective_object` | `sdk-settings-effective-object` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object merge replica (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 769–771. Timed work is in-memory merged settings object — not login I/O. Observed `seo_prov` / `seo_model` / `seo_empty` / `seo_obj` / `seo_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 769–771. Timed work is in-memory merged settings object — not login I/O. Observed `seo_prov` / `seo_model` / `seo_empty` / `seo_obj` / `seo_n` are exact. First n=5 freeze **62.130×** (13.971 / 0.225 µs) on host `cursor`, ceiling 80.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 773 — `settings_load` (sdk_settings_set)
 
@@ -8910,7 +8910,7 @@ Leftover sibling of Pairs 769–771. Timed work is in-memory merged settings obj
 |---|---|---|
 | `sdk_settings_set` | `sdk-settings-set` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.setDefaultProvider` / `setDefaultModel` / `setTheme` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pair 772. Timed work is in-memory set (nil path; no `settings.json` write). Observed `sss_prov` / `sss_model` / `sss_theme` / `sss_str` / `sss_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 772. Timed work is in-memory set (nil path; no `settings.json` write). Observed `sss_prov` / `sss_model` / `sss_theme` / `sss_str` / `sss_n` are exact. First n=5 freeze **1.828×** (16.186 / 8.855 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 774 — `settings_load` (sdk_settings_remove)
 
@@ -8918,7 +8918,7 @@ Leftover sibling of Pair 772. Timed work is in-memory set (nil path; no `setting
 |---|---|---|
 | `sdk_settings_remove` | `sdk-settings-remove` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object delete-key replica (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 772–773. Timed work is memory remhash; pi has no generic `remove`. Observed `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 772–773. Timed work is memory remhash; pi has no generic `remove`. Observed `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` are exact. First n=5 freeze **31.220×** (30.936 / 0.991 µs) on host `cursor`, ceiling 40.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
