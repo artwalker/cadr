@@ -10,6 +10,8 @@ onTuiModeChange.")
   "When bound, called with the new fullscreenCopyOnSelect boolean so
 the running alt-screen renderer can update copyOnSelect
 (pi@b79e4cc83 interactive-mode.ts:4584).")
+
+(defvar *alt-screen-flash-function* nil
   "When non-nil, called with a message string to show a transient
 fullscreen flash instead of a status line (pi@b79e4cc83
 interactive-mode.ts:5956-5960).")

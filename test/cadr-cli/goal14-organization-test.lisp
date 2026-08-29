@@ -594,7 +594,8 @@
     ;; +16 goal 20 K9: format-key-text*, wrap-transcript-lines,
     ;; kebab-keyword-to-camel, startup help table, dialog chrome,
     ;; armin 2D helpers, daxnuts parse cache, tui-multiline-editor-p.
-    (is (= 289 definition-count)
+    ;; +1 v0.84.4: *fullscreen-copy-on-select-hook* (controller.lisp).
+    (is (= 290 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
