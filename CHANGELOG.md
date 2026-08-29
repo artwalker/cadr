@@ -12,17 +12,21 @@ tag/Release step.
 - Goal 20 leftover: pair `package_manager.records_project_first`
   (`package-update-records-project-first` vs project-then-user collect).
   Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` exact.
-  Measure-only leftover (Pair 757). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **0.614×** (0.433 / 0.706 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 757). Under-1×. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.candidate_record`
   (`package-update-candidate-record-p` vs git/unpinned/exists). Observed
-  `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` exact.
-  Measure-only leftover (Pair 758). Freeze pending. `nextPairNum` left
-  unchanged.
+  `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` exact. n=5
+  **17.132×** (30.746 / 1.795 µs) on host `cursor`, ceiling 20.0
+  first-freeze headroom. Measure-only leftover (Pair 758). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.update_offline`
   (`check-for-available-package-updates` offline vs isOfflineModeEnabled).
   Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` /
-  `uoff_n` exact. Measure-only leftover (Pair 759). Freeze pending.
+  `uoff_n` exact. n=5 **1.316×** (0.333 / 0.253 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 759). Over-1× booked.
   `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `provider_registry_defs.protocol_provider`

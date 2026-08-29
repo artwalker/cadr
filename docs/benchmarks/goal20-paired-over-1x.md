@@ -532,4 +532,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
 | `provider_registry_defs.models_runtime` | 309.041 | 203.473 | 1.519× | 8.00× | measure-only leftover 753; `make-built-in-models-runtime` vs builtinProviders Map | invent pause；地板优化另刀 |
+| `package_manager.candidate_record` | 30.746 | 1.795 | 17.132× | 20.00× | measure-only leftover 758; `package-update-candidate-record-p` vs git/unpinned/exists | invent pause；地板优化另刀 |
+| `package_manager.update_offline` | 0.333 | 0.253 | 1.316× | 8.00× | measure-only leftover 759; `check-for-available-package-updates` offline vs isOfflineModeEnabled | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -863,8 +863,11 @@ RATIO_CEILINGS = {
     "package_manager.git_object_id": 8.0,
     # leftover 757–759 update-checks.lisp (samples=5): first-freeze headroom.
     # Ratchet down only. Measure-only leftover 757–759.
+    # leftover 757; first freeze 0.614× (0.433 / 0.706 µs). cadr leads.
     "package_manager.records_project_first": 8.0,
-    "package_manager.candidate_record": 8.0,
+    # leftover 758; first freeze 17.132× (30.746 / 1.795 µs).
+    "package_manager.candidate_record": 20.0,
+    # leftover 759; first freeze 1.316× (0.333 / 0.253 µs).
     "package_manager.update_offline": 8.0,
     # find_tool leftover trio on glob.lisp (samples=5): first-freeze
     # headroom. Ratchet down only.

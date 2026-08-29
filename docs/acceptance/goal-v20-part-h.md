@@ -8782,7 +8782,7 @@ Leftover sibling of Pairs 754–755. Timed work is constructing the openai proto
 |---|---|---|
 | `records_project_first` | `package-update-records-project-first` (`src/cadr-cli/packages/update-checks.lisp`) | project-then-user collect (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
 
-Leftover sibling on a different needs-pair file. Timed work is reordering user/project/user records so project comes first — not git ls-remote. Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling on a different needs-pair file. Timed work is reordering user/project/user records so project comes first — not git ls-remote. Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` are exact. First n=5 freeze **0.614×** (0.433 / 0.706 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 758 — `package_manager` (candidate_record)
 
@@ -8790,7 +8790,7 @@ Leftover sibling on a different needs-pair file. Timed work is reordering user/p
 |---|---|---|
 | `candidate_record` | `package-update-candidate-record-p` (`src/cadr-cli/packages/update-checks.lisp`) | git/unpinned/exists filter (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
 
-Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path — not ls-remote. Observed `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path — not ls-remote. Observed `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` are exact. First n=5 freeze **17.132×** (30.746 / 1.795 µs) on host `cursor`, ceiling 20.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 759 — `package_manager` (update_offline)
 
@@ -8798,7 +8798,7 @@ Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path
 |---|---|---|
 | `update_offline` | `check-for-available-package-updates` (`src/cadr-cli/packages/update-checks.lisp`) | `isOfflineModeEnabled` short-circuit (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
 
-Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and empty-record no-op — not git. Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` / `uoff_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and empty-record no-op — not git. Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` / `uoff_n` are exact. First n=5 freeze **1.316×** (0.333 / 0.253 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
