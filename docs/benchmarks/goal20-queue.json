@@ -7339,6 +7339,51 @@
    "piUs": 0.879,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 955,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.bash_run",
+   "branch": "cursor/cli-interactive-bash-run-fin-halt-leftovers-955-957-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 955",
+   "ratio": 2.219,
+   "cadrUs": 0.807,
+   "piUs": 0.363,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 956,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.bash_fin",
+   "branch": "cursor/cli-interactive-bash-run-fin-halt-leftovers-955-957-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 956",
+   "ratio": 2.620,
+   "cadrUs": 0.785,
+   "piUs": 0.300,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 957,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.bash_halt",
+   "branch": "cursor/cli-interactive-bash-run-fin-halt-leftovers-955-957-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 957",
+   "ratio": 2.872,
+   "cadrUs": 0.635,
+   "piUs": 0.221,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

@@ -1155,10 +1155,12 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.pad_str": 8.0,
     # Measure-only leftover 951; first freeze 2.014× (1.264 / 0.627 µs).
     "cli_interactive_controller.cache_p": 8.0,
-    # leftover 955–957 user-bash.lisp (samples=5): first-freeze headroom.
+    # Measure-only leftover 955; first freeze 2.219× (0.807 / 0.363 µs).
     # Does not remount bash_append_running / bash_complete_string / bash_stop_entry.
     "cli_interactive_controller.bash_run": 8.0,
+    # Measure-only leftover 956; first freeze 2.620× (0.785 / 0.300 µs).
     "cli_interactive_controller.bash_fin": 8.0,
+    # Measure-only leftover 957; first freeze 2.872× (0.635 / 0.221 µs).
     "cli_interactive_controller.bash_halt": 8.0,
     # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,
