@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1039 — `cli_selectors` (ms_kb)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ms_kb` | `make-models-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of KeybindingsManager constructor for app.models.* |
+
+Leftover sibling of leftover 631–633 on the same needs-pair file. Does not remount `make_models_selector_keybindings`. Timed work is save / enable / confirm / custom / reorder bindings. Observed `mmskb_save` / `mmskb_reorder` are exact. First n=5 freeze **1.496×** (32.806 / 21.927 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1040 — `cli_selectors` (sm_st)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sm_st` | `make-scoped-models-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ScopedModelsSelectorComponent constructor |
+
+Leftover sibling of Pair 1039. Does not remount `make_scoped_models_selector_state`. Timed work is constructor all / partial / empty / status / copy. Observed `msmksc_all` / `msmksc_copy` are exact. First n=5 freeze **24.914×** (104.975 / 4.213 µs) on host `cursor`, ceiling 40.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1041 — `cli_selectors` (rm_sel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rm_sel` | `render-model-selector` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ModelSelectorComponent layout |
+
+Leftover sibling of Pairs 1039–1040. Does not remount `render_model_selector`. Timed work is render default / sel2 / scoped / narrow / miss. Observed `rms_default` / `rms_miss` are exact. First n=5 freeze **27.371×** (191.923 / 7.012 µs) on host `cursor`, ceiling 50.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
