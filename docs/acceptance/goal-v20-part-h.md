@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1114 — `cli_selectors` (kb_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kb_ok` | `make-models-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of KEYBINDINGS app.models.* KeybindingsManager constructor |
+
+Leftover sibling of leftover 631–633 on the same needs-pair file (second unused slug after leftover 1039 `ms_kb`). Does not remount `make_models_selector_keybindings`. Timed work is models keybindings constructor. Observed `mmskb_save` / `mmskb_reorder` are exact. First n=5 freeze **0.776×** (34.591 / 44.569 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1115 — `cli_selectors` (sms_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sms_ok` | `make-scoped-models-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ScopedModelsSelectorComponent constructor |
+
+Leftover sibling of Pair 1114. Does not remount `make_scoped_models_selector_state`. Timed work is scoped-models selector constructor. Observed `msmksc_all` / `msmksc_copy` are exact. First n=5 freeze **26.663×** (111.518 / 4.182 µs) on host `cursor`, ceiling 40.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1116 — `cli_selectors` (rms_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rms_ok` | `render-model-selector` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ModelSelectorComponent layout |
+
+Leftover sibling of Pairs 1114–1115. Does not remount `render_model_selector`. Timed work is model selector layout. Observed `rms_default` / `rms_miss` are exact. First n=5 freeze **27.897×** (196.386 / 7.040 µs) on host `cursor`, ceiling 50.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
