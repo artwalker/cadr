@@ -659,6 +659,9 @@
     ("cli_interactive_controller.theme_object_overrides" . 50)
     ("cli_interactive_controller.apply_tui_theme_summary" . 50)
     ("cli_interactive_controller.load_tui_theme_file" . 50)
+    ("cli_interactive_controller.wrap_osc" . 50)
+    ("cli_interactive_controller.pad_str" . 50)
+    ("cli_interactive_controller.cache_p" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -16684,6 +16687,26 @@
    "ltf_empty" (nth 4 load)))
 
 
+(defun leftover-wrap-osc-pad-cache-observed-pairs (wrap pad cache)
+  (list
+   "wt_nil" (nth 0 wrap)
+   "wt_one_n" (nth 1 wrap)
+   "wt_one_order" (nth 2 wrap)
+   "wt_two_n" (nth 3 wrap)
+   "wt_two_first" (nth 4 wrap)
+   "wt_two_last" (nth 5 wrap)
+   "op_0" (nth 0 pad)
+   "op_1" (nth 1 pad)
+   "op_other" (nth 2 pad)
+   "op_space" (nth 3 pad)
+   "rc_assist" (nth 0 cache)
+   "rc_stream" (nth 1 cache)
+   "rc_tool_nil" (nth 2 cache)
+   "rc_tool_done" (nth 3 cache)
+   "rc_tool_run" (nth 4 cache)
+   "rc_custom" (nth 5 cache)))
+
+
 (defun leftover-user-bash-running-complete-stop-observed-pairs
     (running complete-string stop)
   (list
@@ -17456,6 +17479,12 @@
           (run-cli-interactive-apply-tui-theme-summary))
         (leftover-theme-load
           (run-cli-interactive-load-tui-theme-file))
+        (leftover-wrap-osc
+          (run-cli-interactive-wrap-transcript))
+        (leftover-pad-str
+          (run-cli-interactive-output-padding))
+        (leftover-cache-p
+          (run-cli-interactive-render-cacheable))
         (leftover-bash-running
           (run-cli-interactive-bash-append-running))
         (leftover-bash-string
@@ -17611,6 +17640,10 @@
               leftover-theme-overrides
               leftover-theme-apply
               leftover-theme-load)
+             (leftover-wrap-osc-pad-cache-observed-pairs
+              leftover-wrap-osc
+              leftover-pad-str
+              leftover-cache-p)
              (leftover-user-bash-running-complete-stop-observed-pairs
               leftover-bash-running
               leftover-bash-string
@@ -17735,6 +17768,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-load-tui-theme-file))))
+     "wrap_osc"
+     (collect "cli_interactive_controller.wrap_osc"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-wrap-transcript))))
+     "pad_str"
+     (collect "cli_interactive_controller.pad_str"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-output-padding))))
+     "cache_p"
+     (collect "cli_interactive_controller.cache_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-cacheable))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32100,6 +32148,12 @@
       "src/cadr-cli/interactive/themes.lisp apply-tui-theme-summary"
       "cli_interactive_controller.load_tui_theme_file"
       "src/cadr-cli/interactive/themes.lisp load-tui-theme-file"
+      "cli_interactive_controller.wrap_osc"
+      "src/cadr-cli/interactive/transcript.lisp wrap-transcript-lines"
+      "cli_interactive_controller.pad_str"
+      "src/cadr-cli/interactive/transcript.lisp output-padding-string"
+      "cli_interactive_controller.cache_p"
+      "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"

@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 949 — `cli_interactive_controller` (wrap_osc)
+
+| metric | cadr | pi |
+|---|---|---|
+| `wrap_osc` | `wrap-transcript-lines` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of `UserMessageComponent.render` OSC 133 wrap |
+
+Leftover sibling of leftover 517–519 on the same needs-pair file. Does not remount `wrap_transcript`. Timed work is OSC 133 A/B/C wrap of a line list (nil, one-element shared-cons order, two-element first/last) — not user-message markdown, not assistant render. Observed `wt_nil` / `wt_one_n` / `wt_one_order` / `wt_two_n` / `wt_two_first` / `wt_two_last` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 950 — `cli_interactive_controller` (pad_str)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pad_str` | `output-padding-string` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of output padding spaces |
+
+Leftover sibling of Pair 949. Does not remount `output_padding`. Timed work is pad length 0/1/other and space identity — not wrap, not cacheable. Observed `op_0` / `op_1` / `op_other` / `op_space` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 951 — `cli_interactive_controller` (cache_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cache_p` | `tui-entry-render-cacheable-p` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of TUI entry render cacheable |
+
+Leftover sibling of Pairs 949–950. Does not remount `render_cacheable`. Timed work is assistant/streaming/tool-nil/done/running/custom flags — not wrap, not pad. Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` / `rc_tool_run` / `rc_custom` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

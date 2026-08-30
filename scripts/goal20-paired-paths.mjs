@@ -638,6 +638,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_object_overrides": 50,
 	"cli_interactive_controller.apply_tui_theme_summary": 50,
 	"cli_interactive_controller.load_tui_theme_file": 50,
+	"cli_interactive_controller.wrap_osc": 50,
+	"cli_interactive_controller.pad_str": 50,
+	"cli_interactive_controller.cache_p": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -19150,6 +19153,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveThemeObjectOverrides(),
 		...runCliInteractiveApplyTuiThemeSummary(),
 		...runCliInteractiveLoadTuiThemeFile(),
+		...runCliInteractiveWrapTranscript(),
+		...runCliInteractiveOutputPadding(),
+		...runCliInteractiveRenderCacheable(),
 		...runCliInteractiveBashAppendRunning(),
 		...runCliInteractiveBashCompleteString(),
 		...runCliInteractiveBashStopEntry(),
@@ -19241,6 +19247,15 @@ async function measureCliInteractiveDecodeEntity() {
 		),
 		load_tui_theme_file: await collect("cli_interactive_controller.load_tui_theme_file", () => {
 			return () => runCliInteractiveLoadTuiThemeFile();
+		}),
+		wrap_osc: await collect("cli_interactive_controller.wrap_osc", () => {
+			return () => runCliInteractiveWrapTranscript();
+		}),
+		pad_str: await collect("cli_interactive_controller.pad_str", () => {
+			return () => runCliInteractiveOutputPadding();
+		}),
+		cache_p: await collect("cli_interactive_controller.cache_p", () => {
+			return () => runCliInteractiveRenderCacheable();
 		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
@@ -33715,6 +33730,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts setTheme",
 			"cli_interactive_controller.load_tui_theme_file":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts loadThemeFromPath",
+			"cli_interactive_controller.wrap_osc":
+				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent.render OSC 133 wrap",
+			"cli_interactive_controller.pad_str":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts output padding spaces",
+			"cli_interactive_controller.cache_p":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts TUI entry render cacheable",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":
