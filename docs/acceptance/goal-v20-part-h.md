@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1117 — `cli_selectors` (af_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `af_ok` | `thinking-selector-apply-filter` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector applyFilter |
+
+Leftover sibling of leftover 604–606 on the same needs-pair file (second unused slug after leftover 1042 `th_af`). Does not remount `thinking_selector_apply_filter`. Timed work is apply-filter high / off / miss / empty / low. Observed `tsaf_high` / `tsaf_empty` are exact. First n=5 freeze **1.240×** (13.746 / 11.084 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1118 — `cli_selectors` (cl_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cl_ok` | `thinking-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of clamp selected index |
+
+Leftover sibling of Pair 1117. Does not remount `thinking_selector_clamp_selected`. Timed work is clamp selected high / zero and siblings. Observed `tscl_high` / `tscl_zero` are exact. First n=5 freeze **0.974×** (0.707 / 0.726 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1119 — `cli_selectors` (sc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sc_ok` | `thinking-selector-select-current` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of select current thinking level |
+
+Leftover sibling of Pairs 1117–1118. Does not remount `thinking_selector_select_current`. Timed work is select current high / only and siblings. Observed `tssc_high` / `tssc_only` are exact. First n=5 freeze **0.919×** (1.091 / 1.187 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
