@@ -644,6 +644,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_object_overrides": 50,
 	"cli_interactive_controller.apply_tui_theme_summary": 50,
 	"cli_interactive_controller.load_tui_theme_file": 50,
+	"cli_interactive_controller.theme_prim": 50,
+	"cli_interactive_controller.theme_val": 50,
+	"cli_interactive_controller.theme_res": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -18497,6 +18500,16 @@ const LEFTOVER_THEME_JSON_COLOR_MAP = [
 	["bashMode", "bash-mode"],
 ];
 
+const GOAL20_TUI_THEME_OPTIONAL_COLOR_NAMES = [
+	"thinkingMax",
+	"scrollbarThumb",
+	"searchMatchBg",
+	"searchMatchText",
+];
+const GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES = LEFTOVER_THEME_JSON_COLOR_MAP.map(
+	(entry) => entry[0],
+).filter((name) => !LEFTOVER_THEME_OPTIONAL_COLORS.has(name));
+
 const LEFTOVER_THEME_JSON_EXPORT_MAP = [
 	["pageBg", "page-bg"],
 	["cardBg", "card-bg"],
@@ -19254,6 +19267,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveThemeObjectOverrides(),
 		...runCliInteractiveApplyTuiThemeSummary(),
 		...runCliInteractiveLoadTuiThemeFile(),
+		...runCliInteractiveThemePrimitive(),
+		...runCliInteractiveThemeValidate(),
+		...runCliInteractiveThemeResolve(),
 		...runCliInteractiveBashAppendRunning(),
 		...runCliInteractiveBashCompleteString(),
 		...runCliInteractiveBashStopEntry(),
@@ -19345,6 +19361,15 @@ async function measureCliInteractiveDecodeEntity() {
 		),
 		load_tui_theme_file: await collect("cli_interactive_controller.load_tui_theme_file", () => {
 			return () => runCliInteractiveLoadTuiThemeFile();
+		}),
+		theme_prim: await collect("cli_interactive_controller.theme_prim", () => {
+			return () => runCliInteractiveThemePrimitive();
+		}),
+		theme_val: await collect("cli_interactive_controller.theme_val", () => {
+			return () => runCliInteractiveThemeValidate();
+		}),
+		theme_res: await collect("cli_interactive_controller.theme_res", () => {
+			return () => runCliInteractiveThemeResolve();
 		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
@@ -33831,6 +33856,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts setTheme",
 			"cli_interactive_controller.load_tui_theme_file":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts loadThemeFromPath",
+			"cli_interactive_controller.theme_prim":
+				"packages/coding-agent leftover replica of isThemeColorValue (cadr valid-tui-theme-primitive-p)",
+			"cli_interactive_controller.theme_val":
+				"packages/coding-agent leftover replica of theme object validate (cadr validate-tui-theme-object)",
+			"cli_interactive_controller.theme_res":
+				"packages/coding-agent leftover replica of resolveThemeColor (cadr resolve-tui-theme-value)",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":

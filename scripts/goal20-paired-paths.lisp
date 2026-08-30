@@ -665,6 +665,9 @@
     ("cli_interactive_controller.theme_object_overrides" . 50)
     ("cli_interactive_controller.apply_tui_theme_summary" . 50)
     ("cli_interactive_controller.load_tui_theme_file" . 50)
+    ("cli_interactive_controller.theme_prim" . 50)
+    ("cli_interactive_controller.theme_val" . 50)
+    ("cli_interactive_controller.theme_res" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -16619,6 +16622,16 @@
       (lambda ()
         (cadr-cli::resolve-tui-theme-value "missing" variables))))))
 
+(defparameter *goal20-tui-theme-required-color-names*
+  (remove-if
+   (lambda (name)
+     (member
+      name
+      '("thinkingMax" "scrollbarThumb"
+        "searchMatchBg" "searchMatchText")
+      :test #'string=))
+   (mapcar #'car cadr-cli::+tui-theme-json-color-map+)))
+
 (defun goal20-theme-required-colors ()
   (let ((colors (make-hash-table :test #'equal)))
     (dolist (name *goal20-tui-theme-required-color-names*)
@@ -16829,6 +16842,25 @@
    "ltf_miss" (nth 2 load)
    "ltf_bad" (nth 3 load)
    "ltf_empty" (nth 4 load)))
+
+
+(defun leftover-theme-prim-val-res-observed-pairs (prim val res)
+  (list
+   "tp_str" (nth 0 prim)
+   "tp_int" (nth 1 prim)
+   "tp_255" (nth 2 prim)
+   "tp_256" (nth 3 prim)
+   "tp_neg" (nth 4 prim)
+   "tp_nil" (nth 5 prim)
+   "tv_ok" (nth 0 val)
+   "tv_slash" (nth 1 val)
+   "tv_unknown" (nth 2 val)
+   "tr_int" (nth 0 res)
+   "tr_empty" (nth 1 res)
+   "tr_hex" (nth 2 res)
+   "tr_var" (nth 3 res)
+   "tr_cycle" (nth 4 res)
+   "tr_miss" (nth 5 res)))
 
 
 (defun leftover-user-bash-running-complete-stop-observed-pairs
@@ -17603,6 +17635,12 @@
           (run-cli-interactive-apply-tui-theme-summary))
         (leftover-theme-load
           (run-cli-interactive-load-tui-theme-file))
+        (leftover-theme-prim
+          (run-cli-interactive-theme-primitive))
+        (leftover-theme-val
+          (run-cli-interactive-theme-validate))
+        (leftover-theme-res
+          (run-cli-interactive-theme-resolve))
         (leftover-bash-running
           (run-cli-interactive-bash-append-running))
         (leftover-bash-string
@@ -17758,6 +17796,10 @@
               leftover-theme-overrides
               leftover-theme-apply
               leftover-theme-load)
+             (leftover-theme-prim-val-res-observed-pairs
+              leftover-theme-prim
+              leftover-theme-val
+              leftover-theme-res)
              (leftover-user-bash-running-complete-stop-observed-pairs
               leftover-bash-running
               leftover-bash-string
@@ -17882,6 +17924,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-load-tui-theme-file))))
+     "theme_prim"
+     (collect "cli_interactive_controller.theme_prim"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-primitive))))
+     "theme_val"
+     (collect "cli_interactive_controller.theme_val"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-validate))))
+     "theme_res"
+     (collect "cli_interactive_controller.theme_res"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-resolve))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32259,6 +32316,12 @@
       "src/cadr-cli/interactive/themes.lisp apply-tui-theme-summary"
       "cli_interactive_controller.load_tui_theme_file"
       "src/cadr-cli/interactive/themes.lisp load-tui-theme-file"
+      "cli_interactive_controller.theme_prim"
+      "src/cadr-cli/interactive/themes.lisp valid-tui-theme-primitive-p"
+      "cli_interactive_controller.theme_val"
+      "src/cadr-cli/interactive/themes.lisp validate-tui-theme-object"
+      "cli_interactive_controller.theme_res"
+      "src/cadr-cli/interactive/themes.lisp resolve-tui-theme-value"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"
