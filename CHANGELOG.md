@@ -148,6 +148,29 @@ tag/Release step.
   (1.503 / 1.785 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 945). Under-1×. Does not remount `tool_session_render`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dlg_make`
+  (`make-login-dialog-state` vs leftover replica of LoginDialogComponent
+  constructor). Observed `ldm_empty_n` / `ldm_named` / `ldm_named_sec` /
+  `ldm_long` / `ldm_input` / `ldm_long_n` exact. n=5 **1.471×** (0.189 /
+  0.128 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 946). Over-1× booked. Does not remount `login_dialog_make`.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dlg_auth`
+  (`login-dialog-show-auth` vs leftover replica of showAuth). Observed
+  `lda_plain` / `lda_instr` / `lda_empty_instr` / `lda_replace` /
+  `lda_provider` / `lda_n` exact. n=5 **1.689×** (2.003 / 1.186 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 947). Over-1×
+  booked. Does not remount `login_dialog_auth`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.dlg_dev`
+  (`login-dialog-show-device-code` vs leftover replica of showDeviceCode).
+  Observed `ldd_code` / `ldd_empty` / `ldd_replace` / `ldd_provider` /
+  `ldd_n` / `ldd_hint` exact. n=5 **3.465×** (4.085 / 1.179 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 948). Over-1×
+  booked. Does not remount `login_dialog_device`. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

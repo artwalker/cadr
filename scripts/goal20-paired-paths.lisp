@@ -943,6 +943,9 @@
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
+    ("cli_selectors.dlg_make" . 50)
+    ("cli_selectors.dlg_auth" . 50)
+    ("cli_selectors.dlg_dev" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -27437,6 +27440,28 @@
    "dct_renders" (nth 4 tick)))
 
 
+(defun leftover-login-dialog-make-auth-device-observed-pairs (make auth device)
+  (list
+   "ldm_empty_n" (nth 0 make)
+   "ldm_named" (nth 1 make)
+   "ldm_named_sec" (nth 2 make)
+   "ldm_long" (nth 3 make)
+   "ldm_input" (nth 4 make)
+   "ldm_long_n" (nth 5 make)
+   "lda_plain" (nth 0 auth)
+   "lda_instr" (nth 1 auth)
+   "lda_empty_instr" (nth 2 auth)
+   "lda_replace" (nth 3 auth)
+   "lda_provider" (nth 4 auth)
+   "lda_n" (nth 5 auth)
+   "ldd_code" (nth 0 device)
+   "ldd_empty" (nth 1 device)
+   "ldd_replace" (nth 2 device)
+   "ldd_provider" (nth 3 device)
+   "ldd_n" (nth 4 device)
+   "ldd_hint" (nth 5 device)))
+
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -27831,6 +27856,12 @@
           (run-cli-selectors-make-daxnuts-component))
         (leftover-daxnuts-tick
           (run-cli-selectors-daxnuts-component-tick))
+        (leftover-login-dlg-make
+          (run-cli-selectors-login-dialog-make))
+        (leftover-login-dlg-auth
+          (run-cli-selectors-login-dialog-auth))
+        (leftover-login-dlg-dev
+          (run-cli-selectors-login-dialog-device))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -28630,6 +28661,10 @@
               leftover-daxnuts-rgb-at
               leftover-make-daxnuts
               leftover-daxnuts-tick)
+             (leftover-login-dialog-make-auth-device-observed-pairs
+              leftover-login-dlg-make
+              leftover-login-dlg-auth
+              leftover-login-dlg-dev)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -29696,7 +29731,22 @@
      (collect "cli_selectors.daxnuts_component_tick"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-daxnuts-component-tick)))))))
+                  (run-cli-selectors-daxnuts-component-tick))))
+     "dlg_make"
+     (collect "cli_selectors.dlg_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-make))))
+     "dlg_auth"
+     (collect "cli_selectors.dlg_auth"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-auth))))
+     "dlg_dev"
+     (collect "cli_selectors.dlg_dev"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-device)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -33027,6 +33077,12 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
       "cli_selectors.daxnuts_component_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
+      "cli_selectors.dlg_make"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
+      "cli_selectors.dlg_auth"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-auth"
+      "cli_selectors.dlg_dev"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-device-code"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

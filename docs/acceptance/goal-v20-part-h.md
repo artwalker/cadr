@@ -8889,6 +8889,29 @@ Leftover sibling of Pair 943. Does not remount `tool_session_update`. Timed work
 | `sess_draw` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
 
 Leftover sibling of Pairs 943–944. Does not remount `tool_session_render`. Timed work is pending default call, done default result, custom renderers, empty-line drop — not TUI Box, not images. Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` / `trr_done_result` / `trr_custom` / `trr_empty` are exact. First n=5 freeze **0.842×** (1.503 / 1.785 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 946 — `cli_selectors` (dlg_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_make` | `make-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of `LoginDialogComponent` constructor |
+
+Leftover sibling of leftover 529–531 on the same needs-pair file. Does not remount `login_dialog_make`. Timed work is empty/named/long provider construction — not render, not handle-event. Observed `ldm_empty_n` / `ldm_named` / `ldm_named_sec` / `ldm_long` / `ldm_input` / `ldm_long_n` are exact. First n=5 freeze **1.471×** (0.189 / 0.128 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 947 — `cli_selectors` (dlg_auth)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_auth` | `login-dialog-show-auth` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of `showAuth` |
+
+Leftover sibling of Pair 946. Does not remount `login_dialog_auth`. Timed work is plain/instructions/empty-instructions/replace auth sections — not OAuth HTTP, not render. Observed `lda_plain` / `lda_instr` / `lda_empty_instr` / `lda_replace` / `lda_provider` / `lda_n` are exact. First n=5 freeze **1.689×** (2.003 / 1.186 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 948 — `cli_selectors` (dlg_dev)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_dev` | `login-dialog-show-device-code` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of `showDeviceCode` |
+
+Leftover sibling of Pairs 946–947. Does not remount `login_dialog_device`. Timed work is device-code / empty-code / replace sections — not poll, not render. Observed `ldd_code` / `ldd_empty` / `ldd_replace` / `ldd_provider` / `ldd_n` / `ldd_hint` are exact. First n=5 freeze **3.465×** (4.085 / 1.179 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
