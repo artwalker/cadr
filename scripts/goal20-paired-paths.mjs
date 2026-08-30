@@ -587,6 +587,9 @@ const REPETITIONS = {
 	"cli_print_rpc.rpc_images": 50,
 	"cli_print_rpc.rpc_prompt": 50,
 	"cli_print_rpc.bash_result": 50,
+	"cli_print_rpc.img_ok": 50,
+	"cli_print_rpc.prompt_ok": 50,
+	"cli_print_rpc.bash_js": 50,
 	"cli_print_rpc.queue_parse": 50,
 	"cli_print_rpc.asst_text": 50,
 	"cli_print_rpc.cmd_list": 50,
@@ -13909,6 +13912,15 @@ async function measureCliPrintRpc() {
 				return () => runCliPrintRpcPrompt();
 			}),
 			bash_result: await collect("cli_print_rpc.bash_result", () => {
+				return () => runCliPrintRpcBashResult();
+			}),
+			img_ok: await collect("cli_print_rpc.img_ok", () => {
+				return () => runCliPrintRpcImages();
+			}),
+			prompt_ok: await collect("cli_print_rpc.prompt_ok", () => {
+				return () => runCliPrintRpcPrompt();
+			}),
+			bash_js: await collect("cli_print_rpc.bash_js", () => {
 				return () => runCliPrintRpcBashResult();
 			}),
 			queue_parse: await collect("cli_print_rpc.queue_parse", () => {
@@ -33907,6 +33919,12 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts prompt message+images",
 			"cli_print_rpc.bash_result":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts bash result payload",
+			"cli_print_rpc.img_ok":
+				"packages/coding-agent leftover replica of prompt command.images (cadr rpc-images-from-json)",
+			"cli_print_rpc.prompt_ok":
+				"packages/coding-agent leftover replica of prompt message+images (cadr rpc-prompt-message)",
+			"cli_print_rpc.bash_js":
+				"packages/coding-agent leftover replica of bash result payload (cadr rpc-bash-result-json)",
 			"cli_print_rpc.queue_parse":
 				"packages/coding-agent leftover replica of parseQueueMode (cadr parse-queue-mode)",
 			"cli_print_rpc.asst_text":

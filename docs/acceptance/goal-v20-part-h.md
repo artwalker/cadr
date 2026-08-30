@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 976 — `cli_print_rpc` (img_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `img_ok` | `rpc-images-from-json` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | leftover replica of prompt command.images |
+
+Leftover sibling of leftover 463–465 on the same needs-pair file. Does not remount `rpc_images`. Timed work is nil/mime image parse. Observed `img_nil` / `img_mime` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 977 — `cli_print_rpc` (prompt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prompt_ok` | `rpc-prompt-message` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | leftover replica of prompt message+images |
+
+Leftover sibling of Pair 976. Does not remount `rpc_prompt`. Timed work is string/parts prompt. Observed `rp_str` / `rp_parts` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 978 — `cli_print_rpc` (bash_js)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_js` | `rpc-bash-result-json` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | leftover replica of bash result payload |
+
+Leftover sibling of Pairs 976–977. Does not remount `bash_result`. Timed work is output/null bash result. Observed `br_out` / `br_null` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
