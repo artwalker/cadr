@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1129 — `cli_selectors` (tsm_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsm_ok` | `trust-selector-move` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of wrap selection index |
+
+Leftover sibling of leftover 1051–1053 on the same needs-pair file (second unused slug after leftover 1051 `tr_mv`). Does not remount `trust_selector_move`. Timed work is wrap selection child-down / single-wrap. Observed `tsm_child_down` / `tsm_single_wrap` are exact. First n=5 freeze **3.839×** (267.928 / 69.799 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1130 — `cli_selectors` (tse_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tse_ok` | `trust-selector-handle-event` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector handle-event dispatch |
+
+Leftover sibling of Pair 1129. Does not remount `trust_selector_handle_event`. Timed work is handle-event child-down / esc. Observed `tshe_child_down` / `tshe_child_esc` are exact. First n=5 freeze **3.566×** (267.741 / 75.085 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1131 — `cli_selectors` (tui_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tui_ok` | `trust-selector-ui-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent UI state |
+
+Leftover sibling of Pairs 1129–1130. Does not remount `trust_selector_ui_state`. Timed work is TrustSelectorComponent UI state. Observed `rts_child_default` / `rts_single` are exact. First n=5 freeze **3.335×** (309.470 / 92.800 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
