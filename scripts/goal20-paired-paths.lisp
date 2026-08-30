@@ -236,6 +236,12 @@
 ;;;; 640. cli_interactive_controller append-tui-user-bash-running vs BashExecutionComponent addChild running
 ;;;; 641. cli_interactive_controller complete-tui-user-bash-string vs setComplete exit 0 string
 ;;;; 642. cli_interactive_controller stop-tui-user-bash-entry vs loader.stop without setComplete
+;;;; 1009. cli_interactive_controller br_ok vs leftover replica of BashExecutionComponent addChild running
+;;;;      (does not remount bash_run / bash_append_running)
+;;;; 1010. cli_interactive_controller bf_ok vs leftover replica of setComplete exit 0 string
+;;;;      (does not remount bash_fin / bash_complete_string)
+;;;; 1011. cli_interactive_controller bh_ok vs leftover replica of loader.stop without setComplete
+;;;;      (does not remount bash_halt / bash_stop_entry)
 ;;;; 643. cli_interactive_controller assistant-message-has-tool-calls-p vs AssistantMessageComponent hasToolCalls
 ;;;; 644. cli_interactive_controller assistant-display-blocks vs assistant display block flatten
 ;;;; 645. cli_interactive_controller transcript-summary-label vs skill/branch/compaction [name] label
@@ -691,6 +697,9 @@
     ("cli_interactive_controller.bash_run" . 50)
     ("cli_interactive_controller.bash_fin" . 50)
     ("cli_interactive_controller.bash_halt" . 50)
+    ("cli_interactive_controller.br_ok" . 50)
+    ("cli_interactive_controller.bf_ok" . 50)
+    ("cli_interactive_controller.bh_ok" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -18172,6 +18181,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-bash-stop-entry))))
+     "br_ok"
+     (collect "cli_interactive_controller.br_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-append-running))))
+     "bf_ok"
+     (collect "cli_interactive_controller.bf_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-complete-string))))
+     "bh_ok"
+     (collect "cli_interactive_controller.bh_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-stop-entry))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32673,6 +32697,12 @@
       "cli_interactive_controller.bash_fin"
       "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string leftover"
       "cli_interactive_controller.bash_halt"
+      "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry leftover"
+      "cli_interactive_controller.br_ok"
+      "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running leftover"
+      "cli_interactive_controller.bf_ok"
+      "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string leftover"
+      "cli_interactive_controller.bh_ok"
       "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry leftover"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
