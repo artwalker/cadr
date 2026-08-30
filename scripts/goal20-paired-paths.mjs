@@ -887,6 +887,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.cycle_wrap": 50,
 	"cli_bootstrap_sessions.scope_hint": 50,
 	"cli_bootstrap_sessions.file_tags": 50,
+	"cli_bootstrap_sessions.pb_ok": 50,
+	"cli_bootstrap_sessions.rt_ok": 50,
+	"cli_bootstrap_sessions.dp_ok": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -32810,6 +32813,15 @@ async function measureCliBootstrapCodingTools() {
 		file_tags: await collect("cli_bootstrap_sessions.file_tags", () => {
 			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 		}),
+		pb_ok: await collect("cli_bootstrap_sessions.pb_ok", () => {
+			return () => runCliBootstrapParseBash();
+		}),
+		rt_ok: await collect("cli_bootstrap_sessions.rt_ok", () => {
+			return () => runCliBootstrapResponseText();
+		}),
+		dp_ok: await collect("cli_bootstrap_sessions.dp_ok", () => {
+			return () => runCliBootstrapDispatchPlain();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -34647,6 +34659,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
 			"cli_bootstrap_sessions.file_tags":
 				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
+			"cli_bootstrap_sessions.pb_ok":
+				"packages/coding-agent leftover replica of ! / !! bash extract (cadr parse-user-bash-input)",
+			"cli_bootstrap_sessions.rt_ok":
+				"packages/coding-agent leftover replica of textParts.join (cadr response-text)",
+			"cli_bootstrap_sessions.dp_ok":
+				"packages/coding-agent leftover replica of submit classify (cadr dispatch-user-input)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

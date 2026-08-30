@@ -74,6 +74,12 @@
 ;;;;      leftover 940-942: model-cycle-target-entry / model-scope-startup-line /
 ;;;;      process-cli-file-arguments (does not remount model_cycle /
 ;;;;      model_scope_line / process_files)
+;;;; 1012. cli_bootstrap_sessions pb_ok vs leftover replica of ! / !! bash extract
+;;;;      (does not remount parse_bash)
+;;;; 1013. cli_bootstrap_sessions rt_ok vs leftover replica of textParts.join
+;;;;      (does not remount response_text)
+;;;; 1014. cli_bootstrap_sessions dp_ok vs leftover replica of submit classify
+;;;;      (does not remount dispatch_plain)
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
@@ -996,6 +1002,9 @@
     ("cli_bootstrap_sessions.cycle_wrap" . 50)
     ("cli_bootstrap_sessions.scope_hint" . 50)
     ("cli_bootstrap_sessions.file_tags" . 50)
+    ("cli_bootstrap_sessions.pb_ok" . 50)
+    ("cli_bootstrap_sessions.rt_ok" . 50)
+    ("cli_bootstrap_sessions.dp_ok" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -31682,7 +31691,22 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))))))
+                   (first file-pair) (second file-pair))))
+     "pb_ok"
+     (collect "cli_bootstrap_sessions.pb_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-parse-bash))))
+     "rt_ok"
+     (collect "cli_bootstrap_sessions.rt_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-response-text))))
+     "dp_ok"
+     (collect "cli_bootstrap_sessions.dp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-dispatch-plain)))))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -33270,6 +33294,12 @@
       "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line"
       "cli_bootstrap_sessions.file_tags"
       "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments"
+      "cli_bootstrap_sessions.pb_ok"
+      "src/cadr-cli/repl.lisp parse-user-bash-input leftover"
+      "cli_bootstrap_sessions.rt_ok"
+      "src/cadr-cli/repl.lisp response-text leftover"
+      "cli_bootstrap_sessions.dp_ok"
+      "src/cadr-cli/repl.lisp dispatch-user-input leftover"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
