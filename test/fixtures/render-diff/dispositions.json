@@ -4299,14 +4299,14 @@
       "screenSha256": {
         "narrow": {
           "pi": "a6b42831274f7b330e7f92662632b0dd80d81829d170d1b51509dd2f13c39156",
-          "cadr": "c1aa2858bbee95ce352cbdfbd1a3f811af8b487f9c37edd9d4ba851c20bd05ef"
+          "cadr": "ad9fba1944bab0038c02ac3abe94640a0040439f32925e2373f73e16ef850cd3"
         },
         "wide": {
           "pi": "8dfcc963e4a87cfd0b347972e5e4e48f2a8fc0f42ec3df315c88497276b7409b",
           "cadr": "8355db8f1d7c6aa85ab35be121c666512fb2e7f59921decdbf270ada0ec00cdd"
         }
       },
-      "note": "At example-commands/commands-path both sides opened the View source path? confirm after selecting /commands. Residual deltas are path/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-commands/commands-path both sides opened the View source path? confirm after selecting /commands. Narrow: pi wraps <HOME>/.pi/agent/extensions/commands.ts onto two rows; cadr shows <CADR_ROOT>/examples/extensions/commands.lisp on one row (I04 identity paths plus wrap). Residual chrome/I01 ANSI remain. Wide hashes unchanged."
     },
     {
       "scenario": "example-commands",
