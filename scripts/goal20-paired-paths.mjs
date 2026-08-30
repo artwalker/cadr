@@ -356,6 +356,12 @@ const REPETITIONS = {
 	"evals_harness.reporter_run_id": 50,
 	"evals_harness.artifact_reference_json": 50,
 	"evals_harness.reporter_artifacts": 50,
+	"evals_harness.validate_extension": 50,
+	"evals_harness.suite_dispatch": 50,
+	"evals_harness.eval_result_p": 50,
+	"evals_harness.msg_content": 50,
+	"evals_harness.eval_tools": 50,
+	"evals_harness.eval_paths": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -578,6 +584,12 @@ const REPETITIONS = {
 	"cli_print_rpc.rpc_images": 50,
 	"cli_print_rpc.rpc_prompt": 50,
 	"cli_print_rpc.bash_result": 50,
+	"cli_print_rpc.queue_parse": 50,
+	"cli_print_rpc.asst_text": 50,
+	"cli_print_rpc.cmd_list": 50,
+	"cli_print_rpc.bad_line": 50,
+	"cli_print_rpc.array_line": 50,
+	"cli_print_rpc.ui_absent": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -641,6 +653,12 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_object_overrides": 50,
 	"cli_interactive_controller.apply_tui_theme_summary": 50,
 	"cli_interactive_controller.load_tui_theme_file": 50,
+	"cli_interactive_controller.theme_prim": 50,
+	"cli_interactive_controller.theme_val": 50,
+	"cli_interactive_controller.theme_res": 50,
+	"cli_interactive_controller.sess_make": 50,
+	"cli_interactive_controller.sess_upd": 50,
+	"cli_interactive_controller.sess_draw": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -857,6 +875,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.session_path": 50,
 	"cli_bootstrap_sessions.split_command": 50,
 	"cli_bootstrap_sessions.path_argument": 50,
+	"cli_bootstrap_sessions.cycle_wrap": 50,
+	"cli_bootstrap_sessions.scope_hint": 50,
+	"cli_bootstrap_sessions.file_tags": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -1278,6 +1299,9 @@ const googleProviderModule = await import(moduleUrl("packages/ai/src/providers/g
 const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
+const fileProcessorModule = await import(
+	moduleUrl("packages/coding-agent/src/cli/file-processor.ts"),
+);
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const { createRequire } = await import("node:module");
@@ -9872,6 +9896,80 @@ function runEvalsHarnessValidateSmoke() {
 }
 
 
+function leftoverValidateExtensionOk(response, paths) {
+	try {
+		const output = { response, extensionPaths: paths };
+		if (output.response !== "Hello, Bob!") {
+			return 0;
+		}
+		if (!Array.isArray(output.extensionPaths) || output.extensionPaths.length !== 1) {
+			return 0;
+		}
+		return 1;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runEvalsHarnessValidateExtension() {
+	return {
+		ve_ok: leftoverValidateExtensionOk("Hello, Bob!", ["one"]),
+		ve_greet: leftoverValidateExtensionOk("Hello, Alice!", ["one"]) === 0 ? 1 : 0,
+		ve_paths: leftoverValidateExtensionOk("Hello, Bob!", ["a", "b"]) === 0 ? 1 : 0,
+		ve_empty: leftoverValidateExtensionOk("Hello, Bob!", []) === 0 ? 1 : 0,
+		ve_n: 4,
+	};
+}
+
+
+function leftoverEvalSuiteDispatchId(suite) {
+	if (suite === "smoke") {
+		return 0;
+	}
+	if (suite === "extensions") {
+		return 1;
+	}
+	if (suite === "extension-authoring") {
+		return 2;
+	}
+	return 3;
+}
+
+
+function runEvalsHarnessSuiteDispatch() {
+	return {
+		sd_smoke: leftoverEvalSuiteDispatchId("smoke") === 0 ? 1 : 0,
+		sd_ext: leftoverEvalSuiteDispatchId("extensions") === 1 ? 1 : 0,
+		sd_auth: leftoverEvalSuiteDispatchId("extension-authoring") === 2 ? 1 : 0,
+		sd_unk: leftoverEvalSuiteDispatchId("unknown") === 3 ? 1 : 0,
+		sd_n: 4,
+	};
+}
+
+
+function leftoverEvalResultP(value) {
+	return value !== null &&
+		typeof value === "object" &&
+		!Array.isArray(value) &&
+		Object.prototype.hasOwnProperty.call(value, "output") &&
+		Object.prototype.hasOwnProperty.call(value, "events")
+		? 1
+		: 0;
+}
+
+
+function runEvalsHarnessEvalResultP() {
+	return {
+		er_yes: leftoverEvalResultP(makeEvalResult({ output: "ok" })),
+		er_hash: leftoverEvalResultP({ n: 1 }) === 0 ? 1 : 0,
+		er_str: leftoverEvalResultP("x") === 0 ? 1 : 0,
+		er_nil: leftoverEvalResultP(null) === 0 ? 1 : 0,
+		er_n: 4,
+	};
+}
+
+
 function makeEvalResult(fields = {}) {
 	return {
 		output: fields.output,
@@ -10587,6 +10685,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessArgumentPrefix(),
 		...runEvalsHarnessParseArguments(),
 		...runEvalsHarnessValidateSmoke(),
+		...runEvalsHarnessValidateExtension(),
+		...runEvalsHarnessSuiteDispatch(),
+		...runEvalsHarnessEvalResultP(),
 		...runEvalsHarnessCanonicalApi(),
 		...runEvalsHarnessLegacyApi(),
 		...runEvalsHarnessExtensionErrorJson(),
@@ -10596,6 +10697,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessReporterRunId(),
 		...runEvalsHarnessArtifactReferenceJson(),
 		...runEvalsHarnessReporterArtifacts(),
+		...runEvalsHarnessContentText(),
+		...runEvalsHarnessAgentTools(),
+		...runEvalsHarnessExtensionPaths(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -10693,6 +10797,24 @@ async function measureEvalsHarness() {
 		}),
 		reporter_artifacts: await collect("evals_harness.reporter_artifacts", () => {
 			return () => runEvalsHarnessReporterArtifacts();
+		}),
+		validate_extension: await collect("evals_harness.validate_extension", () => {
+			return () => runEvalsHarnessValidateExtension();
+		}),
+		suite_dispatch: await collect("evals_harness.suite_dispatch", () => {
+			return () => runEvalsHarnessSuiteDispatch();
+		}),
+		eval_result_p: await collect("evals_harness.eval_result_p", () => {
+			return () => runEvalsHarnessEvalResultP();
+		}),
+		msg_content: await collect("evals_harness.msg_content", () => {
+			return () => runEvalsHarnessContentText();
+		}),
+		eval_tools: await collect("evals_harness.eval_tools", () => {
+			return () => runEvalsHarnessAgentTools();
+		}),
+		eval_paths: await collect("evals_harness.eval_paths", () => {
+			return () => runEvalsHarnessExtensionPaths();
 		}),
 		observed,
 	};
@@ -13403,6 +13525,27 @@ function runCliPrintRpcHandleUiMiss() {
 	);
 }
 
+function leftoverRpcHandleLineObservedPairs() {
+	const bad = runCliPrintRpcHandleBadJson();
+	const notObj = runCliPrintRpcHandleNotObject();
+	const uiMiss = runCliPrintRpcHandleUiMiss();
+	return {
+		bj_cmd: bad[0],
+		bj_ok: bad[1],
+		bj_id: bad[2],
+		bj_nl: bad[4],
+		no_cmd: notObj[0],
+		no_ok: notObj[1],
+		no_id: notObj[2],
+		no_nl: notObj[4],
+		um_cmd: uiMiss[0],
+		um_ok: uiMiss[1],
+		um_id: uiMiss[2],
+		um_nl: uiMiss[4],
+		um_unk: uiMiss[5],
+	};
+}
+
 
 function measureCliPrintRpcSessionStatsObserved(stats) {
 	return {
@@ -13623,6 +13766,19 @@ function parseQueueMode(mode, noun) {
 }
 
 
+const RPC_LAST_ASSISTANT_MESSAGES = [
+	{ role: "user", content: "q" },
+	{
+		role: "assistant",
+		stopReason: "stop",
+		content: [{ type: "text", text: "hello" }],
+	},
+];
+
+const RPC_COMMAND_LIST_COMMANDS = [{ name: "foo", description: "d" }];
+const RPC_COMMAND_LIST_TEMPLATES = [{ name: "bar", description: "t" }];
+
+
 function runCliPrintRpcQueueMode() {
 	let bad = 0;
 	try {
@@ -13707,6 +13863,10 @@ async function measureCliPrintRpc() {
 			...runCliPrintRpcImages(),
 			...runCliPrintRpcPrompt(),
 			...runCliPrintRpcBashResult(),
+			...runCliPrintRpcQueueMode(),
+			...runCliPrintRpcLastAssistant(),
+			...runCliPrintRpcCommandList(),
+			...leftoverRpcHandleLineObservedPairs(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -13729,6 +13889,24 @@ async function measureCliPrintRpc() {
 			}),
 			bash_result: await collect("cli_print_rpc.bash_result", () => {
 				return () => runCliPrintRpcBashResult();
+			}),
+			queue_parse: await collect("cli_print_rpc.queue_parse", () => {
+				return () => runCliPrintRpcQueueMode();
+			}),
+			asst_text: await collect("cli_print_rpc.asst_text", () => {
+				return () => runCliPrintRpcLastAssistant();
+			}),
+			cmd_list: await collect("cli_print_rpc.cmd_list", () => {
+				return () => runCliPrintRpcCommandList();
+			}),
+			bad_line: await collect("cli_print_rpc.bad_line", () => {
+				return () => runCliPrintRpcHandleBadJson();
+			}),
+			array_line: await collect("cli_print_rpc.array_line", () => {
+				return () => runCliPrintRpcHandleNotObject();
+			}),
+			ui_absent: await collect("cli_print_rpc.ui_absent", () => {
+				return () => runCliPrintRpcHandleUiMiss();
 			}),
 			observed,
 		};
@@ -18396,6 +18574,16 @@ const LEFTOVER_THEME_JSON_COLOR_MAP = [
 	["bashMode", "bash-mode"],
 ];
 
+const GOAL20_TUI_THEME_OPTIONAL_COLOR_NAMES = [
+	"thinkingMax",
+	"scrollbarThumb",
+	"searchMatchBg",
+	"searchMatchText",
+];
+const GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES = LEFTOVER_THEME_JSON_COLOR_MAP.map(
+	(entry) => entry[0],
+).filter((name) => !LEFTOVER_THEME_OPTIONAL_COLORS.has(name));
+
 const LEFTOVER_THEME_JSON_EXPORT_MAP = [
 	["pageBg", "page-bg"],
 	["cardBg", "card-bg"],
@@ -19153,6 +19341,12 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveThemeObjectOverrides(),
 		...runCliInteractiveApplyTuiThemeSummary(),
 		...runCliInteractiveLoadTuiThemeFile(),
+		...runCliInteractiveThemePrimitive(),
+		...runCliInteractiveThemeValidate(),
+		...runCliInteractiveThemeResolve(),
+		...runCliInteractiveToolSessionMake(),
+		...runCliInteractiveToolSessionUpdate(),
+		...runCliInteractiveToolSessionRender(),
 		...runCliInteractiveBashAppendRunning(),
 		...runCliInteractiveBashCompleteString(),
 		...runCliInteractiveBashStopEntry(),
@@ -19244,6 +19438,24 @@ async function measureCliInteractiveDecodeEntity() {
 		),
 		load_tui_theme_file: await collect("cli_interactive_controller.load_tui_theme_file", () => {
 			return () => runCliInteractiveLoadTuiThemeFile();
+		}),
+		theme_prim: await collect("cli_interactive_controller.theme_prim", () => {
+			return () => runCliInteractiveThemePrimitive();
+		}),
+		theme_val: await collect("cli_interactive_controller.theme_val", () => {
+			return () => runCliInteractiveThemeValidate();
+		}),
+		theme_res: await collect("cli_interactive_controller.theme_res", () => {
+			return () => runCliInteractiveThemeResolve();
+		}),
+		sess_make: await collect("cli_interactive_controller.sess_make", () => {
+			return () => runCliInteractiveToolSessionMake();
+		}),
+		sess_upd: await collect("cli_interactive_controller.sess_upd", () => {
+			return () => runCliInteractiveToolSessionUpdate();
+		}),
+		sess_draw: await collect("cli_interactive_controller.sess_draw", () => {
+			return () => runCliInteractiveToolSessionRender();
 		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
@@ -32522,6 +32734,10 @@ async function measureCliBootstrapCodingTools() {
 	const sessionPathObserved = runCliBootstrapSessionPath();
 	const splitCommandObserved = runCliBootstrapSplitCommand();
 	const pathArgumentObserved = runCliBootstrapPathArgument();
+	const leftoverCycle = runCliBootstrapModelCycle();
+	const leftoverScope = runCliBootstrapModelScope();
+	const filePair = writeCliBootstrapProcessFiles();
+	const leftoverFiles = await runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -32538,12 +32754,24 @@ async function measureCliBootstrapCodingTools() {
 		path_argument: await collect("cli_bootstrap_sessions.path_argument", () => {
 			return () => runCliBootstrapPathArgument();
 		}),
+		cycle_wrap: await collect("cli_bootstrap_sessions.cycle_wrap", () => {
+			return () => runCliBootstrapModelCycle();
+		}),
+		scope_hint: await collect("cli_bootstrap_sessions.scope_hint", () => {
+			return () => runCliBootstrapModelScope();
+		}),
+		file_tags: await collect("cli_bootstrap_sessions.file_tags", () => {
+			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
 			...sessionPathObserved,
 			...splitCommandObserved,
 			...pathArgumentObserved,
+			...leftoverCycle,
+			...leftoverScope,
+			...leftoverFiles,
 		},
 	};
 }
@@ -33569,6 +33797,18 @@ const result = {
 				"packages/evals/src/vitest-evals/artifacts.ts persist name/path (cadr artifact-reference-json)",
 			"evals_harness.reporter_artifacts":
 				"packages/evals/src/vitest-evals/reporter.ts test.artifacts assemble (cadr reporter-artifacts)",
+			"evals_harness.validate_extension":
+				"packages/evals leftover replica of extension greeting + path-count (cadr validate-extension-result)",
+			"evals_harness.suite_dispatch":
+				"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)",
+			"evals_harness.eval_result_p":
+				"packages/evals leftover object-shape predicate (cadr typep eval-result)",
+			"evals_harness.msg_content":
+				"packages/evals leftover replica of message content text (cadr message-content-text)",
+			"evals_harness.eval_tools":
+				"packages/evals leftover replica of agent tool list (cadr eval-agent-tools)",
+			"evals_harness.eval_paths":
+				"packages/evals leftover replica of visible extension paths (cadr eval-extension-paths)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
@@ -33614,6 +33854,18 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts prompt message+images",
 			"cli_print_rpc.bash_result":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts bash result payload",
+			"cli_print_rpc.queue_parse":
+				"packages/coding-agent leftover replica of parseQueueMode (cadr parse-queue-mode)",
+			"cli_print_rpc.asst_text":
+				"packages/coding-agent leftover replica of last assistant text (cadr rpc-last-assistant-text)",
+			"cli_print_rpc.cmd_list":
+				"packages/coding-agent leftover replica of rpc command list (cadr rpc-command-list)",
+			"cli_print_rpc.bad_line":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine JSON.parse catch",
+			"cli_print_rpc.array_line":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine require JSON object",
+			"cli_print_rpc.ui_absent":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine unknown extension_ui_response",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",
@@ -33733,6 +33985,18 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts setTheme",
 			"cli_interactive_controller.load_tui_theme_file":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts loadThemeFromPath",
+			"cli_interactive_controller.theme_prim":
+				"packages/coding-agent leftover replica of isThemeColorValue (cadr valid-tui-theme-primitive-p)",
+			"cli_interactive_controller.theme_val":
+				"packages/coding-agent leftover replica of theme object validate (cadr validate-tui-theme-object)",
+			"cli_interactive_controller.theme_res":
+				"packages/coding-agent leftover replica of resolveThemeColor (cadr resolve-tui-theme-value)",
+			"cli_interactive_controller.sess_make":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts ToolExecutionComponent construct",
+			"cli_interactive_controller.sess_upd":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts result/pending",
+			"cli_interactive_controller.sess_draw":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts renderCall/renderResult fallback",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":
@@ -34312,6 +34576,12 @@ const result = {
 				"packages/coding-agent/src/cli first-token slash split (cadr split-command)",
 			"cli_bootstrap_sessions.path_argument":
 				"packages/coding-agent/src/cli quoted path after command (cadr path-command-argument)",
+			"cli_bootstrap_sessions.cycle_wrap":
+				"packages/coding-agent/src/core/agent-session.ts _cycleScopedModel index wrap",
+			"cli_bootstrap_sessions.scope_hint":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
+			"cli_bootstrap_sessions.file_tags":
+				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

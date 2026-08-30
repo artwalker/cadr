@@ -9,6 +9,145 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `evals_harness.validate_extension`
+  (`validate-extension-result` vs leftover replica of extension greeting
+  + path-count). Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty`
+  / `ve_n` exact. n=5 **7.979×** (2.604 / 0.326 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 925). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.suite_dispatch`
+  (leftover replica of `%eval-main` suite cond; pi has no `--suite`).
+  Observed `sd_smoke` / `sd_ext` / `sd_auth` / `sd_unk` / `sd_n` exact.
+  n=5 **0.874×** (0.171 / 0.196 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 926). Under-1×. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.eval_result_p`
+  (`typep` `eval-result` vs leftover object-shape predicate). Observed
+  `er_yes` / `er_hash` / `er_str` / `er_nil` / `er_n` exact. n=5
+  **1.836×** (0.608 / 0.331 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 927). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.msg_content`
+  (`message-content-text` vs leftover replica of content-text join).
+  Observed `ct_plain` / `ct_join` / `ct_empty` / `ct_blank` / `ct_n`
+  exact. n=5 **1.352×** (1.008 / 0.745 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 928). Over-1× booked. Does not
+  remount `content_text`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.eval_tools`
+  (`eval-agent-tools` vs leftover replica of agent.tools list).
+  Observed `at_empty` / `at_n` / `at_read` / `at_bash` / `at_keys`
+  exact. n=5 **5.428×** (1.547 / 0.285 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 929). Over-1× booked. Does not
+  remount `agent_tools`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.eval_paths`
+  (`eval-extension-paths` vs leftover replica of visible extension
+  paths). Observed `ep_none` / `ep_n` / `ep_path` / `ep_skip` /
+  `ep_keys` exact. n=5 **7.223×** (3.230 / 0.447 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 930). Over-1× booked. Does
+  not remount `extension_paths`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_prim`
+  (`valid-tui-theme-primitive-p` vs leftover replica of isThemeColorValue).
+  Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil`
+  exact. n=5 **0.741×** (0.110 / 0.149 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 931). Under-1×. Does not remount
+  `theme_primitive`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_val`
+  (`validate-tui-theme-object` vs leftover replica of theme object
+  validate). Observed `tv_ok` / `tv_slash` / `tv_unknown` exact. n=5
+  **0.756×** (19.713 / 26.066 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 932). Under-1×. Does not remount
+  `theme_validate`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_res`
+  (`resolve-tui-theme-value` vs leftover replica of resolveThemeColor).
+  Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` /
+  `tr_miss` exact. n=5 **0.144×** (1.192 / 8.261 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 933). Under-1×. Does not
+  remount `theme_resolve`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.queue_parse`
+  (`parse-queue-mode` vs leftover replica of parseQueueMode). Observed
+  `qm_all` / `qm_one` / `qm_bad` exact. n=5 **0.132×** (0.337 / 2.547
+  µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 934).
+  Under-1×. Does not remount `queue_mode`. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.asst_text`
+  (`rpc-last-assistant-text` vs leftover replica of last assistant
+  text). Observed `la_hit` / `la_len` / `la_miss` exact. n=5 **0.791×**
+  (0.293 / 0.370 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 935). Under-1×. Does not remount `last_assistant`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.cmd_list`
+  (`rpc-command-list` vs leftover replica of rpc command list).
+  Observed `cl_n` / `cl_ext` / `cl_prompt` exact. n=5 **4.603×**
+  (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 936). Over-1× booked. Does not remount `command_list`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.bad_line`
+  (`rpc-handle-line` vs `handleInputLine` JSON.parse catch). Observed
+  `bj_cmd` / `bj_ok` / `bj_id` / `bj_nl` exact. n=5 **1.262×** (5.686 /
+  4.505 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 937). Over-1× booked. Does not remount `handle_bad_json`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.array_line`
+  (`rpc-handle-line` vs require JSON object). Observed `no_cmd` /
+  `no_ok` / `no_id` / `no_nl` exact. n=5 **1.474×** (5.528 / 3.750 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 938).
+  Over-1× booked. Does not remount `handle_not_object`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.ui_absent`
+  (`rpc-handle-line` vs unknown `extension_ui_response`). Observed
+  `um_cmd` / `um_ok` / `um_id` / `um_nl` / `um_unk` exact. n=5
+  **4.202×** (6.543 / 1.557 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 939). Over-1× booked. Does not remount
+  `handle_ui_miss`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.cycle_wrap`
+  (`model-cycle-target-entry` vs `_cycleScopedModel` index wrap).
+  Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` /
+  `mc_empty` exact. n=5 **0.745×** (0.655 / 0.879 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 940). Under-1×. Does not
+  remount `model_cycle`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.scope_hint`
+  (`model-scope-startup-line` vs interactive-mode Model scope line).
+  Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` / `ms_disabled`
+  exact. n=5 **0.838×** (35.665 / 42.573 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 941). Under-1×. Does not remount
+  `model_scope_line`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.file_tags`
+  (`process-cli-file-arguments` vs `processFileArguments`). Observed
+  `pf_hello` / `pf_n` / `pf_img` exact. n=5 **0.556×** (80.505 /
+  144.830 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 942). Under-1×. Does not remount `process_files`.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_make`
+  (`make-tool-render-session` vs leftover replica of ToolExecutionComponent
+  construct). Observed `tsm_name` / `tsm_pending` / `tsm_nil` exact. n=5
+  **1.130×** (0.244 / 0.216 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 943). Over-1× booked. Does not remount
+  `tool_session_make`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_upd`
+  (`update-tool-render-session` vs leftover replica of result/pending).
+  Observed `tsu_result` / `tsu_pending` / `tsu_cleared` exact. n=5
+  **1.132×** (0.257 / 0.227 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 944). Over-1× booked. Does not remount
+  `tool_session_update`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_draw`
+  (`render-tool-session` vs leftover replica of renderCall/renderResult
+  fallback). Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n`
+  / `trr_done_result` / `trr_custom` / `trr_empty` exact. n=5 **0.842×**
+  (1.503 / 1.785 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 945). Under-1×. Does not remount `tool_session_render`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.dlg_make`
   (`make-login-dialog-state` vs leftover replica of LoginDialogComponent
   constructor). Observed `ldm_empty_n` / `ldm_named` / `ldm_named_sec` /

@@ -8728,6 +8728,167 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 925 — `evals_harness` (validate_extension)
+
+| metric | cadr | pi |
+|---|---|---|
+| `validate_extension` | `validate-extension-result` (`src/cadr-evals/main.lisp`) | leftover replica of extension greeting + path-count |
+
+Leftover sibling of leftover 400–402 on the same needs-pair file. Timed work is Bob+one-path ok, Alice greeting fail, two-path fail, empty-path fail. Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty` / `ve_n` are exact. First n=5 freeze **7.979×** (2.604 / 0.326 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 926 — `evals_harness` (suite_dispatch)
+
+| metric | cadr | pi |
+|---|---|---|
+| `suite_dispatch` | leftover replica of `%eval-main` suite cond (`src/cadr-evals/main.lisp`) | leftover replica of cadr suite cond (pi has no `--suite`) |
+
+Leftover sibling of Pair 925. Timed work is smoke/extensions/extension-authoring/unknown dispatch ids. Observed `sd_smoke` / `sd_ext` / `sd_auth` / `sd_unk` / `sd_n` are exact. First n=5 freeze **0.874×** (0.171 / 0.196 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 927 — `evals_harness` (eval_result_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_result_p` | leftover of `%eval-main` `(typep value 'eval-result)` (`src/cadr-evals/main.lisp`) | leftover object-shape predicate (`output` + `events` own properties) |
+
+Leftover sibling of Pairs 925–926. Timed work is make-eval-result yes, json-object miss, string miss, nil miss. Observed `er_yes` / `er_hash` / `er_str` / `er_nil` / `er_n` are exact. First n=5 freeze **1.836×** (0.608 / 0.331 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 928 — `evals_harness` (msg_content)
+
+| metric | cadr | pi |
+|---|---|---|
+| `msg_content` | `message-content-text` (`src/cadr-evals/harness.lisp`) | leftover replica of content-text join |
+
+Leftover sibling of leftover 418–420 on the same needs-pair file. Does not remount `content_text`. Timed work is plain string, text-parts join, empty, blank. Observed `ct_plain` / `ct_join` / `ct_empty` / `ct_blank` / `ct_n` are exact. First n=5 freeze **1.352×** (1.008 / 0.745 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 929 — `evals_harness` (eval_tools)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_tools` | `eval-agent-tools` (`src/cadr-evals/harness.lisp`) | leftover replica of agent.tools list |
+
+Leftover sibling of Pair 928. Does not remount `agent_tools`. Timed work is empty tools, filled count, read name, bash name. Observed `at_empty` / `at_n` / `at_read` / `at_bash` / `at_keys` are exact. First n=5 freeze **5.428×** (1.547 / 0.285 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 930 — `evals_harness` (eval_paths)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_paths` | `eval-extension-paths` (`src/cadr-evals/harness.lisp`) | leftover replica of visible extension-host paths |
+
+Leftover sibling of Pairs 928–929. Does not remount `extension_paths`. Timed work is no-host empty, one visible path, hidden skipped. Observed `ep_none` / `ep_n` / `ep_path` / `ep_skip` / `ep_keys` are exact. First n=5 freeze **7.223×** (3.230 / 0.447 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 931 — `cli_interactive_controller` (theme_prim)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_prim` | `valid-tui-theme-primitive-p` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of isThemeColorValue |
+
+Leftover sibling of leftover 532–534 on the same needs-pair file. Does not remount `theme_primitive`. Timed work is string, 0, 255, 256, negative, nil. Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` are exact. First n=5 freeze **0.741×** (0.110 / 0.149 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 932 — `cli_interactive_controller` (theme_val)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_val` | `validate-tui-theme-object` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of theme object validate |
+
+Leftover sibling of Pair 931. Does not remount `theme_validate`. Timed work is valid object, slash name, unknown property. Observed `tv_ok` / `tv_slash` / `tv_unknown` are exact. First n=5 freeze **0.756×** (19.713 / 26.066 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 933 — `cli_interactive_controller` (theme_res)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_res` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of resolveThemeColor |
+
+Leftover sibling of Pairs 931–932. Does not remount `theme_resolve`. Timed work is integer, empty, hex, variable, cycle, miss. Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` / `tr_miss` are exact. First n=5 freeze **0.144×** (1.192 / 8.261 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 934 — `cli_print_rpc` (queue_parse)
+
+| metric | cadr | pi |
+|---|---|---|
+| `queue_parse` | `parse-queue-mode` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of parseQueueMode |
+
+Leftover sibling of leftover 475–477 on the same needs-pair file. Does not remount `queue_mode`. Timed work is all, one-at-a-time, invalid. Observed `qm_all` / `qm_one` / `qm_bad` are exact. First n=5 freeze **0.132×** (0.337 / 2.547 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 935 — `cli_print_rpc` (asst_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `asst_text` | `rpc-last-assistant-text` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of last assistant text |
+
+Leftover sibling of Pair 934. Does not remount `last_assistant`. Timed work is hit hello, length, empty miss. Observed `la_hit` / `la_len` / `la_miss` are exact. First n=5 freeze **0.791×** (0.293 / 0.370 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 936 — `cli_print_rpc` (cmd_list)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cmd_list` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of rpc command list |
+
+Leftover sibling of Pairs 934–935. Does not remount `command_list`. Timed work is count, extension foo, prompt bar. Observed `cl_n` / `cl_ext` / `cl_prompt` are exact. First n=5 freeze **4.603×** (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 937 — `cli_print_rpc` (bad_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bad_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` JSON.parse catch (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of leftover 496–498 on the same needs-pair file. Does not remount `handle_bad_json`. Timed work is invalid JSON (`not-json`) through the outer parse failure — not `run-rpc-mode`, not a live agent. Observed `bj_cmd` / `bj_ok` / `bj_id` / `bj_nl` are exact. Do not exact full error strings. First n=5 freeze **1.262×** (5.686 / 4.505 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 938 — `cli_print_rpc` (array_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `array_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` require JSON object (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 937. Does not remount `handle_not_object`. Timed work is JSON array `[]` rejected as a non-object — not command dispatch. Observed `no_cmd` / `no_ok` / `no_id` / `no_nl` are exact. Do not exact full error strings. First n=5 freeze **1.474×** (5.528 / 3.750 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 939 — `cli_print_rpc` (ui_absent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ui_absent` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` unknown `extension_ui_response` (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 937–938. Does not remount `handle_ui_miss`. Timed work is an unknown pending UI id (`missing`) — not dialog resolve, not `rpc-shutdown`. Observed `um_cmd` / `um_ok` / `um_id` / `um_nl` / `um_unk` are exact. Do not exact full error strings. First n=5 freeze **4.202×** (6.543 / 1.557 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 940 — `cli_bootstrap_sessions` (cycle_wrap)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cycle_wrap` | `model-cycle-target-entry` (`src/cadr-cli/bootstrap/commands.lisp`) | `_cycleScopedModel` index wrap (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of leftover 484–486 on the same needs-pair file. Does not remount `model_cycle`. Timed work is scoped-entry wrap / missing-current default — not session persist, not `cycleModel` emit. Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` / `mc_empty` are exact. First n=5 freeze **0.745×** (0.655 / 0.879 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 941 — `cli_bootstrap_sessions` (scope_hint)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scope_hint` | `model-scope-startup-line` (`src/cadr-cli/bootstrap/commands.lisp`) | interactive-mode `init` Model scope line (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 940. Does not remount `model_scope_line`. Timed work is the startup scope line (quiet / empty / cycle-hint / unbound) — not TUI mount, not theme init. Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` / `ms_disabled` are exact. First n=5 freeze **0.838×** (35.665 / 42.573 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 942 — `cli_bootstrap_sessions` (file_tags)
+
+| metric | cadr | pi |
+|---|---|---|
+| `file_tags` | `process-cli-file-arguments` (`src/cadr-cli/bootstrap/commands.lisp`) | `processFileArguments` (`packages/coding-agent/src/cli/file-processor.ts`) |
+
+Leftover sibling of Pairs 940–941. Does not remount `process_files`. Timed work is one text file plus one empty skip — not image resize, not `@file` CLI parse. Observed `pf_hello` / `pf_n` / `pf_img` are exact. First n=5 freeze **0.556×** (80.505 / 144.830 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 943 — `cli_interactive_controller` (sess_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_make` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of `ToolExecutionComponent` construct |
+
+Leftover sibling of leftover 520–522 on the same needs-pair file. Does not remount `tool_session_make`. Timed work is session construct (name, default pending, nil result) — not render, not update. Observed `tsm_name` / `tsm_pending` / `tsm_nil` are exact. First n=5 freeze **1.130×** (0.244 / 0.216 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 944 — `cli_interactive_controller` (sess_upd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_upd` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of result/pending |
+
+Leftover sibling of Pair 943. Does not remount `tool_session_update`. Timed work is result write plus pending keep/clear — not renderCall, not construct. Observed `tsu_result` / `tsu_pending` / `tsu_cleared` are exact. First n=5 freeze **1.132×** (0.257 / 0.227 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 945 — `cli_interactive_controller` (sess_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_draw` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
+
+Leftover sibling of Pairs 943–944. Does not remount `tool_session_render`. Timed work is pending default call, done default result, custom renderers, empty-line drop — not TUI Box, not images. Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` / `trr_done_result` / `trr_custom` / `trr_empty` are exact. First n=5 freeze **0.842×** (1.503 / 1.785 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 946 — `cli_selectors` (dlg_make)
 
 | metric | cadr | pi |
