@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1075. cli_selectors oa_osr vs leftover replica of formatStatusIndicator themed output
+;;;;      (does not remount oauth_option_status_rendered)
+;;;; 1076. cli_selectors oa_osl vs leftover replica of formatStatusIndicator plain label
+;;;;      (does not remount oauth_option_status_label)
+;;;; 1077. cli_selectors oa_cet vs leftover replica of credential-entry authType
+;;;;      (does not remount credential_entry_auth_type)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -830,8 +836,11 @@
     ("cli_selectors.trust_selector_handle_raw_input" . 50)
     ("cli_selectors.trust_selector_ui_state" . 50)
     ("cli_selectors.oauth_option_status_label" . 50)
+    ("cli_selectors.oa_osl" . 50)
     ("cli_selectors.oauth_option_status_rendered" . 50)
+    ("cli_selectors.oa_osr" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
+    ("cli_selectors.oa_cet" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
@@ -29223,13 +29232,28 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-option-status-label))))
+     "oa_osl"
+     (collect "cli_selectors.oa_osl"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-option-status-label))))
      "oauth_option_status_rendered"
      (collect "cli_selectors.oauth_option_status_rendered"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-option-status-rendered))))
+     "oa_osr"
+     (collect "cli_selectors.oa_osr"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-option-status-rendered))))
      "credential_entry_auth_type"
      (collect "cli_selectors.credential_entry_auth_type"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-credential-entry-auth-type))))
+     "oa_cet"
+     (collect "cli_selectors.oa_cet"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-credential-entry-auth-type))))
@@ -32912,10 +32936,16 @@
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.oauth_option_status_label"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label"
+      "cli_selectors.oa_osl"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label leftover"
       "cli_selectors.oauth_option_status_rendered"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-rendered"
+      "cli_selectors.oa_osr"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-rendered leftover"
       "cli_selectors.credential_entry_auth_type"
       "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type"
+      "cli_selectors.oa_cet"
+      "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type leftover"
       "cli_selectors.oauth_environment_source_p"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
       "cli_selectors.oauth_selector_selection"

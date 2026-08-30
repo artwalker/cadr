@@ -2634,9 +2634,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_selectors.oauth_option_status_label", RECORD.METRIC_KEYS)
         self.assertIn("oauth_option_status_label", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oauth_option_status_label", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.oa_osl", RECORD.METRIC_KEYS)
+        self.assertIn("oa_osl", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.oa_osl", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.credential_entry_auth_type", RECORD.METRIC_KEYS)
         self.assertIn("credential_entry_auth_type", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.credential_entry_auth_type", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.oa_cet", RECORD.METRIC_KEYS)
+        self.assertIn("oa_cet", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.oa_cet", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.oauth_environment_source_p", RECORD.METRIC_KEYS)
         self.assertIn("oauth_environment_source_p", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oauth_environment_source_p", paired.RATIO_CEILINGS)
@@ -2679,6 +2685,9 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.oauth_option_status_rendered", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.oa_osr", RECORD.METRIC_KEYS)
+        self.assertIn("oa_osr", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.oa_osr", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.api_key_input_state_handle_event", RECORD.METRIC_KEYS)
         self.assertIn(
             "api_key_input_state_handle_event", paired.METRICS["cli_selectors"]
