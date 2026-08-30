@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1123. cli_selectors sv_ok vs leftover replica of trust-selector isSavedOption
+;;;;      (does not remount trust_option_saved_p / tr_sv)
+;;;; 1124. cli_selectors mk_ok vs leftover replica of TrustSelectorComponent constructor
+;;;;      (does not remount make_trust_selector_state / tr_mk)
+;;;; 1125. cli_selectors trn_ok vs leftover replica of TrustSelectorComponent layout
+;;;;      (does not remount render_trust_selector / tr_rnd)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -931,6 +937,9 @@
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
+    ("cli_selectors.sv_ok" . 50)
+    ("cli_selectors.mk_ok" . 50)
+    ("cli_selectors.trn_ok" . 50)
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
@@ -29726,6 +29735,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-trust-selector))))
+     "sv_ok"
+     (collect "cli_selectors.sv_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-option-saved-p))))
+     "mk_ok"
+     (collect "cli_selectors.mk_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-trust-selector-state))))
+     "trn_ok"
+     (collect "cli_selectors.trn_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-trust-selector))))
      "make_login_method_selector_state"
      (collect "cli_selectors.make_login_method_selector_state"
               (lambda ()
@@ -33112,6 +33136,12 @@
       "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
       "cli_selectors.render_trust_selector"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
+      "cli_selectors.sv_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p leftover"
+      "cli_selectors.mk_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state leftover"
+      "cli_selectors.trn_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector leftover"
       "cli_selectors.make_login_method_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
       "cli_selectors.make_api_key_input_state"
