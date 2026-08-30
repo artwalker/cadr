@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 925,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/main.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.validate_extension",
+   "branch": "cursor/evals-main-validate-suite-typep-leftovers-925-927-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 925",
+   "ratio": 7.979,
+   "cadrUs": 2.604,
+   "piUs": 0.326,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 926,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/main.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.suite_dispatch",
+   "branch": "cursor/evals-main-validate-suite-typep-leftovers-925-927-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 926",
+   "ratio": 0.874,
+   "cadrUs": 0.171,
+   "piUs": 0.196,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 927,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/main.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.eval_result_p",
+   "branch": "cursor/evals-main-validate-suite-typep-leftovers-925-927-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 927",
+   "ratio": 1.836,
+   "cadrUs": 0.608,
+   "piUs": 0.331,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
