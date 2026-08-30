@@ -33,6 +33,8 @@
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;      leftover: read-rpc-jsonl-lines vs attachJsonlLineReader
 ;;;;      leftover: rpc-images-from-json / rpc-prompt-message / rpc-bash-result-json
+;;;;      leftover 937-939: rpc-handle-line bad JSON / array / missing UI id
+;;;;      (does not remount handle_bad_json / handle_not_object / handle_ui_miss)
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -605,6 +607,9 @@
     ("cli_print_rpc.queue_parse" . 50)
     ("cli_print_rpc.asst_text" . 50)
     ("cli_print_rpc.cmd_list" . 50)
+    ("cli_print_rpc.bad_line" . 50)
+    ("cli_print_rpc.array_line" . 50)
+    ("cli_print_rpc.ui_absent" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -14358,6 +14363,13 @@
    "missing"))
 
 
+(defun leftover-rpc-handle-line-observed-pairs (bad not-obj ui-miss)
+  (list
+   (nth 0 bad) (nth 1 bad) (nth 2 bad) (nth 4 bad)
+   (nth 0 not-obj) (nth 1 not-obj) (nth 2 not-obj) (nth 4 not-obj)
+   (nth 0 ui-miss) (nth 1 ui-miss) (nth 2 ui-miss) (nth 4 ui-miss)
+   (nth 5 ui-miss)))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -14385,6 +14397,11 @@
          (leftover-cmds
            (run-cli-print-rpc-command-list
             (rpc-command-list-fixture-state))))
+         (leftover-handle
+           (leftover-rpc-handle-line-observed-pairs
+            (run-cli-print-rpc-handle-bad-json)
+            (run-cli-print-rpc-handle-not-object)
+            (run-cli-print-rpc-handle-ui-miss))))
     (json-object
      "observed"
      (json-object
@@ -14432,6 +14449,19 @@
       "cl_n" (nth 0 leftover-cmds)
       "cl_ext" (nth 1 leftover-cmds)
       "cl_prompt" (nth 2 leftover-cmds))
+      "bj_cmd" (nth 0 leftover-handle)
+      "bj_ok" (nth 1 leftover-handle)
+      "bj_id" (nth 2 leftover-handle)
+      "bj_nl" (nth 3 leftover-handle)
+      "no_cmd" (nth 4 leftover-handle)
+      "no_ok" (nth 5 leftover-handle)
+      "no_id" (nth 6 leftover-handle)
+      "no_nl" (nth 7 leftover-handle)
+      "um_cmd" (nth 8 leftover-handle)
+      "um_ok" (nth 9 leftover-handle)
+      "um_id" (nth 10 leftover-handle)
+      "um_nl" (nth 11 leftover-handle)
+      "um_unk" (nth 12 leftover-handle))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -14484,7 +14514,22 @@
               (lambda ()
                 (let ((state (rpc-command-list-fixture-state)))
                   (lambda ()
-                    (run-cli-print-rpc-command-list state))))))))
+                    (run-cli-print-rpc-command-list state)))))
+     "bad_line"
+     (collect "cli_print_rpc.bad_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-bad-json))))
+     "array_line"
+     (collect "cli_print_rpc.array_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-not-object))))
+     "ui_absent"
+     (collect "cli_print_rpc.ui_absent"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-ui-miss)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -32234,6 +32279,12 @@
       "src/cadr-cli/modes/rpc/commands.lisp rpc-last-assistant-text"
       "cli_print_rpc.cmd_list"
       "src/cadr-cli/modes/rpc/commands.lisp rpc-command-list"
+      "cli_print_rpc.bad_line"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
+      "cli_print_rpc.array_line"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
+      "cli_print_rpc.ui_absent"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"

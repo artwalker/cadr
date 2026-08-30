@@ -88,6 +88,26 @@ tag/Release step.
   (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 936). Over-1× booked. Does not remount `command_list`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.bad_line`
+  (`rpc-handle-line` vs `handleInputLine` JSON.parse catch). Observed
+  `bj_cmd` / `bj_ok` / `bj_id` / `bj_nl` exact. n=5 **1.262×** (5.686 /
+  4.505 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 937). Over-1× booked. Does not remount `handle_bad_json`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.array_line`
+  (`rpc-handle-line` vs require JSON object). Observed `no_cmd` /
+  `no_ok` / `no_id` / `no_nl` exact. n=5 **1.474×** (5.528 / 3.750 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 938).
+  Over-1× booked. Does not remount `handle_not_object`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.ui_absent`
+  (`rpc-handle-line` vs unknown `extension_ui_response`). Observed
+  `um_cmd` / `um_ok` / `um_id` / `um_nl` / `um_unk` exact. n=5
+  **4.202×** (6.543 / 1.557 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 939). Over-1× booked. Does not remount
+  `handle_ui_miss`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

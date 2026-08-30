@@ -8820,6 +8820,29 @@ Leftover sibling of Pair 934. Does not remount `last_assistant`. Timed work is h
 | `cmd_list` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of rpc command list |
 
 Leftover sibling of Pairs 934–935. Does not remount `command_list`. Timed work is count, extension foo, prompt bar. Observed `cl_n` / `cl_ext` / `cl_prompt` are exact. First n=5 freeze **4.603×** (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 937 — `cli_print_rpc` (bad_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bad_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` JSON.parse catch (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of leftover 496–498 on the same needs-pair file. Does not remount `handle_bad_json`. Timed work is invalid JSON (`not-json`) through the outer parse failure — not `run-rpc-mode`, not a live agent. Observed `bj_cmd` / `bj_ok` / `bj_id` / `bj_nl` are exact. Do not exact full error strings. First n=5 freeze **1.262×** (5.686 / 4.505 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 938 — `cli_print_rpc` (array_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `array_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` require JSON object (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 937. Does not remount `handle_not_object`. Timed work is JSON array `[]` rejected as a non-object — not command dispatch. Observed `no_cmd` / `no_ok` / `no_id` / `no_nl` are exact. Do not exact full error strings. First n=5 freeze **1.474×** (5.528 / 3.750 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 939 — `cli_print_rpc` (ui_absent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ui_absent` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` unknown `extension_ui_response` (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 937–938. Does not remount `handle_ui_miss`. Timed work is an unknown pending UI id (`missing`) — not dialog resolve, not `rpc-shutdown`. Observed `um_cmd` / `um_ok` / `um_id` / `um_nl` / `um_unk` are exact. Do not exact full error strings. First n=5 freeze **4.202×** (6.543 / 1.557 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

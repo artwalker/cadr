@@ -584,6 +584,9 @@ const REPETITIONS = {
 	"cli_print_rpc.queue_parse": 50,
 	"cli_print_rpc.asst_text": 50,
 	"cli_print_rpc.cmd_list": 50,
+	"cli_print_rpc.bad_line": 50,
+	"cli_print_rpc.array_line": 50,
+	"cli_print_rpc.ui_absent": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -13510,6 +13513,27 @@ function runCliPrintRpcHandleUiMiss() {
 	);
 }
 
+function leftoverRpcHandleLineObservedPairs() {
+	const bad = runCliPrintRpcHandleBadJson();
+	const notObj = runCliPrintRpcHandleNotObject();
+	const uiMiss = runCliPrintRpcHandleUiMiss();
+	return {
+		bj_cmd: bad[0],
+		bj_ok: bad[1],
+		bj_id: bad[2],
+		bj_nl: bad[4],
+		no_cmd: notObj[0],
+		no_ok: notObj[1],
+		no_id: notObj[2],
+		no_nl: notObj[4],
+		um_cmd: uiMiss[0],
+		um_ok: uiMiss[1],
+		um_id: uiMiss[2],
+		um_nl: uiMiss[4],
+		um_unk: uiMiss[5],
+	};
+}
+
 
 function measureCliPrintRpcSessionStatsObserved(stats) {
 	return {
@@ -13830,6 +13854,7 @@ async function measureCliPrintRpc() {
 			...runCliPrintRpcQueueMode(),
 			...runCliPrintRpcLastAssistant(),
 			...runCliPrintRpcCommandList(),
+			...leftoverRpcHandleLineObservedPairs(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -13861,6 +13886,15 @@ async function measureCliPrintRpc() {
 			}),
 			cmd_list: await collect("cli_print_rpc.cmd_list", () => {
 				return () => runCliPrintRpcCommandList();
+			}),
+			bad_line: await collect("cli_print_rpc.bad_line", () => {
+				return () => runCliPrintRpcHandleBadJson();
+			}),
+			array_line: await collect("cli_print_rpc.array_line", () => {
+				return () => runCliPrintRpcHandleNotObject();
+			}),
+			ui_absent: await collect("cli_print_rpc.ui_absent", () => {
+				return () => runCliPrintRpcHandleUiMiss();
 			}),
 			observed,
 		};
@@ -33771,6 +33805,12 @@ const result = {
 				"packages/coding-agent leftover replica of last assistant text (cadr rpc-last-assistant-text)",
 			"cli_print_rpc.cmd_list":
 				"packages/coding-agent leftover replica of rpc command list (cadr rpc-command-list)",
+			"cli_print_rpc.bad_line":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine JSON.parse catch",
+			"cli_print_rpc.array_line":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine require JSON object",
+			"cli_print_rpc.ui_absent":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine unknown extension_ui_response",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",
