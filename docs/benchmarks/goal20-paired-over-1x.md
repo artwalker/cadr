@@ -531,5 +531,21 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `evals_harness.validate_extension` | 2.604 | 0.326 | 7.979× | 8.00× | measure-only leftover 925; `validate-extension-result` vs leftover greeting+path-count replica | invent pause；地板优化另刀 |
+| `evals_harness.eval_result_p` | 0.608 | 0.331 | 1.836× | 8.00× | measure-only leftover 927; `typep` eval-result vs leftover object-shape predicate | invent pause；地板优化另刀 |
+| `evals_harness.msg_content` | 1.008 | 0.745 | 1.352× | 8.00× | measure-only leftover 928; `message-content-text` vs leftover content-text join | invent pause；地板优化另刀 |
+| `evals_harness.eval_tools` | 1.547 | 0.285 | 5.428× | 8.00× | measure-only leftover 929; `eval-agent-tools` vs leftover agent.tools list | invent pause；地板优化另刀 |
+| `evals_harness.eval_paths` | 3.230 | 0.447 | 7.223× | 8.00× | measure-only leftover 930; `eval-extension-paths` vs leftover visible paths | invent pause；地板优化另刀 |
+| `cli_print_rpc.cmd_list` | 1.533 | 0.333 | 4.603× | 8.00× | measure-only leftover 936; `rpc-command-list` vs leftover rpc command list | invent pause；地板优化另刀 |
+| `cli_print_rpc.bad_line` | 5.686 | 4.505 | 1.262× | 8.00× | measure-only leftover 937; `rpc-handle-line` JSON.parse catch (does not remount handle_bad_json) | invent pause；地板优化另刀 |
+| `cli_print_rpc.array_line` | 5.528 | 3.750 | 1.474× | 8.00× | measure-only leftover 938; `rpc-handle-line` require JSON object (does not remount handle_not_object) | invent pause；地板优化另刀 |
+| `cli_print_rpc.ui_absent` | 6.543 | 1.557 | 4.202× | 8.00× | measure-only leftover 939; `rpc-handle-line` unknown extension_ui_response (does not remount handle_ui_miss) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.sess_make` | 0.244 | 0.216 | 1.130× | 8.00× | measure-only leftover 943; `make-tool-render-session` vs leftover ToolExecutionComponent construct | invent pause；地板优化另刀 |
+| `cli_interactive_controller.sess_upd` | 0.257 | 0.227 | 1.132× | 8.00× | measure-only leftover 944; `update-tool-render-session` vs leftover result/pending | invent pause；地板优化另刀 |
+| `cli_selectors.dlg_make` | 0.189 | 0.128 | 1.471× | 8.00× | measure-only leftover 946; `make-login-dialog-state` vs leftover LoginDialogComponent construct | invent pause；地板优化另刀 |
+| `cli_selectors.dlg_auth` | 2.003 | 1.186 | 1.689× | 8.00× | measure-only leftover 947; `login-dialog-show-auth` vs leftover showAuth | invent pause；地板优化另刀 |
+| `cli_selectors.dlg_dev` | 4.085 | 1.179 | 3.465× | 8.00× | measure-only leftover 948; `login-dialog-show-device-code` vs leftover showDeviceCode | invent pause；地板优化另刀 |
+| `cli_interactive_controller.pad_str` | 0.215 | 0.206 | 1.041× | 8.00× | measure-only leftover 950; `output-padding-string` vs leftover output padding spaces | invent pause；地板优化另刀 |
+| `cli_interactive_controller.cache_p` | 1.264 | 0.627 | 2.014× | 8.00× | measure-only leftover 951; `tui-entry-render-cacheable-p` vs leftover TUI entry render cacheable | invent pause；地板优化另刀 |
 | `evals_harness.art_meta` | 1.038 | 0.879 | 1.181× | 8.00× | measure-only leftover 954; `reporter-artifact-metadata` vs leftover artifact metadata filter | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
