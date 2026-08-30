@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.img_ok`
+  (`rpc-images-from-json` vs leftover replica of prompt command.images).
+  Observed `img_nil` / `img_mime` exact. n=5 **0.630×**
+  (2.260 / 3.586 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 976). Under-1×. Does not remount `rpc_images`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.prompt_ok`
+  (`rpc-prompt-message` vs leftover replica of prompt message+images).
+  Observed `rp_str` / `rp_parts` exact. n=5 **2.288×**
+  (1.299 / 0.568 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 977). Over-1× booked. Does not remount `rpc_prompt`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.bash_js`
+  (`rpc-bash-result-json` vs leftover replica of bash result payload).
+  Observed `br_out` / `br_null` exact. n=5 **2.848×**
+  (2.162 / 0.759 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 978). Over-1× booked. Does not remount `bash_result`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

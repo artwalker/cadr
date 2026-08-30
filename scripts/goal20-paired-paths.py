@@ -913,8 +913,11 @@ RATIO_CEILINGS = {
     "cli_print_rpc.bash_result": 8.0,
     # leftover 976–978 prompt-bash.lisp (samples=5): first-freeze headroom.
     # Does not remount rpc_images / rpc_prompt / bash_result.
+    # Measure-only leftover 976; first freeze 0.630× (2.260 / 3.586 µs).
     "cli_print_rpc.img_ok": 8.0,
+    # Measure-only leftover 977; first freeze 2.288× (1.299 / 0.568 µs).
     "cli_print_rpc.prompt_ok": 8.0,
+    # Measure-only leftover 978; first freeze 2.848× (2.162 / 0.759 µs).
     "cli_print_rpc.bash_js": 8.0,
     "cli_print_rpc.dialog_request": 8.0,
     "cli_print_rpc.dialog_result": 8.0,
