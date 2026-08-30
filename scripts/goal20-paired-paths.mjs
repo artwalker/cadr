@@ -365,6 +365,9 @@ const REPETITIONS = {
 	"evals_harness.rep_make": 50,
 	"evals_harness.fin_num": 50,
 	"evals_harness.art_meta": 50,
+	"evals_harness.val_ext": 50,
+	"evals_harness.suite_id": 50,
+	"evals_harness.type_ok": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -10836,6 +10839,15 @@ async function measureEvalsHarness() {
 		}),
 		art_meta: await collect("evals_harness.art_meta", () => {
 			return () => runEvalsHarnessArtifactMetadata();
+		}),
+		val_ext: await collect("evals_harness.val_ext", () => {
+			return () => runEvalsHarnessValidateExtension();
+		}),
+		suite_id: await collect("evals_harness.suite_id", () => {
+			return () => runEvalsHarnessSuiteDispatch();
+		}),
+		type_ok: await collect("evals_harness.type_ok", () => {
+			return () => runEvalsHarnessEvalResultP();
 		}),
 		observed,
 	};
@@ -33862,6 +33874,12 @@ const result = {
 				"packages/evals/src/vitest-evals/reporter.ts leftover replica of finite number keep",
 			"evals_harness.art_meta":
 				"packages/evals/src/vitest-evals/reporter.ts leftover replica of artifact metadata filter",
+			"evals_harness.val_ext":
+				"packages/evals leftover replica of extension greeting + path-count (cadr validate-extension-result)",
+			"evals_harness.suite_id":
+				"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)",
+			"evals_harness.type_ok":
+				"packages/evals leftover object-shape predicate (cadr typep eval-result)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
