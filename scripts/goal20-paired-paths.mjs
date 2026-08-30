@@ -511,6 +511,9 @@ const REPETITIONS = {
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
+	"cli_selectors.countdown_dispose": 50,
+	"cli_selectors.countdown_unstarted": 50,
+	"cli_selectors.countdown_start_guard": 50,
 	"cli_selectors.model_selector_provider_badge": 50,
 	"cli_selectors.scoped_models_copy_enabled": 50,
 	"cli_selectors.move_list_item": 50,
@@ -25517,6 +25520,58 @@ function runCliSelectorsCountdownRender() {
 }
 
 
+function runCliSelectorsCountdownDispose() {
+	const timer = {
+		intervalId: undefined,
+		stop: false,
+		expired: false,
+		thread: null,
+	};
+	if (timer.intervalId) {
+		timer.intervalId = undefined;
+	}
+	timer.stop = true;
+	timer.thread = null;
+	return {
+		cdd_stop: timer.stop ? "1" : "0",
+		cdd_thread: timer.thread ? "1" : "0",
+		cdd_expired: timer.expired ? "1" : "0",
+		cdd_n: "1",
+	};
+}
+
+
+function runCliSelectorsCountdownUnstarted() {
+	const timeoutMs = 2500;
+	const remaining = Math.ceil(timeoutMs / 1000);
+	return {
+		cdu_thread: "0",
+		cdu_stop: "0",
+		cdu_expired: "0",
+		cdu_remain: String(remaining),
+		cdu_n: "1",
+	};
+}
+
+
+function runCliSelectorsCountdownStartGuard() {
+	const dummy = { dummy: true };
+	const timer = { intervalId: dummy, stop: false };
+	if (!timer.intervalId) {
+		timer.intervalId = { started: true };
+	}
+	timer.stop = false;
+	return {
+		csg_keep: timer.intervalId && timer.intervalId.dummy ? "1" : "0",
+		csg_stop: timer.stop ? "1" : "0",
+		csg_fresh: timer.intervalId && timer.intervalId.started ? "1" : "0",
+		csg_n: "1",
+	};
+}
+
+
+
+
 function modelSelectorProviderBadge(provider) {
 	return `[${String(provider).toLowerCase()}]`;
 }
@@ -29486,6 +29541,9 @@ async function measureCliSelectorsSessionSearch() {
 	const daxnutsRgbAtResults = runCliSelectorsDaxnutsRgbAt();
 	const makeDaxnutsComponentResults = runCliSelectorsMakeDaxnutsComponent();
 	const daxnutsComponentTickResults = runCliSelectorsDaxnutsComponentTick();
+	const countdownDisposeResults = runCliSelectorsCountdownDispose();
+	const countdownUnstartedResults = runCliSelectorsCountdownUnstarted();
+	const countdownStartGuardResults = runCliSelectorsCountdownStartGuard();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -29877,6 +29935,9 @@ async function measureCliSelectorsSessionSearch() {
 		...daxnutsRgbAtResults,
 		...makeDaxnutsComponentResults,
 		...daxnutsComponentTickResults,
+		...countdownDisposeResults,
+		...countdownUnstartedResults,
+		...countdownStartGuardResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -30808,6 +30869,21 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.daxnuts_component_tick",
 			() => {
 				return () => runCliSelectorsDaxnutsComponentTick();
+			},
+		),
+		countdown_dispose: await collect("cli_selectors.countdown_dispose", () => {
+			return () => runCliSelectorsCountdownDispose();
+		}),
+		countdown_unstarted: await collect(
+			"cli_selectors.countdown_unstarted",
+			() => {
+				return () => runCliSelectorsCountdownUnstarted();
+			},
+		),
+		countdown_start_guard: await collect(
+			"cli_selectors.countdown_start_guard",
+			() => {
+				return () => runCliSelectorsCountdownStartGuard();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -34185,6 +34261,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent constructor (no startAnimation)",
 			"cli_selectors.daxnuts_component_tick":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent interval body",
+			"cli_selectors.countdown_dispose":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts CountdownTimer.dispose (intervalId unset)",
+			"cli_selectors.countdown_unstarted":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts remainingSeconds ceil without setInterval",
+			"cli_selectors.countdown_start_guard":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts keep existing intervalId",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
