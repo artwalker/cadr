@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 937 — `cli_print_rpc` (bad_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bad_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` JSON.parse catch (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of leftover 496–498 on the same needs-pair file. Does not remount `handle_bad_json`. Timed work is invalid JSON (`not-json`) through the outer parse failure — not `run-rpc-mode`, not a live agent. Observed `bj_cmd` / `bj_ok` / `bj_id` / `bj_nl` are exact. Do not exact full error strings. Freeze pending. `nextPairNum` left at 328.
+
+### Pair 938 — `cli_print_rpc` (array_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `array_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` require JSON object (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 937. Does not remount `handle_not_object`. Timed work is JSON array `[]` rejected as a non-object — not command dispatch. Observed `no_cmd` / `no_ok` / `no_id` / `no_nl` are exact. Do not exact full error strings. Freeze pending. `nextPairNum` left at 328.
+
+### Pair 939 — `cli_print_rpc` (ui_absent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ui_absent` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` unknown `extension_ui_response` (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 937–938. Does not remount `handle_ui_miss`. Timed work is an unknown pending UI id (`missing`) — not dialog resolve, not `rpc-shutdown`. Observed `um_cmd` / `um_ok` / `um_id` / `um_nl` / `um_unk` are exact. Do not exact full error strings. Freeze pending. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
