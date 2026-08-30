@@ -1278,6 +1278,9 @@ const googleProviderModule = await import(moduleUrl("packages/ai/src/providers/g
 const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
+const fileProcessorModule = await import(
+	moduleUrl("packages/coding-agent/src/cli/file-processor.ts"),
+);
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const { createRequire } = await import("node:module");
