@@ -108,6 +108,26 @@ tag/Release step.
   **4.202×** (6.543 / 1.557 µs) on host `cursor`, ceiling 8.0.
   Measure-only leftover (Pair 939). Over-1× booked. Does not remount
   `handle_ui_miss`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.cycle_wrap`
+  (`model-cycle-target-entry` vs `_cycleScopedModel` index wrap).
+  Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` /
+  `mc_empty` exact. n=5 **0.745×** (0.655 / 0.879 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 940). Under-1×. Does not
+  remount `model_cycle`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.scope_hint`
+  (`model-scope-startup-line` vs interactive-mode Model scope line).
+  Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` / `ms_disabled`
+  exact. n=5 **0.838×** (35.665 / 42.573 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 941). Under-1×. Does not remount
+  `model_scope_line`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.file_tags`
+  (`process-cli-file-arguments` vs `processFileArguments`). Observed
+  `pf_hello` / `pf_n` / `pf_img` exact. n=5 **0.556×** (80.505 /
+  144.830 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 942). Under-1×. Does not remount `process_files`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

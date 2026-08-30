@@ -869,6 +869,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.session_path": 50,
 	"cli_bootstrap_sessions.split_command": 50,
 	"cli_bootstrap_sessions.path_argument": 50,
+	"cli_bootstrap_sessions.cycle_wrap": 50,
+	"cli_bootstrap_sessions.scope_hint": 50,
+	"cli_bootstrap_sessions.file_tags": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -1290,6 +1293,9 @@ const googleProviderModule = await import(moduleUrl("packages/ai/src/providers/g
 const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
+const fileProcessorModule = await import(
+	moduleUrl("packages/coding-agent/src/cli/file-processor.ts"),
+);
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const { createRequire } = await import("node:module");
@@ -32695,6 +32701,10 @@ async function measureCliBootstrapCodingTools() {
 	const sessionPathObserved = runCliBootstrapSessionPath();
 	const splitCommandObserved = runCliBootstrapSplitCommand();
 	const pathArgumentObserved = runCliBootstrapPathArgument();
+	const leftoverCycle = runCliBootstrapModelCycle();
+	const leftoverScope = runCliBootstrapModelScope();
+	const filePair = writeCliBootstrapProcessFiles();
+	const leftoverFiles = await runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -32711,12 +32721,24 @@ async function measureCliBootstrapCodingTools() {
 		path_argument: await collect("cli_bootstrap_sessions.path_argument", () => {
 			return () => runCliBootstrapPathArgument();
 		}),
+		cycle_wrap: await collect("cli_bootstrap_sessions.cycle_wrap", () => {
+			return () => runCliBootstrapModelCycle();
+		}),
+		scope_hint: await collect("cli_bootstrap_sessions.scope_hint", () => {
+			return () => runCliBootstrapModelScope();
+		}),
+		file_tags: await collect("cli_bootstrap_sessions.file_tags", () => {
+			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
 			...sessionPathObserved,
 			...splitCommandObserved,
 			...pathArgumentObserved,
+			...leftoverCycle,
+			...leftoverScope,
+			...leftoverFiles,
 		},
 	};
 }
@@ -34509,6 +34531,12 @@ const result = {
 				"packages/coding-agent/src/cli first-token slash split (cadr split-command)",
 			"cli_bootstrap_sessions.path_argument":
 				"packages/coding-agent/src/cli quoted path after command (cadr path-command-argument)",
+			"cli_bootstrap_sessions.cycle_wrap":
+				"packages/coding-agent/src/core/agent-session.ts _cycleScopedModel index wrap",
+			"cli_bootstrap_sessions.scope_hint":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
+			"cli_bootstrap_sessions.file_tags":
+				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

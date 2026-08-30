@@ -71,6 +71,9 @@
 ;;;;      leftover: resolve-system-prompt / node-read-error-message /
 ;;;;      resolve-system-prompt-with-appends
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
+;;;;      leftover 940-942: model-cycle-target-entry / model-scope-startup-line /
+;;;;      process-cli-file-arguments (does not remount model_cycle /
+;;;;      model_scope_line / process_files)
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
@@ -975,6 +978,9 @@
     ("cli_bootstrap_sessions.session_path" . 50)
     ("cli_bootstrap_sessions.split_command" . 50)
     ("cli_bootstrap_sessions.path_argument" . 50)
+    ("cli_bootstrap_sessions.cycle_wrap" . 50)
+    ("cli_bootstrap_sessions.scope_hint" . 50)
+    ("cli_bootstrap_sessions.file_tags" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -31398,7 +31404,13 @@
          (auth-observed (run-cli-bootstrap-auth))
          (session-path (run-cli-bootstrap-session-path))
          (split-command (run-cli-bootstrap-split-command))
-         (path-argument (run-cli-bootstrap-path-argument)))
+         (path-argument (run-cli-bootstrap-path-argument))
+         (leftover-cycle (run-cli-bootstrap-model-cycle))
+         (leftover-scope (run-cli-bootstrap-model-scope))
+         (file-pair (cli-bootstrap-process-file-paths))
+         (leftover-files
+           (run-cli-bootstrap-process-files
+            (first file-pair) (second file-pair))))
     (json-object
      "observed"
      (json-object
@@ -31424,7 +31436,21 @@
       "pa_plain" (nth 0 path-argument)
       "pa_quote" (nth 1 path-argument)
       "pa_empty" (nth 2 path-argument)
-      "pa_miss" (nth 3 path-argument))
+      "pa_miss" (nth 3 path-argument)
+      "mc_fwd" (nth 0 leftover-cycle)
+      "mc_bwd" (nth 1 leftover-cycle)
+      "mc_wrap" (nth 2 leftover-cycle)
+      "mc_miss" (nth 3 leftover-cycle)
+      "mc_one" (nth 4 leftover-cycle)
+      "mc_empty" (nth 5 leftover-cycle)
+      "ms_quiet" (nth 0 leftover-scope)
+      "ms_empty" (nth 1 leftover-scope)
+      "ms_text" (nth 2 leftover-scope)
+      "ms_n" (nth 3 leftover-scope)
+      "ms_disabled" (nth 4 leftover-scope)
+      "pf_hello" (nth 0 leftover-files)
+      "pf_n" (nth 1 leftover-files)
+      "pf_img" (nth 2 leftover-files))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -31449,7 +31475,23 @@
      (collect "cli_bootstrap_sessions.path_argument"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-path-argument)))))))
+                  (run-cli-bootstrap-path-argument))))
+     "cycle_wrap"
+     (collect "cli_bootstrap_sessions.cycle_wrap"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-model-cycle))))
+     "scope_hint"
+     (collect "cli_bootstrap_sessions.scope_hint"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-model-scope))))
+     "file_tags"
+     (collect "cli_bootstrap_sessions.file_tags"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-process-files
+                   (first file-pair) (second file-pair))))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -33001,6 +33043,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp split-command"
       "cli_bootstrap_sessions.path_argument"
       "src/cadr-cli/bootstrap/sessions.lisp path-command-argument"
+      "cli_bootstrap_sessions.cycle_wrap"
+      "src/cadr-cli/bootstrap/commands.lisp model-cycle-target-entry"
+      "cli_bootstrap_sessions.scope_hint"
+      "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line"
+      "cli_bootstrap_sessions.file_tags"
+      "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
