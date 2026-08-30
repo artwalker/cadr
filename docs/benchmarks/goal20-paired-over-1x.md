@@ -533,4 +533,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
 | `evals_harness.validate_extension` | 2.604 | 0.326 | 7.979× | 8.00× | measure-only leftover 925; `validate-extension-result` vs leftover greeting+path-count replica | invent pause；地板优化另刀 |
 | `evals_harness.eval_result_p` | 0.608 | 0.331 | 1.836× | 8.00× | measure-only leftover 927; `typep` eval-result vs leftover object-shape predicate | invent pause；地板优化另刀 |
+| `evals_harness.msg_content` | 1.008 | 0.745 | 1.352× | 8.00× | measure-only leftover 928; `message-content-text` vs leftover content-text join | invent pause；地板优化另刀 |
+| `evals_harness.eval_tools` | 1.547 | 0.285 | 5.428× | 8.00× | measure-only leftover 929; `eval-agent-tools` vs leftover agent.tools list | invent pause；地板优化另刀 |
+| `evals_harness.eval_paths` | 3.230 | 0.447 | 7.223× | 8.00× | measure-only leftover 930; `eval-extension-paths` vs leftover visible paths | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

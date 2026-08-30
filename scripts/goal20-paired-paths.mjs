@@ -359,6 +359,9 @@ const REPETITIONS = {
 	"evals_harness.validate_extension": 50,
 	"evals_harness.suite_dispatch": 50,
 	"evals_harness.eval_result_p": 50,
+	"evals_harness.msg_content": 50,
+	"evals_harness.eval_tools": 50,
+	"evals_harness.eval_paths": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -10673,6 +10676,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessReporterRunId(),
 		...runEvalsHarnessArtifactReferenceJson(),
 		...runEvalsHarnessReporterArtifacts(),
+		...runEvalsHarnessContentText(),
+		...runEvalsHarnessAgentTools(),
+		...runEvalsHarnessExtensionPaths(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -10779,6 +10785,15 @@ async function measureEvalsHarness() {
 		}),
 		eval_result_p: await collect("evals_harness.eval_result_p", () => {
 			return () => runEvalsHarnessEvalResultP();
+		}),
+		msg_content: await collect("evals_harness.msg_content", () => {
+			return () => runEvalsHarnessContentText();
+		}),
+		eval_tools: await collect("evals_harness.eval_tools", () => {
+			return () => runEvalsHarnessAgentTools();
+		}),
+		eval_paths: await collect("evals_harness.eval_paths", () => {
+			return () => runEvalsHarnessExtensionPaths();
 		}),
 		observed,
 	};
@@ -33646,6 +33661,12 @@ const result = {
 				"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)",
 			"evals_harness.eval_result_p":
 				"packages/evals leftover object-shape predicate (cadr typep eval-result)",
+			"evals_harness.msg_content":
+				"packages/evals leftover replica of message content text (cadr message-content-text)",
+			"evals_harness.eval_tools":
+				"packages/evals leftover replica of agent tool list (cadr eval-agent-tools)",
+			"evals_harness.eval_paths":
+				"packages/evals leftover replica of visible extension paths (cadr eval-extension-paths)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
