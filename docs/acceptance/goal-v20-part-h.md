@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1087 — `cli_selectors` (sec_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sec_ok` | `make-countdown-timer` remaining seconds (`src/cadr-cli/interactive/components/countdown.lisp`, `:start-p nil`) | leftover replica of `Math.ceil(timeoutMs / 1000)` |
+
+Leftover sibling of leftover 556–558 on the same needs-pair file (second unused slug after leftover 1018 `cd_sec`). Does not remount `countdown_seconds`. Timed work is ceiling seconds from timeout — not start/sleep. Observed `cds_0` / `cds_1` are exact. First n=5 freeze **3.146×** (0.805 / 0.256 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1088 — `cli_selectors` (tick_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tick_ok` | `countdown-timer-tick` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown tick |
+
+Leftover sibling of Pair 1087. Does not remount `countdown_tick`. Timed work is three ticks to expire. Observed `cdt_make` / `cdt_remain` are exact. First n=5 freeze **2.327×** (0.704 / 0.303 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1089 — `cli_selectors` (rnd_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rnd_ok` | `countdown-request-render` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown requestRender |
+
+Leftover sibling of Pair 1087. Does not remount `countdown_render`. Timed work is requestRender call counts. Observed `cdr_fn1` / `cdr_fn2` are exact. First n=5 freeze **1.980×** (0.960 / 0.485 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
