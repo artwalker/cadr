@@ -797,8 +797,11 @@ const REPETITIONS = {
 	"cli_selectors.tree_select_id": 50,
 	"cli_selectors.tree_visible_ids": 50,
 	"cli_selectors.project_trust_options": 50,
+	"cli_selectors.tr_pto": 50,
 	"cli_selectors.trust_selector_selection": 50,
+	"cli_selectors.tr_tss": 50,
 	"cli_selectors.trust_decision_description": 50,
+	"cli_selectors.tr_tdd": 50,
 	"cli_selectors.trust_selector_move": 50,
 	"cli_selectors.trust_selector_handle_event": 50,
 	"cli_selectors.trust_selector_handle_raw_input": 50,
@@ -30402,10 +30405,19 @@ async function measureCliSelectorsSessionSearch() {
 		project_trust_options: await collect("cli_selectors.project_trust_options", () => {
 			return () => runCliSelectorsProjectTrustOptions();
 		}),
+		tr_pto: await collect("cli_selectors.tr_pto", () => {
+			return () => runCliSelectorsProjectTrustOptions();
+		}),
 		trust_selector_selection: await collect("cli_selectors.trust_selector_selection", () => {
 			return () => runCliSelectorsTrustSelectorSelection();
 		}),
+		tr_tss: await collect("cli_selectors.tr_tss", () => {
+			return () => runCliSelectorsTrustSelectorSelection();
+		}),
 		trust_decision_description: await collect("cli_selectors.trust_decision_description", () => {
+			return () => runCliSelectorsTrustDecisionDescription();
+		}),
+		tr_tdd: await collect("cli_selectors.tr_tdd", () => {
 			return () => runCliSelectorsTrustDecisionDescription();
 		}),
 		trust_selector_move: await collect("cli_selectors.trust_selector_move", () => {
@@ -34286,10 +34298,16 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.filteredNodes ids",
 			"cli_selectors.project_trust_options":
 				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions",
+			"cli_selectors.tr_pto":
+				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions leftover",
 			"cli_selectors.trust_selector_selection":
 				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions index selection",
+			"cli_selectors.tr_tss":
+				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions index selection leftover",
 			"cli_selectors.trust_decision_description":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts formatDecision",
+			"cli_selectors.tr_tdd":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts formatDecision leftover",
 			"cli_selectors.trust_selector_move":
 				"packages/tui/src/components/select-list.ts wrap selection index on getProjectTrustOptions count",
 			"cli_selectors.trust_selector_handle_event":
