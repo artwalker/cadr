@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1105 — `cli_selectors` (prmt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prmt_ok` | `login-dialog-show-prompt` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showPrompt |
+
+Leftover sibling of leftover 622–624 on the same needs-pair file (second unused slug after leftover 1030 `ld_prmt`). Does not remount `login_dialog_show_prompt`. Timed work is prompt UI with empty / auth / no-placeholder / no-cancel / after wait. Observed `ldpr_empty` / `ldpr_wait` are exact. First n=5 freeze **1.862×** (7.056 / 3.790 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1106 — `cli_selectors` (info_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `info_ok` | `login-dialog-show-info` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showInfo |
+
+Leftover sibling of Pair 1105. Does not remount `login_dialog_show_info`. Timed work is info UI labeled / auth / bare / no-link / after wait. Observed `ldi_labeled` / `ldi_nolink` are exact. First n=5 freeze **2.351×** (9.474 / 4.030 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1107 — `cli_selectors` (det_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `det_ok` | `login-dialog-show-details` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showDetails |
+
+Leftover sibling of Pairs 1105–1106. Does not remount `login_dialog_show_details`. Timed work is details UI two rows / auth / empty / styles / after wait. Observed `lddt_two` / `lddt_styles` are exact. First n=5 freeze **0.871×** (2.792 / 3.204 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
