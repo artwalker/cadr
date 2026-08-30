@@ -356,6 +356,9 @@ const REPETITIONS = {
 	"evals_harness.reporter_run_id": 50,
 	"evals_harness.artifact_reference_json": 50,
 	"evals_harness.reporter_artifacts": 50,
+	"evals_harness.validate_extension": 50,
+	"evals_harness.suite_dispatch": 50,
+	"evals_harness.eval_result_p": 50,
 	"evals_harness.msg_content": 50,
 	"evals_harness.eval_tools": 50,
 	"evals_harness.eval_paths": 50,
@@ -9872,6 +9875,80 @@ function runEvalsHarnessValidateSmoke() {
 }
 
 
+function leftoverValidateExtensionOk(response, paths) {
+	try {
+		const output = { response, extensionPaths: paths };
+		if (output.response !== "Hello, Bob!") {
+			return 0;
+		}
+		if (!Array.isArray(output.extensionPaths) || output.extensionPaths.length !== 1) {
+			return 0;
+		}
+		return 1;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runEvalsHarnessValidateExtension() {
+	return {
+		ve_ok: leftoverValidateExtensionOk("Hello, Bob!", ["one"]),
+		ve_greet: leftoverValidateExtensionOk("Hello, Alice!", ["one"]) === 0 ? 1 : 0,
+		ve_paths: leftoverValidateExtensionOk("Hello, Bob!", ["a", "b"]) === 0 ? 1 : 0,
+		ve_empty: leftoverValidateExtensionOk("Hello, Bob!", []) === 0 ? 1 : 0,
+		ve_n: 4,
+	};
+}
+
+
+function leftoverEvalSuiteDispatchId(suite) {
+	if (suite === "smoke") {
+		return 0;
+	}
+	if (suite === "extensions") {
+		return 1;
+	}
+	if (suite === "extension-authoring") {
+		return 2;
+	}
+	return 3;
+}
+
+
+function runEvalsHarnessSuiteDispatch() {
+	return {
+		sd_smoke: leftoverEvalSuiteDispatchId("smoke") === 0 ? 1 : 0,
+		sd_ext: leftoverEvalSuiteDispatchId("extensions") === 1 ? 1 : 0,
+		sd_auth: leftoverEvalSuiteDispatchId("extension-authoring") === 2 ? 1 : 0,
+		sd_unk: leftoverEvalSuiteDispatchId("unknown") === 3 ? 1 : 0,
+		sd_n: 4,
+	};
+}
+
+
+function leftoverEvalResultP(value) {
+	return value !== null &&
+		typeof value === "object" &&
+		!Array.isArray(value) &&
+		Object.prototype.hasOwnProperty.call(value, "output") &&
+		Object.prototype.hasOwnProperty.call(value, "events")
+		? 1
+		: 0;
+}
+
+
+function runEvalsHarnessEvalResultP() {
+	return {
+		er_yes: leftoverEvalResultP(makeEvalResult({ output: "ok" })),
+		er_hash: leftoverEvalResultP({ n: 1 }) === 0 ? 1 : 0,
+		er_str: leftoverEvalResultP("x") === 0 ? 1 : 0,
+		er_nil: leftoverEvalResultP(null) === 0 ? 1 : 0,
+		er_n: 4,
+	};
+}
+
+
 function makeEvalResult(fields = {}) {
 	return {
 		output: fields.output,
@@ -10587,6 +10664,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessArgumentPrefix(),
 		...runEvalsHarnessParseArguments(),
 		...runEvalsHarnessValidateSmoke(),
+		...runEvalsHarnessValidateExtension(),
+		...runEvalsHarnessSuiteDispatch(),
+		...runEvalsHarnessEvalResultP(),
 		...runEvalsHarnessCanonicalApi(),
 		...runEvalsHarnessLegacyApi(),
 		...runEvalsHarnessExtensionErrorJson(),
@@ -10696,6 +10776,15 @@ async function measureEvalsHarness() {
 		}),
 		reporter_artifacts: await collect("evals_harness.reporter_artifacts", () => {
 			return () => runEvalsHarnessReporterArtifacts();
+		}),
+		validate_extension: await collect("evals_harness.validate_extension", () => {
+			return () => runEvalsHarnessValidateExtension();
+		}),
+		suite_dispatch: await collect("evals_harness.suite_dispatch", () => {
+			return () => runEvalsHarnessSuiteDispatch();
+		}),
+		eval_result_p: await collect("evals_harness.eval_result_p", () => {
+			return () => runEvalsHarnessEvalResultP();
 		}),
 		msg_content: await collect("evals_harness.msg_content", () => {
 			return () => runEvalsHarnessContentText();
@@ -33566,6 +33655,12 @@ const result = {
 				"packages/evals/src/vitest-evals/artifacts.ts persist name/path (cadr artifact-reference-json)",
 			"evals_harness.reporter_artifacts":
 				"packages/evals/src/vitest-evals/reporter.ts test.artifacts assemble (cadr reporter-artifacts)",
+			"evals_harness.validate_extension":
+				"packages/evals leftover replica of extension greeting + path-count (cadr validate-extension-result)",
+			"evals_harness.suite_dispatch":
+				"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)",
+			"evals_harness.eval_result_p":
+				"packages/evals leftover object-shape predicate (cadr typep eval-result)",
 			"evals_harness.msg_content":
 				"packages/evals leftover replica of message content text (cadr message-content-text)",
 			"evals_harness.eval_tools":

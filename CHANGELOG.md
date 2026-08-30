@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `evals_harness.validate_extension`
+  (`validate-extension-result` vs leftover replica of extension greeting
+  + path-count). Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty`
+  / `ve_n` exact. n=5 **7.979×** (2.604 / 0.326 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 925). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.suite_dispatch`
+  (leftover replica of `%eval-main` suite cond; pi has no `--suite`).
+  Observed `sd_smoke` / `sd_ext` / `sd_auth` / `sd_unk` / `sd_n` exact.
+  n=5 **0.874×** (0.171 / 0.196 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 926). Under-1×. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.eval_result_p`
+  (`typep` `eval-result` vs leftover object-shape predicate). Observed
+  `er_yes` / `er_hash` / `er_str` / `er_nil` / `er_n` exact. n=5
+  **1.836×** (0.608 / 0.331 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 927). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `evals_harness.msg_content`
   (`message-content-text` vs leftover replica of content-text join).
   Observed `ct_plain` / `ct_join` / `ct_empty` / `ct_blank` / `ct_n`
