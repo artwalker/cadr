@@ -1157,8 +1157,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.cache_p": 8.0,
     # leftover 961–963 transcript.lisp (samples=5): first-freeze headroom.
     # Does not remount wrap_osc / pad_str / cache_p.
+    # Measure-only leftover 961; first freeze 1.009× (0.593 / 0.588 µs).
     "cli_interactive_controller.wrap_ln": 8.0,
+    # Measure-only leftover 962; first freeze 1.222× (0.225 / 0.184 µs).
     "cli_interactive_controller.pad_sp": 8.0,
+    # Measure-only leftover 963; first freeze 2.815× (1.467 / 0.521 µs).
     "cli_interactive_controller.cache_ok": 8.0,
     # Measure-only leftover 955; first freeze 2.219× (0.807 / 0.363 µs).
     # Does not remount bash_append_running / bash_complete_string / bash_stop_entry.

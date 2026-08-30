@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.wrap_ln`
+  (`wrap-transcript-lines` vs leftover replica of UserMessageComponent
+  OSC 133 wrap). Observed `wt_nil` / `wt_two_last` exact. n=5 **1.009×**
+  (0.593 / 0.588 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 961). Over-1× booked. Does not remount `wrap_osc`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.pad_sp`
+  (`output-padding-string` vs leftover replica of output padding
+  spaces). Observed `op_0` / `op_space` exact. n=5 **1.222×** (0.225 /
+  0.184 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 962). Over-1× booked. Does not remount `pad_str`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.cache_ok`
+  (`tui-entry-render-cacheable-p` vs leftover replica of TUI entry
+  render cacheable). Observed `rc_assist` / `rc_custom` exact. n=5
+  **2.815×** (1.467 / 0.521 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 963). Over-1× booked. Does not remount
+  `cache_p`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
