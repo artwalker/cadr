@@ -989,14 +989,11 @@ RATIO_CEILINGS = {
     # 4.070x (6.190 / 1.521 us). 8.0 is first-freeze headroom.
     # Ratchet down only.
     "cli_print_rpc.handle_ui_miss": 8.0,
-    # Measure-only leftover 937; first-freeze pending. Does not remount
-    # handle_bad_json. 8.0 is first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 937; first freeze 1.262× (5.686 / 4.505 µs).
     "cli_print_rpc.bad_line": 8.0,
-    # Measure-only leftover 938; first-freeze pending. Does not remount
-    # handle_not_object. 8.0 is first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 938; first freeze 1.474× (5.528 / 3.750 µs).
     "cli_print_rpc.array_line": 8.0,
-    # Measure-only leftover 939; first-freeze pending. Does not remount
-    # handle_ui_miss. 8.0 is first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 939; first freeze 4.202× (6.543 / 1.557 µs).
     "cli_print_rpc.ui_absent": 8.0,
     # Frozen from the first Friend-MachineD leftover
     # cli_extensions_install.unsafe_git pair (samples=5): observed

@@ -531,4 +531,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `cli_print_rpc.bad_line` | 5.686 | 4.505 | 1.262× | 8.00× | measure-only leftover 937; `rpc-handle-line` JSON.parse catch (does not remount handle_bad_json) | invent pause；地板优化另刀 |
+| `cli_print_rpc.array_line` | 5.528 | 3.750 | 1.474× | 8.00× | measure-only leftover 938; `rpc-handle-line` require JSON object (does not remount handle_not_object) | invent pause；地板优化另刀 |
+| `cli_print_rpc.ui_absent` | 6.543 | 1.557 | 4.202× | 8.00× | measure-only leftover 939; `rpc-handle-line` unknown extension_ui_response (does not remount handle_ui_miss) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
