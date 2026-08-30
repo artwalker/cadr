@@ -346,6 +346,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.provider_key": 50,
 	"oauth_pkce_device.http_status_text": 50,
 	"oauth_pkce_device.parse_callback_request": 50,
+	"oauth_pkce_device.openrouter_login": 50,
+	"oauth_pkce_device.openrouter_login_fail": 50,
+	"oauth_pkce_device.openrouter_login_miss": 50,
 	"oauth_pkce_device.hex_value": 50,
 	"oauth_pkce_device.write_http_response": 50,
 	"oauth_pkce_device.present_auth_url": 50,
@@ -14023,6 +14026,52 @@ function runOauthPkceDeviceOpenrouterExchange() {
 }
 
 
+function runOauthPkceDeviceOpenrouterLogin() {
+	try {
+		const code = parseOpenRouterAuthorizationInput("or-login-code");
+		const credential = exchangeAuthorizationCodeFromResponse(
+			{ ok: true, status: 200, json: { key: "sk-or-login" } },
+			code,
+			"verifier",
+		);
+		return {
+			olg_acc: credential.access === "sk-or-login" ? 1 : 0,
+			olg_ref: credential.refresh === "" ? 1 : 0,
+			olg_n: 2,
+		};
+	} catch {
+		return { olg_acc: 0, olg_ref: 0, olg_n: 2 };
+	}
+}
+
+
+function runOauthPkceDeviceOpenrouterLoginFail() {
+	let olfThrow = 0;
+	try {
+		exchangeAuthorizationCodeFromResponse(
+			{ ok: false, status: 400, json: { error: "denied" } },
+			"or-login-code",
+			"verifier",
+		);
+	} catch {
+		olfThrow = 1;
+	}
+	return { olf_throw: olfThrow, olf_n: 1 };
+}
+
+
+function runOauthPkceDeviceOpenrouterLoginMiss() {
+	let olmThrow = 0;
+	try {
+		const code = parseOpenRouterAuthorizationInput("");
+		if (!code) throw new Error("Missing authorization code");
+	} catch {
+		olmThrow = 1;
+	}
+	return { olm_throw: olmThrow, olm_n: 1 };
+}
+
+
 const leftoverAnthropicOAuth = {
 	name: "Anthropic (Claude Pro/Max)",
 	isSubscription: true,
@@ -14464,6 +14513,9 @@ async function measureOauthPkceDevice() {
 	const providerKey = runOauthPkceDeviceProviderKey();
 	const statusText = runOauthPkceDeviceHttpStatusText();
 	const callbackRequest = runOauthPkceDeviceParseCallbackRequest();
+	const openrouterLogin = runOauthPkceDeviceOpenrouterLogin();
+	const openrouterLoginFail = runOauthPkceDeviceOpenrouterLoginFail();
+	const openrouterLoginMiss = runOauthPkceDeviceOpenrouterLoginMiss();
 	const base64urlValue = runOauthPkceDeviceBase64urlValue();
 	const base64urlDecode = runOauthPkceDeviceBase64urlDecode();
 	const accountId = runOauthPkceDeviceAccountId();
@@ -14521,6 +14573,15 @@ async function measureOauthPkceDevice() {
 		}),
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
+		}),
+		openrouter_login: await collect("oauth_pkce_device.openrouter_login", () => {
+			return () => runOauthPkceDeviceOpenrouterLogin();
+		}),
+		openrouter_login_fail: await collect("oauth_pkce_device.openrouter_login_fail", () => {
+			return () => runOauthPkceDeviceOpenrouterLoginFail();
+		}),
+		openrouter_login_miss: await collect("oauth_pkce_device.openrouter_login_miss", () => {
+			return () => runOauthPkceDeviceOpenrouterLoginMiss();
 		}),
 		hex_value: await collect("oauth_pkce_device.hex_value", () => {
 			return () => runOauthPkceDeviceHexValue();
@@ -14625,6 +14686,9 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...openrouterLogin,
+			...openrouterLoginFail,
+			...openrouterLoginMiss,
 			...base64urlValue,
 			...base64urlDecode,
 			...accountId,
@@ -39493,6 +39557,12 @@ const result = {
 				"node:http STATUS_CODES (cadr oauth-http-status-text)",
 			"oauth_pkce_device.parse_callback_request":
 				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
+			"oauth_pkce_device.openrouter_login":
+				"packages/ai/src/auth/oauth/openrouter.ts parseAuthorizationInput + exchangeAuthorizationCode (cadr login-openrouter-oauth)",
+			"oauth_pkce_device.openrouter_login_fail":
+				"packages/ai/src/auth/oauth/openrouter.ts exchangeAuthorizationCode HTTP fail (cadr login-openrouter-oauth)",
+			"oauth_pkce_device.openrouter_login_miss":
+				"packages/ai/src/auth/oauth/openrouter.ts Missing authorization code (cadr login-openrouter-oauth)",
 			"oauth_pkce_device.hex_value":
 				"packages/ai/src/auth/oauth leftover parseInt hex digit (cadr hex-value)",
 			"oauth_pkce_device.write_http_response":
