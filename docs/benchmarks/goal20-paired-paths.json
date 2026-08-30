@@ -901221,6 +901221,3921 @@
     "notes": [
       "synthesized leftover 955-957 freeze; --only-enforce py rc=2 parsed_provider"
     ]
+  },
+  {
+    "recordedAt": "2026-08-30T09:21:48Z",
+    "label": "paired-paths",
+    "gitHead": "f0eea0bb6",
+    "machine": "cursor",
+    "quick": false,
+    "sameMachine": true,
+    "ratioGate": "enforced-only:cli_selectors.mtss_ok,cli_selectors.rtrs_ok,cli_selectors.tosp_ok",
+    "samples": 5,
+    "metrics": {
+      "cli_dispatch.argv_parse": {
+        "cadrMedianUs": 2.3717565,
+        "baselineMedianUs": 2.3894830000000002,
+        "ratio": 0.9925814496273879,
+        "ceiling": 3.0
+      },
+      "cli_dispatch.help_render": {
+        "cadrMedianUs": 0.045362,
+        "baselineMedianUs": 1.0674480000000002,
+        "ratio": 0.04249574686542107,
+        "ceiling": 6.0
+      },
+      "cli_dispatch.list_models_registry": {
+        "cadrMedianUs": 1702.0937000000001,
+        "baselineMedianUs": 2517.7992,
+        "ratio": 0.6760244025814292,
+        "ceiling": 1.5
+      },
+      "cli_dispatch.list_models_render": {
+        "cadrMedianUs": 57.40181,
+        "baselineMedianUs": 765.44287,
+        "ratio": 0.0749916319685622,
+        "ceiling": 4.0
+      },
+      "provider_stream.stream_roundtrip": {
+        "cadrMedianUs": 1613.4239,
+        "baselineMedianUs": 4017.9714999999997,
+        "ratio": 0.40155185271971194,
+        "ceiling": 2.5
+      },
+      "provider_anthropic.stream_roundtrip": {
+        "cadrMedianUs": 1091.5058000000001,
+        "baselineMedianUs": 1789.0822,
+        "ratio": 0.6100925938450453,
+        "ceiling": 1.5
+      },
+      "provider_google.stream_roundtrip": {
+        "cadrMedianUs": 2099.4112,
+        "baselineMedianUs": 5007.6921999999995,
+        "ratio": 0.4192372686164697,
+        "ceiling": 1.5
+      },
+      "provider_bedrock.stream_roundtrip": {
+        "cadrMedianUs": 4155.7233,
+        "baselineMedianUs": 5009.5199,
+        "ratio": 0.8295651844800536,
+        "ceiling": 1.5
+      },
+      "provider_mistral.stream_roundtrip": {
+        "cadrMedianUs": 1645.3205000000003,
+        "baselineMedianUs": 1472.3968,
+        "ratio": 1.1174436809425288,
+        "ceiling": 3.0
+      },
+      "provider_openai_responses.stream_roundtrip": {
+        "cadrMedianUs": 1032.3533,
+        "baselineMedianUs": 3457.3540999999996,
+        "ratio": 0.2985963456852742,
+        "ceiling": 1.5
+      },
+      "provider_azure_openai.stream_roundtrip": {
+        "cadrMedianUs": 1027.5701999999999,
+        "baselineMedianUs": 3447.5296000000003,
+        "ratio": 0.29805986292329434,
+        "ceiling": 1.5
+      },
+      "provider_vertex.stream_roundtrip": {
+        "cadrMedianUs": 2136.9862000000003,
+        "baselineMedianUs": 4752.1848,
+        "ratio": 0.44968499541516155,
+        "ceiling": 1.5
+      },
+      "provider_codex.stream_roundtrip": {
+        "cadrMedianUs": 1033.6825000000001,
+        "baselineMedianUs": 1259.0506,
+        "ratio": 0.8210015546634901,
+        "ceiling": 1.5
+      },
+      "provider_pi_messages.stream_roundtrip": {
+        "cadrMedianUs": 795.5636000000001,
+        "baselineMedianUs": 700.3756000000001,
+        "ratio": 1.1359099317566175,
+        "ceiling": 1.5
+      },
+      "cli_settings.create": {
+        "cadrMedianUs": 69.23060000000001,
+        "baselineMedianUs": 146.00820000000002,
+        "ratio": 0.474155561126019,
+        "ceiling": 1.5
+      },
+      "cli_settings.reload": {
+        "cadrMedianUs": 87.28487999999999,
+        "baselineMedianUs": 137.61512000000002,
+        "ratio": 0.6342680949593328,
+        "ceiling": 8.0
+      },
+      "cli_settings.enabled_models": {
+        "cadrMedianUs": 19.01324,
+        "baselineMedianUs": 3.15504,
+        "ratio": 6.026307114965261,
+        "ceiling": 8.0
+      },
+      "cli_settings.block_images": {
+        "cadrMedianUs": 19.49,
+        "baselineMedianUs": 3.25236,
+        "ratio": 5.992571548045111,
+        "ceiling": 8.0
+      },
+      "cli_settings.default_model": {
+        "cadrMedianUs": 15.92694,
+        "baselineMedianUs": 2.05266,
+        "ratio": 7.759171026862705,
+        "ceiling": 8.0
+      },
+      "cli_settings.default_provider": {
+        "cadrMedianUs": 15.948879999999999,
+        "baselineMedianUs": 2.5575,
+        "ratio": 6.236121212121211,
+        "ceiling": 8.0
+      },
+      "cli_settings.output_padding": {
+        "cadrMedianUs": 18.11012,
+        "baselineMedianUs": 2.7505399999999995,
+        "ratio": 6.584205283326184,
+        "ceiling": 8.0
+      },
+      "agent_conditions.error_probe": {
+        "cadrMedianUs": 2.53232,
+        "baselineMedianUs": 47.92042000000001,
+        "ratio": 0.05284427807602687,
+        "ceiling": 8.0
+      },
+      "execution_env.exists_remove_temps": {
+        "cadrMedianUs": 311.06914,
+        "baselineMedianUs": 739.50496,
+        "ratio": 0.42064510290776147,
+        "ceiling": 8.0
+      },
+      "execution_env.absolute_path": {
+        "cadrMedianUs": 35.68322,
+        "baselineMedianUs": 3.45,
+        "ratio": 10.342962318840579,
+        "ceiling": 8.0
+      },
+      "execution_env.join_path": {
+        "cadrMedianUs": 33.1715,
+        "baselineMedianUs": 0.8632,
+        "ratio": 38.428521779425395,
+        "ceiling": 8.0
+      },
+      "execution_env.file_info": {
+        "cadrMedianUs": 29.165399999999998,
+        "baselineMedianUs": 14.5009,
+        "ratio": 2.0112820583549986,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.with_queue": {
+        "cadrMedianUs": 224.0174,
+        "baselineMedianUs": 281.49992,
+        "ratio": 0.7957991604402589,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.queue_key": {
+        "cadrMedianUs": 214.76932,
+        "baselineMedianUs": 126.6926,
+        "ratio": 1.6952001932235978,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.lock": {
+        "cadrMedianUs": 175.49696,
+        "baselineMedianUs": 175.01116000000002,
+        "ratio": 1.002775822981803,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.register": {
+        "cadrMedianUs": 170.64883999999998,
+        "baselineMedianUs": 150.69451999999998,
+        "ratio": 1.1324156976643875,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.wait_turn": {
+        "cadrMedianUs": 158.6293,
+        "baselineMedianUs": 128.91332,
+        "ratio": 1.2305113234225913,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.release_turn": {
+        "cadrMedianUs": 206.04734,
+        "baselineMedianUs": 162.19096,
+        "ratio": 1.2703996572928602,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.ensure_state": {
+        "cadrMedianUs": 174.50133999999997,
+        "baselineMedianUs": 128.76324,
+        "ratio": 1.3552108505502034,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.call_with": {
+        "cadrMedianUs": 200.70266,
+        "baselineMedianUs": 210.76834,
+        "ratio": 0.9522429222529343,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.make_state": {
+        "cadrMedianUs": 190.6905,
+        "baselineMedianUs": 63.779939999999996,
+        "ratio": 2.989819369538447,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.state_key": {
+        "cadrMedianUs": 211.50758000000002,
+        "baselineMedianUs": 138.417,
+        "ratio": 1.5280462659933391,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.pending_count": {
+        "cadrMedianUs": 196.50756,
+        "baselineMedianUs": 161.21666,
+        "ratio": 1.2189035550047993,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.next_ticket": {
+        "cadrMedianUs": 200.96232,
+        "baselineMedianUs": 152.49074000000002,
+        "ratio": 1.317865727453352,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.serving_ticket": {
+        "cadrMedianUs": 210.52396000000002,
+        "baselineMedianUs": 128.47512,
+        "ratio": 1.6386360254032066,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.waitqueue": {
+        "cadrMedianUs": 173.43216,
+        "baselineMedianUs": 107.09164000000001,
+        "ratio": 1.6194743119070731,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.registry": {
+        "cadrMedianUs": 178.61436,
+        "baselineMedianUs": 106.35222,
+        "ratio": 1.6794605697934655,
+        "ceiling": 8.0
+      },
+      "file_mutation_queue.state_p": {
+        "cadrMedianUs": 150.39418,
+        "baselineMedianUs": 64.04814,
+        "ratio": 2.348142818823466,
+        "ceiling": 8.0
+      },
+      "harness_events.emit": {
+        "cadrMedianUs": 0.7559999999999999,
+        "baselineMedianUs": 2.634,
+        "ratio": 0.2870159453302961,
+        "ceiling": 8.0
+      },
+      "bash_tool.strip_exit_footer": {
+        "cadrMedianUs": 0.98762,
+        "baselineMedianUs": 0.5945,
+        "ratio": 1.6612615643397814,
+        "ceiling": 8.0
+      },
+      "bash_tool.append_status": {
+        "cadrMedianUs": 1.1219,
+        "baselineMedianUs": 0.3641,
+        "ratio": 3.0812963471573744,
+        "ceiling": 8.0
+      },
+      "bash_tool.truncation_notice": {
+        "cadrMedianUs": 2.7949200000000003,
+        "baselineMedianUs": 0.8242,
+        "ratio": 3.391070128609561,
+        "ceiling": 8.0
+      },
+      "bash_tool.live_output": {
+        "cadrMedianUs": 0.10964,
+        "baselineMedianUs": 0.2184,
+        "ratio": 0.502014652014652,
+        "ceiling": 8.0
+      },
+      "bash_tool.strip_status": {
+        "cadrMedianUs": 0.42128,
+        "baselineMedianUs": 0.47787999999999997,
+        "ratio": 0.8815602243240981,
+        "ceiling": 8.0
+      },
+      "bash_tool.strip_truncation": {
+        "cadrMedianUs": 2.3412200000000003,
+        "baselineMedianUs": 0.45968000000000003,
+        "ratio": 5.0931517577445184,
+        "ceiling": 8.0
+      },
+      "bash_tool.process_deadline": {
+        "cadrMedianUs": 0.12292,
+        "baselineMedianUs": 0.46226,
+        "ratio": 0.26591095920044994,
+        "ceiling": 8.0
+      },
+      "bash_tool.user_bash_result": {
+        "cadrMedianUs": 2.56864,
+        "baselineMedianUs": 1.22924,
+        "ratio": 2.089616348312778,
+        "ceiling": 8.0
+      },
+      "bash_tool.normalized_extension": {
+        "cadrMedianUs": 0.83324,
+        "baselineMedianUs": 0.43956,
+        "ratio": 1.8956228956228955,
+        "ceiling": 8.0
+      },
+      "output_accumulator.append": {
+        "cadrMedianUs": 3.2206599999999996,
+        "baselineMedianUs": 4.45706,
+        "ratio": 0.7225974072594938,
+        "ceiling": 8.0
+      },
+      "output_accumulator.snapshot": {
+        "cadrMedianUs": 3.22414,
+        "baselineMedianUs": 4.7212,
+        "ratio": 0.6829068880793019,
+        "ceiling": 8.0
+      },
+      "output_accumulator.finish": {
+        "cadrMedianUs": 1.7053200000000002,
+        "baselineMedianUs": 2.40418,
+        "ratio": 0.7093146103869095,
+        "ceiling": 8.0
+      },
+      "output_accumulator.last_line_bytes": {
+        "cadrMedianUs": 1.7929599999999999,
+        "baselineMedianUs": 4.73094,
+        "ratio": 0.3789859943267088,
+        "ceiling": 8.0
+      },
+      "output_accumulator.needs_file": {
+        "cadrMedianUs": 49.04258,
+        "baselineMedianUs": 20.06896,
+        "ratio": 2.4437031116709584,
+        "ceiling": 8.0
+      },
+      "output_accumulator.close_temp_file": {
+        "cadrMedianUs": 57.62312,
+        "baselineMedianUs": 83.30691999999999,
+        "ratio": 0.6916966801797498,
+        "ceiling": 8.0
+      },
+      "harness_events.on": {
+        "cadrMedianUs": 0.60676,
+        "baselineMedianUs": 1.6398400000000002,
+        "ratio": 0.3700117084593618,
+        "ceiling": 8.0
+      },
+      "harness_events.watch": {
+        "cadrMedianUs": 0.59384,
+        "baselineMedianUs": 2.02856,
+        "ratio": 0.29273967740663326,
+        "ceiling": 8.0
+      },
+      "harness_events.make_start": {
+        "cadrMedianUs": 0.1502,
+        "baselineMedianUs": 0.1065,
+        "ratio": 1.4103286384976526,
+        "ceiling": 8.0
+      },
+      "harness_events.make_end": {
+        "cadrMedianUs": 0.22448,
+        "baselineMedianUs": 0.1421,
+        "ratio": 1.5797325826882478,
+        "ceiling": 8.0
+      },
+      "harness_events.event_type": {
+        "cadrMedianUs": 0.18236,
+        "baselineMedianUs": 0.11898,
+        "ratio": 1.532694570516053,
+        "ceiling": 8.0
+      },
+      "harness_events.make_bus": {
+        "cadrMedianUs": 0.35332,
+        "baselineMedianUs": 0.24152,
+        "ratio": 1.4629016230539915,
+        "ceiling": 8.0
+      },
+      "find_tool.pattern_match": {
+        "cadrMedianUs": 53.990680000000005,
+        "baselineMedianUs": 5.02222,
+        "ratio": 10.75036139396522,
+        "ceiling": 8.0
+      },
+      "find_tool.find_files": {
+        "cadrMedianUs": 642.66508,
+        "baselineMedianUs": 180.90128,
+        "ratio": 3.552573425682781,
+        "ceiling": 8.0
+      },
+      "find_tool.make_tool": {
+        "cadrMedianUs": 156.30328,
+        "baselineMedianUs": 91.94134,
+        "ratio": 1.7000326512535058,
+        "ceiling": 8.0
+      },
+      "find_tool.glob_regex": {
+        "cadrMedianUs": 0.5000800000000001,
+        "baselineMedianUs": 0.23358,
+        "ratio": 2.1409367240345922,
+        "ceiling": 8.0
+      },
+      "find_tool.glob_special": {
+        "cadrMedianUs": 0.08868000000000001,
+        "baselineMedianUs": 0.14496,
+        "ratio": 0.6117549668874173,
+        "ceiling": 8.0
+      },
+      "find_tool.gitignore_regex": {
+        "cadrMedianUs": 0.64922,
+        "baselineMedianUs": 0.54772,
+        "ratio": 1.1853136639158695,
+        "ceiling": 8.0
+      },
+      "find_tool.glob_scanner": {
+        "cadrMedianUs": 10.72096,
+        "baselineMedianUs": 0.9539799999999999,
+        "ratio": 11.23813916434307,
+        "ceiling": 20.0
+      },
+      "find_tool.glob_regex_body": {
+        "cadrMedianUs": 0.58406,
+        "baselineMedianUs": 0.39812,
+        "ratio": 1.4670451120265249,
+        "ceiling": 8.0
+      },
+      "find_tool.parse_gitignore_line": {
+        "cadrMedianUs": 7.44232,
+        "baselineMedianUs": 1.2731000000000001,
+        "ratio": 5.845825151205718,
+        "ceiling": 8.0
+      },
+      "find_tool.ignored_directory": {
+        "cadrMedianUs": 27.78904,
+        "baselineMedianUs": 1.95474,
+        "ratio": 14.21623336095849,
+        "ceiling": 16.0
+      },
+      "find_tool.gitignored": {
+        "cadrMedianUs": 49.56376,
+        "baselineMedianUs": 3.605,
+        "ratio": 13.748615811373094,
+        "ceiling": 20.0
+      },
+      "find_tool.make_glob_tool": {
+        "cadrMedianUs": 203.00560000000002,
+        "baselineMedianUs": 0.28638,
+        "ratio": 708.867937705147,
+        "ceiling": 1200.0
+      },
+      "write_tool.ensure_parent": {
+        "cadrMedianUs": 89.83638,
+        "baselineMedianUs": 108.31866,
+        "ratio": 0.8293712274505612,
+        "ceiling": 8.0
+      },
+      "write_tool.write_utf8": {
+        "cadrMedianUs": 200.17428,
+        "baselineMedianUs": 137.54206,
+        "ratio": 1.4553677616868617,
+        "ceiling": 8.0
+      },
+      "write_tool.make_tool": {
+        "cadrMedianUs": 36.99018,
+        "baselineMedianUs": 4.3013200000000005,
+        "ratio": 8.599727525503798,
+        "ceiling": 8.0
+      },
+      "grep_tool.match_event": {
+        "cadrMedianUs": 4.25558,
+        "baselineMedianUs": 4.220400000000001,
+        "ratio": 1.008335702776988,
+        "ceiling": 8.0
+      },
+      "grep_tool.line_text": {
+        "cadrMedianUs": 0.7089,
+        "baselineMedianUs": 0.71004,
+        "ratio": 0.9983944566503296,
+        "ceiling": 8.0
+      },
+      "grep_tool.make_tool": {
+        "cadrMedianUs": 4.1629000000000005,
+        "baselineMedianUs": 0.39134,
+        "ratio": 10.637553022946799,
+        "ceiling": 8.0
+      },
+      "ls_tool.directory_entry_name": {
+        "cadrMedianUs": 27.69692,
+        "baselineMedianUs": 4.30752,
+        "ratio": 6.429899338830696,
+        "ceiling": 8.0
+      },
+      "ls_tool.list_directory": {
+        "cadrMedianUs": 368.09538,
+        "baselineMedianUs": 208.08741999999998,
+        "ratio": 1.7689458593892895,
+        "ceiling": 8.0
+      },
+      "ls_tool.make_tool": {
+        "cadrMedianUs": 282.11858,
+        "baselineMedianUs": 193.08294,
+        "ratio": 1.4611263946985684,
+        "ceiling": 8.0
+      },
+      "tool_manager.get_tool_path": {
+        "cadrMedianUs": 174.64296,
+        "baselineMedianUs": 8753.74768,
+        "ratio": 0.019950650439584064,
+        "ceiling": 8.0
+      },
+      "tool_manager.ensure_tool": {
+        "cadrMedianUs": 109.96,
+        "baselineMedianUs": 5767.97018,
+        "ratio": 0.019063898835898627,
+        "ceiling": 8.0
+      },
+      "tool_manager.cleanup_quarantine": {
+        "cadrMedianUs": 138.0013,
+        "baselineMedianUs": 81.06434,
+        "ratio": 1.7023675268311564,
+        "ceiling": 8.0
+      },
+      "tool_manager.release_asset": {
+        "cadrMedianUs": 1.53226,
+        "baselineMedianUs": 0.9122199999999999,
+        "ratio": 1.6797044572581177,
+        "ceiling": 8.0
+      },
+      "tool_manager.find_binary": {
+        "cadrMedianUs": 356.66608,
+        "baselineMedianUs": 217.39062,
+        "ratio": 1.6406691328264302,
+        "ceiling": 8.0
+      },
+      "tool_manager.quarantine_native": {
+        "cadrMedianUs": 588.99316,
+        "baselineMedianUs": 575.14966,
+        "ratio": 1.024069387435611,
+        "ceiling": 8.0
+      },
+      "powershell_tool.utf8_prefix": {
+        "cadrMedianUs": 0.6420999999999999,
+        "baselineMedianUs": 0.16228,
+        "ratio": 3.956741434557554,
+        "ceiling": 8.0
+      },
+      "powershell_tool.prefix_command": {
+        "cadrMedianUs": 0.48725999999999997,
+        "baselineMedianUs": 0.32411999999999996,
+        "ratio": 1.5033320992225103,
+        "ceiling": 8.0
+      },
+      "powershell_tool.make_tool": {
+        "cadrMedianUs": 2.01316,
+        "baselineMedianUs": 1.35744,
+        "ratio": 1.4830563413484206,
+        "ceiling": 8.0
+      },
+      "settings_load.project_trust": {
+        "cadrMedianUs": 243.30385,
+        "baselineMedianUs": 281.06645,
+        "ratio": 0.865645294911577,
+        "ceiling": 8.0
+      },
+      "settings_load.config_value": {
+        "cadrMedianUs": 1.79726,
+        "baselineMedianUs": 4.13704,
+        "ratio": 0.43443138089068517,
+        "ceiling": 8.0
+      },
+      "settings_load.http_idle": {
+        "cadrMedianUs": 0.14784,
+        "baselineMedianUs": 0.6373,
+        "ratio": 0.23197865997175585,
+        "ceiling": 8.0
+      },
+      "settings_load.stored_auth_secrets": {
+        "cadrMedianUs": 142.05372,
+        "baselineMedianUs": 31.932579999999998,
+        "ratio": 4.448551291502284,
+        "ceiling": 8.0
+      },
+      "settings_load.config_paths": {
+        "cadrMedianUs": 31.51378,
+        "baselineMedianUs": 4.01874,
+        "ratio": 7.841706604557647,
+        "ceiling": 8.0
+      },
+      "settings_load.provider_symbol": {
+        "cadrMedianUs": 0.32036000000000003,
+        "baselineMedianUs": 0.23038,
+        "ratio": 1.3905720982724197,
+        "ceiling": 8.0
+      },
+      "settings_load.parse_auth_provider": {
+        "cadrMedianUs": 0.81844,
+        "baselineMedianUs": 2.32314,
+        "ratio": 0.35229904353590397,
+        "ceiling": 8.0
+      },
+      "settings_load.split_command_line": {
+        "cadrMedianUs": 0.7768,
+        "baselineMedianUs": 0.8233,
+        "ratio": 0.9435199805660148,
+        "ceiling": 8.0
+      },
+      "settings_load.environment_value": {
+        "cadrMedianUs": 0.30276,
+        "baselineMedianUs": 0.29294,
+        "ratio": 1.0335222229808152,
+        "ceiling": 8.0
+      },
+      "settings_load.configured_provider_name": {
+        "cadrMedianUs": 0.3614,
+        "baselineMedianUs": 0.5024000000000001,
+        "ratio": 0.7193471337579617,
+        "ceiling": 8.0
+      },
+      "settings_load.provider_settings": {
+        "cadrMedianUs": 1.30244,
+        "baselineMedianUs": 0.7104600000000001,
+        "ratio": 1.8332348056188945,
+        "ceiling": 8.0
+      },
+      "settings_load.provider_default_model": {
+        "cadrMedianUs": 0.97304,
+        "baselineMedianUs": 2.37674,
+        "ratio": 0.4094011124481433,
+        "ceiling": 8.0
+      },
+      "settings_load.oauth_refresh_function": {
+        "cadrMedianUs": 0.34812,
+        "baselineMedianUs": 2.56914,
+        "ratio": 0.13550059553002172,
+        "ceiling": 8.0
+      },
+      "settings_load.oauth_login_function": {
+        "cadrMedianUs": 2.50706,
+        "baselineMedianUs": 2.4638,
+        "ratio": 1.0175582433639094,
+        "ceiling": 8.0
+      },
+      "resource_loader.reload": {
+        "cadrMedianUs": 692.1476666666667,
+        "baselineMedianUs": 602.5793333333334,
+        "ratio": 1.1486415619962629,
+        "ceiling": 1.5
+      },
+      "resource_loader.dedupe_by_name": {
+        "cadrMedianUs": 131.57542,
+        "baselineMedianUs": 227.1359,
+        "ratio": 0.579280598091275,
+        "ceiling": 8.0
+      },
+      "resource_loader.context_from_dir": {
+        "cadrMedianUs": 81.20136000000001,
+        "baselineMedianUs": 26.793539999999997,
+        "ratio": 3.030632010551798,
+        "ceiling": 8.0
+      },
+      "resource_loader.project_context": {
+        "cadrMedianUs": 78.88306,
+        "baselineMedianUs": 28.332919999999998,
+        "ratio": 2.7841486158151016,
+        "ceiling": 8.0
+      },
+      "resource_loader.nearest_config": {
+        "cadrMedianUs": 53.73402,
+        "baselineMedianUs": 5.5297,
+        "ratio": 9.717348138235348,
+        "ceiling": 8.0
+      },
+      "package_manager.resolve": {
+        "cadrMedianUs": 345.2788,
+        "baselineMedianUs": 86.798,
+        "ratio": 3.97795801746584,
+        "ceiling": 1.5
+      },
+      "package_manager.manifest_parse": {
+        "cadrMedianUs": 45.64272,
+        "baselineMedianUs": 4.80408,
+        "ratio": 9.500824299345556,
+        "ceiling": 8.0
+      },
+      "package_manager.package_source": {
+        "cadrMedianUs": 13.39558,
+        "baselineMedianUs": 294.55224,
+        "ratio": 0.045477773314506115,
+        "ceiling": 8.0
+      },
+      "package_manager.normalize_pattern": {
+        "cadrMedianUs": 0.4567,
+        "baselineMedianUs": 0.6722,
+        "ratio": 0.6794108896161857,
+        "ceiling": 8.0
+      },
+      "package_manager.resource_kinds": {
+        "cadrMedianUs": 0.12404,
+        "baselineMedianUs": 0.13792,
+        "ratio": 0.8993619489559166,
+        "ceiling": 8.0
+      },
+      "package_manager.type_label": {
+        "cadrMedianUs": 0.14526,
+        "baselineMedianUs": 0.11924,
+        "ratio": 1.2182153639718216,
+        "ceiling": 8.0
+      },
+      "package_manager.resource_file_p": {
+        "cadrMedianUs": 19.54878,
+        "baselineMedianUs": 1.8451,
+        "ratio": 10.594970462305566,
+        "ceiling": 8.0
+      },
+      "package_manager.resource_display_name": {
+        "cadrMedianUs": 27.03044,
+        "baselineMedianUs": 0.46682,
+        "ratio": 57.903346043442866,
+        "ceiling": 60.0
+      },
+      "package_manager.settings_array": {
+        "cadrMedianUs": 1.1584999999999999,
+        "baselineMedianUs": 0.49162,
+        "ratio": 2.35649485374883,
+        "ceiling": 8.0
+      },
+      "package_manager.resource_specification": {
+        "cadrMedianUs": 0.43472,
+        "baselineMedianUs": 2.2739,
+        "ratio": 0.19117815207353006,
+        "ceiling": 8.0
+      },
+      "package_manager.config_glob_regex": {
+        "cadrMedianUs": 0.92688,
+        "baselineMedianUs": 1.5495599999999998,
+        "ratio": 0.5981568961511656,
+        "ceiling": 8.0
+      },
+      "package_manager.entry_target": {
+        "cadrMedianUs": 0.27744,
+        "baselineMedianUs": 0.35857999999999995,
+        "ratio": 0.7737185565285294,
+        "ceiling": 8.0
+      },
+      "package_manager.autoload_disabled": {
+        "cadrMedianUs": 0.7425799999999999,
+        "baselineMedianUs": 0.30726,
+        "ratio": 2.416780576710278,
+        "ceiling": 8.0
+      },
+      "package_manager.package_entry_filter": {
+        "cadrMedianUs": 1.09896,
+        "baselineMedianUs": 0.57892,
+        "ratio": 1.8982933738685828,
+        "ceiling": 8.0
+      },
+      "package_manager.item_matches": {
+        "cadrMedianUs": 20.07322,
+        "baselineMedianUs": 0.9950600000000001,
+        "ratio": 20.172873997547885,
+        "ceiling": 20.0
+      },
+      "package_manager.resource_key": {
+        "cadrMedianUs": 2.8418400000000004,
+        "baselineMedianUs": 0.25420000000000004,
+        "ratio": 11.179543666404406,
+        "ceiling": 20.0
+      },
+      "package_manager.relative_pattern": {
+        "cadrMedianUs": 28.42068,
+        "baselineMedianUs": 0.8865000000000001,
+        "ratio": 32.05942470389171,
+        "ceiling": 30.0
+      },
+      "package_manager.config_fit_line": {
+        "cadrMedianUs": 5.12336,
+        "baselineMedianUs": 1.6929400000000001,
+        "ratio": 3.0263092608125506,
+        "ceiling": 8.0
+      },
+      "package_manager.group_less_p": {
+        "cadrMedianUs": 4.029599999999999,
+        "baselineMedianUs": 0.5429200000000001,
+        "ratio": 7.42208796876151,
+        "ceiling": 8.0
+      },
+      "package_manager.package_entry_has_filters": {
+        "cadrMedianUs": 1.38564,
+        "baselineMedianUs": 0.80132,
+        "ratio": 1.7291968252383567,
+        "ceiling": 8.0
+      },
+      "package_manager.find_item_index": {
+        "cadrMedianUs": 0.2484,
+        "baselineMedianUs": 0.409,
+        "ratio": 0.6073349633251834,
+        "ceiling": 8.0
+      },
+      "package_manager.selected_entry": {
+        "cadrMedianUs": 1.0831,
+        "baselineMedianUs": 1.1084399999999999,
+        "ratio": 0.9771390422575873,
+        "ceiling": 8.0
+      },
+      "package_manager.selector_move": {
+        "cadrMedianUs": 1.20204,
+        "baselineMedianUs": 1.5493000000000001,
+        "ratio": 0.775860065836184,
+        "ceiling": 8.0
+      },
+      "package_manager.visible_range": {
+        "cadrMedianUs": 2.04742,
+        "baselineMedianUs": 4.27088,
+        "ratio": 0.4793906642190836,
+        "ceiling": 8.0
+      },
+      "package_manager.item_ordinal": {
+        "cadrMedianUs": 1.15168,
+        "baselineMedianUs": 1.5060200000000001,
+        "ratio": 0.7647176000318721,
+        "ceiling": 8.0
+      },
+      "package_manager.replace_pattern": {
+        "cadrMedianUs": 0.64774,
+        "baselineMedianUs": 0.87664,
+        "ratio": 0.7388893958751597,
+        "ceiling": 8.0
+      },
+      "package_manager.scope_base": {
+        "cadrMedianUs": 29.64218,
+        "baselineMedianUs": 0.5695600000000001,
+        "ratio": 52.04399887632558,
+        "ceiling": 50.0
+      },
+      "package_manager.selector_items": {
+        "cadrMedianUs": 21.236819999999998,
+        "baselineMedianUs": 0.6766599999999999,
+        "ratio": 31.384772263766145,
+        "ceiling": 40.0
+      },
+      "package_manager.item_source_base": {
+        "cadrMedianUs": 29.631700000000002,
+        "baselineMedianUs": 0.53776,
+        "ratio": 55.102090151740555,
+        "ceiling": 50.0
+      },
+      "package_manager.package_resource_pattern": {
+        "cadrMedianUs": 28.18562,
+        "baselineMedianUs": 1.1473,
+        "ratio": 24.566913623289462,
+        "ceiling": 20.0
+      },
+      "package_manager.package_override_source": {
+        "cadrMedianUs": 32.28368,
+        "baselineMedianUs": 1.6043399999999999,
+        "ratio": 20.122717129785457,
+        "ceiling": 20.0
+      },
+      "package_manager.resource_group_label": {
+        "cadrMedianUs": 30.372519999999998,
+        "baselineMedianUs": 0.8095,
+        "ratio": 37.52009882643607,
+        "ceiling": 50.0
+      },
+      "package_manager.settings_values": {
+        "cadrMedianUs": 5.177859999999999,
+        "baselineMedianUs": 0.71926,
+        "ratio": 7.198871061924755,
+        "ceiling": 8.0
+      },
+      "package_manager.pattern_candidates": {
+        "cadrMedianUs": 29.60482,
+        "baselineMedianUs": 2.7074599999999998,
+        "ratio": 10.934536428977715,
+        "ceiling": 8.0
+      },
+      "package_manager.pattern_matches": {
+        "cadrMedianUs": 46.646319999999996,
+        "baselineMedianUs": 4.91706,
+        "ratio": 9.486628188388995,
+        "ceiling": 8.0
+      },
+      "package_manager.enabled_by_patterns": {
+        "cadrMedianUs": 43.14346,
+        "baselineMedianUs": 6.18174,
+        "ratio": 6.979177383713971,
+        "ceiling": 8.0
+      },
+      "package_manager.delta_resource_state": {
+        "cadrMedianUs": 17.16568,
+        "baselineMedianUs": 4.22204,
+        "ratio": 4.065731257875339,
+        "ceiling": 8.0
+      },
+      "package_manager.project_top_level_state": {
+        "cadrMedianUs": 45.116899999999994,
+        "baselineMedianUs": 5.24394,
+        "ratio": 8.60362628100245,
+        "ceiling": 8.0
+      },
+      "package_manager.derived_project_state": {
+        "cadrMedianUs": 45.63102,
+        "baselineMedianUs": 5.06008,
+        "ratio": 9.017845567659009,
+        "ceiling": 8.0
+      },
+      "session_discovery.header_probe": {
+        "cadrMedianUs": 644.78535,
+        "baselineMedianUs": 511.23665,
+        "ratio": 1.2612267723763544,
+        "ceiling": 8.0
+      },
+      "session_discovery.session_list_probe": {
+        "cadrMedianUs": 49474.3418,
+        "baselineMedianUs": 50261.3828,
+        "ratio": 0.9843410396579857,
+        "ceiling": 8.0
+      },
+      "session_export_html.to_html": {
+        "cadrMedianUs": 21462.93,
+        "baselineMedianUs": 4048.5930000000003,
+        "ratio": 5.301330610412061,
+        "ceiling": 20.0
+      },
+      "protocol_cbor.roundtrip": {
+        "cadrMedianUs": 9.15374,
+        "baselineMedianUs": 31.8473,
+        "ratio": 0.287425935636616,
+        "ceiling": 1.5
+      },
+      "agent_schema.validate_ok_fail": {
+        "cadrMedianUs": 29.095219999999998,
+        "baselineMedianUs": 40.35066,
+        "ratio": 0.7210593333541508,
+        "ceiling": 1.5
+      },
+      "harness_storage.open_walk": {
+        "cadrMedianUs": 8830.016666666666,
+        "baselineMedianUs": 6095.178,
+        "ratio": 1.4486888925420498,
+        "ceiling": 8.0
+      },
+      "protocol_codec.roundtrip": {
+        "cadrMedianUs": 7.0855,
+        "baselineMedianUs": 72.46272,
+        "ratio": 0.09778131430893015,
+        "ceiling": 1.5
+      },
+      "agent_proxy.stream_roundtrip": {
+        "cadrMedianUs": 14.399000000000001,
+        "baselineMedianUs": 16.2053,
+        "ratio": 0.8885364664646751,
+        "ceiling": 1.5
+      },
+      "oauth_pkce.challenge_urls": {
+        "cadrMedianUs": 40.88608,
+        "baselineMedianUs": 29.09312,
+        "ratio": 1.4053521932333144,
+        "ceiling": 1.5
+      },
+      "oauth_pkce_device.poll": {
+        "cadrMedianUs": 0.68218,
+        "baselineMedianUs": 14.01144,
+        "ratio": 0.0486873583300503,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.auth_json": {
+        "cadrMedianUs": 238.38296,
+        "baselineMedianUs": 76.11482,
+        "ratio": 3.1318862739214257,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.copilot_url": {
+        "cadrMedianUs": 1.6787200000000002,
+        "baselineMedianUs": 1.70338,
+        "ratio": 0.985522901525203,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.cloudflare_url": {
+        "cadrMedianUs": 8.10752,
+        "baselineMedianUs": 1.5651599999999999,
+        "ratio": 5.179994377571622,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.radius_gateway": {
+        "cadrMedianUs": 0.289,
+        "baselineMedianUs": 0.54634,
+        "ratio": 0.5289746311820477,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.copilot_auth": {
+        "cadrMedianUs": 2.23386,
+        "baselineMedianUs": 1.90022,
+        "ratio": 1.1755796697224532,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.percent_decode": {
+        "cadrMedianUs": 1.64218,
+        "baselineMedianUs": 1.05406,
+        "ratio": 1.557956852551088,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.parse_query": {
+        "cadrMedianUs": 6.55962,
+        "baselineMedianUs": 3.5970400000000002,
+        "ratio": 1.8236160843360094,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.parse_authorization_input": {
+        "cadrMedianUs": 6.36914,
+        "baselineMedianUs": 11.83288,
+        "ratio": 0.5382578036792396,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.provider_key": {
+        "cadrMedianUs": 0.14254,
+        "baselineMedianUs": 0.29236,
+        "ratio": 0.48754959638801476,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.http_status_text": {
+        "cadrMedianUs": 0.14737999999999998,
+        "baselineMedianUs": 0.26086,
+        "ratio": 0.5649773825040251,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.parse_callback_request": {
+        "cadrMedianUs": 12.836179999999999,
+        "baselineMedianUs": 3.39772,
+        "ratio": 3.7778804610150334,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.llama_url": {
+        "cadrMedianUs": 3.3068400000000002,
+        "baselineMedianUs": 10.03404,
+        "ratio": 0.3295621703720536,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.hf_token": {
+        "cadrMedianUs": 247.34315999999998,
+        "baselineMedianUs": 229.03856,
+        "ratio": 1.0799192939389768,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.llama_catalog": {
+        "cadrMedianUs": 3.08378,
+        "baselineMedianUs": 14.722460000000002,
+        "ratio": 0.20946091889534763,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.extension_discovery": {
+        "cadrMedianUs": 496.5236,
+        "baselineMedianUs": 230.13472000000002,
+        "ratio": 2.157534508482683,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.split_command": {
+        "cadrMedianUs": 0.46759999999999996,
+        "baselineMedianUs": 1.68846,
+        "ratio": 0.2769387489191334,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.handle_plain": {
+        "cadrMedianUs": 0.345,
+        "baselineMedianUs": 0.77648,
+        "ratio": 0.4443127962085308,
+        "ceiling": 8.0
+      },
+      "cli_extensions_install.handle_unknown": {
+        "cadrMedianUs": 0.48676,
+        "baselineMedianUs": 0.8637,
+        "ratio": 0.5635753155030682,
+        "ceiling": 8.0
+      },
+      "evals_harness.summarize": {
+        "cadrMedianUs": 4.9005,
+        "baselineMedianUs": 8.5678,
+        "ratio": 0.5719671327528654,
+        "ceiling": 1.5
+      },
+      "evals_harness.group_key": {
+        "cadrMedianUs": 3.2641000000000004,
+        "baselineMedianUs": 1.1939,
+        "ratio": 2.733981070441411,
+        "ceiling": 8.0
+      },
+      "evals_harness.artifact_persist": {
+        "cadrMedianUs": 810.19,
+        "baselineMedianUs": 199.0716666666667,
+        "ratio": 4.069840844586958,
+        "ceiling": 8.0
+      },
+      "evals_harness.format": {
+        "cadrMedianUs": 13.912,
+        "baselineMedianUs": 31.849200000000003,
+        "ratio": 0.4368084598671238,
+        "ceiling": 8.0
+      },
+      "evals_harness.normalize_steps": {
+        "cadrMedianUs": 0.52578,
+        "baselineMedianUs": 6.5921199999999995,
+        "ratio": 0.07975886361291967,
+        "ceiling": 8.0
+      },
+      "evals_harness.resolve_selection": {
+        "cadrMedianUs": 1.0917000000000001,
+        "baselineMedianUs": 6.26002,
+        "ratio": 0.17439241408174416,
+        "ceiling": 8.0
+      },
+      "evals_harness.transcript": {
+        "cadrMedianUs": 3.8629000000000002,
+        "baselineMedianUs": 2.06142,
+        "ratio": 1.873902455588866,
+        "ceiling": 8.0
+      },
+      "evals_harness.last_assistant": {
+        "cadrMedianUs": 0.61186,
+        "baselineMedianUs": 0.55438,
+        "ratio": 1.103683394061835,
+        "ceiling": 8.0
+      },
+      "evals_harness.step_value": {
+        "cadrMedianUs": 0.7930200000000001,
+        "baselineMedianUs": 0.1625,
+        "ratio": 4.880123076923077,
+        "ceiling": 8.0
+      },
+      "evals_harness.usage": {
+        "cadrMedianUs": 2.26904,
+        "baselineMedianUs": 0.99504,
+        "ratio": 2.280350538671812,
+        "ceiling": 8.0
+      },
+      "evals_harness.result_json": {
+        "cadrMedianUs": 1.96252,
+        "baselineMedianUs": 0.36591999999999997,
+        "ratio": 5.363248797551378,
+        "ceiling": 8.0
+      },
+      "evals_harness.eval_environment": {
+        "cadrMedianUs": 0.7620399999999999,
+        "baselineMedianUs": 0.28904,
+        "ratio": 2.636451702186548,
+        "ceiling": 8.0
+      },
+      "evals_harness.prompt_step": {
+        "cadrMedianUs": 0.11974,
+        "baselineMedianUs": 0.1142,
+        "ratio": 1.0485113835376532,
+        "ceiling": 8.0
+      },
+      "evals_harness.reload_step": {
+        "cadrMedianUs": 0.08976,
+        "baselineMedianUs": 0.10529999999999999,
+        "ratio": 0.8524216524216526,
+        "ceiling": 8.0
+      },
+      "evals_harness.make_eval_root": {
+        "cadrMedianUs": 94.25168,
+        "baselineMedianUs": 43.75462,
+        "ratio": 2.1540966416803524,
+        "ceiling": 8.0
+      },
+      "evals_harness.normalize_step_type": {
+        "cadrMedianUs": 0.26388,
+        "baselineMedianUs": 0.21309999999999998,
+        "ratio": 1.2382918817456594,
+        "ceiling": 8.0
+      },
+      "evals_harness.selected_eval_tools": {
+        "cadrMedianUs": 18.84004,
+        "baselineMedianUs": 12.80434,
+        "ratio": 1.4713792354779707,
+        "ceiling": 8.0
+      },
+      "evals_harness.prompt_eval_agent": {
+        "cadrMedianUs": 20.263666666666666,
+        "baselineMedianUs": 1.9080000000000001,
+        "ratio": 10.620370370370368,
+        "ceiling": 20.0
+      },
+      "evals_harness.reload_shutdown": {
+        "cadrMedianUs": 627.6606666666667,
+        "baselineMedianUs": 127.608,
+        "ratio": 4.918662361816396,
+        "ceiling": 8.0
+      },
+      "evals_harness.run_coding_agent_eval": {
+        "cadrMedianUs": 1401.3843333333334,
+        "baselineMedianUs": 125.57100000000001,
+        "ratio": 11.160095351102829,
+        "ceiling": 8.0
+      },
+      "evals_harness.argument_prefix": {
+        "cadrMedianUs": 0.23898,
+        "baselineMedianUs": 0.26792,
+        "ratio": 0.8919826813974321,
+        "ceiling": 8.0
+      },
+      "evals_harness.parse_arguments": {
+        "cadrMedianUs": 1.21996,
+        "baselineMedianUs": 9.58178,
+        "ratio": 0.12732081095579317,
+        "ceiling": 8.0
+      },
+      "evals_harness.validate_smoke": {
+        "cadrMedianUs": 2.43638,
+        "baselineMedianUs": 4.7146,
+        "ratio": 0.5167734272260638,
+        "ceiling": 8.0
+      },
+      "evals_harness.canonical_api": {
+        "cadrMedianUs": 0.96938,
+        "baselineMedianUs": 0.49939999999999996,
+        "ratio": 1.9410893071686026,
+        "ceiling": 8.0
+      },
+      "evals_harness.legacy_api": {
+        "cadrMedianUs": 1.9272,
+        "baselineMedianUs": 0.5382,
+        "ratio": 3.58082497212932,
+        "ceiling": 8.0
+      },
+      "evals_harness.extension_error_json": {
+        "cadrMedianUs": 0.88144,
+        "baselineMedianUs": 0.18526,
+        "ratio": 4.75785382705387,
+        "ceiling": 8.0
+      },
+      "evals_harness.required_prompt_boundary": {
+        "cadrMedianUs": 0.6568600000000001,
+        "baselineMedianUs": 2.23952,
+        "ratio": 0.29330392226905766,
+        "ceiling": 8.0
+      },
+      "evals_harness.exclude_guidelines": {
+        "cadrMedianUs": 0.54576,
+        "baselineMedianUs": 0.2057,
+        "ratio": 2.6531842489061743,
+        "ceiling": 8.0
+      },
+      "evals_harness.prepare_default_prompt": {
+        "cadrMedianUs": 2.62532,
+        "baselineMedianUs": 0.408,
+        "ratio": 6.434607843137255,
+        "ceiling": 8.0
+      },
+      "evals_harness.reporter_run_id": {
+        "cadrMedianUs": 2.60546,
+        "baselineMedianUs": 0.9080800000000001,
+        "ratio": 2.869196546559774,
+        "ceiling": 8.0
+      },
+      "evals_harness.artifact_reference_json": {
+        "cadrMedianUs": 0.90386,
+        "baselineMedianUs": 0.14981999999999998,
+        "ratio": 6.032972900814311,
+        "ceiling": 8.0
+      },
+      "evals_harness.reporter_artifacts": {
+        "cadrMedianUs": 1.4853999999999998,
+        "baselineMedianUs": 1.74364,
+        "ratio": 0.8518960335849142,
+        "ceiling": 8.0
+      },
+      "evals_harness.validate_extension": {
+        "cadrMedianUs": 2.5487200000000003,
+        "baselineMedianUs": 0.32118,
+        "ratio": 7.935487888411483,
+        "ceiling": 8.0
+      },
+      "evals_harness.suite_dispatch": {
+        "cadrMedianUs": 0.16798,
+        "baselineMedianUs": 0.19932,
+        "ratio": 0.8427654023680513,
+        "ceiling": 8.0
+      },
+      "evals_harness.eval_result_p": {
+        "cadrMedianUs": 0.60262,
+        "baselineMedianUs": 0.35509999999999997,
+        "ratio": 1.69704308645452,
+        "ceiling": 8.0
+      },
+      "evals_harness.msg_content": {
+        "cadrMedianUs": 1.01568,
+        "baselineMedianUs": 0.7370399999999999,
+        "ratio": 1.3780527515467276,
+        "ceiling": 8.0
+      },
+      "evals_harness.eval_tools": {
+        "cadrMedianUs": 1.55062,
+        "baselineMedianUs": 0.285,
+        "ratio": 5.440771929824562,
+        "ceiling": 8.0
+      },
+      "evals_harness.eval_paths": {
+        "cadrMedianUs": 3.19306,
+        "baselineMedianUs": 0.44770000000000004,
+        "ratio": 7.132142059414786,
+        "ceiling": 8.0
+      },
+      "evals_harness.rep_make": {
+        "cadrMedianUs": 0.37807999999999997,
+        "baselineMedianUs": 0.36636,
+        "ratio": 1.0319903919641882,
+        "ceiling": 8.0
+      },
+      "evals_harness.fin_num": {
+        "cadrMedianUs": 0.12732,
+        "baselineMedianUs": 0.22704000000000002,
+        "ratio": 0.560782241014799,
+        "ceiling": 8.0
+      },
+      "evals_harness.art_meta": {
+        "cadrMedianUs": 1.02842,
+        "baselineMedianUs": 0.98234,
+        "ratio": 1.046908402386139,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_object_overrides": {
+        "cadrMedianUs": 23.1578,
+        "baselineMedianUs": 28.77862,
+        "ratio": 0.8046876465932001,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.apply_tui_theme_summary": {
+        "cadrMedianUs": 52.74848,
+        "baselineMedianUs": 16.569380000000002,
+        "ratio": 3.183491476446312,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.load_tui_theme_file": {
+        "cadrMedianUs": 284.67198,
+        "baselineMedianUs": 149.46326,
+        "ratio": 1.904628468561438,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_prim": {
+        "cadrMedianUs": 0.11474000000000001,
+        "baselineMedianUs": 0.15264,
+        "ratio": 0.751703354297694,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_val": {
+        "cadrMedianUs": 20.06276,
+        "baselineMedianUs": 26.50716,
+        "ratio": 0.7568807823999252,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_res": {
+        "cadrMedianUs": 1.2030800000000001,
+        "baselineMedianUs": 8.21372,
+        "ratio": 0.14647200050646966,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.sess_make": {
+        "cadrMedianUs": 0.25202,
+        "baselineMedianUs": 0.19128,
+        "ratio": 1.3175449602676705,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.sess_upd": {
+        "cadrMedianUs": 0.26076,
+        "baselineMedianUs": 0.27504,
+        "ratio": 0.9480802792321117,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.sess_draw": {
+        "cadrMedianUs": 1.5437,
+        "baselineMedianUs": 1.5473599999999998,
+        "ratio": 0.9976346810050668,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.wrap_osc": {
+        "cadrMedianUs": 0.59246,
+        "baselineMedianUs": 0.67334,
+        "ratio": 0.8798823774022039,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.pad_str": {
+        "cadrMedianUs": 0.22016,
+        "baselineMedianUs": 0.20623999999999998,
+        "ratio": 1.0674941815360746,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.cache_p": {
+        "cadrMedianUs": 1.30238,
+        "baselineMedianUs": 0.5147999999999999,
+        "ratio": 2.5298756798756803,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.bash_run": {
+        "cadrMedianUs": 0.77224,
+        "baselineMedianUs": 0.37048000000000003,
+        "ratio": 2.084431008421507,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.bash_fin": {
+        "cadrMedianUs": 0.78024,
+        "baselineMedianUs": 0.29912,
+        "ratio": 2.6084514576089863,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.bash_halt": {
+        "cadrMedianUs": 0.6371,
+        "baselineMedianUs": 0.23044,
+        "ratio": 2.7647109876757505,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.bash_append_running": {
+        "cadrMedianUs": 0.76534,
+        "baselineMedianUs": 0.38177999999999995,
+        "ratio": 2.004662370999005,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.bash_complete_string": {
+        "cadrMedianUs": 0.77318,
+        "baselineMedianUs": 0.2995,
+        "ratio": 2.5815692821368947,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.bash_stop_entry": {
+        "cadrMedianUs": 0.6372399999999999,
+        "baselineMedianUs": 0.2267,
+        "ratio": 2.8109395677106304,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.assistant_has_tools": {
+        "cadrMedianUs": 1.1226,
+        "baselineMedianUs": 0.89982,
+        "ratio": 1.2475828499033141,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.assistant_display_blocks": {
+        "cadrMedianUs": 0.96992,
+        "baselineMedianUs": 1.43144,
+        "ratio": 0.6775834125076845,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.transcript_summary_label": {
+        "cadrMedianUs": 12.20828,
+        "baselineMedianUs": 1.72904,
+        "ratio": 7.060727340026836,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.transcript_summary_text": {
+        "cadrMedianUs": 8.8345,
+        "baselineMedianUs": 1.8143,
+        "ratio": 4.869371107314116,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.assistant_stop_error": {
+        "cadrMedianUs": 24.12112,
+        "baselineMedianUs": 2.24538,
+        "ratio": 10.742555825739965,
+        "ceiling": 20.0
+      },
+      "cli_interactive_controller.update_notification_border": {
+        "cadrMedianUs": 6.30866,
+        "baselineMedianUs": 1.5442799999999999,
+        "ratio": 4.085178853575776,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_message_background": {
+        "cadrMedianUs": 8.45104,
+        "baselineMedianUs": 1.52204,
+        "ratio": 5.552442774171507,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.update_notification_text": {
+        "cadrMedianUs": 59.12088,
+        "baselineMedianUs": 2.16378,
+        "ratio": 27.32296259323961,
+        "ceiling": 50.0
+      },
+      "cli_interactive_controller.syntax_highlight": {
+        "cadrMedianUs": 13.050540000000002,
+        "baselineMedianUs": 1.13412,
+        "ratio": 11.507195005819492,
+        "ceiling": 20.0
+      },
+      "cli_interactive_controller.assistant_price_known": {
+        "cadrMedianUs": 4.50462,
+        "baselineMedianUs": 19.13626,
+        "ratio": 0.23539709431205472,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.accumulate_usage": {
+        "cadrMedianUs": 0.75278,
+        "baselineMedianUs": 0.6678799999999999,
+        "ratio": 1.1271186440677967,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.append_user_message": {
+        "cadrMedianUs": 4.81862,
+        "baselineMedianUs": 1.37734,
+        "ratio": 3.498497103111795,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.seed_tui_message": {
+        "cadrMedianUs": 4.1599,
+        "baselineMedianUs": 8.57838,
+        "ratio": 0.4849283897425855,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.reset_tui_messages": {
+        "cadrMedianUs": 2.1311400000000003,
+        "baselineMedianUs": 1.57392,
+        "ratio": 1.3540332418420251,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_user_lines": {
+        "cadrMedianUs": 4.0226,
+        "baselineMedianUs": 1.57532,
+        "ratio": 2.553512937054059,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_assistant_lines": {
+        "cadrMedianUs": 11.9638,
+        "baselineMedianUs": 3.93714,
+        "ratio": 3.0387032211198997,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.transform_tui_markdown": {
+        "cadrMedianUs": 2.8473200000000003,
+        "baselineMedianUs": 1.7867,
+        "ratio": 1.593619522023843,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_transcript_summary": {
+        "cadrMedianUs": 793.2244999999999,
+        "baselineMedianUs": 3.1586200000000004,
+        "ratio": 251.130082124472,
+        "ceiling": 400.0
+      },
+      "cli_interactive_controller.render_assistant_blocks": {
+        "cadrMedianUs": 54.53636,
+        "baselineMedianUs": 10.1267,
+        "ratio": 5.385402944690768,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_version_notification": {
+        "cadrMedianUs": 301.09414,
+        "baselineMedianUs": 4.50676,
+        "ratio": 66.80944625407166,
+        "ceiling": 120.0
+      },
+      "cli_interactive_controller.render_package_notification": {
+        "cadrMedianUs": 214.65383999999997,
+        "baselineMedianUs": 4.1329199999999995,
+        "ratio": 51.93757440260155,
+        "ceiling": 100.0
+      },
+      "cli_interactive_controller.render_tui_entry_uncached": {
+        "cadrMedianUs": 199.43426,
+        "baselineMedianUs": 7.3969000000000005,
+        "ratio": 26.961870513323145,
+        "ceiling": 50.0
+      },
+      "cli_interactive_controller.render_tui_entry": {
+        "cadrMedianUs": 102.41486,
+        "baselineMedianUs": 5.51114,
+        "ratio": 18.583244120091305,
+        "ceiling": 30.0
+      },
+      "cli_interactive_controller.render_tui_entries": {
+        "cadrMedianUs": 42.007659999999994,
+        "baselineMedianUs": 7.918780000000001,
+        "ratio": 5.304814630536521,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.should_use_tui": {
+        "cadrMedianUs": 0.12838,
+        "baselineMedianUs": 0.30538,
+        "ratio": 0.4203942628855852,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.tui_command_error": {
+        "cadrMedianUs": 1.43718,
+        "baselineMedianUs": 11.1985,
+        "ratio": 0.128336830825557,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.route_tui_submission": {
+        "cadrMedianUs": 0.19512000000000002,
+        "baselineMedianUs": 0.23693999999999998,
+        "ratio": 0.8234996201570018,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.extension_dialog_chrome": {
+        "cadrMedianUs": 21.672759999999997,
+        "baselineMedianUs": 1.72672,
+        "ratio": 12.551403817642695,
+        "ceiling": 30.0
+      },
+      "cli_interactive_controller.tui_component_protocol": {
+        "cadrMedianUs": 0.5779,
+        "baselineMedianUs": 0.2932,
+        "ratio": 1.9710095497953612,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.extension_render_value_lines": {
+        "cadrMedianUs": 2.4705600000000003,
+        "baselineMedianUs": 1.2621,
+        "ratio": 1.9574994057523178,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.make_framed_select_state": {
+        "cadrMedianUs": 0.99158,
+        "baselineMedianUs": 0.69104,
+        "ratio": 1.43490970131975,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.note_component_render_channel": {
+        "cadrMedianUs": 0.35454,
+        "baselineMedianUs": 0.28714,
+        "ratio": 1.2347287037681967,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.tui_extension_theme_runtime": {
+        "cadrMedianUs": 1.4401400000000002,
+        "baselineMedianUs": 0.47342,
+        "ratio": 3.0419923112669514,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.make_extension_input_dialog": {
+        "cadrMedianUs": 0.49956,
+        "baselineMedianUs": 0.38781999999999994,
+        "ratio": 1.2881233561961736,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.make_extension_editor_dialog": {
+        "cadrMedianUs": 1.65096,
+        "baselineMedianUs": 0.43804000000000004,
+        "ratio": 3.7689708702401603,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.make_runtime_auth_input_state": {
+        "cadrMedianUs": 0.456,
+        "baselineMedianUs": 0.42095999999999995,
+        "ratio": 1.0832383124287346,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.runtime_auth_input_handle_event": {
+        "cadrMedianUs": 1.00082,
+        "baselineMedianUs": 1.0550199999999998,
+        "ratio": 0.9486265663210178,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_runtime_auth_input": {
+        "cadrMedianUs": 142.94224,
+        "baselineMedianUs": 2.5020599999999997,
+        "ratio": 57.12982102747337,
+        "ceiling": 100.0
+      },
+      "cli_interactive_controller.render_extension_custom_entry": {
+        "cadrMedianUs": 0.42198,
+        "baselineMedianUs": 0.26617999999999997,
+        "ratio": 1.5853182057254491,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_framed_select_state": {
+        "cadrMedianUs": 229.43308000000002,
+        "baselineMedianUs": 2.17102,
+        "ratio": 105.6798555517683,
+        "ceiling": 180.0
+      },
+      "cli_interactive_controller.framed_select_state_handle_event": {
+        "cadrMedianUs": 1.27034,
+        "baselineMedianUs": 1.07372,
+        "ratio": 1.1831203665760162,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.framed_select_state_handle_raw_input": {
+        "cadrMedianUs": 86.57784,
+        "baselineMedianUs": 1.0449599999999999,
+        "ratio": 82.85277905374369,
+        "ceiling": 160.0
+      },
+      "cli_interactive_controller.render_extension_custom_ui": {
+        "cadrMedianUs": 31.97112,
+        "baselineMedianUs": 1.4177799999999998,
+        "ratio": 22.550127664376703,
+        "ceiling": 40.0
+      },
+      "cli_interactive_controller.extension_custom_ui_handle_event": {
+        "cadrMedianUs": 0.35308,
+        "baselineMedianUs": 0.85226,
+        "ratio": 0.41428672001501887,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.render_tui_extension_overlay": {
+        "cadrMedianUs": 142.60443999999998,
+        "baselineMedianUs": 1.6699799999999998,
+        "ratio": 85.39290290901687,
+        "ceiling": 160.0
+      },
+      "cli_selectors.thinking_level_label": {
+        "cadrMedianUs": 0.2382,
+        "baselineMedianUs": 0.25838,
+        "ratio": 0.9218979797197926,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_level_search_text": {
+        "cadrMedianUs": 1.1088,
+        "baselineMedianUs": 0.52162,
+        "ratio": 2.1256853648249683,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_set_query": {
+        "cadrMedianUs": 11.85336,
+        "baselineMedianUs": 11.120920000000002,
+        "ratio": 1.0658614575053142,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_provider_badge": {
+        "cadrMedianUs": 0.13356,
+        "baselineMedianUs": 0.43178,
+        "ratio": 0.3093241928760017,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_copy_enabled": {
+        "cadrMedianUs": 1.06172,
+        "baselineMedianUs": 0.4793,
+        "ratio": 2.2151470895055287,
+        "ceiling": 8.0
+      },
+      "cli_selectors.move_list_item": {
+        "cadrMedianUs": 1.31124,
+        "baselineMedianUs": 1.05668,
+        "ratio": 1.2409054775334063,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_scoped_models": {
+        "cadrMedianUs": 11.75374,
+        "baselineMedianUs": 4.5001,
+        "ratio": 2.611884180351548,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_model_id_enabled_p": {
+        "cadrMedianUs": 19.016859999999998,
+        "baselineMedianUs": 0.2016,
+        "ratio": 94.32966269841269,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_toggle_id": {
+        "cadrMedianUs": 1.1185,
+        "baselineMedianUs": 0.9600799999999999,
+        "ratio": 1.165007082743105,
+        "ceiling": 8.0
+      },
+      "cli_selectors.all_known_model_ids_enabled_p": {
+        "cadrMedianUs": 1.70422,
+        "baselineMedianUs": 0.79494,
+        "ratio": 2.1438347548242636,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_enable_ids": {
+        "cadrMedianUs": 2.61848,
+        "baselineMedianUs": 1.73798,
+        "ratio": 1.5066226308703206,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_clear_ids": {
+        "cadrMedianUs": 2.95632,
+        "baselineMedianUs": 1.51014,
+        "ratio": 1.9576463109380586,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_enabled_set": {
+        "cadrMedianUs": 2.7549,
+        "baselineMedianUs": 1.10102,
+        "ratio": 2.502134384479846,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_equal_p": {
+        "cadrMedianUs": 0.45890000000000003,
+        "baselineMedianUs": 0.20466,
+        "ratio": 2.2422554480601975,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_model_selector_search_text": {
+        "cadrMedianUs": 4.23252,
+        "baselineMedianUs": 0.52502,
+        "ratio": 8.06163574720963,
+        "ceiling": 12.0
+      },
+      "cli_selectors.model_selector_active_models": {
+        "cadrMedianUs": 19.49906,
+        "baselineMedianUs": 1.99686,
+        "ratio": 9.764860831505462,
+        "ceiling": 15.0
+      },
+      "cli_selectors.model_selector_clamp_selected": {
+        "cadrMedianUs": 20.50606,
+        "baselineMedianUs": 5.68234,
+        "ratio": 3.608735133765315,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_select_current": {
+        "cadrMedianUs": 19.09378,
+        "baselineMedianUs": 0.69312,
+        "ratio": 27.547581948291782,
+        "ceiling": 55.0
+      },
+      "cli_selectors.sort_model_selector_models": {
+        "cadrMedianUs": 8.17628,
+        "baselineMedianUs": 2.60358,
+        "ratio": 3.140398989084261,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_visible_models": {
+        "cadrMedianUs": 37.221239999999995,
+        "baselineMedianUs": 20.971799999999998,
+        "ratio": 1.7748233341916286,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_visible_slice": {
+        "cadrMedianUs": 30.8139,
+        "baselineMedianUs": 13.13346,
+        "ratio": 2.346213412154908,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_rebuild_search_text_table": {
+        "cadrMedianUs": 16.28344,
+        "baselineMedianUs": 4.9001,
+        "ratio": 3.3230832023836245,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_filter_search_text": {
+        "cadrMedianUs": 13.440019999999999,
+        "baselineMedianUs": 3.2769,
+        "ratio": 4.1014434373950985,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_finish_refresh": {
+        "cadrMedianUs": 47.35026,
+        "baselineMedianUs": 11.0204,
+        "ratio": 4.296600849333962,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_rebuild_models_by_id": {
+        "cadrMedianUs": 10.337560000000002,
+        "baselineMedianUs": 4.3589,
+        "ratio": 2.3715983390304896,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_model_by_id": {
+        "cadrMedianUs": 9.4373,
+        "baselineMedianUs": 2.9394400000000003,
+        "ratio": 3.2105775249707427,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_model_item_search_text": {
+        "cadrMedianUs": 2.9281400000000004,
+        "baselineMedianUs": 0.8309399999999999,
+        "ratio": 3.5238886080824137,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_items": {
+        "cadrMedianUs": 27.09572,
+        "baselineMedianUs": 6.472659999999999,
+        "ratio": 4.186180024904754,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_cancel": {
+        "cadrMedianUs": 0.68622,
+        "baselineMedianUs": 0.36556,
+        "ratio": 1.8771747455957983,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_selected_item": {
+        "cadrMedianUs": 26.636439999999997,
+        "baselineMedianUs": 8.13572,
+        "ratio": 3.2740113966557356,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_select_id": {
+        "cadrMedianUs": 27.36854,
+        "baselineMedianUs": 9.34628,
+        "ratio": 2.9282816264866875,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_notify_change": {
+        "cadrMedianUs": 1.4125800000000002,
+        "baselineMedianUs": 0.63342,
+        "ratio": 2.2300843042531024,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_rebuild_items": {
+        "cadrMedianUs": 27.17004,
+        "baselineMedianUs": 5.9753,
+        "ratio": 4.547058725084933,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_apply_filter": {
+        "cadrMedianUs": 35.349940000000004,
+        "baselineMedianUs": 17.169079999999997,
+        "ratio": 2.058930356198469,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_visible_items": {
+        "cadrMedianUs": 32.56474,
+        "baselineMedianUs": 12.83588,
+        "ratio": 2.537008759820129,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_refresh_items": {
+        "cadrMedianUs": 32.50976,
+        "baselineMedianUs": 12.82934,
+        "ratio": 2.5340165589188532,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_clamp_selected": {
+        "cadrMedianUs": 29.77212,
+        "baselineMedianUs": 12.775619999999998,
+        "ratio": 2.3303855311914417,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_mark_changed": {
+        "cadrMedianUs": 34.80786,
+        "baselineMedianUs": 24.48576,
+        "ratio": 1.4215552223006351,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_finish_refresh": {
+        "cadrMedianUs": 69.90586,
+        "baselineMedianUs": 20.511599999999998,
+        "ratio": 3.4081134577507366,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_key_p": {
+        "cadrMedianUs": 23.311320000000002,
+        "baselineMedianUs": 1.24804,
+        "ratio": 18.678343642831962,
+        "ceiling": 30.0
+      },
+      "cli_selectors.scoped_models_binding_label": {
+        "cadrMedianUs": 5.63292,
+        "baselineMedianUs": 0.38677999999999996,
+        "ratio": 14.563627902166608,
+        "ceiling": 25.0
+      },
+      "cli_selectors.model_selector_key_p": {
+        "cadrMedianUs": 16.491020000000002,
+        "baselineMedianUs": 0.8845000000000001,
+        "ratio": 18.644454494064444,
+        "ceiling": 30.0
+      },
+      "cli_selectors.model_selector_keybindings": {
+        "cadrMedianUs": 4.143879999999999,
+        "baselineMedianUs": 0.50786,
+        "ratio": 8.159492773599023,
+        "ceiling": 12.0
+      },
+      "cli_selectors.make_model_selector_state": {
+        "cadrMedianUs": 21.30098,
+        "baselineMedianUs": 6.6558399999999995,
+        "ratio": 3.2003443592394047,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_key_p": {
+        "cadrMedianUs": 15.802280000000001,
+        "baselineMedianUs": 0.78142,
+        "ratio": 20.222517980087535,
+        "ceiling": 30.0
+      },
+      "cli_selectors.thinking_selector_keybindings": {
+        "cadrMedianUs": 3.05212,
+        "baselineMedianUs": 0.50288,
+        "ratio": 6.069280941775374,
+        "ceiling": 8.0
+      },
+      "cli_selectors.make_thinking_selector_state": {
+        "cadrMedianUs": 1.6517,
+        "baselineMedianUs": 2.5013,
+        "ratio": 0.6603366249550233,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_apply_filter": {
+        "cadrMedianUs": 13.551400000000001,
+        "baselineMedianUs": 10.83184,
+        "ratio": 1.2510709168525385,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_clamp_selected": {
+        "cadrMedianUs": 0.6441,
+        "baselineMedianUs": 0.87654,
+        "ratio": 0.7348210007529605,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_select_current": {
+        "cadrMedianUs": 0.9975799999999999,
+        "baselineMedianUs": 1.1419199999999998,
+        "ratio": 0.8735988510578675,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_move": {
+        "cadrMedianUs": 0.62592,
+        "baselineMedianUs": 0.4903,
+        "ratio": 1.2766061594941873,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_handle_raw_input": {
+        "cadrMedianUs": 143.42422,
+        "baselineMedianUs": 6.79678,
+        "ratio": 21.101789376734274,
+        "ceiling": 30.0
+      },
+      "cli_selectors.thinking_selector_handle_event": {
+        "cadrMedianUs": 3.2191199999999998,
+        "baselineMedianUs": 3.9259199999999996,
+        "ratio": 0.8199657659860619,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_selector_selected_level": {
+        "cadrMedianUs": 0.47462000000000004,
+        "baselineMedianUs": 0.75952,
+        "ratio": 0.6248946703180958,
+        "ceiling": 8.0
+      },
+      "cli_selectors.thinking_level_description_line": {
+        "cadrMedianUs": 0.28496,
+        "baselineMedianUs": 0.2311,
+        "ratio": 1.2330592816962354,
+        "ceiling": 8.0
+      },
+      "cli_selectors.render_thinking_selector": {
+        "cadrMedianUs": 269.77674,
+        "baselineMedianUs": 6.98978,
+        "ratio": 38.595884276758355,
+        "ceiling": 60.0
+      },
+      "cli_selectors.trust_option_saved_p": {
+        "cadrMedianUs": 46.44204,
+        "baselineMedianUs": 15.5755,
+        "ratio": 2.981736701871529,
+        "ceiling": 8.0
+      },
+      "cli_selectors.make_trust_selector_state": {
+        "cadrMedianUs": 101.88712,
+        "baselineMedianUs": 52.868900000000004,
+        "ratio": 1.9271654980527302,
+        "ceiling": 8.0
+      },
+      "cli_selectors.render_trust_selector": {
+        "cadrMedianUs": 1007.92624,
+        "baselineMedianUs": 113.87989999999999,
+        "ratio": 8.850782622745543,
+        "ceiling": 15.0
+      },
+      "cli_selectors.tosp_ok": {
+        "cadrMedianUs": 46.41078,
+        "baselineMedianUs": 15.49934,
+        "ratio": 2.9943713732326667,
+        "ceiling": 8.0
+      },
+      "cli_selectors.mtss_ok": {
+        "cadrMedianUs": 101.9481,
+        "baselineMedianUs": 51.40936,
+        "ratio": 1.983064951596363,
+        "ceiling": 8.0
+      },
+      "cli_selectors.rtrs_ok": {
+        "cadrMedianUs": 1008.95548,
+        "baselineMedianUs": 112.336,
+        "ratio": 8.981586312491098,
+        "ceiling": 15.0
+      },
+      "cli_selectors.make_login_method_selector_state": {
+        "cadrMedianUs": 2.78888,
+        "baselineMedianUs": 2.35344,
+        "ratio": 1.1850227751716635,
+        "ceiling": 8.0
+      },
+      "cli_selectors.make_api_key_input_state": {
+        "cadrMedianUs": 2.17352,
+        "baselineMedianUs": 1.18446,
+        "ratio": 1.8350303091704234,
+        "ceiling": 8.0
+      },
+      "cli_selectors.make_oauth_selector_state": {
+        "cadrMedianUs": 7.3224,
+        "baselineMedianUs": 5.906180000000001,
+        "ratio": 1.2397861223328783,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_show_waiting": {
+        "cadrMedianUs": 5.47898,
+        "baselineMedianUs": 4.28848,
+        "ratio": 1.2776041860985712,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_show_progress": {
+        "cadrMedianUs": 3.1419799999999998,
+        "baselineMedianUs": 2.4329,
+        "ratio": 1.2914546426075875,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_show_manual_input": {
+        "cadrMedianUs": 5.10602,
+        "baselineMedianUs": 2.9312799999999997,
+        "ratio": 1.7419079719439974,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_show_prompt": {
+        "cadrMedianUs": 6.82834,
+        "baselineMedianUs": 3.8141599999999998,
+        "ratio": 1.7902605029678882,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_show_info": {
+        "cadrMedianUs": 8.9039,
+        "baselineMedianUs": 6.2242,
+        "ratio": 1.430529224639311,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_show_details": {
+        "cadrMedianUs": 2.61382,
+        "baselineMedianUs": 3.4600400000000002,
+        "ratio": 0.7554305730569588,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_complete_input": {
+        "cadrMedianUs": 5.6745600000000005,
+        "baselineMedianUs": 3.5400799999999997,
+        "ratio": 1.6029468260604283,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_dialog_handle_event": {
+        "cadrMedianUs": 6.37358,
+        "baselineMedianUs": 3.35956,
+        "ratio": 1.8971472454726213,
+        "ceiling": 8.0
+      },
+      "cli_selectors.render_login_dialog": {
+        "cadrMedianUs": 107.2999,
+        "baselineMedianUs": 4.03764,
+        "ratio": 26.57490514260806,
+        "ceiling": 50.0
+      },
+      "cli_selectors.user_message_handle_event": {
+        "cadrMedianUs": 1.76092,
+        "baselineMedianUs": 2.32412,
+        "ratio": 0.7576717209094195,
+        "ceiling": 8.0
+      },
+      "cli_selectors.user_message_handle_raw": {
+        "cadrMedianUs": 85.85784,
+        "baselineMedianUs": 5.081259999999999,
+        "ratio": 16.896958628371703,
+        "ceiling": 30.0
+      },
+      "cli_selectors.render_user_message_selector": {
+        "cadrMedianUs": 240.97058,
+        "baselineMedianUs": 4.0839,
+        "ratio": 59.00501481427068,
+        "ceiling": 100.0
+      },
+      "cli_selectors.make_models_selector_keybindings": {
+        "cadrMedianUs": 31.821399999999997,
+        "baselineMedianUs": 21.10334,
+        "ratio": 1.5078845339173799,
+        "ceiling": 8.0
+      },
+      "cli_selectors.make_scoped_models_selector_state": {
+        "cadrMedianUs": 96.77152,
+        "baselineMedianUs": 4.3548,
+        "ratio": 22.22180582345917,
+        "ceiling": 40.0
+      },
+      "cli_selectors.render_model_selector": {
+        "cadrMedianUs": 194.10824,
+        "baselineMedianUs": 9.2341,
+        "ratio": 21.020807658569865,
+        "ceiling": 50.0
+      },
+      "cli_selectors.daxnuts_rgb_at": {
+        "cadrMedianUs": 0.89404,
+        "baselineMedianUs": 0.5271399999999999,
+        "ratio": 1.6960200326289032,
+        "ceiling": 8.0
+      },
+      "cli_selectors.make_daxnuts_component": {
+        "cadrMedianUs": 0.61696,
+        "baselineMedianUs": 0.20358,
+        "ratio": 3.0305530995186163,
+        "ceiling": 8.0
+      },
+      "cli_selectors.daxnuts_component_tick": {
+        "cadrMedianUs": 3.70444,
+        "baselineMedianUs": 3.0221,
+        "ratio": 1.22578339565203,
+        "ceiling": 8.0
+      },
+      "cli_selectors.dlg_make": {
+        "cadrMedianUs": 0.1918,
+        "baselineMedianUs": 0.12494,
+        "ratio": 1.535136865695534,
+        "ceiling": 8.0
+      },
+      "cli_selectors.dlg_auth": {
+        "cadrMedianUs": 1.9913999999999998,
+        "baselineMedianUs": 1.17252,
+        "ratio": 1.698393204380309,
+        "ceiling": 8.0
+      },
+      "cli_selectors.dlg_dev": {
+        "cadrMedianUs": 4.0610800000000005,
+        "baselineMedianUs": 1.1698,
+        "ratio": 3.471601983245,
+        "ceiling": 8.0
+      },
+      "ai_crypto_model_data.manifest": {
+        "cadrMedianUs": 84.92352000000001,
+        "baselineMedianUs": 6.9922,
+        "ratio": 12.145464946654844,
+        "ceiling": 20.0
+      },
+      "ai_crypto.hmac": {
+        "cadrMedianUs": 157.96282,
+        "baselineMedianUs": 6.57236,
+        "ratio": 24.034413817867556,
+        "ceiling": 30.0
+      },
+      "cli_models_rest.pattern_match": {
+        "cadrMedianUs": 28.963919999999998,
+        "baselineMedianUs": 18.45694,
+        "ratio": 1.569269878972354,
+        "ceiling": 3.0
+      },
+      "cli_models_rest.auth_command": {
+        "cadrMedianUs": 2.67396,
+        "baselineMedianUs": 8.44956,
+        "ratio": 0.3164614488801784,
+        "ceiling": 8.0
+      },
+      "cli_models_rest.login_selection": {
+        "cadrMedianUs": 3.502,
+        "baselineMedianUs": 3.97272,
+        "ratio": 0.8815119112346201,
+        "ceiling": 8.0
+      },
+      "image_runtime.dimensions": {
+        "cadrMedianUs": 5.87936,
+        "baselineMedianUs": 1.4413999999999998,
+        "ratio": 4.078923269043986,
+        "ceiling": 8.0
+      },
+      "image_runtime.mime_type": {
+        "cadrMedianUs": 5.294160000000001,
+        "baselineMedianUs": 3.0022,
+        "ratio": 1.763426820331757,
+        "ceiling": 8.0
+      },
+      "image_runtime.lookup": {
+        "cadrMedianUs": 0.98272,
+        "baselineMedianUs": 0.27872,
+        "ratio": 3.525832376578645,
+        "ceiling": 8.0
+      },
+      "image_runtime.dimension_note": {
+        "cadrMedianUs": 3.01886,
+        "baselineMedianUs": 0.71382,
+        "ratio": 4.2291614132414335,
+        "ceiling": 8.0
+      },
+      "image_runtime.api_provider": {
+        "cadrMedianUs": 0.10348,
+        "baselineMedianUs": 0.17386,
+        "ratio": 0.5951915334176925,
+        "ceiling": 8.0
+      },
+      "image_runtime.output_modalities": {
+        "cadrMedianUs": 0.20678000000000002,
+        "baselineMedianUs": 0.22294,
+        "ratio": 0.9275141293621603,
+        "ceiling": 8.0
+      },
+      "image_runtime.openrouter_content": {
+        "cadrMedianUs": 1.36318,
+        "baselineMedianUs": 0.2593,
+        "ratio": 5.257153875819514,
+        "ceiling": 8.0
+      },
+      "image_runtime.parse_data_image": {
+        "cadrMedianUs": 0.54652,
+        "baselineMedianUs": 0.32624000000000003,
+        "ratio": 1.6752084355076016,
+        "ceiling": 8.0
+      },
+      "image_runtime.openrouter_usage": {
+        "cadrMedianUs": 2.1556,
+        "baselineMedianUs": 0.4517,
+        "ratio": 4.772193934027009,
+        "ceiling": 8.0
+      },
+      "image_runtime.parse_openrouter_images": {
+        "cadrMedianUs": 3.1842799999999998,
+        "baselineMedianUs": 0.96868,
+        "ratio": 3.287236239005657,
+        "ceiling": 8.0
+      },
+      "image_runtime.error_result": {
+        "cadrMedianUs": 1.06422,
+        "baselineMedianUs": 0.33212,
+        "ratio": 3.204323738407804,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.jsonl_line": {
+        "cadrMedianUs": 2.0187,
+        "baselineMedianUs": 0.29286,
+        "ratio": 6.8930547019053465,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.jsonl_read": {
+        "cadrMedianUs": 0.42862,
+        "baselineMedianUs": 9.223239999999999,
+        "ratio": 0.046471738781599534,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.clamp_thinking": {
+        "cadrMedianUs": 0.98936,
+        "baselineMedianUs": 2.8566000000000003,
+        "ratio": 0.34634180494293915,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.session_stats": {
+        "cadrMedianUs": 10.628350000000001,
+        "baselineMedianUs": 85.23885,
+        "ratio": 0.12468903557474087,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.rpc_images": {
+        "cadrMedianUs": 2.2747800000000002,
+        "baselineMedianUs": 3.53654,
+        "ratio": 0.6432219061568653,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.rpc_prompt": {
+        "cadrMedianUs": 1.3098400000000001,
+        "baselineMedianUs": 0.58174,
+        "ratio": 2.251590057413965,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.bash_result": {
+        "cadrMedianUs": 2.1566,
+        "baselineMedianUs": 0.7459600000000001,
+        "ratio": 2.8910397340339964,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.queue_parse": {
+        "cadrMedianUs": 0.33448,
+        "baselineMedianUs": 2.61106,
+        "ratio": 0.12810123091771158,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.asst_text": {
+        "cadrMedianUs": 0.29942,
+        "baselineMedianUs": 0.36841999999999997,
+        "ratio": 0.8127137506107162,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.cmd_list": {
+        "cadrMedianUs": 1.5209800000000002,
+        "baselineMedianUs": 0.3346,
+        "ratio": 4.54566646742379,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.bad_line": {
+        "cadrMedianUs": 5.69958,
+        "baselineMedianUs": 4.98386,
+        "ratio": 1.143607565220532,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.array_line": {
+        "cadrMedianUs": 5.47828,
+        "baselineMedianUs": 4.9005,
+        "ratio": 1.1179022548719517,
+        "ceiling": 8.0
+      },
+      "cli_print_rpc.ui_absent": {
+        "cadrMedianUs": 6.5083,
+        "baselineMedianUs": 1.54868,
+        "ratio": 4.20248211380014,
+        "ceiling": 8.0
+      },
+      "tui_latex.render": {
+        "cadrMedianUs": 52.545399999999994,
+        "baselineMedianUs": 23.3072,
+        "ratio": 2.254470721493787,
+        "ceiling": 3.0
+      },
+      "tui_latex.normalize_output": {
+        "cadrMedianUs": 5.3026,
+        "baselineMedianUs": 3.80455,
+        "ratio": 1.3937522177392858,
+        "ceiling": 20.0
+      },
+      "tui_mermaid.render": {
+        "cadrMedianUs": 56.575599999999994,
+        "baselineMedianUs": 121.31325,
+        "ratio": 0.4663596103475918,
+        "ceiling": 8.0
+      },
+      "tui_mermaid.source_box": {
+        "cadrMedianUs": 53.130050000000004,
+        "baselineMedianUs": 118.76169999999999,
+        "ratio": 0.4473668699589178,
+        "ceiling": 8.0
+      },
+      "tui_mermaid.transform": {
+        "cadrMedianUs": 51.91335,
+        "baselineMedianUs": 102.4944,
+        "ratio": 0.5064993794782935,
+        "ceiling": 8.0
+      },
+      "tui_editor_helpers.fuzzy_match": {
+        "cadrMedianUs": 1.22572,
+        "baselineMedianUs": 3.9329,
+        "ratio": 0.31165806402400265,
+        "ceiling": 8.0
+      },
+      "tui_theme_overlay.osc11_bg": {
+        "cadrMedianUs": 3.7719,
+        "baselineMedianUs": 3.02224,
+        "ratio": 1.2480478056011435,
+        "ceiling": 8.0
+      },
+      "tui_theme_overlay.rgb_to_ansi_256": {
+        "cadrMedianUs": 2.39066,
+        "baselineMedianUs": 1.3357599999999998,
+        "ratio": 1.789737677427083,
+        "ceiling": 8.0
+      },
+      "tui_theme_overlay.parse_hex_color": {
+        "cadrMedianUs": 0.7978799999999999,
+        "baselineMedianUs": 0.8506999999999999,
+        "ratio": 0.9379099565064065,
+        "ceiling": 8.0
+      },
+      "tui_theme_overlay.theme_foreground_ansi": {
+        "cadrMedianUs": 5.41886,
+        "baselineMedianUs": 0.40164,
+        "ratio": 13.491833482720844,
+        "ceiling": 8.0
+      },
+      "ai_support.estimate_text": {
+        "cadrMedianUs": 0.40408,
+        "baselineMedianUs": 0.20984000000000003,
+        "ratio": 1.9256576439191762,
+        "ceiling": 8.0
+      },
+      "ai_support.context_overflow": {
+        "cadrMedianUs": 1.47636,
+        "baselineMedianUs": 1.23414,
+        "ratio": 1.1962662258738879,
+        "ceiling": 8.0
+      },
+      "ai_support.grammar_delta": {
+        "cadrMedianUs": 1.0184,
+        "baselineMedianUs": 0.8066800000000001,
+        "ratio": 1.2624584717607972,
+        "ceiling": 8.0
+      },
+      "ai_support.uuid_v7": {
+        "cadrMedianUs": 2.28908,
+        "baselineMedianUs": 8.7853,
+        "ratio": 0.2605579775306478,
+        "ceiling": 8.0
+      },
+      "ai_support.auth_guidance": {
+        "cadrMedianUs": 984.87066,
+        "baselineMedianUs": 37.71164,
+        "ratio": 26.11582683754936,
+        "ceiling": 50.0
+      },
+      "tui_select_settings_loaders.filter": {
+        "cadrMedianUs": 0.86134,
+        "baselineMedianUs": 1.1278,
+        "ratio": 0.7637347047348821,
+        "ceiling": 8.0
+      },
+      "tui_select_settings_loaders.loader_frames": {
+        "cadrMedianUs": 0.19792,
+        "baselineMedianUs": 0.16693999999999998,
+        "ratio": 1.1855756559242845,
+        "ceiling": 8.0
+      },
+      "tui_select_settings_loaders.loader_interval": {
+        "cadrMedianUs": 0.19,
+        "baselineMedianUs": 0.13036,
+        "ratio": 1.457502301319423,
+        "ceiling": 8.0
+      },
+      "tui_select_settings_loaders.loader_step": {
+        "cadrMedianUs": 0.34659999999999996,
+        "baselineMedianUs": 0.20838,
+        "ratio": 1.6633074191381128,
+        "ceiling": 8.0
+      },
+      "tui_word_navigation.step": {
+        "cadrMedianUs": 0.8321599999999999,
+        "baselineMedianUs": 4.97572,
+        "ratio": 0.16724413753185466,
+        "ceiling": 8.0
+      },
+      "tui_overlay.composite_line": {
+        "cadrMedianUs": 18.4277,
+        "baselineMedianUs": 23.887420000000002,
+        "ratio": 0.7714395275839752,
+        "ceiling": 8.0
+      },
+      "tui_kill_ring.push_peek": {
+        "cadrMedianUs": 0.34631999999999996,
+        "baselineMedianUs": 0.9323999999999999,
+        "ratio": 0.37142857142857144,
+        "ceiling": 8.0
+      },
+      "tui_undo_stack.push_pop": {
+        "cadrMedianUs": 0.2507,
+        "baselineMedianUs": 2.48372,
+        "ratio": 0.1009373037218366,
+        "ceiling": 8.0
+      },
+      "tui_autocomplete.suggest_apply": {
+        "cadrMedianUs": 94.32338,
+        "baselineMedianUs": 18.64526,
+        "ratio": 5.058839619291981,
+        "ceiling": 8.0
+      },
+      "tui_keybindings.resolve_match": {
+        "cadrMedianUs": 24.635720000000003,
+        "baselineMedianUs": 15.06532,
+        "ratio": 1.6352603197276927,
+        "ceiling": 8.0
+      },
+      "tui_stdin_buffer.process": {
+        "cadrMedianUs": 1.5397,
+        "baselineMedianUs": 6.69184,
+        "ratio": 0.23008619452945678,
+        "ceiling": 8.0
+      },
+      "tui_stdin_buffer.flush": {
+        "cadrMedianUs": 0.41756,
+        "baselineMedianUs": 3.0377199999999998,
+        "ratio": 0.13745835692558894,
+        "ceiling": 8.0
+      },
+      "tui_stdin_buffer.clear": {
+        "cadrMedianUs": 0.7389600000000001,
+        "baselineMedianUs": 4.28514,
+        "ratio": 0.1724471079124603,
+        "ceiling": 8.0
+      },
+      "tui_stdin_buffer.contents": {
+        "cadrMedianUs": 0.73858,
+        "baselineMedianUs": 4.23876,
+        "ratio": 0.17424435448102746,
+        "ceiling": 8.0
+      },
+      "tui_input_component.edit": {
+        "cadrMedianUs": 4.503159999999999,
+        "baselineMedianUs": 119.05770000000001,
+        "ratio": 0.037823341119474,
+        "ceiling": 8.0
+      },
+      "tui_native_modifiers.pressed": {
+        "cadrMedianUs": 1.41932,
+        "baselineMedianUs": 0.20024,
+        "ratio": 7.088094286855773,
+        "ceiling": 8.0
+      },
+      "tui_settings_list.apply_filter": {
+        "cadrMedianUs": 4.553059999999999,
+        "baselineMedianUs": 8.98934,
+        "ratio": 0.5064954713026762,
+        "ceiling": 8.0
+      },
+      "ai_capabilities.short_hash": {
+        "cadrMedianUs": 1.02454,
+        "baselineMedianUs": 1.33352,
+        "ratio": 0.7682974383586297,
+        "ceiling": 8.0
+      },
+      "ai_capabilities.deferred_tools": {
+        "cadrMedianUs": 3.25856,
+        "baselineMedianUs": 2.69054,
+        "ratio": 1.2111174708422845,
+        "ceiling": 8.0
+      },
+      "ai_capabilities.event_stream": {
+        "cadrMedianUs": 1.10062,
+        "baselineMedianUs": 1.3156800000000002,
+        "ratio": 0.836540800194576,
+        "ceiling": 8.0
+      },
+      "ai_capabilities.http_proxy": {
+        "cadrMedianUs": 4.69684,
+        "baselineMedianUs": 11.03998,
+        "ratio": 0.4254391765202473,
+        "ceiling": 8.0
+      },
+      "ai_capabilities.session_resources": {
+        "cadrMedianUs": 1.12816,
+        "baselineMedianUs": 8.78696,
+        "ratio": 0.1283902510083123,
+        "ceiling": 8.0
+      },
+      "cli_support.strip_ansi": {
+        "cadrMedianUs": 0.9710599999999999,
+        "baselineMedianUs": 0.5672999999999999,
+        "ratio": 1.7117221928432929,
+        "ceiling": 8.0
+      },
+      "cli_support.normalize_path": {
+        "cadrMedianUs": 26.5727,
+        "baselineMedianUs": 1.4160599999999999,
+        "ratio": 18.765235936330384,
+        "ceiling": 8.0
+      },
+      "cli_support.timings": {
+        "cadrMedianUs": 4.09222,
+        "baselineMedianUs": 2.82248,
+        "ratio": 1.4498667838213202,
+        "ceiling": 8.0
+      },
+      "cli_support.event_bus": {
+        "cadrMedianUs": 1.87482,
+        "baselineMedianUs": 6.91364,
+        "ratio": 0.27117697768469284,
+        "ceiling": 8.0
+      },
+      "cli_support.attribution_headers": {
+        "cadrMedianUs": 2.09008,
+        "baselineMedianUs": 8.16992,
+        "ratio": 0.2558262504406408,
+        "ceiling": 8.0
+      },
+      "cli_support.shell_config": {
+        "cadrMedianUs": 34.947919999999996,
+        "baselineMedianUs": 6.38388,
+        "ratio": 5.47440114789125,
+        "ceiling": 8.0
+      },
+      "cli_support.sanitize_output": {
+        "cadrMedianUs": 0.7676000000000001,
+        "baselineMedianUs": 1.8098400000000001,
+        "ratio": 0.42412588958139946,
+        "ceiling": 8.0
+      },
+      "cli_support.git_source": {
+        "cadrMedianUs": 20.00008,
+        "baselineMedianUs": 52.3997,
+        "ratio": 0.38168310123912924,
+        "ceiling": 8.0
+      },
+      "cli_support.user_agent": {
+        "cadrMedianUs": 1.0248,
+        "baselineMedianUs": 0.46664,
+        "ratio": 2.1961254928853076,
+        "ceiling": 8.0
+      },
+      "cli_support.parse_changelog": {
+        "cadrMedianUs": 36.8394,
+        "baselineMedianUs": 6.56658,
+        "ratio": 5.610134956095867,
+        "ceiling": 8.0
+      },
+      "cli_support.experimental": {
+        "cadrMedianUs": 0.12762,
+        "baselineMedianUs": 5.03376,
+        "ratio": 0.02535281777438734,
+        "ceiling": 8.0
+      },
+      "cli_support.no_models_help": {
+        "cadrMedianUs": 278.70207999999997,
+        "baselineMedianUs": 9.2541,
+        "ratio": 30.116605612647366,
+        "ceiling": 50.0
+      },
+      "cli_support.no_model_selected": {
+        "cadrMedianUs": 280.31066,
+        "baselineMedianUs": 8.92424,
+        "ratio": 31.410031554507725,
+        "ceiling": 50.0
+      },
+      "cli_support.no_api_key": {
+        "cadrMedianUs": 525.58528,
+        "baselineMedianUs": 17.496199999999998,
+        "ratio": 30.03996753580778,
+        "ceiling": 50.0
+      },
+      "cli_interactive_controller.decode_entity": {
+        "cadrMedianUs": 0.45549999999999996,
+        "baselineMedianUs": 0.65628,
+        "ratio": 0.6940635094776619,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.wayland": {
+        "cadrMedianUs": 0.22608,
+        "baselineMedianUs": 0.2621,
+        "ratio": 0.862571537581076,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.cwd_footer": {
+        "cadrMedianUs": 0.5245799999999999,
+        "baselineMedianUs": 3.16032,
+        "ratio": 0.16598952004860265,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.auth_type": {
+        "cadrMedianUs": 0.11116,
+        "baselineMedianUs": 0.15442,
+        "ratio": 0.7198549410698095,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.parse_auto_theme": {
+        "cadrMedianUs": 0.76754,
+        "baselineMedianUs": 0.65774,
+        "ratio": 1.1669352631738985,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.resolve_theme": {
+        "cadrMedianUs": 0.52266,
+        "baselineMedianUs": 0.76602,
+        "ratio": 0.6823059450144905,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.make_entry": {
+        "cadrMedianUs": 1.4679,
+        "baselineMedianUs": 0.29600000000000004,
+        "ratio": 4.9591216216216205,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.append_output": {
+        "cadrMedianUs": 0.8138599999999999,
+        "baselineMedianUs": 0.30178,
+        "ratio": 2.6968652660878782,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.complete_entry": {
+        "cadrMedianUs": 1.01636,
+        "baselineMedianUs": 0.40643999999999997,
+        "ratio": 2.5006397008168486,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_search": {
+        "cadrMedianUs": 38.67,
+        "baselineMedianUs": 15.462539999999999,
+        "ratio": 2.5008827786379215,
+        "ceiling": 8.0
+      },
+      "cli_selectors.key_text": {
+        "cadrMedianUs": 5.69886,
+        "baselineMedianUs": 2.57858,
+        "ratio": 2.210076864010424,
+        "ceiling": 8.0
+      },
+      "cli_selectors.fuzzy_filter": {
+        "cadrMedianUs": 5.662380000000001,
+        "baselineMedianUs": 12.328119999999998,
+        "ratio": 0.4593060417971273,
+        "ceiling": 8.0
+      },
+      "cli_selectors.delete_query": {
+        "cadrMedianUs": 1.2001600000000001,
+        "baselineMedianUs": 9.47968,
+        "ratio": 0.12660342965163382,
+        "ceiling": 8.0
+      },
+      "cli_selectors.visible_slice": {
+        "cadrMedianUs": 1.14456,
+        "baselineMedianUs": 1.03356,
+        "ratio": 1.1073957970509694,
+        "ceiling": 8.0
+      },
+      "cli_selectors.move_index": {
+        "cadrMedianUs": 0.1555,
+        "baselineMedianUs": 0.495,
+        "ratio": 0.31414141414141417,
+        "ceiling": 8.0
+      },
+      "cli_selectors.align_left_right": {
+        "cadrMedianUs": 15.92098,
+        "baselineMedianUs": 3.93942,
+        "ratio": 4.041452802696844,
+        "ceiling": 8.0
+      },
+      "cli_selectors.fit_line": {
+        "cadrMedianUs": 7.97628,
+        "baselineMedianUs": 10.53654,
+        "ratio": 0.7570113149098281,
+        "ceiling": 8.0
+      },
+      "cli_selectors.border_line": {
+        "cadrMedianUs": 4.29986,
+        "baselineMedianUs": 2.35174,
+        "ratio": 1.8283738848682252,
+        "ceiling": 8.0
+      },
+      "cli_selectors.selected_line": {
+        "cadrMedianUs": 13.701600000000001,
+        "baselineMedianUs": 11.51112,
+        "ratio": 1.1902925171486354,
+        "ceiling": 8.0
+      },
+      "cli_selectors.muted_line": {
+        "cadrMedianUs": 13.9243,
+        "baselineMedianUs": 35.681999999999995,
+        "ratio": 0.39023317078639097,
+        "ceiling": 8.0
+      },
+      "cli_selectors.dim_line": {
+        "cadrMedianUs": 12.495,
+        "baselineMedianUs": 27.07588,
+        "ratio": 0.46148084568257797,
+        "ceiling": 8.0
+      },
+      "cli_selectors.modified_cursor_key": {
+        "cadrMedianUs": 29.84332,
+        "baselineMedianUs": 3.98758,
+        "ratio": 7.4840680312369905,
+        "ceiling": 20.0
+      },
+      "cli_selectors.title_line": {
+        "cadrMedianUs": 28.5405,
+        "baselineMedianUs": 61.8534,
+        "ratio": 0.46142168417580925,
+        "ceiling": 8.0
+      },
+      "cli_selectors.overlay_title_line": {
+        "cadrMedianUs": 28.91446,
+        "baselineMedianUs": 60.66438,
+        "ratio": 0.4766299433044564,
+        "ceiling": 8.0
+      },
+      "cli_selectors.input_line": {
+        "cadrMedianUs": 37.90968,
+        "baselineMedianUs": 290.84159999999997,
+        "ratio": 0.13034476498547665,
+        "ceiling": 8.0
+      },
+      "cli_selectors.keybinding_text": {
+        "cadrMedianUs": 32.45598,
+        "baselineMedianUs": 13.29924,
+        "ratio": 2.4404387017604012,
+        "ceiling": 8.0
+      },
+      "cli_selectors.keybinding_hint": {
+        "cadrMedianUs": 49.05762,
+        "baselineMedianUs": 18.42304,
+        "ratio": 2.6628406603904677,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_format_age": {
+        "cadrMedianUs": 0.36584000000000005,
+        "baselineMedianUs": 0.6687000000000001,
+        "ratio": 0.5470913713174818,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_record_label": {
+        "cadrMedianUs": 1.2984,
+        "baselineMedianUs": 1.23874,
+        "ratio": 1.0481618418715792,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_shorten_path": {
+        "cadrMedianUs": 21.269560000000002,
+        "baselineMedianUs": 0.70286,
+        "ratio": 30.261446091682554,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_quoted_search": {
+        "cadrMedianUs": 8.6822,
+        "baselineMedianUs": 4.27176,
+        "ratio": 2.032464370657528,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_thread_records": {
+        "cadrMedianUs": 88.79582,
+        "baselineMedianUs": 4.52086,
+        "ratio": 19.64135584822357,
+        "ceiling": 30.0
+      },
+      "cli_selectors.session_binding_label": {
+        "cadrMedianUs": 32.15584,
+        "baselineMedianUs": 24.745520000000003,
+        "ratio": 1.2994610741661519,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_same_path": {
+        "cadrMedianUs": 28.72478,
+        "baselineMedianUs": 24.20062,
+        "ratio": 1.186943970856945,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_quoted_p": {
+        "cadrMedianUs": 0.13368,
+        "baselineMedianUs": 0.32789999999999997,
+        "ratio": 0.4076852698993596,
+        "ceiling": 8.0
+      },
+      "cli_selectors.session_named_p": {
+        "cadrMedianUs": 0.31908000000000003,
+        "baselineMedianUs": 0.31842,
+        "ratio": 1.002072734124741,
+        "ceiling": 8.0
+      },
+      "cli_selectors.settings_thinking_description": {
+        "cadrMedianUs": 0.12826,
+        "baselineMedianUs": 0.24356000000000003,
+        "ratio": 0.5266053539168993,
+        "ceiling": 8.0
+      },
+      "cli_selectors.settings_display_value": {
+        "cadrMedianUs": 0.34102,
+        "baselineMedianUs": 0.17679999999999998,
+        "ratio": 1.9288461538461539,
+        "ceiling": 8.0
+      },
+      "cli_selectors.settings_automatic_theme_setting": {
+        "cadrMedianUs": 0.25102,
+        "baselineMedianUs": 0.18334,
+        "ratio": 1.3691502127195376,
+        "ceiling": 8.0
+      },
+      "cli_selectors.settings_active_automatic_theme": {
+        "cadrMedianUs": 0.09428,
+        "baselineMedianUs": 0.14284,
+        "ratio": 0.6600392047045646,
+        "ceiling": 8.0
+      },
+      "cli_selectors.settings_cycle": {
+        "cadrMedianUs": 1.2829400000000002,
+        "baselineMedianUs": 0.34438,
+        "ratio": 3.7253615192519893,
+        "ceiling": 8.0
+      },
+      "cli_selectors.settings_apply_filter": {
+        "cadrMedianUs": 5.697380000000001,
+        "baselineMedianUs": 4.8665199999999995,
+        "ratio": 1.1707298028159756,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_entry_filtered": {
+        "cadrMedianUs": 0.23904,
+        "baselineMedianUs": 0.53652,
+        "ratio": 0.4455379109818833,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_query_matches": {
+        "cadrMedianUs": 4.47726,
+        "baselineMedianUs": 2.81672,
+        "ratio": 1.5895296657104718,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_entry_search_text": {
+        "cadrMedianUs": 1.2336799999999999,
+        "baselineMedianUs": 1.32594,
+        "ratio": 0.9304191743216134,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_settings_entry_p": {
+        "cadrMedianUs": 0.14296,
+        "baselineMedianUs": 0.30454000000000003,
+        "ratio": 0.46942930321140075,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_normalize_display_text": {
+        "cadrMedianUs": 2.9901,
+        "baselineMedianUs": 0.62854,
+        "ratio": 4.757215133483947,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_status_labels": {
+        "cadrMedianUs": 2.20654,
+        "baselineMedianUs": 0.26961999999999997,
+        "ratio": 8.183888435575996,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_shorten_path": {
+        "cadrMedianUs": 1.53094,
+        "baselineMedianUs": 1.41726,
+        "ratio": 1.0802111115815023,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_foldable_p": {
+        "cadrMedianUs": 2.2847999999999997,
+        "baselineMedianUs": 1.3883,
+        "ratio": 1.6457537996110347,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_tool_argument": {
+        "cadrMedianUs": 1.66682,
+        "baselineMedianUs": 0.27548,
+        "ratio": 6.050602584579643,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_cycle_filter": {
+        "cadrMedianUs": 2.77312,
+        "baselineMedianUs": 0.31620000000000004,
+        "ratio": 8.770145477545856,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_format_label_timestamp": {
+        "cadrMedianUs": 7.100420000000001,
+        "baselineMedianUs": 4.92126,
+        "ratio": 1.4428052978302306,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_format_tool_call": {
+        "cadrMedianUs": 10.94142,
+        "baselineMedianUs": 2.45352,
+        "ratio": 4.459478626626235,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_entry_display_text": {
+        "cadrMedianUs": 13.234459999999999,
+        "baselineMedianUs": 3.18026,
+        "ratio": 4.161439630722016,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_prefix": {
+        "cadrMedianUs": 2.7413,
+        "baselineMedianUs": 4.8899,
+        "ratio": 0.5606045113397001,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_visual_nodes": {
+        "cadrMedianUs": 12.40066,
+        "baselineMedianUs": 14.02658,
+        "ratio": 0.8840829339725008,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_horizontal_viewport": {
+        "cadrMedianUs": 52.91272,
+        "baselineMedianUs": 75.08822,
+        "ratio": 0.7046740487389366,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_help_keys": {
+        "cadrMedianUs": 116.37312,
+        "baselineMedianUs": 65.08702,
+        "ratio": 1.7879620237644926,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_help_key": {
+        "cadrMedianUs": 33.16484,
+        "baselineMedianUs": 51.0554,
+        "ratio": 0.6495853523819224,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_app_key_p": {
+        "cadrMedianUs": 55.59814,
+        "baselineMedianUs": 142.52242,
+        "ratio": 0.39010101007266085,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_help_lines": {
+        "cadrMedianUs": 788.17962,
+        "baselineMedianUs": 293.12558,
+        "ratio": 2.6888803767995952,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_active_path": {
+        "cadrMedianUs": 7.7905,
+        "baselineMedianUs": 4.0100999999999996,
+        "ratio": 1.94271963292686,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_nearest_visible_id": {
+        "cadrMedianUs": 8.8186,
+        "baselineMedianUs": 4.4939,
+        "ratio": 1.9623489619261665,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_prioritize_active": {
+        "cadrMedianUs": 11.826659999999999,
+        "baselineMedianUs": 8.93966,
+        "ratio": 1.3229429307154856,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_entry_map": {
+        "cadrMedianUs": 8.935080000000001,
+        "baselineMedianUs": 4.87896,
+        "ratio": 1.8313493039500224,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_order_entries": {
+        "cadrMedianUs": 28.11466,
+        "baselineMedianUs": 20.5392,
+        "ratio": 1.368829360442471,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_iso_timestamp": {
+        "cadrMedianUs": 4.59152,
+        "baselineMedianUs": 3.9570800000000004,
+        "ratio": 1.1603303445975315,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_rebuild_visible_maps": {
+        "cadrMedianUs": 31.559099999999997,
+        "baselineMedianUs": 26.211100000000002,
+        "ratio": 1.2040356948010573,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_apply_filter": {
+        "cadrMedianUs": 54.537,
+        "baselineMedianUs": 17.09328,
+        "ratio": 3.190552076605543,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_render_lines": {
+        "cadrMedianUs": 662.15085,
+        "baselineMedianUs": 1154.7503000000002,
+        "ratio": 0.5734147460277775,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_move": {
+        "cadrMedianUs": 217.05689999999998,
+        "baselineMedianUs": 102.19322,
+        "ratio": 2.1239853289680077,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_fold_or_up": {
+        "cadrMedianUs": 221.10292,
+        "baselineMedianUs": 103.92085999999999,
+        "ratio": 2.1276086437313935,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_unfold_or_down": {
+        "cadrMedianUs": 248.56187999999997,
+        "baselineMedianUs": 108.10176,
+        "ratio": 2.299332406798927,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_branch_segment_id": {
+        "cadrMedianUs": 202.69439999999997,
+        "baselineMedianUs": 95.53262000000001,
+        "ratio": 2.121729729593933,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_set_query": {
+        "cadrMedianUs": 64.96478,
+        "baselineMedianUs": 84.03882,
+        "ratio": 0.7730329864222273,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_set_filter": {
+        "cadrMedianUs": 55.81652,
+        "baselineMedianUs": 85.60274,
+        "ratio": 0.6520412781179667,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_copy_selected": {
+        "cadrMedianUs": 119.40498,
+        "baselineMedianUs": 32.31294,
+        "ratio": 3.6952682114348,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_toggle_label_timestamps": {
+        "cadrMedianUs": 2.8012,
+        "baselineMedianUs": 76.94432,
+        "ratio": 0.03640554624434916,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_start_label_edit": {
+        "cadrMedianUs": 120.21603999999999,
+        "baselineMedianUs": 35.208600000000004,
+        "ratio": 3.4143942105053875,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_confirm_label": {
+        "cadrMedianUs": 179.35208,
+        "baselineMedianUs": 48.61718,
+        "ratio": 3.6890679385353082,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_cancel_label": {
+        "cadrMedianUs": 143.85972,
+        "baselineMedianUs": 86.4392,
+        "ratio": 1.6642879619431925,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_handle_raw_input": {
+        "cadrMedianUs": 619.90434,
+        "baselineMedianUs": 198.7363,
+        "ratio": 3.119230558282508,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_handle_event": {
+        "cadrMedianUs": 161.2961,
+        "baselineMedianUs": 181.20896000000002,
+        "ratio": 0.890111062940817,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_handle_label_event": {
+        "cadrMedianUs": 128.3118,
+        "baselineMedianUs": 176.5598,
+        "ratio": 0.7267328123389356,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_selected_entry": {
+        "cadrMedianUs": 144.47593999999998,
+        "baselineMedianUs": 59.647659999999995,
+        "ratio": 2.4221560409913816,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_selected_id": {
+        "cadrMedianUs": 141.96318,
+        "baselineMedianUs": 59.320919999999994,
+        "ratio": 2.3931385420185665,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_select_id": {
+        "cadrMedianUs": 145.72657999999998,
+        "baselineMedianUs": 63.33292,
+        "ratio": 2.3009610167982144,
+        "ceiling": 8.0
+      },
+      "cli_selectors.tree_visible_ids": {
+        "cadrMedianUs": 57.01232,
+        "baselineMedianUs": 10.91,
+        "ratio": 5.225693858845096,
+        "ceiling": 8.0
+      },
+      "cli_selectors.project_trust_options": {
+        "cadrMedianUs": 65.04316,
+        "baselineMedianUs": 28.60404,
+        "ratio": 2.2739151532440873,
+        "ceiling": 8.0
+      },
+      "cli_selectors.trust_selector_selection": {
+        "cadrMedianUs": 176.27669999999998,
+        "baselineMedianUs": 25.61516,
+        "ratio": 6.88173331730116,
+        "ceiling": 8.0
+      },
+      "cli_selectors.trust_decision_description": {
+        "cadrMedianUs": 119.60068,
+        "baselineMedianUs": 34.73252,
+        "ratio": 3.443478330970514,
+        "ceiling": 8.0
+      },
+      "cli_selectors.trust_selector_move": {
+        "cadrMedianUs": 224.88774,
+        "baselineMedianUs": 70.21021999999999,
+        "ratio": 3.203062744996384,
+        "ceiling": 8.0
+      },
+      "cli_selectors.trust_selector_handle_event": {
+        "cadrMedianUs": 231.7724,
+        "baselineMedianUs": 72.96512,
+        "ratio": 3.176482132832784,
+        "ceiling": 8.0
+      },
+      "cli_selectors.trust_selector_handle_raw_input": {
+        "cadrMedianUs": 462.72012,
+        "baselineMedianUs": 205.4547,
+        "ratio": 2.252175881106638,
+        "ceiling": 8.0
+      },
+      "cli_selectors.trust_selector_ui_state": {
+        "cadrMedianUs": 272.52042,
+        "baselineMedianUs": 91.77108,
+        "ratio": 2.969567536962625,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_option_status_label": {
+        "cadrMedianUs": 1.36384,
+        "baselineMedianUs": 0.9109,
+        "ratio": 1.4972444834778789,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_option_status_rendered": {
+        "cadrMedianUs": 7.85648,
+        "baselineMedianUs": 1.76556,
+        "ratio": 4.449851605156438,
+        "ceiling": 15.0
+      },
+      "cli_selectors.credential_entry_auth_type": {
+        "cadrMedianUs": 0.40192,
+        "baselineMedianUs": 0.30284,
+        "ratio": 1.3271694624224013,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_environment_source_p": {
+        "cadrMedianUs": 0.81554,
+        "baselineMedianUs": 0.40628,
+        "ratio": 2.007334842965443,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_selection": {
+        "cadrMedianUs": 74.3918,
+        "baselineMedianUs": 4.7835,
+        "ratio": 15.551750810076305,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_apply_filter": {
+        "cadrMedianUs": 80.80756000000001,
+        "baselineMedianUs": 8.7111,
+        "ratio": 9.276389893354457,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_handle_event": {
+        "cadrMedianUs": 90.18164,
+        "baselineMedianUs": 9.056140000000001,
+        "ratio": 9.958066019297403,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_handle_raw_input": {
+        "cadrMedianUs": 442.09422,
+        "baselineMedianUs": 104.18093999999999,
+        "ratio": 4.24352304749794,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_search_text": {
+        "cadrMedianUs": 1.1782,
+        "baselineMedianUs": 0.5381,
+        "ratio": 2.1895558446385426,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_auth_type_route": {
+        "cadrMedianUs": 2.59086,
+        "baselineMedianUs": 1.24084,
+        "ratio": 2.087988781792979,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_provider_options": {
+        "cadrMedianUs": 8.486839999999999,
+        "baselineMedianUs": 6.7066,
+        "ratio": 1.2654459785882561,
+        "ceiling": 8.0
+      },
+      "cli_selectors.logout_provider_options": {
+        "cadrMedianUs": 7.2761000000000005,
+        "baselineMedianUs": 4.13768,
+        "ratio": 1.7584975155159417,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_method_selector_handle_event": {
+        "cadrMedianUs": 2.91666,
+        "baselineMedianUs": 2.43882,
+        "ratio": 1.1959308190026323,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_move": {
+        "cadrMedianUs": 74.21818,
+        "baselineMedianUs": 2.66376,
+        "ratio": 27.862187284139715,
+        "ceiling": 50.0
+      },
+      "cli_selectors.api_key_input_state_handle_event": {
+        "cadrMedianUs": 5.22686,
+        "baselineMedianUs": 4.90794,
+        "ratio": 1.0649804194835308,
+        "ceiling": 8.0
+      },
+      "cli_selectors.login_method_selector_ui_state": {
+        "cadrMedianUs": 425.50983999999994,
+        "baselineMedianUs": 69.1979,
+        "ratio": 6.149172735010743,
+        "ceiling": 12.0
+      },
+      "cli_selectors.api_key_input_ui_state": {
+        "cadrMedianUs": 207.91908,
+        "baselineMedianUs": 62.72884,
+        "ratio": 3.3145691838076394,
+        "ceiling": 8.0
+      },
+      "cli_selectors.oauth_selector_ui_state": {
+        "cadrMedianUs": 253.18454000000003,
+        "baselineMedianUs": 14.15406,
+        "ratio": 17.88776789133295,
+        "ceiling": 35.0
+      },
+      "cli_selectors.model_selector_search_text": {
+        "cadrMedianUs": 3.7579000000000002,
+        "baselineMedianUs": 0.6958799999999999,
+        "ratio": 5.400212680347187,
+        "ceiling": 8.0
+      },
+      "cli_selectors.qualified_model_id": {
+        "cadrMedianUs": 1.59412,
+        "baselineMedianUs": 0.2763,
+        "ratio": 5.7695258776692,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_apply_filter": {
+        "cadrMedianUs": 37.18042,
+        "baselineMedianUs": 19.702460000000002,
+        "ratio": 1.887095317031477,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_move": {
+        "cadrMedianUs": 25.21056,
+        "baselineMedianUs": 5.5797,
+        "ratio": 4.518264422818431,
+        "ceiling": 20.0
+      },
+      "cli_selectors.model_selector_handle_event": {
+        "cadrMedianUs": 37.0715,
+        "baselineMedianUs": 21.64372,
+        "ratio": 1.7128063013197363,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_handle_raw_input": {
+        "cadrMedianUs": 508.33288,
+        "baselineMedianUs": 101.54054000000001,
+        "ratio": 5.006206191142966,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_set_query": {
+        "cadrMedianUs": 39.07652,
+        "baselineMedianUs": 38.14846,
+        "ratio": 1.0243275875356437,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_selected_model": {
+        "cadrMedianUs": 40.26204,
+        "baselineMedianUs": 15.10676,
+        "ratio": 2.6651671172375813,
+        "ceiling": 12.0
+      },
+      "cli_selectors.model_selector_toggle_scope": {
+        "cadrMedianUs": 42.182520000000004,
+        "baselineMedianUs": 17.01848,
+        "ratio": 2.4786302889564755,
+        "ceiling": 8.0
+      },
+      "cli_selectors.model_selector_ui_state": {
+        "cadrMedianUs": 353.12947999999994,
+        "baselineMedianUs": 28.527959999999997,
+        "ratio": 12.378364243359847,
+        "ceiling": 35.0
+      },
+      "cli_selectors.scoped_models_selector_set_query": {
+        "cadrMedianUs": 129.87674,
+        "baselineMedianUs": 34.50102,
+        "ratio": 3.7644318921585516,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_move": {
+        "cadrMedianUs": 112.87270000000001,
+        "baselineMedianUs": 8.53492,
+        "ratio": 13.224810543039656,
+        "ceiling": 20.0
+      },
+      "cli_selectors.scoped_models_selector_handle_event": {
+        "cadrMedianUs": 148.73688,
+        "baselineMedianUs": 25.374760000000002,
+        "ratio": 5.861607361015435,
+        "ceiling": 12.0
+      },
+      "cli_selectors.scoped_models_selector_handle_raw_input": {
+        "cadrMedianUs": 909.26874,
+        "baselineMedianUs": 201.35266,
+        "ratio": 4.515801976492389,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_ui_state": {
+        "cadrMedianUs": 922.79318,
+        "baselineMedianUs": 36.923739999999995,
+        "ratio": 24.99186647939781,
+        "ceiling": 35.0
+      },
+      "cli_selectors.scoped_models_selector_sorted_ids": {
+        "cadrMedianUs": 108.15602000000001,
+        "baselineMedianUs": 4.39518,
+        "ratio": 24.607870439890974,
+        "ceiling": 50.0
+      },
+      "cli_selectors.scoped_models_selector_counts": {
+        "cadrMedianUs": 104.95756,
+        "baselineMedianUs": 3.392,
+        "ratio": 30.942676886792455,
+        "ceiling": 55.0
+      },
+      "cli_selectors.scoped_models_selector_toggle_selected": {
+        "cadrMedianUs": 169.89388,
+        "baselineMedianUs": 52.47472,
+        "ratio": 3.237632902090759,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_target_ids": {
+        "cadrMedianUs": 118.02968000000001,
+        "baselineMedianUs": 21.90824,
+        "ratio": 5.387456043935981,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_enable_all": {
+        "cadrMedianUs": 169.03772,
+        "baselineMedianUs": 15.2147,
+        "ratio": 11.110157939361276,
+        "ceiling": 25.0
+      },
+      "cli_selectors.scoped_models_selector_toggle_provider": {
+        "cadrMedianUs": 174.02282,
+        "baselineMedianUs": 58.968819999999994,
+        "ratio": 2.9510989027760774,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_clear_all": {
+        "cadrMedianUs": 169.55592000000001,
+        "baselineMedianUs": 12.65462,
+        "ratio": 13.398736587902286,
+        "ceiling": 25.0
+      },
+      "cli_selectors.scoped_models_selector_reorder": {
+        "cadrMedianUs": 165.03439999999998,
+        "baselineMedianUs": 46.881800000000005,
+        "ratio": 3.520223199621174,
+        "ceiling": 8.0
+      },
+      "cli_selectors.scoped_models_selector_persist": {
+        "cadrMedianUs": 125.34644,
+        "baselineMedianUs": 7.78576,
+        "ratio": 16.099448223423277,
+        "ceiling": 25.0
+      },
+      "cli_selectors.scoped_models_selector_provider_count": {
+        "cadrMedianUs": 110.29462,
+        "baselineMedianUs": 3.20704,
+        "ratio": 34.391407653163036,
+        "ceiling": 50.0
+      },
+      "websocket_stream.stream_roundtrip": {
+        "cadrMedianUs": 44056.418900000004,
+        "baselineMedianUs": 58.2096,
+        "ratio": 756.8583000054974,
+        "ceiling": 800.0
+      },
+      "cli_sdk.version_newer": {
+        "cadrMedianUs": 2.92936,
+        "baselineMedianUs": 11.88656,
+        "ratio": 0.2464430415528126,
+        "ceiling": 8.0
+      },
+      "cli_sdk.cache_miss": {
+        "cadrMedianUs": 1.68656,
+        "baselineMedianUs": 4.79686,
+        "ratio": 0.35159666948795676,
+        "ceiling": 8.0
+      },
+      "cli_sdk.cache_waste": {
+        "cadrMedianUs": 2.68636,
+        "baselineMedianUs": 6.62802,
+        "ratio": 0.40530354464832635,
+        "ceiling": 8.0
+      },
+      "cli_sdk.thinking_level": {
+        "cadrMedianUs": 0.5760799999999999,
+        "baselineMedianUs": 0.24530000000000002,
+        "ratio": 2.3484712596820216,
+        "ceiling": 8.0
+      },
+      "cli_sdk.session_list": {
+        "cadrMedianUs": 10991.4122,
+        "baselineMedianUs": 5775.9418,
+        "ratio": 1.9029645000924353,
+        "ceiling": 8.0
+      },
+      "cli_sdk.agent_session": {
+        "cadrMedianUs": 2523.2408,
+        "baselineMedianUs": 3266.1040000000003,
+        "ratio": 0.7725537214981518,
+        "ceiling": 8.0
+      },
+      "cli_sdk.session_services": {
+        "cadrMedianUs": 2015.9651999999999,
+        "baselineMedianUs": 4032.5447999999997,
+        "ratio": 0.4999238198172033,
+        "ceiling": 8.0
+      },
+      "cli_sdk.model_runtime": {
+        "cadrMedianUs": 1901.6342,
+        "baselineMedianUs": 2378.945,
+        "ratio": 0.7993603046728697,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.lookup": {
+        "cadrMedianUs": 0.6335000000000001,
+        "baselineMedianUs": 0.23896,
+        "ratio": 2.6510713090056917,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.definition_ids": {
+        "cadrMedianUs": 204.665216,
+        "baselineMedianUs": 2.949376,
+        "ratio": 69.39271764603767,
+        "ceiling": 125.0
+      },
+      "provider_registry_defs.merge_environment": {
+        "cadrMedianUs": 0.33198,
+        "baselineMedianUs": 2.74492,
+        "ratio": 0.12094341547294639,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.runtime_models": {
+        "cadrMedianUs": 17.35362,
+        "baselineMedianUs": 4.873740000000001,
+        "ratio": 3.5606372108483417,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.structured_api_key_login": {
+        "cadrMedianUs": 0.18861999999999998,
+        "baselineMedianUs": 221.57338,
+        "ratio": 0.0008512755458259471,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.api_key_strategy": {
+        "cadrMedianUs": 0.12210000000000001,
+        "baselineMedianUs": 0.28065999999999997,
+        "ratio": 0.4350459630870093,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.provider_options": {
+        "cadrMedianUs": 0.57328,
+        "baselineMedianUs": 0.27036,
+        "ratio": 2.120432016570499,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.strip_runtime_options": {
+        "cadrMedianUs": 0.14676,
+        "baselineMedianUs": 2.1734,
+        "ratio": 0.06752553602650226,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.oauth_login_function": {
+        "cadrMedianUs": 0.124,
+        "baselineMedianUs": 15.2673,
+        "ratio": 0.00812193380623948,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.oauth_refresh_function": {
+        "cadrMedianUs": 0.12514,
+        "baselineMedianUs": 15.656600000000001,
+        "ratio": 0.007992795370642413,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.oauth_to_auth": {
+        "cadrMedianUs": 0.41479999999999995,
+        "baselineMedianUs": 0.2596,
+        "ratio": 1.5978428351309706,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.api_key_login_function": {
+        "cadrMedianUs": 0.16948,
+        "baselineMedianUs": 217.74344000000002,
+        "ratio": 0.000778347214501617,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.api_key_auth": {
+        "cadrMedianUs": 0.6947199999999999,
+        "baselineMedianUs": 217.37797999999998,
+        "ratio": 0.0031959078835860004,
+        "ceiling": 8.0
+      },
+      "provider_registry_defs.model_filter_function": {
+        "cadrMedianUs": 0.61236,
+        "baselineMedianUs": 220.82067999999998,
+        "ratio": 0.002773109837357625,
+        "ceiling": 8.0
+      },
+      "core_rest.cancellation_abort": {
+        "cadrMedianUs": 0.58328,
+        "baselineMedianUs": 4.24948,
+        "ratio": 0.13725914700151548,
+        "ceiling": 8.0
+      },
+      "core_rest.redacted_secrets": {
+        "cadrMedianUs": 2.77158,
+        "baselineMedianUs": 0.60974,
+        "ratio": 4.54551120149572,
+        "ceiling": 8.0
+      },
+      "core_rest.threads_cleanup": {
+        "cadrMedianUs": 177.7524,
+        "baselineMedianUs": 24878.6512,
+        "ratio": 0.0071447764017046065,
+        "ceiling": 8.0
+      },
+      "skill_prompt_load.build_prompt": {
+        "cadrMedianUs": 1136.6000999999999,
+        "baselineMedianUs": 1.32822,
+        "ratio": 855.7318064778425,
+        "ceiling": 3000.0
+      },
+      "skill_prompt_load.resolve_prompt": {
+        "cadrMedianUs": 39.73466,
+        "baselineMedianUs": 3.86396,
+        "ratio": 10.283403554902224,
+        "ceiling": 8.0
+      },
+      "skill_prompt_load.node_read_error": {
+        "cadrMedianUs": 31.94908,
+        "baselineMedianUs": 2.8752999999999997,
+        "ratio": 11.111564010711927,
+        "ceiling": 8.0
+      },
+      "skill_prompt_load.prompt_appends": {
+        "cadrMedianUs": 23.699499999999997,
+        "baselineMedianUs": 1.61352,
+        "ratio": 14.688073280777429,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.coding_tools": {
+        "cadrMedianUs": 6.90446,
+        "baselineMedianUs": 3.60514,
+        "ratio": 1.9151711167943548,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.bootstrap_auth": {
+        "cadrMedianUs": 2013.3650200000002,
+        "baselineMedianUs": 2389.9935800000003,
+        "ratio": 0.8424144051466448,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.session_path": {
+        "cadrMedianUs": 0.30182,
+        "baselineMedianUs": 0.38242,
+        "ratio": 0.789236964593902,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.split_command": {
+        "cadrMedianUs": 0.5036999999999999,
+        "baselineMedianUs": 0.53092,
+        "ratio": 0.9487305055375574,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.path_argument": {
+        "cadrMedianUs": 0.39186,
+        "baselineMedianUs": 0.56066,
+        "ratio": 0.6989262654728355,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.cycle_wrap": {
+        "cadrMedianUs": 0.6509199999999999,
+        "baselineMedianUs": 0.9202800000000001,
+        "ratio": 0.7073064719433214,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.scope_hint": {
+        "cadrMedianUs": 35.44558,
+        "baselineMedianUs": 51.270379999999996,
+        "ratio": 0.6913461534710685,
+        "ceiling": 8.0
+      },
+      "cli_bootstrap_sessions.file_tags": {
+        "cadrMedianUs": 77.62566,
+        "baselineMedianUs": 148.547,
+        "ratio": 0.5225663258093398,
+        "ceiling": 8.0
+      },
+      "ai_runtime_faux.blocks": {
+        "cadrMedianUs": 0.14176,
+        "baselineMedianUs": 0.15694,
+        "ratio": 0.9032751369950299,
+        "ceiling": 8.0
+      },
+      "http_transport.parse_url": {
+        "cadrMedianUs": 0.81002,
+        "baselineMedianUs": 0.82906,
+        "ratio": 0.9770342315393337,
+        "ceiling": 8.0
+      },
+      "core_rest.cancellation_wait": {
+        "cadrMedianUs": 53.537259999999996,
+        "baselineMedianUs": 8.75282,
+        "ratio": 6.116572715993246,
+        "ceiling": 8.0
+      },
+      "core_rest.redacted_types": {
+        "cadrMedianUs": 2.344,
+        "baselineMedianUs": 0.53766,
+        "ratio": 4.359632481493881,
+        "ceiling": 8.0
+      },
+      "core_rest.threads_join": {
+        "cadrMedianUs": 175.3402,
+        "baselineMedianUs": 24698.8688,
+        "ratio": 0.00709911864465631,
+        "ceiling": 8.0
+      },
+      "session_pipeline.session_load": {
+        "cadrMedianUs": 1542.1696666666667,
+        "baselineMedianUs": 1378.9350000000002,
+        "ratio": 1.1183773467688227,
+        "ceiling": 9.0
+      },
+      "session_pipeline.context_walk": {
+        "cadrMedianUs": 1.62512,
+        "baselineMedianUs": 99.07014,
+        "ratio": 0.016403731739957166,
+        "ceiling": 2.0
+      },
+      "session_pipeline.session_leaf_id": {
+        "cadrMedianUs": 0.0179,
+        "baselineMedianUs": 0.058120000000000005,
+        "ratio": 0.3079834824501032,
+        "ceiling": 8.0
+      },
+      "storage_journal.journal_read": {
+        "cadrMedianUs": 1295.8642,
+        "baselineMedianUs": 1236.69,
+        "ratio": 1.0478488546038214,
+        "ceiling": 8.0
+      },
+      "storage_journal.journal_append": {
+        "cadrMedianUs": 1007.6873333333333,
+        "baselineMedianUs": 937.3996666666667,
+        "ratio": 1.074981535801698,
+        "ceiling": 12.0
+      },
+      "storage_journal.journal_entry_count": {
+        "cadrMedianUs": 0.15716,
+        "baselineMedianUs": 2.33392,
+        "ratio": 0.06733735517926921,
+        "ceiling": 8.0
+      },
+      "sqlite_session.open_walk": {
+        "cadrMedianUs": 4486.944333333334,
+        "baselineMedianUs": 7312.082666666666,
+        "ratio": 0.613634245929386,
+        "ceiling": 1.5
+      },
+      "tool_read.text_file": {
+        "cadrMedianUs": 1008.7286,
+        "baselineMedianUs": 2989.075,
+        "ratio": 0.33747182656842,
+        "ceiling": 8.0
+      },
+      "tool_grep.context_file": {
+        "cadrMedianUs": 10001.9176,
+        "baselineMedianUs": 9880.362,
+        "ratio": 1.012302747611879,
+        "ceiling": 3.0
+      },
+      "agent_tool_loop.roundtrip": {
+        "cadrMedianUs": 30.983999999999998,
+        "baselineMedianUs": 144.13833333333335,
+        "ratio": 0.21496016558167497,
+        "ceiling": 1.5
+      },
+      "agent_tool_loop.tool_path": {
+        "cadrMedianUs": 10.73578,
+        "baselineMedianUs": 5.05296,
+        "ratio": 2.124651689306862,
+        "ceiling": 8.0
+      },
+      "agent_tool_loop.line_ending": {
+        "cadrMedianUs": 0.47158,
+        "baselineMedianUs": 0.39614,
+        "ratio": 1.1904377240369566,
+        "ceiling": 8.0
+      },
+      "agent_tool_loop.tool_result_digest": {
+        "cadrMedianUs": 118.640704,
+        "baselineMedianUs": 1.5218800000000001,
+        "ratio": 77.95667463926196,
+        "ceiling": 125.0
+      },
+      "agent_tool_loop.runtime": {
+        "cadrMedianUs": 5.1876,
+        "baselineMedianUs": 1.4299600000000001,
+        "ratio": 3.6277937844415225,
+        "ceiling": 8.0
+      },
+      "session_compact.compact": {
+        "cadrMedianUs": 20.842333333333332,
+        "baselineMedianUs": 27.883,
+        "ratio": 0.7474924984160002,
+        "ceiling": 20.0
+      },
+      "session_compact.branch_summarize": {
+        "cadrMedianUs": 22.438333333333333,
+        "baselineMedianUs": 17.439666666666668,
+        "ratio": 1.2866262734379479,
+        "ceiling": 20.0
+      },
+      "session_compact.prepare_branch_entries": {
+        "cadrMedianUs": 11.013333333333334,
+        "baselineMedianUs": 4.316333333333334,
+        "ratio": 2.551548382114449,
+        "ceiling": 20.0
+      },
+      "text_truncation.truncate_middle": {
+        "cadrMedianUs": 840.10548,
+        "baselineMedianUs": 7274.45396,
+        "ratio": 0.11548708461411446,
+        "ceiling": 8.0
+      }
+    },
+    "notes": [
+      "synthesized leftover 1000-1002 freeze; --only-enforce py rc=2 parsed_provider"
+    ]
   }
   ]
 }
