@@ -1,6 +1,6 @@
 # Goal 22：pi 基线推进至 v0.84.4
 
-> **状态：** 进行中。基线落到 **v0.84.4**。Does not announce Goal 20 complete.
+> **状态：** 完成（合入 `cadr-migration`，#221，`0755cfd62`）。基线落到 **v0.84.4**。Does not announce Goal 20 complete.
 >
 > **当前：** `BASELINE` = `b79e4cc83` · `v0.84.4` +0（pi-mono tag `v0.84.4`）  
 > **自：** `4e58f324f` · `v0.84.3` +0
@@ -38,3 +38,13 @@ pairing 不在本 goal 内恢复燃尽。
 - [x] `python3 scripts/baseline-anchor.py check` 绿
 - [x] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
 - [x] `CHANGELOG.md` 记录 aligned with pi v0.84.4
+- [x] 合入 `cadr-migration`：GitHub #221 → `0755cfd62`
+
+## 源码账本上仍标 missing 的 v0.84.4 文件（不挡 Goal 22 合入）
+
+Goal 22 对齐的是基线锚点与上表用户可见增量。`docs/source-parity.md` 仍有两行 `missing`，不是本合入的验收项：
+
+| 基线文件 | 现状 |
+|---|---|
+| `packages/coding-agent/src/modes/interactive/components/settings-submenu.ts` | cadr 已有 `/thinking` 选择器（`src/cadr-cli/interactive/selectors/thinking.lisp`），未抽出通用 `SelectSubmenu` 容器 |
+| `packages/coding-agent/src/modes/interactive/session-share.ts` | `/share` 已走 gist（`share-session-as-gist`）；Radius `/v1/artifacts` 上传未移植 |
