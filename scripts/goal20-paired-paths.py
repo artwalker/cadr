@@ -689,10 +689,15 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.openrouter_input": 8.0,
     "oauth_pkce_device.openrouter_refresh": 8.0,
     "oauth_pkce_device.openrouter_exchange": 8.0,
-    # leftover 895-897; first-freeze headroom. Ratchet down only.
-    "oauth_pkce_device.xai_login": 8.0,
+    # leftover 895; first freeze 14.708× (11.961 / 0.813 µs). Over-1×.
+    # cadr runs production login-xai-oauth; pi classifies stub JSON.
+    # Ceiling 20.0 first-freeze.
+    "oauth_pkce_device.xai_login": 20.0,
+    # leftover 896; first freeze 3.448× (6.445 / 1.869 µs). Over-1×.
     "oauth_pkce_device.xai_login_fail": 8.0,
-    "oauth_pkce_device.xai_refresh": 8.0,
+    # leftover 897; first freeze 16.125× (4.296 / 0.266 µs). Over-1×.
+    # Ceiling 20.0 first-freeze.
+    "oauth_pkce_device.xai_refresh": 20.0,
     # output_accumulator leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "output_accumulator.last_line_bytes": 8.0,

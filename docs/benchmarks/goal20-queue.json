@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 895,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/xai.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.xai_login",
+   "branch": "cursor/oauth-xai-login-refresh-leftovers-895-897-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 895",
+   "ratio": 14.708,
+   "cadrUs": 11.961,
+   "piUs": 0.813,
+   "ceiling": 20.0,
+   "rc": 2
+  },
+  {
+   "pair": 896,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/xai.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.xai_login_fail",
+   "branch": "cursor/oauth-xai-login-refresh-leftovers-895-897-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 896",
+   "ratio": 3.448,
+   "cadrUs": 6.445,
+   "piUs": 1.869,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 897,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/xai.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.xai_refresh",
+   "branch": "cursor/oauth-xai-login-refresh-leftovers-895-897-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 897",
+   "ratio": 16.125,
+   "cadrUs": 4.296,
+   "piUs": 0.266,
+   "ceiling": 20.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

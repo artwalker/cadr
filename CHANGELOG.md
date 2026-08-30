@@ -9,6 +9,23 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.xai_login` (`login-xai-oauth` vs
+  xai parseDeviceCode + credentialsFromTokenResponse). Observed `xli_acc`
+  / `xli_ref` / `xli_n` exact. n=5 **14.708×** (11.961 / 0.813 µs) on host
+  `cursor`, ceiling 20.0. Measure-only leftover (Pair 895). Over-1×. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.xai_login_fail` (device HTTP
+  400 throw). Observed `xlf_throw` / `xlf_n` exact. n=5 **3.448×**
+  (6.445 / 1.869 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 896). Over-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.xai_refresh`
+  (`refresh-xai-oauth-credential` vs refreshXaiToken /
+  credentialsFromTokenResponse). Observed `xrf_acc` / `xrf_ref` / `xrf_n`
+  exact. n=5 **16.125×** (4.296 / 0.266 µs) on host `cursor`, ceiling
+  20.0. Measure-only leftover (Pair 897). Over-1×. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
