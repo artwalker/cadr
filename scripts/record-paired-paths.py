@@ -394,6 +394,10 @@ METRIC_KEYS = (
     "cli_support.threads_absent",
     "cli_support.threads_current",
     "cli_support.threads_joined",
+
+    "cli_support.watch_error",
+    "cli_support.watch_start_close",
+    "cli_support.poll_once",
     "cli_bootstrap_sessions.model_cycle",
     "cli_bootstrap_sessions.model_scope_line",
     "cli_bootstrap_sessions.process_files",

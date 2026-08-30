@@ -939,6 +939,10 @@
     ("cli_support.threads_absent" . 50)
     ("cli_support.threads_current" . 50)
     ("cli_support.threads_joined" . 5)
+
+    ("cli_support.watch_error" . 50)
+    ("cli_support.watch_start_close" . 50)
+    ("cli_support.poll_once" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -20953,6 +20957,91 @@
      (if (eq joined :joined) 1 0)
      1)))
 
+(defun cli-support-watch-poll-file ()
+  (ensure-directories-exist *scratch-directory*)
+  (let ((path
+          (merge-pathnames
+           "watch-poll.txt" *scratch-directory*)))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create)
+      (write-string "poll" out))
+    path))
+
+
+(defun run-cli-support-watch-error ()
+  ;; Invalid pathname object. Do not exact invalid-path copy
+  ;; (Lisp probe-file vs Node fs.watch).
+  (let ((hits 0))
+    (let ((got
+            (cadr-cli::watch-with-error-handler
+             0
+             (lambda (&rest args)
+               (declare (ignore args)))
+             (lambda ()
+               (incf hits)))))
+      (list
+       (if (null got) 1 0)
+       (if (= hits 1) 1 0)
+       (if (plusp hits) 1 0)
+       1))))
+
+
+(defun run-cli-support-watch-start-close (present)
+  (let ((hits 0)
+        watcher)
+    (unwind-protect
+         (progn
+           (setf watcher
+                 (cadr-cli::watch-with-error-handler
+                  (namestring present)
+                  (lambda (&rest args)
+                    (declare (ignore args)))
+                  (lambda ()
+                    (incf hits))))
+           (let ((got (if watcher 1 0)))
+             (when watcher
+               (cadr-cli::close-watcher watcher))
+             (list
+              got
+              (if (and watcher
+                       (cadr-cli::file-watcher-closed-p watcher))
+                  1
+                  0)
+              (if (zerop hits) 1 0)
+              1)))
+      (when watcher
+        (cadr-cli::close-watcher watcher)))))
+
+
+(defun run-cli-support-poll-once (present)
+  (let* ((n 0)
+         (watcher
+           (cadr-cli::%make-file-watcher
+            :path present
+            :listener
+            (lambda (&rest args)
+              (declare (ignore args))
+              (incf n))
+            :on-error (lambda ())
+            :signature
+            (cadr-cli::watched-path-signature present)))
+         (same (cadr-cli::poll-file-watcher-once watcher)))
+    (with-open-file
+        (out present
+             :direction :output
+             :if-exists :append
+             :if-does-not-exist :create)
+      (write-string "x" out))
+    (let ((changed (cadr-cli::poll-file-watcher-once watcher)))
+      (list
+       (if same 0 1)
+       (if changed 1 0)
+       (if (= n 1) 1 0)
+       1))))
+
 
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
@@ -20990,6 +21079,13 @@
         (login-help (run-cli-support-provider-login-help))
         (docs-dir (run-cli-support-docs-directory))
         (think-level (run-cli-support-default-thinking-level)))
+
+        (present (cli-support-watch-present-file))
+        (poll-file (cli-support-watch-poll-file))
+        (watch-error (run-cli-support-watch-error))
+        (watch-start-close
+          (run-cli-support-watch-start-close present))
+        (poll-once (run-cli-support-poll-once poll-file)))
     (json-object
      "observed"
      (json-object
@@ -21119,6 +21215,19 @@
       "dtl_high" (nth 1 think-level)
       "dtl_name" (nth 2 think-level)
       "dtl_n" (nth 3 think-level))
+
+      "we_nil" (first watch-error)
+      "we_err" (second watch-error)
+      "we_pos" (third watch-error)
+      "we_n" (fourth watch-error)
+      "wsc_got" (first watch-start-close)
+      "wsc_closed" (second watch-start-close)
+      "wsc_err" (third watch-start-close)
+      "wsc_n" (fourth watch-start-close)
+      "po_same" (first poll-once)
+      "po_change" (second poll-once)
+      "po_n1" (third poll-once)
+      "po_n" (fourth poll-once))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -21270,6 +21379,23 @@
               (lambda ()
                 (lambda ()
                   (run-cli-support-default-thinking-level)))))))
+
+     "watch_error"
+     (collect "cli_support.watch_error"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-watch-error))))
+     "watch_start_close"
+     (collect "cli_support.watch_start_close"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-watch-start-close present))))
+     "poll_once"
+     (collect "cli_support.poll_once"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-poll-once
+                   (cli-support-watch-poll-file))))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -40027,6 +40153,13 @@
       "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup current"
       "cli_support.threads_joined"
       "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup joined"
+
+      "cli_support.watch_error"
+      "src/cadr-cli/support/file-watcher.lisp watch-with-error-handler error"
+      "cli_support.watch_start_close"
+      "src/cadr-cli/support/file-watcher.lisp watch-with-error-handler + close-watcher"
+      "cli_support.poll_once"
+      "src/cadr-cli/support/file-watcher.lisp poll-file-watcher-once"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"

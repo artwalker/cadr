@@ -9921,6 +9921,30 @@ Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for devi
 Leftover sibling of leftover 913–914. Timed work is extra Accept + Bearer + COPILOT_HEADERS — not oauth-flow-request. Observed `gch_n` / `gch_auth` / `gch_ua` / `gch_acc` / `gch_ok` are exact. First n=5 freeze **0.851×** (0.668 / 0.785 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1×. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 
+### Pair 916 — `cli_support` (watch_error)
+
+| metric | cadr | pi |
+|---|---|---|
+| `watch_error` | `watch-with-error-handler` (`src/cadr-cli/support/file-watcher.lisp`) | leftover watchWithErrorHandler catch (`packages/coding-agent/src/utils/fs-watch.ts`) |
+
+Leftover sibling of leftover 481–483 on the same file-watcher hole. Timed work is the error/onError path — not retry delay, not null close, not signature. Observed `we_nil` / `we_err` / `we_pos` / `we_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 917 — `cli_support` (watch_start_close)
+
+| metric | cadr | pi |
+|---|---|---|
+| `watch_start_close` | `watch-with-error-handler` + `close-watcher` (`src/cadr-cli/support/file-watcher.lisp`) | watchWithErrorHandler + closeWatcher (`packages/coding-agent/src/utils/fs-watch.ts`) |
+
+Leftover sibling of leftover 916. Timed work is start on a present file then close — not poll, not null close. Observed `wsc_got` / `wsc_closed` / `wsc_err` / `wsc_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 918 — `cli_support` (poll_once)
+
+| metric | cadr | pi |
+|---|---|---|
+| `poll_once` | `poll-file-watcher-once` (`src/cadr-cli/support/file-watcher.lisp`) | leftoverPollOnce (`packages/coding-agent/src/utils/fs-watch.ts` signature compare) |
+
+Leftover sibling of leftover 916–917. Timed work is unchanged then changed poll — not `watch_signature` as its own metric, not native `fs.watch` keep-alive. Observed `po_same` / `po_change` / `po_n1` / `po_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
