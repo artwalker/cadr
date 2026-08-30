@@ -246,6 +246,27 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oa_sel`
+  (`oauth-selector-selection` vs leftover replica of
+  filteredProviders[selectedIndex]). Observed `oss_first` /
+  `oss_filter_miss` exact. n=5 **13.728×** (78.524 / 5.720 µs) on host
+  `cursor`, ceiling 16.0 (first-freeze headroom). Measure-only leftover
+  (Pair 1057). Over-1× booked. Does not remount `oauth_selector_selection`.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oa_flt`
+  (`oauth-selector-apply-filter` vs leftover replica of filterProviders).
+  Observed `osaf_all` / `osaf_miss` exact. n=5 **10.049×** (81.700 /
+  8.130 µs) on host `cursor`, ceiling 12.0 (first-freeze headroom).
+  Measure-only leftover (Pair 1058). Over-1× booked. Does not remount
+  `oauth_selector_apply_filter`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oa_qry`
+  (`oauth-selector-search-text` vs leftover replica of filterProviders
+  search text). Observed `osst_oauth` / `osst_api` exact. n=5 **2.247×**
+  (1.213 / 0.540 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1059). Over-1× booked. Does not remount `oauth_selector_search_text`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

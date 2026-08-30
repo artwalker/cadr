@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1057 — `cli_selectors` (oa_sel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_sel` | `oauth-selector-selection` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filteredProviders[selectedIndex] |
+
+Leftover sibling of Pair 201 on the same needs-pair file. Does not remount `oauth_selector_selection`. Timed work is first / second / third / filter-hit / filter-miss selection. Observed `oss_first` / `oss_filter_miss` are exact. First n=5 freeze **13.728×** (78.524 / 5.720 µs) on host `cursor`, ceiling 16.0 (first-freeze headroom). Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1058 — `cli_selectors` (oa_flt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_flt` | `oauth-selector-apply-filter` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filterProviders |
+
+Leftover sibling of Pair 1057. Does not remount `oauth_selector_apply_filter`. Timed work is all / open / miss / anth / google filter. Observed `osaf_all` / `osaf_miss` are exact. First n=5 freeze **10.049×** (81.700 / 8.130 µs) on host `cursor`, ceiling 12.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1059 — `cli_selectors` (oa_qry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_qry` | `oauth-selector-search-text` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filterProviders search text |
+
+Leftover sibling of Pairs 1057–1058. Does not remount `oauth_selector_search_text`. Timed work is oauth / api / no-method / api-plain search text. Observed `osst_oauth` / `osst_api` are exact. First n=5 freeze **2.247×** (1.213 / 0.540 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
