@@ -534,6 +534,9 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.github_domain" . 50)
+    ("oauth_pkce_device.github_oauth_url" . 50)
+    ("oauth_pkce_device.github_request_headers" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10081,6 +10084,82 @@
     "/auth/callback" "expected" "OpenAI" 400)
    4))
 
+
+(defun leftover-github-domain-flag (input expected)
+  (let ((got (cadr-ai::normalize-github-domain input)))
+    (cond
+      ((null expected) (if got 0 1))
+      ((and got (string= got expected)) 1)
+      (t 0))))
+
+
+(defun run-oauth-pkce-device-github-domain ()
+  ;; Overlap with normalizeDomain. Do not exact invalid URL copy
+  ;; (Lisp parse-http-url vs URL constructor).
+  (list
+   (leftover-github-domain-flag "" nil)
+   (leftover-github-domain-flag "github.com" "github.com")
+   (leftover-github-domain-flag
+    "https://company.ghe.com/path" "company.ghe.com")
+   (leftover-github-domain-flag "  github.com  " "github.com")
+   1))
+
+
+(defun leftover-github-oauth-url-flag (domain suffix expected)
+  (if (string=
+       (cadr-ai::github-oauth-url domain suffix)
+       expected)
+      1
+      0))
+
+
+(defun run-oauth-pkce-device-github-oauth-url ()
+  (list
+   (leftover-github-oauth-url-flag
+    "github.com" "/login/device/code"
+    "https://github.com/login/device/code")
+   (leftover-github-oauth-url-flag
+    "github.com" "/login/oauth/access_token"
+    "https://github.com/login/oauth/access_token")
+   (leftover-github-oauth-url-flag
+    "company.ghe.com" "/login/device/code"
+    "https://company.ghe.com/login/device/code")
+   (if (eql
+        (search
+         "https://"
+         (cadr-ai::github-oauth-url "github.com" "/login/device/code"))
+        0)
+       1
+       0)
+   1))
+
+
+(defun leftover-github-header (headers name)
+  (cdr (assoc name headers :test #'string=)))
+
+
+(defun run-oauth-pkce-device-github-request-headers ()
+  (let ((headers
+          (cadr-ai::github-copilot-request-headers
+           "tok"
+           (list (cons "Accept" "application/json")))))
+    (list
+     (write-to-string (length headers))
+     (if (string=
+          (leftover-github-header headers "Authorization")
+          "Bearer tok")
+         "1" "0")
+     (if (string=
+          (leftover-github-header headers "User-Agent")
+          "GitHubCopilotChat/0.35.0")
+         "1" "0")
+     (if (string=
+          (leftover-github-header headers "Accept")
+          "application/json")
+         "1" "0")
+     "1")))
+
+
 (defun oauth-base64url-value-flag (character expected)
   (handler-case
       (if (eql (cadr-ai::base64url-value character) expected)
@@ -10456,7 +10535,11 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (github-domain (run-oauth-pkce-device-github-domain))
+        (github-oauth-url (run-oauth-pkce-device-github-oauth-url))
+        (github-request-headers
+          (run-oauth-pkce-device-github-request-headers)))
     (json-object
      "observed"
      (json-object
@@ -10513,7 +10596,22 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "ghd_blank" (nth 0 github-domain)
+      "ghd_plain" (nth 1 github-domain)
+      "ghd_https" (nth 2 github-domain)
+      "ghd_trim" (nth 3 github-domain)
+      "ghd_n" (nth 4 github-domain)
+      "gou_dev" (nth 0 github-oauth-url)
+      "gou_tok" (nth 1 github-oauth-url)
+      "gou_ent" (nth 2 github-oauth-url)
+      "gou_https" (nth 3 github-oauth-url)
+      "gou_n" (nth 4 github-oauth-url)
+      "gch_n" (nth 0 github-request-headers)
+      "gch_auth" (nth 1 github-request-headers)
+      "gch_ua" (nth 2 github-request-headers)
+      "gch_acc" (nth 3 github-request-headers)
+      "gch_ok" (nth 4 github-request-headers))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10573,7 +10671,22 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "github_domain"
+     (collect "oauth_pkce_device.github_domain"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-github-domain))))
+     "github_oauth_url"
+     (collect "oauth_pkce_device.github_oauth_url"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-github-oauth-url))))
+     "github_request_headers"
+     (collect "oauth_pkce_device.github_request_headers"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-github-request-headers)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -31850,6 +31963,12 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.github_domain"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp normalize-github-domain"
+      "oauth_pkce_device.github_oauth_url"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp github-oauth-url"
+      "oauth_pkce_device.github_request_headers"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp github-copilot-request-headers"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
