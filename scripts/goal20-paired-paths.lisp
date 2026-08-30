@@ -21081,11 +21081,11 @@
         (think-level (run-cli-support-default-thinking-level)))
 
         (present (cli-support-watch-present-file))
-        (poll-file (cli-support-watch-poll-file))
-        (watch-error (run-cli-support-watch-error))
-        (watch-start-close
-          (run-cli-support-watch-start-close present))
-        (poll-once (run-cli-support-poll-once poll-file)))
+        (poll-file (cli-support-watch-poll-file)))
+    (let ((watch-error (run-cli-support-watch-error))
+          (watch-start-close
+            (run-cli-support-watch-start-close present))
+          (poll-once (run-cli-support-poll-once poll-file)))
     (json-object
      "observed"
      (json-object
