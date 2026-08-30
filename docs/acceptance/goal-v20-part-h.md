@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 943 — `cli_interactive_controller` (sess_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_make` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of `ToolExecutionComponent` construct |
+
+Leftover sibling of leftover 520–522 on the same needs-pair file. Does not remount `tool_session_make`. Timed work is session construct (name, default pending, nil result) — not render, not update. Observed `tsm_name` / `tsm_pending` / `tsm_nil` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 944 — `cli_interactive_controller` (sess_upd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_upd` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of result/pending |
+
+Leftover sibling of Pair 943. Does not remount `tool_session_update`. Timed work is result write plus pending keep/clear — not renderCall, not construct. Observed `tsu_result` / `tsu_pending` / `tsu_cleared` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 945 — `cli_interactive_controller` (sess_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_draw` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
+
+Leftover sibling of Pairs 943–944. Does not remount `tool_session_render`. Timed work is pending default call, done default result, custom renderers, empty-line drop — not TUI Box, not images. Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` / `trr_done_result` / `trr_custom` / `trr_empty` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

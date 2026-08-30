@@ -659,6 +659,9 @@
     ("cli_interactive_controller.theme_object_overrides" . 50)
     ("cli_interactive_controller.apply_tui_theme_summary" . 50)
     ("cli_interactive_controller.load_tui_theme_file" . 50)
+    ("cli_interactive_controller.sess_make" . 50)
+    ("cli_interactive_controller.sess_upd" . 50)
+    ("cli_interactive_controller.sess_draw" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -16684,6 +16687,22 @@
    "ltf_empty" (nth 4 load)))
 
 
+(defun leftover-tool-sess-make-upd-draw-observed-pairs (make upd draw)
+  (list
+   "tsm_name" (nth 0 make)
+   "tsm_pending" (nth 1 make)
+   "tsm_nil" (nth 2 make)
+   "tsu_result" (nth 0 upd)
+   "tsu_pending" (nth 1 upd)
+   "tsu_cleared" (nth 2 upd)
+   "trr_pending_n" (nth 0 draw)
+   "trr_pending_call" (nth 1 draw)
+   "trr_done_n" (nth 2 draw)
+   "trr_done_result" (nth 3 draw)
+   "trr_custom" (nth 4 draw)
+   "trr_empty" (nth 5 draw)))
+
+
 (defun leftover-user-bash-running-complete-stop-observed-pairs
     (running complete-string stop)
   (list
@@ -17456,6 +17475,12 @@
           (run-cli-interactive-apply-tui-theme-summary))
         (leftover-theme-load
           (run-cli-interactive-load-tui-theme-file))
+        (leftover-tool-sess-make
+          (run-cli-interactive-tool-session-make))
+        (leftover-tool-sess-upd
+          (run-cli-interactive-tool-session-update))
+        (leftover-tool-sess-draw
+          (run-cli-interactive-tool-session-render))
         (leftover-bash-running
           (run-cli-interactive-bash-append-running))
         (leftover-bash-string
@@ -17611,6 +17636,10 @@
               leftover-theme-overrides
               leftover-theme-apply
               leftover-theme-load)
+             (leftover-tool-sess-make-upd-draw-observed-pairs
+              leftover-tool-sess-make
+              leftover-tool-sess-upd
+              leftover-tool-sess-draw)
              (leftover-user-bash-running-complete-stop-observed-pairs
               leftover-bash-running
               leftover-bash-string
@@ -17735,6 +17764,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-load-tui-theme-file))))
+     "sess_make"
+     (collect "cli_interactive_controller.sess_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-make))))
+     "sess_upd"
+     (collect "cli_interactive_controller.sess_upd"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-update))))
+     "sess_draw"
+     (collect "cli_interactive_controller.sess_draw"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-render))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32100,6 +32144,12 @@
       "src/cadr-cli/interactive/themes.lisp apply-tui-theme-summary"
       "cli_interactive_controller.load_tui_theme_file"
       "src/cadr-cli/interactive/themes.lisp load-tui-theme-file"
+      "cli_interactive_controller.sess_make"
+      "src/cadr-cli/interactive/tool-render-session.lisp make-tool-render-session"
+      "cli_interactive_controller.sess_upd"
+      "src/cadr-cli/interactive/tool-render-session.lisp update-tool-render-session"
+      "cli_interactive_controller.sess_draw"
+      "src/cadr-cli/interactive/tool-render-session.lisp render-tool-session"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"

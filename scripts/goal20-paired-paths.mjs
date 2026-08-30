@@ -638,6 +638,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_object_overrides": 50,
 	"cli_interactive_controller.apply_tui_theme_summary": 50,
 	"cli_interactive_controller.load_tui_theme_file": 50,
+	"cli_interactive_controller.sess_make": 50,
+	"cli_interactive_controller.sess_upd": 50,
+	"cli_interactive_controller.sess_draw": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -19150,6 +19153,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveThemeObjectOverrides(),
 		...runCliInteractiveApplyTuiThemeSummary(),
 		...runCliInteractiveLoadTuiThemeFile(),
+		...runCliInteractiveToolSessionMake(),
+		...runCliInteractiveToolSessionUpdate(),
+		...runCliInteractiveToolSessionRender(),
 		...runCliInteractiveBashAppendRunning(),
 		...runCliInteractiveBashCompleteString(),
 		...runCliInteractiveBashStopEntry(),
@@ -19241,6 +19247,15 @@ async function measureCliInteractiveDecodeEntity() {
 		),
 		load_tui_theme_file: await collect("cli_interactive_controller.load_tui_theme_file", () => {
 			return () => runCliInteractiveLoadTuiThemeFile();
+		}),
+		sess_make: await collect("cli_interactive_controller.sess_make", () => {
+			return () => runCliInteractiveToolSessionMake();
+		}),
+		sess_upd: await collect("cli_interactive_controller.sess_upd", () => {
+			return () => runCliInteractiveToolSessionUpdate();
+		}),
+		sess_draw: await collect("cli_interactive_controller.sess_draw", () => {
+			return () => runCliInteractiveToolSessionRender();
 		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
@@ -33715,6 +33730,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts setTheme",
 			"cli_interactive_controller.load_tui_theme_file":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts loadThemeFromPath",
+			"cli_interactive_controller.sess_make":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts ToolExecutionComponent construct",
+			"cli_interactive_controller.sess_upd":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts result/pending",
+			"cli_interactive_controller.sess_draw":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts renderCall/renderResult fallback",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":
