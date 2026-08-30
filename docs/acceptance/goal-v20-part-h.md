@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `directory_gitignore_rules` | `directory-gitignore-rules` (`src/cadr-cli/tools/glob.lisp`) | `.gitignore` load classify (`packages/coding-agent/src/core/tools/find.ts`) |
 
-Leftover trio on unclaimed `src/cadr-cli/tools/glob.lisp` (leftover 448–450 / 688–693 already frozen; no open leftover PR). Timed work is production directory-gitignore-rules on a staged tree — not parse-gitignore-line fixtures. Observed `dgr_n` / `dgr_ok` / `dgr_none` / `dgr_hash` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-cli/tools/glob.lisp` (leftover 448–450 / 688–693 already frozen; no open leftover PR). Timed work is production directory-gitignore-rules on a staged tree — not parse-gitignore-line fixtures. Observed `dgr_n` / `dgr_ok` / `dgr_none` / `dgr_hash` are exact. First n=5 freeze **1.081×** (300.688 / 278.042 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 902 — `find_tool` (collect_tree_files)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-cli/tools/glob.lisp` (leftover 448–450 / 
 |---|---|---|
 | `collect_tree_files` | `collect-tree-files` (`src/cadr-cli/tools/glob.lisp`) | tree walk classify (`packages/coding-agent/src/core/tools/find.ts`) |
 
-Leftover sibling of Pair 901. Timed work is collect-tree-files keep.lisp / nested / skip.txt / .git / node_modules filtering. Observed `ctf_n` / `ctf_keep` / `ctf_nested` / `ctf_skip` / `ctf_git` / `ctf_nm` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 901. Timed work is collect-tree-files keep.lisp / nested / skip.txt / .git / node_modules filtering. Observed `ctf_n` / `ctf_keep` / `ctf_nested` / `ctf_skip` / `ctf_git` / `ctf_nm` are exact. First n=5 freeze **1.316×** (432.758 / 328.791 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 903 — `find_tool` (glob_files)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 901. Timed work is collect-tree-files keep.lisp / neste
 |---|---|---|
 | `glob_files` | `glob-files` (`src/cadr-cli/tools/glob.lisp`) | glob execute classify (`packages/coding-agent/src/core/tools/find.ts`) |
 
-Leftover sibling of Pairs 901–902. Timed work is glob-files match count / empty copy / limit truncation / missing path throw — not make-glob-tool constructor. Observed `gf_lisp` / `gf_empty` / `gf_limit` / `gf_miss` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 901–902. Timed work is glob-files match count / empty copy / limit truncation / missing path throw — not make-glob-tool constructor. Observed `gf_lisp` / `gf_empty` / `gf_limit` / `gf_miss` are exact. First n=5 freeze **2.302×** (831.412 / 361.149 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

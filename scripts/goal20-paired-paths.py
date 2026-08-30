@@ -868,7 +868,10 @@ RATIO_CEILINGS = {
     # leftover 693; first freeze 701.525× (193.915 / 0.276 µs).
     # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
     "find_tool.make_glob_tool": 1200.0,
-    # leftover 901-903; first-freeze headroom. Ratchet down only.
+    # leftover 901-903; first freeze directory_gitignore_rules 1.081×
+    # (300.688 / 278.042 µs), collect_tree_files 1.316× (432.758 /
+    # 328.791 µs), glob_files 2.302× (831.412 / 361.149 µs) on host
+    # cursor. Ceiling 8.0 first-freeze headroom. Ratchet down only.
     # Does not remount leftover 448-450 / 688-693.
     "find_tool.directory_gitignore_rules": 8.0,
     "find_tool.collect_tree_files": 8.0,

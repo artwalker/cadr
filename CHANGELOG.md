@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `find_tool.directory_gitignore_rules`
+  (`directory-gitignore-rules` vs find.ts `.gitignore` load classify).
+  Observed `dgr_n` / `dgr_ok` / `dgr_none` / `dgr_hash` exact. n=5
+  **1.081×** (300.688 / 278.042 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 901). Over-1×. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `find_tool.collect_tree_files`
+  (`collect-tree-files` vs find.ts tree walk classify). Observed
+  `ctf_n` / `ctf_keep` / `ctf_nested` / `ctf_skip` / `ctf_git` /
+  `ctf_nm` exact. n=5 **1.316×** (432.758 / 328.791 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 902). Over-1×.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `find_tool.glob_files` (`glob-files` vs
+  find.ts glob execute classify). Observed `gf_lisp` / `gf_empty` /
+  `gf_limit` / `gf_miss` exact. n=5 **2.302×** (831.412 / 361.149 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 903).
+  Over-1×. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 901,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.directory_gitignore_rules",
+   "branch": "cursor/glob-walk-files-leftovers-901-903-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 901",
+   "ratio": 1.081,
+   "cadrUs": 300.688,
+   "piUs": 278.042,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 902,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.collect_tree_files",
+   "branch": "cursor/glob-walk-files-leftovers-901-903-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 902",
+   "ratio": 1.316,
+   "cadrUs": 432.758,
+   "piUs": 328.791,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 903,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_files",
+   "branch": "cursor/glob-walk-files-leftovers-901-903-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 903",
+   "ratio": 2.302,
+   "cadrUs": 831.412,
+   "piUs": 361.149,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
