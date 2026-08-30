@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1051 — `cli_selectors` (tr_mv)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_mv` | `trust-selector-move` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of wrap selection index |
+
+Leftover sibling of Pair 194 on the same needs-pair file. Does not remount `trust_selector_move`. Timed work is child down / up / wrap / page and single down / wrap. Observed `tsm_child_down` / `tsm_single_wrap` are exact. First n=5 freeze **3.064×** (227.607 / 74.281 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1052 — `cli_selectors` (tr_he)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_he` | `trust-selector-handle-event` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector handle-event dispatch |
+
+Leftover sibling of Pair 1051. Does not remount `trust_selector_handle_event`. Timed work is child down / up / enter / k / bad / esc / nop. Observed `tshe_child_down` / `tshe_child_esc` are exact. First n=5 freeze **3.061×** (241.415 / 78.861 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1053 — `cli_selectors` (tr_ui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_ui` | `trust-selector-ui-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent UI state |
+
+Leftover sibling of Pairs 1051–1052. Does not remount `trust_selector_ui_state`. Timed work is child default / saved / inherited / distrust and single. Observed `rts_child_default` / `rts_single` are exact. First n=5 freeze **3.086×** (287.305 / 93.086 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
