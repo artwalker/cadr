@@ -8989,7 +8989,7 @@ Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed w
 |---|---|---|
 | `sess_new` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of ToolExecutionComponent construct |
 
-Leftover sibling of leftover 943–945 on the same needs-pair file. Does not remount `sess_make`. Timed work is named session construct. Observed `tsm_name` / `tsm_nil` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 943–945 on the same needs-pair file. Does not remount `sess_make`. Timed work is named session construct. Observed `tsm_name` / `tsm_nil` are exact. First n=5 freeze **1.242×** (0.249 / 0.200 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 965 — `cli_interactive_controller` (sess_set)
 
@@ -8997,7 +8997,7 @@ Leftover sibling of leftover 943–945 on the same needs-pair file. Does not rem
 |---|---|---|
 | `sess_set` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of result/pending |
 
-Leftover sibling of Pair 964. Does not remount `sess_upd`. Timed work is result set and clear. Observed `tsu_result` / `tsu_cleared` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 964. Does not remount `sess_upd`. Timed work is result set and clear. Observed `tsu_result` / `tsu_cleared` are exact. First n=5 freeze **1.079×** (0.256 / 0.237 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 966 — `cli_interactive_controller` (sess_out)
 
@@ -9005,7 +9005,7 @@ Leftover sibling of Pair 964. Does not remount `sess_upd`. Timed work is result 
 |---|---|---|
 | `sess_out` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
 
-Leftover sibling of Pairs 964–965. Does not remount `sess_draw`. Timed work is pending vs hide-result empty render. Observed `trr_pending_n` / `trr_empty` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 964–965. Does not remount `sess_draw`. Timed work is pending vs hide-result empty render. Observed `trr_pending_n` / `trr_empty` are exact. First n=5 freeze **0.831×** (1.543 / 1.856 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

@@ -1150,8 +1150,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.sess_draw": 8.0,
     # leftover 964–966 tool-render-session.lisp (samples=5): first-freeze headroom.
     # Does not remount sess_make / sess_upd / sess_draw.
+    # Measure-only leftover 964; first freeze 1.242× (0.249 / 0.200 µs).
     "cli_interactive_controller.sess_new": 8.0,
+    # Measure-only leftover 965; first freeze 1.079× (0.256 / 0.237 µs).
     "cli_interactive_controller.sess_set": 8.0,
+    # Measure-only leftover 966; first freeze 0.831× (1.543 / 1.856 µs).
     "cli_interactive_controller.sess_out": 8.0,
     # Measure-only leftover 949; first freeze 0.981× (0.583 / 0.594 µs).
     # Does not remount wrap_transcript / output_padding / render_cacheable.

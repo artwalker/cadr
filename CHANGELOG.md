@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_new`
+  (`make-tool-render-session` vs leftover replica of ToolExecutionComponent
+  construct). Observed `tsm_name` / `tsm_nil` exact. n=5 **1.242×**
+  (0.249 / 0.200 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 964). Over-1× booked. Does not remount `sess_make`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_set`
+  (`update-tool-render-session` vs leftover replica of result/pending).
+  Observed `tsu_result` / `tsu_cleared` exact. n=5 **1.079×**
+  (0.256 / 0.237 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 965). Over-1× booked. Does not remount `sess_upd`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_out`
+  (`render-tool-session` vs leftover replica of renderCall/renderResult
+  fallback). Observed `trr_pending_n` / `trr_empty` exact. n=5 **0.831×**
+  (1.543 / 1.856 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 966). Under-1×. Does not remount `sess_draw`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
