@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 898 — `oauth_pkce_device` (openrouter_login)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_login` | `login-openrouter-oauth` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `parseAuthorizationInput` + `exchangeAuthorizationCode` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftover 436–438 queued openrouter_input / openrouter_refresh / openrouter_exchange). Timed work is stub HTTP login after a pasted code — not parse-openrouter-authorization-input fixtures, not PKCE, not callback port. Observed `olg_acc` / `olg_ref` / `olg_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 899 — `oauth_pkce_device` (openrouter_login_fail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_login_fail` | `login-openrouter-oauth` key exchange fail (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `exchangeAuthorizationCode` HTTP fail (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of Pair 898. Timed work is stub HTTP 400 throwing — not exact message text. Observed `olf_throw` / `olf_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 900 — `oauth_pkce_device` (openrouter_login_miss)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_login_miss` | `login-openrouter-oauth` missing code (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `Missing authorization code` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of Pairs 898–899. Timed work is empty pasted input throwing — not NIL vs undefined. Observed `olm_throw` / `olm_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -534,6 +534,9 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.openrouter_login" . 50)
+    ("oauth_pkce_device.openrouter_login_fail" . 50)
+    ("oauth_pkce_device.openrouter_login_miss" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10444,6 +10447,77 @@
    3))
 
 
+(defparameter *oauth-openrouter-login-interaction*
+  (cadr-ai:make-runtime-auth-interaction
+   :notify-function (lambda (event) (declare (ignore event)))
+   :prompt-function
+   (lambda (prompt)
+     (declare (ignore prompt))
+     "or-login-code")))
+
+(defparameter *oauth-openrouter-login-miss-interaction*
+  (cadr-ai:make-runtime-auth-interaction
+   :notify-function (lambda (event) (declare (ignore event)))
+   :prompt-function
+   (lambda (prompt)
+     (declare (ignore prompt))
+     "")))
+
+
+(defun run-oauth-pkce-device-openrouter-login ()
+  ;; Full login-openrouter-oauth with stub HTTP. Exact access/refresh
+  ;; only — not PKCE, not oauth-state, not callback URL.
+  (handler-case
+      (let ((credential
+              (with-oauth-flow-stub
+               200
+               (cadr-ai::json-object "key" "sk-or-login")
+               (lambda ()
+                 (cadr-ai::login-openrouter-oauth
+                  *oauth-openrouter-login-interaction*)))))
+        (list
+         (if (string= (cadr-ai:oauth-credential-access credential)
+                      "sk-or-login")
+             1
+             0)
+         (if (string= (cadr-ai:oauth-credential-refresh credential) "")
+             1
+             0)
+         2))
+    (error () (list 0 0 2))))
+
+
+(defun run-oauth-pkce-device-openrouter-login-fail ()
+  ;; Device/key HTTP 400 after a pasted code. Do not exact message text.
+  (handler-case
+      (progn
+        (with-oauth-flow-stub
+         400
+         (cadr-ai::json-object "error" "denied")
+         (lambda ()
+           (cadr-ai::login-openrouter-oauth
+            *oauth-openrouter-login-interaction*)))
+        (list 0 1))
+    (cadr-ai:authentication-error () (list 1 1))
+    (error () (list 0 1))))
+
+
+(defun run-oauth-pkce-device-openrouter-login-miss ()
+  ;; Empty pasted input -> missing authorization code. Do not exact
+  ;; NIL vs undefined.
+  (handler-case
+      (progn
+        (with-oauth-flow-stub
+         200
+         (cadr-ai::json-object "key" "sk-or-login")
+         (lambda ()
+           (cadr-ai::login-openrouter-oauth
+            *oauth-openrouter-login-miss-interaction*)))
+        (list 0 1))
+    (cadr-ai:authentication-error () (list 1 1))
+    (error () (list 0 1))))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -10456,7 +10530,10 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (openrouter-login (run-oauth-pkce-device-openrouter-login))
+        (openrouter-login-fail (run-oauth-pkce-device-openrouter-login-fail))
+        (openrouter-login-miss (run-oauth-pkce-device-openrouter-login-miss)))
     (json-object
      "observed"
      (json-object
@@ -10513,7 +10590,14 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "olg_acc" (nth 0 openrouter-login)
+      "olg_ref" (nth 1 openrouter-login)
+      "olg_n" (nth 2 openrouter-login)
+      "olf_throw" (nth 0 openrouter-login-fail)
+      "olf_n" (nth 1 openrouter-login-fail)
+      "olm_throw" (nth 0 openrouter-login-miss)
+      "olm_n" (nth 1 openrouter-login-miss))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10573,7 +10657,22 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "openrouter_login"
+     (collect "oauth_pkce_device.openrouter_login"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-login))))
+     "openrouter_login_fail"
+     (collect "oauth_pkce_device.openrouter_login_fail"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-login-fail))))
+     "openrouter_login_miss"
+     (collect "oauth_pkce_device.openrouter_login_miss"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-login-miss)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -31850,6 +31949,12 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.openrouter_login"
+      "src/cadr-ai/oauth/providers/openrouter.lisp login-openrouter-oauth"
+      "oauth_pkce_device.openrouter_login_fail"
+      "src/cadr-ai/oauth/providers/openrouter.lisp login-openrouter-oauth key exchange fail"
+      "oauth_pkce_device.openrouter_login_miss"
+      "src/cadr-ai/oauth/providers/openrouter.lisp login-openrouter-oauth missing code"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
