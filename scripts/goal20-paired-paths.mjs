@@ -813,8 +813,11 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"cli_selectors.oauth_selector_search_text": 50,
 	"cli_selectors.login_auth_type_route": 50,
+	"cli_selectors.oa_rt": 50,
 	"cli_selectors.login_provider_options": 50,
+	"cli_selectors.oa_lin": 50,
 	"cli_selectors.logout_provider_options": 50,
+	"cli_selectors.oa_out": 50,
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
 	"cli_selectors.api_key_input_state_handle_event": 50,
@@ -30450,10 +30453,19 @@ async function measureCliSelectorsSessionSearch() {
 		login_auth_type_route: await collect("cli_selectors.login_auth_type_route", () => {
 			return () => runCliSelectorsLoginAuthTypeRoute();
 		}),
+		oa_rt: await collect("cli_selectors.oa_rt", () => {
+			return () => runCliSelectorsLoginAuthTypeRoute();
+		}),
 		login_provider_options: await collect("cli_selectors.login_provider_options", () => {
 			return () => runCliSelectorsLoginProviderOptions();
 		}),
+		oa_lin: await collect("cli_selectors.oa_lin", () => {
+			return () => runCliSelectorsLoginProviderOptions();
+		}),
 		logout_provider_options: await collect("cli_selectors.logout_provider_options", () => {
+			return () => runCliSelectorsLogoutProviderOptions();
+		}),
+		oa_out: await collect("cli_selectors.oa_out", () => {
 			return () => runCliSelectorsLogoutProviderOptions();
 		}),
 		login_method_selector_handle_event: await collect(
@@ -34318,10 +34330,16 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
 			"cli_selectors.login_auth_type_route":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
+			"cli_selectors.oa_rt":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing leftover",
 			"cli_selectors.login_provider_options":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
+			"cli_selectors.oa_lin":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions leftover",
 			"cli_selectors.logout_provider_options":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions",
+			"cli_selectors.oa_out":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions leftover",
 			"cli_selectors.login_method_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts handleInput event dispatch (login method selector)",
 			"cli_selectors.oauth_selector_move":
