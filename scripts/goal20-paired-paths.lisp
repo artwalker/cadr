@@ -1275,6 +1275,9 @@
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
+    ("cli_selectors.countdown_dispose" . 50)
+    ("cli_selectors.countdown_unstarted" . 50)
+    ("cli_selectors.countdown_start_guard" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -30572,6 +30575,77 @@
    (countdown-render-count :fn 3)))
 
 
+(defun run-cli-selectors-countdown-dispose ()
+  (let ((timer (make-countdown-bench-timer
+                1500
+                (lambda ())
+                (lambda (seconds) (declare (ignore seconds)))
+                (lambda ()))))
+    (cadr-tui:component-dispose timer)
+    timer))
+
+
+(defun countdown-dispose-observed-pairs (timer)
+  (list
+   "cdd_stop"
+   (if (cadr-cli::countdown-timer-stop-p timer) "1" "0")
+   "cdd_thread"
+   (if (cadr-cli::countdown-timer-thread timer) "1" "0")
+   "cdd_expired"
+   (if (cadr-cli::countdown-timer-expired-p timer) "1" "0")
+   "cdd_n" "1"))
+
+
+(defun run-cli-selectors-countdown-unstarted ()
+  (make-countdown-bench-timer
+   2500
+   (lambda ())
+   (lambda (seconds) (declare (ignore seconds)))
+   (lambda ())))
+
+
+(defun countdown-unstarted-observed-pairs (timer)
+  (list
+   "cdu_thread"
+   (if (cadr-cli::countdown-timer-thread timer) "1" "0")
+   "cdu_stop"
+   (if (cadr-cli::countdown-timer-stop-p timer) "1" "0")
+   "cdu_expired"
+   (if (cadr-cli::countdown-timer-expired-p timer) "1" "0")
+   "cdu_remain"
+   (write-to-string
+    (cadr-cli::countdown-timer-remaining-seconds timer))
+   "cdu_n" "1"))
+
+
+(defun run-cli-selectors-countdown-start-guard ()
+  (let ((timer (make-countdown-bench-timer
+                1500
+                (lambda ())
+                (lambda (seconds) (declare (ignore seconds)))
+                (lambda ()))))
+    (setf (cadr-cli::countdown-timer-thread timer) :bench-dummy)
+    (cadr-cli::countdown-timer-start timer)
+    timer))
+
+
+(defun countdown-start-guard-observed-pairs (timer)
+  (list
+   "csg_keep"
+   (if (eq (cadr-cli::countdown-timer-thread timer) :bench-dummy)
+       "1" "0")
+   "csg_stop"
+   (if (cadr-cli::countdown-timer-stop-p timer) "1" "0")
+   "csg_fresh"
+   (if (and (cadr-cli::countdown-timer-thread timer)
+            (not (eq (cadr-cli::countdown-timer-thread timer)
+                     :bench-dummy)))
+       "1" "0")
+   "csg_n" "1"))
+
+
+
+
 (defun scoped-models-selector-provider-count-encoded (state)
   (write-to-string
    (cadr-cli::scoped-models-selector-provider-count state)))
@@ -33103,6 +33177,12 @@
           (run-cli-selectors-login-dialog-auth))
         (leftover-login-dlg-dev
           (run-cli-selectors-login-dialog-device))
+        (leftover-countdown-dispose
+          (run-cli-selectors-countdown-dispose))
+        (leftover-countdown-unstarted
+          (run-cli-selectors-countdown-unstarted))
+        (leftover-countdown-start-guard
+          (run-cli-selectors-countdown-start-guard))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -33918,6 +33998,12 @@
               leftover-login-dlg-make
               leftover-login-dlg-auth
               leftover-login-dlg-dev)
+             (countdown-dispose-observed-pairs
+              leftover-countdown-dispose)
+             (countdown-unstarted-observed-pairs
+              leftover-countdown-unstarted)
+             (countdown-start-guard-observed-pairs
+              leftover-countdown-start-guard)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -35224,7 +35310,22 @@
      (collect "cli_selectors.dlg_dev"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-dialog-device)))))))
+                  (run-cli-selectors-login-dialog-device))))
+     "countdown_dispose"
+     (collect "cli_selectors.countdown_dispose"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-dispose))))
+     "countdown_unstarted"
+     (collect "cli_selectors.countdown_unstarted"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-unstarted))))
+     "countdown_start_guard"
+     (collect "cli_selectors.countdown_start_guard"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-start-guard)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -40324,6 +40425,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-auth"
       "cli_selectors.dlg_dev"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-device-code"
+      "cli_selectors.countdown_dispose"
+      "src/cadr-cli/interactive/components/countdown.lisp cadr-tui:component-dispose"
+      "cli_selectors.countdown_unstarted"
+      "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer :start-p nil"
+      "cli_selectors.countdown_start_guard"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-start existing-thread"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
