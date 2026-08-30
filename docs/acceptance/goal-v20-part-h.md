@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1060 — `cli_selectors` (oa_rt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_rt` | `login-auth-type-route` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showLoginAuthTypeSelector routing |
+
+Leftover sibling of Pair 206 on the same needs-pair file. Does not remount `login_auth_type_route`. Timed work is none / oauth / api / both / generic routing. Observed `latr_none` / `latr_oauth` are exact. First n=5 freeze **2.388×** (2.901 / 1.215 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1061 — `cli_selectors` (oa_lin)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lin` | `login-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLoginProviderOptions |
+
+Leftover sibling of Pair 1060. Does not remount `login_provider_options`. Timed work is all / oauth / api / labeled / status option lists. Observed `lpo_all` / `lpo_oauth` are exact. First n=5 freeze **1.410×** (8.921 / 6.329 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1062 — `cli_selectors` (oa_out)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_out` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
+
+Leftover sibling of Pairs 1060–1061. Does not remount `logout_provider_options`. Timed work is empty / mixed / unknown / sorted logout lists. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.050×** (7.530 / 3.673 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
