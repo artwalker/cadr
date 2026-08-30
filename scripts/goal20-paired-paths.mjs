@@ -471,8 +471,11 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_handle_raw_input": 50,
 	"cli_selectors.thinking_selector_handle_event": 50,
 	"cli_selectors.thinking_selector_selected_level": 50,
+	"cli_selectors.sl_ok": 50,
 	"cli_selectors.thinking_level_description_line": 50,
+	"cli_selectors.dsc_ok": 50,
 	"cli_selectors.render_thinking_selector": 50,
+	"cli_selectors.rth_ok": 50,
 	"cli_selectors.trust_option_saved_p": 50,
 	"cli_selectors.make_trust_selector_state": 50,
 	"cli_selectors.render_trust_selector": 50,
@@ -30925,18 +30928,27 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsThinkingSelectorSelectedLevel();
 			},
 		),
+		sl_ok: await collect("cli_selectors.sl_ok", () => {
+			return () => runCliSelectorsThinkingSelectorSelectedLevel();
+		}),
 		thinking_level_description_line: await collect(
 			"cli_selectors.thinking_level_description_line",
 			() => {
 				return () => runCliSelectorsThinkingLevelDescriptionLine();
 			},
 		),
+		dsc_ok: await collect("cli_selectors.dsc_ok", () => {
+			return () => runCliSelectorsThinkingLevelDescriptionLine();
+		}),
 		render_thinking_selector: await collect(
 			"cli_selectors.render_thinking_selector",
 			() => {
 				return () => runCliSelectorsRenderThinkingSelector();
 			},
 		),
+		rth_ok: await collect("cli_selectors.rth_ok", () => {
+			return () => runCliSelectorsRenderThinkingSelector();
+		}),
 		trust_option_saved_p: await collect(
 			"cli_selectors.trust_option_saved_p",
 			() => {
@@ -34480,10 +34492,16 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts typed input event dispatch",
 			"cli_selectors.thinking_selector_selected_level":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts selected SelectList item",
+			"cli_selectors.sl_ok":
+				"packages/coding-agent leftover replica of thinking-selector selected SelectList item",
 			"cli_selectors.thinking_level_description_line":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts LEVEL_DESCRIPTIONS · default suffix",
+			"cli_selectors.dsc_ok":
+				"packages/coding-agent leftover replica of LEVEL_DESCRIPTIONS default suffix",
 			"cli_selectors.render_thinking_selector":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts ThinkingSelectorComponent layout",
+			"cli_selectors.rth_ok":
+				"packages/coding-agent leftover replica of ThinkingSelectorComponent layout",
 			"cli_selectors.trust_option_saved_p":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts isSavedOption",
 			"cli_selectors.make_trust_selector_state":
