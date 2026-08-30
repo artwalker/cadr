@@ -855,6 +855,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.wrap_osc": 50,
 	"cli_interactive_controller.pad_str": 50,
 	"cli_interactive_controller.cache_p": 50,
+	"cli_interactive_controller.wrap_ln": 50,
+	"cli_interactive_controller.pad_sp": 50,
+	"cli_interactive_controller.cache_ok": 50,
 	"cli_interactive_controller.bash_run": 50,
 	"cli_interactive_controller.bash_fin": 50,
 	"cli_interactive_controller.bash_halt": 50,
@@ -24193,6 +24196,15 @@ async function measureCliInteractiveDecodeEntity() {
 		cache_p: await collect("cli_interactive_controller.cache_p", () => {
 			return () => runCliInteractiveRenderCacheable();
 		}),
+		wrap_ln: await collect("cli_interactive_controller.wrap_ln", () => {
+			return () => runCliInteractiveWrapTranscript();
+		}),
+		pad_sp: await collect("cli_interactive_controller.pad_sp", () => {
+			return () => runCliInteractiveOutputPadding();
+		}),
+		cache_ok: await collect("cli_interactive_controller.cache_ok", () => {
+			return () => runCliInteractiveRenderCacheable();
+		}),
 		bash_run: await collect("cli_interactive_controller.bash_run", () => {
 			return () => runCliInteractiveBashAppendRunning();
 		}),
@@ -40767,6 +40779,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts output padding spaces",
 			"cli_interactive_controller.cache_p":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts TUI entry render cacheable",
+			"cli_interactive_controller.wrap_ln":
+				"packages/coding-agent leftover replica of UserMessageComponent.render OSC 133 wrap (cadr wrap-transcript-lines leftover)",
+			"cli_interactive_controller.pad_sp":
+				"packages/coding-agent leftover replica of output padding spaces (cadr output-padding-string leftover)",
+			"cli_interactive_controller.cache_ok":
+				"packages/coding-agent leftover replica of TUI entry render cacheable (cadr tui-entry-render-cacheable-p leftover)",
 			"cli_interactive_controller.bash_run":
 				"packages/coding-agent leftover replica of BashExecutionComponent addChild running (cadr append-tui-user-bash-running)",
 			"cli_interactive_controller.bash_fin":
