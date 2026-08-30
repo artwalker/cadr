@@ -531,5 +531,10 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `evals_harness.validate_extension` | 2.604 | 0.326 | 7.979× | 8.00× | measure-only leftover 925; `validate-extension-result` vs leftover greeting+path-count replica | invent pause；地板优化另刀 |
+| `evals_harness.eval_result_p` | 0.608 | 0.331 | 1.836× | 8.00× | measure-only leftover 927; `typep` eval-result vs leftover object-shape predicate | invent pause；地板优化另刀 |
+| `evals_harness.msg_content` | 1.008 | 0.745 | 1.352× | 8.00× | measure-only leftover 928; `message-content-text` vs leftover content-text join | invent pause；地板优化另刀 |
+| `evals_harness.eval_tools` | 1.547 | 0.285 | 5.428× | 8.00× | measure-only leftover 929; `eval-agent-tools` vs leftover agent.tools list | invent pause；地板优化另刀 |
+| `evals_harness.eval_paths` | 3.230 | 0.447 | 7.223× | 8.00× | measure-only leftover 930; `eval-extension-paths` vs leftover visible paths | invent pause；地板优化另刀 |
 | `cli_print_rpc.cmd_list` | 1.533 | 0.333 | 4.603× | 8.00× | measure-only leftover 936; `rpc-command-list` vs leftover rpc command list | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
