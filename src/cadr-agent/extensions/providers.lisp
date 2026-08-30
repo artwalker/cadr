@@ -217,6 +217,37 @@
         message :display-p))))
   message)
 
+(defun append-extension-custom-message (host agent message)
+  (persist-extension-custom-message agent message)
+  (when
+      (and
+       (extension-custom-message-value message :display-p)
+       (extension-host-ui-function host))
+    (funcall
+     (extension-host-ui-function host)
+     :append-custom-message
+     (copy-tree message)))
+  message)
+
+(defun flush-pending-custom-messages (host)
+  ;; pi@b79e4cc83 agent-session.ts #8537: context-only custom messages
+  ;; queued during a run land after the turn's tool results.
+  (unless host
+    (return-from flush-pending-custom-messages nil))
+  (let ((pending
+          (nreverse
+           (extension-host-pending-custom-messages host)))
+        (agent (extension-host-agent host)))
+    (setf (extension-host-pending-custom-messages host) nil)
+    (when agent
+      (dolist (message pending)
+        (append-extension-custom-message host agent message)))))
+
+(defun flush-agent-pending-custom-messages (agent)
+  (when agent
+    (flush-pending-custom-messages
+     (agent-extension-host agent))))
+
 (defun deliver-extension-message
     (agent message deliver-as)
   (ecase deliver-as
@@ -234,18 +265,22 @@
     (let ((queued-message
             (cond
               ((extension-custom-message-p message)
-               (persist-extension-custom-message
-                agent message)
-               (when
-                   (and
-                    (extension-custom-message-value message :display-p)
-                    (extension-host-ui-function host))
-                 (funcall
-                  (extension-host-ui-function host)
-                  :append-custom-message
-                  (copy-tree message)))
-               (extension-custom-message-as-user-message
-                message))
+               (if (and (agent-busy-p agent)
+                        (not trigger-turn-p)
+                        (null deliver-as))
+                   (progn
+                     (setf
+                      (extension-host-pending-custom-messages host)
+                      (nconc
+                       (extension-host-pending-custom-messages host)
+                       (list (copy-tree message))))
+                     (extension-custom-message-as-user-message
+                      message))
+                   (progn
+                     (append-extension-custom-message
+                      host agent message)
+                     (extension-custom-message-as-user-message
+                      message))))
               ((typep message 'cadr-ai:user-message)
                message)
               (t

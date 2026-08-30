@@ -206,36 +206,45 @@
 
 (defun ensure-tool
     (tool &key silent-p (installer #'install-tool-from-release)
-               (output *standard-output*))
-  (or (get-tool-path tool)
-      (cond
-        ((offline-mode-p)
-         (unless silent-p
-           (format output "~A not found. Offline mode enabled, skipping download.~%"
-                   (tool-display-name tool)))
-         nil)
-        ((or (search "android" (string-downcase (software-type)))
-             (uiop:getenv "TERMUX_VERSION"))
-         (unless silent-p
-           (format output "~A not found. Install with: pkg install ~A~%"
-                   (tool-display-name tool)
-                   (if (eq tool :rg) "ripgrep" "fd")))
-         nil)
-        (t
-         (unless silent-p
-           (format output "~A not found. Downloading...~%"
-                   (tool-display-name tool)))
-         (handler-case
-             (let ((path (funcall installer tool)))
-               (unless silent-p
-                 (format output "~A installed to ~A~%"
-                         (tool-display-name tool) path))
-               path)
-           (error (condition)
+               (output *standard-output*)
+               on-status)
+  "Ensure FD/RG. ON-STATUS is (lambda (type message)) with TYPE
+:warning or :info, matching baseline ensureTool's onStatus. Without
+ON-STATUS, messages still go to OUTPUT."
+  (labels ((emit (type message)
              (unless silent-p
-               (format output "Failed to download ~A: ~A~%"
-                       (tool-display-name tool) condition))
-             nil))))))
+               (if on-status
+                   (funcall on-status type message)
+                   (format output "~A~%" message)))))
+    (or (get-tool-path tool)
+        (cond
+          ((offline-mode-p)
+           (emit :warning
+                 (format nil "~A not found. Offline mode enabled, skipping download."
+                         (tool-display-name tool)))
+           nil)
+          ((or (search "android" (string-downcase (software-type)))
+               (uiop:getenv "TERMUX_VERSION"))
+           (emit :warning
+                 (format nil "~A not found. Install with: pkg install ~A"
+                         (tool-display-name tool)
+                         (if (eq tool :rg) "ripgrep" "fd")))
+           nil)
+          (t
+           (emit :info
+                 (format nil "~A not found. Downloading..."
+                         (tool-display-name tool)))
+           (handler-case
+               (let ((path (funcall installer tool)))
+                 (emit :info
+                       (format nil "~A installed to ~A"
+                               (tool-display-name tool) path))
+                 path)
+             (error (condition)
+               (emit :warning
+                     (format nil "Failed to download ~A: ~A"
+                             (tool-display-name tool) condition))
+               nil)))))))
 
 (defparameter +windows-native-quarantine-directory+ ".cadr-native-quarantine/")
 (defparameter *loaded-shared-object-paths-function*

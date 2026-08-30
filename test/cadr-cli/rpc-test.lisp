@@ -438,3 +438,33 @@
         (is (eq 'null (cadr-ai::json-get data "exitCode")))
         (is (eq t
                 (cadr-ai::json-get abort-response "success")))))))
+
+(test rpc-clear-queue-returns-steering-and-follow-up-text
+  (with-test-directory (directory)
+    (let* ((output (make-string-output-stream))
+           (state (make-rpc-test-state directory output))
+           (agent (cadr-cli::rpc-state-agent state)))
+      (cadr-agent:agent-steer agent "steer-me")
+      (cadr-agent:agent-follow-up agent "later")
+      (cadr-cli::rpc-handle-line
+       state
+       "{\"id\":\"cq1\",\"type\":\"clear_queue\"}")
+      (let* ((records (rpc-output-records output))
+             (record
+               (find
+                "cq1" records
+                :key
+                (lambda (candidate)
+                  (cadr-ai::json-get candidate "id"))
+                :test #'string=))
+             (data (and record (cadr-ai::json-get record "data"))))
+        (is (not (null record)))
+        (is (eq t (cadr-ai::json-get record "success")))
+        (is (string= "clear_queue"
+                     (cadr-ai::json-get record "command")))
+        (is (equalp #("steer-me")
+                    (cadr-ai::json-get data "steering")))
+        (is (equalp #("later")
+                    (cadr-ai::json-get data "followUp")))
+        (is (null (cadr-agent::agent-steering-queue agent)))
+        (is (null (cadr-agent::agent-follow-up-queue agent)))))))

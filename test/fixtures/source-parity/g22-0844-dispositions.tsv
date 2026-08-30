@@ -1,0 +1,2 @@
+status	old_path	new_path	decision
+A	-	packages/ai/scripts/openrouter-reasoning-options.ts	implement: OpenRouter thinking-level mapper; map to openrouter-thinking-level-map in src/cadr-ai/model-data.lisp

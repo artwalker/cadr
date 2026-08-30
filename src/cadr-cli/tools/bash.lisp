@@ -105,7 +105,7 @@
      (not (null exclude-from-context-p)))))
 
 (defun record-user-bash-result (agent result)
-  ;; Fixed pi@4e58f324f agent-session.ts:2803-2824 records the direct shell
+  ;; Fixed pi@b79e4cc83 agent-session.ts:2803-2824 records the direct shell
   ;; message immediately when the agent is idle. TUI dispatch serializes idle
   ;; direct commands, so the same one-step append preserves ordering here.
   (when (and agent (user-bash-result-p result))

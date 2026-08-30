@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Aligned with pi **v0.84.4** (`b79e4cc83` +0).
+  cadr 0.2.0 · aligned with pi v0.84.4 (+0, b79e4cc83). Terminal capability
+  overrides (`CADR_HYPERLINKS` / `CADR_IMAGE_PROTOCOL` /
+  `CADR_TRUE_COLOR`), `fullscreenCopyOnSelect` plus Ctrl+X copy of the
+  active selection, `-`/`/` word-selection joiners, RPC `clear_queue`,
+  extension `ui_prompt_start`/`ui_prompt_end`, DeepSeek V4 Flash Vision
+  Exp, OpenRouter reasoning-effort mapper, compact-before-next-tool
+  request, queued custom messages during a run, persist-default into a
+  non-empty model scope, llama.cpp autoload presets, JSONL trailing
+  newline repair, omit `tool_choice` when a completions request has
+  no tools, and interactive fd/rg ensure via TUI `Warning:` lines
+  before restored session messages (matching `showManagedToolStatus`).
+
 - Goal 20 leftover: pair `evals_harness.validate_extension`
   (`validate-extension-result` vs leftover replica of extension greeting
   + path-count). Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty`

@@ -18,7 +18,7 @@
      (make-string padding :initial-element #\Space))))
 
 (defun goal9-b3-overlay-text-line (value width)
-  ;; pi@4e58f324f Text/TruncatedText owns the complete row.  This oracle is
+  ;; pi@b79e4cc83 Text/TruncatedText owns the complete row.  This oracle is
   ;; intentionally implemented from the baseline width contract instead of
   ;; calling Cadr's selector helpers.
   (let* ((limited
@@ -164,13 +164,13 @@
             :done-function (constantly nil))))))
 
 (test goal15-overlay-cursor-contract-follows-the-focused-input-component
-  ;; Fixed pi@4e58f324f input components own the cursor.  Selectors without an
+  ;; Fixed pi@b79e4cc83 input components own the cursor.  Selectors without an
   ;; Input/Focusable component return no cursor metadata at all; they do not
   ;; invent a (0, 0) cursor that the terminal renderer can accidentally show.
   (let ((expected
           '(("model" 4 2)
             ("model-scoped" 5 2)
-            ;; pi@4e58f324f focuses SettingsList, which does not implement
+            ;; pi@b79e4cc83 focuses SettingsList, which does not implement
             ;; Focusable.  Its private Input therefore never emits the
             ;; hardware-cursor marker.
             ("settings" nil nil)
@@ -197,7 +197,7 @@
           (is (eql expected-column column)))))))
 
 (test goal15-overlay-viewport-crops-the-natural-document-and-hides-offscreen-cursor
-  ;; pi@4e58f324f Tui.ts:1076-1151 lays components out at natural height,
+  ;; pi@b79e4cc83 Tui.ts:1076-1151 lays components out at natural height,
   ;; then the terminal viewport selects the visible rows.  A focused Input
   ;; above that viewport does not leak a synthetic cursor onto the screen.
   (let* ((models
@@ -243,7 +243,7 @@
            (cadr-tui:virtual-terminal-snapshot terminal))))))))
 
 (defparameter +goal9-b3-overlay-baseline-semantic-oracles+
-  ;; Each row is copied from the fixed pi@4e58f324f component contract named
+  ;; Each row is copied from the fixed pi@b79e4cc83 component contract named
   ;; in its second field.  The ordered strings are intentionally independent
   ;; of Cadr's SHA fixtures and rendering implementation.
   '(("model"
@@ -260,7 +260,7 @@
      (">" "→ Auto-compact" "Auto-resize images" "Block images"
       "Skill commands" "Show hardware cursor" "Editor padding"
       "Output padding" "Autocomplete max items" "Clear on shrink"
-      "Terminal progress" "(1/29)"
+      "Terminal progress" "(1/30)"
       "Automatically compact context when it gets too large"
       "Type to search · Enter/Space to change · Esc to cancel"))
     ("resume"
@@ -385,7 +385,7 @@
   (let ((expected
           '(("model" . "828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869")
             ("model-scoped" . "9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1")
-            ("settings" . "043894DD3451E896BE703E91709027D277EF82D37EAEC8FE36802C66C74E94CE")
+            ("settings" . "BEBF2D0C4FFB197A65CE953AECB2B542A2AB2B72E0A5F52115DF0211F4A24FC6")
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
             ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")

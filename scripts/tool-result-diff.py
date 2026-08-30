@@ -283,6 +283,22 @@ def materialize_workspace(root: Path, scenarios: list[dict[str, Any]]) -> None:
             _write_fixture_file(cwd / _safe_relative(file_spec["path"]), file_spec)
 
 
+def _fixed_fd_binary() -> Path:
+    candidates = (
+        Path("/usr/bin/fdfind"),
+        Path("/usr/bin/fd"),
+        Path("/opt/cadr/gate-tools/fdfind"),
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise GateFailure(
+        "required fixed tool is unavailable: fd (tried "
+        + ", ".join(str(path) for path in candidates)
+        + ")"
+    )
+
+
 def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
     home.mkdir(parents=True, exist_ok=True)
     home.chmod(0o777)
@@ -297,7 +313,7 @@ def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
         "bash": Path("/usr/bin/bash"),
         "setsid": Path("/usr/bin/setsid"),
         "rg": Path("/usr/bin/rg"),
-        "fd": Path("/usr/bin/fdfind"),
+        "fd": _fixed_fd_binary(),
         "grep": Path("/usr/bin/grep"),
         "head": Path("/usr/bin/head"),
         "sleep": Path("/usr/bin/sleep"),

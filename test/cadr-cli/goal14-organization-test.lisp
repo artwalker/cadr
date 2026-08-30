@@ -430,7 +430,9 @@
     ;; write-ascii-downcase.
     ;; +2 Goal 21 task 3: cli-thinking-level-for-model-switch and
     ;; model-thinking-overrides-summary (bootstrap/settings.lisp).
-    (is (= 136 definition-count)
+    ;; +2 v0.84.4: settings-fullscreen-copy-on-select-p and
+    ;; settings-terminal-capability-overrides (bootstrap/settings.lisp).
+    (is (= 138 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -592,7 +594,8 @@
     ;; +16 goal 20 K9: format-key-text*, wrap-transcript-lines,
     ;; kebab-keyword-to-camel, startup help table, dialog chrome,
     ;; armin 2D helpers, daxnuts parse cache, tui-multiline-editor-p.
-    (is (= 289 definition-count)
+    ;; +1 v0.84.4: *fullscreen-copy-on-select-hook* (controller.lisp).
+    (is (= 290 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -788,7 +791,9 @@
     ;; B7 owner set, so the top-level (def count stays 334.
     ;; +1 Goal 20 P.12.3: renderer-document-line (lifecycle-input.lisp)
     ;; indexes last-document as a vector or list.
-    (is (= 335 definition-count)
+    ;; +4 v0.84.4: fullscreen copy-on-select helpers in
+    ;; renderer/lifecycle-input.lisp.
+    (is (= 339 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -965,7 +970,8 @@
     ;; quote-or-bs-mask + ctrl-mask + find-quote-or-backslash.
     ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
     ;; SeqOneByteString word; not empty SWAR).
-    (is (= 309 definition-count)
+    ;; +1 v0.84.4: repair-unterminated-session-file (session/migration.lisp).
+    (is (= 310 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1122,7 +1128,9 @@
                 "~A does not own ~A" (first owner) marker)))))
     ;; +14 Goal 20 K6: extension-definition-bundle methods,
     ;; assert-extension-deliver-as, render-extension-named.
-    (is (= 253 definition-count)
+    ;; +5 v0.84.4: ui prompt events (context.lisp) and custom-message
+    ;; flush helpers (providers.lisp).
+    (is (= 258 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1167,7 +1175,7 @@
           (events
             (goal14-source-block
              registration "(defparameter +extension-hook-events+"
-             "    :user-bash))")))
+             "    :ui-prompt-end))")))
       (is (and exports
                (string=
                 "61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18"
@@ -1175,9 +1183,9 @@
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "47299ec9ea88222a91482ef44a767112c797a04b58b93a589f146062bd24109d"
+                "61428b4487f768838bc1d660490d9957337c308c9e57be4c5a651548483b6e07"
                 (goal14-sha256 events)))
-          "B9 changed the frozen 35-event source block"))))
+          "B9 changed the frozen 37-event source block"))))
 
 (test goal14-b9-asdf-loads-extension-host-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-agent"))

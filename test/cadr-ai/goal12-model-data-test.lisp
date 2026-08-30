@@ -51,6 +51,18 @@
   (is (string= "2026-08-07T05:53:06.539Z"
                (cadr-ai::get-builtin-model-data-generated-at))))
 
+(test g22-openrouter-thinking-level-map-matches-effort-and-mandatory
+  (is (null (cadr-ai::openrouter-thinking-level-map nil)))
+  (is (equal
+       '((:off))
+       (cadr-ai::openrouter-thinking-level-map
+        '(:mandatory t :supported-efforts nil))))
+  (let ((map
+          (cadr-ai::openrouter-thinking-level-map
+           '(:mandatory nil :supported-efforts ("none" "low" "high")))))
+    (is (equal "none" (cdr (assoc :off map))))
+    (is (equal "low" (cdr (assoc :low map))))))
+
 (test goal12-test-image-generator-writes-a-self-contained-png
   (let ((path
           (merge-pathnames

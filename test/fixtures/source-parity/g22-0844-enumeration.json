@@ -1,0 +1,42 @@
+{
+ "settingsKeys": {
+  "added": [
+   "Terminal.hyperlinks",
+   "Terminal.images",
+   "Terminal.trueColor",
+   "fullscreenCopyOnSelect"
+  ],
+  "removed": []
+ },
+ "extensionEvents": {
+  "added": [
+   "ui_prompt_end",
+   "ui_prompt_start"
+  ],
+  "removed": []
+ },
+ "environmentVariables": {
+  "added": [
+   "PI_HYPERLINKS",
+   "PI_IMAGE_PROTOCOL",
+   "PI_TRUE_COLOR"
+  ],
+  "removed": []
+ },
+ "rpcMethods": {
+  "added": [
+   "clear_queue"
+  ],
+  "removed": []
+ },
+ "publicApiExportCount": {
+  "from": 34,
+  "to": 35
+ },
+ "files": {
+  "addedNonTest": [
+   "packages/ai/scripts/openrouter-reasoning-options.ts"
+  ],
+  "removedNonTest": []
+ }
+}

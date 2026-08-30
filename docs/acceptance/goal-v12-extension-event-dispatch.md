@@ -1,6 +1,6 @@
 # Goal 12 extension event dispatch audit
 
-The public event set contains 35 events. Declaration and result validation do
+The public event set contains 37 events. Declaration and result validation do
 not count as implementation: every row below names the production dispatch
 site and a test that installs a handler, drives that production path, and
 asserts that the handler was called.
@@ -42,6 +42,8 @@ asserts that the handler was called.
 | `:before-provider-headers` | `src/cadr-cli/sdk-services.lisp:623` | `PROVIDER-LIFECYCLE-EXTENSION-HOOKS-RUN-ON-THE-REAL-STREAM-SURFACE`, `test/cadr-cli/part-b-sdk-test.lisp:397` |
 | `:after-provider-response` | `src/cadr-cli/sdk-services.lisp:633` | `PROVIDER-LIFECYCLE-EXTENSION-HOOKS-RUN-ON-THE-REAL-STREAM-SURFACE`, `test/cadr-cli/part-b-sdk-test.lisp:397` |
 | `:user-bash` | `src/cadr-cli/tools/bash.lisp:384` | `WAVE3-STARTUP-RESOURCE-TRUST-AND-USER-BASH-HOOKS-ARE-WIRED`, `test/cadr-cli/extensions-test.lisp:592` |
+| `:ui-prompt-start` | `src/cadr-agent/extensions/context.lisp:382` | `G22-UI-PROMPT-EVENTS-WRAP-THE-OUTERMOST-EXTENSION-PROMPT`, `test/cadr-agent/extensions-wave3-test.lisp:12` |
+| `:ui-prompt-end` | `src/cadr-agent/extensions/context.lisp:382` | `G22-UI-PROMPT-EVENTS-WRAP-THE-OUTERMOST-EXTENSION-PROMPT`, `test/cadr-agent/extensions-wave3-test.lisp:12` |
 
 The audit found one declared-but-disconnected event:
 `:session-before-compact`. Its result validator and merge path existed, but the

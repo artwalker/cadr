@@ -2,7 +2,7 @@
 
 The 24 JSON request fixtures are generated from
 [`earendil-works/pi`](https://github.com/earendil-works/pi) commit
-`4e58f324fae8ebfa98a3d45181fb248072a2afac` with the same system prompt,
+`b79e4cc834970cca69daebffab7df1da7d1e52c4` with the same system prompt,
 user message, tool, model IDs, and 4096-token limit used by the Common Lisp
 test.
 

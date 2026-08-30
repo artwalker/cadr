@@ -174,6 +174,39 @@ The modified non-test files between v0.84.2 and v0.84.3 are governed by the
 existing behavioral and source re-audit; their deltas land in the goal 21
 implementation lanes before the fixed ledger advances to v0.84.3.
 
+### v0.84.4 enumeration result (4e58f324 → v0.84.4, generated 2026-08-29)
+
+| Class | Delta |
+|---|---|
+| CLI flags | none |
+| slash commands | none |
+| settings keys | +`Terminal.hyperlinks`, +`Terminal.images`, +`Terminal.trueColor`, +`fullscreenCopyOnSelect` |
+| extension events | +`ui_prompt_start`, +`ui_prompt_end` |
+| exported components | none |
+| keybinding actions | none |
+| providers | none |
+| environment variables | +`PI_HYPERLINKS`, +`PI_IMAGE_PROTOCOL`, +`PI_TRUE_COLOR` (cadr runtime: `CADR_*` only) |
+| theme tokens | none |
+| error classes | none |
+| tool files | none |
+| extension type fields | none |
+| public API exports | 34 → 35 (`detectSupportedImageMimeTypeFromFile`; cadr already detects image MIME internally) |
+| RPC methods | +`clear_queue` |
+| exit codes / session format | none |
+| files | +7 `.ts` under `packages/`; of these **+1 non-test** (`packages/ai/scripts/openrouter-reasoning-options.ts`) |
+
+v0.84.4 file dispositions (four-column TSV):
+
+```text
+status	old_path	new_path	decision
+A	-	packages/ai/scripts/openrouter-reasoning-options.ts	implement: OpenRouter thinking-level mapper; map to openrouter-thinking-level-map in src/cadr-ai/model-data.lisp
+```
+
+The committed fixture copy lives at
+`test/fixtures/source-parity/g22-0844-dispositions.tsv`; named-set deltas are
+locked in `test/fixtures/source-parity/g22-0844-enumeration.json` and exercised
+by `test/goal22-source-parity-test.py`.
+
 This mode enters only the six-column package tables headed by `Baseline file`,
 ignores prose and summary tables, accepts exactly the three ledger verdicts,
 and fails on malformed separators/rows, duplicates, a row count different from

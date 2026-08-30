@@ -62,7 +62,10 @@
   (event-listeners (make-hash-table :test #'equal)
                    :type hash-table)
   (event-lock (sb-thread:make-mutex
-               :name "cadr-extension-events")))
+               :name "cadr-extension-events"))
+  (ui-prompt-depth 0 :type (integer 0 *))
+  active-ui-prompt
+  (pending-custom-messages nil :type list))
 
 ;;; Public handler values
 
@@ -367,8 +370,50 @@
   (assert-active-extension-context context)
   (let* ((host (%extension-context-host context))
          (function (extension-host-ui-function host)))
-    (and function
-         (funcall function method arguments))))
+    (if (and function
+             (member method
+                     '(:select :confirm :input :editor :custom)))
+        (call-with-extension-ui-prompt
+         host method (getf arguments :title)
+         (lambda ()
+           (funcall function method arguments)))
+        (and function
+             (funcall function method arguments)))))
+
+(defun call-with-extension-ui-prompt (host kind title thunk)
+  ;; pi@b79e4cc83 extensions/runner.ts withUIPrompt: nest prompts, emit
+  ;; ui_prompt_start/end only on the outermost wait.
+  (let ((outer-p
+          (zerop (extension-host-ui-prompt-depth host))))
+    (incf (extension-host-ui-prompt-depth host))
+    (when outer-p
+      (setf (extension-host-active-ui-prompt host)
+            (list :kind kind :title title))
+      (emit-ui-prompt-event host :ui-prompt-start kind title))
+    (unwind-protect
+         (funcall thunk)
+      (when (plusp (extension-host-ui-prompt-depth host))
+        (decf (extension-host-ui-prompt-depth host)))
+      (when (zerop (extension-host-ui-prompt-depth host))
+        (let ((prompt
+                (or (extension-host-active-ui-prompt host)
+                    (list :kind kind :title title))))
+          (setf (extension-host-active-ui-prompt host) nil)
+          (emit-ui-prompt-event
+           host :ui-prompt-end
+           (getf prompt :kind)
+           (getf prompt :title)))))))
+
+(defun emit-ui-prompt-event (host type kind title)
+  (ignore-errors
+    (run-extension-lifecycle-hooks
+     host type
+     :payload
+     (append
+      (list :reason :ui-prompt :kind kind)
+      (and (stringp title)
+           (plusp (length title))
+           (list :title title))))))
 
 (defun extension-context-select
     (context title options &key signal timeout-ms)

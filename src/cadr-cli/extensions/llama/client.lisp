@@ -3,7 +3,7 @@
 (defparameter +default-llama-server-url+
   "http://127.0.0.1:8080")
 
-(defstruct llama-model-info
+  (defstruct llama-model-info
   (id "" :type string)
   (status :unloaded :type keyword)
   (arguments nil :type list)
@@ -12,7 +12,8 @@
   training-context-window
   (failed-p nil :type boolean)
   exit-code
-  progress)
+  progress
+  source)
 
 (defstruct (llama-client
             (:constructor %make-llama-client))
@@ -202,7 +203,19 @@
                          "exit_code"))
      :progress
      (cadr-ai::json-get status-object
-                        "progress"))))
+                        "progress")
+     :source
+     (let ((source (cadr-ai::json-get object "source")))
+       (and (stringp source) source)))))
+
+(defun llama-client-props (client)
+  (let ((payload (llama-request-json client "/props")))
+    (if (hash-table-p payload)
+        (list
+         :models-autoload
+         (eq t
+             (cadr-ai::json-get payload "models_autoload")))
+        nil)))
 
 (defun llama-client-list
     (client &key reload-p)

@@ -164,6 +164,27 @@
        (cadr-ai:model-supports-images-p
         (first models))))))
 
+(test llama-provider-includes-sleeping-and-autoload-presets
+  (let ((controller
+          (cadr-cli::make-llama-provider-controller)))
+    (cadr-cli::llama-provider-set-catalog
+     controller
+     (list
+      (cadr-cli::make-llama-model-info :id "asleep" :status :sleeping)
+      (cadr-cli::make-llama-model-info
+       :id "preset-one" :status :unloaded :source "preset")
+      (cadr-cli::make-llama-model-info
+       :id "failed-preset" :status :unloaded :source "preset"
+       :failed-p t))
+     "http://localhost:8080"
+     :router-autoload-p t)
+    (let ((ids
+            (mapcar #'cadr-ai:model-id
+                    (cadr-ai:runtime-provider-models
+                     (cadr-cli::llama-provider-controller-provider
+                      controller)))))
+      (is (equal '("asleep" "preset-one") ids)))))
+
 (test llama-provider-restores-provider-scoped-cache-and-resolves-auth
   (let* ((calls 0)
          (cadr-ai:*http-request-function*

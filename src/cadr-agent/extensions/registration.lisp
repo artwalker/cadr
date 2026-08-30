@@ -367,7 +367,9 @@
     :before-provider-request
     :before-provider-headers
     :after-provider-response
-    :user-bash))
+    :user-bash
+    :ui-prompt-start
+    :ui-prompt-end))
 
 (defun register-extension-hook
     (event &key (priority 0) handler)

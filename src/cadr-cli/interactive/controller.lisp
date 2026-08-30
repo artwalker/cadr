@@ -3,12 +3,17 @@
 (defvar *tui-mode-switch-hook* nil
   "When bound, called with the new tuiMode settings value to
 live-switch the running renderer; returns true when the switch
-happened.  pi@4e58f324f interactive-mode.ts:4557-4567
+happened.  pi@b79e4cc83 interactive-mode.ts:4557-4567
 onTuiModeChange.")
+
+(defvar *fullscreen-copy-on-select-hook* nil
+  "When bound, called with the new fullscreenCopyOnSelect boolean so
+the running alt-screen renderer can update copyOnSelect
+(pi@b79e4cc83 interactive-mode.ts:4584).")
 
 (defvar *alt-screen-flash-function* nil
   "When non-nil, called with a message string to show a transient
-fullscreen flash instead of a status line (pi@4e58f324f
+fullscreen flash instead of a status line (pi@b79e4cc83
 interactive-mode.ts:5956-5960).")
 
 (defun should-use-tui-p
@@ -148,7 +153,8 @@ interactive-mode.ts:5956-5960).")
      &key show-hardware-cursor-p
        clear-on-shrink-p
        (scrollbar-mode :auto)
-       (exit-output-mode :transcript))
+       (exit-output-mode :transcript)
+       (copy-on-select-p t))
   (cadr-tui:make-terminal-renderer
    terminal
    :alt-p alt-p
@@ -157,8 +163,9 @@ interactive-mode.ts:5956-5960).")
    :clear-on-shrink-p clear-on-shrink-p
    :scrollbar-mode scrollbar-mode
    :exit-output-mode exit-output-mode
+   :copy-on-select-p copy-on-select-p
    :copy-selection-function
-   ;; v0.84.3 tui-alt-screen.ts copySelection: the native/platform
+   ;; v0.84.4 tui-alt-screen.ts copySelection: the native/platform
    ;; clipboard with a verified success path, OSC 52 as its own
    ;; fallback inside copy-to-clipboard.
    (lambda (text)
@@ -323,6 +330,8 @@ interactive-mode.ts:5956-5960).")
        clear-on-shrink-p
        (scrollbar-mode :auto)
        (exit-output-mode :transcript)
+       (copy-on-select-p t)
+       last-assistant-text-function
        (clock-function #'tui-monotonic-seconds)
        (sleep-function #'sleep)
        (terminal
@@ -376,7 +385,9 @@ interactive-mode.ts:5956-5960).")
                 (or (funcall mermaid-mode-function) "streaming")
                 "streaming")
             :session session
-            :messages messages))
+            ;; Seed after managed-tool ensure so offline fd/rg warnings
+            ;; sit above restored session messages (interactive-mode.ts).
+            :messages nil))
          (editor
            (let ((editor
                    (cadr-tui:make-multiline-editor
@@ -410,7 +421,8 @@ interactive-mode.ts:5956-5960).")
             :clear-on-shrink-p
             clear-on-shrink-p
             :scrollbar-mode scrollbar-mode
-            :exit-output-mode exit-output-mode))
+            :exit-output-mode exit-output-mode
+            :copy-on-select-p copy-on-select-p))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -429,9 +441,6 @@ interactive-mode.ts:5956-5960).")
          (worker nil)
          (extension-prompt-worker nil)
          (unwrap-tui-turn-dispatch nil)
-         (version-update-worker nil)
-         (package-update-worker nil)
-         (tool-ensure-worker nil)
          (session-loader-worker nil)
          (custom-ui-lock
            (sb-thread:make-mutex
@@ -2188,7 +2197,7 @@ interactive-mode.ts:5956-5960).")
                            (oauth-selector-option-id value))
                         (declare (ignore provider))
                         (if sync-error
-                            ;; pi@4e58f324f interactive-mode.ts:5399 —
+                            ;; pi@b79e4cc83 interactive-mode.ts:5399 —
                             ;; the synchronization failure replaces the
                             ;; success status.
                             (show-error
@@ -2224,7 +2233,7 @@ interactive-mode.ts:5956-5960).")
                            provider
                            (getf value :key))
                         (if sync-error
-                            ;; pi@4e58f324f interactive-mode.ts:5548 —
+                            ;; pi@b79e4cc83 interactive-mode.ts:5548 —
                             ;; the synchronization failure replaces the
                             ;; success status.
                             (show-error
@@ -2329,7 +2338,7 @@ interactive-mode.ts:5956-5960).")
                   (format nil "~A" condition)))))
            (refresh-footer-state))
          (switch-tui-mode (mode)
-           ;; pi@4e58f324f interactive-mode.ts:788-832 switchTuiMode +
+           ;; pi@b79e4cc83 interactive-mode.ts:788-832 switchTuiMode +
            ;; :4557-4567 onTuiModeChange.  The baseline guard ("Close
            ;; active overlays before changing TUI mode") requires a
            ;; stacked overlay above the settings selector; cadr's
@@ -2646,6 +2655,38 @@ interactive-mode.ts:5956-5960).")
                  (:dequeue
                   (restore-queued-messages :notify-p t)
                   (request-render))
+                 (:copy
+                  (cond
+                    ((and alt-p
+                          (not
+                           (cadr-tui:terminal-renderer-copy-on-select-p
+                            renderer))
+                          (cadr-tui:renderer-has-active-selection-p
+                           renderer))
+                     (cadr-tui:renderer-copy-active-selection
+                      renderer)
+                     (request-render))
+                    (t
+                     (let ((text
+                             (and last-assistant-text-function
+                                  (funcall
+                                   last-assistant-text-function))))
+                       (if (and (stringp text)
+                                (plusp (length text)))
+                           (handler-case
+                               (progn
+                                 (copy-to-clipboard text)
+                                 (if *alt-screen-flash-function*
+                                     (funcall
+                                      *alt-screen-flash-function*
+                                      "Copied!")
+                                     (status
+                                      "Copied last agent message to clipboard")))
+                             (condition (condition)
+                               (show-error
+                                (princ-to-string condition))))
+                           (show-error
+                            "No agent messages to copy yet."))))))
                  (:model-cycle-forward
                   (cycle-model :forward))
                  (:model-cycle-backward
@@ -2705,40 +2746,31 @@ interactive-mode.ts:5956-5960).")
                 (call-with-tui-command-error-notice
                  thunk #'show-error))
               :name "cadr-tui-extension-prompt"))))))
-      (when version-update-check-function
-        (setf
-         version-update-worker
-         (sb-thread:make-thread
-          (lambda ()
-            (handler-case
-                (show-version-update
-                 (funcall
-                  version-update-check-function))
-              (condition () nil)))
-          :name "cadr-version-update-check")))
-      (when package-update-check-function
-        (setf
-         package-update-worker
-         (sb-thread:make-thread
-          (lambda ()
-            (handler-case
-                (show-package-updates
-                 (funcall
-                  package-update-check-function))
-              (condition () nil)))
-          :name "cadr-package-update-check")))
       (when tool-ensure-function
-        ;; Baseline v0.84.3 interactive-mode.ts: fd/rg download runs
-        ;; after the UI mounts so a slow fetch cannot freeze startup.
-        (setf
-         tool-ensure-worker
-         (sb-thread:make-thread
-          (lambda ()
-            (handler-case
-                (funcall tool-ensure-function)
-              (condition () nil)))
-          :name "cadr-tool-ensure")))
+        ;; Await fd/rg before seeding session messages, matching
+        ;; interactive-mode.ts ensureTool then rebindCurrentSession.
+        (handler-case
+            (funcall tool-ensure-function)
+          (condition () nil)))
+      (dolist (message messages)
+        (seed-tui-message state message))
+      (when version-update-check-function
+        (handler-case
+            (show-version-update
+             (funcall version-update-check-function))
+          (condition () nil)))
+      (when package-update-check-function
+        (handler-case
+            (show-package-updates
+             (funcall package-update-check-function))
+          (condition () nil)))
       (setf *tui-mode-switch-hook* #'switch-tui-mode
+            *fullscreen-copy-on-select-hook*
+            (lambda (enabled)
+              (setf
+               (cadr-tui:terminal-renderer-copy-on-select-p
+                renderer)
+               (not (null enabled))))
             *alt-screen-flash-function*
             (and alt-p
                  (lambda (message)
@@ -2909,6 +2941,7 @@ interactive-mode.ts:5956-5960).")
               (cadr-tui:renderer-after-stop
                renderer))))
         (setf *tui-mode-switch-hook* nil
+              *fullscreen-copy-on-select-hook* nil
               *alt-screen-flash-function* nil)
         (finish-custom-ui nil)
         (when unwrap-tui-turn-dispatch
@@ -2937,15 +2970,6 @@ interactive-mode.ts:5956-5960).")
                   session-loader-worker))
           (stop-thread-for-cleanup
            session-loader-worker))
-        (dolist (update-worker
-                 (list version-update-worker
-                       package-update-worker
-                       tool-ensure-worker))
-          (when (and update-worker
-                     (sb-thread:thread-alive-p
-                      update-worker))
-            (stop-thread-for-cleanup
-             update-worker)))
         (when set-event-consumer
           (funcall set-event-consumer nil))
         (when set-notice-consumer

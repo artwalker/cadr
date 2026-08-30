@@ -480,7 +480,7 @@
           (cadr-cli::resolve-user-keybindings manager agent-dir)
           :test #'string=)))))))
 (test goal15-clear-on-shrink-setting-precedes-environment-and-defaults-off
-  ;; pi@4e58f324f settings-manager.ts:1093-1099: an explicit terminal setting
+  ;; pi@b79e4cc83 settings-manager.ts:1093-1099: an explicit terminal setting
   ;; wins, the environment is only a fallback, and the default is false.
   #+sbcl
   (let ((previous (uiop:getenv "CADR_CLEAR_ON_SHRINK")))
@@ -529,6 +529,16 @@
            "two"
            (cadr-cli::settings-default-model
             manager)))
+      (let ((model
+              (cadr-ai:make-model
+               :id "three" :name "Three"
+               :provider :faux :api :openai-responses)))
+        (cadr-cli::add-persisted-default-to-non-empty-scope
+         manager model)
+        (is (equal
+             '("faux/unavailable" "faux/two"
+               "faux/one" "faux/three")
+             (cadr-cli::settings-enabled-models manager))))
       (cadr-cli::settings-set-enabled-models
        manager :all)
       (let ((persisted

@@ -175,7 +175,7 @@
                                 (stringp result-reason))
                              (error
                               "Hook block reason must be a string or NIL")))
-                         ;; pi@4e58f324f extensions/types.ts:1075-1079 — the
+                         ;; pi@b79e4cc83 extensions/types.ts:1075-1079 — the
                          ;; before hook may set terminate on a block;
                          ;; agent-loop.ts:638-639 applies it to the blocked
                          ;; result.  Without a block it is ignored.
@@ -231,7 +231,9 @@
     :tool-execution-end
     :model-select
     :thinking-level-select
-    :after-provider-response))
+    :after-provider-response
+    :ui-prompt-start
+    :ui-prompt-end))
 
 (defun strict-keyword-plist-p (value)
   (and

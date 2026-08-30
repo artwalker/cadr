@@ -186,3 +186,20 @@
          "plain"
          (cadr-tui:crop-kitty-image-line
           "plain" 1 1)))))
+
+(test terminal-capability-overrides-honor-cadr-environment
+  (cadr-tui:reset-capability-overrides)
+  (unwind-protect
+       (let ((forced
+               (cadr-tui:detect-terminal-capabilities
+                :environment
+                '("TERM=xterm-256color"
+                  "CADR_HYPERLINKS=1"
+                  "CADR_TRUE_COLOR=0"
+                  "CADR_IMAGE_PROTOCOL=kitty"))))
+         (is (eq :kitty
+                 (cadr-tui:terminal-capabilities-images forced)))
+         (is (cadr-tui:terminal-capabilities-hyperlinks-p forced))
+         (is (not
+              (cadr-tui:terminal-capabilities-true-color-p forced))))
+    (cadr-tui:reset-capability-overrides)))

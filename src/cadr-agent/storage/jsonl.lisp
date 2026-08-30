@@ -255,6 +255,7 @@
                     storage))))
             (commit-memory-storage-entry
              storage entry))))
+      (repair-unterminated-session-file absolute)
       storage)))
 
 (defmethod session-storage-append-entry

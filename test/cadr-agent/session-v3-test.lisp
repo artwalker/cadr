@@ -1249,3 +1249,40 @@
       (is (= 1.25d0 (cadr-ai:cost-input (cadr-ai:usage-cost decimal))))
       (is (= 0.5d0 (cadr-ai:cost-output (cadr-ai:usage-cost decimal))))
       (is (= 1.75d0 (cadr-ai:cost-total (cadr-ai:usage-cost decimal)))))))
+
+(test load-session-repairs-a-missing-trailing-newline
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "tail"
+              :timestamp 100))
+           (path (cadr-agent:session-path session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "persist"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 101))
+      (cadr-agent::close-session-journal-stream session)
+      (let ((text (uiop:read-file-string path)))
+        (with-open-file
+            (stream path :direction :output :if-exists :supersede
+                    :external-format :utf-8)
+          (write-string (string-right-trim '(#\Newline) text) stream)))
+      (cadr-agent:load-session path)
+      (let ((octets
+              (with-open-file
+                  (stream path :element-type '(unsigned-byte 8))
+                (let ((buffer
+                        (make-array (file-length stream)
+                                    :element-type '(unsigned-byte 8))))
+                  (read-sequence buffer stream)
+                  buffer))))
+        (is (plusp (length octets)))
+        (is (= 10 (aref octets (1- (length octets)))))))))

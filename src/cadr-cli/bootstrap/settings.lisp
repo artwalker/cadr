@@ -71,7 +71,7 @@
          nil)))))
 
 (defun settings-clear-on-shrink-p (manager)
-  ;; pi@4e58f324f settings-manager.ts:1093-1099 gives an explicit setting
+  ;; pi@b79e4cc83 settings-manager.ts:1093-1099 gives an explicit setting
   ;; precedence over the environment and defaults to false.
   (settings-boolean-value
    manager "terminal"
@@ -95,14 +95,14 @@
         default)))
 
 (defun settings-tui-mode (manager)
-  ;; pi@4e58f324f settings-manager.ts:1128-1130 — only the exact string
+  ;; pi@b79e4cc83 settings-manager.ts:1128-1130 — only the exact string
   ;; "fullscreen" selects fullscreen; everything else is regular.
   (if (string= (settings-value manager "tuiMode" "") "fullscreen")
       :fullscreen
       :regular))
 
 (defun parse-default-tools-setting (value)
-  ;; Baseline v0.84.3 settings-manager.ts getDefaultTools: a string array
+  ;; Baseline v0.84.4 settings-manager.ts getDefaultTools: a string array
   ;; passes through as a copy; anything else is absent.
   (and (vectorp value)
        (every #'stringp value)
@@ -113,21 +113,57 @@
    (settings-value manager "defaultTools")))
 
 (defun settings-fullscreen-scrollbar (manager)
-  ;; pi@4e58f324f settings-manager.ts:1138-1141 — "always"/"hidden" pass
+  ;; pi@b79e4cc83 settings-manager.ts:1138-1141 — "always"/"hidden" pass
   ;; through; everything else falls back to "auto".  No effect in
   ;; regular TUI mode.
   (settings-choice-value
    manager "fullscreenScrollbar" '("auto" "always" "hidden") "auto"))
 
 (defun settings-fullscreen-exit-output (manager)
-  ;; Baseline v0.84.3 settings-manager.ts getFullscreenExitOutput.
+  ;; Baseline v0.84.4 settings-manager.ts getFullscreenExitOutput.
   (if (string= (settings-value manager "fullscreenExitOutput" "")
                "resume-hint")
       :resume-hint
       :transcript))
 
+(defun settings-fullscreen-copy-on-select-p (manager)
+  ;; pi@b79e4cc83 settings-manager.ts getFullscreenCopyOnSelect: default true.
+  (let ((value
+          (settings-value manager "fullscreenCopyOnSelect" t)))
+    (not (eq value nil))))
+
+(defun settings-terminal-capability-overrides (manager)
+  ;; pi@b79e4cc83 settings-manager.ts getTerminalCapabilityOverrides.
+  (let ((terminal
+          (settings-value manager "terminal"))
+        (overrides nil))
+    (when (hash-table-p terminal)
+      (when (cadr-ai::json-present-p terminal "images")
+        (let ((images
+                (cadr-ai::json-get terminal "images")))
+          (cond
+            ((or (string= images "kitty")
+                 (string= images "iterm2"))
+             (setf (getf overrides :images)
+                   (intern (string-upcase images) :keyword)))
+            ((or (eq images nil)
+                 (eq images :false)
+                 (string= images "none"))
+             (setf (getf overrides :images) nil)))))
+      (when (cadr-ai::json-present-p terminal "trueColor")
+        (let ((value
+                (cadr-ai::json-get terminal "trueColor")))
+          (when (or (eq value t) (eq value nil))
+            (setf (getf overrides :true-color-p) value))))
+      (when (cadr-ai::json-present-p terminal "hyperlinks")
+        (let ((value
+                (cadr-ai::json-get terminal "hyperlinks")))
+          (when (or (eq value t) (eq value nil))
+            (setf (getf overrides :hyperlinks-p) value)))))
+    overrides))
+
 (defun settings-mermaid-rendering-mode (manager)
-  ;; pi@4e58f324f settings-manager.ts:1252-1255 — markdown.mermaid is
+  ;; pi@b79e4cc83 settings-manager.ts:1252-1255 — markdown.mermaid is
   ;; nested; "off"/"final" pass through, anything else is "streaming".
   (let ((mode
           (settings-nested-value
@@ -496,7 +532,7 @@
               settings-manager
               "hideThinkingBlock" nil)
             :values (list t nil))
-           ;; pi@4e58f324f settings-selector.ts:539-546
+           ;; pi@b79e4cc83 settings-selector.ts:539-546
            (make-settings-option
             :id "mermaid-rendering"
             :label "Mermaid diagrams"
@@ -640,7 +676,7 @@
                (model-thinking-overrides-summary
                 settings-manager))
              :submenu :model-thinking)
-           ;; pi@4e58f324f settings-selector.ts:634-646
+           ;; pi@b79e4cc83 settings-selector.ts:634-646
            (make-settings-option
             :id "tui-mode"
             :label "TUI mode"
@@ -669,6 +705,17 @@
             :value
             (settings-fullscreen-scrollbar settings-manager)
             :values '("auto" "always" "hidden"))
+           (make-settings-option
+            :id "fullscreen-copy-on-select"
+            :label "Fullscreen copy on select"
+            :description
+            "Automatically copy selected text in fullscreen mode; disable to copy selections with Ctrl+X"
+            :value
+            (if (settings-fullscreen-copy-on-select-p
+                 settings-manager)
+                "true"
+                "false")
+            :values '("true" "false"))
            (make-settings-option
             :id "theme"
              :label "Theme"
@@ -769,7 +816,7 @@
            "markdown" "mermaid" value
            :scope :global))
          ((string= id "tui-mode")
-          ;; pi@4e58f324f interactive-mode.ts:4557-4567: switch the
+          ;; pi@b79e4cc83 interactive-mode.ts:4557-4567: switch the
           ;; running renderer first, persist only on success.
           (if *tui-mode-switch-hook*
               (when (funcall *tui-mode-switch-hook* value)
@@ -787,6 +834,13 @@
           (settings-set
            settings-manager "fullscreenScrollbar" value
            :scope :global))
+         ((string= id "fullscreen-copy-on-select")
+          (let ((enabled (string= value "true")))
+            (settings-set
+             settings-manager "fullscreenCopyOnSelect" enabled
+             :scope :global)
+            (when *fullscreen-copy-on-select-hook*
+              (funcall *fullscreen-copy-on-select-hook* enabled))))
          ((string= id "steering-mode")
           (setf
            (cadr-agent:agent-steering-mode agent)

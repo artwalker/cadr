@@ -1,47 +1,47 @@
 {
   "schemaVersion": 3,
-  "baselineCommit": "4e58f324fae8ebfa98a3d45181fb248072a2afac",
+  "baselineCommit": "b79e4cc834970cca69daebffab7df1da7d1e52c4",
   "entries": [
     {
-  "id": "VS-5b4d79218b4929c5",
+      "id": "VS-677ac690a336bb20",
       "branchId": "B-fd13d93a29bf",
-  "reason": "main.ts:150 'Failed to parse auth command' fires only when parseCredentialPrintCommand throws a non-CredentialPrintError; all twelve baseline throw sites (cli/credential-print.ts:38,51,56,68,71,74,99,111,140,143,145,149) throw CredentialPrintError with a message, so the fallback is unreachable through any user input.",
+      "reason": "main.ts:141 'Failed to parse auth command' (inventory site line 142) fires only when parseAuthCommand throws a non-AuthCommandError; all eight baseline throw sites in cli/auth-command.ts (60,74,77,84,103,106,110,115) throw AuthCommandError with a message, so the fallback is unreachable through any user input.",
       "obstacleKind": "unreachable-in-baseline",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/main.ts",
-    "line": 150
+        "line": 142
       },
       "probe": {
-        "command": ["grep", "-c", "throw new CredentialPrintError", "packages/coding-agent/src/cli/credential-print.ts"],
-        "expected": "12",
-        "observed": "12"
+        "command": ["grep", "-c", "throw new AuthCommandError", "packages/coding-agent/src/cli/auth-command.ts"],
+        "expected": "8",
+        "observed": "8"
       },
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-6447d2fd0b8dfeac",
+      "id": "VS-c61790115117cc54",
       "branchId": "B-3f0215f4a9d2",
-  "reason": "main.ts:211 'Failed to resolve credential' fires only on a non-CredentialPrintError throw; resolveCredentialForPrint throws only CredentialPrintError and ModelRuntime.create({allowModelNetwork:false}) reports models.json failures as values (core/model-config.ts:251,261,271), never throws.",
+      "reason": "main.ts:202 'Failed to resolve credential' (inventory site line 203) fires only on a non-AuthCommandError throw; resolveCredentialForPrint and auth-check throw only AuthCommandError, and ModelRuntime.create({allowModelNetwork:false}) reports models.json failures as values (core/model-config.ts:249,255,256,266,278), never throws.",
       "obstacleKind": "unreachable-in-baseline",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/main.ts",
-    "line": 211
+        "line": 203
       },
       "probe": {
         "command": ["grep", "-n", "return new ModelConfig", "packages/coding-agent/src/core/model-config.ts"],
-        "expected": "load/parse/schema failures returned as ModelConfig error values at lines 251,261,271",
-        "observed": "all three sites return error values instead of throwing"
+        "expected": "load/parse/schema failures returned as ModelConfig error values at lines 249,255,256,266,278",
+        "observed": "those sites return error values instead of throwing"
       },
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-bb58c66ea271c03f",
+      "id": "VS-a8a65ce1faab0ca5",
       "branchId": "B-fa0be7fade22",
-  "reason": "main.ts:633 'Failed to export session' fires only when exportFromFile throws a value without a message; every baseline throw site (core/export-html/index.ts:245,248,293) throws an Error with a message.",
+      "reason": "main.ts:625 'Failed to export session' (inventory site line 626) fires only when exportFromFile throws a value without a message; every baseline throw site (core/export-html/index.ts:245,248,293) throws an Error with a message.",
       "obstacleKind": "unreachable-in-baseline",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/main.ts",
-    "line": 633
+        "line": 626
       },
       "probe": {
         "command": ["grep", "-n", "throw new Error", "packages/coding-agent/src/core/export-html/index.ts"],
@@ -51,13 +51,13 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-6ff70f58a3779492",
+      "id": "VS-fa0285d4c9dc3e98",
       "branchId": "B-85d3c79ec77b",
-  "reason": "package-manager-cli.ts:733 'Unknown model catalog refresh error' fires only when refreshModelCatalogs throws a messageless value; its network and parse failures are all Errors with messages.",
+      "reason": "package-manager-cli.ts:918 'Unknown model catalog refresh error' (inventory site line 919) fires only when refreshModelCatalogs throws a messageless value; its network and parse failures are all Errors with messages.",
       "obstacleKind": "unreachable-in-baseline",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
-    "line": 733
+        "line": 919
       },
       "probe": {
         "command": ["grep", "-rn", "throw new", "packages/ai/src/models/"],
@@ -67,29 +67,29 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-e6a6aff1812e4741",
+      "id": "VS-9bea6c9d5bfd2547",
       "branchId": "B-c5a60ab5ff3b",
-  "reason": "package-manager-cli.ts:870 'Unknown package command error' is the catch-all fallback for messageless throws around package operations and the self-update runner; every baseline failure path produces an Error with a message.",
+      "reason": "package-manager-cli.ts:1082 and :1097 'Unknown package command error' (inventory sites 1083 and 1098 share this branch) is the catch-all fallback for messageless throws around package operations and the self-update runner; every baseline failure path produces an Error with a message.",
       "obstacleKind": "unreachable-in-baseline",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
-    "line": 870
+        "line": 1083
       },
       "probe": {
-        "command": ["grep", "-c", "message ?? \"Unknown package command error\"", "packages/coding-agent/src/package-manager-cli.ts"],
+        "command": ["grep", "-c", "Unknown package command error", "packages/coding-agent/src/package-manager-cli.ts"],
         "expected": "2",
         "observed": "2"
       },
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-      "id": "VS-330e0b10cc765a60",
+      "id": "VS-fb5c78f1934950c8",
       "branchId": "B-d987d23f73bb",
-      "reason": "migrations.ts:148 'Warning: Could not migrate' fires only when renameSync fails (EACCES on the agent directory); the gate runs as root so permission bits never fail, tsx loads the baseline through ESM so fs patching cannot reach the import (verified empirically), and a setuid child cannot read the 0700 instrumented tree.",
+      "reason": "migrations.ts:150 'Warning: Could not migrate' (inventory site line 149) fires only when renameSync fails (EACCES on the agent directory); the gate runs as root so permission bits never fail, tsx loads the baseline through ESM so fs patching cannot reach the import (verified empirically), and a setuid child cannot read the 0700 instrumented tree.",
       "obstacleKind": "unreachable-in-harness",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/migrations.ts",
-        "line": 148
+        "line": 149
       },
       "probe": {
         "command": ["id", "-u"],
@@ -99,13 +99,13 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-      "id": "VS-330e0b10cc765a60",
+      "id": "VS-fb5c78f1934950c8",
       "branchId": "B-4b479e0533e6",
-      "reason": "Second fixed fragment of the same migrations.ts:148 failure arm (' commands/ to prompts/: '); same rename-failure preconditions as B-d987d23f73bb. cadr's failure arm is locked by FiveAM through the *migration-rename-function* injection seam.",
+      "reason": "Second fixed fragment of the same migrations.ts:150 failure arm (' commands/ to prompts/: '); same rename-failure preconditions as B-d987d23f73bb. cadr's failure arm is locked by FiveAM through the *migration-rename-function* injection seam.",
       "obstacleKind": "unreachable-in-harness",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/migrations.ts",
-        "line": 148
+        "line": 149
       },
       "probe": {
         "command": ["id", "-u"],
@@ -115,13 +115,13 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-      "id": "VS-a82e6cc335d3e727",
+      "id": "VS-38e275ab7158158f",
       "branchId": "B-a329842f84c5",
-      "reason": "file-processor.ts:80 'Error: Could not read file' fires only when readFile fails after mime detection succeeded (EACCES); a directory never reaches it in the baseline (mime detection throws EISDIR first — the baseline crashes there, and cadr normalizes that case to this wording per the P0-1 rule). Root harness cannot induce EACCES.",
+      "reason": "file-processor.ts:81 'Error: Could not read file' fires only when readFile fails after mime detection succeeded (EACCES); a directory never reaches it in the baseline (mime detection throws EISDIR first — the baseline crashes there, and cadr normalizes that case to this wording per the P0-1 rule). Root harness cannot induce EACCES.",
       "obstacleKind": "unreachable-in-harness",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/cli/file-processor.ts",
-        "line": 80
+        "line": 81
       },
       "probe": {
         "command": ["id", "-u"],
@@ -131,13 +131,13 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-      "id": "VS-a82e6cc335d3e727",
+      "id": "VS-38e275ab7158158f",
       "branchId": "B-c1b8a22b174c",
-      "reason": "Second fixed fragment (': ') of the same file-processor.ts:80 failure arm; same preconditions as B-a329842f84c5. cadr's directory case is locked by goal18-file-argument-directory-is-a-normalized-error.",
+      "reason": "Second fixed fragment (': ') of the same file-processor.ts:81 failure arm; same preconditions as B-a329842f84c5. cadr's directory case is locked by goal18-file-argument-directory-is-a-normalized-error.",
       "obstacleKind": "unreachable-in-harness",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/cli/file-processor.ts",
-        "line": 80
+        "line": 81
       },
       "probe": {
         "command": ["id", "-u"],
