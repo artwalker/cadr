@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1072. cli_selectors oa_ohe vs leftover replica of oauth-selector handleInput event dispatch
+;;;;      (does not remount oauth_selector_handle_event)
+;;;; 1073. cli_selectors oa_mos vs leftover replica of OauthSelectorComponent constructor
+;;;;      (does not remount make_oauth_selector_state)
+;;;; 1074. cli_selectors oa_sst vs leftover replica of oauth-selector filterProviders search text
+;;;;      (does not remount oauth_selector_search_text)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -836,8 +842,10 @@
     ("cli_selectors.oauth_selector_selection" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
     ("cli_selectors.oauth_selector_handle_event" . 50)
+    ("cli_selectors.oa_ohe" . 50)
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
+    ("cli_selectors.oa_sst" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
@@ -934,6 +942,7 @@
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
+    ("cli_selectors.oa_mos" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -29253,6 +29262,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-handle-event))))
+     "oa_ohe"
+     (collect "cli_selectors.oa_ohe"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-handle-event))))
      "oauth_selector_handle_raw_input"
      (collect "cli_selectors.oauth_selector_handle_raw_input"
               (lambda ()
@@ -29260,6 +29274,11 @@
                   (run-cli-selectors-oauth-selector-handle-raw-input))))
      "oauth_selector_search_text"
      (collect "cli_selectors.oauth_selector_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-search-text))))
+     "oa_sst"
+     (collect "cli_selectors.oa_sst"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-search-text))))
@@ -29738,6 +29757,11 @@
                   (run-cli-selectors-make-api-key-input-state))))
      "make_oauth_selector_state"
      (collect "cli_selectors.make_oauth_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
+     "oa_mos"
+     (collect "cli_selectors.oa_mos"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
@@ -32924,10 +32948,14 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter"
       "cli_selectors.oauth_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event"
+      "cli_selectors.oa_ohe"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event leftover"
       "cli_selectors.oauth_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
       "cli_selectors.oauth_selector_search_text"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
+      "cli_selectors.oa_sst"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text leftover"
       "cli_selectors.login_auth_type_route"
       "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
       "cli_selectors.login_provider_options"
@@ -33118,6 +33146,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
       "cli_selectors.make_oauth_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
+      "cli_selectors.oa_mos"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover"
       "cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
       "cli_selectors.login_dialog_show_progress"

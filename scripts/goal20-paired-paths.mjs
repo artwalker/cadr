@@ -479,6 +479,7 @@ const REPETITIONS = {
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
+	"cli_selectors.oa_mos": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
@@ -810,8 +811,10 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_selection": 50,
 	"cli_selectors.oauth_selector_apply_filter": 50,
 	"cli_selectors.oauth_selector_handle_event": 50,
+	"cli_selectors.oa_ohe": 50,
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"cli_selectors.oauth_selector_search_text": 50,
+	"cli_selectors.oa_sst": 50,
 	"cli_selectors.login_auth_type_route": 50,
 	"cli_selectors.login_provider_options": 50,
 	"cli_selectors.logout_provider_options": 50,
@@ -30441,10 +30444,16 @@ async function measureCliSelectorsSessionSearch() {
 		oauth_selector_handle_event: await collect("cli_selectors.oauth_selector_handle_event", () => {
 			return () => runCliSelectorsOauthSelectorHandleEvent();
 		}),
+		oa_ohe: await collect("cli_selectors.oa_ohe", () => {
+			return () => runCliSelectorsOauthSelectorHandleEvent();
+		}),
 		oauth_selector_handle_raw_input: await collect("cli_selectors.oauth_selector_handle_raw_input", () => {
 			return () => runCliSelectorsOauthSelectorHandleRawInput();
 		}),
 		oauth_selector_search_text: await collect("cli_selectors.oauth_selector_search_text", () => {
+			return () => runCliSelectorsOauthSelectorSearchText();
+		}),
+		oa_sst: await collect("cli_selectors.oa_sst", () => {
 			return () => runCliSelectorsOauthSelectorSearchText();
 		}),
 		login_auth_type_route: await collect("cli_selectors.login_auth_type_route", () => {
@@ -30973,6 +30982,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeOauthSelectorState();
 			},
 		),
+		oa_mos: await collect("cli_selectors.oa_mos", () => {
+			return () => runCliSelectorsMakeOauthSelectorState();
+		}),
 		login_dialog_show_waiting: await collect(
 			"cli_selectors.login_dialog_show_waiting",
 			() => {
@@ -34312,10 +34324,14 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders",
 			"cli_selectors.oauth_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput event dispatch",
+			"cli_selectors.oa_ohe":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput event dispatch leftover",
 			"cli_selectors.oauth_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput raw key dispatch",
 			"cli_selectors.oauth_selector_search_text":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
+			"cli_selectors.oa_sst":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text leftover",
 			"cli_selectors.login_auth_type_route":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
 			"cli_selectors.login_provider_options":
@@ -34496,6 +34512,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
 			"cli_selectors.make_oauth_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
+			"cli_selectors.oa_mos":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor leftover",
 			"cli_selectors.login_dialog_show_waiting":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
 			"cli_selectors.login_dialog_show_progress":
