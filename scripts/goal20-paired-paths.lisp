@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1126. cli_selectors lms_ok vs leftover replica of ExtensionSelectorComponent constructor (login method selector)
+;;;;      (does not remount make_login_method_selector_state)
+;;;; 1127. cli_selectors aki_ok vs leftover replica of login-dialog showPrompt api key Input constructor
+;;;;      (does not remount make_api_key_input_state)
+;;;; 1128. cli_selectors oss_ok vs leftover replica of OauthSelectorComponent constructor
+;;;;      (does not remount make_oauth_selector_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -934,6 +940,9 @@
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
+    ("cli_selectors.lms_ok" . 50)
+    ("cli_selectors.aki_ok" . 50)
+    ("cli_selectors.oss_ok" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -29741,6 +29750,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
+     "lms_ok"
+     (collect "cli_selectors.lms_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "aki_ok"
+     (collect "cli_selectors.aki_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "oss_ok"
+     (collect "cli_selectors.oss_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
      "login_dialog_show_waiting"
      (collect "cli_selectors.login_dialog_show_waiting"
               (lambda ()
@@ -33118,6 +33142,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
       "cli_selectors.make_oauth_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
+      "cli_selectors.lms_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover"
+      "cli_selectors.aki_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover"
+      "cli_selectors.oss_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover"
       "cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
       "cli_selectors.login_dialog_show_progress"
