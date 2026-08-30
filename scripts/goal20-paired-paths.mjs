@@ -32788,6 +32788,9 @@ async function measureCliBootstrapCodingTools() {
 	const leftoverScope = runCliBootstrapModelScope();
 	const filePair = writeCliBootstrapProcessFiles();
 	const leftoverFiles = await runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
+	const leftoverParse = runCliBootstrapParseBash();
+	const leftoverResponse = runCliBootstrapResponseText();
+	const leftoverDispatch = runCliBootstrapDispatchPlain();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -32831,6 +32834,9 @@ async function measureCliBootstrapCodingTools() {
 			...leftoverCycle,
 			...leftoverScope,
 			...leftoverFiles,
+			...leftoverParse,
+			...leftoverResponse,
+			...leftoverDispatch,
 		},
 	};
 }

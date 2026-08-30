@@ -31610,7 +31610,10 @@
          (file-pair (cli-bootstrap-process-file-paths))
          (leftover-files
            (run-cli-bootstrap-process-files
-            (first file-pair) (second file-pair))))
+            (first file-pair) (second file-pair)))
+         (leftover-parse (run-cli-bootstrap-parse-bash))
+         (leftover-response (run-cli-bootstrap-response-text))
+         (leftover-dispatch (run-cli-bootstrap-dispatch-plain)))
     (json-object
      "observed"
      (json-object
@@ -31650,7 +31653,32 @@
       "ms_disabled" (nth 4 leftover-scope)
       "pf_hello" (nth 0 leftover-files)
       "pf_n" (nth 1 leftover-files)
-      "pf_img" (nth 2 leftover-files))
+      "pf_img" (nth 2 leftover-files)
+      "pb_ls" (nth 0 leftover-parse)
+      "pb_ls_ex" (nth 1 leftover-parse)
+      "pb_ls_ok" (nth 2 leftover-parse)
+      "pb_excl" (nth 3 leftover-parse)
+      "pb_excl_ex" (nth 4 leftover-parse)
+      "pb_excl_ok" (nth 5 leftover-parse)
+      "pb_bang" (nth 6 leftover-parse)
+      "pb_bang_ok" (nth 7 leftover-parse)
+      "pb_ws" (nth 8 leftover-parse)
+      "pb_ws_ok" (nth 9 leftover-parse)
+      "pb_plain_ok" (nth 10 leftover-parse)
+      "pb_n" (nth 11 leftover-parse)
+      "rt_one" (nth 0 leftover-response)
+      "rt_two" (nth 1 leftover-response)
+      "rt_empty" (nth 2 leftover-response)
+      "rt_n" (nth 3 leftover-response)
+      "dp_empty" (nth 0 leftover-dispatch)
+      "dp_ws" (nth 1 leftover-dispatch)
+      "dp_plain" (nth 2 leftover-dispatch)
+      "dp_plain_n" (nth 3 leftover-dispatch)
+      "dp_slash" (nth 4 leftover-dispatch)
+      "dp_bash" (nth 5 leftover-dispatch)
+      "dp_bash_n" (nth 6 leftover-dispatch)
+      "dp_bang" (nth 7 leftover-dispatch)
+      "dp_n" (nth 8 leftover-dispatch))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -31691,7 +31719,7 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))
+                   (first file-pair) (second file-pair)))))
      "pb_ok"
      (collect "cli_bootstrap_sessions.pb_ok"
               (lambda ()
@@ -31706,7 +31734,7 @@
      (collect "cli_bootstrap_sessions.dp_ok"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-dispatch-plain))))))))
+                  (run-cli-bootstrap-dispatch-plain)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
