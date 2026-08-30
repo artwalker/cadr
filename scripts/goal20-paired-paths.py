@@ -1143,8 +1143,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.theme_res": 8.0,
     # leftover 958–960 themes.lisp (samples=5): first-freeze headroom.
     # Does not remount theme_prim / theme_val / theme_res.
+    # Measure-only leftover 958; first freeze 0.853× (0.110 / 0.129 µs).
     "cli_interactive_controller.theme_kind": 8.0,
+    # Measure-only leftover 959; first freeze 1.157× (19.703 / 17.025 µs).
     "cli_interactive_controller.theme_ok": 8.0,
+    # Measure-only leftover 960; first freeze 0.169× (1.184 / 7.020 µs).
     "cli_interactive_controller.theme_get": 8.0,
     # Measure-only leftover 943; first freeze 1.130× (0.244 / 0.216 µs).
     # Does not remount tool_session_make / tool_session_update / tool_session_render.
