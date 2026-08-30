@@ -800,9 +800,12 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_selection": 50,
 	"cli_selectors.trust_decision_description": 50,
 	"cli_selectors.trust_selector_move": 50,
+	"cli_selectors.tsm_ok": 50,
 	"cli_selectors.trust_selector_handle_event": 50,
+	"cli_selectors.tse_ok": 50,
 	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"cli_selectors.trust_selector_ui_state": 50,
+	"cli_selectors.tui_ok": 50,
 	"cli_selectors.oauth_option_status_label": 50,
 	"cli_selectors.oauth_option_status_rendered": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
@@ -30411,13 +30414,22 @@ async function measureCliSelectorsSessionSearch() {
 		trust_selector_move: await collect("cli_selectors.trust_selector_move", () => {
 			return () => runCliSelectorsTrustSelectorMove();
 		}),
+		tsm_ok: await collect("cli_selectors.tsm_ok", () => {
+			return () => runCliSelectorsTrustSelectorMove();
+		}),
 		trust_selector_handle_event: await collect("cli_selectors.trust_selector_handle_event", () => {
+			return () => runCliSelectorsTrustSelectorHandleEvent();
+		}),
+		tse_ok: await collect("cli_selectors.tse_ok", () => {
 			return () => runCliSelectorsTrustSelectorHandleEvent();
 		}),
 		trust_selector_handle_raw_input: await collect("cli_selectors.trust_selector_handle_raw_input", () => {
 			return () => runCliSelectorsTrustSelectorHandleRawInput();
 		}),
 		trust_selector_ui_state: await collect("cli_selectors.trust_selector_ui_state", () => {
+			return () => runCliSelectorsTrustSelectorUiState();
+		}),
+		tui_ok: await collect("cli_selectors.tui_ok", () => {
 			return () => runCliSelectorsTrustSelectorUiState();
 		}),
 		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
@@ -34292,12 +34304,18 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts formatDecision",
 			"cli_selectors.trust_selector_move":
 				"packages/tui/src/components/select-list.ts wrap selection index on getProjectTrustOptions count",
+			"cli_selectors.tsm_ok":
+				"packages/tui/src/components/select-list.ts wrap selection index leftover",
 			"cli_selectors.trust_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-event dispatch",
+			"cli_selectors.tse_ok":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-event leftover",
 			"cli_selectors.trust_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-raw-input dispatch",
 			"cli_selectors.trust_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
+			"cli_selectors.tui_ok":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state leftover",
 			"cli_selectors.oauth_option_status_label":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
 			"cli_selectors.oauth_option_status_rendered":
