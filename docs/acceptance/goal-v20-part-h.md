@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 961 — `cli_interactive_controller` (wrap_ln)
+
+| metric | cadr | pi |
+|---|---|---|
+| `wrap_ln` | `wrap-transcript-lines` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of UserMessageComponent.render OSC 133 wrap |
+
+Leftover sibling of leftover 949–951 on the same needs-pair file. Does not remount `wrap_osc`. Timed work is nil / one-line / two-line OSC wrap. Observed `wt_nil` / `wt_two_last` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 962 — `cli_interactive_controller` (pad_sp)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pad_sp` | `output-padding-string` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of output padding spaces |
+
+Leftover sibling of Pair 961. Does not remount `pad_str`. Timed work is zero / one / other / space padding. Observed `op_0` / `op_space` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 963 — `cli_interactive_controller` (cache_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cache_ok` | `tui-entry-render-cacheable-p` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of TUI entry render cacheable |
+
+Leftover sibling of Pairs 961–962. Does not remount `cache_p`. Timed work is assistant / stream / tool nil / done / running / custom. Observed `rc_assist` / `rc_custom` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

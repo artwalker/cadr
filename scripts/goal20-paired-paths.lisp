@@ -688,6 +688,9 @@
     ("cli_interactive_controller.wrap_osc" . 50)
     ("cli_interactive_controller.pad_str" . 50)
     ("cli_interactive_controller.cache_p" . 50)
+    ("cli_interactive_controller.wrap_ln" . 50)
+    ("cli_interactive_controller.pad_sp" . 50)
+    ("cli_interactive_controller.cache_ok" . 50)
     ("cli_interactive_controller.bash_run" . 50)
     ("cli_interactive_controller.bash_fin" . 50)
     ("cli_interactive_controller.bash_halt" . 50)
@@ -18157,6 +18160,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-render-cacheable))))
+     "wrap_ln"
+     (collect "cli_interactive_controller.wrap_ln"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-wrap-transcript))))
+     "pad_sp"
+     (collect "cli_interactive_controller.pad_sp"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-output-padding))))
+     "cache_ok"
+     (collect "cli_interactive_controller.cache_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-cacheable))))
      "bash_run"
      (collect "cli_interactive_controller.bash_run"
               (lambda ()
@@ -32668,6 +32686,12 @@
       "src/cadr-cli/interactive/transcript.lisp output-padding-string"
       "cli_interactive_controller.cache_p"
       "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p"
+      "cli_interactive_controller.wrap_ln"
+      "src/cadr-cli/interactive/transcript.lisp wrap-transcript-lines leftover"
+      "cli_interactive_controller.pad_sp"
+      "src/cadr-cli/interactive/transcript.lisp output-padding-string leftover"
+      "cli_interactive_controller.cache_ok"
+      "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p leftover"
       "cli_interactive_controller.bash_run"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running leftover"
       "cli_interactive_controller.bash_fin"
