@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1120 — `cli_selectors` (mv_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mv_ok` | `thinking-selector-move` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector wrap selected index |
+
+Leftover sibling of leftover 607–609 on the same needs-pair file (second unused slug after leftover 1045 `th_mv`). Does not remount `thinking_selector_move`. Timed work is wrap selected index. Observed `tsmv_down` / `tsmv_empty` are exact. First n=5 freeze **1.964×** (0.716 / 0.365 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1121 — `cli_selectors` (hri_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hri_ok` | `thinking-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector handleInput keybindings |
+
+Leftover sibling of Pair 1120. Does not remount `thinking_selector_handle_raw_input`. Timed work is raw CSI/CR/ctrl+s dispatch. Observed `tshri_down` / `tshri_save` are exact. First n=5 freeze **24.275×** (146.851 / 6.050 µs) on host `cursor`, ceiling 30.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1122 — `cli_selectors` (hev_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hev_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector typed input event dispatch |
+
+Leftover sibling of Pairs 1120–1121. Does not remount `thinking_selector_handle_event`. Timed work is typed event dispatch. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **1.016×** (3.487 / 3.432 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
