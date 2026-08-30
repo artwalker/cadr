@@ -17981,6 +17981,11 @@ function runCliInteractiveTerminalTitle() {
 }
 
 
+const OSC133_ZONE_START = "\x1b]133;A\x07";
+const OSC133_ZONE_END = "\x1b]133;B\x07";
+const OSC133_ZONE_FINAL = "\x1b]133;C\x07";
+
+
 function wrapTranscriptLines(lines) {
 	if (!lines || lines.length === 0) return null;
 	const copy = lines.slice();
