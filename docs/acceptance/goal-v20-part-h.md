@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1078 — `cli_selectors` (oa_hri)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_hri` | `oauth-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauth-selector handleInput raw key dispatch |
+
+Leftover sibling of Pair 204 on the same needs-pair file. Does not remount `oauth_selector_handle_raw_input`. Timed work is down / j / enter / cancel / q / o / confirm. Observed `oshri_down` / `oshri_j` are exact. First n=5 freeze **3.311×** (459.961 / 138.900 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1079 — `cli_selectors` (oa_esp)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_esp` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of env source regex |
+
+Leftover sibling of Pair 200 on the same needs-pair file (second unused slug after leftover 1056 `oa_env`). Does not remount `oauth_environment_source_p`. Timed work is nil / oauth / env / runtime / stored cases. Observed `oesp_nil` / `oesp_oauth` are exact. First n=5 freeze **1.898×** (0.811 / 0.428 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1080 — `cli_selectors` (oa_lgo)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lgo` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
+
+Leftover sibling of Pair 208 on the same needs-pair file (second unused slug after leftover 1062 `oa_out`). Does not remount `logout_provider_options`. Timed work is empty / mixed / unknown / sorted logout option lists. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.092×** (7.541 / 3.605 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
