@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1033. cli_selectors ld_cmp vs leftover replica of LoginDialogComponent.replaceInputWithSubmittedText
+;;;;      (does not remount login_dialog_complete_input)
+;;;; 1034. cli_selectors ld_evt vs leftover replica of LoginDialogComponent.handleInput
+;;;;      (does not remount login_dialog_handle_event)
+;;;; 1035. cli_selectors ld_rnd vs leftover replica of LoginDialogComponent.render
+;;;;      (does not remount render_login_dialog)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -943,6 +949,9 @@
     ("cli_selectors.login_dialog_complete_input" . 50)
     ("cli_selectors.login_dialog_handle_event" . 50)
     ("cli_selectors.render_login_dialog" . 50)
+    ("cli_selectors.ld_cmp" . 50)
+    ("cli_selectors.ld_evt" . 50)
+    ("cli_selectors.ld_rnd" . 50)
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
@@ -29786,6 +29795,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-login-dialog))))
+     "ld_cmp"
+     (collect "cli_selectors.ld_cmp"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-complete-input))))
+     "ld_evt"
+     (collect "cli_selectors.ld_evt"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-handle-event))))
+     "ld_rnd"
+     (collect "cli_selectors.ld_rnd"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-login-dialog))))
      "user_message_handle_event"
      (collect "cli_selectors.user_message_handle_event"
               (lambda ()
@@ -33136,6 +33160,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event"
       "cli_selectors.render_login_dialog"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp render-login-dialog-state"
+      "cli_selectors.ld_cmp"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-complete-input leftover"
+      "cli_selectors.ld_evt"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event leftover"
+      "cli_selectors.ld_rnd"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp render-login-dialog-state leftover"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
