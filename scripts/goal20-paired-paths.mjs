@@ -454,6 +454,9 @@ const REPETITIONS = {
 	"evals_harness.msg_txt": 50,
 	"evals_harness.tools_n": 50,
 	"evals_harness.paths_n": 50,
+	"evals_harness.rep_ok": 50,
+	"evals_harness.fin_ok": 50,
+	"evals_harness.meta_ok": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -13299,6 +13302,15 @@ async function measureEvalsHarness() {
 		}),
 		paths_n: await collect("evals_harness.paths_n", () => {
 			return () => runEvalsHarnessExtensionPaths();
+		}),
+		rep_ok: await collect("evals_harness.rep_ok", () => {
+			return () => runEvalsHarnessMakeReporter();
+		}),
+		fin_ok: await collect("evals_harness.fin_ok", () => {
+			return () => runEvalsHarnessFiniteNumber();
+		}),
+		meta_ok: await collect("evals_harness.meta_ok", () => {
+			return () => runEvalsHarnessArtifactMetadata();
 		}),
 		observed,
 	};
@@ -40623,6 +40635,12 @@ const result = {
 				"packages/evals leftover replica of agent tool list (cadr eval-agent-tools)",
 			"evals_harness.paths_n":
 				"packages/evals leftover replica of visible extension paths (cadr eval-extension-paths)",
+			"evals_harness.rep_ok":
+				"packages/evals leftover replica of constructor artifactDirectory (cadr make-eval-harness-reporter)",
+			"evals_harness.fin_ok":
+				"packages/evals leftover replica of finite number keep (cadr reporter-finite-number)",
+			"evals_harness.meta_ok":
+				"packages/evals leftover replica of artifact metadata filter (cadr reporter-artifact-metadata)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
