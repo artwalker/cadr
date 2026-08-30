@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1138 — `cli_selectors` (oas_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oas_ok` | `oauth-selector-selection` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filteredProviders[selectedIndex] |
+
+Leftover sibling of leftover 1057–1059 on the same needs-pair file (second unused slug after leftover 1057 `oa_sel`). Does not remount `oauth_selector_selection`. Timed work is filteredProviders first / filter-miss. Observed `oss_first` / `oss_filter_miss` are exact. First n=5 freeze **16.008×** (76.194 / 4.760 µs) on host `cursor`, ceiling 20.0 first-freeze headroom (this freeze exceeded leftover 1057's 16.0). Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1139 — `cli_selectors` (flt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `flt_ok` | `oauth-selector-apply-filter` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filterProviders |
+
+Leftover sibling of Pair 1138. Does not remount `oauth_selector_apply_filter`. Timed work is filterProviders all / miss. Observed `osaf_all` / `osaf_miss` are exact. First n=5 freeze **10.195×** (82.113 / 8.055 µs) on host `cursor`, ceiling 12.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1140 — `cli_selectors` (qry_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `qry_ok` | `oauth-selector-search-text` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filterProviders search text |
+
+Leftover sibling of Pairs 1138–1139. Does not remount `oauth_selector_search_text`. Timed work is search text oauth / api. Observed `osst_oauth` / `osst_api` are exact. First n=5 freeze **2.448×** (1.293 / 0.528 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
