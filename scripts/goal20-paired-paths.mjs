@@ -448,6 +448,9 @@ const REPETITIONS = {
 	"evals_harness.bundle_tool_names": 50,
 	"evals_harness.visible_extension_bundles": 50,
 	"evals_harness.authoring_harness_table": 50,
+	"evals_harness.val_ext": 50,
+	"evals_harness.suite_id": 50,
+	"evals_harness.type_ok": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -13276,6 +13279,15 @@ async function measureEvalsHarness() {
 				return () => runEvalsHarnessAuthoringHarnessTable();
 			},
 		),
+		val_ext: await collect("evals_harness.val_ext", () => {
+			return () => runEvalsHarnessValidateExtension();
+		}),
+		suite_id: await collect("evals_harness.suite_id", () => {
+			return () => runEvalsHarnessSuiteDispatch();
+		}),
+		type_ok: await collect("evals_harness.type_ok", () => {
+			return () => runEvalsHarnessEvalResultP();
+		}),
 		observed,
 	};
 }
@@ -40587,6 +40599,12 @@ const result = {
 				"packages/evals/src/extensions.eval.ts leftover visible bundles (cadr visible-extension-bundles)",
 			"evals_harness.authoring_harness_table":
 				"packages/evals/src/extensions.eval.ts leftover authoring harness table (cadr extension-authoring-harness-table)",
+			"evals_harness.val_ext":
+				"packages/evals leftover replica of extension greeting + path-count (cadr validate-extension-result)",
+			"evals_harness.suite_id":
+				"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)",
+			"evals_harness.type_ok":
+				"packages/evals leftover object-shape predicate (cadr typep eval-result)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
