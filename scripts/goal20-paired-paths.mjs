@@ -205,6 +205,9 @@ const REPETITIONS = {
 	"find_tool.ignored_directory": 50,
 	"find_tool.gitignored": 50,
 	"find_tool.make_glob_tool": 50,
+	"find_tool.directory_gitignore_rules": 50,
+	"find_tool.collect_tree_files": 50,
+	"find_tool.glob_files": 50,
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
@@ -4457,6 +4460,147 @@ function runFindMakeGlobTool() {
 	};
 }
 
+const GLOB_WALK_CWD = "/tmp/goal20-glob-walk-cwd";
+
+function globWalkWrite(root, relative, contents) {
+	const full = path.join(root, relative);
+	mkdirSync(path.dirname(full), { recursive: true });
+	writeFileSync(full, contents, "utf8");
+}
+
+function ensureGlobWalkFixture() {
+	mkdirSync(path.join(GLOB_WALK_CWD, "src"), { recursive: true });
+	mkdirSync(path.join(GLOB_WALK_CWD, ".git"), { recursive: true });
+	mkdirSync(path.join(GLOB_WALK_CWD, "node_modules"), { recursive: true });
+	mkdirSync(path.join(GLOB_WALK_CWD, "empty-gitignore"), { recursive: true });
+	mkdirSync(path.join(GLOB_WALK_CWD, "no-gitignore"), { recursive: true });
+	globWalkWrite(GLOB_WALK_CWD, "keep.lisp", "x");
+	globWalkWrite(GLOB_WALK_CWD, "skip.txt", "y");
+	globWalkWrite(GLOB_WALK_CWD, "src/keep2.lisp", "z");
+	globWalkWrite(GLOB_WALK_CWD, ".git/hidden.txt", "h");
+	globWalkWrite(GLOB_WALK_CWD, "node_modules/x.js", "n");
+	globWalkWrite(GLOB_WALK_CWD, ".gitignore", "skip.txt\n");
+	globWalkWrite(GLOB_WALK_CWD, "empty-gitignore/.gitignore", "# only\n");
+	return GLOB_WALK_CWD;
+}
+
+function leftoverDirectoryGitignoreRules(directory) {
+	const gitignore = path.join(directory, ".gitignore");
+	if (!existsSync(gitignore) || !statSync(gitignore).isFile()) return [];
+	let text = readFileSync(gitignore, "utf8");
+	if (text.endsWith("\n")) text = text.slice(0, -1);
+	const lines = text.length === 0 ? [] : text.split("\n");
+	const base = directory.endsWith("/") ? directory : `${directory}/`;
+	return lines.map((line) => leftoverParseGitignoreLine(line, base)).filter(Boolean);
+}
+
+function leftoverGitignoredPath(pathStr, rules) {
+	let ignoredP = false;
+	for (const rule of rules) {
+		if (!leftoverIsSubpath(pathStr, rule.base)) continue;
+		const rel = leftoverRelativePosix(pathStr, rule.base);
+		if (rule.scanner.test(rel)) ignoredP = !rule.negatedP;
+	}
+	return ignoredP;
+}
+
+function leftoverCollectTreeFiles(root) {
+	const canonical = realpathSync(root);
+	const files = [];
+	const walk = (directory, inherited) => {
+		const dir = directory.endsWith("/") ? directory : `${directory}/`;
+		const rules = inherited.concat(leftoverDirectoryGitignoreRules(dir));
+		for (const entry of readdirSync(directory, { withFileTypes: true })) {
+			const full = path.join(directory, entry.name);
+			if (entry.isFile()) {
+				if (!leftoverGitignoredPath(full, rules)) files.push(full);
+			} else if (entry.isDirectory()) {
+				if (!leftoverIgnoredDirectory(full)) walk(full, rules);
+			}
+		}
+	};
+	walk(canonical, []);
+	return files.sort((a, b) =>
+		leftoverRelativePosix(a, canonical).localeCompare(leftoverRelativePosix(b, canonical)),
+	);
+}
+
+function leftoverGlobFiles(cwd, argumentsObj) {
+	const pattern = argumentsObj.pattern;
+	const searchDir = argumentsObj.path ?? ".";
+	const limit = argumentsObj.limit ?? 1000;
+	if (limit < 1) throw new Error("limit must be at least 1");
+	const base = path.resolve(cwd, searchDir);
+	if (!existsSync(base) || !statSync(base).isDirectory()) {
+		throw new Error(`Path not found: ${base}`);
+	}
+	const files = leftoverCollectTreeFiles(base);
+	const matches = [];
+	const baseResolved = realpathSync(base);
+	const cwdResolved = realpathSync(cwd);
+	for (const file of files) {
+		const relativeBase = leftoverRelativePosix(file, baseResolved);
+		if (!leftoverGlobScanner(pattern, relativeBase)) continue;
+		matches.push(
+			baseResolved === cwdResolved ? relativeBase : leftoverRelativePosix(file, cwdResolved),
+		);
+	}
+	const truncated = matches.length > limit;
+	const selected = matches.slice(0, Math.min(limit, matches.length));
+	const text = selected.length > 0 ? selected.join("\n") : "No files found";
+	return { text, truncated, matches: matches.length };
+}
+
+function globFilesText(cwd, argumentsObj) {
+	try {
+		const result = leftoverGlobFiles(cwd, argumentsObj);
+		return [result.text, result.truncated ? 1 : 0, result.matches, 1];
+	} catch {
+		return ["", 0, 0, 0];
+	}
+}
+
+function runFindDirectoryGitignoreRules() {
+	const root = ensureGlobWalkFixture();
+	const rules = leftoverDirectoryGitignoreRules(root);
+	const none = leftoverDirectoryGitignoreRules(path.join(root, "no-gitignore"));
+	const hash = leftoverDirectoryGitignoreRules(path.join(root, "empty-gitignore"));
+	return {
+		dgr_n: rules.length,
+		dgr_ok: rules.length === 1 && rules[0].scanner && !rules[0].negatedP ? 1 : 0,
+		dgr_none: none.length === 0 ? 1 : 0,
+		dgr_hash: hash.length === 0 ? 1 : 0,
+	};
+}
+
+function runFindCollectTreeFiles() {
+	const root = ensureGlobWalkFixture();
+	const files = leftoverCollectTreeFiles(root);
+	const relatives = files.map((file) => leftoverRelativePosix(file, realpathSync(root)));
+	return {
+		ctf_n: files.length,
+		ctf_keep: relatives.includes("keep.lisp") ? 1 : 0,
+		ctf_nested: relatives.includes("src/keep2.lisp") ? 1 : 0,
+		ctf_skip: relatives.includes("skip.txt") ? 0 : 1,
+		ctf_git: relatives.includes(".git/hidden.txt") ? 0 : 1,
+		ctf_nm: relatives.includes("node_modules/x.js") ? 0 : 1,
+	};
+}
+
+function runFindGlobFiles() {
+	const cwd = ensureGlobWalkFixture();
+	const lisp = globFilesText(cwd, { pattern: "*.lisp", path: cwd });
+	const empty = globFilesText(cwd, { pattern: "*.nomatch", path: cwd });
+	const limited = globFilesText(cwd, { pattern: "**/*.lisp", path: cwd, limit: 1 });
+	const miss = globFilesText(cwd, { pattern: "*", path: "missing-subdir" });
+	return {
+		gf_lisp: lisp[2],
+		gf_empty: empty[0] === "No files found" ? 1 : 0,
+		gf_limit: limited[1],
+		gf_miss: miss[3] === 0 ? 1 : 0,
+	};
+}
+
 async function measureFindTool() {
 	ensureFindToolFixture();
 	const patternObserved = runFindPatternMatch();
@@ -4471,6 +4615,9 @@ async function measureFindTool() {
 	const ignoredDirectoryObserved = runFindIgnoredDirectory();
 	const gitignoredObserved = runFindGitignored();
 	const makeGlobToolObserved = runFindMakeGlobTool();
+	const directoryGitignoreObserved = runFindDirectoryGitignoreRules();
+	const collectTreeObserved = runFindCollectTreeFiles();
+	const globFilesObserved = runFindGlobFiles();
 	return {
 		pattern_match: await collect("find_tool.pattern_match", () => {
 			return () => runFindPatternMatch();
@@ -4508,6 +4655,15 @@ async function measureFindTool() {
 		make_glob_tool: await collect("find_tool.make_glob_tool", () => {
 			return () => runFindMakeGlobTool();
 		}),
+		directory_gitignore_rules: await collect("find_tool.directory_gitignore_rules", () => {
+			return () => runFindDirectoryGitignoreRules();
+		}),
+		collect_tree_files: await collect("find_tool.collect_tree_files", () => {
+			return () => runFindCollectTreeFiles();
+		}),
+		glob_files: await collect("find_tool.glob_files", () => {
+			return () => runFindGlobFiles();
+		}),
 		observed: {
 			...patternObserved,
 			...filesObserved,
@@ -4521,6 +4677,9 @@ async function measureFindTool() {
 			...ignoredDirectoryObserved,
 			...gitignoredObserved,
 			...makeGlobToolObserved,
+			...directoryGitignoreObserved,
+			...collectTreeObserved,
+			...globFilesObserved,
 		},
 	};
 }
@@ -33290,6 +33449,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts gitignore rule apply (cadr gitignored-p)",
 			"find_tool.make_glob_tool":
 				"packages/coding-agent/src/core/tools/find.ts glob tool constructor (cadr make-glob-tool)",
+			"find_tool.directory_gitignore_rules":
+				"packages/coding-agent/src/core/tools/find.ts .gitignore load (cadr directory-gitignore-rules)",
+			"find_tool.collect_tree_files":
+				"packages/coding-agent/src/core/tools/find.ts tree walk (cadr collect-tree-files)",
+			"find_tool.glob_files":
+				"packages/coding-agent/src/core/tools/find.ts glob execute classify (cadr glob-files)",
 			"write_tool.ensure_parent":
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
 			"write_tool.write_utf8":

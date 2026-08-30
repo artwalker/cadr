@@ -605,6 +605,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("find_tool.make_glob_tool", paired.RATIO_CEILINGS)
         self.assertIn("mgt_name", paired.OBSERVED_EXACT["find_tool"])
         self.assertIn("mgt_par", paired.OBSERVED_EXACT["find_tool"])
+        self.assertIn("find_tool.directory_gitignore_rules", RECORD.METRIC_KEYS)
+        self.assertIn("directory_gitignore_rules", paired.METRICS["find_tool"])
+        self.assertIn("find_tool.directory_gitignore_rules", paired.RATIO_CEILINGS)
+        self.assertIn("dgr_n", paired.OBSERVED_EXACT["find_tool"])
+        self.assertIn("find_tool.collect_tree_files", RECORD.METRIC_KEYS)
+        self.assertIn("collect_tree_files", paired.METRICS["find_tool"])
+        self.assertIn("find_tool.collect_tree_files", paired.RATIO_CEILINGS)
+        self.assertIn("ctf_keep", paired.OBSERVED_EXACT["find_tool"])
+        self.assertIn("find_tool.glob_files", RECORD.METRIC_KEYS)
+        self.assertIn("glob_files", paired.METRICS["find_tool"])
+        self.assertIn("find_tool.glob_files", paired.RATIO_CEILINGS)
+        self.assertIn("gf_empty", paired.OBSERVED_EXACT["find_tool"])
 
     def test_write_tool_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

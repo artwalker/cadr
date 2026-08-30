@@ -437,6 +437,9 @@
     ("find_tool.ignored_directory" . 50)
     ("find_tool.gitignored" . 50)
     ("find_tool.make_glob_tool" . 50)
+    ("find_tool.directory_gitignore_rules" . 50)
+    ("find_tool.collect_tree_files" . 50)
+    ("find_tool.glob_files" . 50)
     ("write_tool.ensure_parent" . 50)
     ("write_tool.write_utf8" . 50)
     ("write_tool.make_tool" . 50)
@@ -8012,8 +8015,148 @@
       (eq (cadr-ai:tool-execution-mode tool) :parallel))
      4)))
 
+
+(defparameter *glob-walk-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-glob-walk-cwd")))
+
+
+(defun glob-walk-write (root relative contents)
+  (let ((path (merge-pathnames relative root)))
+    (ensure-directories-exist
+     (uiop:pathname-directory-pathname path))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create
+             :external-format :utf-8)
+      (write-string contents out))))
+
+
+(defun ensure-glob-walk-fixture ()
+  ;; Dedicated tree for leftover 901–903. Does not remount leftover
+  ;; 448–450 / 688–693 helpers or mutate *find-tool-cwd*.
+  (let ((root (uiop:ensure-directory-pathname *glob-walk-cwd*)))
+    (ensure-directories-exist (merge-pathnames "src/" root))
+    (ensure-directories-exist (merge-pathnames ".git/" root))
+    (ensure-directories-exist (merge-pathnames "node_modules/" root))
+    (ensure-directories-exist (merge-pathnames "empty-gitignore/" root))
+    (ensure-directories-exist (merge-pathnames "no-gitignore/" root))
+    (glob-walk-write root "keep.lisp" "x")
+    (glob-walk-write root "skip.txt" "y")
+    (glob-walk-write root "src/keep2.lisp" "z")
+    (glob-walk-write root ".git/hidden.txt" "h")
+    (glob-walk-write root "node_modules/x.js" "n")
+    (glob-walk-write root ".gitignore" "skip.txt
+")
+    (glob-walk-write root "empty-gitignore/.gitignore" "# only
+")
+    *glob-walk-cwd*))
+
+
+(defun run-find-directory-gitignore-rules ()
+  ;; Production directory-gitignore-rules. Exact rule presence — not
+  ;; leftover parse-gitignore-line fixtures.
+  (let* ((root (uiop:ensure-directory-pathname
+                (ensure-glob-walk-fixture)))
+         (rules (cadr-cli::directory-gitignore-rules root))
+         (none
+           (cadr-cli::directory-gitignore-rules
+            (merge-pathnames "no-gitignore/" root)))
+         (hash
+           (cadr-cli::directory-gitignore-rules
+            (merge-pathnames "empty-gitignore/" root))))
+    (list
+     (length rules)
+     (find-tool-truth
+      (and (= (length rules) 1)
+           (cadr-cli::gitignore-rule-scanner (first rules))
+           (not (cadr-cli::gitignore-rule-negated-p (first rules)))))
+     (find-tool-truth (null none))
+     (find-tool-truth (null hash))
+     4)))
+
+
+(defun run-find-collect-tree-files ()
+  ;; Production collect-tree-files. Exact keep.lisp / skip.txt /
+  ;; .git / node_modules filtering — not gitignored-p unit cases.
+  (let* ((root (uiop:ensure-directory-pathname
+                (ensure-glob-walk-fixture)))
+         (files (cadr-cli::collect-tree-files root))
+         (relatives
+           (mapcar
+            (lambda (path)
+              (cadr-cli::relative-posix-path path root))
+            files)))
+    (list
+     (length files)
+     (find-tool-truth (find "keep.lisp" relatives :test #'string=))
+     (find-tool-truth (find "src/keep2.lisp" relatives :test #'string=))
+     (find-tool-truth (not (find "skip.txt" relatives :test #'string=)))
+     (find-tool-truth
+      (not (find ".git/hidden.txt" relatives :test #'string=)))
+     (find-tool-truth
+      (not (find "node_modules/x.js" relatives :test #'string=)))
+     6)))
+
+
+(defun glob-files-text (cwd arguments)
+  (handler-case
+      (multiple-value-bind (content details)
+          (cadr-cli::glob-files cwd arguments)
+        (list
+         (cadr-ai:text-content-text (first content))
+         (if (getf details :truncated) 1 0)
+         (or (getf details :matches) 0)
+         1))
+    (error () (list "" 0 0 0))))
+
+
+(defun run-find-glob-files ()
+  ;; Production glob-files. Explicit absolute path — default "."
+  ;; resolves to cwd/. and enough-namestring then leaks absolute
+  ;; relatives, so *.lisp would match nothing. Not make-glob-tool.
+  (let ((cwd *glob-walk-cwd*))
+    (ensure-glob-walk-fixture)
+    (let* ((lisp
+           (glob-files-text
+            cwd
+            (cadr-ai::json-object
+             "pattern" "*.lisp"
+             "path" cwd)))
+         (empty
+           (glob-files-text
+            cwd
+            (cadr-ai::json-object
+             "pattern" "*.nomatch"
+             "path" cwd)))
+         (limited
+           (glob-files-text
+            cwd
+            (cadr-ai::json-object
+             "pattern" "**/*.lisp"
+             "path" cwd
+             "limit" 1)))
+         (miss
+           (glob-files-text
+            cwd
+            (cadr-ai::json-object
+             "pattern" "*"
+             "path" "missing-subdir"))))
+    (list
+     (nth 2 lisp)
+     (find-tool-truth (string= (nth 0 empty) "No files found"))
+     (nth 1 limited)
+     (find-tool-truth (zerop (nth 3 miss)))
+     4))))
+
+
 (defun measure-find-tool ()
   (ensure-find-tool-fixture)
+  (let ((dgr (run-find-directory-gitignore-rules))
+        (ctf (run-find-collect-tree-files))
+        (gf (run-find-glob-files)))
   (destructuring-bind
       (fpm-star-a fpm-star-src fpm-star-txt fpm-path-src fpm-path-root
        fpm-src-star fpm-n)
@@ -8111,7 +8254,21 @@
                             "mgt_desc" mgt-desc
                             "mgt_req" mgt-req
                             "mgt_par" mgt-par
-                            "mgt_n" mgt-n)
+                            "mgt_n" mgt-n
+                            "dgr_n" (nth 0 dgr)
+                            "dgr_ok" (nth 1 dgr)
+                            "dgr_none" (nth 2 dgr)
+                            "dgr_hash" (nth 3 dgr)
+                            "ctf_n" (nth 0 ctf)
+                            "ctf_keep" (nth 1 ctf)
+                            "ctf_nested" (nth 2 ctf)
+                            "ctf_skip" (nth 3 ctf)
+                            "ctf_git" (nth 4 ctf)
+                            "ctf_nm" (nth 5 ctf)
+                            "gf_lisp" (nth 0 gf)
+                            "gf_empty" (nth 1 gf)
+                            "gf_limit" (nth 2 gf)
+                            "gf_miss" (nth 3 gf))
                            "pattern_match"
                            (collect "find_tool.pattern_match"
                                     (lambda ()
@@ -8171,7 +8328,22 @@
                            (collect "find_tool.make_glob_tool"
                                     (lambda ()
                                       (lambda ()
-                                        (run-find-make-glob-tool))))))))))))))))))
+                                        (run-find-make-glob-tool))))
+                           "directory_gitignore_rules"
+                           (collect "find_tool.directory_gitignore_rules"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-directory-gitignore-rules))))
+                           "collect_tree_files"
+                           (collect "find_tool.collect_tree_files"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-collect-tree-files))))
+                           "glob_files"
+                           (collect "find_tool.glob_files"
+                                    (lambda ()
+                                      (lambda ()
+                                        (run-find-glob-files)))))))))))))))))))
 
 (defun ls-tool-truth (value)
   (if value 1 0))
@@ -31656,6 +31828,12 @@
       "src/cadr-cli/tools/glob.lisp gitignored-p"
       "find_tool.make_glob_tool"
       "src/cadr-cli/tools/glob.lisp make-glob-tool"
+      "find_tool.directory_gitignore_rules"
+      "src/cadr-cli/tools/glob.lisp directory-gitignore-rules"
+      "find_tool.collect_tree_files"
+      "src/cadr-cli/tools/glob.lisp collect-tree-files"
+      "find_tool.glob_files"
+      "src/cadr-cli/tools/glob.lisp glob-files"
       "write_tool.ensure_parent"
       "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
       "write_tool.write_utf8"

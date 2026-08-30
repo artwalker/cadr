@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 901 — `find_tool` (directory_gitignore_rules)
+
+| metric | cadr | pi |
+|---|---|---|
+| `directory_gitignore_rules` | `directory-gitignore-rules` (`src/cadr-cli/tools/glob.lisp`) | `.gitignore` load classify (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover trio on unclaimed `src/cadr-cli/tools/glob.lisp` (leftover 448–450 / 688–693 already frozen; no open leftover PR). Timed work is production directory-gitignore-rules on a staged tree — not parse-gitignore-line fixtures. Observed `dgr_n` / `dgr_ok` / `dgr_none` / `dgr_hash` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 902 — `find_tool` (collect_tree_files)
+
+| metric | cadr | pi |
+|---|---|---|
+| `collect_tree_files` | `collect-tree-files` (`src/cadr-cli/tools/glob.lisp`) | tree walk classify (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 901. Timed work is collect-tree-files keep.lisp / nested / skip.txt / .git / node_modules filtering. Observed `ctf_n` / `ctf_keep` / `ctf_nested` / `ctf_skip` / `ctf_git` / `ctf_nm` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 903 — `find_tool` (glob_files)
+
+| metric | cadr | pi |
+|---|---|---|
+| `glob_files` | `glob-files` (`src/cadr-cli/tools/glob.lisp`) | glob execute classify (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pairs 901–902. Timed work is glob-files match count / empty copy / limit truncation / missing path throw — not make-glob-tool constructor. Observed `gf_lisp` / `gf_empty` / `gf_limit` / `gf_miss` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
