@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 916,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/file-watcher.lisp",
+   "measure": "measure-cli-support",
+   "metric": "cli_support.watch_error",
+   "branch": "cursor/cli-support-watch-error-start-poll-leftovers-916-918-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 916",
+   "ratio": 0.271,
+   "cadrUs": 2.517,
+   "piUs": 9.292,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 917,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/file-watcher.lisp",
+   "measure": "measure-cli-support",
+   "metric": "cli_support.watch_start_close",
+   "branch": "cursor/cli-support-watch-error-start-poll-leftovers-916-918-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 917",
+   "ratio": 23.928,
+   "cadrUs": 79.040,
+   "piUs": 3.303,
+   "ceiling": 40.0,
+   "rc": 2
+  },
+  {
+   "pair": 918,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/file-watcher.lisp",
+   "measure": "measure-cli-support",
+   "metric": "cli_support.poll_once",
+   "branch": "cursor/cli-support-watch-error-start-poll-leftovers-916-918-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 918",
+   "ratio": 4.549,
+   "cadrUs": 195.607,
+   "piUs": 42.999,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `watch_error` | `watch-with-error-handler` (`src/cadr-cli/support/file-watcher.lisp`) | leftover watchWithErrorHandler catch (`packages/coding-agent/src/utils/fs-watch.ts`) |
 
-Leftover sibling of leftover 481–483 on the same file-watcher hole. Timed work is the error/onError path — not retry delay, not null close, not signature. Observed `we_nil` / `we_err` / `we_pos` / `we_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 481–483 on the same file-watcher hole. Timed work is the error/onError path — not retry delay, not null close, not signature. Observed `we_nil` / `we_err` / `we_pos` / `we_n` are exact. First n=5 freeze **0.271×** (2.517 / 9.292 µs) on host `cursor`, ceiling 8.0. Under-1×. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 917 — `cli_support` (watch_start_close)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover 481–483 on the same file-watcher hole. Timed work
 |---|---|---|
 | `watch_start_close` | `watch-with-error-handler` + `close-watcher` (`src/cadr-cli/support/file-watcher.lisp`) | watchWithErrorHandler + closeWatcher (`packages/coding-agent/src/utils/fs-watch.ts`) |
 
-Leftover sibling of leftover 916. Timed work is start on a present file then close — not poll, not null close. Observed `wsc_got` / `wsc_closed` / `wsc_err` / `wsc_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 916. Timed work is start on a present file then close — not poll, not null close. Observed `wsc_got` / `wsc_closed` / `wsc_err` / `wsc_n` are exact. First n=5 freeze **23.928×** (79.040 / 3.303 µs) on host `cursor`, ceiling 40.0 (cadr poll thread vs native `fs.watch`). Over-1× booked. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 918 — `cli_support` (poll_once)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of leftover 916. Timed work is start on a present file then clo
 |---|---|---|
 | `poll_once` | `poll-file-watcher-once` (`src/cadr-cli/support/file-watcher.lisp`) | leftoverPollOnce (`packages/coding-agent/src/utils/fs-watch.ts` signature compare) |
 
-Leftover sibling of leftover 916–917. Timed work is unchanged then changed poll — not `watch_signature` as its own metric, not native `fs.watch` keep-alive. Observed `po_same` / `po_change` / `po_n1` / `po_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 916–917. Timed work is unchanged then changed poll — not `watch_signature` as its own metric, not native `fs.watch` keep-alive. Observed `po_same` / `po_change` / `po_n1` / `po_n` are exact. First n=5 freeze **4.549×** (195.607 / 42.999 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_support.watch_error`
+  (`watch-with-error-handler` catch vs leftover watchWithErrorHandler
+  catch). Observed `we_nil` / `we_err` / `we_pos` / `we_n` exact. n=5
+  **0.271×** (2.517 / 9.292 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 916). Under-1×. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_support.watch_start_close`
+  (`watch-with-error-handler` + `close-watcher` vs watchWithErrorHandler
+  + closeWatcher). Observed `wsc_got` / `wsc_closed` / `wsc_err` /
+  `wsc_n` exact. n=5 **23.928×** (79.040 / 3.303 µs) on host `cursor`,
+  ceiling 40.0 (cadr poll thread vs native `fs.watch`). Measure-only
+  leftover (Pair 917). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_support.poll_once`
+  (`poll-file-watcher-once` vs leftoverPollOnce signature compare).
+  Observed `po_same` / `po_change` / `po_n1` / `po_n` exact. n=5
+  **4.549×** (195.607 / 42.999 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 918). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

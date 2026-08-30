@@ -531,4 +531,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `cli_support.watch_start_close` | 79.040 | 3.303 | 23.928× | 40.00× | measure-only leftover 917; start+close poll thread vs native `fs.watch`; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
+| `cli_support.poll_once` | 195.607 | 42.999 | 4.549× | 8.00× | measure-only leftover 918; `poll-file-watcher-once` vs leftoverPollOnce signature compare | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

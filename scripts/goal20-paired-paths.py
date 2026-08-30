@@ -942,11 +942,14 @@ RATIO_CEILINGS = {
     "cli_support.watch_retry_delay": 8.0,
     "cli_support.close_watcher": 8.0,
     "cli_support.watch_signature": 8.0,
-    # Measure-only leftover 916; freeze pending.
+    # Measure-only leftover 916-918 (samples=5): observed
+    # watch_error 0.271x (2.517 / 9.292 us), watch_start_close
+    # 23.928x (79.040 / 3.303 us), poll_once 4.549x (195.607 /
+    # 42.999 us). 8.0 first-freeze for error/poll; 40.0 for
+    # start-close (cadr poll thread vs native fs.watch).
+    # Ratchet down only.
     "cli_support.watch_error": 8.0,
-    # Measure-only leftover 917; freeze pending.
-    "cli_support.watch_start_close": 8.0,
-    # Measure-only leftover 918; freeze pending.
+    "cli_support.watch_start_close": 40.0,
     "cli_support.poll_once": 8.0,
     # Leftover trio on src/cadr-cli/bootstrap/commands.lisp (pairs 484-486):
     # model_cycle 0.622x (0.632 / 1.017 us), model_scope_line 1.608x
