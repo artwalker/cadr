@@ -309,6 +309,9 @@ const REPETITIONS = {
 	"cli_extensions_install.split_command": 50,
 	"cli_extensions_install.handle_plain": 50,
 	"cli_extensions_install.handle_unknown": 50,
+	"cli_extensions_install.sc_ok": 50,
+	"cli_extensions_install.hp_ok": 50,
+	"cli_extensions_install.hu_ok": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -12599,6 +12602,15 @@ async function measureCliExtensionsInstall() {
 			return () => runCliExtensionsHandlePlain();
 		}),
 		handle_unknown: await collect("cli_extensions_install.handle_unknown", () => {
+			return () => runCliExtensionsHandleUnknown();
+		}),
+		sc_ok: await collect("cli_extensions_install.sc_ok", () => {
+			return () => runCliExtensionsSplitCommand();
+		}),
+		hp_ok: await collect("cli_extensions_install.hp_ok", () => {
+			return () => runCliExtensionsHandlePlain();
+		}),
+		hu_ok: await collect("cli_extensions_install.hu_ok", () => {
 			return () => runCliExtensionsHandleUnknown();
 		}),
 		observed: { ...url, ...token, ...catalog, ...discovery, ...split, ...plain, ...unknown },
@@ -33785,6 +33797,12 @@ const result = {
 			"cli_extensions_install.handle_plain":
 				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand non-slash miss",
 			"cli_extensions_install.handle_unknown":
+				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand getCommand miss",
+			"cli_extensions_install.sc_ok":
+				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand spaceIndex split",
+			"cli_extensions_install.hp_ok":
+				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand non-slash miss",
+			"cli_extensions_install.hu_ok":
 				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand getCommand miss",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",

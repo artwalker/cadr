@@ -290,6 +290,12 @@
 ;;;; 487. cli_extensions_install split-extension-command vs spaceIndex command/args split
 ;;;; 488. cli_extensions_install handle-extension-command plain vs non-slash return
 ;;;; 489. cli_extensions_install handle-extension-command unknown slash vs getCommand miss
+;;;; 1006. cli_extensions_install sc_ok vs leftover replica of spaceIndex command/args split
+;;;;      (does not remount split_command)
+;;;; 1007. cli_extensions_install hp_ok vs leftover replica of non-slash return
+;;;;      (does not remount handle_plain)
+;;;; 1008. cli_extensions_install hu_ok vs leftover replica of getCommand miss
+;;;;      (does not remount handle_unknown)
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
@@ -546,6 +552,9 @@
     ("cli_extensions_install.split_command" . 50)
     ("cli_extensions_install.handle_plain" . 50)
     ("cli_extensions_install.handle_unknown" . 50)
+    ("cli_extensions_install.sc_ok" . 50)
+    ("cli_extensions_install.hp_ok" . 50)
+    ("cli_extensions_install.hu_ok" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -11225,6 +11234,22 @@
                   (run-cli-extensions-handle-plain))))
      "handle_unknown"
      (collect "cli_extensions_install.handle_unknown"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-handle-unknown
+                   manager))))
+     "sc_ok"
+     (collect "cli_extensions_install.sc_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-split-command))))
+     "hp_ok"
+     (collect "cli_extensions_install.hp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-handle-plain))))
+     "hu_ok"
+     (collect "cli_extensions_install.hu_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-extensions-handle-unknown
@@ -32383,6 +32408,12 @@
       "cli_extensions_install.handle_plain"
       "src/cadr-cli/extensions/commands.lisp handle-extension-command"
       "cli_extensions_install.handle_unknown"
+      "src/cadr-cli/extensions/commands.lisp handle-extension-command unknown slash"
+      "cli_extensions_install.sc_ok"
+      "src/cadr-cli/extensions/commands.lisp split-extension-command"
+      "cli_extensions_install.hp_ok"
+      "src/cadr-cli/extensions/commands.lisp handle-extension-command"
+      "cli_extensions_install.hu_ok"
       "src/cadr-cli/extensions/commands.lisp handle-extension-command unknown slash"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
