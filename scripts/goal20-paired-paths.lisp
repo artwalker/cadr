@@ -616,6 +616,9 @@
     ("cli_print_rpc.bad_line" . 50)
     ("cli_print_rpc.array_line" . 50)
     ("cli_print_rpc.ui_absent" . 50)
+    ("cli_print_rpc.line_bad" . 50)
+    ("cli_print_rpc.line_arr" . 50)
+    ("cli_print_rpc.line_ui" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -14580,6 +14583,21 @@
                   (run-cli-print-rpc-handle-not-object))))
      "ui_absent"
      (collect "cli_print_rpc.ui_absent"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-ui-miss))))
+     "line_bad"
+     (collect "cli_print_rpc.line_bad"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-bad-json))))
+     "line_arr"
+     (collect "cli_print_rpc.line_arr"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-not-object))))
+     "line_ui"
+     (collect "cli_print_rpc.line_ui"
               (lambda ()
                 (lambda ()
                   (run-cli-print-rpc-handle-ui-miss)))))))
@@ -32524,6 +32542,12 @@
       "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
       "cli_print_rpc.ui_absent"
       "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
+      "cli_print_rpc.line_bad"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line leftover JSON.parse catch"
+      "cli_print_rpc.line_arr"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line leftover require JSON object"
+      "cli_print_rpc.line_ui"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line leftover unknown extension_ui_response"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"

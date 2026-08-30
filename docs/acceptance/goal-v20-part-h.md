@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 970 — `cli_print_rpc` (line_bad)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_bad` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine JSON.parse catch |
+
+Leftover sibling of leftover 937–939 on the same needs-pair file. Does not remount `bad_line`. Timed work is invalid JSON line. Observed `bj_cmd` / `bj_nl` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 971 — `cli_print_rpc` (line_arr)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_arr` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine require JSON object |
+
+Leftover sibling of Pair 970. Does not remount `array_line`. Timed work is a JSON array line. Observed `no_cmd` / `no_nl` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 972 — `cli_print_rpc` (line_ui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_ui` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine unknown extension_ui_response |
+
+Leftover sibling of Pairs 970–971. Does not remount `ui_absent`. Timed work is an unknown pending UI id. Observed `um_cmd` / `um_unk` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

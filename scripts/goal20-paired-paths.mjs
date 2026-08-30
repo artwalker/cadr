@@ -593,6 +593,9 @@ const REPETITIONS = {
 	"cli_print_rpc.bad_line": 50,
 	"cli_print_rpc.array_line": 50,
 	"cli_print_rpc.ui_absent": 50,
+	"cli_print_rpc.line_bad": 50,
+	"cli_print_rpc.line_arr": 50,
+	"cli_print_rpc.line_ui": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -13927,6 +13930,15 @@ async function measureCliPrintRpc() {
 				return () => runCliPrintRpcHandleNotObject();
 			}),
 			ui_absent: await collect("cli_print_rpc.ui_absent", () => {
+				return () => runCliPrintRpcHandleUiMiss();
+			}),
+			line_bad: await collect("cli_print_rpc.line_bad", () => {
+				return () => runCliPrintRpcHandleBadJson();
+			}),
+			line_arr: await collect("cli_print_rpc.line_arr", () => {
+				return () => runCliPrintRpcHandleNotObject();
+			}),
+			line_ui: await collect("cli_print_rpc.line_ui", () => {
 				return () => runCliPrintRpcHandleUiMiss();
 			}),
 			observed,
@@ -33919,6 +33931,12 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine require JSON object",
 			"cli_print_rpc.ui_absent":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine unknown extension_ui_response",
+			"cli_print_rpc.line_bad":
+				"packages/coding-agent leftover replica of handleInputLine JSON.parse catch (cadr rpc-handle-line)",
+			"cli_print_rpc.line_arr":
+				"packages/coding-agent leftover replica of handleInputLine require JSON object (cadr rpc-handle-line)",
+			"cli_print_rpc.line_ui":
+				"packages/coding-agent leftover replica of handleInputLine unknown extension_ui_response (cadr rpc-handle-line)",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",
