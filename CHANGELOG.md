@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.val_ext`
+  (`validate-extension-result` vs leftover replica of extension greeting
+  + path-count). Observed `ve_ok` / `ve_greet` exact. n=5 **9.202×**
+  (2.556 / 0.278 µs) on host `cursor`, ceiling 12.0. Measure-only leftover
+  (Pair 979). Over-1× booked. Does not remount `validate_extension`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.suite_id`
+  (`%eval-main` suite cond leftover vs leftover replica of cadr suite
+  cond). Observed `sd_smoke` / `sd_unk` exact. n=5 **1.160×**
+  (0.170 / 0.147 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 980). Over-1× booked. Does not remount `suite_dispatch`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.type_ok`
+  (`typep` eval-result leftover vs leftover object-shape predicate).
+  Observed `er_yes` / `er_nil` exact. n=5 **1.864×**
+  (0.604 / 0.324 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 981). Over-1× booked. Does not remount `eval_result_p`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

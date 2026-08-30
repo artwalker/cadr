@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 979 — `evals_harness` (val_ext)
+
+| metric | cadr | pi |
+|---|---|---|
+| `val_ext` | `validate-extension-result` (`src/cadr-evals/main.lisp`) | leftover replica of extension greeting + path-count |
+
+Leftover sibling of leftover 925–927 on the same needs-pair file. Does not remount `validate_extension`. Timed work is Bob+one-path ok, Alice greeting fail, two-path fail, empty-path fail. Observed `ve_ok` / `ve_greet` are exact. First n=5 freeze **9.202×** (2.556 / 0.278 µs) on host `cursor`, ceiling 12.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 980 — `evals_harness` (suite_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `suite_id` | leftover replica of `%eval-main` suite cond (`src/cadr-evals/main.lisp`) | leftover replica of cadr suite cond (pi has no `--suite`) |
+
+Leftover sibling of Pair 979. Does not remount `suite_dispatch`. Timed work is smoke/extensions/extension-authoring/unknown dispatch ids. Observed `sd_smoke` / `sd_unk` are exact. First n=5 freeze **1.160×** (0.170 / 0.147 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 981 — `evals_harness` (type_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `type_ok` | leftover of `%eval-main` `(typep value 'eval-result)` (`src/cadr-evals/main.lisp`) | leftover object-shape predicate (`output` + `events` own properties) |
+
+Leftover sibling of Pairs 979–980. Does not remount `eval_result_p`. Timed work is make-eval-result yes, json-object miss, string miss, nil miss. Observed `er_yes` / `er_nil` are exact. First n=5 freeze **1.864×** (0.604 / 0.324 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

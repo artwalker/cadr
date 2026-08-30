@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `evals_harness.val_ext` | 2.556 | 0.278 | 9.202× | 12.00× | measure-only leftover 979; `validate-extension-result` vs leftover greeting+path-count replica (does not remount validate_extension) | invent pause；地板优化另刀 |
+| `evals_harness.suite_id` | 0.170 | 0.147 | 1.160× | 8.00× | measure-only leftover 980; `%eval-main` suite cond leftover vs leftover dispatch replica (does not remount suite_dispatch) | invent pause；地板优化另刀 |
+| `evals_harness.type_ok` | 0.604 | 0.324 | 1.864× | 8.00× | measure-only leftover 981; `typep` eval-result leftover vs leftover object-shape predicate (does not remount eval_result_p) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
