@@ -808,10 +808,13 @@ const REPETITIONS = {
 	"cli_selectors.credential_entry_auth_type": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
 	"cli_selectors.oauth_selector_selection": 50,
+	"cli_selectors.oas_ok": 50,
 	"cli_selectors.oauth_selector_apply_filter": 50,
+	"cli_selectors.flt_ok": 50,
 	"cli_selectors.oauth_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"cli_selectors.oauth_selector_search_text": 50,
+	"cli_selectors.qry_ok": 50,
 	"cli_selectors.login_auth_type_route": 50,
 	"cli_selectors.login_provider_options": 50,
 	"cli_selectors.logout_provider_options": 50,
@@ -30435,7 +30438,13 @@ async function measureCliSelectorsSessionSearch() {
 		oauth_selector_selection: await collect("cli_selectors.oauth_selector_selection", () => {
 			return () => runCliSelectorsOauthSelectorSelection();
 		}),
+		oas_ok: await collect("cli_selectors.oas_ok", () => {
+			return () => runCliSelectorsOauthSelectorSelection();
+		}),
 		oauth_selector_apply_filter: await collect("cli_selectors.oauth_selector_apply_filter", () => {
+			return () => runCliSelectorsOauthSelectorApplyFilter();
+		}),
+		flt_ok: await collect("cli_selectors.flt_ok", () => {
 			return () => runCliSelectorsOauthSelectorApplyFilter();
 		}),
 		oauth_selector_handle_event: await collect("cli_selectors.oauth_selector_handle_event", () => {
@@ -30445,6 +30454,9 @@ async function measureCliSelectorsSessionSearch() {
 			return () => runCliSelectorsOauthSelectorHandleRawInput();
 		}),
 		oauth_selector_search_text: await collect("cli_selectors.oauth_selector_search_text", () => {
+			return () => runCliSelectorsOauthSelectorSearchText();
+		}),
+		qry_ok: await collect("cli_selectors.qry_ok", () => {
 			return () => runCliSelectorsOauthSelectorSearchText();
 		}),
 		login_auth_type_route: await collect("cli_selectors.login_auth_type_route", () => {
@@ -34308,14 +34320,20 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
 			"cli_selectors.oauth_selector_selection":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filteredProviders[selectedIndex]",
+			"cli_selectors.oas_ok":
+				"packages/coding-agent leftover replica of filteredProviders[selectedIndex]",
 			"cli_selectors.oauth_selector_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders",
+			"cli_selectors.flt_ok":
+				"packages/coding-agent leftover replica of filterProviders",
 			"cli_selectors.oauth_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput event dispatch",
 			"cli_selectors.oauth_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput raw key dispatch",
 			"cli_selectors.oauth_selector_search_text":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
+			"cli_selectors.qry_ok":
+				"packages/coding-agent leftover replica of filterProviders search text",
 			"cli_selectors.login_auth_type_route":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
 			"cli_selectors.login_provider_options":
