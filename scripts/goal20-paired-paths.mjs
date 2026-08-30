@@ -887,6 +887,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.cycle_wrap": 50,
 	"cli_bootstrap_sessions.scope_hint": 50,
 	"cli_bootstrap_sessions.file_tags": 50,
+	"cli_bootstrap_sessions.cycle_ent": 50,
+	"cli_bootstrap_sessions.scope_st": 50,
+	"cli_bootstrap_sessions.file_cli": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -32810,6 +32813,15 @@ async function measureCliBootstrapCodingTools() {
 		file_tags: await collect("cli_bootstrap_sessions.file_tags", () => {
 			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 		}),
+		cycle_ent: await collect("cli_bootstrap_sessions.cycle_ent", () => {
+			return () => runCliBootstrapModelCycle();
+		}),
+		scope_st: await collect("cli_bootstrap_sessions.scope_st", () => {
+			return () => runCliBootstrapModelScope();
+		}),
+		file_cli: await collect("cli_bootstrap_sessions.file_cli", () => {
+			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -34647,6 +34659,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
 			"cli_bootstrap_sessions.file_tags":
 				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
+			"cli_bootstrap_sessions.cycle_ent":
+				"packages/coding-agent leftover replica of _cycleScopedModel index wrap (cadr model-cycle-target-entry)",
+			"cli_bootstrap_sessions.scope_st":
+				"packages/coding-agent leftover replica of init Model scope line (cadr model-scope-startup-line)",
+			"cli_bootstrap_sessions.file_cli":
+				"packages/coding-agent leftover replica of processFileArguments (cadr process-cli-file-arguments)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

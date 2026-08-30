@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 967 — `cli_bootstrap_sessions` (cycle_ent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cycle_ent` | `model-cycle-target-entry` (`src/cadr-cli/bootstrap/commands.lisp`) | leftover replica of `_cycleScopedModel` index wrap |
+
+Leftover sibling of leftover 940–942 on the same needs-pair file. Does not remount `cycle_wrap`. Timed work is forward/empty model cycle. Observed `mc_fwd` / `mc_empty` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 968 — `cli_bootstrap_sessions` (scope_st)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scope_st` | `model-scope-startup-line` (`src/cadr-cli/bootstrap/commands.lisp`) | leftover replica of init Model scope line |
+
+Leftover sibling of Pair 967. Does not remount `scope_hint`. Timed work is quiet/disabled scope lines. Observed `ms_quiet` / `ms_disabled` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 969 — `cli_bootstrap_sessions` (file_cli)
+
+| metric | cadr | pi |
+|---|---|---|
+| `file_cli` | `process-cli-file-arguments` (`src/cadr-cli/bootstrap/commands.lisp`) | leftover replica of processFileArguments |
+
+Leftover sibling of Pairs 967–968. Does not remount `file_tags`. Timed work is hello/image file tags. Observed `pf_hello` / `pf_img` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
