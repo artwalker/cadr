@@ -531,4 +531,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `bash_tool.output_path` | 88.726 | 6.159 | 14.405× | 24.00× | measure-only leftover 922; `bash-output-path` vs ensureTempFile path; first-freeze headroom 24.0 | invent pause；地板优化另刀 |
+| `bash_tool.make_tool` | 1.570 | 1.501 | 1.046× | 8.00× | measure-only leftover 923; `make-bash-tool` vs createBashTool | invent pause；地板优化另刀 |
+| `bash_tool.record_nil` | 0.162 | 0.123 | 1.323× | 8.00× | measure-only leftover 924; `record-user-bash-result` nil-agent vs leftover no-op return | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

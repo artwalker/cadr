@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `bash_tool.output_path`
+  (`bash-output-path` vs ensureTempFile `pi-bash` temp log path).
+  Observed `bop_log` / `bop_hex` / `bop_tmp` / `bop_n` exact. n=5
+  **14.405×** (88.726 / 6.159 µs) on host `cursor`, ceiling 24.0
+  (first-freeze headroom). Measure-only leftover (Pair 922). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `bash_tool.make_tool`
+  (`make-bash-tool` vs `createBashTool`). Observed `mt_name` /
+  `mt_desc` / `mt_exec` / `mt_n` exact. n=5 **1.046×** (1.570 /
+  1.501 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 923). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `bash_tool.record_nil`
+  (`record-user-bash-result` nil agent vs leftover no-op return).
+  Observed `rn_eq` / `rn_cmd` / `rn_out` / `rn_n` exact. n=5
+  **1.323×** (0.162 / 0.123 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 924). Over-1× booked. `nextPairNum`
+  left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

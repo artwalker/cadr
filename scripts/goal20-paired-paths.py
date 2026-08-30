@@ -1057,10 +1057,13 @@ RATIO_CEILINGS = {
     # leftover 695; first freeze 2.070× (2.616 / 1.264 µs).
     "bash_tool.normalized_extension": 8.0,
     # leftover 696; first freeze 1.812× (0.840 / 0.464 µs).
-    # bash_tool leftover trio on bash.lisp (samples=5): first-freeze
-    # headroom. Ratchet down only. Measure-only leftover 922–924.
-    "bash_tool.output_path": 8.0,
+    # leftover 922; first freeze 14.405× (88.726 / 6.159 µs).
+    # cadr secure-random + pathname vs node randomBytes+join.
+    # 24.0 is first-freeze headroom. Ratchet down only.
+    "bash_tool.output_path": 24.0,
+    # leftover 923; first freeze 1.046× (1.570 / 1.501 µs).
     "bash_tool.make_tool": 8.0,
+    # leftover 924; first freeze 1.323× (0.162 / 0.123 µs).
     "bash_tool.record_nil": 8.0,
     # First-freeze headroom for leftover
     # cli_interactive_controller.sanitize_title.
