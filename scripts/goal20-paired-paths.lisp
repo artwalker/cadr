@@ -864,6 +864,9 @@
     ("cli_print_rpc.rpc_images" . 50)
     ("cli_print_rpc.rpc_prompt" . 50)
     ("cli_print_rpc.bash_result" . 50)
+    ("cli_print_rpc.img_ok" . 50)
+    ("cli_print_rpc.prompt_ok" . 50)
+    ("cli_print_rpc.bash_js" . 50)
     ("cli_print_rpc.queue_parse" . 50)
     ("cli_print_rpc.asst_text" . 50)
     ("cli_print_rpc.cmd_list" . 50)
@@ -19071,6 +19074,21 @@
                   (run-cli-print-rpc-prompt))))
      "bash_result"
      (collect "cli_print_rpc.bash_result"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-bash-result))))
+     "img_ok"
+     (collect "cli_print_rpc.img_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-images))))
+     "prompt_ok"
+     (collect "cli_print_rpc.prompt_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-prompt))))
+     "bash_js"
+     (collect "cli_print_rpc.bash_js"
               (lambda ()
                 (lambda ()
                   (run-cli-print-rpc-bash-result))))
@@ -40190,6 +40208,12 @@
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
       "cli_print_rpc.bash_result"
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
+      "cli_print_rpc.img_ok"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-images-from-json leftover"
+      "cli_print_rpc.prompt_ok"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-prompt-message leftover"
+      "cli_print_rpc.bash_js"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json leftover"
       "cli_print_rpc.queue_parse"
       "src/cadr-cli/modes/rpc/commands.lisp parse-queue-mode"
       "cli_print_rpc.asst_text"
