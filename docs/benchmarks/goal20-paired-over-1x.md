@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `evals_harness.msg_txt` | 1.036 | 0.709 | 1.461× | 8.00× | measure-only leftover 982; `message-content-text` vs leftover content-text join (does not remount msg_content) | invent pause；地板优化另刀 |
+| `evals_harness.tools_n` | 1.525 | 0.259 | 5.881× | 8.00× | measure-only leftover 983; `eval-agent-tools` vs leftover agent.tools list (does not remount eval_tools) | invent pause；地板优化另刀 |
+| `evals_harness.paths_n` | 3.209 | 0.389 | 8.243× | 12.00× | measure-only leftover 984; `eval-extension-paths` vs leftover visible paths (does not remount eval_paths) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

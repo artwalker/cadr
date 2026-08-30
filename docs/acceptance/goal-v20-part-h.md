@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 982 — `evals_harness` (msg_txt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `msg_txt` | `message-content-text` (`src/cadr-evals/harness.lisp`) | leftover replica of content-text join |
+
+Leftover sibling of leftover 928–930 on the same needs-pair file. Does not remount `msg_content`. Timed work is plain string, text-parts join, empty, blank. Observed `ct_plain` / `ct_join` are exact. First n=5 freeze **1.461×** (1.036 / 0.709 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 983 — `evals_harness` (tools_n)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tools_n` | `eval-agent-tools` (`src/cadr-evals/harness.lisp`) | leftover replica of agent.tools list |
+
+Leftover sibling of Pair 982. Does not remount `eval_tools`. Timed work is empty tools, filled count, read name, bash name. Observed `at_empty` / `at_read` are exact. First n=5 freeze **5.881×** (1.525 / 0.259 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 984 — `evals_harness` (paths_n)
+
+| metric | cadr | pi |
+|---|---|---|
+| `paths_n` | `eval-extension-paths` (`src/cadr-evals/harness.lisp`) | leftover replica of visible extension-host paths |
+
+Leftover sibling of Pairs 982–983. Does not remount `eval_paths`. Timed work is no-host empty, one visible path, hidden skipped. Observed `ep_none` / `ep_path` are exact. First n=5 freeze **8.243×** (3.209 / 0.389 µs) on host `cursor`, ceiling 12.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

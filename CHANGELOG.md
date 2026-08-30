@@ -233,6 +233,25 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.msg_txt`
+  (`message-content-text` vs leftover replica of content-text join).
+  Observed `ct_plain` / `ct_join` exact. n=5 **1.461×**
+  (1.036 / 0.709 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 982). Over-1× booked. Does not remount `msg_content`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.tools_n`
+  (`eval-agent-tools` vs leftover replica of agent.tools list). Observed
+  `at_empty` / `at_read` exact. n=5 **5.881×** (1.525 / 0.259 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 983). Over-1× booked.
+  Does not remount `eval_tools`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.paths_n`
+  (`eval-extension-paths` vs leftover replica of visible extension-host
+  paths). Observed `ep_none` / `ep_path` exact. n=5 **8.243×**
+  (3.209 / 0.389 µs) on host `cursor`, ceiling 12.0. Measure-only leftover
+  (Pair 984). Over-1× booked. Does not remount `eval_paths`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
