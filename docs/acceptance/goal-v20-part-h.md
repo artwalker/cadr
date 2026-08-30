@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1084 — `cli_selectors` (oa_lms)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lms` | `login-method-selector-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent UI state |
+
+Leftover sibling of Pair 213 on the same needs-pair file (second unused slug after leftover 1064 `oa_lui`). Does not remount `login_method_selector_ui_state`. Timed work is default / sel1 / title / narrow / mid UI states. Observed `lmsui_default` / `lmsui_sel1` are exact. First n=5 freeze **4.116×** (425.046 / 103.269 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1085 — `cli_selectors` (oa_aku)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_aku` | `api-key-input-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key UI state |
+
+Leftover sibling of Pair 214 on the same needs-pair file (second unused slug after leftover 1065 `oa_aki`). Does not remount `api_key_input_ui_state`. Timed work is empty / key / openai / narrow / long UI states. Observed `akiui_empty` / `akiui_key` are exact. First n=5 freeze **2.731×** (208.807 / 76.463 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1086 — `cli_selectors` (oa_ahe)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_ahe` | `api-key-input-state-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login dialog api key prompt handleInput |
+
+Leftover sibling of Pair 212 on the same needs-pair file (second unused slug after leftover 1066 `oa_akhe`). Does not remount `api_key_input_state_handle_event`. Timed work is esc / clear / text / backspace / enter-empty / enter-key / interrupt. Observed `akhe_esc` / `akhe_text` are exact. First n=5 freeze **0.577×** (5.443 / 9.429 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
