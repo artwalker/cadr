@@ -804,9 +804,12 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"cli_selectors.trust_selector_ui_state": 50,
 	"cli_selectors.oauth_option_status_label": 50,
+	"cli_selectors.lbl_ok": 50,
 	"cli_selectors.oauth_option_status_rendered": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
+	"cli_selectors.typ_ok": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
+	"cli_selectors.env_ok": 50,
 	"cli_selectors.oauth_selector_selection": 50,
 	"cli_selectors.oauth_selector_apply_filter": 50,
 	"cli_selectors.oauth_selector_handle_event": 50,
@@ -30423,13 +30426,22 @@ async function measureCliSelectorsSessionSearch() {
 		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
 			return () => runCliSelectorsOauthOptionStatusLabel();
 		}),
+		lbl_ok: await collect("cli_selectors.lbl_ok", () => {
+			return () => runCliSelectorsOauthOptionStatusLabel();
+		}),
 		oauth_option_status_rendered: await collect("cli_selectors.oauth_option_status_rendered", () => {
 			return () => runCliSelectorsOauthOptionStatusRendered();
 		}),
 		credential_entry_auth_type: await collect("cli_selectors.credential_entry_auth_type", () => {
 			return () => runCliSelectorsCredentialEntryAuthType();
 		}),
+		typ_ok: await collect("cli_selectors.typ_ok", () => {
+			return () => runCliSelectorsCredentialEntryAuthType();
+		}),
 		oauth_environment_source_p: await collect("cli_selectors.oauth_environment_source_p", () => {
+			return () => runCliSelectorsOauthEnvironmentSourceP();
+		}),
+		env_ok: await collect("cli_selectors.env_ok", () => {
 			return () => runCliSelectorsOauthEnvironmentSourceP();
 		}),
 		oauth_selector_selection: await collect("cli_selectors.oauth_selector_selection", () => {
@@ -34300,12 +34312,18 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
 			"cli_selectors.oauth_option_status_label":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
+			"cli_selectors.lbl_ok":
+				"packages/coding-agent leftover replica of formatStatusIndicator plain label",
 			"cli_selectors.oauth_option_status_rendered":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator themed output",
 			"cli_selectors.credential_entry_auth_type":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions authType",
+			"cli_selectors.typ_ok":
+				"packages/coding-agent leftover replica of credential-entry authType",
 			"cli_selectors.oauth_environment_source_p":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
+			"cli_selectors.env_ok":
+				"packages/coding-agent leftover replica of env source regex",
 			"cli_selectors.oauth_selector_selection":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filteredProviders[selectedIndex]",
 			"cli_selectors.oauth_selector_apply_filter":
