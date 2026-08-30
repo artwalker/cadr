@@ -928,11 +928,11 @@ RATIO_CEILINGS = {
     "cli_print_rpc.queue_mode": 8.0,
     "cli_print_rpc.last_assistant": 8.0,
     "cli_print_rpc.command_list": 8.0,
-    # cli_print_rpc leftover trio on commands.lisp (samples=5): first-freeze
-    # headroom. Ratchet down only. Measure-only leftover 934–936.
-    # Does not remount queue_mode / last_assistant / command_list.
+    # Measure-only leftover 934; first freeze 0.132× (0.337 / 2.547 µs).
     "cli_print_rpc.queue_parse": 8.0,
+    # Measure-only leftover 935; first freeze 0.791× (0.293 / 0.370 µs).
     "cli_print_rpc.asst_text": 8.0,
+    # Measure-only leftover 936; first freeze 4.603× (1.533 / 0.333 µs).
     "cli_print_rpc.cmd_list": 8.0,
     # skill_prompt_load leftover trio (samples=5): observed
     # sdk_prompt_input 4.32x (15.18 / 3.51 us), sdk_list_override
