@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1081. cli_selectors oa_lat vs leftover replica of showLoginAuthTypeSelector routing
+;;;;      (does not remount login_auth_type_route)
+;;;; 1082. cli_selectors oa_lpo vs leftover replica of getLoginProviderOptions
+;;;;      (does not remount login_provider_options)
+;;;; 1083. cli_selectors oa_lhe vs leftover replica of login-method-selector handleInput
+;;;;      (does not remount login_method_selector_handle_event)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -839,9 +845,12 @@
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
+    ("cli_selectors.oa_lat" . 50)
     ("cli_selectors.login_provider_options" . 50)
+    ("cli_selectors.oa_lpo" . 50)
     ("cli_selectors.logout_provider_options" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
+    ("cli_selectors.oa_lhe" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
@@ -29268,8 +29277,18 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-auth-type-route))))
+     "oa_lat"
+     (collect "cli_selectors.oa_lat"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-auth-type-route))))
      "login_provider_options"
      (collect "cli_selectors.login_provider_options"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-provider-options))))
+     "oa_lpo"
+     (collect "cli_selectors.oa_lpo"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-provider-options))))
@@ -29280,6 +29299,11 @@
                   (run-cli-selectors-logout-provider-options))))
      "login_method_selector_handle_event"
      (collect "cli_selectors.login_method_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event))))
+     "oa_lhe"
+     (collect "cli_selectors.oa_lhe"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-method-selector-handle-event))))
@@ -32930,12 +32954,18 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
       "cli_selectors.login_auth_type_route"
       "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
+      "cli_selectors.oa_lat"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route leftover"
       "cli_selectors.login_provider_options"
       "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options"
+      "cli_selectors.oa_lpo"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options leftover"
       "cli_selectors.logout_provider_options"
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
       "cli_selectors.login_method_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
+      "cli_selectors.oa_lhe"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event leftover"
       "cli_selectors.oauth_selector_move"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
       "cli_selectors.api_key_input_state_handle_event"
