@@ -587,6 +587,9 @@
     ("evals_harness.rep_make" . 50)
     ("evals_harness.fin_num" . 50)
     ("evals_harness.art_meta" . 50)
+    ("evals_harness.rep_ok" . 50)
+    ("evals_harness.fin_ok" . 50)
+    ("evals_harness.meta_ok" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -13379,6 +13382,21 @@
                   (run-evals-harness-finite-number))))
      "art_meta"
      (collect "evals_harness.art_meta"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-metadata))))
+     "rep_ok"
+     (collect "evals_harness.rep_ok"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-reporter))))
+     "fin_ok"
+     (collect "evals_harness.fin_ok"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-finite-number))))
+     "meta_ok"
+     (collect "evals_harness.meta_ok"
               (lambda ()
                 (lambda ()
                   (run-evals-harness-artifact-metadata)))))))
@@ -32466,6 +32484,12 @@
       "src/cadr-evals/reporter.lisp reporter-finite-number"
       "evals_harness.art_meta"
       "src/cadr-evals/reporter.lisp reporter-artifact-metadata"
+      "evals_harness.rep_ok"
+      "src/cadr-evals/reporter.lisp make-eval-harness-reporter leftover"
+      "evals_harness.fin_ok"
+      "src/cadr-evals/reporter.lisp reporter-finite-number leftover"
+      "evals_harness.meta_ok"
+      "src/cadr-evals/reporter.lisp reporter-artifact-metadata leftover"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

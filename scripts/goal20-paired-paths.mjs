@@ -365,6 +365,9 @@ const REPETITIONS = {
 	"evals_harness.rep_make": 50,
 	"evals_harness.fin_num": 50,
 	"evals_harness.art_meta": 50,
+	"evals_harness.rep_ok": 50,
+	"evals_harness.fin_ok": 50,
+	"evals_harness.meta_ok": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -10835,6 +10838,15 @@ async function measureEvalsHarness() {
 			return () => runEvalsHarnessFiniteNumber();
 		}),
 		art_meta: await collect("evals_harness.art_meta", () => {
+			return () => runEvalsHarnessArtifactMetadata();
+		}),
+		rep_ok: await collect("evals_harness.rep_ok", () => {
+			return () => runEvalsHarnessMakeReporter();
+		}),
+		fin_ok: await collect("evals_harness.fin_ok", () => {
+			return () => runEvalsHarnessFiniteNumber();
+		}),
+		meta_ok: await collect("evals_harness.meta_ok", () => {
 			return () => runEvalsHarnessArtifactMetadata();
 		}),
 		observed,
@@ -33862,6 +33874,12 @@ const result = {
 				"packages/evals/src/vitest-evals/reporter.ts leftover replica of finite number keep",
 			"evals_harness.art_meta":
 				"packages/evals/src/vitest-evals/reporter.ts leftover replica of artifact metadata filter",
+			"evals_harness.rep_ok":
+				"packages/evals leftover replica of constructor artifactDirectory (cadr make-eval-harness-reporter)",
+			"evals_harness.fin_ok":
+				"packages/evals leftover replica of finite number keep (cadr reporter-finite-number)",
+			"evals_harness.meta_ok":
+				"packages/evals leftover replica of artifact metadata filter (cadr reporter-artifact-metadata)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
