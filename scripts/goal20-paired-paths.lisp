@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1039. cli_selectors ms_kb vs leftover replica of models KeybindingsManager constructor
+;;;;      (does not remount make_models_selector_keybindings)
+;;;; 1040. cli_selectors sm_st vs leftover replica of ScopedModelsSelectorComponent constructor
+;;;;      (does not remount make_scoped_models_selector_state)
+;;;; 1041. cli_selectors rm_sel vs leftover replica of ModelSelectorComponent layout
+;;;;      (does not remount render_model_selector)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -949,6 +955,9 @@
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
+    ("cli_selectors.ms_kb" . 50)
+    ("cli_selectors.sm_st" . 50)
+    ("cli_selectors.rm_sel" . 50)
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
@@ -29816,6 +29825,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-model-selector))))
+     "ms_kb"
+     (collect "cli_selectors.ms_kb"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-models-selector-keybindings))))
+     "sm_st"
+     (collect "cli_selectors.sm_st"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-scoped-models-selector-state))))
+     "rm_sel"
+     (collect "cli_selectors.rm_sel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-model-selector))))
      "daxnuts_rgb_at"
      (collect "cli_selectors.daxnuts_rgb_at"
               (lambda ()
@@ -33188,6 +33212,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state"
       "cli_selectors.render_model_selector"
       "src/cadr-cli/interactive/selectors/models.lisp render-model-selector"
+      "cli_selectors.ms_kb"
+      "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings leftover"
+      "cli_selectors.sm_st"
+      "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state leftover"
+      "cli_selectors.rm_sel"
+      "src/cadr-cli/interactive/selectors/models.lisp render-model-selector leftover"
       "cli_selectors.daxnuts_rgb_at"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at"
       "cli_selectors.make_daxnuts_component"
