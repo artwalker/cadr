@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1018 — `cli_selectors` (cd_sec)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cd_sec` | `make-countdown-timer` remaining seconds (`src/cadr-cli/interactive/components/countdown.lisp`, `:start-p nil`) | leftover replica of `Math.ceil(timeoutMs / 1000)` |
+
+Leftover sibling of leftover 556–558 on the same needs-pair file. Does not remount `countdown_seconds`. Timed work is ceiling seconds from timeout — not start/sleep. Observed `cds_0` / `cds_1` are exact. First n=5 freeze **3.129×** (0.828 / 0.265 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1019 — `cli_selectors` (cd_tick)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cd_tick` | `countdown-timer-tick` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown tick |
+
+Leftover sibling of Pair 1018. Does not remount `countdown_tick`. Timed work is three ticks to expire. Observed `cdt_make` / `cdt_remain` are exact. First n=5 freeze **2.369×** (0.783 / 0.331 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1020 — `cli_selectors` (cd_rnd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cd_rnd` | `countdown-request-render` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of requestRender |
+
+Leftover sibling of Pairs 1018–1019. Does not remount `countdown_render`. Timed work is request-render call counts by UI kind. Observed `cdr_fn1` / `cdr_nil` are exact. First n=5 freeze **1.466×** (0.940 / 0.642 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
