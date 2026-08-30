@@ -35,6 +35,12 @@
 ;;;;      leftover: rpc-images-from-json / rpc-prompt-message / rpc-bash-result-json
 ;;;;      leftover 937-939: rpc-handle-line bad JSON / array / missing UI id
 ;;;;      (does not remount handle_bad_json / handle_not_object / handle_ui_miss)
+;;;; 1000. cli_selectors tosp_ok vs TrustSelector isSavedOption
+;;;;      (does not remount trust_option_saved_p)
+;;;; 1001. cli_selectors mtss_ok vs TrustSelectorComponent constructor
+;;;;      (does not remount make_trust_selector_state)
+;;;; 1002. cli_selectors rtrs_ok vs TrustSelectorComponent layout
+;;;;      (does not remount render_trust_selector)
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -931,6 +937,9 @@
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
+    ("cli_selectors.tosp_ok" . 50)
+    ("cli_selectors.mtss_ok" . 50)
+    ("cli_selectors.rtrs_ok" . 50)
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
@@ -29726,6 +29735,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-trust-selector))))
+     "tosp_ok"
+     (collect "cli_selectors.tosp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-option-saved-p))))
+     "mtss_ok"
+     (collect "cli_selectors.mtss_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-trust-selector-state))))
+     "rtrs_ok"
+     (collect "cli_selectors.rtrs_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-trust-selector))))
      "make_login_method_selector_state"
      (collect "cli_selectors.make_login_method_selector_state"
               (lambda ()
@@ -33111,6 +33135,12 @@
       "cli_selectors.make_trust_selector_state"
       "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
       "cli_selectors.render_trust_selector"
+      "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
+      "cli_selectors.tosp_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p"
+      "cli_selectors.mtss_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
+      "cli_selectors.rtrs_ok"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.make_login_method_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
