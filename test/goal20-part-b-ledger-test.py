@@ -3473,6 +3473,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("sdk_context_files", paired.METRICS["skill_prompt_load"])
         self.assertIn("skill_prompt_load.sdk_context_files", paired.RATIO_CEILINGS)
         self.assertIn("cf_n", paired.OBSERVED_EXACT["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_get_skills", RECORD.METRIC_KEYS)
+        self.assertIn("sdk_get_skills", paired.METRICS["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_get_skills", paired.RATIO_CEILINGS)
+        self.assertIn("sk_n", paired.OBSERVED_EXACT["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_get_prompts", RECORD.METRIC_KEYS)
+        self.assertIn("sdk_get_prompts", paired.METRICS["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_get_prompts", paired.RATIO_CEILINGS)
+        self.assertIn("pr_n", paired.OBSERVED_EXACT["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_get_themes", RECORD.METRIC_KEYS)
+        self.assertIn("sdk_get_themes", paired.METRICS["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_get_themes", paired.RATIO_CEILINGS)
+        self.assertIn("th_n", paired.OBSERVED_EXACT["skill_prompt_load"])
 
     def test_cli_bootstrap_sessions_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

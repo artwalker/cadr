@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 919 — `skill_prompt_load` (sdk_get_skills)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_get_skills` | `sdk-resource-loader-skills` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getSkills` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of leftover 478–480 on the same resource-service hole. Timed work is the skills getter after isolated no-discovery reload — not prompt-input resolve, not list override, not context-file records. Observed `sk_n` / `sk_list` / `sk_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 920 — `skill_prompt_load` (sdk_get_prompts)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_get_prompts` | `sdk-resource-loader-prompts` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getPrompts` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of leftover 919. Timed work is the prompts getter after isolated no-discovery reload — not skills, not themes. Observed `pr_n` / `pr_list` / `pr_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 921 — `skill_prompt_load` (sdk_get_themes)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_get_themes` | `sdk-resource-loader-themes` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getThemes` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of leftover 919–920. Timed work is the themes getter after isolated no-discovery reload — not skills, not prompts. Observed `th_n` / `th_list` / `th_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

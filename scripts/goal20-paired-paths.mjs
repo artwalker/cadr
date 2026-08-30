@@ -410,6 +410,9 @@ const REPETITIONS = {
 	"skill_prompt_load.sdk_prompt_input": 50,
 	"skill_prompt_load.sdk_list_override": 50,
 	"skill_prompt_load.sdk_context_files": 50,
+	"skill_prompt_load.sdk_get_skills": 50,
+	"skill_prompt_load.sdk_get_prompts": 50,
+	"skill_prompt_load.sdk_get_themes": 50,
 	"cli_support.watch_retry_delay": 50,
 	"cli_support.close_watcher": 50,
 	"cli_support.watch_signature": 50,
@@ -31963,13 +31966,64 @@ function runSkillPromptSdkContextFiles(promptPath) {
 }
 
 
+async function stageSkillPromptSdkGetters() {
+	const cwd = path.join(scratch, "sdk-get-cwd");
+	const agentDir = path.join(scratch, "sdk-get-agent");
+	mkdirSync(path.join(cwd, ".pi"), { recursive: true });
+	mkdirSync(agentDir, { recursive: true });
+	const loader = new resourceLoaderModule.DefaultResourceLoader({
+		cwd,
+		agentDir,
+		noExtensions: true,
+		noSkills: true,
+		noPromptTemplates: true,
+		noThemes: true,
+		settingsManager: settingsModule.SettingsManager.create(cwd, agentDir, {
+			projectTrusted: true,
+		}),
+	});
+	await loader.reload();
+	return loader;
+}
+
+function runSkillPromptSdkGetSkills(loader) {
+	const got = loader.getSkills();
+	return {
+		sk_n: got.skills.length,
+		sk_list: Array.isArray(got.skills) ? 1 : 0,
+		sk_ok: 1,
+	};
+}
+
+function runSkillPromptSdkGetPrompts(loader) {
+	const got = loader.getPrompts();
+	return {
+		pr_n: got.prompts.length,
+		pr_list: Array.isArray(got.prompts) ? 1 : 0,
+		pr_ok: 1,
+	};
+}
+
+function runSkillPromptSdkGetThemes(loader) {
+	const got = loader.getThemes();
+	return {
+		th_n: got.themes.length,
+		th_list: Array.isArray(got.themes) ? 1 : 0,
+		th_ok: 1,
+	};
+}
+
 async function measureSkillPromptBuild() {
 	const file = stageSkillPromptResolveFile();
 	const dir = "/tmp/goal20-skill-prompt-resolve";
+	const loader = await stageSkillPromptSdkGetters();
 	const observed = runSkillPromptBuild();
 	const resolve = runSkillPromptResolvePrompt(file);
 	const nodeErr = runSkillPromptNodeReadError(dir);
 	const appends = runSkillPromptPromptAppends();
+	const getSkills = runSkillPromptSdkGetSkills(loader);
+	const getPrompts = runSkillPromptSdkGetPrompts(loader);
+	const getThemes = runSkillPromptSdkGetThemes(loader);
 	return {
 		build_prompt: await collect("skill_prompt_load.build_prompt", () => {
 			return () => runSkillPromptBuild();
@@ -31983,7 +32037,24 @@ async function measureSkillPromptBuild() {
 		prompt_appends: await collect("skill_prompt_load.prompt_appends", () => {
 			return () => runSkillPromptPromptAppends();
 		}),
-		observed: { ...observed, ...resolve, ...nodeErr, ...appends },
+		sdk_get_skills: await collect("skill_prompt_load.sdk_get_skills", () => {
+			return () => runSkillPromptSdkGetSkills(loader);
+		}),
+		sdk_get_prompts: await collect("skill_prompt_load.sdk_get_prompts", () => {
+			return () => runSkillPromptSdkGetPrompts(loader);
+		}),
+		sdk_get_themes: await collect("skill_prompt_load.sdk_get_themes", () => {
+			return () => runSkillPromptSdkGetThemes(loader);
+		}),
+		observed: {
+			...observed,
+			...resolve,
+			...nodeErr,
+			...appends,
+			...getSkills,
+			...getPrompts,
+			...getThemes,
+		},
 	};
 }
 
@@ -34278,6 +34349,12 @@ const result = {
 				"packages/coding-agent/src/core/resource-loader.ts Node fs errno text (EISDIR/EACCES)",
 			"skill_prompt_load.prompt_appends":
 				"packages/coding-agent/src/core/resource-loader.ts appendSystemPrompt join",
+			"skill_prompt_load.sdk_get_skills":
+				"packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.getSkills",
+			"skill_prompt_load.sdk_get_prompts":
+				"packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.getPrompts",
+			"skill_prompt_load.sdk_get_themes":
+				"packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.getThemes",
 			"cli_bootstrap_sessions.coding_tools":
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":

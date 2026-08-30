@@ -953,6 +953,9 @@
     ("skill_prompt_load.resolve_prompt" . 50)
     ("skill_prompt_load.node_read_error" . 50)
     ("skill_prompt_load.prompt_appends" . 50)
+    ("skill_prompt_load.sdk_get_skills" . 50)
+    ("skill_prompt_load.sdk_get_prompts" . 50)
+    ("skill_prompt_load.sdk_get_themes" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
     ("cli_bootstrap_sessions.session_path" . 50)
@@ -30676,13 +30679,57 @@
      (if (search (format nil "~%~%") joined) 1 0)
      (if (eql (search "base" joined) 0) 1 0))))
 
+(defun stage-skill-prompt-sdk-getters ()
+  ;; Isolated cwd/agentDir, no discovery. Reload is setup, not timed.
+  ;; Do not remount leftover 478-480 resolve/override/context-files.
+  (destructuring-bind (cwd agent-dir)
+      (stage-cli-sdk-agent-session)
+    (let* ((settings (cadr-cli::make-memory-sdk-settings-manager))
+           (loader
+             (cadr-cli::make-sdk-resource-loader
+              :cwd cwd
+              :agent-directory agent-dir
+              :settings-manager settings
+              :no-extensions-p t
+              :no-skills-p t
+              :no-prompts-p t
+              :no-themes-p t
+              :no-context-files-p t)))
+      (cadr-cli::sdk-resource-loader-reload loader)
+      loader)))
+
+(defun run-skill-prompt-sdk-get-skills (loader)
+  (let ((skills (cadr-cli::sdk-resource-loader-skills loader)))
+    (list
+     (length skills)
+     (if (listp skills) 1 0)
+     1)))
+
+(defun run-skill-prompt-sdk-get-prompts (loader)
+  (let ((prompts (cadr-cli::sdk-resource-loader-prompts loader)))
+    (list
+     (length prompts)
+     (if (listp prompts) 1 0)
+     1)))
+
+(defun run-skill-prompt-sdk-get-themes (loader)
+  (let ((themes (cadr-cli::sdk-resource-loader-themes loader)))
+    (list
+     (length themes)
+     (if (listp themes) 1 0)
+     1)))
+
 (defun measure-skill-prompt-build ()
   (let* ((file (stage-skill-prompt-resolve-file))
          (dir "/tmp/goal20-skill-prompt-resolve/")
+         (loader (stage-skill-prompt-sdk-getters))
          (observed (run-skill-prompt-build))
          (resolve (run-skill-prompt-resolve-prompt file))
          (node-err (run-skill-prompt-node-read-error dir))
-         (appends (run-skill-prompt-prompt-appends)))
+         (appends (run-skill-prompt-prompt-appends))
+         (get-skills (run-skill-prompt-sdk-get-skills loader))
+         (get-prompts (run-skill-prompt-sdk-get-prompts loader))
+         (get-themes (run-skill-prompt-sdk-get-themes loader)))
     (json-object
      "observed"
      (json-object
@@ -30700,7 +30747,16 @@
       "nr_other" (third node-err)
       "pa_len" (first appends)
       "pa_join" (second appends)
-      "pa_base" (third appends))
+      "pa_base" (third appends)
+      "sk_n" (first get-skills)
+      "sk_list" (second get-skills)
+      "sk_ok" (third get-skills)
+      "pr_n" (first get-prompts)
+      "pr_list" (second get-prompts)
+      "pr_ok" (third get-prompts)
+      "th_n" (first get-themes)
+      "th_list" (second get-themes)
+      "th_ok" (third get-themes))
      "build_prompt"
      (collect "skill_prompt_load.build_prompt"
               (lambda ()
@@ -30720,7 +30776,22 @@
      (collect "skill_prompt_load.prompt_appends"
               (lambda ()
                 (lambda ()
-                  (run-skill-prompt-prompt-appends)))))))
+                  (run-skill-prompt-prompt-appends))))
+     "sdk_get_skills"
+     (collect "skill_prompt_load.sdk_get_skills"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-sdk-get-skills loader))))
+     "sdk_get_prompts"
+     (collect "skill_prompt_load.sdk_get_prompts"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-sdk-get-prompts loader))))
+     "sdk_get_themes"
+     (collect "skill_prompt_load.sdk_get_themes"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-sdk-get-themes loader)))))))
 
 (defun run-cli-bootstrap-coding-tools ()
   (let* ((tools (cadr-cli:make-coding-tools "/tmp/proj"))
@@ -32674,6 +32745,12 @@
       "src/cadr-cli/system-prompt.lisp node-read-error-message"
       "skill_prompt_load.prompt_appends"
       "src/cadr-cli/system-prompt.lisp resolve-system-prompt-with-appends"
+      "skill_prompt_load.sdk_get_skills"
+      "src/cadr-cli/sdk/resource-service.lisp sdk-resource-loader-skills"
+      "skill_prompt_load.sdk_get_prompts"
+      "src/cadr-cli/sdk/resource-service.lisp sdk-resource-loader-prompts"
+      "skill_prompt_load.sdk_get_themes"
+      "src/cadr-cli/sdk/resource-service.lisp sdk-resource-loader-themes"
       "cli_bootstrap_sessions.coding_tools"
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
