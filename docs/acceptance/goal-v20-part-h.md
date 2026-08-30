@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `countdown_dispose` | `cadr-tui:component-dispose` on unstarted `countdown-timer` (`src/cadr-cli/interactive/components/countdown.lisp`) | CountdownTimer.dispose with intervalId unset (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
 
-Leftover sibling of leftover 556–558 on the same `countdown.lisp` hole. Timed work is dispose without a live thread — not remaining-seconds, not tick, not request-render. Observed `cdd_stop` / `cdd_thread` / `cdd_expired` / `cdd_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 556–558 on the same `countdown.lisp` hole. Timed work is dispose without a live thread — not remaining-seconds, not tick, not request-render. Observed `cdd_stop` / `cdd_thread` / `cdd_expired` / `cdd_n` are exact. First n=5 freeze **1.536×** (0.172 / 0.112 µs) on host `cursor`, ceiling 8.0. Over-1×. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 905 — `cli_selectors` (countdown_unstarted)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover 556–558 on the same `countdown.lisp` hole. Timed 
 |---|---|---|
 | `countdown_unstarted` | `make-countdown-timer` `:start-p nil` 2500ms (`src/cadr-cli/interactive/components/countdown.lisp`) | remainingSeconds ceil without setInterval (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
 
-Leftover sibling of leftover 556–558 / 904. Timed work is construct without starting the thread — 2500ms remaining is 3, not leftover 556's 1500ms path. Observed `cdu_thread` / `cdu_stop` / `cdu_expired` / `cdu_remain` / `cdu_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 556–558 / 904. Timed work is construct without starting the thread — 2500ms remaining is 3, not leftover 556's 1500ms path. Observed `cdu_thread` / `cdu_stop` / `cdu_expired` / `cdu_remain` / `cdu_n` are exact. First n=5 freeze **1.077×** (0.116 / 0.108 µs) on host `cursor`, ceiling 8.0. Over-1×. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 906 — `cli_selectors` (countdown_start_guard)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of leftover 556–558 / 904. Timed work is construct without st
 |---|---|---|
 | `countdown_start_guard` | `countdown-timer-start` when thread is already bound (`src/cadr-cli/interactive/components/countdown.lisp`) | keep existing intervalId (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
 
-Leftover sibling of leftover 556–558 / 904–905. Timed work is the existing-thread skip — no `sb-thread:make-thread`, no setInterval. Observed `csg_keep` / `csg_stop` / `csg_fresh` / `csg_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 556–558 / 904–905. Timed work is the existing-thread skip — no `sb-thread:make-thread`, no setInterval. Observed `csg_keep` / `csg_stop` / `csg_fresh` / `csg_n` are exact. First n=5 freeze **1.038×** (0.152 / 0.146 µs) on host `cursor`, ceiling 8.0. Over-1×. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.countdown_dispose`
+  (`cadr-tui:component-dispose` on unstarted countdown-timer vs
+  CountdownTimer.dispose with intervalId unset). Observed `cdd_stop`
+  / `cdd_thread` / `cdd_expired` / `cdd_n` exact. n=5 **1.536×**
+  (0.172 / 0.112 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 904). Over-1×. Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.countdown_unstarted`
+  (`make-countdown-timer` `:start-p nil` 2500ms vs remainingSeconds
+  ceil without setInterval). Observed `cdu_thread` / `cdu_stop` /
+  `cdu_expired` / `cdu_remain` / `cdu_n` exact. n=5 **1.077×**
+  (0.116 / 0.108 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 905). Over-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.countdown_start_guard`
+  (`countdown-timer-start` existing-thread skip vs keep existing
+  intervalId). Observed `csg_keep` / `csg_stop` / `csg_fresh` /
+  `csg_n` exact. n=5 **1.038×** (0.152 / 0.146 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 906). Over-1×.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
