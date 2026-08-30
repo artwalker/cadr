@@ -246,6 +246,27 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oa_lbl`
+  (`oauth-option-status-label` vs leftover replica of
+  formatStatusIndicator plain label). Observed `oosl_none` /
+  `oosl_custom` exact. n=5 **1.583×** (1.470 / 0.929 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1054). Over-1×
+  booked. Does not remount `oauth_option_status_label`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oa_typ`
+  (`credential-entry-auth-type` vs leftover replica of credential-entry
+  authType). Observed `ceat_oauth` / `ceat_api_key` exact. n=5
+  **1.365×** (0.428 / 0.314 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1055). Over-1× booked. Does not remount
+  `credential_entry_auth_type`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oa_env`
+  (`oauth-environment-source-p` vs leftover replica of env source
+  regex). Observed `oesp_nil` / `oesp_oauth` exact. n=5 **2.099×**
+  (0.860 / 0.410 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 1056). Over-1× booked. Does not remount
+  `oauth_environment_source_p`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
