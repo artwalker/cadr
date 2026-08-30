@@ -573,6 +573,12 @@
     ("evals_harness.reporter_run_id" . 50)
     ("evals_harness.artifact_reference_json" . 50)
     ("evals_harness.reporter_artifacts" . 50)
+    ("evals_harness.validate_extension" . 50)
+    ("evals_harness.suite_dispatch" . 50)
+    ("evals_harness.eval_result_p" . 50)
+    ("evals_harness.msg_content" . 50)
+    ("evals_harness.eval_tools" . 50)
+    ("evals_harness.eval_paths" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -12115,6 +12121,81 @@
    4))
 
 
+(defun leftover-eval-extension-output (response paths)
+  (cadr-evals::make-eval-result
+   :output
+   (cadr-ai::json-object
+    "response" response
+    "extensionPaths" paths)))
+
+
+(defun leftover-eval-validate-extension-ok-p (response paths)
+  (handler-case
+      (progn
+        (cadr-evals::validate-extension-result
+         (leftover-eval-extension-output response paths))
+        1)
+    (error () 0)))
+
+
+(defun run-evals-harness-validate-extension ()
+  ;; extensions.eval.ts greeting + path-count. Not a live eval run.
+  ;; Do not exact cadr vs pi error copy.
+  (list
+   (leftover-eval-validate-extension-ok-p "Hello, Bob!" '("one"))
+   (eval-flag
+    (zerop
+     (leftover-eval-validate-extension-ok-p
+      "Hello, Alice!" '("one"))))
+   (eval-flag
+    (zerop
+     (leftover-eval-validate-extension-ok-p
+      "Hello, Bob!" '("a" "b"))))
+   (eval-flag
+    (zerop
+     (leftover-eval-validate-extension-ok-p
+      "Hello, Bob!" '())))
+   4))
+
+
+(defun leftover-eval-suite-dispatch-id (suite)
+  ;; Replica of %eval-main suite cond. Not production.
+  ;; pi run-evals.mjs has no --suite.
+  (cond ((string= suite "smoke") 0)
+        ((string= suite "extensions") 1)
+        ((string= suite "extension-authoring") 2)
+        (t 3)))
+
+
+(defun run-evals-harness-suite-dispatch ()
+  (list
+   (eval-flag (= (leftover-eval-suite-dispatch-id "smoke") 0))
+   (eval-flag (= (leftover-eval-suite-dispatch-id "extensions") 1))
+   (eval-flag
+    (= (leftover-eval-suite-dispatch-id "extension-authoring") 2))
+   (eval-flag (= (leftover-eval-suite-dispatch-id "unknown") 3))
+   4))
+
+
+(defun leftover-eval-result-type-p (value)
+  (eval-flag (typep value 'cadr-evals::eval-result)))
+
+
+(defun run-evals-harness-eval-result-p ()
+  ;; Leftover of %eval-main (typep value 'eval-result).
+  ;; Not eval-result-json.
+  (list
+   (leftover-eval-result-type-p
+    (cadr-evals::make-eval-result :output "ok"))
+   (eval-flag
+    (zerop
+     (leftover-eval-result-type-p
+      (cadr-ai::json-object "n" 1))))
+   (eval-flag (zerop (leftover-eval-result-type-p "x")))
+   (eval-flag (zerop (leftover-eval-result-type-p nil)))
+   4))
+
+
 (defun run-evals-harness-eval-result ()
   ;; Struct construction only — not eval-result-json (#36) and not
   ;; default-eval-model-resolver (skipped this cut).
@@ -12833,6 +12914,9 @@
          (argument-prefix (run-evals-harness-argument-prefix))
          (parse-arguments (run-evals-harness-parse-arguments))
          (validate-smoke (run-evals-harness-validate-smoke))
+         (validate-extension (run-evals-harness-validate-extension))
+         (suite-dispatch (run-evals-harness-suite-dispatch))
+         (eval-result-p (run-evals-harness-eval-result-p))
          (canonical-api (run-evals-harness-canonical-api))
          (legacy-api (run-evals-harness-legacy-api))
          (extension-error (run-evals-harness-extension-error-json))
@@ -12841,7 +12925,10 @@
          (prepare-default (run-evals-harness-prepare-default-prompt))
          (reporter-run-id (run-evals-harness-reporter-run-id))
          (artifact-reference (run-evals-harness-artifact-reference-json))
-         (reporter-artifacts (run-evals-harness-reporter-artifacts)))
+         (reporter-artifacts (run-evals-harness-reporter-artifacts))
+         (msg-content (run-evals-harness-content-text))
+         (eval-tools-list (run-evals-harness-agent-tools))
+         (eval-paths (run-evals-harness-extension-paths)))
     (json-object
      "observed"
      (json-object
@@ -12968,6 +13055,21 @@
       "vs_city" (nth 2 validate-smoke)
       "vs_tok" (nth 3 validate-smoke)
       "vs_n" (nth 4 validate-smoke)
+      "ve_ok" (nth 0 validate-extension)
+      "ve_greet" (nth 1 validate-extension)
+      "ve_paths" (nth 2 validate-extension)
+      "ve_empty" (nth 3 validate-extension)
+      "ve_n" (nth 4 validate-extension)
+      "sd_smoke" (nth 0 suite-dispatch)
+      "sd_ext" (nth 1 suite-dispatch)
+      "sd_auth" (nth 2 suite-dispatch)
+      "sd_unk" (nth 3 suite-dispatch)
+      "sd_n" (nth 4 suite-dispatch)
+      "er_yes" (nth 0 eval-result-p)
+      "er_hash" (nth 1 eval-result-p)
+      "er_str" (nth 2 eval-result-p)
+      "er_nil" (nth 3 eval-result-p)
+      "er_n" (nth 4 eval-result-p)
       "sca_def" (nth 0 canonical-api)
       "sca_pkg" (nth 1 canonical-api)
       "sca_case" (nth 2 canonical-api)
@@ -13012,7 +13114,22 @@
       "ra_sess" (nth 1 reporter-artifacts)
       "ra_rec" (nth 2 reporter-artifacts)
       "ra_case" (nth 3 reporter-artifacts)
-      "ra_n" (nth 4 reporter-artifacts))
+      "ra_n" (nth 4 reporter-artifacts)
+      "ct_plain" (nth 0 msg-content)
+      "ct_join" (nth 1 msg-content)
+      "ct_empty" (nth 2 msg-content)
+      "ct_blank" (nth 3 msg-content)
+      "ct_n" (nth 4 msg-content)
+      "at_empty" (nth 0 eval-tools-list)
+      "at_n" (nth 1 eval-tools-list)
+      "at_read" (nth 2 eval-tools-list)
+      "at_bash" (nth 3 eval-tools-list)
+      "at_keys" (nth 4 eval-tools-list)
+      "ep_none" (nth 0 eval-paths)
+      "ep_n" (nth 1 eval-paths)
+      "ep_path" (nth 2 eval-paths)
+      "ep_skip" (nth 3 eval-paths)
+      "ep_keys" (nth 4 eval-paths))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -13173,7 +13290,37 @@
      (collect "evals_harness.reporter_artifacts"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reporter-artifacts)))))))
+                  (run-evals-harness-reporter-artifacts))))
+     "validate_extension"
+     (collect "evals_harness.validate_extension"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-validate-extension))))
+     "suite_dispatch"
+     (collect "evals_harness.suite_dispatch"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-suite-dispatch))))
+     "eval_result_p"
+     (collect "evals_harness.eval_result_p"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-result-p))))
+     "msg_content"
+     (collect "evals_harness.msg_content"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-content-text))))
+     "eval_tools"
+     (collect "evals_harness.eval_tools"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-agent-tools))))
+     "eval_paths"
+     (collect "evals_harness.eval_paths"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-extension-paths)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -31985,6 +32132,18 @@
       "src/cadr-evals/reporter.lisp artifact-reference-json"
       "evals_harness.reporter_artifacts"
       "src/cadr-evals/reporter.lisp reporter-artifacts"
+      "evals_harness.validate_extension"
+      "src/cadr-evals/main.lisp validate-extension-result"
+      "evals_harness.suite_dispatch"
+      "src/cadr-evals/main.lisp %eval-main suite cond leftover replica"
+      "evals_harness.eval_result_p"
+      "src/cadr-evals/main.lisp %eval-main typep eval-result"
+      "evals_harness.msg_content"
+      "src/cadr-evals/harness.lisp message-content-text"
+      "evals_harness.eval_tools"
+      "src/cadr-evals/harness.lisp eval-agent-tools"
+      "evals_harness.eval_paths"
+      "src/cadr-evals/harness.lisp eval-extension-paths"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
