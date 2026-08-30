@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 991 — `cli_selectors` (dlg_new)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_new` | `make-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent constructor |
+
+Leftover sibling of leftover 529–531, 619–627, and 946–948 on the same needs-pair file. Does not remount `dlg_make`. Timed work is empty/named/long provider construct. Observed `ldm_empty_n` / `ldm_named` are exact. First n=5 freeze **1.413×** (0.184 / 0.130 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 992 — `cli_selectors` (dlg_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_key` | `login-dialog-show-auth` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of showAuth |
+
+Leftover sibling of Pair 991. Does not remount `dlg_auth`. Timed work is plain/instr/empty/replace auth sections. Observed `lda_plain` / `lda_n` are exact. First n=5 freeze **3.066×** (2.013 / 0.657 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 993 — `cli_selectors` (dlg_code)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_code` | `login-dialog-show-device-code` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of showDeviceCode |
+
+Leftover sibling of Pairs 991–992. Does not remount `dlg_dev`. Timed work is code/empty/replace device sections. Observed `ldd_code` / `ldd_hint` are exact. First n=5 freeze **3.663×** (4.100 / 1.119 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

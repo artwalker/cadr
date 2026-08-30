@@ -1557,8 +1557,11 @@ RATIO_CEILINGS = {
     # cli_selectors leftover trio on login-dialog.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 991–993.
     # Does not remount dlg_make / dlg_auth / dlg_dev.
+    # leftover 991; first freeze 1.413× (0.184 / 0.130 µs).
     "cli_selectors.dlg_new": 8.0,
+    # leftover 992; first freeze 3.066× (2.013 / 0.657 µs).
     "cli_selectors.dlg_key": 8.0,
+    # leftover 993; first freeze 3.663× (4.100 / 1.119 µs).
     "cli_selectors.dlg_code": 8.0,
     "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick

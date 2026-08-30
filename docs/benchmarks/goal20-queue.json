@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 991,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.dlg_new",
+   "branch": "cursor/cli-login-dlg-new-key-code-leftovers-991-993-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 991",
+   "ratio": 1.413,
+   "cadrUs": 0.184,
+   "piUs": 0.130,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 992,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.dlg_key",
+   "branch": "cursor/cli-login-dlg-new-key-code-leftovers-991-993-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 992",
+   "ratio": 3.066,
+   "cadrUs": 2.013,
+   "piUs": 0.657,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 993,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.dlg_code",
+   "branch": "cursor/cli-login-dlg-new-key-code-leftovers-991-993-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 993",
+   "ratio": 3.663,
+   "cadrUs": 4.100,
+   "piUs": 1.119,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
