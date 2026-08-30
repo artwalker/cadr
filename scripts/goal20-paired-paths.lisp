@@ -35,6 +35,12 @@
 ;;;;      leftover: rpc-images-from-json / rpc-prompt-message / rpc-bash-result-json
 ;;;;      leftover 937-939: rpc-handle-line bad JSON / array / missing UI id
 ;;;;      (does not remount handle_bad_json / handle_not_object / handle_ui_miss)
+;;;; 1003. cli_selectors mlms_ok vs ExtensionSelectorComponent constructor (login method)
+;;;;      (does not remount make_login_method_selector_state)
+;;;; 1004. cli_selectors makis_ok vs showPrompt api key Input constructor
+;;;;      (does not remount make_api_key_input_state)
+;;;; 1005. cli_selectors moss_ok vs OauthSelectorComponent constructor
+;;;;      (does not remount make_oauth_selector_state)
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -934,6 +940,9 @@
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
+    ("cli_selectors.mlms_ok" . 50)
+    ("cli_selectors.makis_ok" . 50)
+    ("cli_selectors.moss_ok" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -29741,6 +29750,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
+     "mlms_ok"
+     (collect "cli_selectors.mlms_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "makis_ok"
+     (collect "cli_selectors.makis_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "moss_ok"
+     (collect "cli_selectors.moss_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
      "login_dialog_show_waiting"
      (collect "cli_selectors.login_dialog_show_waiting"
               (lambda ()
@@ -33117,6 +33141,12 @@
       "cli_selectors.make_api_key_input_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
       "cli_selectors.make_oauth_selector_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
+      "cli_selectors.mlms_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
+      "cli_selectors.makis_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
+      "cli_selectors.moss_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
       "cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"

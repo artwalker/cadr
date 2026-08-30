@@ -479,6 +479,9 @@ const REPETITIONS = {
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
+	"cli_selectors.mlms_ok": 50,
+	"cli_selectors.makis_ok": 50,
+	"cli_selectors.moss_ok": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
@@ -30973,6 +30976,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeOauthSelectorState();
 			},
 		),
+		mlms_ok: await collect(
+			"cli_selectors.mlms_ok",
+			() => {
+				return () => runCliSelectorsMakeLoginMethodSelectorState();
+			},
+		),
+		makis_ok: await collect(
+			"cli_selectors.makis_ok",
+			() => {
+				return () => runCliSelectorsMakeApiKeyInputState();
+			},
+		),
+		moss_ok: await collect(
+			"cli_selectors.moss_ok",
+			() => {
+				return () => runCliSelectorsMakeOauthSelectorState();
+			},
+		),
 		login_dialog_show_waiting: await collect(
 			"cli_selectors.login_dialog_show_waiting",
 			() => {
@@ -34495,6 +34516,12 @@ const result = {
 			"cli_selectors.make_api_key_input_state":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
 			"cli_selectors.make_oauth_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
+			"cli_selectors.mlms_ok":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
+			"cli_selectors.makis_ok":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
+			"cli_selectors.moss_ok":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
 			"cli_selectors.login_dialog_show_waiting":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
