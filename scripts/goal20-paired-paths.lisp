@@ -682,6 +682,9 @@
     ("cli_interactive_controller.theme_prim" . 50)
     ("cli_interactive_controller.theme_val" . 50)
     ("cli_interactive_controller.theme_res" . 50)
+    ("cli_interactive_controller.theme_kind" . 50)
+    ("cli_interactive_controller.theme_ok" . 50)
+    ("cli_interactive_controller.theme_get" . 50)
     ("cli_interactive_controller.sess_make" . 50)
     ("cli_interactive_controller.sess_upd" . 50)
     ("cli_interactive_controller.sess_draw" . 50)
@@ -18127,6 +18130,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-theme-resolve))))
+     "theme_kind"
+     (collect "cli_interactive_controller.theme_kind"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-primitive))))
+     "theme_ok"
+     (collect "cli_interactive_controller.theme_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-validate))))
+     "theme_get"
+     (collect "cli_interactive_controller.theme_get"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-resolve))))
      "sess_make"
      (collect "cli_interactive_controller.sess_make"
               (lambda ()
@@ -32656,6 +32674,12 @@
       "src/cadr-cli/interactive/themes.lisp validate-tui-theme-object"
       "cli_interactive_controller.theme_res"
       "src/cadr-cli/interactive/themes.lisp resolve-tui-theme-value"
+      "cli_interactive_controller.theme_kind"
+      "src/cadr-cli/interactive/themes.lisp valid-tui-theme-primitive-p leftover"
+      "cli_interactive_controller.theme_ok"
+      "src/cadr-cli/interactive/themes.lisp validate-tui-theme-object leftover"
+      "cli_interactive_controller.theme_get"
+      "src/cadr-cli/interactive/themes.lisp resolve-tui-theme-value leftover"
       "cli_interactive_controller.sess_make"
       "src/cadr-cli/interactive/tool-render-session.lisp make-tool-render-session"
       "cli_interactive_controller.sess_upd"

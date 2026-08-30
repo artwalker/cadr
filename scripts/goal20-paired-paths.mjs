@@ -659,6 +659,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_prim": 50,
 	"cli_interactive_controller.theme_val": 50,
 	"cli_interactive_controller.theme_res": 50,
+	"cli_interactive_controller.theme_kind": 50,
+	"cli_interactive_controller.theme_ok": 50,
+	"cli_interactive_controller.theme_get": 50,
 	"cli_interactive_controller.sess_make": 50,
 	"cli_interactive_controller.sess_upd": 50,
 	"cli_interactive_controller.sess_draw": 50,
@@ -19477,6 +19480,15 @@ async function measureCliInteractiveDecodeEntity() {
 		theme_res: await collect("cli_interactive_controller.theme_res", () => {
 			return () => runCliInteractiveThemeResolve();
 		}),
+		theme_kind: await collect("cli_interactive_controller.theme_kind", () => {
+			return () => runCliInteractiveThemePrimitive();
+		}),
+		theme_ok: await collect("cli_interactive_controller.theme_ok", () => {
+			return () => runCliInteractiveThemeValidate();
+		}),
+		theme_get: await collect("cli_interactive_controller.theme_get", () => {
+			return () => runCliInteractiveThemeResolve();
+		}),
 		sess_make: await collect("cli_interactive_controller.sess_make", () => {
 			return () => runCliInteractiveToolSessionMake();
 		}),
@@ -34044,6 +34056,12 @@ const result = {
 				"packages/coding-agent leftover replica of theme object validate (cadr validate-tui-theme-object)",
 			"cli_interactive_controller.theme_res":
 				"packages/coding-agent leftover replica of resolveThemeColor (cadr resolve-tui-theme-value)",
+			"cli_interactive_controller.theme_kind":
+				"packages/coding-agent leftover replica of isThemeColorValue (cadr valid-tui-theme-primitive-p leftover)",
+			"cli_interactive_controller.theme_ok":
+				"packages/coding-agent leftover replica of theme object validate (cadr validate-tui-theme-object leftover)",
+			"cli_interactive_controller.theme_get":
+				"packages/coding-agent leftover replica of resolveThemeColor (cadr resolve-tui-theme-value leftover)",
 			"cli_interactive_controller.sess_make":
 				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts ToolExecutionComponent construct",
 			"cli_interactive_controller.sess_upd":

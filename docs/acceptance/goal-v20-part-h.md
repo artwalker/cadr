@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 958 — `cli_interactive_controller` (theme_kind)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_kind` | `valid-tui-theme-primitive-p` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of isThemeColorValue |
+
+Leftover sibling of leftover 931–933 on the same needs-pair file. Does not remount `theme_prim`. Timed work is string/int/255/256/neg/nil primitive flags. Observed `tp_str` / `tp_nil` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 959 — `cli_interactive_controller` (theme_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_ok` | `validate-tui-theme-object` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of theme object validate |
+
+Leftover sibling of Pair 958. Does not remount `theme_val`. Timed work is ok / slash-name / unknown-key objects. Observed `tv_ok` / `tv_slash` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 960 — `cli_interactive_controller` (theme_get)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_get` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of resolveThemeColor |
+
+Leftover sibling of Pairs 958–959. Does not remount `theme_res`. Timed work is int/empty/hex/var/cycle/missing resolve. Observed `tr_int` / `tr_hex` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
