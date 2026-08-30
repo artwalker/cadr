@@ -688,6 +688,9 @@
     ("cli_interactive_controller.wrap_osc" . 50)
     ("cli_interactive_controller.pad_str" . 50)
     ("cli_interactive_controller.cache_p" . 50)
+    ("cli_interactive_controller.bash_run" . 50)
+    ("cli_interactive_controller.bash_fin" . 50)
+    ("cli_interactive_controller.bash_halt" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -18154,6 +18157,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-render-cacheable))))
+     "bash_run"
+     (collect "cli_interactive_controller.bash_run"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-append-running))))
+     "bash_fin"
+     (collect "cli_interactive_controller.bash_fin"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-complete-string))))
+     "bash_halt"
+     (collect "cli_interactive_controller.bash_halt"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-stop-entry))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32650,6 +32668,12 @@
       "src/cadr-cli/interactive/transcript.lisp output-padding-string"
       "cli_interactive_controller.cache_p"
       "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p"
+      "cli_interactive_controller.bash_run"
+      "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running leftover"
+      "cli_interactive_controller.bash_fin"
+      "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string leftover"
+      "cli_interactive_controller.bash_halt"
+      "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry leftover"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"
