@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1063 — `cli_selectors` (oa_lmh)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lmh` | `login-method-selector-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login method selector handleInput |
+
+Leftover sibling of Pair 209 on the same needs-pair file. Does not remount `login_method_selector_handle_event`. Timed work is down / up / enter oauth / enter api / esc / clear / interrupt. Observed `lmhe_down` / `lmhe_esc` are exact. First n=5 freeze **0.950×** (2.750 / 2.894 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1064 — `cli_selectors` (oa_lui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lui` | `login-method-selector-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent UI state |
+
+Leftover sibling of Pair 1063. Does not remount `login_method_selector_ui_state`. Timed work is default / sel1 / title / narrow / mid UI states. Observed `lmsui_default` / `lmsui_sel1` are exact. First n=5 freeze **3.690×** (430.301 / 116.600 µs) on host `cursor`, ceiling 12.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1065 — `cli_selectors` (oa_aki)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_aki` | `api-key-input-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key UI state |
+
+Leftover sibling of Pairs 1063–1064. Does not remount `api_key_input_ui_state`. Timed work is empty / key / openai / narrow / long UI states. Observed `akiui_empty` / `akiui_key` are exact. First n=5 freeze **1.990×** (208.953 / 104.983 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
