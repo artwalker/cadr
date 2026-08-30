@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1024. cli_selectors th_lbl vs leftover replica of thinking level label
+;;;;      (does not remount thinking_level_label)
+;;;; 1025. cli_selectors th_qry vs leftover replica of thinking applyFilter from search
+;;;;      (does not remount thinking_selector_set_query)
+;;;; 1026. cli_selectors th_kb vs leftover replica of thinking getKeybindings
+;;;;      (does not remount thinking_selector_keybindings)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -918,6 +924,9 @@
     ("cli_selectors.thinking_selector_set_query" . 50)
     ("cli_selectors.thinking_selector_key_p" . 50)
     ("cli_selectors.thinking_selector_keybindings" . 50)
+    ("cli_selectors.th_lbl" . 50)
+    ("cli_selectors.th_qry" . 50)
+    ("cli_selectors.th_kb" . 50)
     ("cli_selectors.make_thinking_selector_state" . 50)
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
@@ -29661,6 +29670,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-keybindings))))
+     "th_lbl"
+     (collect "cli_selectors.th_lbl"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-label))))
+     "th_qry"
+     (collect "cli_selectors.th_qry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-set-query))))
+     "th_kb"
+     (collect "cli_selectors.th_kb"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-keybindings))))
      "make_thinking_selector_state"
      (collect "cli_selectors.make_thinking_selector_state"
               (lambda ()
@@ -33086,6 +33110,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-key-p"
       "cli_selectors.thinking_selector_keybindings"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings"
+      "cli_selectors.th_lbl"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label leftover"
+      "cli_selectors.th_qry"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query leftover"
+      "cli_selectors.th_kb"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings leftover"
       "cli_selectors.make_thinking_selector_state"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
       "cli_selectors.thinking_selector_apply_filter"
