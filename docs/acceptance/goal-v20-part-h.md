@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 994 — `cli_selectors` (th_sel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_sel` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of selected SelectList item |
+
+Leftover sibling of leftover 532–534 and 601–612 on the same needs-pair file. Does not remount `thinking_selector_selected_level`. Timed work is first/oob selected level. Observed `tssl_first` / `tssl_oob` are exact. First n=5 freeze **0.842×** (0.476 / 0.566 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 995 — `cli_selectors` (th_desc)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_desc` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of LEVEL_DESCRIPTIONS |
+
+Leftover sibling of Pair 994. Does not remount `thinking_level_description_line`. Timed work is off default and bogus level. Observed `tsdl_off_def` / `tsdl_bogus` are exact. First n=5 freeze **1.808×** (0.286 / 0.158 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 996 — `cli_selectors` (th_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_draw` | `render-thinking-selector` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of ThinkingSelectorComponent layout |
+
+Leftover sibling of Pairs 994–995. Does not remount `render_thinking_selector`. Timed work is default/wide layout. Observed `tsrd_default` / `tsrd_wide` are exact. First n=5 freeze **54.616×** (273.649 / 5.010 µs) on host `cursor`, ceiling 60.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

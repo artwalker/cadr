@@ -1496,8 +1496,12 @@ RATIO_CEILINGS = {
     # cli_selectors leftover trio on thinking.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 994–996.
     # Does not remount thinking_selector_selected_level / thinking_level_description_line / render_thinking_selector.
+    # leftover 994; first freeze 0.842× (0.476 / 0.566 µs). cadr leads.
     "cli_selectors.th_sel": 8.0,
+    # leftover 995; first freeze 1.808× (0.286 / 0.158 µs).
     "cli_selectors.th_desc": 8.0,
+    # leftover 996; first freeze 54.616× (273.649 / 5.010 µs).
+    # 60.0 is first-freeze headroom. Ratchet down only.
     "cli_selectors.th_draw": 60.0,
   # Measure-only leftover 613; first freeze 2.292× (35.594 / 15.530 µs).
   "cli_selectors.trust_option_saved_p": 8.0,
