@@ -8866,6 +8866,29 @@ Leftover sibling of Pair 940. Does not remount `model_scope_line`. Timed work is
 | `file_tags` | `process-cli-file-arguments` (`src/cadr-cli/bootstrap/commands.lisp`) | `processFileArguments` (`packages/coding-agent/src/cli/file-processor.ts`) |
 
 Leftover sibling of Pairs 940–941. Does not remount `process_files`. Timed work is one text file plus one empty skip — not image resize, not `@file` CLI parse. Observed `pf_hello` / `pf_n` / `pf_img` are exact. First n=5 freeze **0.556×** (80.505 / 144.830 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 943 — `cli_interactive_controller` (sess_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_make` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of `ToolExecutionComponent` construct |
+
+Leftover sibling of leftover 520–522 on the same needs-pair file. Does not remount `tool_session_make`. Timed work is session construct (name, default pending, nil result) — not render, not update. Observed `tsm_name` / `tsm_pending` / `tsm_nil` are exact. First n=5 freeze **1.130×** (0.244 / 0.216 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 944 — `cli_interactive_controller` (sess_upd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_upd` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of result/pending |
+
+Leftover sibling of Pair 943. Does not remount `tool_session_update`. Timed work is result write plus pending keep/clear — not renderCall, not construct. Observed `tsu_result` / `tsu_pending` / `tsu_cleared` are exact. First n=5 freeze **1.132×** (0.257 / 0.227 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 945 — `cli_interactive_controller` (sess_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_draw` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
+
+Leftover sibling of Pairs 943–944. Does not remount `tool_session_render`. Timed work is pending default call, done default result, custom renderers, empty-line drop — not TUI Box, not images. Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` / `trr_done_result` / `trr_custom` / `trr_empty` are exact. First n=5 freeze **0.842×** (1.503 / 1.785 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

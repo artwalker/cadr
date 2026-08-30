@@ -540,4 +540,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.bad_line` | 5.686 | 4.505 | 1.262× | 8.00× | measure-only leftover 937; `rpc-handle-line` JSON.parse catch (does not remount handle_bad_json) | invent pause；地板优化另刀 |
 | `cli_print_rpc.array_line` | 5.528 | 3.750 | 1.474× | 8.00× | measure-only leftover 938; `rpc-handle-line` require JSON object (does not remount handle_not_object) | invent pause；地板优化另刀 |
 | `cli_print_rpc.ui_absent` | 6.543 | 1.557 | 4.202× | 8.00× | measure-only leftover 939; `rpc-handle-line` unknown extension_ui_response (does not remount handle_ui_miss) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.sess_make` | 0.244 | 0.216 | 1.130× | 8.00× | measure-only leftover 943; `make-tool-render-session` vs leftover ToolExecutionComponent construct | invent pause；地板优化另刀 |
+| `cli_interactive_controller.sess_upd` | 0.257 | 0.227 | 1.132× | 8.00× | measure-only leftover 944; `update-tool-render-session` vs leftover result/pending | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
