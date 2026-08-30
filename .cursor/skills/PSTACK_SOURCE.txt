@@ -1,0 +1,4 @@
+Vendored from https://github.com/cursor/plugins/tree/main/pstack
+commit 68836dd (pstack plugin.json version 0.14.5)
+Install the marketplace plugin for auto-updates: https://cursor.com/marketplace/cursor/pstack
+Local cloud-agent copy: ~/.cursor/plugins/local/pstack
