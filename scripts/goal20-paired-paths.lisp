@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1093. cli_selectors dn_rgb vs leftover replica of parseImage pixel lookup
+;;;;      (does not remount daxnuts_rgb_at)
+;;;; 1094. cli_selectors dn_make vs leftover replica of DaxnutsComponent constructor
+;;;;      (does not remount make_daxnuts_component)
+;;;; 1095. cli_selectors dn_tick vs leftover replica of DaxnutsComponent interval
+;;;;      (does not remount daxnuts_component_tick)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -952,6 +958,9 @@
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
+    ("cli_selectors.dn_rgb" . 50)
+    ("cli_selectors.dn_make" . 50)
+    ("cli_selectors.dn_tick" . 50)
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
@@ -29831,6 +29840,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+     "dn_rgb"
+     (collect "cli_selectors.dn_rgb"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "dn_make"
+     (collect "cli_selectors.dn_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "dn_tick"
+     (collect "cli_selectors.dn_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
@@ -33194,6 +33218,12 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
       "cli_selectors.daxnuts_component_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
+      "cli_selectors.dn_rgb"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at leftover"
+      "cli_selectors.dn_make"
+      "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover"
+      "cli_selectors.dn_tick"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"
