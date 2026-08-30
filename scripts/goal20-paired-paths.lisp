@@ -16475,6 +16475,16 @@
       (lambda ()
         (cadr-cli::resolve-tui-theme-value "missing" variables))))))
 
+(defparameter *goal20-tui-theme-required-color-names*
+  (remove-if
+   (lambda (name)
+     (member
+      name
+      '("thinkingMax" "scrollbarThumb"
+        "searchMatchBg" "searchMatchText")
+      :test #'string=))
+   (mapcar #'car cadr-cli::+tui-theme-json-color-map+)))
+
 (defun goal20-theme-required-colors ()
   (let ((colors (make-hash-table :test #'equal)))
     (dolist (name *goal20-tui-theme-required-color-names*)

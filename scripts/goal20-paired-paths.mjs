@@ -18396,6 +18396,16 @@ const LEFTOVER_THEME_JSON_COLOR_MAP = [
 	["bashMode", "bash-mode"],
 ];
 
+const GOAL20_TUI_THEME_OPTIONAL_COLOR_NAMES = [
+	"thinkingMax",
+	"scrollbarThumb",
+	"searchMatchBg",
+	"searchMatchText",
+];
+const GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES = LEFTOVER_THEME_JSON_COLOR_MAP.map(
+	(entry) => entry[0],
+).filter((name) => !LEFTOVER_THEME_OPTIONAL_COLORS.has(name));
+
 const LEFTOVER_THEME_JSON_EXPORT_MAP = [
 	["pageBg", "page-bg"],
 	["cardBg", "card-bg"],
