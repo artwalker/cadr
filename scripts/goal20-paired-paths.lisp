@@ -921,6 +921,9 @@
     ("cli_support.no_models_help" . 50)
     ("cli_support.no_model_selected" . 50)
     ("cli_support.no_api_key" . 50)
+    ("cli_support.provider_login_help" . 50)
+    ("cli_support.docs_directory" . 50)
+    ("cli_support.default_thinking_level" . 50)
     ("cli_support.watch_retry_delay" . 50)
     ("cli_support.close_watcher" . 50)
     ("cli_support.watch_signature" . 50)
@@ -20629,6 +20632,36 @@
      (auth-prefix unknown 40)
      (auth-flag unknown "the selected model"))))
 
+
+
+(defun run-cli-support-provider-login-help ()
+  (let ((text (cadr-cli::get-provider-login-help)))
+    (list
+     (auth-prefix text 21)
+     (auth-flag text "Use /login")
+     (auth-flag text "providers.md")
+     (auth-flag text "models.md")
+     1)))
+
+
+(defun run-cli-support-docs-directory ()
+  (let* ((dir (cadr-cli::docs-directory))
+         (name (namestring dir)))
+    (list
+     (if (search "docs" name) 1 0)
+     (if (> (length name) 3) 1 0)
+     1)))
+
+
+(defun run-cli-support-default-thinking-level ()
+  (let ((level cadr-cli:+default-thinking-level+))
+    (list
+     (if (eq level :medium) 1 0)
+     (if (eq level :high) 1 0)
+     (if (string= (string-downcase (symbol-name level)) "medium") 1 0)
+     1)))
+
+
 (defun cli-support-watch-present-file ()
   (ensure-directories-exist *scratch-directory*)
   (let ((path
@@ -20838,7 +20871,10 @@
         (editor-empty (run-cli-support-editor-empty))
         (threads-absent (run-cli-support-threads-absent))
         (threads-current (run-cli-support-threads-current))
-        (threads-joined (run-cli-support-threads-joined)))
+        (threads-joined (run-cli-support-threads-joined))
+        (login-help (run-cli-support-provider-login-help))
+        (docs-dir (run-cli-support-docs-directory))
+        (think-level (run-cli-support-default-thinking-level)))
     (json-object
      "observed"
      (json-object
@@ -20955,7 +20991,19 @@
       "ctc_eq" (nth 0 threads-current)
       "ctc_n" (nth 1 threads-current)
       "ctj_eq" (nth 0 threads-joined)
-      "ctj_n" (nth 1 threads-joined))
+      "ctj_n" (nth 1 threads-joined)
+      "plh_pref" (nth 0 login-help)
+      "plh_login" (nth 1 login-help)
+      "plh_prov" (nth 2 login-help)
+      "plh_mod" (nth 3 login-help)
+      "plh_n" (nth 4 login-help)
+      "dd_docs" (nth 0 docs-dir)
+      "dd_len" (nth 1 docs-dir)
+      "dd_n" (nth 2 docs-dir)
+      "dtl_med" (nth 0 think-level)
+      "dtl_high" (nth 1 think-level)
+      "dtl_name" (nth 2 think-level)
+      "dtl_n" (nth 3 think-level))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -21091,7 +21139,22 @@
      (collect "cli_support.threads_joined"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-threads-joined)))))))
+                  (run-cli-support-threads-joined))))
+     "provider_login_help"
+     (collect "cli_support.provider_login_help"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-provider-login-help))))
+     "docs_directory"
+     (collect "cli_support.docs_directory"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-docs-directory))))
+     "default_thinking_level"
+     (collect "cli_support.default_thinking_level"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-default-thinking-level)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -39719,6 +39782,12 @@
       "src/cadr-cli/support/model-help.lisp format-no-model-selected-message"
       "cli_support.no_api_key"
       "src/cadr-cli/support/model-help.lisp format-no-api-key-found-message"
+      "cli_support.provider_login_help"
+      "src/cadr-cli/support/model-help.lisp get-provider-login-help"
+      "cli_support.docs_directory"
+      "src/cadr-cli/support/model-help.lisp docs-directory"
+      "cli_support.default_thinking_level"
+      "src/cadr-cli/support/model-help.lisp +default-thinking-level+"
       "cli_support.watch_retry_delay"
       "src/cadr-cli/support/file-watcher.lisp +fs-watch-retry-delay-milliseconds+"
       "cli_support.close_watcher"

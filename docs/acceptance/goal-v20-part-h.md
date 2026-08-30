@@ -9288,1501 +9288,574 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 | metric | cadr | pi |
 |---|---|---|
 | `token_fields` | `token-response-credential` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `readTokenResponse` field check (`packages/ai/src/auth/oauth/openai-codex.ts`) |
-
 Leftover trio on unclaimed `src/cadr-ai/oauth/openai-anthropic.lisp`. Timed work is access/refresh/expires_in presence (ok / missing access / missing expires_in) — not live HTTP, not expiry timestamps, not old-refresh fallback. Observed `trc_ok` / `trc_miss_acc` / `trc_miss_exp` / `trc_n` are exact. First n=5 freeze **0.746×** (3.187 / 4.272 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1×. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 890 — `oauth_pkce_device` (openai_exchange)
-
-| metric | cadr | pi |
-|---|---|---|
 | `openai_exchange` | `exchange-openai-authorization-code` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `exchangeAuthorizationCode` JSON parse (`packages/ai/src/auth/oauth/openai-codex.ts`) |
-
 Leftover sibling of Pair 889. Timed work is stub HTTP 200 token JSON, HTTP 400, and missing refresh_token — not browser login, not PKCE. Observed `oex_ok` / `oex_http` / `oex_miss` / `oex_n` are exact. First n=5 freeze **5.625×** (29.574 / 5.257 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 891 — `oauth_pkce_device` (anthropic_exchange)
-
-| metric | cadr | pi |
-|---|---|---|
 | `anthropic_exchange` | `exchange-anthropic-authorization-code` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `exchangeAuthorizationCode` JSON parse (`packages/ai/src/auth/oauth/anthropic.ts`) |
-
 Leftover sibling of Pairs 889–890. Timed work is stub HTTP 200 token JSON, HTTP 400, and invalid JSON — not callback server, not expires skew. Observed `aex_ok` / `aex_http` / `aex_badjson` / `aex_n` are exact. First n=5 freeze **1.697×** (12.807 / 7.545 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 892 — `oauth_pkce_device` (device_poll_complete)
-
-| metric | cadr | pi |
-|---|---|---|
 | `device_poll_complete` | `poll-openai-codex-device-authorization` (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` complete (`packages/ai/src/auth/oauth/openai-codex.ts`) |
-
 Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openai-device.lisp` (leftover 421–423 measured json_copy / interval_seconds / device_start). Timed work is stub HTTP 200 with authorization_code and code_verifier — not device_start, not browser login. Observed `dpc_code` / `dpc_ver` / `dpc_n` are exact. First n=5 freeze **15.756×** (2.586 / 0.164 µs) on host `Friend-MachineD`, ceiling 15.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 893 — `oauth_pkce_device` (device_poll_fail)
-
-| metric | cadr | pi |
-|---|---|---|
 | `device_poll_fail` | `poll-openai-codex-device-authorization` failed (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` failed (`packages/ai/src/auth/oauth/openai-codex.ts`) |
-
 Leftover sibling of Pair 892. Timed work is stub HTTP 200 missing fields throwing — not exact failed-message JSON stringify. Observed `dpf_throw` / `dpf_n` are exact. First n=5 freeze **1.705×** (2.962 / 1.737 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 894 — `oauth_pkce_device` (device_poll_slow)
-
-| metric | cadr | pi |
-|---|---|---|
 | `device_poll_slow` | `poll-openai-codex-device-authorization` slow_down timeout (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` slow_down + `SLOW_DOWN_TIMEOUT_MESSAGE` (`packages/ai/src/auth/oauth/openai-codex.ts` + `device-code.ts`) |
-
 Leftover sibling of Pairs 892–893. Timed work is stub HTTP error `slow_down` then timeout message — not interval_seconds, not live sleep. Observed `dps_msg` / `dps_n` are exact. First n=5 freeze **1.824×** (3.588 / 1.967 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 925 — `evals_harness` (validate_extension)
-
-| metric | cadr | pi |
-|---|---|---|
 | `validate_extension` | `validate-extension-result` (`src/cadr-evals/main.lisp`) | leftover replica of extension greeting + path-count |
-
 Leftover sibling of leftover 400–402 on the same needs-pair file. Timed work is Bob+one-path ok, Alice greeting fail, two-path fail, empty-path fail. Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty` / `ve_n` are exact. First n=5 freeze **7.979×** (2.604 / 0.326 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 926 — `evals_harness` (suite_dispatch)
-
-| metric | cadr | pi |
-|---|---|---|
 | `suite_dispatch` | leftover replica of `%eval-main` suite cond (`src/cadr-evals/main.lisp`) | leftover replica of cadr suite cond (pi has no `--suite`) |
-
 Leftover sibling of Pair 925. Timed work is smoke/extensions/extension-authoring/unknown dispatch ids. Observed `sd_smoke` / `sd_ext` / `sd_auth` / `sd_unk` / `sd_n` are exact. First n=5 freeze **0.874×** (0.171 / 0.196 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 927 — `evals_harness` (eval_result_p)
-
-| metric | cadr | pi |
-|---|---|---|
 | `eval_result_p` | leftover of `%eval-main` `(typep value 'eval-result)` (`src/cadr-evals/main.lisp`) | leftover object-shape predicate (`output` + `events` own properties) |
-
 Leftover sibling of Pairs 925–926. Timed work is make-eval-result yes, json-object miss, string miss, nil miss. Observed `er_yes` / `er_hash` / `er_str` / `er_nil` / `er_n` are exact. First n=5 freeze **1.836×** (0.608 / 0.331 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 928 — `evals_harness` (msg_content)
-
-| metric | cadr | pi |
-|---|---|---|
 | `msg_content` | `message-content-text` (`src/cadr-evals/harness.lisp`) | leftover replica of content-text join |
-
 Leftover sibling of leftover 418–420 on the same needs-pair file. Does not remount `content_text`. Timed work is plain string, text-parts join, empty, blank. Observed `ct_plain` / `ct_join` / `ct_empty` / `ct_blank` / `ct_n` are exact. First n=5 freeze **1.352×** (1.008 / 0.745 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 929 — `evals_harness` (eval_tools)
-
-| metric | cadr | pi |
-|---|---|---|
 | `eval_tools` | `eval-agent-tools` (`src/cadr-evals/harness.lisp`) | leftover replica of agent.tools list |
-
 Leftover sibling of Pair 928. Does not remount `agent_tools`. Timed work is empty tools, filled count, read name, bash name. Observed `at_empty` / `at_n` / `at_read` / `at_bash` / `at_keys` are exact. First n=5 freeze **5.428×** (1.547 / 0.285 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 930 — `evals_harness` (eval_paths)
-
-| metric | cadr | pi |
-|---|---|---|
 | `eval_paths` | `eval-extension-paths` (`src/cadr-evals/harness.lisp`) | leftover replica of visible extension-host paths |
-
 Leftover sibling of Pairs 928–929. Does not remount `extension_paths`. Timed work is no-host empty, one visible path, hidden skipped. Observed `ep_none` / `ep_n` / `ep_path` / `ep_skip` / `ep_keys` are exact. First n=5 freeze **7.223×** (3.230 / 0.447 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 931 — `cli_interactive_controller` (theme_prim)
-
-| metric | cadr | pi |
-|---|---|---|
 | `theme_prim` | `valid-tui-theme-primitive-p` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of isThemeColorValue |
-
 Leftover sibling of leftover 532–534 on the same needs-pair file. Does not remount `theme_primitive`. Timed work is string, 0, 255, 256, negative, nil. Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` are exact. First n=5 freeze **0.741×** (0.110 / 0.149 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 932 — `cli_interactive_controller` (theme_val)
-
-| metric | cadr | pi |
-|---|---|---|
 | `theme_val` | `validate-tui-theme-object` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of theme object validate |
-
 Leftover sibling of Pair 931. Does not remount `theme_validate`. Timed work is valid object, slash name, unknown property. Observed `tv_ok` / `tv_slash` / `tv_unknown` are exact. First n=5 freeze **0.756×** (19.713 / 26.066 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 933 — `cli_interactive_controller` (theme_res)
-
-| metric | cadr | pi |
-|---|---|---|
 | `theme_res` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of resolveThemeColor |
-
 Leftover sibling of Pairs 931–932. Does not remount `theme_resolve`. Timed work is integer, empty, hex, variable, cycle, miss. Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` / `tr_miss` are exact. First n=5 freeze **0.144×** (1.192 / 8.261 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 934 — `cli_print_rpc` (queue_parse)
-
-| metric | cadr | pi |
-|---|---|---|
 | `queue_parse` | `parse-queue-mode` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of parseQueueMode |
-
 Leftover sibling of leftover 475–477 on the same needs-pair file. Does not remount `queue_mode`. Timed work is all, one-at-a-time, invalid. Observed `qm_all` / `qm_one` / `qm_bad` are exact. First n=5 freeze **0.132×** (0.337 / 2.547 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 935 — `cli_print_rpc` (asst_text)
-
-| metric | cadr | pi |
-|---|---|---|
 | `asst_text` | `rpc-last-assistant-text` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of last assistant text |
-
 Leftover sibling of Pair 934. Does not remount `last_assistant`. Timed work is hit hello, length, empty miss. Observed `la_hit` / `la_len` / `la_miss` are exact. First n=5 freeze **0.791×** (0.293 / 0.370 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 936 — `cli_print_rpc` (cmd_list)
-
-| metric | cadr | pi |
-|---|---|---|
 | `cmd_list` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of rpc command list |
-
 Leftover sibling of Pairs 934–935. Does not remount `command_list`. Timed work is count, extension foo, prompt bar. Observed `cl_n` / `cl_ext` / `cl_prompt` are exact. First n=5 freeze **4.603×** (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 937 — `cli_print_rpc` (bad_line)
-
-| metric | cadr | pi |
-|---|---|---|
 | `bad_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` JSON.parse catch (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
-
 Leftover sibling of leftover 496–498 on the same needs-pair file. Does not remount `handle_bad_json`. Timed work is invalid JSON (`not-json`) through the outer parse failure — not `run-rpc-mode`, not a live agent. Observed `bj_cmd` / `bj_ok` / `bj_id` / `bj_nl` are exact. Do not exact full error strings. First n=5 freeze **1.262×** (5.686 / 4.505 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 938 — `cli_print_rpc` (array_line)
-
-| metric | cadr | pi |
-|---|---|---|
 | `array_line` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` require JSON object (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
-
 Leftover sibling of Pair 937. Does not remount `handle_not_object`. Timed work is JSON array `[]` rejected as a non-object — not command dispatch. Observed `no_cmd` / `no_ok` / `no_id` / `no_nl` are exact. Do not exact full error strings. First n=5 freeze **1.474×** (5.528 / 3.750 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 939 — `cli_print_rpc` (ui_absent)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ui_absent` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` unknown `extension_ui_response` (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
-
 Leftover sibling of Pairs 937–938. Does not remount `handle_ui_miss`. Timed work is an unknown pending UI id (`missing`) — not dialog resolve, not `rpc-shutdown`. Observed `um_cmd` / `um_ok` / `um_id` / `um_nl` / `um_unk` are exact. Do not exact full error strings. First n=5 freeze **4.202×** (6.543 / 1.557 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 940 — `cli_bootstrap_sessions` (cycle_wrap)
-
-| metric | cadr | pi |
-|---|---|---|
 | `cycle_wrap` | `model-cycle-target-entry` (`src/cadr-cli/bootstrap/commands.lisp`) | `_cycleScopedModel` index wrap (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of leftover 484–486 on the same needs-pair file. Does not remount `model_cycle`. Timed work is scoped-entry wrap / missing-current default — not session persist, not `cycleModel` emit. Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` / `mc_empty` are exact. First n=5 freeze **0.745×** (0.655 / 0.879 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 941 — `cli_bootstrap_sessions` (scope_hint)
-
-| metric | cadr | pi |
-|---|---|---|
 | `scope_hint` | `model-scope-startup-line` (`src/cadr-cli/bootstrap/commands.lisp`) | interactive-mode `init` Model scope line (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
-
 Leftover sibling of Pair 940. Does not remount `model_scope_line`. Timed work is the startup scope line (quiet / empty / cycle-hint / unbound) — not TUI mount, not theme init. Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` / `ms_disabled` are exact. First n=5 freeze **0.838×** (35.665 / 42.573 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 942 — `cli_bootstrap_sessions` (file_tags)
-
-| metric | cadr | pi |
-|---|---|---|
 | `file_tags` | `process-cli-file-arguments` (`src/cadr-cli/bootstrap/commands.lisp`) | `processFileArguments` (`packages/coding-agent/src/cli/file-processor.ts`) |
-
 Leftover sibling of Pairs 940–941. Does not remount `process_files`. Timed work is one text file plus one empty skip — not image resize, not `@file` CLI parse. Observed `pf_hello` / `pf_n` / `pf_img` are exact. First n=5 freeze **0.556×** (80.505 / 144.830 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 943 — `cli_interactive_controller` (sess_make)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sess_make` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of `ToolExecutionComponent` construct |
-
 Leftover sibling of leftover 520–522 on the same needs-pair file. Does not remount `tool_session_make`. Timed work is session construct (name, default pending, nil result) — not render, not update. Observed `tsm_name` / `tsm_pending` / `tsm_nil` are exact. First n=5 freeze **1.130×** (0.244 / 0.216 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 944 — `cli_interactive_controller` (sess_upd)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sess_upd` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of result/pending |
-
 Leftover sibling of Pair 943. Does not remount `tool_session_update`. Timed work is result write plus pending keep/clear — not renderCall, not construct. Observed `tsu_result` / `tsu_pending` / `tsu_cleared` are exact. First n=5 freeze **1.132×** (0.257 / 0.227 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 945 — `cli_interactive_controller` (sess_draw)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sess_draw` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
-
 Leftover sibling of Pairs 943–944. Does not remount `tool_session_render`. Timed work is pending default call, done default result, custom renderers, empty-line drop — not TUI Box, not images. Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` / `trr_done_result` / `trr_custom` / `trr_empty` are exact. First n=5 freeze **0.842×** (1.503 / 1.785 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 946 — `cli_selectors` (dlg_make)
-
-| metric | cadr | pi |
-|---|---|---|
 | `dlg_make` | `make-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of `LoginDialogComponent` constructor |
-
 Leftover sibling of leftover 529–531 on the same needs-pair file. Does not remount `login_dialog_make`. Timed work is empty/named/long provider construction — not render, not handle-event. Observed `ldm_empty_n` / `ldm_named` / `ldm_named_sec` / `ldm_long` / `ldm_input` / `ldm_long_n` are exact. First n=5 freeze **1.471×** (0.189 / 0.128 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 947 — `cli_selectors` (dlg_auth)
-
-| metric | cadr | pi |
-|---|---|---|
 | `dlg_auth` | `login-dialog-show-auth` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of `showAuth` |
-
 Leftover sibling of Pair 946. Does not remount `login_dialog_auth`. Timed work is plain/instructions/empty-instructions/replace auth sections — not OAuth HTTP, not render. Observed `lda_plain` / `lda_instr` / `lda_empty_instr` / `lda_replace` / `lda_provider` / `lda_n` are exact. First n=5 freeze **1.689×** (2.003 / 1.186 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 948 — `cli_selectors` (dlg_dev)
-
-| metric | cadr | pi |
-|---|---|---|
 | `dlg_dev` | `login-dialog-show-device-code` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of `showDeviceCode` |
-
 Leftover sibling of Pairs 946–947. Does not remount `login_dialog_device`. Timed work is device-code / empty-code / replace sections — not poll, not render. Observed `ldd_code` / `ldd_empty` / `ldd_replace` / `ldd_provider` / `ldd_n` / `ldd_hint` are exact. First n=5 freeze **3.465×** (4.085 / 1.179 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 949 — `cli_interactive_controller` (wrap_osc)
-
-| metric | cadr | pi |
-|---|---|---|
 | `wrap_osc` | `wrap-transcript-lines` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of `UserMessageComponent.render` OSC 133 wrap |
-
 Leftover sibling of leftover 517–519 on the same needs-pair file. Does not remount `wrap_transcript`. Timed work is OSC 133 A/B/C wrap of a line list (nil, one-element shared-cons order, two-element first/last) — not user-message markdown, not assistant render. Observed `wt_nil` / `wt_one_n` / `wt_one_order` / `wt_two_n` / `wt_two_first` / `wt_two_last` are exact. First n=5 freeze **0.981×** (0.583 / 0.594 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 950 — `cli_interactive_controller` (pad_str)
-
-| metric | cadr | pi |
-|---|---|---|
 | `pad_str` | `output-padding-string` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of output padding spaces |
-
 Leftover sibling of Pair 949. Does not remount `output_padding`. Timed work is pad length 0/1/other and space identity — not wrap, not cacheable. Observed `op_0` / `op_1` / `op_other` / `op_space` are exact. First n=5 freeze **1.041×** (0.215 / 0.206 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 951 — `cli_interactive_controller` (cache_p)
-
-| metric | cadr | pi |
-|---|---|---|
 | `cache_p` | `tui-entry-render-cacheable-p` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of TUI entry render cacheable |
-
 Leftover sibling of Pairs 949–950. Does not remount `render_cacheable`. Timed work is assistant/streaming/tool-nil/done/running/custom flags — not wrap, not pad. Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` / `rc_tool_run` / `rc_custom` are exact. First n=5 freeze **2.014×** (1.264 / 0.627 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 952 — `evals_harness` (rep_make)
-
-| metric | cadr | pi |
-|---|---|---|
 | `rep_make` | `make-eval-harness-reporter` (`src/cadr-evals/reporter.lisp`) | leftover replica of reporter constructor artifactDirectory |
-
 Leftover sibling of leftover 703–705 on the same needs-pair file. Does not remount `make_reporter`. Timed work is explicit dir, trimmed env fallback, missing env — not record-case, not persist. Observed `mr_explicit` / `mr_env` / `mr_miss` / `mr_n` are exact. First n=5 freeze **0.898×** (0.367 / 0.409 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 953 — `evals_harness` (fin_num)
-
-| metric | cadr | pi |
-|---|---|---|
 | `fin_num` | `reporter-finite-number` (`src/cadr-evals/reporter.lisp`) | leftover replica of finite number keep |
-
 Leftover sibling of Pair 952. Does not remount `finite_number`. Timed work is int/float keep and nil/inf/string drop — not observation walk, not persist. Observed `fn_int` / `fn_float` / `fn_nil` / `fn_inf` / `fn_str` / `fn_n` are exact. First n=5 freeze **0.563×** (0.126 / 0.224 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 954 — `evals_harness` (art_meta)
-
-| metric | cadr | pi |
-|---|---|---|
 | `art_meta` | `reporter-artifact-metadata` (`src/cadr-evals/reporter.lisp`) | leftover replica of artifact metadata filter |
-
 Leftover sibling of Pairs 952–953. Does not remount `artifact_metadata`. Timed work is keep custom, drop runId and session snapshot — not JSONL, not persist. Observed `am_keep` / `am_runid` / `am_snap` / `am_n` are exact. First n=5 freeze **1.181×** (1.038 / 0.879 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 955 — `cli_interactive_controller` (bash_run)
-
-| metric | cadr | pi |
-|---|---|---|
 | `bash_run` | `append-tui-user-bash-running` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of BashExecutionComponent addChild running |
-
 Leftover sibling of leftover 640–642 on the same needs-pair file. Does not remount `bash_append_running`. Timed work is two running entries (plain / exclude-from-context). Observed `bar_n` / `bar_run2` are exact. First n=5 freeze **2.219×** (0.807 / 0.363 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 956 — `cli_interactive_controller` (bash_fin)
-
-| metric | cadr | pi |
-|---|---|---|
 | `bash_fin` | `complete-tui-user-bash-string` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of setComplete exit 0 string |
-
 Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed work is hello complete and empty complete. Observed `cs_text` / `cs_empty` are exact. First n=5 freeze **2.620×** (0.785 / 0.300 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 957 — `cli_interactive_controller` (bash_halt)
-
-| metric | cadr | pi |
-|---|---|---|
 | `bash_halt` | `stop-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of loader.stop without setComplete |
-
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1354 — `cli_selectors` (latxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `latxxx_ok` | `login-auth-type-route` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showLoginAuthTypeSelector routing |
-
 Leftover sibling of leftover 1288–1290 on the same needs-pair file (fifth unused slug after leftover 1060 `oa_rt` / leftover 1141 `lat_ok` / leftover 1222 `latx_ok` / leftover 1288 `latxx_ok`). Does not remount `login_auth_type_route`. Timed work is auth-type route none / oauth. Observed `latr_none` / `latr_oauth` are exact. First n=5 freeze **2.078×** (2.534 / 1.220 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1355 — `cli_selectors` (lpoxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `lpoxxx_ok` | `login-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLoginProviderOptions |
-
 Leftover sibling of Pair 1354. Does not remount `login_provider_options` / leftover 1060 `oa_lin` / leftover 1142 `lpo_ok` / leftover 1223 `lpox_ok` / leftover 1289 `lpoxx_ok`. Timed work is login provider options all / oauth. Observed `lpo_all` / `lpo_oauth` are exact. First n=5 freeze **1.459×** (8.355 / 5.726 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1356 — `cli_selectors` (lgoxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `lgoxxx_ok` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
-
 Leftover sibling of Pairs 1354–1355. Does not remount `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143 `lgo_ok` / leftover 1224 `lgox_ok` / leftover 1290 `lgoxx_ok`. Timed work is logout provider options empty / mixed. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.122×** (7.260 / 3.422 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1363 — `cli_selectors` (henxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `henxxx_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector typed input event dispatch |
-
 Leftover sibling of leftover 1297–1299 on the same needs-pair file (sixth unused slug after leftover 1069 `th_he` / leftover 1120 `hev_ok` / leftover 1150 `hen_ok` / leftover 1231 `henx_ok` / leftover 1297 `henxx_ok`). Does not remount `thinking_selector_handle_event`. Timed work is thinking handle-event down / text. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **0.839×** (3.337 / 3.979 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1364 — `cli_selectors` (mtsxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `mtsxxx_ok` | `make-thinking-selector-state` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector constructor filter + select current |
-
 Leftover sibling of Pair 1363. Does not remount `make_thinking_selector_state` / leftover 1070 `th_mts` / leftover 1151 `mts_ok` / leftover 1232 `mtsx_ok` / leftover 1298 `mtsxx_ok`. Timed work is thinking constructor high / default. Observed `tms_high` / `tms_default` are exact. First n=5 freeze **0.775×** (1.706 / 2.200 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1365 — `cli_selectors` (lstxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `lstxxx_ok` | `thinking-level-search-text` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector label + description search text |
-
 Leftover sibling of Pairs 1363–1364. Does not remount `thinking_level_search_text` / leftover 1071 `th_lst` / leftover 1152 `lst_ok` / leftover 1233 `lstx_ok` / leftover 1299 `lstxx_ok`. Timed work is thinking search-text off / high. Observed `tlst_off` / `tlst_high` are exact. First n=5 freeze **1.577×** (1.172 / 0.743 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1381 — `cli_selectors` (ldwxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldwxxx_ok` | `login-dialog-show-waiting` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showWaiting |
-
 Leftover sibling of leftover 1315–1317 on the same needs-pair file (sixth unused slug after leftover 1027 `ld_wait` / leftover 1102 `wait_ok` / leftover 1183 `ldw_ok` / leftover 1249 `ldwx_ok` / leftover 1315 `ldwxx_ok`). Does not remount `login_dialog_show_waiting`. Timed work is empty / device waiting UI. Observed `ldw_empty` / `ldw_device` are exact. First n=5 freeze **2.566×** (5.581 / 2.175 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1382 — `cli_selectors` (ldpxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldpxxx_ok` | `login-dialog-show-progress` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showProgress |
-
 Leftover sibling of Pair 1381. Does not remount `login_dialog_show_progress` / leftover 1028 `ld_prog` / leftover 1103 `prog_ok` / leftover 1184 `ldp_ok` / leftover 1250 `ldpx_ok` / leftover 1316 `ldpxx_ok`. Timed work is empty / wait progress UI. Observed `ldp_empty` / `ldp_wait` are exact. First n=5 freeze **1.770×** (3.206 / 1.811 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1383 — `cli_selectors` (ldmixxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldmixxx_ok` | `login-dialog-show-manual-input` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showManualInput |
-
 Leftover sibling of Pairs 1381–1382. Does not remount `login_dialog_show_manual_input` / leftover 1029 `ld_man` / leftover 1104 `man_ok` / leftover 1185 `ldmi_ok` / leftover 1251 `ldmix_ok` / leftover 1317 `ldmixx_ok`. Timed work is empty / nocancel manual input UI. Observed `ldmi_empty` / `ldmi_nocancel` are exact. First n=5 freeze **2.096×** (5.271 / 2.515 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1384 — `cli_selectors` (ldprxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldprxxx_ok` | `login-dialog-show-prompt` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showPrompt |
-
 Leftover sibling of leftover 1318–1320 on the same needs-pair file (sixth unused slug after leftover 1030 `ld_prmt` / leftover 1105 `prmt_ok` / leftover 1186 `ldpr_ok` / leftover 1252 `ldprx_ok` / leftover 1318 `ldprxx_ok`). Does not remount `login_dialog_show_prompt`. Timed work is empty / wait prompt UI. Observed `ldpr_empty` / `ldpr_wait` are exact. First n=5 freeze **2.164×** (7.001 / 3.234 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1385 — `cli_selectors` (ldixxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldixxx_ok` | `login-dialog-show-info` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showInfo |
-
 Leftover sibling of Pair 1384. Does not remount `login_dialog_show_info` / leftover 1030 `ld_info` / leftover 1106 `info_ok` / leftover 1187 `ldi_ok` / leftover 1253 `ldix_ok` / leftover 1319 `ldixx_ok`. Timed work is labeled / nolink info UI. Observed `ldi_labeled` / `ldi_nolink` are exact. First n=5 freeze **2.297×** (9.135 / 3.977 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1386 — `cli_selectors` (lddtxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `lddtxxx_ok` | `login-dialog-show-details` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showDetails |
-
 Leftover sibling of Pairs 1384–1385. Does not remount `login_dialog_show_details` / leftover 1030 `ld_det` / leftover 1107 `det_ok` / leftover 1188 `lddt_ok` / leftover 1254 `lddtx_ok` / leftover 1320 `lddtxx_ok`. Timed work is two-row / styles details UI. Observed `lddt_two` / `lddt_styles` are exact. First n=5 freeze **0.794×** (2.646 / 3.330 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1387 — `cli_selectors` (ldcixxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldcixxx_ok` | `login-dialog-complete-input` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.replaceInputWithSubmittedText |
-
 Leftover sibling of leftover 1321–1323 on the same needs-pair file (sixth unused slug after leftover 1033 `ld_cmp` / leftover 1108 `cmp_ok` / leftover 1189 `ldci_ok` / leftover 1255 `ldcix_ok` / leftover 1321 `ldcixx_ok`). Does not remount `login_dialog_complete_input`. Timed work is complete-input on manual / prompt states. Observed `ldci_manual` / `ldci_prompt` are exact. First n=5 freeze **3.230×** (5.854 / 1.813 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1388 — `cli_selectors` (ldhexxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldhexxx_ok` | `login-dialog-handle-event` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.handleInput |
-
 Leftover sibling of Pair 1387. Does not remount `login_dialog_handle_event` / leftover 1033 `ld_evt` / leftover 1109 `evt_ok` / leftover 1190 `ldhe_ok` / leftover 1256 `ldhex_ok` / leftover 1322 `ldhexx_ok`. Timed work is esc / cancel handleInput. Observed `ldhe_esc` / `ldhe_cancel` are exact. First n=5 freeze **2.887×** (7.396 / 2.562 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1389 — `cli_selectors` (ldrdxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ldrdxxx_ok` | `render-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent layout |
-
 Leftover sibling of Pairs 1387–1388. Does not remount `render_login_dialog` / leftover 1033 `ld_rnd` / leftover 1110 `rnd_ok` / leftover 1191 `ldrd_ok` / leftover 1257 `ldrdx_ok` / leftover 1323 `ldrdxx_ok`. Timed work is wait / details layout. Observed `ldrd_wait` / `ldrd_details` are exact. First n=5 freeze **29.776×** (106.883 / 3.590 µs) on host `cursor`, ceiling 50.0 matching leftover 1323. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1390 — `cli_selectors` (umevxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `umevxxx_ok` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (structured events) |
-
 Leftover sibling of leftover 1324–1326 on the same needs-pair file (sixth unused slug after leftover 1036 `um_he` / leftover 1111 `he_ok` / leftover 1192 `umev_ok` / leftover 1258 `umevx_ok` / leftover 1324 `umevxx_ok`). Does not remount `user_message_handle_event`. Timed work is down / empty structured handle-event. Observed `umhe_down` / `umhe_empty` are exact. First n=5 freeze **0.707×** (1.371 / 1.940 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1391 — `cli_selectors` (umrwxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `umrwxxx_ok` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (raw key dispatch) |
-
 Leftover sibling of Pair 1390. Does not remount `user_message_handle_raw` / leftover 1036 `um_hr` / leftover 1112 `raw_ok` / leftover 1193 `umrw_ok` / leftover 1259 `umrwx_ok` / leftover 1325 `umrwxx_ok`. Timed work is down / nop raw handle. Observed `umhr_down` / `umhr_nop` are exact. First n=5 freeze **17.622×** (85.685 / 4.862 µs) on host `cursor`, ceiling 30.0 matching leftover 1325. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1392 — `cli_selectors` (umrsxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `umrsxxx_ok` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageSelectorComponent layout |
-
 Leftover sibling of Pairs 1390–1391. Does not remount `render_user_message_selector` / leftover 1036 `um_rd` / leftover 1113 `sel_ok` / leftover 1194 `umrs_ok` / leftover 1260 `umrsx_ok` / leftover 1326 `umrsxx_ok`. Timed work is three-row / hit selector layout. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **70.735×** (242.804 / 3.433 µs) on host `cursor`, ceiling 100.0 matching leftover 1326. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1393 — `cli_selectors` (mkbxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `mkbxxx_ok` | `make-models-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of KeybindingsManager app.models.* constructor |
-
 Leftover sibling of leftover 1327–1329 on the same needs-pair file (sixth unused slug after leftover 1039 `ms_kb` / leftover 1114 `kb_ok` / leftover 1195 `mkb_ok` / leftover 1261 `mkbx_ok` / leftover 1327 `mkbxx_ok`). Does not remount `make_models_selector_keybindings`. Timed work is save / reorder keybinding construction. Observed `mmskb_save` / `mmskb_reorder` are exact. First n=5 freeze **1.515×** (32.739 / 21.614 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1394 — `cli_selectors` (msmsxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `msmsxxx_ok` | `make-scoped-models-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ScopedModelsSelectorComponent constructor |
-
 Leftover sibling of Pair 1393. Does not remount `make_scoped_models_selector_state` / leftover 1039 `sm_st` / leftover 1115 `sms_ok` / leftover 1196 `msms_ok` / leftover 1262 `msmsx_ok` / leftover 1328 `msmsxx_ok`. Timed work is all / copy scoped-models state. Observed `msmksc_all` / `msmksc_copy` are exact. First n=5 freeze **24.432×** (105.397 / 4.314 µs) on host `cursor`, ceiling 40.0 matching leftover 1328. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1395 — `cli_selectors` (mrmsxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `mrmsxxx_ok` | `render-model-selector` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ModelSelectorComponent layout |
-
 Leftover sibling of Pairs 1393–1394. Does not remount `render_model_selector` / leftover 1039 `rm_sel` / leftover 1116 `rms_ok` / leftover 1197 `mrms_ok` / leftover 1263 `mrmsx_ok` / leftover 1329 `mrmsxx_ok`. Timed work is default / miss model-selector layout. Observed `rms_default` / `rms_miss` are exact. First n=5 freeze **27.467×** (196.853 / 7.167 µs) on host `cursor`, ceiling 50.0 matching leftover 1329. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1396 — `cli_selectors` (thafxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `thafxxx_ok` | `thinking-selector-apply-filter` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector applyFilter |
-
 Leftover sibling of leftover 1330–1332 on the same needs-pair file (sixth unused slug after leftover 1042 `th_af` / leftover 1117 `af_ok` / leftover 1198 `thaf_ok` / leftover 1264 `thafx_ok` / leftover 1330 `thafxx_ok`). Does not remount `thinking_selector_apply_filter`. Timed work is high / empty apply-filter. Observed `tsaf_high` / `tsaf_empty` are exact. First n=5 freeze **1.251×** (13.551 / 10.831 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1397 — `cli_selectors` (thclxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `thclxxx_ok` | `thinking-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector clamp selected |
-
 Leftover sibling of Pair 1396. Does not remount `thinking_selector_clamp_selected` / leftover 1042 `th_cl` / leftover 1118 `cl_ok` / leftover 1199 `thcl_ok` / leftover 1265 `thclx_ok` / leftover 1331 `thclxx_ok`. Timed work is high / zero clamp. Observed `tscl_high` / `tscl_zero` are exact. First n=5 freeze **0.854×** (0.650 / 0.761 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1398 — `cli_selectors` (thscxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `thscxxx_ok` | `thinking-selector-select-current` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector select current |
-
 Leftover sibling of Pairs 1396–1397. Does not remount `thinking_selector_select_current` / leftover 1042 `th_sc` / leftover 1119 `sc_ok` / leftover 1200 `thsc_ok` / leftover 1266 `thscx_ok` / leftover 1332 `thscxx_ok`. Timed work is high / only select-current. Observed `tssc_high` / `tssc_only` are exact. First n=5 freeze **0.837×** (0.984 / 1.176 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1399 — `cli_selectors` (thmvxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `thmvxxx_ok` | `thinking-selector-move` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector wrap selected |
-
 Leftover sibling of leftover 1333–1335 on the same needs-pair file (unused slug after leftover 1045 `th_mv` / leftover 1120 `mv_ok` / leftover 1201 `thmv_ok` / leftover 1267 `thmvx_ok` / leftover 1333 `thmvxx_ok`). Does not remount `thinking_selector_move`. Timed work is down / wrap. Observed `tsmv_down` / `tsmv_up_wrap` are exact. First n=5 freeze **1.675×** (0.633 / 0.378 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1400 — `cli_selectors` (thhrxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `thhrxxx_ok` | `thinking-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector handleInput keybindings |
-
 Leftover sibling of Pair 1399. Does not remount `thinking_selector_handle_raw_input` / leftover 1045 `th_hri` / leftover 1121 `hri_ok` / leftover 1202 `thhr_ok` / leftover 1268 `thhrx_ok` / leftover 1334 `thhrxx_ok`. Timed work is down / save keybindings. Observed `tshri_down` / `tshri_save` are exact. First n=5 freeze **23.939×** (143.544 / 5.996 µs) on host `cursor`, ceiling 30.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1401 — `cli_selectors` (thhexxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `thhexxx_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector typed input event dispatch |
-
 Leftover sibling of Pairs 1399–1400. Does not remount `thinking_selector_handle_event` / leftover 1363 `henxxx_ok` / leftover 1045 `th_hev` / leftover 1122 `hev_ok` / leftover 1203 `thhe_ok` / leftover 1269 `thhex_ok` / leftover 1335 `thhexx_ok`. Timed work is down / text dispatch. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **0.914×** (3.238 / 3.542 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1402 — `cli_selectors` (trsvxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `trsvxxx_ok` | `trust-option-saved-p` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector isSavedOption |
-
 Leftover sibling of leftover 1336–1338 on the same needs-pair file (unused slug after leftover 1048 `tr_sv` / leftover 1123 `sv_ok` / leftover 1204 `trsv_ok` / leftover 1270 `trsvx_ok` / leftover 1336 `trsvxx_ok`). Does not remount `trust_option_saved_p`. Timed work is nil / distrust saved-option. Observed `tosp_nil` / `tosp_distrust` are exact. First n=5 freeze **5.065×** (76.972 / 15.197 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1403 — `cli_selectors` (trmkxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `trmkxxx_ok` | `make-trust-selector-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent constructor |
-
 Leftover sibling of Pair 1402. Does not remount `make_trust_selector_state` / leftover 1048 `tr_mk` / leftover 1124 `mk_ok` / leftover 1205 `trmk_ok` / leftover 1271 `trmkx_ok` / leftover 1337 `trmkxx_ok`. Timed work is child / single constructor. Observed `mtss_child` / `mtss_single` are exact. First n=5 freeze **2.552×** (131.369 / 51.480 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1404 — `cli_selectors` (trrsxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `trrsxxx_ok` | `render-trust-selector` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent layout |
-
 Leftover sibling of Pairs 1402–1403. Does not remount `render_trust_selector` / leftover 1048 `tr_rnd` / leftover 1125 `trn_ok` / leftover 1206 `trrs_ok` / leftover 1272 `trrsx_ok` / leftover 1338 `trrsxx_ok`. Timed work is default / single layout. Observed `rtrs_default` / `rtrs_single` are exact. First n=5 freeze **9.157×** (1023.386 / 111.757 µs) on host `cursor`, ceiling 15.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1405 — `cli_selectors` (lmsxxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `lmsxxxx_ok` | `make-login-method-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelector login-method constructor |
-
 Leftover sibling of leftover 1339–1341 on the same needs-pair file (unused slug after leftover 1003 `mlms_ok` / leftover 1126 `lms_ok` / leftover 1207 `lmsx_ok` / leftover 1273 `lmsxx_ok` / leftover 1339 `lmsxxx_ok`). Does not remount `make_login_method_selector_state`. Timed work is default / three login-method constructors. Observed `mlms_default` / `mlms_three` are exact. First n=5 freeze **1.274×** (2.681 / 2.105 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1406 — `cli_selectors` (akixxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `akixxxx_ok` | `make-api-key-input-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key Input constructor |
-
 Leftover sibling of Pair 1405. Does not remount `make_api_key_input_state` / leftover 1003 `makis_ok` / leftover 1127 `aki_ok` / leftover 1208 `akix_ok` / leftover 1274 `akixx_ok` / leftover 1340 `akixxx_ok`. Timed work is anthropic / named constructors. Observed `makis_anth` / `makis_named` are exact. First n=5 freeze **2.039×** (2.164 / 1.061 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 1407 — `cli_selectors` (ossxxxx_ok)
-
-| metric | cadr | pi |
-|---|---|---|
 | `ossxxxx_ok` | `make-oauth-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of OauthSelectorComponent constructor |
-
 Leftover sibling of Pairs 1405–1406. Does not remount `make_oauth_selector_state` / leftover 1003 `moss_ok` / leftover 1128 `oss_ok` / leftover 1209 `ossx_ok` / leftover 1275 `ossxx_ok` / leftover 1341 `ossxxx_ok`. Timed work is default / logout constructors. Observed `moss_default` / `moss_logout` are exact. First n=5 freeze **1.340×** (7.239 / 5.400 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 760 — `settings_load` (read_cli_config)
-
-| metric | cadr | pi |
-|---|---|---|
 | `read_cli_config` | `read-cli-config` (`src/cadr-cli/config.lisp`) | JSON.parse settings.json object (`packages/coding-agent/src/config.ts`) |
-
 Leftover sibling on a different needs-pair file. Timed work is missing/object/bad/array config.json — not `stream-chat`. Observed `rcc_miss` / `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` are exact. First n=5 freeze **2.098×** (200.606 / 95.628 µs) on host `cursor`; remesure Friend-MachineD **1.188×** (260.569 / 219.256 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 761 — `settings_load` (provider_config_secrets)
-
-| metric | cadr | pi |
-|---|---|---|
 | `provider_config_secrets` | `provider-config-secrets` (`src/cadr-cli/config.lisp`) | apiKey/oauth/env secret collect (`packages/coding-agent/src/config.ts`) |
-
 Leftover sibling of Pair 760. Timed work is provider plus environment secret collection — not login I/O. Observed `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` are exact. First n=5 freeze **43.688×** (59.914 / 1.371 µs) on host `cursor`; remesure Friend-MachineD **33.085×** (61.333 / 1.854 µs), ceiling 50.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 762 — `settings_load` (resolve_provider_config)
-
-| metric | cadr | pi |
-|---|---|---|
 | `resolve_provider_config` | `resolve-provider-config` (`src/cadr-cli/config.lisp`) | `openaiProvider` construct (`packages/ai/src/providers/openai.ts`) |
-
 Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`; remesure Friend-MachineD **1.031×** (208.703 / 202.485 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 757 — `package_manager` (records_project_first)
-
-| metric | cadr | pi |
-|---|---|---|
 | `records_project_first` | `package-update-records-project-first` (`src/cadr-cli/packages/update-checks.lisp`) | project-then-user collect (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
-
 Leftover sibling on a different needs-pair file. Timed work is reordering user/project/user records so project comes first — not git ls-remote. Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` are exact. First n=5 freeze **0.614×** (0.433 / 0.706 µs) on host `cursor`; remesure Friend-MachineD **1.059×** (0.576 / 0.544 µs), ceiling 8.0. Over-1× booked on Friend-MachineD. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 758 — `package_manager` (candidate_record)
-
-| metric | cadr | pi |
-|---|---|---|
 | `candidate_record` | `package-update-candidate-record-p` (`src/cadr-cli/packages/update-checks.lisp`) | git/unpinned/exists filter (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
-
 Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path — not ls-remote. Observed `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` are exact. First n=5 freeze **17.132×** (30.746 / 1.795 µs) on host `cursor`; remesure Friend-MachineD **3.048×** (7.755 / 2.544 µs), ceiling 20.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 759 — `package_manager` (update_offline)
-
-| metric | cadr | pi |
-|---|---|---|
 | `update_offline` | `check-for-available-package-updates` (`src/cadr-cli/packages/update-checks.lisp`) | `isOfflineModeEnabled` short-circuit (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
-
 Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and empty-record no-op — not git. Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` / `uoff_n` are exact. First n=5 freeze **1.316×** (0.333 / 0.253 µs) on host `cursor`; remesure Friend-MachineD **1.568×** (0.416 / 0.266 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 766 — `settings_load` (sdk_http_idle_timeout)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_http_idle_timeout` | `sdk-settings-http-idle-timeout-ms` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getHttpIdleTimeoutMs` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 763–765. Timed work is in-memory idle timeout parse — not `stream-chat`. Observed `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` are exact. First n=5 freeze **1.249×** (10.990 / 8.800 µs) on host `cursor`; remesure Friend-MachineD **1.412×** (11.259 / 7.976 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 767 — `settings_load` (sdk_apply_overrides)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_apply_overrides` | `sdk-settings-apply-overrides` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.applyOverrides` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pair 766. Timed work is overlay merge last-wins — not login I/O. Observed `sao_prov` / `sao_last` / `sao_len` / `sao_base` / `sao_n` are exact. First n=5 freeze **6.960×** (45.476 / 6.534 µs) on host `cursor`; remesure Friend-MachineD **7.583×** (47.291 / 6.236 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 768 — `settings_load` (sdk_model_thinking_level)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_model_thinking_level` | `sdk-settings-model-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getModelThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 766–767. Timed work is per-model thinking lookup — not `stream-chat`. Observed `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` are exact. First n=5 freeze **4.323×** (16.293 / 3.769 µs) on host `cursor`; remesure Friend-MachineD **5.346×** (16.830 / 3.148 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 769 — `settings_load` (sdk_settings_value)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_settings_value` | `sdk-settings-value` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object json-get replica (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 766–768. Timed work is in-memory json-get hit/miss/default — not login I/O. Observed `ssv_hit` / `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` are exact. First n=5 freeze **114.678×** (33.477 / 0.292 µs) on host `cursor`, ceiling 150.0. Over-1× booked. Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution (`parsed_provider`); this metric did not fail observed-exact. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 770 — `settings_load` (sdk_default_thinking_level)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_default_thinking_level` | `sdk-settings-default-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pair 769. Timed work is defaultThinkingLevel lookup. Empty cadr returns `:medium`; pi returns `undefined` — encoded as cadr `eq :medium` → 1 and pi `== null` → 1. Invalid `"nope"` is not an exact key. Observed `sdt_high` / `sdt_off` / `sdt_empty` / `sdt_ok` / `sdt_n` are exact. First n=5 freeze **2.541×** (10.345 / 4.072 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 771 — `settings_load` (sdk_drain_errors)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_drain_errors` | `sdk-settings-drain-errors` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.drainErrors` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 769–770. Timed work is empty-memory drain by length — not `listp` vs `Array.isArray([])`, not `flush()`. Observed `sde_len` / `sde_empty` / `sde_again` / `sde_ok` / `sde_n` are exact. First n=5 freeze **0.806×** (1.002 / 1.244 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate `--only-enforce`; py rc=2 from known METRICS pollution. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 772 — `settings_load` (sdk_effective_object)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_effective_object` | `sdk-settings-effective-object` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object merge replica (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 769–771. Timed work is in-memory merged settings object — not login I/O. Observed `seo_prov` / `seo_model` / `seo_empty` / `seo_obj` / `seo_n` are exact. First n=5 freeze **86.669×** (15.846 / 0.183 µs) on host `cursor`, ceiling 100.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 773 — `settings_load` (sdk_settings_set)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_settings_set` | `sdk-settings-set` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.setDefaultProvider` / `setDefaultModel` / `setTheme` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pair 772. Timed work is in-memory set (nil path; no `settings.json` write). Observed `sss_prov` / `sss_model` / `sss_theme` / `sss_str` / `sss_n` are exact. First n=5 freeze **2.210×** (17.925 / 8.113 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 774 — `settings_load` (sdk_settings_remove)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_settings_remove` | `sdk-settings-remove` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object delete-key replica (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 772–773. Timed work is memory remhash; pi has no generic `remove`. Observed `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` are exact. First n=5 freeze **35.830×** (32.715 / 0.913 µs) on host `cursor`, ceiling 40.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 775 — `settings_load` (sdk_settings_reload)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_settings_reload` | `sdk-settings-reload` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.reload` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 772–774. Timed work is in-memory reload (nil path; no `settings.json` read). cadr returns the manager; pi resolves to `undefined` — encoded as cadr `eq` manager → 1 and pi `== null` → 1. Observed `srl_hit` / `srl_model` / `srl_same` / `srl_empty` / `srl_n` are exact. First n=5 freeze **4.144×** (24.265 / 5.855 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 776 — `settings_load` (sdk_settings_flush)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_settings_flush` | `sdk-settings-flush` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.flush` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pair 775. Timed work is flush identity vs `await flush()`. Do not compare manager vs Promise. Observed `sfl_hit` / `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` are exact. First n=5 freeze **5.937×** (26.442 / 4.454 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 777 — `settings_load` (sdk_compaction_enabled)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_compaction_enabled` | `sdk-settings-compaction-enabled-p` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getCompactionEnabled` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pairs 775–776. Timed work is compaction enabled default/true/false — not login I/O. Observed `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` are exact. First n=5 freeze **3.643×** (17.188 / 4.718 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 778 — `evals_harness` (matching_hello_call)
-
-| metric | cadr | pi |
-|---|---|---|
 | `matching_hello_call` | `matching-hello-tool-call-p` (`src/cadr-evals/suites.lisp`) | ExtensionAuthoringJudge hello-call replica (`packages/evals/src/extensions.eval.ts`) |
-
 Leftover sibling of Pairs 700–702. Timed work is the hello({name:Bob}) event walk — not live eval, not rationale copy. Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` are exact. First n=5 freeze **2.600×** (5.560 / 2.138 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 779 — `evals_harness` (authoring_judge)
-
-| metric | cadr | pi |
-|---|---|---|
 | `authoring_judge` | `judge-extension-authoring-result` (`src/cadr-evals/suites.lisp`) | ExtensionAuthoringJudge replica (`packages/evals/src/extensions.eval.ts`) |
-
 Leftover sibling of Pair 778. Timed work is judge score (pass / missing source / non-canonical API / wrong response). Do not compare rationale product copy. Observed `aj_pass` / `aj_src` / `aj_api` / `aj_resp` / `aj_n` are exact. First n=5 freeze **2.331×** (16.713 / 7.170 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 780 — `evals_harness` (source_bundle)
-
-| metric | cadr | pi |
-|---|---|---|
 | `source_bundle` | `extension-source-bundle` (`src/cadr-evals/suites.lisp`) | hello-tool bundle pick replica (`packages/evals/src/extensions.eval.ts`) |
-
 Leftover sibling of Pairs 778–779. Timed work is pick hello bundle else first — not `read-extension-source` path I/O. Observed `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` are exact. First n=5 freeze **0.465×** (0.776 / 1.671 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 781 — `package_manager` (resource_item_key)
-
-| metric | cadr | pi |
-|---|---|---|
 | `resource_item_key` | `config-resource-item-key` (`src/cadr-cli/packages/config-selector.lisp`) | leftover `getResourceItemKey` replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 736–738 on the same `config-selector.lisp` `package_manager` hole. Timed work is type-prefixed item key (`extensions:` / `skills:` plus path) — not TUI render, not directory discovery. Observed `rik_ext` / `rik_skill` / `rik_diff` / `rik_hello` / `rik_n` are exact. First n=5 freeze **23.49×** (15.782 / 0.672 µs) on host `cursor`, ceiling 50.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 782 — `package_manager` (project_override_state)
-
-| metric | cadr | pi |
-|---|---|---|
 | `project_override_state` | `config-selector-project-state` (`src/cadr-cli/packages/config-selector.lisp`) | leftover override-hash replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 781. Timed work is hash lookup load/unload/inherit — not `getProjectOverrideState` settings walk. Observed `cps_load` / `cps_unload` / `cps_miss` / `cps_eq` / `cps_n` are exact. First n=5 freeze **17.17×** (44.722 / 2.605 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 783 — `package_manager` (next_project_state)
-
-| metric | cadr | pi |
-|---|---|---|
 | `next_project_state` | `config-selector-next-project-state` (`src/cadr-cli/packages/config-selector.lisp`) | leftover `nextProjectOverrideState` replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 781–782. Timed work is inherit/unload/load cycle given inherited-enabled — not TUI checkbox. Observed `nps_inh_t` / `nps_inh_f` / `nps_unl` / `nps_load` / `nps_n` are exact. First n=5 freeze **9.35×** (40.473 / 4.330 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 784 — `package_manager` (inherited_enabled)
-
-| metric | cadr | pi |
-|---|---|---|
 | `inherited_enabled` | `config-selector-inherited-enabled-p` (`src/cadr-cli/packages/config-selector.lisp`) | leftover inheritedEnabled map (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 781–783 on the same `config-selector.lisp` `package_manager` hole. Timed work is inherited-enabled hash lookup plus item `enabled-p` default — not TUI checkbox. Observed `ie_hash_t` / `ie_hash_f` / `ie_def_t` / `ie_def_f` / `ie_n` are exact. First n=5 freeze **7.81×** (28.743 / 3.682 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 785 — `package_manager` (resource_group_key)
-
-| metric | cadr | pi |
-|---|---|---|
 | `resource_group_key` | `config-resource-group-key` (`src/cadr-cli/packages/config-selector.lisp`) | leftover group-key replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 784. Timed work is `origin:scope:source:` prefix of the group key — not TUI label, not directory walk. Observed `rgk_top` / `rgk_pkg` / `rgk_src` / `rgk_diff` / `rgk_n` are exact. First n=5 freeze **16.47×** (12.761 / 0.775 µs) on host `cursor`, ceiling 50.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 786 — `package_manager` (package_entry_index)
-
-| metric | cadr | pi |
-|---|---|---|
 | `package_entry_index` | `config-selector-package-entry-index` (`src/cadr-cli/packages/config-selector.lisp`) | leftover npm identity index (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 784–785. Timed work is npm package-source identity position (hit / first / miss / scoped pin) — not git/local path I/O. Observed `pei_hit` / `pei_first` / `pei_miss` / `pei_pin` / `pei_n` are exact. First n=5 freeze **7.45×** (14.402 / 1.934 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 787 — `package_manager` (project_package_entry)
-
-| metric | cadr | pi |
-|---|---|---|
 | `project_package_entry` | `config-selector-project-package-entry` (`src/cadr-cli/packages/config-selector.lisp`) | leftover project npm identity find (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 784–786 on the same `config-selector.lisp` `package_manager` hole. Timed work is project-settings identity find (hit / miss / scoped pin) — not TUI, not directory walk. Observed `ppe_hit` / `ppe_miss` / `ppe_pin` / `ppe_eq` / `ppe_n` are exact. First n=5 freeze **6.71×** (18.051 / 2.691 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 788 — `package_manager` (project_package_state)
-
-| metric | cadr | pi |
-|---|---|---|
 | `project_package_state` | `config-selector-project-package-state` (`src/cadr-cli/packages/config-selector.lisp`) | leftover project package filter walk (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 787. Timed work is load/unload/inherit from `+-!` exact pattern match plus empty-filter unload — not TUI checkbox. Observed `pps_load` / `pps_unload` / `pps_miss` / `pps_nofilter` / `pps_n` are exact. First n=5 freeze **7.90×** (25.317 / 3.203 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 789 — `package_manager` (package_setting_record)
-
-| metric | cadr | pi |
-|---|---|---|
 | `package_setting_record` | `config-package-setting-record` (`src/cadr-cli/packages/config-selector.lisp`) | leftover npm setting record (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 787–788. Timed work is npm record identity / nil path / autoload-disabled — not git/local install path I/O. Observed `psr_npm` / `psr_id` / `psr_path` / `psr_auto` / `psr_n` are exact. First n=5 freeze **11.91×** (10.399 / 0.873 µs) on host `cursor`, ceiling 40.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 790 — `package_manager` (package_setting_records)
-
-| metric | cadr | pi |
-|---|---|---|
 | `package_setting_records` | `config-package-setting-records` (`src/cadr-cli/packages/config-selector.lisp`) | leftover npm records merge (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 789 on the same `config-selector.lisp` `package_manager` hole. Timed work is global+project npm record merge (length / scopes / global-only) — not git/local install I/O. Observed `psrs_len` / `psrs_user` / `psrs_proj` / `psrs_glob` / `psrs_n` are exact. First n=5 freeze **5.64×** (22.779 / 4.036 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 791 — `package_manager` (selector_rebuild)
-
-| metric | cadr | pi |
-|---|---|---|
 | `selector_rebuild` | `config-selector-rebuild` (`src/cadr-cli/packages/config-selector.lisp`) | leftover selector flat rebuild (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 790. Timed work is group/item flatten from pre-seeded items plus query miss — not `make-config-selector-state` directory walk, not TUI render. Observed `crb_group` / `crb_items` / `crb_sel` / `crb_query` / `crb_n` are exact. First n=5 freeze **5.89×** (26.127 / 4.435 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 792 — `package_manager` (switch_scope)
-
-| metric | cadr | pi |
-|---|---|---|
 | `switch_scope` | `config-selector-switch-scope` (`src/cadr-cli/packages/config-selector.lisp`) | leftover selector scope flip (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 791. Timed work is write-scope flip plus rebuild (project / global / unavailable no-op / package item) — not TUI tab handler. Observed `css_proj` / `css_glob` / `css_nop` / `css_pkg` / `css_n` are exact. First n=5 freeze **6.03×** (36.289 / 6.020 µs) on host `cursor`, ceiling 12.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 793 — `evals_harness` (bundle_tool_names)
-
-| metric | cadr | pi |
-|---|---|---|
 | `bundle_tool_names` | `extension-bundle-tool-names` (`src/cadr-evals/suites.lisp`) | leftover bundle tool-name list (`packages/evals/src/extensions.eval.ts`) |
-
 Leftover sibling of Pairs 778–780 on the same `suites.lisp` `evals_harness` hole. Timed work is tool-name list (hello / multi / empty / unequal) — not `read-extension-source` path I/O. Observed `ebt_hello` / `ebt_multi` / `ebt_empty` / `ebt_eq` / `ebt_n` are exact. First n=5 freeze **0.969×** (1.001 / 1.033 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 794 — `evals_harness` (visible_extension_bundles)
-
-| metric | cadr | pi |
-|---|---|---|
 | `visible_extension_bundles` | `visible-extension-bundles` (`src/cadr-evals/suites.lisp`) | leftover hidden-p filter (`packages/evals/src/extensions.eval.ts`) |
-
 Leftover sibling of Pair 793. Timed work is drop `hidden-p` bundles from a memory snapshot — not directory discovery, not TUI. Observed `veb_vis` / `veb_hid` / `veb_empty` / `veb_nvis` / `veb_n` are exact. First n=5 freeze **21.59×** (12.635 / 0.585 µs) on host `cursor`, ceiling 25.0 first-freeze headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 795 — `evals_harness` (authoring_harness_table)
-
-| metric | cadr | pi |
-|---|---|---|
 | `authoring_harness_table` | `extension-authoring-harness-table` (`src/cadr-evals/suites.lisp`) | leftover two-row authoring table (`packages/evals/src/extensions.eval.ts`) |
-
 Leftover sibling of Pairs 793–794. Timed work is construct the two named rows (system-prompt-without-docs / default-system-prompt, repetition 1) — do not invoke `:run`. Observed `eht_len` / `eht_base` / `eht_cand` / `eht_rep` / `eht_n` are exact. First n=5 freeze **4.301×** (0.880 / 0.205 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 796 — `package_manager` (git_output)
-
-| metric | cadr | pi |
-|---|---|---|
 | `git_output` | `package-update-git-output` (`src/cadr-cli/packages/update-checks.lisp`) | leftover git argv runner (`packages/coding-agent/src/core/package-manager.ts`) |
-
 Leftover sibling of Pairs 757–759 on the same `update-checks.lisp` `package_manager` hole. Timed work is `git -C path` argv plus runner reply — not git spawn. Observed `pug_git` / `pug_cwd` / `pug_rev` / `pug_out` / `pug_n` are exact. First n=5 freeze **14.54×** (3.208 / 0.221 µs) on host `cursor`, ceiling 120.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 797 — `package_manager` (remote_ref)
-
-| metric | cadr | pi |
-|---|---|---|
 | `remote_ref` | `package-update-remote-ref` (`src/cadr-cli/packages/update-checks.lisp`) | leftover origin/ upstream ref (`packages/coding-agent/src/core/package-manager.ts`) |
-
 Leftover sibling of Pair 796. Timed work is origin/ prefix to `refs/heads/` — not `ls-remote` spawn. Observed `pur_main` / `pur_feat` / `pur_plain` / `pur_empty` / `pur_n` are exact. First n=5 freeze **4.082×** (4.714 / 1.155 µs) on host `cursor`, ceiling 25.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 798 — `package_manager` (update_record_result)
-
-| metric | cadr | pi |
-|---|---|---|
 | `update_record_result` | `package-update-record-result` (`src/cadr-cli/packages/update-checks.lisp`) | leftover host/path update result (`packages/coding-agent/src/core/package-manager.ts`) |
-
 Leftover sibling of Pairs 796–797. Timed work is host/path when mock oids differ, nil on match/error/bad oid — not git spawn. Observed `prr_hit` / `prr_same` / `prr_err` / `prr_bad` / `prr_n` are exact. First n=5 freeze **1.814×** (11.610 / 6.399 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 799 — `package_manager` (selector_hint)
-
-| metric | cadr | pi |
-|---|---|---|
 | `selector_hint` | `config-selector-hint` (`src/cadr-cli/packages/config-selector.lisp`) | leftover keyHint wrap (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of leftover 790–792 on the same `config-selector.lisp` `package_manager` hole. Timed work is dim key plus muted description — not `config-selector-header-lines` / `render-entry`. Observed `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` are exact. First n=5 freeze **15.49×** (10.635 / 0.687 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 800 — `package_manager` (override_suffix)
-
-| metric | cadr | pi |
-|---|---|---|
 | `override_suffix` | `config-selector-override-suffix` (`src/cadr-cli/packages/config-selector.lisp`) | leftover getItemSuffix (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pair 799. Timed work is project load/unload/inherit suffix strings — not writers, not full TUI. Observed `cos_load` / `cos_unload` / `cos_global` / `cos_inh` / `cos_n` are exact. First n=5 freeze **9.075×** (35.220 / 3.881 µs) on host `cursor`, ceiling 25.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 801 — `package_manager` (checkbox)
-
-| metric | cadr | pi |
-|---|---|---|
 | `checkbox` | `config-selector-checkbox` (`src/cadr-cli/packages/config-selector.lisp`) | leftover renderCheckbox (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
-
 Leftover sibling of Pairs 799–800. Timed work is `[x]` / `[ ]` / `[+]` / `[-]` marks — not `render-entry`. Observed `ccb_on` / `ccb_off` / `ccb_plus` / `ccb_minus` / `ccb_n` are exact. First n=5 freeze **10.47×** (36.479 / 3.484 µs) on host `cursor`, ceiling 25.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 802 — `cli_extensions_install` (string_prefix)
-
-| metric | cadr | pi |
-|---|---|---|
 | `string_prefix` | `string-prefix-p` (`src/cadr-cli/extensions/installer.lisp`) | leftover startsWith (`packages/coding-agent/src/utils/git.ts`) |
-
 Leftover sibling of leftover 499–501 on the same `installer.lisp` `cli_extensions_install` hole. Timed work is case-sensitive prefix — not `unsafe-git-source-p`, not git spawn. Observed `sp_git` / `sp_http` / `sp_case` / `sp_empty` / `sp_n` are exact. First n=5 freeze **1.109×** (0.236 / 0.213 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 803 — `cli_extensions_install` (split_path_segments)
-
-| metric | cadr | pi |
-|---|---|---|
 | `split_path_segments` | `split-path-segments` (`src/cadr-cli/extensions/installer.lisp`) | leftover split("/") (`packages/coding-agent/src/utils/git.ts`) |
-
 Leftover sibling of Pair 802. Timed work is slash split including empty segments — not `unsafe-git-source-p`, not git spawn. Observed `sps_dot` / `sps_empty` / `sps_nseg` / `sps_blank` / `sps_n` are exact. First n=5 freeze **2.742×** (0.885 / 0.323 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 804 — `cli_extensions_install` (strip_git_query)
-
-| metric | cadr | pi |
-|---|---|---|
 | `strip_git_query` | `strip-git-query-and-ref` (`src/cadr-cli/extensions/installer.lisp`) | leftover strip query/hash (`packages/coding-agent/src/utils/git.ts`) |
-
 Leftover sibling of Pairs 802–803. Timed work is strip at first `?` or `#` — not git spawn. Observed `sgq_q` / `sgq_hash` / `sgq_plain` / `sgq_both` / `sgq_n` are exact. First n=5 freeze **2.811×** (0.697 / 0.248 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 805 — `cli_extensions_install` (llama_format_context)
-
-| metric | cadr | pi |
-|---|---|---|
 | `llama_format_context` | `llama-format-context-size` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover Math.round k (`packages/coding-agent/src/extensions/llama/ui.ts`) |
-
 Leftover sibling of leftover 544–546 on the same `llama/ui.lisp` `cli_extensions_install` hole. Timed work is k-suffix rounding — not `llama-context-label` TUI, not view frames. Observed `lfc_small` / `lfc_1k` / `lfc_8k` / `lfc_round` / `lfc_n` are exact. First n=5 freeze **4.332×** (0.868 / 0.200 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 806 — `cli_extensions_install` (llama_js_to_fixed)
-
-| metric | cadr | pi |
-|---|---|---|
 | `llama_js_to_fixed` | `llama-js-to-fixed` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover Number.toFixed (`packages/coding-agent/src/extensions/llama/ui.ts`) |
-
 Leftover sibling of Pair 805. Timed work is toFixed digit strings — not compactCount TUI. Observed `ltf_one` / `ltf_zero` / `ltf_pi` / `ltf_ten` / `ltf_n` are exact. First n=5 freeze **3.076×** (1.301 / 0.423 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 807 — `cli_extensions_install` (llama_search_exact)
-
-| metric | cadr | pi |
-|---|---|---|
 | `llama_search_exact` | `llama-search-exact-query-p` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover org/name regex (`packages/coding-agent/src/extensions/llama/ui.ts`) |
-
 Leftover sibling of Pairs 805–806. Timed work is org/name(:quant) regex — not search schedule, not TUI. Observed `lseq_ok` / `lseq_tag` / `lseq_space` / `lseq_slash` / `lseq_n` are exact. First n=5 freeze **4.086×** (0.945 / 0.231 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 808 — `cli_bootstrap_sessions` (assistant_tool_call_only)
-
-| metric | cadr | pi |
-|---|---|---|
 | `assistant_tool_call_only` | `assistant-tool-call-only-p` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover hasTextContent invert (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
-
 Leftover sibling of leftover 553–555 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is tool-call-only hide (tool present, no nonempty text) — not tree render. Observed `atco_none` / `atco_text` / `atco_tool` / `atco_both` / `atco_n` are exact. First n=5 freeze **2.121×** (1.423 / 0.671 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 809 — `cli_bootstrap_sessions` (session_entry_user_text)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_entry_user_text` | `session-entry-user-text` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover contentText user entry (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of Pair 808. Timed work is string or text-block join for user message entries — not fork TUI. Observed `seut_str` / `seut_blocks` / `seut_asst` / `seut_empty` / `seut_n` are exact. First n=5 freeze **2.198×** (1.431 / 0.651 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 810 — `cli_bootstrap_sessions` (session_compaction_status)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_compaction_status` | `session-compaction-status` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover compaction count string (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
-
 Leftover sibling of Pairs 808–809. Timed work is `Session compacted N time(s)` — not `showStatus` TUI. Observed `scs_none` / `scs_one` / `scs_two` / `scs_zero` / `scs_n` are exact. First n=5 freeze **3.530×** (2.150 / 0.609 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 811 — `cli_bootstrap_sessions` (last_assistant_text)
-
-| metric | cadr | pi |
-|---|---|---|
 | `last_assistant_text` | `last-assistant-text` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getLastAssistantText (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of leftover 808–810 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is last non-aborted-empty assistant text join/trim — not clipboard TUI. Observed `lat_none` / `lat_hit` / `lat_skip` / `lat_ws` / `lat_n` are exact. First n=5 freeze **3.389×** (4.006 / 1.182 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 812 — `cli_bootstrap_sessions` (session_export_basename)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_export_basename` | `session-export-basename` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover APP_NAME-session ISO_id.html (`packages/coding-agent/src/core/export-html/index.ts`) |
-
 Leftover sibling of Pair 811. Timed work is `cadr-session-{ISO}_{id}.html` with `[:.]` replaced — not HTML write. Observed `seb_epoch` / `seb_ms` / `seb_sec` / `seb_999` / `seb_n` are exact. First n=5 freeze **5.369×** (12.308 / 2.292 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 813 — `cli_bootstrap_sessions` (session_user_messages_for_forking)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_user_messages_for_forking` | `session-user-messages-for-forking` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getUserMessagesForForking (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of Pairs 811–812. Timed work is nonempty trimmed user-entry texts for fork — not fork TUI. Observed `sumf_none` / `sumf_n` / `sumf_first` / `sumf_id` / `sumf_last` are exact. First n=5 freeze **2.692×** (2.542 / 0.944 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 814 — `cli_bootstrap_sessions` (session_command_stats)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_command_stats` | `session-command-stats` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getSessionStats (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of leftover 808–813 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is user/assistant/tool-result/tool-call counts — not `/session` TUI. Observed `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` are exact. First n=5 freeze **2.362×** (2.578 / 1.092 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 815 — `cli_bootstrap_sessions` (session_usage_breakdown)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_usage_breakdown` | `session-usage-breakdown` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getUsageCostBreakdown (`packages/coding-agent/src/core/usage-totals.ts`) |
-
 Leftover sibling of Pair 814. Timed work is provider/model and Tools/summaries token totals — not `/session` TUI. Observed `sub_empty` / `sub_n` / `sub_first` / `sub_tok` / `sub_second` are exact. First n=5 freeze **3.689×** (7.127 / 1.932 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 816 — `cli_bootstrap_sessions` (session_tree_label_timestamps)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_tree_label_timestamps` | `session-tree-label-timestamps` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover label timestamps (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
-
 Leftover sibling of Pairs 814–815. Timed work is nonempty label ISO map (empty label remhash) — not tree TUI. Observed `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` are exact. First n=5 freeze **2.873×** (4.218 / 1.468 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 817 — `cli_bootstrap_sessions` (session_tree_tool_calls)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_tree_tool_calls` | `session-tree-tool-calls` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover tool-call id→name map (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
-
 Leftover sibling of leftover 808–816 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is assistant tool-call id→name/arguments hash — not tree TUI. Observed `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` are exact. First n=5 freeze **2.754×** (2.883 / 1.047 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 818 — `cli_bootstrap_sessions` (session_compaction_display_state)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_compaction_display_state` | `session-compaction-display-state` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover display messages + nil summary/kept (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
-
 Leftover sibling of Pair 817. Timed work is message-only display projection returning `(messages nil nil)` — not `/compact` TUI. Fixture has no compaction entry (invalid first-kept-id errors). Observed `scds_empty` / `scds_n` / `scds_sum` / `scds_kept` / `scds_first` are exact. First n=5 freeze **3.286×** (3.306 / 1.006 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 819 — `cli_bootstrap_sessions` (write_hotkeys_command)
-
-| metric | cadr | pi |
-|---|---|---|
 | `write_hotkeys_command` | `write-hotkeys-command` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover Keyboard Shortcuts list (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
-
 Leftover sibling of Pairs 817–818. Timed work is fixed `Keyboard Shortcuts` plus `+interactive-hotkey-definitions+` (optional configured bindings) — not markdown keybinding tables. Observed `whc_plain` / `whc_hdr` / `whc_ctrlc` / `whc_bound` / `whc_cfg` are exact. First n=5 freeze **3.421×** (8.281 / 2.421 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 820 — `cli_bootstrap_sessions` (find_session_by_id_or_prefix)
-
-| metric | cadr | pi |
-|---|---|---|
 | `find_session_by_id_or_prefix` | `find-session-by-id-or-prefix` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover find by id or prefix (`packages/coding-agent/src/core/session-manager.ts`) |
-
 Leftover sibling of leftover 808–819 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is exact session-id then prefix match over an in-memory list — not `list-sessions` disk I/O. Observed `fsb_exact` / `fsb_prefix` / `fsb_xy` / `fsb_miss` / `fsb_empty` are exact. First n=5 freeze **1.888×** (1.627 / 0.862 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 821 — `cli_bootstrap_sessions` (session_display_messages)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_display_messages` | `session-display-messages` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover display message projection (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of Pair 820. Timed work is message-only context projection (parent chain + leaf/by-id) — not TUI. Observed `sdm_empty` / `sdm_n` / `sdm_first` / `sdm_asst` / `sdm_tool` are exact. First n=5 freeze **3.471×** (3.262 / 0.940 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 822 — `cli_bootstrap_sessions` (session_tree_selector_data)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_tree_selector_data` | `session-tree-selector-data` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover tree row map (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
-
 Leftover sibling of Pairs 820–821. Timed work is tree row plists (id/text/leaf) — not tree TUI render. Observed `stsd_nil` / `stsd_n` / `stsd_leaf` / `stsd_id` / `stsd_text` are exact. First n=5 freeze **3.574×** (4.557 / 1.275 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 823 — `cli_bootstrap_sessions` (validate_cli_session_flags)
-
-| metric | cadr | pi |
-|---|---|---|
 | `validate_cli_session_flags` | `validate-cli-session-flags` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover validateForkFlags/validateSessionIdFlags (`packages/coding-agent/src/cli/main.ts`) |
-
 Leftover sibling of leftover 808–822 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is fork/`--session-id` conflict strings — not picker I/O. Observed `vcsf_ok` / `vcsf_fork` / `vcsf_fork2` / `vcsf_sid` / `vcsf_sidok` are exact. First n=5 freeze **5.366×** (2.825 / 0.526 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 824 — `cli_bootstrap_sessions` (session_entry_tree_selector_data)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_entry_tree_selector_data` | `session-entry-tree-selector-data` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover one tree row (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
-
 Leftover sibling of Pair 823. Timed work is one tree row plist (id/role/text/type) — not tree TUI render. Observed `sets_id` / `sets_role` / `sets_text` / `sets_type` / `sets_asst` are exact. First n=5 freeze **4.596×** (4.460 / 0.970 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 825 — `cli_bootstrap_sessions` (session_restored_model)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_restored_model` | `session-restored-model` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover restored model lookup (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of Pairs 823–824. Timed work is last assistant/model-change lookup against an in-memory registry — not models.json I/O. Observed `srm_none` / `srm_hit` / `srm_noreg` / `srm_noavail` / `srm_wrong` are exact. First n=5 freeze **1.559×** (4.808 / 3.084 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 826 — `cli_extensions_install` (llama_search_status)
-
-| metric | cadr | pi |
-|---|---|---|
 | `llama_search_status` | `llama-search-status-text` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover HuggingFaceSearch status (`packages/coding-agent/src/extensions/llama/ui.ts`) |
-
 Leftover sibling of leftover 805–807 on the same `llama/ui.lisp` `cli_extensions_install` hole. Timed work is search status copy — not HF HTTP, not search TUI. Observed `lss_type` / `lss_search` / `lss_empty` / `lss_found` / `lss_n` are exact. First n=5 freeze **2.908×** (0.456 / 0.157 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.854×** (0.880 / 0.181 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 827 — `cli_extensions_install` (llama_search_filter)
-
-| metric | cadr | pi |
-|---|---|---|
 | `llama_search_filter` | `llama-search-filter` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover filterResults (`packages/coding-agent/src/extensions/llama/ui.ts`) |
-
 Leftover sibling of Pair 826. Timed work is in-memory result filter + selected clamp — not scheduleSearch debounce/HTTP. Observed `lsf_empty` / `lsf_miss` / `lsf_hit` / `lsf_sel` / `lsf_n` are exact. First n=5 freeze **0.472×** (3.792 / 8.027 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **0.602×** (4.961 / 8.243 µs) on host `Friend-MachineD`. Under 1× — not booked on over-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 828 — `cli_extensions_install` (llama_view_width)
-
-| metric | cadr | pi |
-|---|---|---|
 | `llama_view_width` | `llama-view-width` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover last width (`packages/coding-agent/src/extensions/llama/ui.ts`) |
-
 Leftover sibling of Pairs 826–827. Timed work is last-width slot — not frame TUI render. Observed `lvw_def` / `lvw_set` / `lvw_n` / `lvw_pos` / `lvw_eq` are exact. First n=5 freeze **149.278×** (27.079 / 0.181 µs) on host `cursor`, ceiling 180.0 (CLOS `make-llama-view` vs leftover replica lastWidth property). Remeasure on tip **114.091×** (27.891 / 0.244 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 829 — `cli_print_rpc` (dialog_default)
-
-| metric | cadr | pi |
-|---|---|---|
 | `dialog_default` | `rpc-dialog-default` (`src/cadr-cli/modes/rpc/ui.lisp`) | leftover createDialogPromise defaultValue (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
-
 Leftover sibling of leftover 466–468 / 496–498 on the same `rpc/ui.lisp` `cli_print_rpc` hole. Timed work is the dialog default value — not wait, not TUI. Observed `rdd_sel` / `rdd_conf` / `rdd_in` / `rdd_ed` / `rdd_n` are exact. First n=5 freeze **0.524×** (0.072 / 0.137 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **0.699×** (0.173 / 0.248 µs) on host `Friend-MachineD`. Under 1× — not booked on over-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 830 — `cli_print_rpc` (dialog_deadline)
-
-| metric | cadr | pi |
-|---|---|---|
 | `dialog_deadline` | `rpc-dialog-deadline` (`src/cadr-cli/modes/rpc/ui.lisp`) | leftover opts.timeout deadline (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
-
 Leftover sibling of Pair 829. Timed work is timeout-ms → deadline — not condition-wait. Observed `rdl_nil` / `rdl_fut` / `rdl_num` / `rdl_one` / `rdl_n` are exact. First n=5 freeze **0.593×** (0.108 / 0.181 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **0.702×** (0.230 / 0.328 µs) on host `Friend-MachineD`. Under 1× — not booked on over-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 831 — `cli_print_rpc` (close_pending)
-
-| metric | cadr | pi |
-|---|---|---|
 | `close_pending` | `rpc-close-pending-dialogs` (`src/cadr-cli/modes/rpc/ui.lisp`) | leftover pendingExtensionRequests clear (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
-
 Leftover sibling of Pairs 829–830. Timed work is closing-p + pending map clear — not listen, not HTTP. Observed `rcp_close` / `rcp_n` / `rcp_empty` / `rcp_empty_n` / `rcp_keys` are exact. First n=5 freeze **2.795×** (1.526 / 0.546 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **3.213×** (2.293 / 0.714 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 832 — `oauth_pkce_device` (hex_value)
-
-| metric | cadr | pi |
-|---|---|---|
 | `hex_value` | `hex-value` (`src/cadr-ai/oauth/callback.lisp`) | leftover `parseInt` hex digit (`packages/ai/src/auth/oauth`) |
-
 Leftover sibling of leftover percent_decode / parse_query / parse_callback_request on the same `callback.lisp` `oauth_pkce_device` hole. Timed work is a valid hex digit — not percent-decode, not listen. Observed `hv_A` / `hv_a` / `hv_0` / `hv_F` / `hv_9` / `hv_n` are exact. First n=5 freeze **0.371×** (0.142 / 0.384 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **0.692×** (0.272 / 0.392 µs) on host `Friend-MachineD`. Under 1× — not booked on over-1×. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 833 — `oauth_pkce_device` (write_http_response)
-
-| metric | cadr | pi |
-|---|---|---|
 | `write_http_response` | `write-oauth-http-response` (`src/cadr-ai/oauth/callback.lisp`) | leftover `writeHead`+`end` (`packages/ai/src/auth/oauth/anthropic.ts`) |
-
 Leftover sibling of Pair 832. Timed work is string-stream HTTP write — not sockets, not listen. Observed `woh_ok` / `woh_ct` / `woh_body` / `woh_400` / `woh_n` are exact. First n=5 freeze **8.881×** (5.964 / 0.672 µs) on host `cursor`, ceiling 12.0 (Lisp `format` HTTP framing vs leftover writeHead mock). Remeasure on tip **10.896×** (6.758 / 0.620 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 834 — `oauth_pkce_device` (present_auth_url)
-
-| metric | cadr | pi |
-|---|---|---|
 | `present_auth_url` | `present-oauth-auth-url` (`src/cadr-ai/oauth/callback.lisp`) | leftover `auth_url` notify (`packages/ai/src/cli.ts`) |
-
 Leftover sibling of Pairs 832–833. Timed work is URL print or callback — not browser open, not wait. Observed `pau_fmt` / `pau_url` / `pau_ret` / `pau_cb` / `pau_n` are exact. First n=5 freeze **4.268×** (1.580 / 0.370 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **5.875×** (2.080 / 0.354 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 835 — `cli_selectors` (armin_make_grid)
-
-| metric | cadr | pi |
-|---|---|---|
 | `armin_make_grid` | `make-armin-grid` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover `buildFinalGrid` / `createEmptyGrid` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
-
 Leftover sibling of Pairs 514–516 on the same `armin.lisp` `cli_selectors` hole. Timed work is empty vs final 2d grid construct — not tick, not TUI render. Observed `amg_spaces` / `amg_ink` / `amg_h` / `amg_w` / `amg_empty0` are exact. First n=5 freeze **4.041×** (27.332 / 6.763 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **1.684×** (27.119 / 16.108 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 836 — `cli_selectors` (armin_copy_grid)
-
-| metric | cadr | pi |
-|---|---|---|
 | `armin_copy_grid` | `copy-armin-grid` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover `finalGrid.map(row => [...row])` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
-
 Leftover sibling of Pair 835. Timed work is independent 2d copy plus mutate-copy — not tick, not render. Observed `acg_orig` / `acg_copy` / `acg_h` / `acg_w` / `acg_n` are exact. First n=5 freeze **6.066×** (24.123 / 3.977 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **6.466×** (24.841 / 3.842 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 837 — `cli_selectors` (armin_row_string)
-
-| metric | cadr | pi |
-|---|---|---|
 | `armin_row_string` | `armin-grid-row-string` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover `row.join("")` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
-
 Leftover sibling of Pairs 835–836. Timed work is row join without theme/clip — not `component-render`, not tick. Observed `ars_len` / `ars_empty0` / `ars_ink` / `ars_full` / `ars_n` are exact. First n=5 freeze **4.095×** (23.245 / 5.676 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.293×** (23.584 / 5.494 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 844 — `cli_extensions_install` (http_timeout_p)
-
-| metric | cadr | pi |
-|---|---|---|
 | `http_timeout_p` | `extension-http-timeout-condition-p` (`src/cadr-cli/extensions/loader.lisp`) | leftover timeout error names (`packages/coding-agent/src/core/extensions/loader.ts`) |
-
 Leftover sibling of Pair 502–504 on the same `loader.lisp` hole. Timed work is the timeout-condition predicate — not HTTP, not reload. Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil` are exact. First n=5 freeze **2.787×** (0.832 / 0.298 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.480×** (1.356 / 0.303 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 845 — `cli_extensions_install` (same_source)
-
-| metric | cadr | pi |
-|---|---|---|
 | `same_source` | `same-extension-source-p` (`src/cadr-cli/extensions/loader.lisp`) | leftover `bundle.path === source.path` (`packages/coding-agent/src/core/extensions/loader.ts`) |
-
 Leftover sibling of Pair 844. Timed work is path equality — not `reload-cli-extensions`. Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n` are exact. First n=5 freeze **2.631×** (0.421 / 0.160 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.802×** (0.759 / 0.158 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 846 — `cli_extensions_install` (quiet_manager)
-
-| metric | cadr | pi |
-|---|---|---|
 | `quiet_manager` | `call-with-quiet-extension-manager` (`src/cadr-cli/extensions/loader.lisp`) | leftover silenced notify stream (`packages/coding-agent/src/core/extensions/loader.ts`) |
-
 Leftover sibling of Pairs 844–845. Timed work is swapping the manager output stream — not discovery. Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n` are exact. First n=5 freeze **2.740×** (0.680 / 0.248 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **6.863×** (1.176 / 0.171 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 847 — `cli_extensions_install` (manager_notify)
-
-| metric | cadr | pi |
-|---|---|---|
 | `manager_notify` | `extension-manager-notify` (`src/cadr-cli/extensions/loader.lisp`) | leftover notify format (`packages/coding-agent/src/core/extensions/loader.ts`) |
-
 Leftover sibling of Pairs 844–846 on the same `loader.lisp` hole. Timed work is the notify prefix, downcased level, and secret absence — not reload. Observed `enm_info` / `enm_error` / `enm_redact` / `enm_nl` / `enm_n` are exact. First n=5 freeze **2.503×** (3.324 / 1.328 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **2.930×** (3.618 / 1.235 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 848 — `cli_extensions_install` (startup_issues)
-
-| metric | cadr | pi |
-|---|---|---|
 | `startup_issues` | `report-startup-extension-issues` (`src/cadr-cli/extensions/loader.lisp`) | leftover `reportDiagnostics` (`packages/coding-agent/src/core/extensions/loader.ts`) |
-
 Leftover sibling of Pair 847. Timed work is Error:/Warning:/load-failure flags — not ANSI, not TUI. Observed `rsi_err` / `rsi_warn` / `rsi_load` / `rsi_prefix` / `rsi_n` are exact. First n=5 freeze **2.567×** (2.919 / 1.137 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.819×** (3.989 / 0.828 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 849 — `cli_extensions_install` (output_boundary)
-
-| metric | cadr | pi |
-|---|---|---|
 | `output_boundary` | `call-with-extension-output-boundary` (`src/cadr-cli/extensions/loader.lisp`) | leftover stdout/stderr bind (`packages/coding-agent/src/core/extensions/loader.ts`) |
-
 Leftover sibling of Pairs 847–848. Timed work is writes landing on the manager stream — not asdf load. Observed `eob_out` / `eob_err` / `eob_n` are exact. First n=5 freeze **2.759×** (0.740 / 0.268 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **5.208×** (1.196 / 0.230 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 850 — `cli_extensions_install` (loaded_model)
-
-| metric | cadr | pi |
-|---|---|---|
 | `loaded_model` | `llama-loaded-model-p` (`src/cadr-cli/extensions/llama/extension.lisp`) | leftover loaded/sleeping predicate (`packages/coding-agent/src/extensions/llama`) |
-
 Leftover sibling of Pairs 505–507 on the same `llama/extension.lisp` hole. Timed work is the loaded/sleeping status predicate — not HTTP, not login. Observed `llm_loaded` / `llm_sleep` / `llm_unloaded` / `llm_n` are exact. First n=5 freeze **1.511×** (0.211 / 0.140 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **3.296×** (0.427 / 0.130 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 851 — `cli_extensions_install` (catalog_notify)
-
-| metric | cadr | pi |
-|---|---|---|
 | `catalog_notify` | `notify-llama-catalog` (`src/cadr-cli/extensions/llama/extension.lisp`) | leftover catalog notify lines (`packages/coding-agent/src/extensions/llama`) |
-
 Leftover sibling of Pair 850. Timed work is empty/catalog notify text — not auth. Observed `lnc_empty` / `lnc_loaded` / `lnc_sleep` / `lnc_n` are exact. First n=5 freeze **40.150×** (28.921 / 0.720 µs) on host `cursor`, ceiling 60.0 (first-freeze bump). Remeasure on tip **14.250×** (9.316 / 0.654 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 852 — `cli_extensions_install` (progress_notify)
-
-| metric | cadr | pi |
-|---|---|---|
 | `progress_notify` | `llama-progress-notifier` (`src/cadr-cli/extensions/llama/extension.lisp`) | leftover progress notify text (`packages/coding-agent/src/extensions/llama`) |
-
 Leftover sibling of Pairs 850–851. Timed work is progress message flags (`%` / detail) — not download. Observed `lpn_plain` / `lpn_pct` / `lpn_detail` / `lpn_n` are exact. First n=5 freeze **47.472×** (29.267 / 0.616 µs) on host `cursor`, ceiling 60.0 (first-freeze bump). Remeasure on tip **19.792×** (11.417 / 0.577 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 853 — `cli_bootstrap_sessions` (cli_platform)
-
-| metric | cadr | pi |
-|---|---|---|
 | `cli_platform` | `cli-platform` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover process.platform darwin/win32/linux |
-
 Leftover sibling of Pairs 808–825 on the same `sessions.lisp` hole. Timed work is the platform keyword — not clipboard. Observed `cpl_linux` / `cpl_win` / `cpl_darwin` are exact. First n=5 freeze **1.049×** (0.131 / 0.125 µs) on host `Friend-MachineD`, ceiling 8.0. Within ceiling; not booked in over-1× ledger. Gate used `--only-enforce` (scoped overlay; py rc=2 from known METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 854 — `cli_bootstrap_sessions` (session_info_style)
-
-| metric | cadr | pi |
-|---|---|---|
 | `session_info_style` | `session-info-style` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover heading/label/other style |
-
 Leftover sibling of Pair 853. Timed work is heading/label/other style flags — not TUI render. Observed `sis_head_plain` / `sis_head_bold` / `sis_lab_plain` / `sis_lab_dim` / `sis_other` are exact. First n=5 freeze **7.201×** (2.643 / 0.367 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (scoped overlay; py rc=2 from known METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 855 — `cli_bootstrap_sessions` (default_changelog_path)
-
-| metric | cadr | pi |
-|---|---|---|
 | `default_changelog_path` | `default-changelog-path` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover CHANGELOG env/leaf |
-
 Leftover sibling of Pairs 853–854. Timed work is CADR_CHANGELOG_PATH / CHANGELOG.md leaf flags — not disk walk. Observed `dcp_forced` / `dcp_fallback` / `dcp_clean` are exact. First n=5 freeze **1182.272×** (218.058 / 0.184 µs) on host `Friend-MachineD`, ceiling 1200.0 (first-freeze bump). Over-1× booked. Gate used `--only-enforce` (scoped overlay; py rc=2 from known METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 856 — `settings_load` (sdk_make_manager)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_make_manager` | `make-sdk-settings-manager` (`src/cadr-cli/sdk/settings-service.lisp`) | leftover `SettingsManager.inMemory({})` (nil-path construct; not `create` I/O) |
-
 Leftover sibling of Pairs 763–777 on the same `settings-service.lisp` hole. Timed work is nil-path manager construct — `settings-reload` sees nil paths and does not read settings.json. Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` are exact. First n=5 freeze **1.411×** (3.670 / 2.600 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 857 — `settings_load` (sdk_make_memory)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_make_memory` | `make-memory-sdk-settings-manager` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.inMemory` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pair 856. Timed work is in-memory SDK manager construct with fixture vs empty — not disk. Observed `smm_prov` / `smm_model` / `smm_empty` / `smm_type` / `smm_n` are exact. First n=5 freeze **5.581×** (26.876 / 4.816 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 858 — `settings_load` (sdk_effective_thinking_level)
-
-| metric | cadr | pi |
-|---|---|---|
 | `sdk_effective_thinking_level` | `sdk-settings-effective-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | leftover explicit / per-model / restored / default thinking precedence |
-
 Leftover sibling of Pairs 856–857. Timed work is thinking-level precedence — not login I/O. Do not compare keyword vs string. Observed `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` are exact. First n=5 freeze **3.700×** (14.454 / 3.907 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
-### Pair 856 — `settings_load` (sdk_make_manager)
-
-| metric | cadr | pi |
-|---|---|---|
-| `sdk_make_manager` | `make-sdk-settings-manager` (`src/cadr-cli/sdk/settings-service.lisp`) | leftover `SettingsManager.inMemory({})` (nil-path construct; not `create` I/O) |
-
 Leftover sibling of Pairs 763–777 on the same `settings-service.lisp` hole. Timed work is nil-path manager construct — `settings-reload` sees nil paths and does not read settings.json. Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
-
-### Pair 857 — `settings_load` (sdk_make_memory)
-
-| metric | cadr | pi |
-|---|---|---|
-| `sdk_make_memory` | `make-memory-sdk-settings-manager` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.inMemory` (`packages/coding-agent/src/core/settings-manager.ts`) |
-
 Leftover sibling of Pair 856. Timed work is in-memory SDK manager construct with fixture vs empty — not disk. Observed `smm_prov` / `smm_model` / `smm_empty` / `smm_type` / `smm_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
-
-### Pair 858 — `settings_load` (sdk_effective_thinking_level)
-
-| metric | cadr | pi |
-|---|---|---|
-| `sdk_effective_thinking_level` | `sdk-settings-effective-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | leftover explicit / per-model / restored / default thinking precedence |
-
 Leftover sibling of Pairs 856–857. Timed work is thinking-level precedence — not login I/O. Do not compare keyword vs string. Observed `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 859 — `cli_interactive_controller` (terminal_title_sequence)
-
-| metric | cadr | pi |
-|---|---|---|
 | `terminal_title_sequence` | `tui-terminal-title-sequence` (`src/cadr-cli/interactive/controller.lisp`) | leftover OSC 0 title wrap (`ESC]0;…BEL`) |
-
 Leftover sibling of Pairs 511–513 on the same `controller.lisp` hole. Timed work is OSC 0 wrap of the already-paired title — not TUI render. Observed `tts_osc` / `tts_bel` / `tts_cadr` / `tts_sess` / `tts_n` are exact. First n=5 freeze **1.519×** (2.713 / 1.785 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py rc=2 from known `parsed_provider` pollution; scoped gate PASS). Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 860 — `cli_interactive_controller` (make_notification_stream)
-
-| metric | cadr | pi |
-|---|---|---|
 | `make_notification_stream` | `make-notification-output-stream` (`src/cadr-cli/interactive/controller.lisp`) | leftover notification buffer construct |
-
 Leftover sibling of Pair 859. Timed work is gray-stream construct plus one write/flush — not TUI. Observed `mns_type` / `mns_cb` / `mns_empty` / `mns_char` / `mns_n` are exact. First n=5 freeze **8.280×** (1.429 / 0.173 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 861 — `cli_interactive_controller` (notification_stream_flush)
-
-| metric | cadr | pi |
-|---|---|---|
 | `notification_stream_flush` | `notification-stream-flush` (`src/cadr-cli/interactive/controller.lisp`) | leftover notification buffer flush |
-
 Leftover sibling of Pairs 859–860. Timed work is flush of buffered chars; empty flush is a no-op. Observed `nsf_hi` / `nsf_once` / `nsf_len` / `nsf_again` / `nsf_n` are exact. First n=5 freeze **4.675×** (1.154 / 0.247 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 862 — `cli_selectors` (armin_copy_cell)
-
-| metric | cadr | pi |
-|---|---|---|
 | `armin_copy_cell` | `armin-copy-cell` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover typewriter `currentGrid[row][x] = finalGrid[row][x]` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
-
 Leftover sibling of Pairs 835–837 on the same `armin.lisp` hole. Timed work is one cell assign plus oob reject — not tick, not TUI render, no animation thread. Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` are exact. First n=5 freeze **5.290×** (25.759 / 4.869 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 863 — `cli_selectors` (armin_copy_row)
-
-| metric | cadr | pi |
-|---|---|---|
 | `armin_copy_row` | `armin-copy-row` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover scanline row copy (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
-
 Leftover sibling of Pair 862. Timed work is one display-row copy plus dest mutate — not tick, not render. Observed `acr_eq` / `acr_indep` / `acr_w` / `acr_h` / `acr_n` are exact. First n=5 freeze **4.716×** (23.953 / 5.080 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 864 — `cli_selectors` (armin_rotate_row)
-
-| metric | cadr | pi |
-|---|---|---|
 | `armin_rotate_row` | `armin-rotate-row` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover glitch `slice(offset).concat(slice(0, offset))` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
-
 Leftover sibling of Pairs 862–863. Timed work is left-rotate of one row; offsets are non-negative so JS slice and CL `mod` agree. Observed `arr_len` / `arr_zero` / `arr_shift` / `arr_mod` / `arr_n` are exact. First n=5 freeze **3.429×** (21.362 / 6.230 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 865 — `cli_interactive_controller` (tui_input_thread)
-
-| metric | cadr | pi |
-|---|---|---|
 | `tui_input_thread` | `tui-input-thread-p` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover TUI input-thread sentinel |
-
 Leftover sibling of Pairs 670–687 on the same `extension-ui.lisp` hole. Timed work is the input-thread predicate (nil / self / other) — not TUI render, not spawn. Observed `tit_nil` / `tit_self` / `tit_other` / `tit_both` / `tit_n` are exact. First n=5 freeze **0.979×** (0.168 / 0.171 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 866 — `cli_interactive_controller` (extension_host_turn)
-
-| metric | cadr | pi |
-|---|---|---|
 | `extension_host_turn` | `call-extension-host-turn-without-blocking-tui` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover inline vs deferred startTurn |
-
 Leftover sibling of Pair 865. Timed work is inline thunk vs start-turn dispatch — not a live LLM turn, not `make-thread`. Observed `eht_inline` / `eht_start` / `eht_defer` / `eht_ok` / `eht_n` are exact. First n=5 freeze **1.495×** (0.323 / 0.216 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 867 — `cli_interactive_controller` (wrap_extension_host_turn)
-
-| metric | cadr | pi |
-|---|---|---|
 | `wrap_extension_host_turn` | `wrap-extension-host-tui-turn-dispatch` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover sendCustomMessage wrap/restore (`packages/coding-agent/src/core/agent-session.ts`) |
-
 Leftover sibling of Pairs 865–866. Timed work is wrap send/user plus restorer off the TUI thread — not a live turn. Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` are exact. First n=5 freeze **2.313×** (1.297 / 0.561 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 895 — `oauth_pkce_device` (xai_login)
-
-| metric | cadr | pi |
-|---|---|---|
 | `xai_login` | `login-xai-oauth` (`src/cadr-ai/oauth/providers/xai.lisp`) | `parseDeviceCode` + `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
-
 Leftover trio on unclaimed `src/cadr-ai/oauth/providers/xai.lisp` (leftover 379–381 measured error_detail / ensure_success / notify_device). Timed work is stub device+token HTTP login — not error_detail, not expires, not referrer slug. Observed `xli_acc` / `xli_ref` / `xli_n` are exact. First n=5 freeze **13.116×** (15.536 / 1.185 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 896 — `oauth_pkce_device` (xai_login_fail)
-
-| metric | cadr | pi |
-|---|---|---|
 | `xai_login_fail` | `login-xai-oauth` device HTTP fail (`src/cadr-ai/oauth/providers/xai.lisp`) | `requestDeviceCode` HTTP fail (`packages/ai/src/auth/oauth/xai.ts`) |
-
 Leftover sibling of Pair 895. Timed work is stub device HTTP 400 throwing — not exact message text. Observed `xlf_throw` / `xlf_n` are exact. First n=5 freeze **3.870×** (8.266 / 2.136 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 897 — `oauth_pkce_device` (xai_refresh)
-
-| metric | cadr | pi |
-|---|---|---|
 | `xai_refresh` | `refresh-xai-oauth-credential` (`src/cadr-ai/oauth/providers/xai.lisp`) | `refreshXaiToken` / `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
-
 Leftover sibling of Pairs 895–896. Timed work is stub token HTTP 200 refresh — exact access/refresh, not expires. Observed `xrf_acc` / `xrf_ref` / `xrf_n` are exact. First n=5 freeze **22.614×** (5.365 / 0.237 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 898 — `oauth_pkce_device` (openrouter_login)
-
-| metric | cadr | pi |
-|---|---|---|
 | `openrouter_login` | `login-openrouter-oauth` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `parseAuthorizationInput` + `exchangeAuthorizationCode` (`packages/ai/src/auth/oauth/openrouter.ts`) |
-
 Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftover 436–438 queued openrouter_input / openrouter_refresh / openrouter_exchange). Timed work is stub HTTP login after a pasted code — not parse-openrouter-authorization-input fixtures, not PKCE, not callback port. Observed `olg_acc` / `olg_ref` / `olg_n` are exact. First n=5 freeze **35.027×** (168.272 / 4.804 µs) on host `Friend-MachineD`, ceiling 50.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 899 — `oauth_pkce_device` (openrouter_login_fail)
-
-| metric | cadr | pi |
-|---|---|---|
 | `openrouter_login_fail` | `login-openrouter-oauth` key exchange fail (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `exchangeAuthorizationCode` HTTP fail (`packages/ai/src/auth/oauth/openrouter.ts`) |
-
 Leftover sibling of Pair 898. Timed work is stub HTTP 400 throwing — not exact message text. Observed `olf_throw` / `olf_n` are exact. First n=5 freeze **53.681×** (202.181 / 3.766 µs) on host `Friend-MachineD`, ceiling 80.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 900 — `oauth_pkce_device` (openrouter_login_miss)
-
-| metric | cadr | pi |
-|---|---|---|
 | `openrouter_login_miss` | `login-openrouter-oauth` missing code (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `Missing authorization code` (`packages/ai/src/auth/oauth/openrouter.ts`) |
-
 Leftover sibling of Pairs 898–899. Timed work is empty pasted input throwing — not NIL vs undefined. Observed `olm_throw` / `olm_n` are exact. First n=5 freeze **98.722×** (183.818 / 1.862 µs) on host `Friend-MachineD`, ceiling 100.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 901 — `find_tool` (directory_gitignore_rules)
-
-| metric | cadr | pi |
-|---|---|---|
 | `directory_gitignore_rules` | `directory-gitignore-rules` (`src/cadr-cli/tools/glob.lisp`) | `.gitignore` load classify (`packages/coding-agent/src/core/tools/find.ts`) |
-
 Leftover trio on unclaimed `src/cadr-cli/tools/glob.lisp` (leftover 448–450 / 688–693 already frozen; no open leftover PR). Timed work is production directory-gitignore-rules on a staged tree — not parse-gitignore-line fixtures. Observed `dgr_n` / `dgr_ok` / `dgr_none` / `dgr_hash` are exact. First n=5 freeze **1.635×** (598.841 / 366.283 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 902 — `find_tool` (collect_tree_files)
-
-| metric | cadr | pi |
-|---|---|---|
 | `collect_tree_files` | `collect-tree-files` (`src/cadr-cli/tools/glob.lisp`) | tree walk classify (`packages/coding-agent/src/core/tools/find.ts`) |
-
 Leftover sibling of Pair 901. Timed work is collect-tree-files keep.lisp / nested / skip.txt / .git / node_modules filtering. Observed `ctf_n` / `ctf_keep` / `ctf_nested` / `ctf_skip` / `ctf_git` / `ctf_nm` are exact. First n=5 freeze **1.315×** (754.579 / 573.769 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 903 — `find_tool` (glob_files)
-
-| metric | cadr | pi |
-|---|---|---|
 | `glob_files` | `glob-files` (`src/cadr-cli/tools/glob.lisp`) | glob execute classify (`packages/coding-agent/src/core/tools/find.ts`) |
-
 Leftover sibling of Pairs 901–902. Timed work is glob-files match count / empty copy / limit truncation / missing path throw — not make-glob-tool constructor. Observed `gf_lisp` / `gf_empty` / `gf_limit` / `gf_miss` are exact. First n=5 freeze **1.951×** (1370.273 / 702.302 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 904 — `cli_selectors` (countdown_dispose)
-
-| metric | cadr | pi |
-|---|---|---|
 | `countdown_dispose` | `cadr-tui:component-dispose` on unstarted `countdown-timer` (`src/cadr-cli/interactive/components/countdown.lisp`) | CountdownTimer.dispose with intervalId unset (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
-
 Leftover sibling of leftover 556–558 on the same `countdown.lisp` hole. Timed work is dispose without a live thread — not remaining-seconds, not tick, not request-render. Observed `cdd_stop` / `cdd_thread` / `cdd_expired` / `cdd_n` are exact. First n=5 freeze **1.773×** (0.318 / 0.179 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 905 — `cli_selectors` (countdown_unstarted)
-
-| metric | cadr | pi |
-|---|---|---|
 | `countdown_unstarted` | `make-countdown-timer` `:start-p nil` 2500ms (`src/cadr-cli/interactive/components/countdown.lisp`) | remainingSeconds ceil without setInterval (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
-
 Leftover sibling of leftover 556–558 / 904. Timed work is construct without starting the thread — 2500ms remaining is 3, not leftover 556's 1500ms path. Observed `cdu_thread` / `cdu_stop` / `cdu_expired` / `cdu_remain` / `cdu_n` are exact. First n=5 freeze **1.653×** (0.249 / 0.150 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
-
 ### Pair 906 — `cli_selectors` (countdown_start_guard)
-
-| metric | cadr | pi |
-|---|---|---|
 | `countdown_start_guard` | `countdown-timer-start` when thread is already bound (`src/cadr-cli/interactive/components/countdown.lisp`) | keep existing intervalId (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
-
 Leftover sibling of leftover 556–558 / 904–905. Timed work is the existing-thread skip — no `sb-thread:make-thread`, no setInterval. Observed `csg_keep` / `csg_stop` / `csg_fresh` / `csg_n` are exact. First n=5 freeze **1.458×** (0.292 / 0.200 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 907 — `cli_support` (provider_login_help)
+| `provider_login_help` | `get-provider-login-help` (`src/cadr-cli/support/model-help.lisp`) | `getProviderLoginHelp` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+Leftover sibling of leftover 460–462 on the same `model-help.lisp` hole. Timed work is the login-help wrapper itself — not format-no-models / no-model-selected / no-api-key. Observed `plh_pref` / `plh_login` / `plh_prov` / `plh_mod` / `plh_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 908 — `cli_support` (docs_directory)
+| `docs_directory` | `docs-directory` (`src/cadr-cli/support/model-help.lisp`) | `getDocsPath` (`packages/coding-agent/src/config.ts`) |
+Leftover sibling of leftover 460–462 / 907. Timed work is the docs-directory wrapper — not the three format-* messages. Observed `dd_docs` / `dd_len` / `dd_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 909 — `cli_support` (default_thinking_level)
+| `default_thinking_level` | `+default-thinking-level+` (`src/cadr-cli/support/model-help.lisp`) | `DEFAULT_THINKING_LEVEL` (`packages/coding-agent/src/core/defaults.ts`) |
+Leftover sibling of leftover 460–462 / 907–908. Timed work is the default thinking keyword/string classify — not settings-manager get/set. Observed `dtl_med` / `dtl_high` / `dtl_name` / `dtl_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
