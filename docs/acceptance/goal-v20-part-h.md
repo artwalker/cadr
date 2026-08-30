@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1081 — `cli_selectors` (oa_lat)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lat` | `login-auth-type-route` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showLoginAuthTypeSelector routing |
+
+Leftover sibling of Pair 206 on the same needs-pair file (second unused slug after leftover 1060 `oa_rt`). Does not remount `login_auth_type_route`. Timed work is none / oauth / api / both / generic route cases. Observed `latr_none` / `latr_oauth` are exact. First n=5 freeze **2.491×** (3.044 / 1.222 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1082 — `cli_selectors` (oa_lpo)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lpo` | `login-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLoginProviderOptions |
+
+Leftover sibling of Pair 207 on the same needs-pair file (second unused slug after leftover 1061 `oa_lin`). Does not remount `login_provider_options`. Timed work is all / oauth / api / labeled / status option lists. Observed `lpo_all` / `lpo_oauth` are exact. First n=5 freeze **1.307×** (9.060 / 6.931 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1083 — `cli_selectors` (oa_lhe)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_lhe` | `login-method-selector-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login method selector handleInput |
+
+Leftover sibling of Pair 209 on the same needs-pair file (second unused slug after leftover 1063 `oa_lmh`). Does not remount `login_method_selector_handle_event`. Timed work is down / up / enter-oauth / enter-api / esc / clear / interrupt. Observed `lmhe_down` / `lmhe_esc` are exact. First n=5 freeze **1.151×** (2.941 / 2.555 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
