@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1045 — `cli_selectors` (th_mv)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_mv` | `thinking-selector-move` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector wrap selected |
+
+Leftover sibling of leftover 607 / 610 / 611 on the same needs-pair file. Does not remount `thinking_selector_move`. Timed work is wrap down / up / page / empty. Observed `tsmv_down` / `tsmv_empty` are exact. First n=5 freeze **1.422×** (0.672 / 0.472 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1046 — `cli_selectors` (th_lv)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_lv` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector selected level |
+
+Leftover sibling of Pair 1045. Does not remount `thinking_selector_selected_level`. Timed work is first / mid / last / empty / oob. Observed `tssl_first` / `tssl_oob` are exact. First n=5 freeze **0.688×** (0.513 / 0.746 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1047 — `cli_selectors` (th_ds)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_ds` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-level description line |
+
+Leftover sibling of Pairs 1045–1046. Does not remount `thinking_level_description_line`. Timed work is off/def / high / high-def / bogus / min. Observed `tsdl_off_def` / `tsdl_bogus` are exact. First n=5 freeze **1.296×** (0.298 / 0.230 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
