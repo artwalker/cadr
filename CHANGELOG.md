@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.cycle_ent`
+  (`model-cycle-target-entry` vs leftover replica of `_cycleScopedModel`
+  index wrap). Observed `mc_fwd` / `mc_empty` exact. n=5 **0.720×**
+  (0.671 / 0.931 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 967). Under-1×. Does not remount `cycle_wrap`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.scope_st`
+  (`model-scope-startup-line` vs leftover replica of init Model scope
+  line). Observed `ms_quiet` / `ms_disabled` exact. n=5 **1.144×**
+  (35.777 / 31.266 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 968). Over-1× booked. Does not remount `scope_hint`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.file_cli`
+  (`process-cli-file-arguments` vs leftover replica of
+  processFileArguments). Observed `pf_hello` / `pf_img` exact. n=5
+  **0.550×** (79.335 / 144.120 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 969). Under-1×. Does not remount
+  `file_tags`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

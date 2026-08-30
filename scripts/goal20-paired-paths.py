@@ -970,8 +970,11 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.file_tags": 8.0,
     # leftover 967–969 commands.lisp (samples=5): first-freeze headroom.
     # Does not remount cycle_wrap / scope_hint / file_tags.
+    # Measure-only leftover 967; first freeze 0.720× (0.671 / 0.931 µs).
     "cli_bootstrap_sessions.cycle_ent": 8.0,
+    # Measure-only leftover 968; first freeze 1.144× (35.777 / 31.266 µs).
     "cli_bootstrap_sessions.scope_st": 8.0,
+    # Measure-only leftover 969; first freeze 0.550× (79.335 / 144.120 µs).
     "cli_bootstrap_sessions.file_cli": 8.0,
     # Leftover trio on src/cadr-cli/extensions/commands.lisp (pairs 487-489):
     # split_command 0.282x (0.465 / 1.652 us), handle_plain 0.449x
