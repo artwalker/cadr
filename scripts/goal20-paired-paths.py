@@ -2158,20 +2158,17 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.login_auth_type_route.
   # Measure-only pair (Pair 206); ceiling not lowered.
   "cli_selectors.login_auth_type_route": 8.0,
-  # Measure-only leftover 1141; first-freeze headroom matching leftover 1060
-  # oa_rt (2.388×). Ratchet down only.
+  # Measure-only leftover 1141; first freeze 2.217× (2.712 / 1.224 µs).
   "cli_selectors.lat_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_provider_options.
   # Measure-only pair (Pair 207); ceiling not lowered.
   "cli_selectors.login_provider_options": 8.0,
-  # Measure-only leftover 1142; first-freeze headroom matching leftover 1061
-  # oa_lin (1.410×). Ratchet down only.
+  # Measure-only leftover 1142; first freeze 1.564× (8.904 / 5.695 µs).
   "cli_selectors.lpo_ok": 8.0,
   # First-freeze headroom for cli_selectors.logout_provider_options.
   # Measure-only pair (Pair 208); ceiling not lowered.
   "cli_selectors.logout_provider_options": 8.0,
-  # Measure-only leftover 1143; first-freeze headroom matching leftover 1062
-  # oa_out (2.050×). Ratchet down only.
+  # Measure-only leftover 1143; first freeze 2.400× (8.113 / 3.381 µs).
   "cli_selectors.lgo_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_method_selector_handle_event.
   # Measure-only pair (Pair 209); ceiling not lowered.
