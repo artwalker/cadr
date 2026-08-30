@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `validate_extension` | `validate-extension-result` (`src/cadr-evals/main.lisp`) | leftover replica of extension greeting + path-count |
 
-Leftover sibling of leftover 400–402 on the same needs-pair file. Timed work is Bob+one-path ok, Alice greeting fail, two-path fail, empty-path fail. Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty` / `ve_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 400–402 on the same needs-pair file. Timed work is Bob+one-path ok, Alice greeting fail, two-path fail, empty-path fail. Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty` / `ve_n` are exact. First n=5 freeze **7.979×** (2.604 / 0.326 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 926 — `evals_harness` (suite_dispatch)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover 400–402 on the same needs-pair file. Timed work i
 |---|---|---|
 | `suite_dispatch` | leftover replica of `%eval-main` suite cond (`src/cadr-evals/main.lisp`) | leftover replica of cadr suite cond (pi has no `--suite`) |
 
-Leftover sibling of Pair 925. Timed work is smoke/extensions/extension-authoring/unknown dispatch ids. Observed `sd_smoke` / `sd_ext` / `sd_auth` / `sd_unk` / `sd_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 925. Timed work is smoke/extensions/extension-authoring/unknown dispatch ids. Observed `sd_smoke` / `sd_ext` / `sd_auth` / `sd_unk` / `sd_n` are exact. First n=5 freeze **0.874×** (0.171 / 0.196 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 927 — `evals_harness` (eval_result_p)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 925. Timed work is smoke/extensions/extension-authoring
 |---|---|---|
 | `eval_result_p` | leftover of `%eval-main` `(typep value 'eval-result)` (`src/cadr-evals/main.lisp`) | leftover object-shape predicate (`output` + `events` own properties) |
 
-Leftover sibling of Pairs 925–926. Timed work is make-eval-result yes, json-object miss, string miss, nil miss. Observed `er_yes` / `er_hash` / `er_str` / `er_nil` / `er_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 925–926. Timed work is make-eval-result yes, json-object miss, string miss, nil miss. Observed `er_yes` / `er_hash` / `er_str` / `er_nil` / `er_n` are exact. First n=5 freeze **1.836×** (0.608 / 0.331 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
