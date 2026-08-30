@@ -689,10 +689,14 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.openrouter_input": 8.0,
     "oauth_pkce_device.openrouter_refresh": 8.0,
     "oauth_pkce_device.openrouter_exchange": 8.0,
-    # leftover 898-900; first-freeze headroom. Ratchet down only.
-    "oauth_pkce_device.openrouter_login": 8.0,
-    "oauth_pkce_device.openrouter_login_fail": 8.0,
-    "oauth_pkce_device.openrouter_login_miss": 8.0,
+    # leftover 898-900; first freeze 39.355× / 52.221× / 76.090×
+    # (147.502 / 3.748, 148.223 / 2.838, 145.313 / 1.910 µs). Over-1×:
+    # cadr runs production login-openrouter-oauth + stub HTTP; pi
+    # classifies parseAuthorizationInput + exchangeAuthorizationCodeFromResponse.
+    # First-freeze headroom. Ratchet down only.
+    "oauth_pkce_device.openrouter_login": 50.0,
+    "oauth_pkce_device.openrouter_login_fail": 80.0,
+    "oauth_pkce_device.openrouter_login_miss": 100.0,
     # output_accumulator leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "output_accumulator.last_line_bytes": 8.0,

@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.openrouter_login`
+  (`login-openrouter-oauth` vs parseAuthorizationInput +
+  exchangeAuthorizationCodeFromResponse). Observed `olg_acc` /
+  `olg_ref` / `olg_n` exact. n=5 **39.355×** (147.502 / 3.748 µs) on
+  host `cursor`, ceiling 50.0. Measure-only leftover (Pair 898).
+  Over-1×. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.openrouter_login_fail`
+  (stub HTTP 400 key exchange throw). Observed `olf_throw` / `olf_n`
+  exact. n=5 **52.221×** (148.223 / 2.838 µs) on host `cursor`,
+  ceiling 80.0. Measure-only leftover (Pair 899). Over-1×.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.openrouter_login_miss`
+  (empty pasted code throw). Observed `olm_throw` / `olm_n` exact.
+  n=5 **76.090×** (145.313 / 1.910 µs) on host `cursor`, ceiling
+  100.0. Measure-only leftover (Pair 900). Over-1×. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

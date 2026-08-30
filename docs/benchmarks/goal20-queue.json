@@ -108,7 +108,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 261,
@@ -154,7 +154,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 266,
@@ -174,7 +174,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 268,
@@ -184,7 +184,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 269,
@@ -194,7 +194,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 270,
@@ -5414,7 +5414,7 @@
    "metric": "cli_interactive_controller.assistant_price_known",
    "branch": "cursor/transcript-price-usage-user-msg-leftovers-652-654-34f9",
    "note": "nextPairNum left at tip 328; leftover id 652",
-   "ratio": 0.240,
+   "ratio": 0.24,
    "cadrUs": 4.477,
    "piUs": 18.674,
    "ceiling": 8.0,
@@ -5445,7 +5445,7 @@
    "branch": "cursor/transcript-price-usage-user-msg-leftovers-652-654-34f9",
    "note": "nextPairNum left at tip 328; leftover id 654",
    "ratio": 4.205,
-   "cadrUs": 5.050,
+   "cadrUs": 5.05,
    "piUs": 1.201,
    "ceiling": 8.0,
    "rc": 2
@@ -5476,7 +5476,7 @@
    "note": "nextPairNum left at tip 328; leftover id 656",
    "ratio": 1.296,
    "cadrUs": 2.035,
-   "piUs": 1.570,
+   "piUs": 1.57,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -5504,7 +5504,7 @@
    "metric": "cli_interactive_controller.render_assistant_lines",
    "branch": "cursor/transcript-asst-md-summary-leftovers-658-660-34f9",
    "note": "nextPairNum left at tip 328; leftover id 658",
-   "ratio": 2.730,
+   "ratio": 2.73,
    "cadrUs": 12.279,
    "piUs": 4.498,
    "ceiling": 8.0,
@@ -5731,7 +5731,7 @@
    "note": "nextPairNum left at tip 328; leftover id 673",
    "ratio": 1.037,
    "cadrUs": 0.903,
-   "piUs": 0.870,
+   "piUs": 0.87,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -6451,7 +6451,7 @@
    "note": "nextPairNum left at tip 328; leftover id 721",
    "ratio": 1.195,
    "cadrUs": 0.968,
-   "piUs": 0.810,
+   "piUs": 0.81,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -6601,7 +6601,7 @@
    "note": "nextPairNum left at tip 328; leftover id 731",
    "ratio": 31.609,
    "cadrUs": 17.081,
-   "piUs": 0.540,
+   "piUs": 0.54,
    "ceiling": 50.0,
    "rc": 2
   },
@@ -6659,7 +6659,7 @@
    "metric": "package_manager.enabled_by_patterns",
    "branch": "cursor/config-selector-pattern-enabled-leftovers-733-735-34f9",
    "note": "nextPairNum left at tip 328; leftover id 735",
-   "ratio": 4.820,
+   "ratio": 4.82,
    "cadrUs": 31.989,
    "piUs": 6.637,
    "ceiling": 8.0,
@@ -6675,7 +6675,7 @@
    "branch": "cursor/config-selector-delta-top-derived-leftovers-736-738-34f9",
    "note": "nextPairNum left at tip 328; leftover id 736",
    "ratio": 3.946,
-   "cadrUs": 17.140,
+   "cadrUs": 17.14,
    "piUs": 4.344,
    "ceiling": 8.0,
    "rc": 2
@@ -6704,8 +6704,8 @@
    "metric": "package_manager.derived_project_state",
    "branch": "cursor/config-selector-delta-top-derived-leftovers-736-738-34f9",
    "note": "nextPairNum left at tip 328; leftover id 738",
-   "ratio": 6.210,
-   "cadrUs": 31.710,
+   "ratio": 6.21,
+   "cadrUs": 31.71,
    "piUs": 5.107,
    "ceiling": 8.0,
    "rc": 2
@@ -6719,7 +6719,7 @@
    "metric": "settings_load.environment_value",
    "branch": "cursor/config-env-provider-settings-leftovers-739-741-34f9",
    "note": "nextPairNum left at tip 328; leftover id 739",
-   "ratio": 1.090,
+   "ratio": 1.09,
    "cadrUs": 0.299,
    "piUs": 0.274,
    "ceiling": 8.0,
@@ -6734,7 +6734,7 @@
    "metric": "settings_load.configured_provider_name",
    "branch": "cursor/config-env-provider-settings-leftovers-739-741-34f9",
    "note": "nextPairNum left at tip 328; leftover id 740",
-   "ratio": 0.760,
+   "ratio": 0.76,
    "cadrUs": 0.376,
    "piUs": 0.495,
    "ceiling": 8.0,
@@ -6764,8 +6764,8 @@
    "metric": "settings_load.provider_default_model",
    "branch": "cursor/config-default-oauth-leftovers-742-744-34f9",
    "note": "nextPairNum left at tip 328; leftover id 742",
-   "ratio": 0.410,
-   "cadrUs": 0.970,
+   "ratio": 0.41,
+   "cadrUs": 0.97,
    "piUs": 2.367,
    "ceiling": 8.0,
    "rc": 2
@@ -6888,6 +6888,51 @@
    "cadrUs": 0.646,
    "piUs": 215.457,
    "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 898,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_login",
+   "branch": "cursor/oauth-openrouter-login-leftovers-898-900-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 898",
+   "ratio": 39.355,
+   "cadrUs": 147.502,
+   "piUs": 3.748,
+   "ceiling": 50.0,
+   "rc": 2
+  },
+  {
+   "pair": 899,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_login_fail",
+   "branch": "cursor/oauth-openrouter-login-leftovers-898-900-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 899",
+   "ratio": 52.221,
+   "cadrUs": 148.223,
+   "piUs": 2.838,
+   "ceiling": 80.0,
+   "rc": 2
+  },
+  {
+   "pair": 900,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_login_miss",
+   "branch": "cursor/oauth-openrouter-login-leftovers-898-900-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 900",
+   "ratio": 76.09,
+   "cadrUs": 145.313,
+   "piUs": 1.91,
+   "ceiling": 100.0,
    "rc": 2
   }
  ],

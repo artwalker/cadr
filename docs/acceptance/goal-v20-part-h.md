@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `openrouter_login` | `login-openrouter-oauth` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `parseAuthorizationInput` + `exchangeAuthorizationCode` (`packages/ai/src/auth/oauth/openrouter.ts`) |
 
-Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftover 436–438 queued openrouter_input / openrouter_refresh / openrouter_exchange). Timed work is stub HTTP login after a pasted code — not parse-openrouter-authorization-input fixtures, not PKCE, not callback port. Observed `olg_acc` / `olg_ref` / `olg_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftover 436–438 queued openrouter_input / openrouter_refresh / openrouter_exchange). Timed work is stub HTTP login after a pasted code — not parse-openrouter-authorization-input fixtures, not PKCE, not callback port. Observed `olg_acc` / `olg_ref` / `olg_n` are exact. First n=5 freeze **39.355×** (147.502 / 3.748 µs) on host `cursor`, ceiling 50.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 899 — `oauth_pkce_device` (openrouter_login_fail)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftov
 |---|---|---|
 | `openrouter_login_fail` | `login-openrouter-oauth` key exchange fail (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `exchangeAuthorizationCode` HTTP fail (`packages/ai/src/auth/oauth/openrouter.ts`) |
 
-Leftover sibling of Pair 898. Timed work is stub HTTP 400 throwing — not exact message text. Observed `olf_throw` / `olf_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 898. Timed work is stub HTTP 400 throwing — not exact message text. Observed `olf_throw` / `olf_n` are exact. First n=5 freeze **52.221×** (148.223 / 2.838 µs) on host `cursor`, ceiling 80.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 900 — `oauth_pkce_device` (openrouter_login_miss)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 898. Timed work is stub HTTP 400 throwing — not exact
 |---|---|---|
 | `openrouter_login_miss` | `login-openrouter-oauth` missing code (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `Missing authorization code` (`packages/ai/src/auth/oauth/openrouter.ts`) |
 
-Leftover sibling of Pairs 898–899. Timed work is empty pasted input throwing — not NIL vs undefined. Observed `olm_throw` / `olm_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 898–899. Timed work is empty pasted input throwing — not NIL vs undefined. Observed `olm_throw` / `olm_n` are exact. First n=5 freeze **76.090×** (145.313 / 1.910 µs) on host `cursor`, ceiling 100.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
