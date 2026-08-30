@@ -536,4 +536,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.msg_content` | 1.008 | 0.745 | 1.352× | 8.00× | measure-only leftover 928; `message-content-text` vs leftover content-text join | invent pause；地板优化另刀 |
 | `evals_harness.eval_tools` | 1.547 | 0.285 | 5.428× | 8.00× | measure-only leftover 929; `eval-agent-tools` vs leftover agent.tools list | invent pause；地板优化另刀 |
 | `evals_harness.eval_paths` | 3.230 | 0.447 | 7.223× | 8.00× | measure-only leftover 930; `eval-extension-paths` vs leftover visible paths | invent pause；地板优化另刀 |
+| `cli_print_rpc.cmd_list` | 1.533 | 0.333 | 4.603× | 8.00× | measure-only leftover 936; `rpc-command-list` vs leftover rpc command list | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

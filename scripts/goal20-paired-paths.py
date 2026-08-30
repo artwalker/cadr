@@ -123,7 +123,7 @@ METRICS = {
     "ai_crypto": ("hmac", "fox", "empty", "long"),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection", "exact_id", "exact_provider", "bare_id", "partial_id", "scoped_id", "scoped_thinking", "miss", "ac_skip", "ac_api", "ac_api_prov", "ac_bearer", "ac_exp", "ac_check", "ac_json", "ac_cred", "ac_noref", "ac_chk_prov", "ac_min_api", "ac_unknown", "ac_help", "ac_help2", "ls_xai", "ls_nodef", "ls_defun", "ls_ok", "ls_fail", "ls_nomodels_sub", "ls_nodef_sub"),
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image", "png_width", "png_height", "gif_width", "gif_height", "miss", "png_mime", "jpeg_mime", "gif_mime", "webp_mime", "miss_mime", "gemini", "flux", "unknown", "note_resized", "note_half", "note_plain", "api_fixture", "api_unknown", "om_gemini_n", "om_gemini_text", "om_flux_n", "om_flux_text", "oc_text_type", "oc_text", "oc_img_type", "oc_img_url", "oc_ok", "pd_ok_mime", "pd_ok_data", "pd_ok", "pd_miss", "pd_plain", "us_in", "us_out", "us_cr", "us_cw", "us_in2", "us_out2", "us_cr2", "us_cw2", "poi_id", "poi_text", "poi_n", "poi_mime", "poi_data", "poi_in", "poi_out", "er_auth", "er_hit", "er_abort", "er_flag", "er_prov", "openrouter_usage", "parse_openrouter_images", "error_result"),
-    "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats", "line_chars", "newline", "payload", "line_count", "first", "second", "last_line", "tl_off", "tl_high", "tl_xh", "tl_max", "tl_xh_down", "tl_unk", "tl_full_n", "tl_short_n", "ss_user", "ss_asst", "ss_tool", "ss_calls", "ss_total", "ss_id", "rpc_images", "rpc_prompt", "bash_result", "dialog_request", "dialog_result", "dialog_expired", "queue_mode", "last_assistant", "command_list", "handle_bad_json", "handle_not_object", "handle_ui_miss"),
+    "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats", "line_chars", "newline", "payload", "line_count", "first", "second", "last_line", "tl_off", "tl_high", "tl_xh", "tl_max", "tl_xh_down", "tl_unk", "tl_full_n", "tl_short_n", "ss_user", "ss_asst", "ss_tool", "ss_calls", "ss_total", "ss_id", "rpc_images", "rpc_prompt", "bash_result", "queue_parse", "asst_text", "cmd_list", "dialog_request", "dialog_result", "dialog_expired", "queue_mode", "last_assistant", "command_list", "handle_bad_json", "handle_not_object", "handle_ui_miss"),
     "tui_latex": ("render", "normalize_output", "e_mc2", "frac_inline", "greek", "frac_display_newlines", "unknown_miss", "empty", "alpha", "frac", "script", "operator", "marker_edge"),
     "tui_mermaid": ("render", "source_box", "transform", "mm_lr_w", "mm_lr_first", "mm_lr_rows", "mm_empty", "mm_unk", "mm_cjk_w", "sb_wide_w", "sb_wide_first", "sb_narrow_rows", "sb_empty_w", "tf_ok", "tf_art", "tf_off", "tf_think", "tf_wide", "tf_len"),
     "tui_editor_helpers": ("fuzzy_match", "gpt", "id_suffix", "swapped", "miss", "empty"),
@@ -944,6 +944,12 @@ RATIO_CEILINGS = {
     "cli_print_rpc.queue_mode": 8.0,
     "cli_print_rpc.last_assistant": 8.0,
     "cli_print_rpc.command_list": 8.0,
+    # Measure-only leftover 934; first freeze 0.132× (0.337 / 2.547 µs).
+    "cli_print_rpc.queue_parse": 8.0,
+    # Measure-only leftover 935; first freeze 0.791× (0.293 / 0.370 µs).
+    "cli_print_rpc.asst_text": 8.0,
+    # Measure-only leftover 936; first freeze 4.603× (1.533 / 0.333 µs).
+    "cli_print_rpc.cmd_list": 8.0,
     # skill_prompt_load leftover trio (samples=5): observed
     # sdk_prompt_input 4.32x (15.18 / 3.51 us), sdk_list_override
     # 0.36x (0.19 / 0.52 us), sdk_context_files 2.88x (7.56 / 2.62 us).

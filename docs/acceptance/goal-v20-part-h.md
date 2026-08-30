@@ -8797,6 +8797,29 @@ Leftover sibling of Pair 931. Does not remount `theme_validate`. Timed work is v
 | `theme_res` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of resolveThemeColor |
 
 Leftover sibling of Pairs 931–932. Does not remount `theme_resolve`. Timed work is integer, empty, hex, variable, cycle, miss. Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` / `tr_miss` are exact. First n=5 freeze **0.144×** (1.192 / 8.261 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 934 — `cli_print_rpc` (queue_parse)
+
+| metric | cadr | pi |
+|---|---|---|
+| `queue_parse` | `parse-queue-mode` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of parseQueueMode |
+
+Leftover sibling of leftover 475–477 on the same needs-pair file. Does not remount `queue_mode`. Timed work is all, one-at-a-time, invalid. Observed `qm_all` / `qm_one` / `qm_bad` are exact. First n=5 freeze **0.132×** (0.337 / 2.547 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 935 — `cli_print_rpc` (asst_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `asst_text` | `rpc-last-assistant-text` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of last assistant text |
+
+Leftover sibling of Pair 934. Does not remount `last_assistant`. Timed work is hit hello, length, empty miss. Observed `la_hit` / `la_len` / `la_miss` are exact. First n=5 freeze **0.791×** (0.293 / 0.370 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 936 — `cli_print_rpc` (cmd_list)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cmd_list` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of rpc command list |
+
+Leftover sibling of Pairs 934–935. Does not remount `command_list`. Timed work is count, extension foo, prompt bar. Observed `cl_n` / `cl_ext` / `cl_prompt` are exact. First n=5 freeze **4.603×** (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

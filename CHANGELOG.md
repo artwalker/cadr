@@ -69,6 +69,25 @@ tag/Release step.
   `tr_miss` exact. n=5 **0.144×** (1.192 / 8.261 µs) on host `cursor`,
   ceiling 8.0. Measure-only leftover (Pair 933). Under-1×. Does not
   remount `theme_resolve`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.queue_parse`
+  (`parse-queue-mode` vs leftover replica of parseQueueMode). Observed
+  `qm_all` / `qm_one` / `qm_bad` exact. n=5 **0.132×** (0.337 / 2.547
+  µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 934).
+  Under-1×. Does not remount `queue_mode`. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.asst_text`
+  (`rpc-last-assistant-text` vs leftover replica of last assistant
+  text). Observed `la_hit` / `la_len` / `la_miss` exact. n=5 **0.791×**
+  (0.293 / 0.370 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 935). Under-1×. Does not remount `last_assistant`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.cmd_list`
+  (`rpc-command-list` vs leftover replica of rpc command list).
+  Observed `cl_n` / `cl_ext` / `cl_prompt` exact. n=5 **4.603×**
+  (1.533 / 0.333 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 936). Over-1× booked. Does not remount `command_list`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
