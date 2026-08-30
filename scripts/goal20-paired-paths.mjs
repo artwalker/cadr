@@ -818,8 +818,11 @@ const REPETITIONS = {
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
 	"cli_selectors.api_key_input_state_handle_event": 50,
+	"cli_selectors.oa_ahe": 50,
 	"cli_selectors.login_method_selector_ui_state": 50,
+	"cli_selectors.oa_lms": 50,
 	"cli_selectors.api_key_input_ui_state": 50,
+	"cli_selectors.oa_aku": 50,
 	"cli_selectors.oauth_selector_ui_state": 50,
 	"cli_selectors.model_selector_search_text": 50,
 	"cli_selectors.qualified_model_id": 50,
@@ -30471,13 +30474,22 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsApiKeyInputStateHandleEvent();
 			},
 		),
+		oa_ahe: await collect("cli_selectors.oa_ahe", () => {
+			return () => runCliSelectorsApiKeyInputStateHandleEvent();
+		}),
 		login_method_selector_ui_state: await collect(
 			"cli_selectors.login_method_selector_ui_state",
 			() => {
 				return () => runCliSelectorsLoginMethodSelectorUiState();
 			},
 		),
+		oa_lms: await collect("cli_selectors.oa_lms", () => {
+			return () => runCliSelectorsLoginMethodSelectorUiState();
+		}),
 		api_key_input_ui_state: await collect("cli_selectors.api_key_input_ui_state", () => {
+			return () => runCliSelectorsApiKeyInputUiState();
+		}),
+		oa_aku: await collect("cli_selectors.oa_aku", () => {
 			return () => runCliSelectorsApiKeyInputUiState();
 		}),
 		oauth_selector_ui_state: await collect("cli_selectors.oauth_selector_ui_state", () => {
@@ -34328,10 +34340,16 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput navigation (wrap index; fixtures avoid clamp boundary)",
 			"cli_selectors.api_key_input_state_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch",
+			"cli_selectors.oa_ahe":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch leftover",
 			"cli_selectors.login_method_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state",
+			"cli_selectors.oa_lms":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state leftover",
 			"cli_selectors.api_key_input_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key UI state",
+			"cli_selectors.oa_aku":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key UI state leftover",
 			"cli_selectors.oauth_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent UI state",
 			"cli_selectors.model_selector_search_text":

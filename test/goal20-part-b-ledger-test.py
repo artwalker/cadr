@@ -2686,6 +2686,9 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.api_key_input_state_handle_event", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.oa_ahe", RECORD.METRIC_KEYS)
+        self.assertIn("oa_ahe", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.oa_ahe", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.login_method_selector_ui_state", RECORD.METRIC_KEYS)
         self.assertIn(
             "login_method_selector_ui_state", paired.METRICS["cli_selectors"]
@@ -2693,9 +2696,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.login_method_selector_ui_state", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.oa_lms", RECORD.METRIC_KEYS)
+        self.assertIn("oa_lms", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.oa_lms", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.api_key_input_ui_state", RECORD.METRIC_KEYS)
         self.assertIn("api_key_input_ui_state", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.api_key_input_ui_state", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.oa_aku", RECORD.METRIC_KEYS)
+        self.assertIn("oa_aku", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.oa_aku", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.oauth_selector_ui_state", RECORD.METRIC_KEYS)
         self.assertIn("oauth_selector_ui_state", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oauth_selector_ui_state", paired.RATIO_CEILINGS)
