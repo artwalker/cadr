@@ -39,6 +39,7 @@ pairing 不在本 goal 内恢复燃尽。
 - [x] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
 - [x] `CHANGELOG.md` 记录 aligned with pi v0.84.4
 - [x] 合入 `cadr-migration`：GitHub #221 → `0755cfd62`
+- [x] 合入后产品身份门禁：`docs/product-identity-allowlist.json` `expected_findings` 1339 → 1340（leftover `%eval-main` / `--suite` 与 `evals_harness` METRIC_KEYS 行含 `sla_pi`）
 
 ## 源码账本上仍标 missing 的 v0.84.4 文件（不挡 Goal 22 合入）
 
