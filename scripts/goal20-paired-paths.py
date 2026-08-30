@@ -1016,8 +1016,11 @@ RATIO_CEILINGS = {
     "cli_print_rpc.ui_absent": 8.0,
     # leftover 970–972 rpc/mode.lisp (samples=5): first-freeze headroom.
     # Does not remount bad_line / array_line / ui_absent.
+    # Measure-only leftover 970; first freeze 1.161× (5.660 / 4.877 µs).
     "cli_print_rpc.line_bad": 8.0,
+    # Measure-only leftover 971; first freeze 1.135× (5.494 / 4.840 µs).
     "cli_print_rpc.line_arr": 8.0,
+    # Measure-only leftover 972; first freeze 4.288× (6.497 / 1.515 µs).
     "cli_print_rpc.line_ui": 8.0,
     # Frozen from the first Friend-MachineD leftover
     # cli_extensions_install.unsafe_git pair (samples=5): observed

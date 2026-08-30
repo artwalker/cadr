@@ -8989,7 +8989,7 @@ Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed w
 |---|---|---|
 | `line_bad` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine JSON.parse catch |
 
-Leftover sibling of leftover 937–939 on the same needs-pair file. Does not remount `bad_line`. Timed work is invalid JSON line. Observed `bj_cmd` / `bj_nl` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 937–939 on the same needs-pair file. Does not remount `bad_line`. Timed work is invalid JSON line. Observed `bj_cmd` / `bj_nl` are exact. First n=5 freeze **1.161×** (5.660 / 4.877 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 971 — `cli_print_rpc` (line_arr)
 
@@ -8997,7 +8997,7 @@ Leftover sibling of leftover 937–939 on the same needs-pair file. Does not rem
 |---|---|---|
 | `line_arr` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine require JSON object |
 
-Leftover sibling of Pair 970. Does not remount `array_line`. Timed work is a JSON array line. Observed `no_cmd` / `no_nl` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 970. Does not remount `array_line`. Timed work is a JSON array line. Observed `no_cmd` / `no_nl` are exact. First n=5 freeze **1.135×** (5.494 / 4.840 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 972 — `cli_print_rpc` (line_ui)
 
@@ -9005,7 +9005,7 @@ Leftover sibling of Pair 970. Does not remount `array_line`. Timed work is a JSO
 |---|---|---|
 | `line_ui` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine unknown extension_ui_response |
 
-Leftover sibling of Pairs 970–971. Does not remount `ui_absent`. Timed work is an unknown pending UI id. Observed `um_cmd` / `um_unk` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 970–971. Does not remount `ui_absent`. Timed work is an unknown pending UI id. Observed `um_cmd` / `um_unk` are exact. First n=5 freeze **4.288×** (6.497 / 1.515 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
