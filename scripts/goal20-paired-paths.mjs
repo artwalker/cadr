@@ -491,6 +491,9 @@ const REPETITIONS = {
 	"cli_selectors.user_message_handle_event": 50,
 	"cli_selectors.user_message_handle_raw": 50,
 	"cli_selectors.render_user_message_selector": 50,
+	"cli_selectors.um_he": 50,
+	"cli_selectors.um_hr": 50,
+	"cli_selectors.um_rd": 50,
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
@@ -31045,6 +31048,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderUserMessageSelector();
 			},
 		),
+		um_he: await collect("cli_selectors.um_he", () => {
+			return () => runCliSelectorsUserMessageHandleEvent();
+		}),
+		um_hr: await collect("cli_selectors.um_hr", () => {
+			return () => runCliSelectorsUserMessageHandleRaw();
+		}),
+		um_rd: await collect("cli_selectors.um_rd", () => {
+			return () => runCliSelectorsRenderUserMessageSelector();
+		}),
 		make_models_selector_keybindings: await collect(
 			"cli_selectors.make_models_selector_keybindings",
 			() => {
@@ -34520,6 +34532,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
 			"cli_selectors.render_user_message_selector":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
+			"cli_selectors.um_he":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (structured events) leftover",
+			"cli_selectors.um_hr":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch) leftover",
+			"cli_selectors.um_rd":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout leftover",
 			"cli_selectors.make_models_selector_keybindings":
 				"packages/coding-agent/src/core/keybindings.ts KEYBINDINGS app.models.* KeybindingsManager constructor",
 			"cli_selectors.make_scoped_models_selector_state":
