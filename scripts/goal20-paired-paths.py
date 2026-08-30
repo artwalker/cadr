@@ -1547,11 +1547,11 @@ RATIO_CEILINGS = {
   "cli_selectors.make_daxnuts_component": 8.0,
   # Measure-only leftover 636; first freeze 1.119× (3.787 / 3.384 µs).
   "cli_selectors.daxnuts_component_tick": 8.0,
-  # Measure-only leftover 1093; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 1093; first freeze 1.807× (0.955 / 0.529 µs).
   "cli_selectors.dn_rgb": 8.0,
-  # Measure-only leftover 1094; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 1094; first freeze 3.548× (0.706 / 0.199 µs).
   "cli_selectors.dn_make": 8.0,
-  # Measure-only leftover 1095; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 1095; first freeze 6.172× (3.844 / 0.623 µs).
   "cli_selectors.dn_tick": 8.0,
     # Measure-only leftover 946; first freeze 1.471× (0.189 / 0.128 µs).
     # Does not remount login_dialog_make / login_dialog_auth / login_dialog_device.

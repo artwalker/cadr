@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1093,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.dn_rgb",
+   "branch": "cursor/cli-daxnuts-dn-rgb-make-tick-leftovers-1093-1095-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1093",
+   "ratio": 1.807,
+   "cadrUs": 0.955,
+   "piUs": 0.529,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1094,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.dn_make",
+   "branch": "cursor/cli-daxnuts-dn-rgb-make-tick-leftovers-1093-1095-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1094",
+   "ratio": 3.548,
+   "cadrUs": 0.706,
+   "piUs": 0.199,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1095,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.dn_tick",
+   "branch": "cursor/cli-daxnuts-dn-rgb-make-tick-leftovers-1093-1095-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1095",
+   "ratio": 6.172,
+   "cadrUs": 3.844,
+   "piUs": 0.623,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
