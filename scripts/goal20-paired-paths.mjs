@@ -659,6 +659,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.sess_make": 50,
 	"cli_interactive_controller.sess_upd": 50,
 	"cli_interactive_controller.sess_draw": 50,
+	"cli_interactive_controller.wrap_osc": 50,
+	"cli_interactive_controller.pad_str": 50,
+	"cli_interactive_controller.cache_p": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -18159,6 +18162,11 @@ function runCliInteractiveTerminalTitle() {
 }
 
 
+const OSC133_ZONE_START = "\x1b]133;A\x07";
+const OSC133_ZONE_END = "\x1b]133;B\x07";
+const OSC133_ZONE_FINAL = "\x1b]133;C\x07";
+
+
 function wrapTranscriptLines(lines) {
 	if (!lines || lines.length === 0) return null;
 	const copy = lines.slice();
@@ -19347,6 +19355,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveToolSessionMake(),
 		...runCliInteractiveToolSessionUpdate(),
 		...runCliInteractiveToolSessionRender(),
+		...runCliInteractiveWrapTranscript(),
+		...runCliInteractiveOutputPadding(),
+		...runCliInteractiveRenderCacheable(),
 		...runCliInteractiveBashAppendRunning(),
 		...runCliInteractiveBashCompleteString(),
 		...runCliInteractiveBashStopEntry(),
@@ -19456,6 +19467,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		sess_draw: await collect("cli_interactive_controller.sess_draw", () => {
 			return () => runCliInteractiveToolSessionRender();
+		}),
+		wrap_osc: await collect("cli_interactive_controller.wrap_osc", () => {
+			return () => runCliInteractiveWrapTranscript();
+		}),
+		pad_str: await collect("cli_interactive_controller.pad_str", () => {
+			return () => runCliInteractiveOutputPadding();
+		}),
+		cache_p: await collect("cli_interactive_controller.cache_p", () => {
+			return () => runCliInteractiveRenderCacheable();
 		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
@@ -33997,6 +34017,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts result/pending",
 			"cli_interactive_controller.sess_draw":
 				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts renderCall/renderResult fallback",
+			"cli_interactive_controller.wrap_osc":
+				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent.render OSC 133 wrap",
+			"cli_interactive_controller.pad_str":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts output padding spaces",
+			"cli_interactive_controller.cache_p":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts TUI entry render cacheable",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":

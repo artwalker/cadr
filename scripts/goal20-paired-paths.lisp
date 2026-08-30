@@ -682,6 +682,9 @@
     ("cli_interactive_controller.sess_make" . 50)
     ("cli_interactive_controller.sess_upd" . 50)
     ("cli_interactive_controller.sess_draw" . 50)
+    ("cli_interactive_controller.wrap_osc" . 50)
+    ("cli_interactive_controller.pad_str" . 50)
+    ("cli_interactive_controller.cache_p" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -16970,6 +16973,24 @@
    "trr_done_result" (nth 3 draw)
    "trr_custom" (nth 4 draw)
    "trr_empty" (nth 5 draw)))
+(defun leftover-wrap-osc-pad-cache-observed-pairs (wrap pad cache)
+  (list
+   "wt_nil" (nth 0 wrap)
+   "wt_one_n" (nth 1 wrap)
+   "wt_one_order" (nth 2 wrap)
+   "wt_two_n" (nth 3 wrap)
+   "wt_two_first" (nth 4 wrap)
+   "wt_two_last" (nth 5 wrap)
+   "op_0" (nth 0 pad)
+   "op_1" (nth 1 pad)
+   "op_other" (nth 2 pad)
+   "op_space" (nth 3 pad)
+   "rc_assist" (nth 0 cache)
+   "rc_stream" (nth 1 cache)
+   "rc_tool_nil" (nth 2 cache)
+   "rc_tool_done" (nth 3 cache)
+   "rc_tool_run" (nth 4 cache)
+   "rc_custom" (nth 5 cache)))
 
 
 (defun leftover-user-bash-running-complete-stop-observed-pairs
@@ -17756,6 +17777,12 @@
           (run-cli-interactive-tool-session-update))
         (leftover-tool-sess-draw
           (run-cli-interactive-tool-session-render))
+        (leftover-wrap-osc
+          (run-cli-interactive-wrap-transcript))
+        (leftover-pad-str
+          (run-cli-interactive-output-padding))
+        (leftover-cache-p
+          (run-cli-interactive-render-cacheable))
         (leftover-bash-running
           (run-cli-interactive-bash-append-running))
         (leftover-bash-string
@@ -17919,6 +17946,10 @@
               leftover-tool-sess-make
               leftover-tool-sess-upd
               leftover-tool-sess-draw)
+             (leftover-wrap-osc-pad-cache-observed-pairs
+              leftover-wrap-osc
+              leftover-pad-str
+              leftover-cache-p)
              (leftover-user-bash-running-complete-stop-observed-pairs
               leftover-bash-running
               leftover-bash-string
@@ -18073,6 +18104,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-tool-session-render))))
+     "wrap_osc"
+     (collect "cli_interactive_controller.wrap_osc"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-wrap-transcript))))
+     "pad_str"
+     (collect "cli_interactive_controller.pad_str"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-output-padding))))
+     "cache_p"
+     (collect "cli_interactive_controller.cache_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-cacheable))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32557,6 +32603,12 @@
       "src/cadr-cli/interactive/tool-render-session.lisp update-tool-render-session"
       "cli_interactive_controller.sess_draw"
       "src/cadr-cli/interactive/tool-render-session.lisp render-tool-session"
+      "cli_interactive_controller.wrap_osc"
+      "src/cadr-cli/interactive/transcript.lisp wrap-transcript-lines"
+      "cli_interactive_controller.pad_str"
+      "src/cadr-cli/interactive/transcript.lisp output-padding-string"
+      "cli_interactive_controller.cache_p"
+      "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"
