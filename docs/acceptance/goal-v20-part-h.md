@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 928 — `evals_harness` (msg_content)
+
+| metric | cadr | pi |
+|---|---|---|
+| `msg_content` | `message-content-text` (`src/cadr-evals/harness.lisp`) | leftover replica of content-text join |
+
+Leftover sibling of leftover 418–420 on the same needs-pair file. Does not remount `content_text`. Timed work is plain string, text-parts join, empty, blank. Observed `ct_plain` / `ct_join` / `ct_empty` / `ct_blank` / `ct_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 929 — `evals_harness` (eval_tools)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_tools` | `eval-agent-tools` (`src/cadr-evals/harness.lisp`) | leftover replica of agent.tools list |
+
+Leftover sibling of Pair 928. Does not remount `agent_tools`. Timed work is empty tools, filled count, read name, bash name. Observed `at_empty` / `at_n` / `at_read` / `at_bash` / `at_keys` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 930 — `evals_harness` (eval_paths)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_paths` | `eval-extension-paths` (`src/cadr-evals/harness.lisp`) | leftover replica of visible extension-host paths |
+
+Leftover sibling of Pairs 928–929. Does not remount `extension_paths`. Timed work is no-host empty, one visible path, hidden skipped. Observed `ep_none` / `ep_n` / `ep_path` / `ep_skip` / `ep_keys` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

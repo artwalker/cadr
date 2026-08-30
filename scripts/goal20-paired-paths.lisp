@@ -573,6 +573,9 @@
     ("evals_harness.reporter_run_id" . 50)
     ("evals_harness.artifact_reference_json" . 50)
     ("evals_harness.reporter_artifacts" . 50)
+    ("evals_harness.msg_content" . 50)
+    ("evals_harness.eval_tools" . 50)
+    ("evals_harness.eval_paths" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -12838,7 +12841,10 @@
          (prepare-default (run-evals-harness-prepare-default-prompt))
          (reporter-run-id (run-evals-harness-reporter-run-id))
          (artifact-reference (run-evals-harness-artifact-reference-json))
-         (reporter-artifacts (run-evals-harness-reporter-artifacts)))
+         (reporter-artifacts (run-evals-harness-reporter-artifacts))
+         (msg-content (run-evals-harness-content-text))
+         (eval-tools-list (run-evals-harness-agent-tools))
+         (eval-paths (run-evals-harness-extension-paths)))
     (json-object
      "observed"
      (json-object
@@ -13009,7 +13015,22 @@
       "ra_sess" (nth 1 reporter-artifacts)
       "ra_rec" (nth 2 reporter-artifacts)
       "ra_case" (nth 3 reporter-artifacts)
-      "ra_n" (nth 4 reporter-artifacts))
+      "ra_n" (nth 4 reporter-artifacts)
+      "ct_plain" (nth 0 msg-content)
+      "ct_join" (nth 1 msg-content)
+      "ct_empty" (nth 2 msg-content)
+      "ct_blank" (nth 3 msg-content)
+      "ct_n" (nth 4 msg-content)
+      "at_empty" (nth 0 eval-tools-list)
+      "at_n" (nth 1 eval-tools-list)
+      "at_read" (nth 2 eval-tools-list)
+      "at_bash" (nth 3 eval-tools-list)
+      "at_keys" (nth 4 eval-tools-list)
+      "ep_none" (nth 0 eval-paths)
+      "ep_n" (nth 1 eval-paths)
+      "ep_path" (nth 2 eval-paths)
+      "ep_skip" (nth 3 eval-paths)
+      "ep_keys" (nth 4 eval-paths))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -13170,7 +13191,22 @@
      (collect "evals_harness.reporter_artifacts"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reporter-artifacts)))))))
+                  (run-evals-harness-reporter-artifacts))))
+     "msg_content"
+     (collect "evals_harness.msg_content"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-content-text))))
+     "eval_tools"
+     (collect "evals_harness.eval_tools"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-agent-tools))))
+     "eval_paths"
+     (collect "evals_harness.eval_paths"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-extension-paths)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -31928,6 +31964,12 @@
       "src/cadr-evals/reporter.lisp artifact-reference-json"
       "evals_harness.reporter_artifacts"
       "src/cadr-evals/reporter.lisp reporter-artifacts"
+      "evals_harness.msg_content"
+      "src/cadr-evals/harness.lisp message-content-text"
+      "evals_harness.eval_tools"
+      "src/cadr-evals/harness.lisp eval-agent-tools"
+      "evals_harness.eval_paths"
+      "src/cadr-evals/harness.lisp eval-extension-paths"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
