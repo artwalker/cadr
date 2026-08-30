@@ -193,6 +193,26 @@ tag/Release step.
   (1.264 / 0.627 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 951). Over-1× booked. Does not remount `render_cacheable`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.rep_make`
+  (`make-eval-harness-reporter` vs leftover replica of reporter
+  constructor artifactDirectory). Observed `mr_explicit` / `mr_env` /
+  `mr_miss` / `mr_n` exact. n=5 **0.898×** (0.367 / 0.409 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 952). Under-1×.
+  Does not remount `make_reporter`. Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.fin_num`
+  (`reporter-finite-number` vs leftover replica of finite number keep).
+  Observed `fn_int` / `fn_float` / `fn_nil` / `fn_inf` / `fn_str` /
+  `fn_n` exact. n=5 **0.563×** (0.126 / 0.224 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 953). Under-1×. Does not
+  remount `finite_number`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.art_meta`
+  (`reporter-artifact-metadata` vs leftover replica of artifact metadata
+  filter). Observed `am_keep` / `am_runid` / `am_snap` / `am_n` exact.
+  n=5 **1.181×** (1.038 / 0.879 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 954). Over-1× booked. Does not remount
+  `artifact_metadata`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

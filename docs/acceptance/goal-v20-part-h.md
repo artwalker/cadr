@@ -8935,6 +8935,29 @@ Leftover sibling of Pair 949. Does not remount `output_padding`. Timed work is p
 | `cache_p` | `tui-entry-render-cacheable-p` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of TUI entry render cacheable |
 
 Leftover sibling of Pairs 949–950. Does not remount `render_cacheable`. Timed work is assistant/streaming/tool-nil/done/running/custom flags — not wrap, not pad. Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` / `rc_tool_run` / `rc_custom` are exact. First n=5 freeze **2.014×** (1.264 / 0.627 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 952 — `evals_harness` (rep_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rep_make` | `make-eval-harness-reporter` (`src/cadr-evals/reporter.lisp`) | leftover replica of reporter constructor artifactDirectory |
+
+Leftover sibling of leftover 703–705 on the same needs-pair file. Does not remount `make_reporter`. Timed work is explicit dir, trimmed env fallback, missing env — not record-case, not persist. Observed `mr_explicit` / `mr_env` / `mr_miss` / `mr_n` are exact. First n=5 freeze **0.898×** (0.367 / 0.409 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 953 — `evals_harness` (fin_num)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fin_num` | `reporter-finite-number` (`src/cadr-evals/reporter.lisp`) | leftover replica of finite number keep |
+
+Leftover sibling of Pair 952. Does not remount `finite_number`. Timed work is int/float keep and nil/inf/string drop — not observation walk, not persist. Observed `fn_int` / `fn_float` / `fn_nil` / `fn_inf` / `fn_str` / `fn_n` are exact. First n=5 freeze **0.563×** (0.126 / 0.224 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 954 — `evals_harness` (art_meta)
+
+| metric | cadr | pi |
+|---|---|---|
+| `art_meta` | `reporter-artifact-metadata` (`src/cadr-evals/reporter.lisp`) | leftover replica of artifact metadata filter |
+
+Leftover sibling of Pairs 952–953. Does not remount `artifact_metadata`. Timed work is keep custom, drop runId and session snapshot — not JSONL, not persist. Observed `am_keep` / `am_runid` / `am_snap` / `am_n` are exact. First n=5 freeze **1.181×** (1.038 / 0.879 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

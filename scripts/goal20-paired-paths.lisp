@@ -584,6 +584,9 @@
     ("evals_harness.msg_content" . 50)
     ("evals_harness.eval_tools" . 50)
     ("evals_harness.eval_paths" . 50)
+    ("evals_harness.rep_make" . 50)
+    ("evals_harness.fin_num" . 50)
+    ("evals_harness.art_meta" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -12952,6 +12955,9 @@
          (msg-content (run-evals-harness-content-text))
          (eval-tools-list (run-evals-harness-agent-tools))
          (eval-paths (run-evals-harness-extension-paths)))
+         (leftover-rep-make (run-evals-harness-make-reporter))
+         (leftover-fin-num (run-evals-harness-finite-number))
+         (leftover-art-meta (run-evals-harness-artifact-metadata)))
     (json-object
      "observed"
      (json-object
@@ -13153,6 +13159,20 @@
       "ep_path" (nth 2 eval-paths)
       "ep_skip" (nth 3 eval-paths)
       "ep_keys" (nth 4 eval-paths))
+      "mr_explicit" (nth 0 leftover-rep-make)
+      "mr_env" (nth 1 leftover-rep-make)
+      "mr_miss" (nth 2 leftover-rep-make)
+      "mr_n" (nth 3 leftover-rep-make)
+      "fn_int" (nth 0 leftover-fin-num)
+      "fn_float" (nth 1 leftover-fin-num)
+      "fn_nil" (nth 2 leftover-fin-num)
+      "fn_inf" (nth 3 leftover-fin-num)
+      "fn_str" (nth 4 leftover-fin-num)
+      "fn_n" (nth 5 leftover-fin-num)
+      "am_keep" (nth 0 leftover-art-meta)
+      "am_runid" (nth 1 leftover-art-meta)
+      "am_snap" (nth 2 leftover-art-meta)
+      "am_n" (nth 3 leftover-art-meta))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -13343,7 +13363,22 @@
      (collect "evals_harness.eval_paths"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-extension-paths)))))))
+                  (run-evals-harness-extension-paths))))
+     "rep_make"
+     (collect "evals_harness.rep_make"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-reporter))))
+     "fin_num"
+     (collect "evals_harness.fin_num"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-finite-number))))
+     "art_meta"
+     (collect "evals_harness.art_meta"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-metadata)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -32407,6 +32442,12 @@
       "src/cadr-evals/harness.lisp eval-agent-tools"
       "evals_harness.eval_paths"
       "src/cadr-evals/harness.lisp eval-extension-paths"
+      "evals_harness.rep_make"
+      "src/cadr-evals/reporter.lisp make-eval-harness-reporter"
+      "evals_harness.fin_num"
+      "src/cadr-evals/reporter.lisp reporter-finite-number"
+      "evals_harness.art_meta"
+      "src/cadr-evals/reporter.lisp reporter-artifact-metadata"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

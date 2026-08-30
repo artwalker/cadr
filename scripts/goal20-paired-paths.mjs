@@ -362,6 +362,9 @@ const REPETITIONS = {
 	"evals_harness.msg_content": 50,
 	"evals_harness.eval_tools": 50,
 	"evals_harness.eval_paths": 50,
+	"evals_harness.rep_make": 50,
+	"evals_harness.fin_num": 50,
+	"evals_harness.art_meta": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -10703,6 +10706,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessContentText(),
 		...runEvalsHarnessAgentTools(),
 		...runEvalsHarnessExtensionPaths(),
+		...runEvalsHarnessMakeReporter(),
+		...runEvalsHarnessFiniteNumber(),
+		...runEvalsHarnessArtifactMetadata(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -10818,6 +10824,15 @@ async function measureEvalsHarness() {
 		}),
 		eval_paths: await collect("evals_harness.eval_paths", () => {
 			return () => runEvalsHarnessExtensionPaths();
+		}),
+		rep_make: await collect("evals_harness.rep_make", () => {
+			return () => runEvalsHarnessMakeReporter();
+		}),
+		fin_num: await collect("evals_harness.fin_num", () => {
+			return () => runEvalsHarnessFiniteNumber();
+		}),
+		art_meta: await collect("evals_harness.art_meta", () => {
+			return () => runEvalsHarnessArtifactMetadata();
 		}),
 		observed,
 	};
@@ -33829,6 +33844,12 @@ const result = {
 				"packages/evals leftover replica of agent tool list (cadr eval-agent-tools)",
 			"evals_harness.eval_paths":
 				"packages/evals leftover replica of visible extension paths (cadr eval-extension-paths)",
+			"evals_harness.rep_make":
+				"packages/evals/src/vitest-evals/reporter.ts leftover replica of constructor artifactDirectory",
+			"evals_harness.fin_num":
+				"packages/evals/src/vitest-evals/reporter.ts leftover replica of finite number keep",
+			"evals_harness.art_meta":
+				"packages/evals/src/vitest-evals/reporter.ts leftover replica of artifact metadata filter",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
