@@ -753,8 +753,11 @@ RATIO_CEILINGS = {
     # evals_harness leftover trio on reporter.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 985–987.
     # Does not remount rep_make / fin_num / art_meta.
+    # leftover 985; first freeze 1.025× (0.362 / 0.353 µs).
     "evals_harness.rep_ok": 8.0,
+    # leftover 986; first freeze 0.580× (0.128 / 0.221 µs). cadr leads.
     "evals_harness.fin_ok": 8.0,
+    # leftover 987; first freeze 1.200× (1.032 / 0.860 µs).
     "evals_harness.meta_ok": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

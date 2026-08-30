@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 985,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.rep_ok",
+   "branch": "cursor/evals-reporter-rep-ok-fin-meta-leftovers-985-987-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 985",
+   "ratio": 1.025,
+   "cadrUs": 0.362,
+   "piUs": 0.353,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 986,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.fin_ok",
+   "branch": "cursor/evals-reporter-rep-ok-fin-meta-leftovers-985-987-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 986",
+   "ratio": 0.580,
+   "cadrUs": 0.128,
+   "piUs": 0.221,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 987,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.meta_ok",
+   "branch": "cursor/evals-reporter-rep-ok-fin-meta-leftovers-985-987-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 987",
+   "ratio": 1.200,
+   "cadrUs": 1.032,
+   "piUs": 0.860,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 985 — `evals_harness` (rep_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rep_ok` | `make-eval-harness-reporter` (`src/cadr-evals/reporter.lisp`) | leftover replica of constructor artifactDirectory |
+
+Leftover sibling of leftover 952–954 on the same needs-pair file. Does not remount `rep_make`. Timed work is explicit dir, trimmed env, missing env. Observed `mr_explicit` / `mr_n` are exact. First n=5 freeze **1.025×** (0.362 / 0.353 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 986 — `evals_harness` (fin_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fin_ok` | `reporter-finite-number` (`src/cadr-evals/reporter.lisp`) | leftover replica of finite number keep |
+
+Leftover sibling of Pair 985. Does not remount `fin_num`. Timed work is int, float, nil, inf, string. Observed `fn_int` / `fn_n` are exact. First n=5 freeze **0.580×** (0.128 / 0.221 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 987 — `evals_harness` (meta_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `meta_ok` | `reporter-artifact-metadata` (`src/cadr-evals/reporter.lisp`) | leftover replica of artifact metadata filter |
+
+Leftover sibling of Pairs 985–986. Does not remount `art_meta`. Timed work is keep/runid/snap filter. Observed `am_keep` / `am_n` are exact. First n=5 freeze **1.200×** (1.032 / 0.860 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
