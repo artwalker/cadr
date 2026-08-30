@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.br_ok`
+  (`append-tui-user-bash-running` vs leftover replica of
+  BashExecutionComponent addChild running). Observed `bar_n` / `bar_run2`
+  exact. n=5 **1.999×** (0.763 / 0.382 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1009). Over-1× booked. Does not remount
+  `bash_run`. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bf_ok`
+  (`complete-tui-user-bash-string` vs leftover replica of setComplete exit 0
+  string). Observed `cs_text` / `cs_empty` exact. n=5 **2.575×** (0.777 /
+  0.302 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1010). Over-1× booked. Does not remount `bash_fin`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bh_ok`
+  (`stop-tui-user-bash-entry` vs leftover replica of loader.stop without
+  setComplete). Observed `st_run` / `st_exit` exact. n=5 **2.844×** (0.648 /
+  0.228 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1011). Over-1× booked. Does not remount `bash_halt`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

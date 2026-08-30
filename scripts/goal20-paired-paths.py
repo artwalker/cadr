@@ -1162,11 +1162,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.bash_fin": 8.0,
     # Measure-only leftover 957; first freeze 2.872× (0.635 / 0.221 µs).
     "cli_interactive_controller.bash_halt": 8.0,
-    # Measure-only leftover 1009; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1009; first freeze 1.999× (0.763 / 0.382 µs).
     "cli_interactive_controller.br_ok": 8.0,
-    # Measure-only leftover 1010; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1010; first freeze 2.575× (0.777 / 0.302 µs).
     "cli_interactive_controller.bf_ok": 8.0,
-    # Measure-only leftover 1011; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1011; first freeze 2.844× (0.648 / 0.228 µs).
     "cli_interactive_controller.bh_ok": 8.0,
     # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,

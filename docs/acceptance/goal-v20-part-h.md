@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1009 — `cli_interactive_controller` (br_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `br_ok` | `append-tui-user-bash-running` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of BashExecutionComponent addChild running |
+
+Leftover sibling of leftover 955–957 on the same needs-pair file. Does not remount `bash_run`. Timed work is two running entries (plain / exclude-from-context). Observed `bar_n` / `bar_run2` are exact. First n=5 freeze **1.999×** (0.763 / 0.382 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1010 — `cli_interactive_controller` (bf_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bf_ok` | `complete-tui-user-bash-string` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of setComplete exit 0 string |
+
+Leftover sibling of Pair 1009. Does not remount `bash_fin`. Timed work is hello complete and empty complete. Observed `cs_text` / `cs_empty` are exact. First n=5 freeze **2.575×** (0.777 / 0.302 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1011 — `cli_interactive_controller` (bh_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bh_ok` | `stop-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of loader.stop without setComplete |
+
+Leftover sibling of Pairs 1009–1010. Does not remount `bash_halt`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.844×** (0.648 / 0.228 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
