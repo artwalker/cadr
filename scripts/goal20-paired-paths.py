@@ -1164,8 +1164,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.bash_halt": 8.0,
     # Measure-only leftover 988–990; first-freeze headroom. Ratchet down only.
     # Does not remount bash_run / bash_fin / bash_halt.
+    # leftover 988; first freeze 2.108× (0.767 / 0.364 µs).
     "cli_interactive_controller.bash_go": 8.0,
+    # leftover 989; first freeze 2.643× (0.776 / 0.294 µs).
     "cli_interactive_controller.bash_end": 8.0,
+    # leftover 990; first freeze 2.836× (0.634 / 0.223 µs).
     "cli_interactive_controller.bash_off": 8.0,
     # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,

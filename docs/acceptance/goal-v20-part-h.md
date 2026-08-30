@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 988 — `cli_interactive_controller` (bash_go)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_go` | `append-tui-user-bash-running` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of BashExecutionComponent addChild running |
+
+Leftover sibling of leftover 640–642 and 955–957 on the same needs-pair file. Does not remount `bash_run`. Timed work is addChild running. Observed `bar_n` / `bar_run2` are exact. First n=5 freeze **2.108×** (0.767 / 0.364 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 989 — `cli_interactive_controller` (bash_end)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_end` | `complete-tui-user-bash-string` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of setComplete exit 0 string |
+
+Leftover sibling of Pair 988. Does not remount `bash_fin`. Timed work is hello complete and empty complete. Observed `cs_text` / `cs_empty` are exact. First n=5 freeze **2.643×** (0.776 / 0.294 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 990 — `cli_interactive_controller` (bash_off)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_off` | `stop-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of loader.stop without setComplete |
+
+Leftover sibling of Pairs 988–989. Does not remount `bash_halt`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.836×** (0.634 / 0.223 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
