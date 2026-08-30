@@ -665,6 +665,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.wrap_osc": 50,
 	"cli_interactive_controller.pad_str": 50,
 	"cli_interactive_controller.cache_p": 50,
+	"cli_interactive_controller.bash_run": 50,
+	"cli_interactive_controller.bash_fin": 50,
+	"cli_interactive_controller.bash_halt": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -19492,6 +19495,15 @@ async function measureCliInteractiveDecodeEntity() {
 		cache_p: await collect("cli_interactive_controller.cache_p", () => {
 			return () => runCliInteractiveRenderCacheable();
 		}),
+		bash_run: await collect("cli_interactive_controller.bash_run", () => {
+			return () => runCliInteractiveBashAppendRunning();
+		}),
+		bash_fin: await collect("cli_interactive_controller.bash_fin", () => {
+			return () => runCliInteractiveBashCompleteString();
+		}),
+		bash_halt: await collect("cli_interactive_controller.bash_halt", () => {
+			return () => runCliInteractiveBashStopEntry();
+		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
 			() => {
@@ -34044,6 +34056,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts output padding spaces",
 			"cli_interactive_controller.cache_p":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts TUI entry render cacheable",
+			"cli_interactive_controller.bash_run":
+				"packages/coding-agent leftover replica of BashExecutionComponent addChild running (cadr append-tui-user-bash-running)",
+			"cli_interactive_controller.bash_fin":
+				"packages/coding-agent leftover replica of setComplete exit 0 string (cadr complete-tui-user-bash-string)",
+			"cli_interactive_controller.bash_halt":
+				"packages/coding-agent leftover replica of loader.stop without setComplete (cadr stop-tui-user-bash-entry)",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":

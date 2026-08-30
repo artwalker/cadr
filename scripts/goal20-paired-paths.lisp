@@ -688,6 +688,9 @@
     ("cli_interactive_controller.wrap_osc" . 50)
     ("cli_interactive_controller.pad_str" . 50)
     ("cli_interactive_controller.cache_p" . 50)
+    ("cli_interactive_controller.bash_run" . 50)
+    ("cli_interactive_controller.bash_fin" . 50)
+    ("cli_interactive_controller.bash_halt" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -12954,7 +12957,7 @@
          (reporter-artifacts (run-evals-harness-reporter-artifacts))
          (msg-content (run-evals-harness-content-text))
          (eval-tools-list (run-evals-harness-agent-tools))
-         (eval-paths (run-evals-harness-extension-paths)))
+         (eval-paths (run-evals-harness-extension-paths))
          (leftover-rep-make (run-evals-harness-make-reporter))
          (leftover-fin-num (run-evals-harness-finite-number))
          (leftover-art-meta (run-evals-harness-artifact-metadata)))
@@ -13158,7 +13161,7 @@
       "ep_n" (nth 1 eval-paths)
       "ep_path" (nth 2 eval-paths)
       "ep_skip" (nth 3 eval-paths)
-      "ep_keys" (nth 4 eval-paths))
+      "ep_keys" (nth 4 eval-paths)
       "mr_explicit" (nth 0 leftover-rep-make)
       "mr_env" (nth 1 leftover-rep-make)
       "mr_miss" (nth 2 leftover-rep-make)
@@ -14446,7 +14449,7 @@
             (cadr-agent:make-agent)))
          (leftover-cmds
            (run-cli-print-rpc-command-list
-            (rpc-command-list-fixture-state))))
+            (rpc-command-list-fixture-state)))
          (leftover-handle
            (leftover-rpc-handle-line-observed-pairs
             (run-cli-print-rpc-handle-bad-json)
@@ -14498,7 +14501,7 @@
       "la_miss" (nth 2 leftover-asst)
       "cl_n" (nth 0 leftover-cmds)
       "cl_ext" (nth 1 leftover-cmds)
-      "cl_prompt" (nth 2 leftover-cmds))
+      "cl_prompt" (nth 2 leftover-cmds)
       "bj_cmd" (nth 0 leftover-handle)
       "bj_ok" (nth 1 leftover-handle)
       "bj_id" (nth 2 leftover-handle)
@@ -18154,6 +18157,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-render-cacheable))))
+     "bash_run"
+     (collect "cli_interactive_controller.bash_run"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-append-running))))
+     "bash_fin"
+     (collect "cli_interactive_controller.bash_fin"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-complete-string))))
+     "bash_halt"
+     (collect "cli_interactive_controller.bash_halt"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-stop-entry))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -32650,6 +32668,12 @@
       "src/cadr-cli/interactive/transcript.lisp output-padding-string"
       "cli_interactive_controller.cache_p"
       "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p"
+      "cli_interactive_controller.bash_run"
+      "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running leftover"
+      "cli_interactive_controller.bash_fin"
+      "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string leftover"
+      "cli_interactive_controller.bash_halt"
+      "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry leftover"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"
