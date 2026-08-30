@@ -1327,6 +1327,9 @@
     ("cli_selectors.daxnuts_render" . 50)
     ("cli_selectors.daxnuts_invalidate" . 50)
     ("cli_selectors.daxnuts_dispose" . 50)
+    ("cli_selectors.dlg_new" . 50)
+    ("cli_selectors.dlg_key" . 50)
+    ("cli_selectors.dlg_code" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -35991,7 +35994,22 @@
      (collect "cli_selectors.daxnuts_dispose"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-daxnuts-dispose)))))))
+                  (run-cli-selectors-daxnuts-dispose))))
+     "dlg_new"
+     (collect "cli_selectors.dlg_new"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-make))))
+     "dlg_key"
+     (collect "cli_selectors.dlg_key"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-auth))))
+     "dlg_code"
+     (collect "cli_selectors.dlg_code"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-device)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -41204,6 +41222,12 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp cadr-tui:component-invalidate"
       "cli_selectors.daxnuts_dispose"
       "src/cadr-cli/interactive/components/daxnuts.lisp cadr-tui:component-dispose"
+      "cli_selectors.dlg_new"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state leftover"
+      "cli_selectors.dlg_key"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-auth leftover"
+      "cli_selectors.dlg_code"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-device-code leftover"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
