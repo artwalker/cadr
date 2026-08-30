@@ -246,6 +246,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dax_rgb`
+  (`daxnuts-rgb-at` vs leftover replica of parseImage pixel lookup).
+  Observed `dra_00` / `dra_mid` exact. n=5 **1.678×**
+  (0.895 / 0.533 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1021). Over-1× booked. Does not remount
+  `daxnuts_rgb_at`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dax_make`
+  (`make-daxnuts-component` vs leftover replica of DaxnutsComponent
+  constructor). Observed `dmc_tick` exact. n=5 **2.961×**
+  (0.608 / 0.205 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1022). Over-1× booked. Does not remount `make_daxnuts_component`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dax_tick`
+  (`daxnuts-component-tick` vs leftover replica of DaxnutsComponent
+  interval). Observed `dct_one` / `dct_renders` exact. n=5 **5.691×**
+  (3.761 / 0.661 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1023). Over-1× booked. Does not remount `daxnuts_component_tick`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
