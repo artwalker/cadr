@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1048 — `cli_selectors` (tr_pto)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_pto` | `project-trust-options` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of getProjectTrustOptions |
+
+Leftover sibling of Pair 191 on the same needs-pair file. Does not remount `project_trust_options`. Timed work is child-project and single-project option lists. Observed `pto_child` / `pto_single` are exact. First n=5 freeze **2.254×** (63.927 / 28.358 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1049 — `cli_selectors` (tr_tss)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_tss` | `trust-selector-selection` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector index selection |
+
+Leftover sibling of Pair 1048. Does not remount `trust_selector_selection`. Timed work is child trust / parent / distrust and single trust / distrust. Observed `tss_child_trust` / `tss_single_distrust` are exact. First n=5 freeze **6.922×** (177.579 / 25.654 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1050 — `cli_selectors` (tr_tdd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_tdd` | `trust-decision-description` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of formatDecision |
+
+Leftover sibling of Pairs 1048–1049. Does not remount `trust_decision_description`. Timed work is none / child local / child inherited / single untrusted. Observed `tdd_none` / `tdd_single_untrusted` are exact. First n=5 freeze **3.712×** (121.400 / 32.702 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

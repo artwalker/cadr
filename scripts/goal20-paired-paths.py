@@ -2110,17 +2110,17 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.project_trust_options.
   # Measure-only pair (Pair 191); ceiling not lowered.
   "cli_selectors.project_trust_options": 8.0,
-  # Measure-only leftover 1048; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 1048; first freeze 2.254× (63.927 / 28.358 µs).
   "cli_selectors.tr_pto": 8.0,
   # First-freeze headroom for cli_selectors.trust_selector_selection.
   # Measure-only pair (Pair 192); ceiling not lowered.
   "cli_selectors.trust_selector_selection": 8.0,
-  # Measure-only leftover 1049; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 1049; first freeze 6.922× (177.579 / 25.654 µs).
   "cli_selectors.tr_tss": 8.0,
   # First-freeze headroom for cli_selectors.trust_decision_description.
   # Measure-only pair (Pair 193); ceiling not lowered.
   "cli_selectors.trust_decision_description": 8.0,
-  # Measure-only leftover 1050; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 1050; first freeze 3.712× (121.400 / 32.702 µs).
   "cli_selectors.tr_tdd": 8.0,
   # First-freeze headroom for cli_selectors.trust_selector_move.
   # Measure-only pair (Pair 194); ceiling not lowered.

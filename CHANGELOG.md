@@ -246,6 +246,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.tr_pto`
+  (`project-trust-options` vs leftover replica of
+  getProjectTrustOptions). Observed `pto_child` / `pto_single` exact.
+  n=5 **2.254×** (63.927 / 28.358 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1048). Over-1× booked. Does not remount
+  `project_trust_options`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.tr_tss`
+  (`trust-selector-selection` vs leftover replica of trust-selector
+  index selection). Observed `tss_child_trust` / `tss_single_distrust`
+  exact. n=5 **6.922×** (177.579 / 25.654 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 1049). Over-1× booked. Does not
+  remount `trust_selector_selection`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.tr_tdd`
+  (`trust-decision-description` vs leftover replica of formatDecision).
+  Observed `tdd_none` / `tdd_single_untrusted` exact. n=5 **3.712×**
+  (121.400 / 32.702 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 1050). Over-1× booked. Does not remount
+  `trust_decision_description`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
