@@ -444,6 +444,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.daxnuts_rgb_at` | 0.910 | 0.497 | 1.831× | 8.00× | measure-only leftover 634; `daxnuts-rgb-at` vs parseImage pixel lookup | invent pause；地板优化另刀 |
 | `cli_selectors.make_daxnuts_component` | 0.688 | 0.198 | 3.472× | 8.00× | measure-only leftover 635; `make-daxnuts-component` vs DaxnutsComponent constructor (no startAnimation) | invent pause；地板优化另刀 |
 | `cli_selectors.daxnuts_component_tick` | 3.787 | 3.384 | 1.119× | 8.00× | measure-only leftover 636; `daxnuts-component-tick` vs DaxnutsComponent interval body | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_render` | 567.375 | 120.577 | 4.706× | 8.00× | measure-only leftover 910; `component-render` vs leftoverDaxnutsRenderOnce cadr append structure | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_invalidate` | 21.078 | 3.626 | 5.814× | 8.00× | measure-only leftover 911; `component-invalidate` vs leftoverDaxnutsInvalidateOnce | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_dispose` | 0.480 | 0.141 | 3.400× | 8.00× | measure-only leftover 912; `component-dispose` unstarted vs leftoverDaxnutsDisposeUnstarted | invent pause；地板优化另刀 |
 | `cli_interactive_controller.apply_tui_theme_summary` | 52.489 | 16.348 | 3.211× | 8.00× | measure-only leftover 638; `apply-tui-theme-summary` vs setTheme | invent pause；地板优化另刀 |
 | `cli_interactive_controller.load_tui_theme_file` | 233.265 | 97.883 | 2.383× | 8.00× | measure-only leftover 639; `load-tui-theme-file` vs loadThemeFromPath | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_append_running` | 0.735 | 0.357 | 2.059× | 8.00× | measure-only leftover 640; `append-tui-user-bash-running` vs BashExecutionComponent addChild running | invent pause；地板优化另刀 |

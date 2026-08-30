@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.daxnuts_render`
+  (`cadr-tui:component-render` vs leftoverDaxnutsRenderOnce cadr
+  append structure). Observed `dxr_len` / `dxr_cache` / `dxr_late` /
+  `dxr_scan` / `dxr_rev20` exact. n=5 **4.706×** (567.375 / 120.577 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 910).
+  Over-1×. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.daxnuts_invalidate`
+  (`cadr-tui:component-invalidate` vs leftoverDaxnutsInvalidateOnce).
+  Observed `dxi_had` / `dxi_cleared` / `dxi_n` exact. n=5 **5.814×**
+  (21.078 / 3.626 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 911). Over-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.daxnuts_dispose`
+  (`cadr-tui:component-dispose` vs leftoverDaxnutsDisposeUnstarted).
+  Observed `dxd_stop` / `dxd_thread` / `dxd_n` exact. n=5 **3.400×**
+  (0.480 / 0.141 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 912). Over-1×. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

@@ -1495,11 +1495,11 @@ RATIO_CEILINGS = {
   "cli_selectors.make_daxnuts_component": 8.0,
   # Measure-only leftover 636; first freeze 1.119× (3.787 / 3.384 µs).
   "cli_selectors.daxnuts_component_tick": 8.0,
-  # Measure-only leftover 910; freeze pending.
+  # Measure-only leftover 910; first freeze 4.706× (567.375 / 120.577 µs).
   "cli_selectors.daxnuts_render": 8.0,
-  # Measure-only leftover 911; freeze pending.
+  # Measure-only leftover 911; first freeze 5.814× (21.078 / 3.626 µs).
   "cli_selectors.daxnuts_invalidate": 8.0,
-  # Measure-only leftover 912; freeze pending.
+  # Measure-only leftover 912; first freeze 3.400× (0.480 / 0.141 µs).
   "cli_selectors.daxnuts_dispose": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
