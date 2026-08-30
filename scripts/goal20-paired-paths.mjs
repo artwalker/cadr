@@ -626,6 +626,9 @@ const REPETITIONS = {
 	"cli_support.no_models_help": 50,
 	"cli_support.no_model_selected": 50,
 	"cli_support.no_api_key": 50,
+	"cli_support.watch_error": 50,
+	"cli_support.watch_start_close": 50,
+	"cli_support.poll_once": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
@@ -1246,6 +1249,7 @@ const attributionModule = await import(
 );
 const shellModule = await import(moduleUrl("packages/coding-agent/src/utils/shell.ts"));
 const gitModule = await import(moduleUrl("packages/coding-agent/src/utils/git.ts"));
+const fsWatchModule = await import(moduleUrl("packages/coding-agent/src/utils/fs-watch.ts"));
 const userAgentModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/pi-user-agent.ts")
 );
@@ -15391,7 +15395,77 @@ function runCliSupportWatchSignature(missing, present) {
 	return {
 		sg_miss: miss ? 0 : 1,
 		sg_hit: hit ? 1 : 0,
-		sg_n: Array.isArray(hit) && hit.length === 2 ? 1 : 0,
+		sg_n: hit && hit.length === 2 ? 1 : 0,
+	};
+}
+
+
+function leftoverPollOnce(prev, next, listener, onError) {
+	try {
+		if (JSON.stringify(prev) !== JSON.stringify(next)) {
+			listener("change", "p");
+			return 1;
+		}
+		return 0;
+	} catch {
+		onError();
+		return 0;
+	}
+}
+
+
+function runCliSupportWatchError() {
+	let hits = 0;
+	const got = fsWatchModule.watchWithErrorHandler(0, () => {}, () => {
+		hits += 1;
+	});
+	return {
+		we_nil: got == null ? 1 : 0,
+		we_err: hits === 1 ? 1 : 0,
+		we_pos: hits > 0 ? 1 : 0,
+		we_n: 1,
+	};
+}
+
+
+function runCliSupportWatchStartClose(present) {
+	let hits = 0;
+	const watcher = fsWatchModule.watchWithErrorHandler(
+		present,
+		() => {},
+		() => {
+			hits += 1;
+		},
+	);
+	fsWatchModule.closeWatcher(watcher);
+	return {
+		wsc_got: watcher ? 1 : 0,
+		wsc_closed: 1,
+		wsc_err: hits === 0 ? 1 : 0,
+		wsc_n: 1,
+	};
+}
+
+
+function runCliSupportPollOnce(present) {
+	const prev = watchedPathSignature(present);
+	const same = leftoverPollOnce(prev, prev, () => {}, () => {});
+	writeFileSync(present, `${readFileSync(present, "utf8")}x`);
+	const next = watchedPathSignature(present);
+	let n = 0;
+	const changed = leftoverPollOnce(
+		prev,
+		next,
+		() => {
+			n += 1;
+		},
+		() => {},
+	);
+	return {
+		po_same: same === 0 ? 1 : 0,
+		po_change: changed === 1 ? 1 : 0,
+		po_n1: n === 1 ? 1 : 0,
+		po_n: 1,
 	};
 }
 
@@ -15457,6 +15531,12 @@ async function measureCliSupportStripAnsi() {
 	const noModels = runCliSupportNoModelsHelp();
 	const noSelected = runCliSupportNoModelSelected();
 	const noKey = runCliSupportNoApiKey();
+	const present = cliSupportWatchPresentFile();
+	const pollFile = path.join(scratch, "watch-poll.txt");
+	writeFileSync(pollFile, "poll");
+	const watchError = runCliSupportWatchError();
+	const watchStartClose = runCliSupportWatchStartClose(present);
+	const pollOnce = runCliSupportPollOnce(pollFile);
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -15500,6 +15580,16 @@ async function measureCliSupportStripAnsi() {
 		no_api_key: await collect("cli_support.no_api_key", () => {
 			return () => runCliSupportNoApiKey();
 		}),
+		watch_error: await collect("cli_support.watch_error", () => {
+			return () => runCliSupportWatchError();
+		}),
+		watch_start_close: await collect("cli_support.watch_start_close", () => {
+			return () => runCliSupportWatchStartClose(present);
+		}),
+		poll_once: await collect("cli_support.poll_once", () => {
+			writeFileSync(pollFile, "poll");
+			return () => runCliSupportPollOnce(pollFile);
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -15515,6 +15605,9 @@ async function measureCliSupportStripAnsi() {
 			...noModels,
 			...noSelected,
 			...noKey,
+			...watchError,
+			...watchStartClose,
+			...pollOnce,
 		},
 	};
 }
@@ -33691,6 +33784,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
 			"cli_support.no_api_key":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
+			"cli_support.watch_error":
+				"packages/coding-agent/src/utils/fs-watch.ts watchWithErrorHandler catch",
+			"cli_support.watch_start_close":
+				"packages/coding-agent/src/utils/fs-watch.ts watchWithErrorHandler + closeWatcher",
+			"cli_support.poll_once":
+				"packages/coding-agent/src/utils/fs-watch.ts leftoverPollOnce vs poll-file-watcher-once",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":
