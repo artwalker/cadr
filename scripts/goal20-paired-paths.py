@@ -98,7 +98,7 @@ METRICS = {
     "execution_env": ("exists_remove_temps", "ex_missing", "ex_present", "ex_after_rm", "tmp_dir", "tmp_file", "tmp_suffix", "rm_force", "rm_recursive", "absolute_path", "join_path", "file_info"),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket", "fmq_alias_key", "fmq_missing_key", "fmq_other_key", "fmq_fifo_sum", "fmq_other_run", "fmq_clean", "fmqk_alias", "fmqk_missing", "fmqk_other", "fmqk_n", "fmql_alias", "fmql_other", "fmql_missing", "fmql_repeat", "fmql_n", "fmqr_alias", "fmqr_other", "fmqr_pending", "fmqr_ticket", "fmqr_n", "fmqw_serving", "fmqw_pending", "fmqw_other", "fmqw_missing", "fmqw_n", "fmqe_serving", "fmqe_pending", "fmqe_other", "fmqe_missing", "fmqe_n", "fmqs_alias", "fmqs_other", "fmqs_missing", "fmqs_repeat", "fmqs_n", "fmqf_alias", "fmqf_other", "fmqf_fifo", "fmqf_run", "fmqf_n", "fmqm_pending", "fmqm_ticket", "fmqm_serving", "fmqm_other", "fmqm_n", "fmqt_alias", "fmqt_other", "fmqt_missing", "fmqt_repeat", "fmqt_n", "fmqp_shared", "fmqp_other", "fmqp_missing", "fmqp_alias", "fmqp_n", "fmqi_shared", "fmqi_other", "fmqi_missing", "fmqi_alias", "fmqi_n", "fmqv_zero", "fmqv_other", "fmqv_missing", "fmqv_alias", "fmqv_n", "waitqueue", "registry", "state_p"),
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus", "he_direct", "he_watch", "he_start", "he_end", "he_second", "heon_off", "heon_keep", "heon_type", "hew_snap", "hew_count", "hew_start", "hew_end", "hes_type", "hes_lane", "hes_run", "hee_type", "hee_lane", "hee_run", "hee_outcome", "hee_abort", "het_start", "het_end", "het_fail", "heb_distinct", "heb_a", "heb_b"),
-    "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice", "sef_exact", "sef_nl", "sef_no_nl", "sef_plain", "sef_empty", "sef_n", "abs_empty", "abs_abort", "abs_exit", "abs_timeout", "abs_n", "btn_none", "btn_partial", "btn_lines", "btn_bytes", "btn_n", "live_output", "strip_status", "strip_truncation", "process_deadline", "user_bash_result", "normalized_extension", "pd_nil", "pd_int", "pd_ord", "pd_zero", "ubr_cmd", "ubr_out", "ubr_exit", "ubr_can", "ubr_ex", "ubr_n", "neb_text", "neb_nl", "neb_code", "neb_can", "neb_path", "neb_n"),
+    "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice", "sef_exact", "sef_nl", "sef_no_nl", "sef_plain", "sef_empty", "sef_n", "abs_empty", "abs_abort", "abs_exit", "abs_timeout", "abs_n", "btn_none", "btn_partial", "btn_lines", "btn_bytes", "btn_n", "live_output", "strip_status", "strip_truncation", "process_deadline", "user_bash_result", "normalized_extension", "output_path", "make_tool", "record_nil", "pd_nil", "pd_int", "pd_ord", "pd_zero", "ubr_cmd", "ubr_out", "ubr_exit", "ubr_can", "ubr_ex", "ubr_n", "neb_text", "neb_nl", "neb_code", "neb_can", "neb_path", "neb_n", "bop_log", "bop_hex", "bop_tmp", "bop_n", "mt_name", "mt_desc", "mt_exec", "mt_n", "rn_eq", "rn_cmd", "rn_out", "rn_n"),
     "output_accumulator": ("append", "snapshot", "finish", "oa_append_bytes", "oa_append_trunc", "oa_append_lines", "oa_append_last", "oa_append_n", "oa_snap_bytes", "oa_snap_trunc", "oa_snap_lines", "oa_snap_total", "oa_snap_n", "oa_fin_bytes", "oa_fin_fffd", "oa_fin_last", "oa_fin_trunc", "oa_fin_n", "last_line_bytes", "needs_file", "close_temp_file"),
     "find_tool": ("pattern_match", "find_files", "make_tool", "fpm_star_a", "fpm_star_src", "fpm_star_txt", "fpm_path_src", "fpm_path_root", "fpm_src_star", "fpm_n", "ff_empty", "ff_lisp", "ff_path", "ff_src_star", "ff_n", "fmt_name", "fmt_desc", "fmt_req", "fmt_n", "glob_regex", "glob_special", "gitignore_regex", "glob_scanner", "glob_regex_body", "parse_gitignore_line", "gsc_star", "gsc_miss", "gsc_glob", "gsc_q", "gsc_dot", "grb_star", "grb_glob", "grb_q", "grb_dot", "pgl_empty", "pgl_hash", "pgl_foo", "pgl_bang", "pgl_scan", "ignored_directory", "gitignored", "make_glob_tool", "directory_gitignore_rules", "collect_tree_files", "glob_files", "igd_git", "igd_nm", "igd_src", "igd_hub", "igd_slash", "gig_empty", "gig_hit", "gig_miss", "gig_bang", "gig_out", "mgt_name", "mgt_desc", "mgt_req", "mgt_par", "mgt_n"),
     "grep_tool": ("match_event", "line_text", "make_tool", "read_utf8", "file_lines", "context_block"),
@@ -1311,6 +1311,12 @@ RATIO_CEILINGS = {
     "bash_tool.user_bash_result": 8.0,
     # leftover 695; first freeze 2.070× (2.616 / 1.264 µs).
     "bash_tool.normalized_extension": 8.0,
+    # leftover 696; first freeze 1.812× (0.840 / 0.464 µs).
+    # bash_tool leftover trio on bash.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only. Measure-only leftover 922–924.
+    "bash_tool.output_path": 8.0,
+    "bash_tool.make_tool": 8.0,
+    "bash_tool.record_nil": 8.0,
     # First-freeze headroom for leftover
     # cli_interactive_controller.sanitize_title.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
@@ -3197,6 +3203,18 @@ OBSERVED_EXACT = {
         "neb_can",
         "neb_path",
         "neb_n",
+        "bop_log",
+        "bop_hex",
+        "bop_tmp",
+        "bop_n",
+        "mt_name",
+        "mt_desc",
+        "mt_exec",
+        "mt_n",
+        "rn_eq",
+        "rn_cmd",
+        "rn_out",
+        "rn_n",
     ),
     "output_accumulator": (
         "oa_append_bytes",

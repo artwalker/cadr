@@ -9945,6 +9945,29 @@ Leftover sibling of leftover 916. Timed work is start on a present file then clo
 
 Leftover sibling of leftover 916–917. Timed work is unchanged then changed poll — not `watch_signature` as its own metric, not native `fs.watch` keep-alive. Observed `po_same` / `po_change` / `po_n1` / `po_n` are exact. First n=5 freeze **0.300×** (59.744 / 199.071 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1×. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 922 — `bash_tool` (output_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_path` | `bash-output-path` (`src/cadr-cli/tools/bash.lisp`) | ensureTempFile temp log path (`packages/coding-agent/src/core/bash-executor.ts`) |
+
+Leftover sibling of earlier `bash_tool` leftovers on `src/cadr-cli/tools/bash.lisp`. Timed work is constructing a temp log path (`.log` suffix, 16-hex id after last hyphen, under the process temp directory). Do not exact `cadr-bash` vs `pi-bash` product prefixes or the random hex. Observed `bop_log` / `bop_hex` / `bop_tmp` / `bop_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** (freeze pending). Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 923 — `bash_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-bash-tool` (`src/cadr-cli/tools/bash.lisp`) | `createBashTool` (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pair 922. Timed work is constructing the bash tool (name `bash`, nonempty description, executor/execute function). Do not exact description product copy. Observed `mt_name` / `mt_desc` / `mt_exec` / `mt_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** (freeze pending). Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 924 — `bash_tool` (record_nil)
+
+| metric | cadr | pi |
+|---|---|---|
+| `record_nil` | `record-user-bash-result` nil agent (`src/cadr-cli/tools/bash.lisp`) | leftover nil-agent no-op return of `recordBashResult` (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of Pairs 922–923. Timed work is the nil-agent no-op: return the same result object without appending a session message. Observed `rn_eq` / `rn_cmd` / `rn_out` / `rn_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** (freeze pending). Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
