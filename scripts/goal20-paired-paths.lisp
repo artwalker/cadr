@@ -31706,7 +31706,7 @@
      (collect "cli_bootstrap_sessions.dp_ok"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-dispatch-plain)))))))))
+                  (run-cli-bootstrap-dispatch-plain))))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
