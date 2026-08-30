@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_support.provider_login_help`
+  (`get-provider-login-help` vs getProviderLoginHelp). Observed
+  `plh_pref` / `plh_login` / `plh_prov` / `plh_mod` / `plh_n` exact.
+  n=5 **32.402×** (284.644 / 8.785 µs) on host `cursor`, ceiling
+  50.0. Measure-only leftover (Pair 907). Over-1×. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_support.docs_directory`
+  (`docs-directory` vs getDocsPath). Observed `dd_docs` / `dd_len` /
+  `dd_n` exact. n=5 **39.834×** (157.682 / 3.958 µs) on host
+  `cursor`, ceiling 50.0. Measure-only leftover (Pair 908). Over-1×.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_support.default_thinking_level`
+  (`+default-thinking-level+` vs DEFAULT_THINKING_LEVEL). Observed
+  `dtl_med` / `dtl_high` / `dtl_name` / `dtl_n` exact. n=5 **1.410×**
+  (0.138 / 0.098 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 909). Over-1×. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

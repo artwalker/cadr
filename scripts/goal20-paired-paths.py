@@ -902,16 +902,16 @@ RATIO_CEILINGS = {
     "cli_support.no_model_selected": 50.0,
     "cli_support.no_api_key": 50.0,
   # cli_support.provider_login_help leftover 907 (samples=5):
-  # freeze pending. 50.0 matches leftover 460-462 ASDF
-  # docs-dir sibling. Ratchet down only.
+  # observed 32.402x (284.644 / 8.785 us). 50.0 matches leftover
+  # 460-462 ASDF docs-dir sibling. Ratchet down only.
   "cli_support.provider_login_help": 50.0,
   # cli_support.docs_directory leftover 908 (samples=5):
-  # freeze pending. 50.0 matches leftover 460-462 ASDF
-  # docs-dir sibling. Ratchet down only.
+  # observed 39.834x (157.682 / 3.958 us). 50.0 matches leftover
+  # 460-462 ASDF docs-dir sibling. Ratchet down only.
   "cli_support.docs_directory": 50.0,
   # cli_support.default_thinking_level leftover 909 (samples=5):
-  # freeze pending. 8.0 is first-freeze headroom.
-  # Ratchet down only.
+  # observed 1.410x (0.138 / 0.098 us). 8.0 is first-freeze
+  # headroom. Ratchet down only.
   "cli_support.default_thinking_level": 8.0,
     "cli_print_rpc.rpc_images": 8.0,
     "cli_print_rpc.rpc_prompt": 8.0,
