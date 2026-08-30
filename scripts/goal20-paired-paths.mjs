@@ -491,6 +491,9 @@ const REPETITIONS = {
 	"cli_selectors.user_message_handle_event": 50,
 	"cli_selectors.user_message_handle_raw": 50,
 	"cli_selectors.render_user_message_selector": 50,
+	"cli_selectors.um_evt": 50,
+	"cli_selectors.um_raw": 50,
+	"cli_selectors.um_draw": 50,
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
@@ -31045,6 +31048,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderUserMessageSelector();
 			},
 		),
+		um_evt: await collect(
+			"cli_selectors.um_evt",
+			() => {
+				return () => runCliSelectorsUserMessageHandleEvent();
+			},
+		),
+		um_raw: await collect(
+			"cli_selectors.um_raw",
+			() => {
+				return () => runCliSelectorsUserMessageHandleRaw();
+			},
+		),
+		um_draw: await collect(
+			"cli_selectors.um_draw",
+			() => {
+				return () => runCliSelectorsRenderUserMessageSelector();
+			},
+		),
 		make_models_selector_keybindings: await collect(
 			"cli_selectors.make_models_selector_keybindings",
 			() => {
@@ -34519,6 +34540,12 @@ const result = {
 			"cli_selectors.user_message_handle_raw":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
 			"cli_selectors.render_user_message_selector":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
+			"cli_selectors.um_evt":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (structured events)",
+			"cli_selectors.um_raw":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
+			"cli_selectors.um_draw":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
 			"cli_selectors.make_models_selector_keybindings":
 				"packages/coding-agent/src/core/keybindings.ts KEYBINDINGS app.models.* KeybindingsManager constructor",

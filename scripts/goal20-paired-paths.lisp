@@ -35,6 +35,12 @@
 ;;;;      leftover: rpc-images-from-json / rpc-prompt-message / rpc-bash-result-json
 ;;;;      leftover 937-939: rpc-handle-line bad JSON / array / missing UI id
 ;;;;      (does not remount handle_bad_json / handle_not_object / handle_ui_miss)
+;;;; 997. cli_selectors um_evt vs UserMessageList.handleInput structured events
+;;;;      (does not remount user_message_handle_event)
+;;;; 998. cli_selectors um_raw vs UserMessageList.handleInput raw key dispatch
+;;;;      (does not remount user_message_handle_raw)
+;;;; 999. cli_selectors um_draw vs UserMessageSelectorComponent layout
+;;;;      (does not remount render_user_message_selector)
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -946,6 +952,9 @@
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
+    ("cli_selectors.um_evt" . 50)
+    ("cli_selectors.um_raw" . 50)
+    ("cli_selectors.um_draw" . 50)
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
@@ -29801,6 +29810,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-user-message-selector))))
+     "um_evt"
+     (collect "cli_selectors.um_evt"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-event))))
+     "um_raw"
+     (collect "cli_selectors.um_raw"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-raw))))
+     "um_draw"
+     (collect "cli_selectors.um_draw"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-user-message-selector))))
      "make_models_selector_keybindings"
      (collect "cli_selectors.make_models_selector_keybindings"
               (lambda ()
@@ -33181,6 +33205,12 @@
       "cli_selectors.user_message_handle_raw"
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input"
       "cli_selectors.render_user_message_selector"
+      "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector"
+      "cli_selectors.um_evt"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-event"
+      "cli_selectors.um_raw"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input"
+      "cli_selectors.um_draw"
       "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector"
       "cli_selectors.make_models_selector_keybindings"
       "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings"
