@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 964 — `cli_interactive_controller` (sess_new)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_new` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of ToolExecutionComponent construct |
+
+Leftover sibling of leftover 943–945 on the same needs-pair file. Does not remount `sess_make`. Timed work is named session construct. Observed `tsm_name` / `tsm_nil` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 965 — `cli_interactive_controller` (sess_set)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_set` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of result/pending |
+
+Leftover sibling of Pair 964. Does not remount `sess_upd`. Timed work is result set and clear. Observed `tsu_result` / `tsu_cleared` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 966 — `cli_interactive_controller` (sess_out)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sess_out` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | leftover replica of renderCall/renderResult fallback |
+
+Leftover sibling of Pairs 964–965. Does not remount `sess_draw`. Timed work is pending vs hide-result empty render. Observed `trr_pending_n` / `trr_empty` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

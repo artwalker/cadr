@@ -685,6 +685,9 @@
     ("cli_interactive_controller.sess_make" . 50)
     ("cli_interactive_controller.sess_upd" . 50)
     ("cli_interactive_controller.sess_draw" . 50)
+    ("cli_interactive_controller.sess_new" . 50)
+    ("cli_interactive_controller.sess_set" . 50)
+    ("cli_interactive_controller.sess_out" . 50)
     ("cli_interactive_controller.wrap_osc" . 50)
     ("cli_interactive_controller.pad_str" . 50)
     ("cli_interactive_controller.cache_p" . 50)
@@ -18142,6 +18145,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-tool-session-render))))
+     "sess_new"
+     (collect "cli_interactive_controller.sess_new"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-make))))
+     "sess_set"
+     (collect "cli_interactive_controller.sess_set"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-update))))
+     "sess_out"
+     (collect "cli_interactive_controller.sess_out"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-render))))
      "wrap_osc"
      (collect "cli_interactive_controller.wrap_osc"
               (lambda ()
@@ -32662,6 +32680,12 @@
       "src/cadr-cli/interactive/tool-render-session.lisp update-tool-render-session"
       "cli_interactive_controller.sess_draw"
       "src/cadr-cli/interactive/tool-render-session.lisp render-tool-session"
+      "cli_interactive_controller.sess_new"
+      "src/cadr-cli/interactive/tool-render-session.lisp make-tool-render-session leftover"
+      "cli_interactive_controller.sess_set"
+      "src/cadr-cli/interactive/tool-render-session.lisp update-tool-render-session leftover"
+      "cli_interactive_controller.sess_out"
+      "src/cadr-cli/interactive/tool-render-session.lisp render-tool-session leftover"
       "cli_interactive_controller.wrap_osc"
       "src/cadr-cli/interactive/transcript.lisp wrap-transcript-lines"
       "cli_interactive_controller.pad_str"
