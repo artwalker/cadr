@@ -943,8 +943,11 @@ RATIO_CEILINGS = {
     "cli_print_rpc.cmd_list": 8.0,
     # leftover 973–975 rpc/commands.lisp (samples=5): first-freeze headroom.
     # Does not remount queue_parse / asst_text / cmd_list.
+    # Measure-only leftover 973; first freeze 0.118× (0.328 / 2.782 µs).
     "cli_print_rpc.queue_ok": 8.0,
+    # Measure-only leftover 974; first freeze 0.914× (0.307 / 0.336 µs).
     "cli_print_rpc.asst_hit": 8.0,
+    # Measure-only leftover 975; first freeze 4.774× (1.560 / 0.327 µs).
     "cli_print_rpc.cmd_n": 8.0,
     # skill_prompt_load leftover trio (samples=5): observed
     # sdk_prompt_input 4.32x (15.18 / 3.51 us), sdk_list_override

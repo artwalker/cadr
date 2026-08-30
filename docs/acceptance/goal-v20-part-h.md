@@ -8989,7 +8989,7 @@ Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed w
 |---|---|---|
 | `queue_ok` | `parse-queue-mode` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of parseQueueMode |
 
-Leftover sibling of leftover 934–936 on the same needs-pair file. Does not remount `queue_parse`. Timed work is all/bad queue-mode parse. Observed `qm_all` / `qm_bad` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 934–936 on the same needs-pair file. Does not remount `queue_parse`. Timed work is all/bad queue-mode parse. Observed `qm_all` / `qm_bad` are exact. First n=5 freeze **0.118×** (0.328 / 2.782 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 974 — `cli_print_rpc` (asst_hit)
 
@@ -8997,7 +8997,7 @@ Leftover sibling of leftover 934–936 on the same needs-pair file. Does not rem
 |---|---|---|
 | `asst_hit` | `rpc-last-assistant-text` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of last assistant text |
 
-Leftover sibling of Pair 973. Does not remount `asst_text`. Timed work is hit/miss last assistant. Observed `la_hit` / `la_miss` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 973. Does not remount `asst_text`. Timed work is hit/miss last assistant. Observed `la_hit` / `la_miss` are exact. First n=5 freeze **0.914×** (0.307 / 0.336 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 975 — `cli_print_rpc` (cmd_n)
 
@@ -9005,7 +9005,7 @@ Leftover sibling of Pair 973. Does not remount `asst_text`. Timed work is hit/mi
 |---|---|---|
 | `cmd_n` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of rpc command list |
 
-Leftover sibling of Pairs 973–974. Does not remount `cmd_list`. Timed work is command list length/extension. Observed `cl_n` / `cl_ext` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 973–974. Does not remount `cmd_list`. Timed work is command list length/extension. Observed `cl_n` / `cl_ext` are exact. First n=5 freeze **4.774×** (1.560 / 0.327 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
