@@ -743,12 +743,12 @@ RATIO_CEILINGS = {
     "evals_harness.artifact_reference_json": 8.0,
     # leftover 705; first freeze 0.927× (1.620 / 1.747 µs). cadr leads.
     "evals_harness.reporter_artifacts": 8.0,
-    # First-freeze headroom for leftover evals_harness.rep_make.
+    # Measure-only leftover 952; first freeze 0.898× (0.367 / 0.409 µs).
     # Does not remount make_reporter / finite_number / artifact_metadata.
     "evals_harness.rep_make": 8.0,
-    # First-freeze headroom for leftover evals_harness.fin_num.
+    # Measure-only leftover 953; first freeze 0.563× (0.126 / 0.224 µs).
     "evals_harness.fin_num": 8.0,
-    # First-freeze headroom for leftover evals_harness.art_meta.
+    # Measure-only leftover 954; first freeze 1.181× (1.038 / 0.879 µs).
     "evals_harness.art_meta": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
