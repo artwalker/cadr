@@ -9894,6 +9894,15 @@ Leftover sibling of leftover 910. Timed work is render then invalidate (cached-k
 | `daxnuts_dispose` | `cadr-tui:component-dispose` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsDisposeUnstarted stopped / interval stays null (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
 
 Leftover sibling of leftover 910–911. Timed work is dispose on an unstarted timer (thread/interval nil) — not `daxnuts-component-run` sleep, not start. Observed `dxd_stop` / `dxd_thread` / `dxd_n` are exact. First n=5 freeze **3.537×** (0.851 / 0.241 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 913 — `oauth_pkce_device` (github_domain)
+| `github_domain` | `normalize-github-domain` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverNormalizeGitHubDomain / normalizeDomain (`packages/ai/src/auth/oauth/github-copilot.ts`) |
+Leftover sibling of leftover copilot_url / copilot_auth on the same github-copilot hole. Timed work is domain normalize (blank / plain / https host / trim) — not base-url, not toAuth, not device login. Observed `ghd_blank` / `ghd_plain` / `ghd_https` / `ghd_trim` / `ghd_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 914 — `oauth_pkce_device` (github_oauth_url)
+| `github_oauth_url` | `github-oauth-url` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverGithubOAuthUrl / getUrls (`packages/ai/src/auth/oauth/github-copilot.ts`) |
+Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for device-code / access-token / enterprise host — not copilot_internal token URL. Observed `gou_dev` / `gou_tok` / `gou_ent` / `gou_https` / `gou_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+### Pair 915 — `oauth_pkce_device` (github_request_headers)
+| `github_request_headers` | `github-copilot-request-headers` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverGithubCopilotRequestHeaders / COPILOT_HEADERS + Authorization (`packages/ai/src/auth/oauth/github-copilot.ts`) |
+Leftover sibling of leftover 913–914. Timed work is extra Accept + Bearer + COPILOT_HEADERS — not oauth-flow-request. Observed `gch_n` / `gch_auth` / `gch_ua` / `gch_acc` / `gch_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

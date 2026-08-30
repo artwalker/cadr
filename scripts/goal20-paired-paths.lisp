@@ -748,6 +748,9 @@
     ("oauth_pkce_device.xai_login" . 50)
     ("oauth_pkce_device.xai_login_fail" . 50)
     ("oauth_pkce_device.xai_refresh" . 50)
+    ("oauth_pkce_device.github_domain" . 50)
+    ("oauth_pkce_device.github_oauth_url" . 50)
+    ("oauth_pkce_device.github_request_headers" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -12518,6 +12521,66 @@
          1
          0)
      4)))
+(defun leftover-github-domain-flag (input expected)
+  (let ((got (cadr-ai::normalize-github-domain input)))
+    (cond
+      ((null expected) (if got 0 1))
+      ((and got (string= got expected)) 1)
+      (t 0))))
+(defun run-oauth-pkce-device-github-domain ()
+  ;; Overlap with normalizeDomain. Do not exact invalid URL copy
+  ;; (Lisp parse-http-url vs URL constructor).
+   (leftover-github-domain-flag "" nil)
+   (leftover-github-domain-flag "github.com" "github.com")
+   (leftover-github-domain-flag
+    "https://company.ghe.com/path" "company.ghe.com")
+   (leftover-github-domain-flag "  github.com  " "github.com")
+   1))
+(defun leftover-github-oauth-url-flag (domain suffix expected)
+  (if (string=
+       (cadr-ai::github-oauth-url domain suffix)
+       expected)
+      1
+      0))
+(defun run-oauth-pkce-device-github-oauth-url ()
+   (leftover-github-oauth-url-flag
+    "github.com" "/login/device/code"
+    "https://github.com/login/device/code")
+   (leftover-github-oauth-url-flag
+    "github.com" "/login/oauth/access_token"
+    "https://github.com/login/oauth/access_token")
+   (leftover-github-oauth-url-flag
+    "company.ghe.com" "/login/device/code"
+    "https://company.ghe.com/login/device/code")
+   (if (eql
+        (search
+         "https://"
+         (cadr-ai::github-oauth-url "github.com" "/login/device/code"))
+        0)
+       1
+       0)
+   1))
+(defun leftover-github-header (headers name)
+  (cdr (assoc name headers :test #'string=)))
+(defun run-oauth-pkce-device-github-request-headers ()
+  (let ((headers
+          (cadr-ai::github-copilot-request-headers
+           "tok"
+           (list (cons "Accept" "application/json")))))
+     (write-to-string (length headers))
+     (if (string=
+          (leftover-github-header headers "Authorization")
+          "Bearer tok")
+         "1" "0")
+     (if (string=
+          (leftover-github-header headers "User-Agent")
+          "GitHubCopilotChat/0.35.0")
+         "1" "0")
+     (if (string=
+          (leftover-github-header headers "Accept")
+          "application/json")
+         "1" "0")
+     "1")))
 
 (defun oauth-base64url-value-flag (character expected)
   (handler-case
@@ -13415,6 +13478,10 @@
         (xai-login (run-oauth-pkce-device-xai-login))
         (xai-login-fail (run-oauth-pkce-device-xai-login-fail))
         (xai-refresh (run-oauth-pkce-device-xai-refresh)))
+        (github-domain (run-oauth-pkce-device-github-domain))
+        (github-oauth-url (run-oauth-pkce-device-github-oauth-url))
+        (github-request-headers
+          (run-oauth-pkce-device-github-request-headers)))
     (json-object
      "observed"
      (json-object
@@ -13592,6 +13659,21 @@
       "xrf_acc" (nth 0 xai-refresh)
       "xrf_ref" (nth 1 xai-refresh)
       "xrf_n" (nth 2 xai-refresh))
+      "ghd_blank" (nth 0 github-domain)
+      "ghd_plain" (nth 1 github-domain)
+      "ghd_https" (nth 2 github-domain)
+      "ghd_trim" (nth 3 github-domain)
+      "ghd_n" (nth 4 github-domain)
+      "gou_dev" (nth 0 github-oauth-url)
+      "gou_tok" (nth 1 github-oauth-url)
+      "gou_ent" (nth 2 github-oauth-url)
+      "gou_https" (nth 3 github-oauth-url)
+      "gou_n" (nth 4 github-oauth-url)
+      "gch_n" (nth 0 github-request-headers)
+      "gch_auth" (nth 1 github-request-headers)
+      "gch_ua" (nth 2 github-request-headers)
+      "gch_acc" (nth 3 github-request-headers)
+      "gch_ok" (nth 4 github-request-headers))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -13817,6 +13899,16 @@
               (lambda ()
                 (lambda ()
                   (run-oauth-pkce-device-xai-refresh)))))))
+     "github_domain"
+     (collect "oauth_pkce_device.github_domain"
+                  (run-oauth-pkce-device-github-domain))))
+     "github_oauth_url"
+     (collect "oauth_pkce_device.github_oauth_url"
+                  (run-oauth-pkce-device-github-oauth-url))))
+     "github_request_headers"
+     (collect "oauth_pkce_device.github_request_headers"
+                  (run-oauth-pkce-device-github-request-headers)))))))
+
 (defun llama-url-flag (value expected)
   (handler-case
       (if (string=
@@ -39531,6 +39623,12 @@
       "src/cadr-ai/oauth/providers/xai.lisp login-xai-oauth device HTTP fail"
       "oauth_pkce_device.xai_refresh"
       "src/cadr-ai/oauth/providers/xai.lisp refresh-xai-oauth-credential"
+      "oauth_pkce_device.github_domain"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp normalize-github-domain"
+      "oauth_pkce_device.github_oauth_url"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp github-oauth-url"
+      "oauth_pkce_device.github_request_headers"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp github-copilot-request-headers"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
