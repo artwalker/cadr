@@ -531,4 +531,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `cli_selectors.dlg_make` | 0.189 | 0.128 | 1.471× | 8.00× | measure-only leftover 946; `make-login-dialog-state` vs leftover LoginDialogComponent construct | invent pause；地板优化另刀 |
+| `cli_selectors.dlg_auth` | 2.003 | 1.186 | 1.689× | 8.00× | measure-only leftover 947; `login-dialog-show-auth` vs leftover showAuth | invent pause；地板优化另刀 |
+| `cli_selectors.dlg_dev` | 4.085 | 1.179 | 3.465× | 8.00× | measure-only leftover 948; `login-dialog-show-device-code` vs leftover showDeviceCode | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

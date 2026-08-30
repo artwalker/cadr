@@ -1495,12 +1495,12 @@ RATIO_CEILINGS = {
   "cli_selectors.make_daxnuts_component": 8.0,
   # Measure-only leftover 636; first freeze 1.119× (3.787 / 3.384 µs).
   "cli_selectors.daxnuts_component_tick": 8.0,
-    # First-freeze headroom for leftover cli_selectors.dlg_make.
+    # Measure-only leftover 946; first freeze 1.471× (0.189 / 0.128 µs).
     # Does not remount login_dialog_make / login_dialog_auth / login_dialog_device.
     "cli_selectors.dlg_make": 8.0,
-    # First-freeze headroom for leftover cli_selectors.dlg_auth.
+    # Measure-only leftover 947; first freeze 1.689× (2.003 / 1.186 µs).
     "cli_selectors.dlg_auth": 8.0,
-    # First-freeze headroom for leftover cli_selectors.dlg_dev.
+    # Measure-only leftover 948; first freeze 3.465× (4.085 / 1.179 µs).
     "cli_selectors.dlg_dev": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
