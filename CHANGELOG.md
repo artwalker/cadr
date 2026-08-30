@@ -246,6 +246,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `powershell_tool.ps_up`
+  (`+powershell-utf8-output-prefix+` vs leftover replica of
+  UTF8_OUTPUT_PREFIX). Observed `psu_len` / `psu_n` exact. n=5
+  **3.758×** (0.677 / 0.180 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1090). Over-1× booked. Does not remount
+  `utf8_prefix`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `powershell_tool.ps_pc`
+  (UTF-8 prefix + command concatenate vs leftover replica of
+  createLocalPowerShellOperations wrap). Observed `psc_empty` / `psc_n`
+  exact. n=5 **1.787×** (0.598 / 0.335 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1091). Over-1× booked. Does not remount
+  `prefix_command`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `powershell_tool.ps_mt`
+  (`make-powershell-tool` vs leftover replica of
+  createPowerShellToolDefinition). Observed `pmt_name` / `pmt_n` exact.
+  n=5 **1.231×** (2.275 / 1.849 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1092). Over-1× booked. Does not remount
+  `make_tool`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

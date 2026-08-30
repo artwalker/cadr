@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1090 — `powershell_tool` (ps_up)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ps_up` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling of leftover 301–303 on the same needs-pair file (second unused slug after leftover 1015 `up_ok`). Does not remount `utf8_prefix`. Timed work is the UTF-8 output prefix string — not execute/spawn. Observed `psu_len` / `psu_n` are exact. First n=5 freeze **3.758×** (0.677 / 0.180 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1091 — `powershell_tool` (ps_pc)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ps_pc` | UTF-8 prefix + command concatenate (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createLocalPowerShellOperations wrap |
+
+Leftover sibling of Pair 1090. Does not remount `prefix_command`. Timed work is prefix wrapping date/empty/write commands. Observed `psc_empty` / `psc_n` are exact. First n=5 freeze **1.787×** (0.598 / 0.335 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1092 — `powershell_tool` (ps_mt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ps_mt` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling of Pair 1090. Does not remount `make_tool`. Timed work is tool name/description/required. Observed `pmt_name` / `pmt_n` are exact. First n=5 freeze **1.231×** (2.275 / 1.849 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

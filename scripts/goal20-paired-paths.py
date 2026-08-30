@@ -325,11 +325,11 @@ RATIO_CEILINGS = {
     "powershell_tool.utf8_prefix": 8.0,
     "powershell_tool.prefix_command": 8.0,
     "powershell_tool.make_tool": 8.0,
-    # Measure-only leftover 1090; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1090; first freeze 3.758× (0.677 / 0.180 µs).
     "powershell_tool.ps_up": 8.0,
-    # Measure-only leftover 1091; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1091; first freeze 1.787× (0.598 / 0.335 µs).
     "powershell_tool.ps_pc": 8.0,
-    # Measure-only leftover 1092; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1092; first freeze 1.231× (2.275 / 1.849 µs).
     "powershell_tool.ps_mt": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
