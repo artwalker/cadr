@@ -33,7 +33,7 @@
 //     scripts/goal20-paired-paths.mjs "$BASELINE_WORKTREE"
 
 import { execFileSync } from "node:child_process";
-import { createHash, createHmac, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { STATUS_CODES } from "node:http";
 import {
 	copyFileSync,
@@ -181,6 +181,9 @@ const REPETITIONS = {
 	"bash_tool.process_deadline": 50,
 	"bash_tool.user_bash_result": 50,
 	"bash_tool.normalized_extension": 50,
+	"bash_tool.output_path": 50,
+	"bash_tool.make_tool": 50,
+	"bash_tool.record_nil": 50,
 	"output_accumulator.append": 50,
 	"output_accumulator.snapshot": 50,
 	"output_accumulator.finish": 50,
@@ -5443,6 +5446,57 @@ function runBashNormalizedExtension() {
 	};
 }
 
+function leftoverBashOutputPath() {
+	const id = randomBytes(8).toString("hex");
+	return path.join(tmpdir(), `pi-bash-${id}.log`);
+}
+
+function runBashOutputPath() {
+	const p = leftoverBashOutputPath();
+	const name = path.basename(p);
+	const hyphen = name.lastIndexOf("-");
+	const dot = name.lastIndexOf(".");
+	const hex = hyphen >= 0 && dot > hyphen + 1 ? name.slice(hyphen + 1, dot) : "";
+	const tmp = tmpdir();
+	return {
+		bop_log: name.endsWith(".log") ? 1 : 0,
+		bop_hex:
+			hex.length === 16 && /^[0-9a-fA-F]+$/.test(hex) ? 1 : 0,
+		bop_tmp: p.startsWith(tmp) ? 1 : 0,
+		bop_n: 1,
+	};
+}
+
+function runBashMakeTool() {
+	const tool = codingToolsModule.createBashTool("/tmp");
+	const description = typeof tool.description === "string" ? tool.description : "";
+	const exec = tool.execute ?? tool.executor;
+	return {
+		mt_name: tool.name === "bash" ? 1 : 0,
+		mt_desc: description.length > 0 ? 1 : 0,
+		mt_exec: typeof exec === "function" ? 1 : 0,
+		mt_n: 1,
+	};
+}
+
+function leftoverRecordUserBash(agent, result) {
+	if (agent && result) {
+		// append skipped: leftover measures the nil-agent no-op return
+	}
+	return result;
+}
+
+function runBashRecordNil() {
+	const result = { command: "echo", output: "hi", exitCode: 0 };
+	const out = leftoverRecordUserBash(null, result);
+	return {
+		rn_eq: out === result ? 1 : 0,
+		rn_cmd: out.command === "echo" ? 1 : 0,
+		rn_out: out.output === "hi" ? 1 : 0,
+		rn_n: 1,
+	};
+}
+
 async function measureBashTool() {
 	const stripObserved = runBashStripExitFooter();
 	const appendObserved = runBashAppendStatus();
@@ -5453,6 +5507,9 @@ async function measureBashTool() {
 	const deadlineObserved = runBashProcessDeadline();
 	const userResultObserved = runBashUserBashResult();
 	const normalizedObserved = runBashNormalizedExtension();
+	const outputPathObserved = runBashOutputPath();
+	const makeToolObserved = runBashMakeTool();
+	const recordNilObserved = runBashRecordNil();
 	return {
 		strip_exit_footer: await collect("bash_tool.strip_exit_footer", () => {
 			return () => runBashStripExitFooter();
@@ -5481,6 +5538,15 @@ async function measureBashTool() {
 		normalized_extension: await collect("bash_tool.normalized_extension", () => {
 			return () => runBashNormalizedExtension();
 		}),
+		output_path: await collect("bash_tool.output_path", () => {
+			return () => runBashOutputPath();
+		}),
+		make_tool: await collect("bash_tool.make_tool", () => {
+			return () => runBashMakeTool();
+		}),
+		record_nil: await collect("bash_tool.record_nil", () => {
+			return () => runBashRecordNil();
+		}),
 		observed: {
 			...stripObserved,
 			...appendObserved,
@@ -5491,6 +5557,9 @@ async function measureBashTool() {
 			...deadlineObserved,
 			...userResultObserved,
 			...normalizedObserved,
+			...outputPathObserved,
+			...makeToolObserved,
+			...recordNilObserved,
 		},
 	};
 }
@@ -33242,6 +33311,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/bash.ts user bash result from execution (cadr make-user-bash-result-from-execution)",
 			"bash_tool.normalized_extension":
 				"packages/coding-agent/src/core/tools/bash.ts extension bash result normalize (cadr normalized-extension-bash-result)",
+			"bash_tool.output_path":
+				"packages/coding-agent/src/core/bash-executor.ts ensureTempFile pi-bash temp log path",
+			"bash_tool.make_tool":
+				"packages/coding-agent/src/core/tools/bash.ts createBashTool",
+			"bash_tool.record_nil":
+				"packages/coding-agent/src/core/agent-session.ts recordBashResult leftover nil-agent no-op return",
 			"output_accumulator.append":
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.append",
 			"output_accumulator.snapshot":
