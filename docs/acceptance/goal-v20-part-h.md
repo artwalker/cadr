@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `cycle_wrap` | `model-cycle-target-entry` (`src/cadr-cli/bootstrap/commands.lisp`) | `_cycleScopedModel` index wrap (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of leftover 484–486 on the same needs-pair file. Does not remount `model_cycle`. Timed work is scoped-entry wrap / missing-current default — not session persist, not `cycleModel` emit. Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` / `mc_empty` are exact. Freeze pending. `nextPairNum` left at 328.
+Leftover sibling of leftover 484–486 on the same needs-pair file. Does not remount `model_cycle`. Timed work is scoped-entry wrap / missing-current default — not session persist, not `cycleModel` emit. Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` / `mc_empty` are exact. First n=5 freeze **0.745×** (0.655 / 0.879 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 941 — `cli_bootstrap_sessions` (scope_hint)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover 484–486 on the same needs-pair file. Does not rem
 |---|---|---|
 | `scope_hint` | `model-scope-startup-line` (`src/cadr-cli/bootstrap/commands.lisp`) | interactive-mode `init` Model scope line (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
 
-Leftover sibling of Pair 940. Does not remount `model_scope_line`. Timed work is the startup scope line (quiet / empty / cycle-hint / unbound) — not TUI mount, not theme init. Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` / `ms_disabled` are exact. Freeze pending. `nextPairNum` left at 328.
+Leftover sibling of Pair 940. Does not remount `model_scope_line`. Timed work is the startup scope line (quiet / empty / cycle-hint / unbound) — not TUI mount, not theme init. Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` / `ms_disabled` are exact. First n=5 freeze **0.838×** (35.665 / 42.573 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 942 — `cli_bootstrap_sessions` (file_tags)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 940. Does not remount `model_scope_line`. Timed work is
 |---|---|---|
 | `file_tags` | `process-cli-file-arguments` (`src/cadr-cli/bootstrap/commands.lisp`) | `processFileArguments` (`packages/coding-agent/src/cli/file-processor.ts`) |
 
-Leftover sibling of Pairs 940–941. Does not remount `process_files`. Timed work is one text file plus one empty skip — not image resize, not `@file` CLI parse. Observed `pf_hello` / `pf_n` / `pf_img` are exact. Freeze pending. `nextPairNum` left at 328.
+Leftover sibling of Pairs 940–941. Does not remount `process_files`. Timed work is one text file plus one empty skip — not image resize, not `@file` CLI parse. Observed `pf_hello` / `pf_n` / `pf_img` are exact. First n=5 freeze **0.556×** (80.505 / 144.830 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

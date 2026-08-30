@@ -949,14 +949,11 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.model_cycle": 8.0,
     "cli_bootstrap_sessions.model_scope_line": 8.0,
     "cli_bootstrap_sessions.process_files": 8.0,
-    # Measure-only leftover 940; first-freeze pending. Does not remount
-    # model_cycle. 8.0 is first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 940; first freeze 0.745× (0.655 / 0.879 µs).
     "cli_bootstrap_sessions.cycle_wrap": 8.0,
-    # Measure-only leftover 941; first-freeze pending. Does not remount
-    # model_scope_line. 8.0 is first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 941; first freeze 0.838× (35.665 / 42.573 µs).
     "cli_bootstrap_sessions.scope_hint": 8.0,
-    # Measure-only leftover 942; first-freeze pending. Does not remount
-    # process_files. 8.0 is first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 942; first freeze 0.556× (80.505 / 144.830 µs).
     "cli_bootstrap_sessions.file_tags": 8.0,
     # Leftover trio on src/cadr-cli/extensions/commands.lisp (pairs 487-489):
     # split_command 0.282x (0.465 / 1.652 us), handle_plain 0.449x
