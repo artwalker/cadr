@@ -975,11 +975,11 @@ RATIO_CEILINGS = {
     "cli_extensions_install.split_command": 8.0,
     "cli_extensions_install.handle_plain": 8.0,
     "cli_extensions_install.handle_unknown": 8.0,
-    # Measure-only leftover 1006; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1006; first freeze 0.463× (0.474 / 1.023 µs). cadr leads.
     "cli_extensions_install.sc_ok": 8.0,
-    # Measure-only leftover 1007; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1007; first freeze 0.478× (0.357 / 0.747 µs). cadr leads.
     "cli_extensions_install.hp_ok": 8.0,
-    # Measure-only leftover 1008; first-freeze headroom. Ratchet down only.
+    # Measure-only leftover 1008; first freeze 0.611× (0.505 / 0.826 µs). cadr leads.
     "cli_extensions_install.hu_ok": 8.0,
     # cli_bootstrap_sessions.parse_bash leftover (samples=5): observed 0.421x
     # (0.528 / 1.252 us). 8.0 is first-freeze headroom. Ratchet down only.

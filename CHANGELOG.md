@@ -233,6 +233,25 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.sc_ok`
+  (`split-extension-command` vs leftover replica of spaceIndex command/args
+  split). Observed `sc_plain` / `sc_reload` exact. n=5 **0.463×** (0.474 /
+  1.023 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1006). Under-1×. Does not remount `split_command`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.hp_ok`
+  (`handle-extension-command` vs leftover replica of non-slash return).
+  Observed `hp_hello` / `hp_blank` exact. n=5 **0.478×** (0.357 / 0.747 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1007).
+  Under-1×. Does not remount `handle_plain`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.hu_ok`
+  (`handle-extension-command` unknown slash vs leftover replica of getCommand
+  miss). Observed `hu_nope` / `hu_miss` exact. n=5 **0.611×** (0.505 /
+  0.826 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1008). Under-1×. Does not remount `handle_unknown`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1006 — `cli_extensions_install` (sc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sc_ok` | `split-extension-command` (`src/cadr-cli/extensions/commands.lisp`) | leftover replica of spaceIndex command/args split |
+
+Leftover sibling of leftover 487–489 on the same needs-pair file. Does not remount `split_command`. Timed work is command/args split (plain / reload). Observed `sc_plain` / `sc_reload` are exact. First n=5 freeze **0.463×** (0.474 / 1.023 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1007 — `cli_extensions_install` (hp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hp_ok` | `handle-extension-command` (`src/cadr-cli/extensions/commands.lisp`) | leftover replica of non-slash return |
+
+Leftover sibling of Pair 1006. Does not remount `handle_plain`. Timed work is non-slash miss (hello / blank). Observed `hp_hello` / `hp_blank` are exact. First n=5 freeze **0.478×** (0.357 / 0.747 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1008 — `cli_extensions_install` (hu_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hu_ok` | `handle-extension-command` (`src/cadr-cli/extensions/commands.lisp`) | leftover replica of getCommand miss |
+
+Leftover sibling of Pairs 1006–1007. Does not remount `handle_unknown`. Timed work is unknown slash (nope / missing). Observed `hu_nope` / `hu_miss` are exact. First n=5 freeze **0.611×** (0.505 / 0.826 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

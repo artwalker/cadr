@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1006,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/commands.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.sc_ok",
+   "branch": "cursor/cli-ext-sc-hp-hu-leftovers-1006-1008-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1006",
+   "ratio": 0.463,
+   "cadrUs": 0.474,
+   "piUs": 1.023,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1007,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/commands.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.hp_ok",
+   "branch": "cursor/cli-ext-sc-hp-hu-leftovers-1006-1008-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1007",
+   "ratio": 0.478,
+   "cadrUs": 0.357,
+   "piUs": 0.747,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1008,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/commands.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.hu_ok",
+   "branch": "cursor/cli-ext-sc-hp-hu-leftovers-1006-1008-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1008",
+   "ratio": 0.611,
+   "cadrUs": 0.505,
+   "piUs": 0.826,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
