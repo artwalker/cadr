@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1123 — `cli_selectors` (sv_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sv_ok` | `trust-option-saved-p` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector isSavedOption |
+
+Leftover sibling of leftover 613–615 on the same needs-pair file (second unused slug after leftover 1048 `tr_sv`). Does not remount `trust_option_saved_p`. Timed work is isSavedOption nil / distrust and siblings. Observed `tosp_nil` / `tosp_distrust` are exact. First n=5 freeze **4.914×** (75.448 / 15.355 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1124 — `cli_selectors` (mk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mk_ok` | `make-trust-selector-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent constructor |
+
+Leftover sibling of Pair 1123. Does not remount `make_trust_selector_state`. Timed work is constructor child / single. Observed `mtss_child` / `mtss_single` are exact. First n=5 freeze **2.559×** (132.973 / 51.967 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1125 — `cli_selectors` (trn_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trn_ok` | `render-trust-selector` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent layout |
+
+Leftover sibling of Pairs 1123–1124. Does not remount `render_trust_selector`. Timed work is trust selector layout. Observed `rtrs_default` / `rtrs_single` are exact. First n=5 freeze **9.103×** (1100.082 / 120.846 µs) on host `cursor`, ceiling 15.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
