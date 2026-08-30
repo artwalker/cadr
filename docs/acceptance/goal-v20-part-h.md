@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1036 — `cli_selectors` (um_he)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_he` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput structured events |
+
+Leftover sibling of leftover 628–630 on the same needs-pair file. Does not remount `user_message_handle_event`. Timed work is structured-event down / enter / esc / text / empty. Observed `umhe_down` / `umhe_empty` are exact. First n=5 freeze **0.744×** (1.383 / 1.858 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1037 — `cli_selectors` (um_hr)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_hr` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput raw key dispatch |
+
+Leftover sibling of Pair 1036. Does not remount `user_message_handle_raw`. Timed work is raw-key down / up / enter / esc / nop. Observed `umhr_down` / `umhr_nop` are exact. First n=5 freeze **17.650×** (84.838 / 4.807 µs) on host `cursor`, ceiling 30.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1038 — `cli_selectors` (um_rd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_rd` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageSelectorComponent layout |
+
+Leftover sibling of Pairs 1036–1037. Does not remount `render_user_message_selector`. Timed work is render three / one / empty / narrow / hit. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **59.176×** (239.117 / 4.041 µs) on host `cursor`, ceiling 100.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
