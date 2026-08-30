@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1111 — `cli_selectors` (he_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `he_ok` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (structured events) |
+
+Leftover sibling of leftover 628–630 on the same needs-pair file (second unused slug after leftover 1036 `um_he`). Does not remount `user_message_handle_event`. Timed work is structured handle-event down / enter / escape / text / empty. Observed `umhe_down` / `umhe_empty` are exact. First n=5 freeze **0.730×** (1.433 / 1.964 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1112 — `cli_selectors` (raw_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `raw_ok` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (raw key dispatch) |
+
+Leftover sibling of Pair 1111. Does not remount `user_message_handle_raw`. Timed work is raw-key dispatch down / nop and siblings. Observed `umhr_down` / `umhr_nop` are exact. First n=5 freeze **17.845×** (86.075 / 4.823 µs) on host `cursor`, ceiling 30.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1113 — `cli_selectors` (sel_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sel_ok` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageSelectorComponent layout |
+
+Leftover sibling of Pairs 1111–1112. Does not remount `render_user_message_selector`. Timed work is selector layout three / hit and siblings. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **62.986×** (240.537 / 3.819 µs) on host `cursor`, ceiling 100.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
