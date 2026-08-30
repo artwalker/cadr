@@ -523,6 +523,9 @@ const REPETITIONS = {
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
+	"cli_selectors.sec_ok": 50,
+	"cli_selectors.tick_ok": 50,
+	"cli_selectors.rnd_ok": 50,
 	"cli_selectors.model_selector_provider_badge": 50,
 	"cli_selectors.scoped_models_copy_enabled": 50,
 	"cli_selectors.move_list_item": 50,
@@ -29751,6 +29754,9 @@ async function measureCliSelectorsSessionSearch() {
 	const loginDialogMakeResults = runCliSelectorsLoginDialogMake();
 	const loginDialogAuthResults = runCliSelectorsLoginDialogAuth();
 	const loginDialogDeviceResults = runCliSelectorsLoginDialogDevice();
+	const leftoverCountdownSecondsResults = runCliSelectorsCountdownSeconds();
+	const leftoverCountdownTickResults = runCliSelectorsCountdownTick();
+	const leftoverCountdownRenderResults = runCliSelectorsCountdownRender();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -30145,6 +30151,9 @@ async function measureCliSelectorsSessionSearch() {
 		...loginDialogMakeResults,
 		...loginDialogAuthResults,
 		...loginDialogDeviceResults,
+		...leftoverCountdownSecondsResults,
+		...leftoverCountdownTickResults,
+		...leftoverCountdownRenderResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -31086,6 +31095,15 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		dlg_dev: await collect("cli_selectors.dlg_dev", () => {
 			return () => runCliSelectorsLoginDialogDevice();
+		}),
+		sec_ok: await collect("cli_selectors.sec_ok", () => {
+			return () => runCliSelectorsCountdownSeconds();
+		}),
+		tick_ok: await collect("cli_selectors.tick_ok", () => {
+			return () => runCliSelectorsCountdownTick();
+		}),
+		rnd_ok: await collect("cli_selectors.rnd_ok", () => {
+			return () => runCliSelectorsCountdownRender();
 		}),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
 			return () => runCliSelectorsArminPixel();
@@ -34538,6 +34556,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showAuth",
 			"cli_selectors.dlg_dev":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showDeviceCode",
+			"cli_selectors.sec_ok":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts Math.ceil leftover",
+			"cli_selectors.tick_ok":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts tick leftover",
+			"cli_selectors.rnd_ok":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts requestRender leftover",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
