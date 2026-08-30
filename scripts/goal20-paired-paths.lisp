@@ -867,6 +867,9 @@
     ("cli_print_rpc.queue_parse" . 50)
     ("cli_print_rpc.asst_text" . 50)
     ("cli_print_rpc.cmd_list" . 50)
+    ("cli_print_rpc.queue_ok" . 50)
+    ("cli_print_rpc.asst_hit" . 50)
+    ("cli_print_rpc.cmd_n" . 50)
     ("cli_print_rpc.bad_line" . 50)
     ("cli_print_rpc.array_line" . 50)
     ("cli_print_rpc.ui_absent" . 50)
@@ -19085,6 +19088,24 @@
                     (run-cli-print-rpc-last-assistant agent empty)))))
      "cmd_list"
      (collect "cli_print_rpc.cmd_list"
+              (lambda ()
+                (let ((state (rpc-command-list-fixture-state)))
+                  (lambda ()
+                    (run-cli-print-rpc-command-list state)))))
+     "queue_ok"
+     (collect "cli_print_rpc.queue_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-queue-mode))))
+     "asst_hit"
+     (collect "cli_print_rpc.asst_hit"
+              (lambda ()
+                (let ((agent (rpc-last-assistant-fixture-agent))
+                      (empty (cadr-agent:make-agent)))
+                  (lambda ()
+                    (run-cli-print-rpc-last-assistant agent empty)))))
+     "cmd_n"
+     (collect "cli_print_rpc.cmd_n"
               (lambda ()
                 (let ((state (rpc-command-list-fixture-state)))
                   (lambda ()
@@ -40175,6 +40196,12 @@
       "src/cadr-cli/modes/rpc/commands.lisp rpc-last-assistant-text"
       "cli_print_rpc.cmd_list"
       "src/cadr-cli/modes/rpc/commands.lisp rpc-command-list"
+      "cli_print_rpc.queue_ok"
+      "src/cadr-cli/modes/rpc/commands.lisp parse-queue-mode leftover"
+      "cli_print_rpc.asst_hit"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-last-assistant-text leftover"
+      "cli_print_rpc.cmd_n"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-command-list leftover"
       "cli_print_rpc.bad_line"
       "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
       "cli_print_rpc.array_line"
