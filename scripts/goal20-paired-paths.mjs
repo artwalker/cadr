@@ -13623,6 +13623,19 @@ function parseQueueMode(mode, noun) {
 }
 
 
+const RPC_LAST_ASSISTANT_MESSAGES = [
+	{ role: "user", content: "q" },
+	{
+		role: "assistant",
+		stopReason: "stop",
+		content: [{ type: "text", text: "hello" }],
+	},
+];
+
+const RPC_COMMAND_LIST_COMMANDS = [{ name: "foo", description: "d" }];
+const RPC_COMMAND_LIST_TEMPLATES = [{ name: "bar", description: "t" }];
+
+
 function runCliPrintRpcQueueMode() {
 	let bad = 0;
 	try {
