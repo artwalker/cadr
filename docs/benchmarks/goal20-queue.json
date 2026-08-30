@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 928,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.msg_content",
+   "branch": "cursor/evals-harness-msg-tools-paths-leftovers-928-930-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 928",
+   "ratio": 1.352,
+   "cadrUs": 1.008,
+   "piUs": 0.745,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 929,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.eval_tools",
+   "branch": "cursor/evals-harness-msg-tools-paths-leftovers-928-930-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 929",
+   "ratio": 5.428,
+   "cadrUs": 1.547,
+   "piUs": 0.285,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 930,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.eval_paths",
+   "branch": "cursor/evals-harness-msg-tools-paths-leftovers-928-930-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 930",
+   "ratio": 7.223,
+   "cadrUs": 3.230,
+   "piUs": 0.447,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

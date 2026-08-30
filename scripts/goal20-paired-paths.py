@@ -746,8 +746,11 @@ RATIO_CEILINGS = {
     # evals_harness leftover trio on harness.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 928–930.
     # Does not remount content_text / agent_tools / extension_paths.
+    # leftover 928; first freeze 1.352× (1.008 / 0.745 µs).
     "evals_harness.msg_content": 8.0,
+    # leftover 929; first freeze 5.428× (1.547 / 0.285 µs).
     "evals_harness.eval_tools": 8.0,
+    # leftover 930; first freeze 7.223× (3.230 / 0.447 µs).
     "evals_harness.eval_paths": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
