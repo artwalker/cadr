@@ -604,6 +604,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_selected_level": 50,
 	"cli_selectors.thinking_level_description_line": 50,
 	"cli_selectors.render_thinking_selector": 50,
+	"cli_selectors.th_sel": 50,
+	"cli_selectors.th_desc": 50,
+	"cli_selectors.th_draw": 50,
 	"cli_selectors.trust_option_saved_p": 50,
 	"cli_selectors.make_trust_selector_state": 50,
 	"cli_selectors.render_trust_selector": 50,
@@ -36184,6 +36187,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderThinkingSelector();
 			},
 		),
+		th_sel: await collect("cli_selectors.th_sel", () => {
+			return () => runCliSelectorsThinkingSelectorSelectedLevel();
+		}),
+		th_desc: await collect("cli_selectors.th_desc", () => {
+			return () => runCliSelectorsThinkingLevelDescriptionLine();
+		}),
+		th_draw: await collect("cli_selectors.th_draw", () => {
+			return () => runCliSelectorsRenderThinkingSelector();
+		}),
 		trust_option_saved_p: await collect(
 			"cli_selectors.trust_option_saved_p",
 			() => {
@@ -41420,6 +41432,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts LEVEL_DESCRIPTIONS · default suffix",
 			"cli_selectors.render_thinking_selector":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts ThinkingSelectorComponent layout",
+			"cli_selectors.th_sel":
+				"packages/coding-agent leftover replica of selected SelectList item (cadr thinking-selector-selected-level)",
+			"cli_selectors.th_desc":
+				"packages/coding-agent leftover replica of LEVEL_DESCRIPTIONS (cadr thinking-level-description-line)",
+			"cli_selectors.th_draw":
+				"packages/coding-agent leftover replica of ThinkingSelectorComponent layout (cadr render-thinking-selector)",
 			"cli_selectors.trust_option_saved_p":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts isSavedOption",
 			"cli_selectors.make_trust_selector_state":
