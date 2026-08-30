@@ -13159,7 +13159,7 @@
         (xai-refresh (run-oauth-pkce-device-xai-refresh)))
     (json-object
      "observed"
-     (json-object)
+     (json-object
       "dc_ok" (first poll)
       "dc_fail" (second poll)
       "dc_cancel" (third poll)
