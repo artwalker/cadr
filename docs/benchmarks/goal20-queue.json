@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1030,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.ld_prmt",
+   "branch": "cursor/cli-login-dlg-ld-prmt-info-det-leftovers-1030-1032-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1030",
+   "ratio": 2.101,
+   "cadrUs": 7.922,
+   "piUs": 3.771,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1031,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.ld_info",
+   "branch": "cursor/cli-login-dlg-ld-prmt-info-det-leftovers-1030-1032-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1031",
+   "ratio": 2.403,
+   "cadrUs": 10.652,
+   "piUs": 4.432,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1032,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.ld_det",
+   "branch": "cursor/cli-login-dlg-ld-prmt-info-det-leftovers-1030-1032-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1032",
+   "ratio": 0.871,
+   "cadrUs": 2.974,
+   "piUs": 3.414,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
