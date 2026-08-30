@@ -2686,6 +2686,10 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.api_key_input_state_handle_event", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.akhe_ok", RECORD.METRIC_KEYS)
+        self.assertIn("akhe_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.akhe_ok", paired.RATIO_CEILINGS)
+        self.assertIn("akhe_esc", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.login_method_selector_ui_state", RECORD.METRIC_KEYS)
         self.assertIn(
             "login_method_selector_ui_state", paired.METRICS["cli_selectors"]
@@ -2988,11 +2992,17 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.make_login_method_selector_state", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.mls_ok", RECORD.METRIC_KEYS)
+        self.assertIn("mls_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.mls_ok", paired.RATIO_CEILINGS)
         self.assertIn("mlms_default", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("mlms_three", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.make_api_key_input_state", RECORD.METRIC_KEYS)
         self.assertIn("make_api_key_input_state", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.make_api_key_input_state", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.ais_ok", RECORD.METRIC_KEYS)
+        self.assertIn("ais_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.ais_ok", paired.RATIO_CEILINGS)
         self.assertIn("makis_anth", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("makis_named", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.make_oauth_selector_state", RECORD.METRIC_KEYS)
