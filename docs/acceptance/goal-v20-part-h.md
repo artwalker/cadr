@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 910 — `cli_selectors` (daxnuts_render)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_render` | `cadr-tui:component-render` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsRenderOnce cadr append structure (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of leftover 547–549 / 634–636 on the same `daxnuts.lisp` hole. Timed work is unstarted `component-render` at width 80 twice (cache `eq`) then tick=20 late render — not parse/image-line/center, not rgb_at / make / tick, not startAnimation. Observed `dxr_len` / `dxr_cache` / `dxr_late` / `dxr_scan` / `dxr_rev20` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 911 — `cli_selectors` (daxnuts_invalidate)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_invalidate` | `cadr-tui:component-invalidate` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsInvalidateOnce cachedKey clear (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of leftover 910. Timed work is render then invalidate (cached-key was set then nil). Observed `dxi_had` / `dxi_cleared` / `dxi_n` are exact (`dxi_cleared` is still-cached after invalidate = 0). First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 912 — `cli_selectors` (daxnuts_dispose)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_dispose` | `cadr-tui:component-dispose` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsDisposeUnstarted stopped / interval stays null (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of leftover 910–911. Timed work is dispose on an unstarted timer (thread/interval nil) — not `daxnuts-component-run` sleep, not start. Observed `dxd_stop` / `dxd_thread` / `dxd_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
