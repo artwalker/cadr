@@ -246,6 +246,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.th_af`
+  (`thinking-selector-apply-filter` vs leftover replica of
+  thinking-selector applyFilter). Observed `tsaf_high` / `tsaf_empty`
+  exact. n=5 **1.215×** (13.447 / 11.068 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 1042). Over-1× booked. Does not
+  remount `thinking_selector_apply_filter`. Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.th_cl`
+  (`thinking-selector-clamp-selected` vs leftover replica of
+  thinking-selector clamp selected). Observed `tscl_high` / `tscl_zero`
+  exact. n=5 **0.866×** (0.672 / 0.776 µs) on host `cursor`, ceiling 8.0.
+  cadr leads. Measure-only leftover (Pair 1043). Does not remount
+  `thinking_selector_clamp_selected`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.th_sc`
+  (`thinking-selector-select-current` vs leftover replica of
+  thinking-selector select current). Observed `tssc_high` / `tssc_only`
+  exact. n=5 **0.909×** (1.030 / 1.133 µs) on host `cursor`, ceiling 8.0.
+  cadr leads. Measure-only leftover (Pair 1044). Does not remount
+  `thinking_selector_select_current`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
