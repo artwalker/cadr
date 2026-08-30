@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1099. cli_selectors tlbl_ok vs leftover replica of thinking level label
+;;;;      (does not remount thinking_level_label / th_lbl)
+;;;; 1100. cli_selectors tqry_ok vs leftover replica of thinking applyFilter from search
+;;;;      (does not remount thinking_selector_set_query / th_qry)
+;;;; 1101. cli_selectors tkb_ok vs leftover replica of thinking getKeybindings
+;;;;      (does not remount thinking_selector_keybindings / th_kb)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -918,6 +924,9 @@
     ("cli_selectors.thinking_selector_set_query" . 50)
     ("cli_selectors.thinking_selector_key_p" . 50)
     ("cli_selectors.thinking_selector_keybindings" . 50)
+    ("cli_selectors.tlbl_ok" . 50)
+    ("cli_selectors.tqry_ok" . 50)
+    ("cli_selectors.tkb_ok" . 50)
     ("cli_selectors.make_thinking_selector_state" . 50)
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
@@ -29661,6 +29670,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-keybindings))))
+     "tlbl_ok"
+     (collect "cli_selectors.tlbl_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-label))))
+     "tqry_ok"
+     (collect "cli_selectors.tqry_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-set-query))))
+     "tkb_ok"
+     (collect "cli_selectors.tkb_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-keybindings))))
      "make_thinking_selector_state"
      (collect "cli_selectors.make_thinking_selector_state"
               (lambda ()
@@ -33086,6 +33110,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-key-p"
       "cli_selectors.thinking_selector_keybindings"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings"
+      "cli_selectors.tlbl_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label leftover"
+      "cli_selectors.tqry_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query leftover"
+      "cli_selectors.tkb_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings leftover"
       "cli_selectors.make_thinking_selector_state"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
       "cli_selectors.thinking_selector_apply_filter"
