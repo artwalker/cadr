@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `sdk_get_skills` | `sdk-resource-loader-skills` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getSkills` (`packages/coding-agent/src/core/resource-loader.ts`) |
 
-Leftover sibling of leftover 478–480 on the same resource-service hole. Timed work is the skills getter after isolated no-discovery reload — not prompt-input resolve, not list override, not context-file records. Observed `sk_n` / `sk_list` / `sk_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 478–480 on the same resource-service hole. Timed work is the skills getter after isolated no-discovery reload — not prompt-input resolve, not list override, not context-file records. Observed `sk_n` / `sk_list` / `sk_ok` are exact. First n=5 freeze **0.637×** (0.085 / 0.134 µs) on host `cursor`, ceiling 8.0. Under-1×. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 920 — `skill_prompt_load` (sdk_get_prompts)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover 478–480 on the same resource-service hole. Timed 
 |---|---|---|
 | `sdk_get_prompts` | `sdk-resource-loader-prompts` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getPrompts` (`packages/coding-agent/src/core/resource-loader.ts`) |
 
-Leftover sibling of leftover 919. Timed work is the prompts getter after isolated no-discovery reload — not skills, not themes. Observed `pr_n` / `pr_list` / `pr_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 919. Timed work is the prompts getter after isolated no-discovery reload — not skills, not themes. Observed `pr_n` / `pr_list` / `pr_ok` are exact. First n=5 freeze **0.728×** (0.085 / 0.117 µs) on host `cursor`, ceiling 8.0. Under-1×. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 921 — `skill_prompt_load` (sdk_get_themes)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of leftover 919. Timed work is the prompts getter after isolate
 |---|---|---|
 | `sdk_get_themes` | `sdk-resource-loader-themes` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getThemes` (`packages/coding-agent/src/core/resource-loader.ts`) |
 
-Leftover sibling of leftover 919–920. Timed work is the themes getter after isolated no-discovery reload — not skills, not prompts. Observed `th_n` / `th_list` / `th_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 919–920. Timed work is the themes getter after isolated no-discovery reload — not skills, not prompts. Observed `th_n` / `th_list` / `th_ok` are exact. First n=5 freeze **0.638×** (0.087 / 0.136 µs) on host `cursor`, ceiling 8.0. Under-1×. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

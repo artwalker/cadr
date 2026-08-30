@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `skill_prompt_load.sdk_get_skills`
+  (`sdk-resource-loader-skills` vs DefaultResourceLoader.getSkills).
+  Observed `sk_n` / `sk_list` / `sk_ok` exact. n=5 **0.637×** (0.085 /
+  0.134 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 919). Under-1×. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `skill_prompt_load.sdk_get_prompts`
+  (`sdk-resource-loader-prompts` vs DefaultResourceLoader.getPrompts).
+  Observed `pr_n` / `pr_list` / `pr_ok` exact. n=5 **0.728×** (0.085 /
+  0.117 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 920). Under-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `skill_prompt_load.sdk_get_themes`
+  (`sdk-resource-loader-themes` vs DefaultResourceLoader.getThemes).
+  Observed `th_n` / `th_list` / `th_ok` exact. n=5 **0.638×** (0.087 /
+  0.136 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 921). Under-1×. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

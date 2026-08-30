@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 919,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/resource-service.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.sdk_get_skills",
+   "branch": "cursor/sdk-resource-skills-prompts-themes-leftovers-919-921-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 919",
+   "ratio": 0.637,
+   "cadrUs": 0.085,
+   "piUs": 0.134,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 920,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/resource-service.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.sdk_get_prompts",
+   "branch": "cursor/sdk-resource-skills-prompts-themes-leftovers-919-921-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 920",
+   "ratio": 0.728,
+   "cadrUs": 0.085,
+   "piUs": 0.117,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 921,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/resource-service.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.sdk_get_themes",
+   "branch": "cursor/sdk-resource-skills-prompts-themes-leftovers-919-921-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 921",
+   "ratio": 0.638,
+   "cadrUs": 0.087,
+   "piUs": 0.136,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

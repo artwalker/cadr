@@ -935,7 +935,10 @@ RATIO_CEILINGS = {
     "skill_prompt_load.sdk_prompt_input": 8.0,
     "skill_prompt_load.sdk_list_override": 8.0,
     "skill_prompt_load.sdk_context_files": 8.0,
-    # Measure-only leftover 919-921; freeze pending.
+    # Measure-only leftover 919-921 (samples=5): observed
+    # sdk_get_skills 0.637x (0.085 / 0.134 us), sdk_get_prompts
+    # 0.728x (0.085 / 0.117 us), sdk_get_themes 0.638x (0.087 /
+    # 0.136 us). 8.0 is first-freeze headroom. Ratchet down only.
     "skill_prompt_load.sdk_get_skills": 8.0,
     "skill_prompt_load.sdk_get_prompts": 8.0,
     "skill_prompt_load.sdk_get_themes": 8.0,
