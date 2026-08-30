@@ -10142,7 +10142,7 @@
   (let ((headers
           (cadr-ai::github-copilot-request-headers
            "tok"
-           (list (cons "Accept" "application/json")))))
+           (cons "Accept" "application/json"))))
     (list
      (write-to-string (length headers))
      (if (string=
