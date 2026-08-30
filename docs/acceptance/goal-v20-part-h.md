@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `theme_prim` | `valid-tui-theme-primitive-p` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of isThemeColorValue |
 
-Leftover sibling of leftover 532–534 on the same needs-pair file. Does not remount `theme_primitive`. Timed work is string, 0, 255, 256, negative, nil. Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 532–534 on the same needs-pair file. Does not remount `theme_primitive`. Timed work is string, 0, 255, 256, negative, nil. Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` are exact. First n=5 freeze **0.741×** (0.110 / 0.149 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 932 — `cli_interactive_controller` (theme_val)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover 532–534 on the same needs-pair file. Does not rem
 |---|---|---|
 | `theme_val` | `validate-tui-theme-object` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of theme object validate |
 
-Leftover sibling of Pair 931. Does not remount `theme_validate`. Timed work is valid object, slash name, unknown property. Observed `tv_ok` / `tv_slash` / `tv_unknown` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 931. Does not remount `theme_validate`. Timed work is valid object, slash name, unknown property. Observed `tv_ok` / `tv_slash` / `tv_unknown` are exact. First n=5 freeze **0.756×** (19.713 / 26.066 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 933 — `cli_interactive_controller` (theme_res)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 931. Does not remount `theme_validate`. Timed work is v
 |---|---|---|
 | `theme_res` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of resolveThemeColor |
 
-Leftover sibling of Pairs 931–932. Does not remount `theme_resolve`. Timed work is integer, empty, hex, variable, cycle, miss. Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` / `tr_miss` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 931–932. Does not remount `theme_resolve`. Timed work is integer, empty, hex, variable, cycle, miss. Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` / `tr_miss` are exact. First n=5 freeze **0.144×** (1.192 / 8.261 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

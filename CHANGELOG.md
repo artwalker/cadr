@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.theme_prim`
+  (`valid-tui-theme-primitive-p` vs leftover replica of isThemeColorValue).
+  Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil`
+  exact. n=5 **0.741×** (0.110 / 0.149 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 931). Under-1×. Does not remount
+  `theme_primitive`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_val`
+  (`validate-tui-theme-object` vs leftover replica of theme object
+  validate). Observed `tv_ok` / `tv_slash` / `tv_unknown` exact. n=5
+  **0.756×** (19.713 / 26.066 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 932). Under-1×. Does not remount
+  `theme_validate`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_res`
+  (`resolve-tui-theme-value` vs leftover replica of resolveThemeColor).
+  Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` /
+  `tr_miss` exact. n=5 **0.144×** (1.192 / 8.261 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 933). Under-1×. Does not
+  remount `theme_resolve`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

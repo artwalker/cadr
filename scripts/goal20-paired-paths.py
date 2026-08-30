@@ -1110,11 +1110,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.apply_tui_theme_summary": 8.0,
     # Measure-only leftover 639; first freeze 2.383× (233.265 / 97.883 µs).
     "cli_interactive_controller.load_tui_theme_file": 8.0,
-    # cli_interactive_controller leftover trio on themes.lisp (samples=5):
-    # first-freeze headroom. Ratchet down only. Measure-only leftover 931–933.
-    # Does not remount theme_primitive / theme_validate / theme_resolve.
+    # Measure-only leftover 931; first freeze 0.741× (0.110 / 0.149 µs).
     "cli_interactive_controller.theme_prim": 8.0,
+    # Measure-only leftover 932; first freeze 0.756× (19.713 / 26.066 µs).
     "cli_interactive_controller.theme_val": 8.0,
+    # Measure-only leftover 933; first freeze 0.144× (1.192 / 8.261 µs).
     "cli_interactive_controller.theme_res": 8.0,
     # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,
