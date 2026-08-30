@@ -488,6 +488,9 @@ const REPETITIONS = {
 	"cli_selectors.daxnuts_rgb_at": 50,
 	"cli_selectors.make_daxnuts_component": 50,
 	"cli_selectors.daxnuts_component_tick": 50,
+	"cli_selectors.dlg_make": 50,
+	"cli_selectors.dlg_auth": 50,
+	"cli_selectors.dlg_dev": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -29486,6 +29489,9 @@ async function measureCliSelectorsSessionSearch() {
 	const daxnutsRgbAtResults = runCliSelectorsDaxnutsRgbAt();
 	const makeDaxnutsComponentResults = runCliSelectorsMakeDaxnutsComponent();
 	const daxnutsComponentTickResults = runCliSelectorsDaxnutsComponentTick();
+	const loginDialogMakeResults = runCliSelectorsLoginDialogMake();
+	const loginDialogAuthResults = runCliSelectorsLoginDialogAuth();
+	const loginDialogDeviceResults = runCliSelectorsLoginDialogDevice();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -29877,6 +29883,9 @@ async function measureCliSelectorsSessionSearch() {
 		...daxnutsRgbAtResults,
 		...makeDaxnutsComponentResults,
 		...daxnutsComponentTickResults,
+		...loginDialogMakeResults,
+		...loginDialogAuthResults,
+		...loginDialogDeviceResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -30810,6 +30819,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsDaxnutsComponentTick();
 			},
 		),
+		dlg_make: await collect("cli_selectors.dlg_make", () => {
+			return () => runCliSelectorsLoginDialogMake();
+		}),
+		dlg_auth: await collect("cli_selectors.dlg_auth", () => {
+			return () => runCliSelectorsLoginDialogAuth();
+		}),
+		dlg_dev: await collect("cli_selectors.dlg_dev", () => {
+			return () => runCliSelectorsLoginDialogDevice();
+		}),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
 			return () => runCliSelectorsArminPixel();
 		}),
@@ -34185,6 +34203,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent constructor (no startAnimation)",
 			"cli_selectors.daxnuts_component_tick":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent interval body",
+			"cli_selectors.dlg_make":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent constructor",
+			"cli_selectors.dlg_auth":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showAuth",
+			"cli_selectors.dlg_dev":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showDeviceCode",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
