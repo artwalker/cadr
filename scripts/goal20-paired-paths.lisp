@@ -596,6 +596,9 @@
     ("cli_print_rpc.rpc_images" . 50)
     ("cli_print_rpc.rpc_prompt" . 50)
     ("cli_print_rpc.bash_result" . 50)
+    ("cli_print_rpc.queue_parse" . 50)
+    ("cli_print_rpc.asst_text" . 50)
+    ("cli_print_rpc.cmd_list" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -14223,7 +14226,15 @@
             (run-cli-print-rpc-session-stats session)))
          (images (run-cli-print-rpc-images))
          (prompt (run-cli-print-rpc-prompt))
-         (bash (run-cli-print-rpc-bash-result)))
+         (bash (run-cli-print-rpc-bash-result))
+         (leftover-queue (run-cli-print-rpc-queue-mode))
+         (leftover-asst
+           (run-cli-print-rpc-last-assistant
+            (rpc-last-assistant-fixture-agent)
+            (cadr-agent:make-agent)))
+         (leftover-cmds
+           (run-cli-print-rpc-command-list
+            (rpc-command-list-fixture-state))))
     (json-object
      "observed"
      (json-object
@@ -14261,7 +14272,16 @@
       "br_can" (nth 2 bash)
       "br_tr" (nth 3 bash)
       "br_path" (nth 4 bash)
-      "br_null" (nth 5 bash))
+      "br_null" (nth 5 bash)
+      "qm_all" (nth 0 leftover-queue)
+      "qm_one" (nth 1 leftover-queue)
+      "qm_bad" (nth 2 leftover-queue)
+      "la_hit" (nth 0 leftover-asst)
+      "la_len" (nth 1 leftover-asst)
+      "la_miss" (nth 2 leftover-asst)
+      "cl_n" (nth 0 leftover-cmds)
+      "cl_ext" (nth 1 leftover-cmds)
+      "cl_prompt" (nth 2 leftover-cmds))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -14296,7 +14316,25 @@
      (collect "cli_print_rpc.bash_result"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-bash-result)))))))
+                  (run-cli-print-rpc-bash-result))))
+     "queue_parse"
+     (collect "cli_print_rpc.queue_parse"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-queue-mode))))
+     "asst_text"
+     (collect "cli_print_rpc.asst_text"
+              (lambda ()
+                (let ((agent (rpc-last-assistant-fixture-agent))
+                      (empty (cadr-agent:make-agent)))
+                  (lambda ()
+                    (run-cli-print-rpc-last-assistant agent empty)))))
+     "cmd_list"
+     (collect "cli_print_rpc.cmd_list"
+              (lambda ()
+                (let ((state (rpc-command-list-fixture-state)))
+                  (lambda ()
+                    (run-cli-print-rpc-command-list state))))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -31974,6 +32012,12 @@
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-prompt-message"
       "cli_print_rpc.bash_result"
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
+      "cli_print_rpc.queue_parse"
+      "src/cadr-cli/modes/rpc/commands.lisp parse-queue-mode"
+      "cli_print_rpc.asst_text"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-last-assistant-text"
+      "cli_print_rpc.cmd_list"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-command-list"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"

@@ -575,6 +575,9 @@ const REPETITIONS = {
 	"cli_print_rpc.rpc_images": 50,
 	"cli_print_rpc.rpc_prompt": 50,
 	"cli_print_rpc.bash_result": 50,
+	"cli_print_rpc.queue_parse": 50,
+	"cli_print_rpc.asst_text": 50,
+	"cli_print_rpc.cmd_list": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -13704,6 +13707,9 @@ async function measureCliPrintRpc() {
 			...runCliPrintRpcImages(),
 			...runCliPrintRpcPrompt(),
 			...runCliPrintRpcBashResult(),
+			...runCliPrintRpcQueueMode(),
+			...runCliPrintRpcLastAssistant(),
+			...runCliPrintRpcCommandList(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -13726,6 +13732,15 @@ async function measureCliPrintRpc() {
 			}),
 			bash_result: await collect("cli_print_rpc.bash_result", () => {
 				return () => runCliPrintRpcBashResult();
+			}),
+			queue_parse: await collect("cli_print_rpc.queue_parse", () => {
+				return () => runCliPrintRpcQueueMode();
+			}),
+			asst_text: await collect("cli_print_rpc.asst_text", () => {
+				return () => runCliPrintRpcLastAssistant();
+			}),
+			cmd_list: await collect("cli_print_rpc.cmd_list", () => {
+				return () => runCliPrintRpcCommandList();
 			}),
 			observed,
 		};
@@ -33596,6 +33611,12 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts prompt message+images",
 			"cli_print_rpc.bash_result":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts bash result payload",
+			"cli_print_rpc.queue_parse":
+				"packages/coding-agent leftover replica of parseQueueMode (cadr parse-queue-mode)",
+			"cli_print_rpc.asst_text":
+				"packages/coding-agent leftover replica of last assistant text (cadr rpc-last-assistant-text)",
+			"cli_print_rpc.cmd_list":
+				"packages/coding-agent leftover replica of rpc command list (cadr rpc-command-list)",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",

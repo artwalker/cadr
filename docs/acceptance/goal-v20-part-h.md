@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 934 — `cli_print_rpc` (queue_parse)
+
+| metric | cadr | pi |
+|---|---|---|
+| `queue_parse` | `parse-queue-mode` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of parseQueueMode |
+
+Leftover sibling of leftover 475–477 on the same needs-pair file. Does not remount `queue_mode`. Timed work is all, one-at-a-time, invalid. Observed `qm_all` / `qm_one` / `qm_bad` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 935 — `cli_print_rpc` (asst_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `asst_text` | `rpc-last-assistant-text` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of last assistant text |
+
+Leftover sibling of Pair 934. Does not remount `last_assistant`. Timed work is hit hello, length, empty miss. Observed `la_hit` / `la_len` / `la_miss` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 936 — `cli_print_rpc` (cmd_list)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cmd_list` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | leftover replica of rpc command list |
+
+Leftover sibling of Pairs 934–935. Does not remount `command_list`. Timed work is count, extension foo, prompt bar. Observed `cl_n` / `cl_ext` / `cl_prompt` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
