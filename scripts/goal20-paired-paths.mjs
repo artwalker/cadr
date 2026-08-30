@@ -477,7 +477,9 @@ const REPETITIONS = {
 	"cli_selectors.make_trust_selector_state": 50,
 	"cli_selectors.render_trust_selector": 50,
 	"cli_selectors.make_login_method_selector_state": 50,
+	"cli_selectors.oa_mls": 50,
 	"cli_selectors.make_api_key_input_state": 50,
+	"cli_selectors.oa_ais": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
@@ -818,6 +820,7 @@ const REPETITIONS = {
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
 	"cli_selectors.api_key_input_state_handle_event": 50,
+	"cli_selectors.oa_akhe": 50,
 	"cli_selectors.login_method_selector_ui_state": 50,
 	"cli_selectors.api_key_input_ui_state": 50,
 	"cli_selectors.oauth_selector_ui_state": 50,
@@ -30471,6 +30474,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsApiKeyInputStateHandleEvent();
 			},
 		),
+		oa_akhe: await collect("cli_selectors.oa_akhe", () => {
+			return () => runCliSelectorsApiKeyInputStateHandleEvent();
+		}),
 		login_method_selector_ui_state: await collect(
 			"cli_selectors.login_method_selector_ui_state",
 			() => {
@@ -30961,12 +30967,18 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeLoginMethodSelectorState();
 			},
 		),
+		oa_mls: await collect("cli_selectors.oa_mls", () => {
+			return () => runCliSelectorsMakeLoginMethodSelectorState();
+		}),
 		make_api_key_input_state: await collect(
 			"cli_selectors.make_api_key_input_state",
 			() => {
 				return () => runCliSelectorsMakeApiKeyInputState();
 			},
 		),
+		oa_ais: await collect("cli_selectors.oa_ais", () => {
+			return () => runCliSelectorsMakeApiKeyInputState();
+		}),
 		make_oauth_selector_state: await collect(
 			"cli_selectors.make_oauth_selector_state",
 			() => {
@@ -34328,6 +34340,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput navigation (wrap index; fixtures avoid clamp boundary)",
 			"cli_selectors.api_key_input_state_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch",
+			"cli_selectors.oa_akhe":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch leftover",
 			"cli_selectors.login_method_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state",
 			"cli_selectors.api_key_input_ui_state":
@@ -34492,8 +34506,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent layout",
 			"cli_selectors.make_login_method_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
+			"cli_selectors.oa_mls":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor leftover",
 			"cli_selectors.make_api_key_input_state":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
+			"cli_selectors.oa_ais":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor leftover",
 			"cli_selectors.make_oauth_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
 			"cli_selectors.login_dialog_show_waiting":
