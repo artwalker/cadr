@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1015 — `powershell_tool` (up_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `up_ok` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling of leftover 301–303 on the same needs-pair file. Does not remount `utf8_prefix`. Timed work is the UTF-8 output prefix string — not execute/spawn. Observed `psu_len` / `psu_n` are exact. First n=5 freeze **4.281×** (0.677 / 0.158 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1016 — `powershell_tool` (pc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pc_ok` | UTF-8 prefix + command concatenate (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createLocalPowerShellOperations wrap |
+
+Leftover sibling of Pair 1015. Does not remount `prefix_command`. Timed work is prefix+command concat. Observed `psc_empty` / `psc_n` are exact. First n=5 freeze **1.492×** (0.485 / 0.325 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1017 — `powershell_tool` (mt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mt_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling of Pairs 1015–1016. Does not remount `make_tool`. Timed work is tool schema construction — not execute. Observed `pmt_name` / `pmt_n` are exact. First n=5 freeze **1.241×** (2.059 / 1.659 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
