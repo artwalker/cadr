@@ -575,6 +575,12 @@
     ("evals_harness.reporter_run_id" . 50)
     ("evals_harness.artifact_reference_json" . 50)
     ("evals_harness.reporter_artifacts" . 50)
+    ("evals_harness.validate_extension" . 50)
+    ("evals_harness.suite_dispatch" . 50)
+    ("evals_harness.eval_result_p" . 50)
+    ("evals_harness.msg_content" . 50)
+    ("evals_harness.eval_tools" . 50)
+    ("evals_harness.eval_paths" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -598,6 +604,9 @@
     ("cli_print_rpc.rpc_images" . 50)
     ("cli_print_rpc.rpc_prompt" . 50)
     ("cli_print_rpc.bash_result" . 50)
+    ("cli_print_rpc.queue_parse" . 50)
+    ("cli_print_rpc.asst_text" . 50)
+    ("cli_print_rpc.cmd_list" . 50)
     ("cli_print_rpc.bad_line" . 50)
     ("cli_print_rpc.array_line" . 50)
     ("cli_print_rpc.ui_absent" . 50)
@@ -664,6 +673,9 @@
     ("cli_interactive_controller.theme_object_overrides" . 50)
     ("cli_interactive_controller.apply_tui_theme_summary" . 50)
     ("cli_interactive_controller.load_tui_theme_file" . 50)
+    ("cli_interactive_controller.theme_prim" . 50)
+    ("cli_interactive_controller.theme_val" . 50)
+    ("cli_interactive_controller.theme_res" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -12117,6 +12129,81 @@
    4))
 
 
+(defun leftover-eval-extension-output (response paths)
+  (cadr-evals::make-eval-result
+   :output
+   (cadr-ai::json-object
+    "response" response
+    "extensionPaths" paths)))
+
+
+(defun leftover-eval-validate-extension-ok-p (response paths)
+  (handler-case
+      (progn
+        (cadr-evals::validate-extension-result
+         (leftover-eval-extension-output response paths))
+        1)
+    (error () 0)))
+
+
+(defun run-evals-harness-validate-extension ()
+  ;; extensions.eval.ts greeting + path-count. Not a live eval run.
+  ;; Do not exact cadr vs pi error copy.
+  (list
+   (leftover-eval-validate-extension-ok-p "Hello, Bob!" '("one"))
+   (eval-flag
+    (zerop
+     (leftover-eval-validate-extension-ok-p
+      "Hello, Alice!" '("one"))))
+   (eval-flag
+    (zerop
+     (leftover-eval-validate-extension-ok-p
+      "Hello, Bob!" '("a" "b"))))
+   (eval-flag
+    (zerop
+     (leftover-eval-validate-extension-ok-p
+      "Hello, Bob!" '())))
+   4))
+
+
+(defun leftover-eval-suite-dispatch-id (suite)
+  ;; Replica of %eval-main suite cond. Not production.
+  ;; pi run-evals.mjs has no --suite.
+  (cond ((string= suite "smoke") 0)
+        ((string= suite "extensions") 1)
+        ((string= suite "extension-authoring") 2)
+        (t 3)))
+
+
+(defun run-evals-harness-suite-dispatch ()
+  (list
+   (eval-flag (= (leftover-eval-suite-dispatch-id "smoke") 0))
+   (eval-flag (= (leftover-eval-suite-dispatch-id "extensions") 1))
+   (eval-flag
+    (= (leftover-eval-suite-dispatch-id "extension-authoring") 2))
+   (eval-flag (= (leftover-eval-suite-dispatch-id "unknown") 3))
+   4))
+
+
+(defun leftover-eval-result-type-p (value)
+  (eval-flag (typep value 'cadr-evals::eval-result)))
+
+
+(defun run-evals-harness-eval-result-p ()
+  ;; Leftover of %eval-main (typep value 'eval-result).
+  ;; Not eval-result-json.
+  (list
+   (leftover-eval-result-type-p
+    (cadr-evals::make-eval-result :output "ok"))
+   (eval-flag
+    (zerop
+     (leftover-eval-result-type-p
+      (cadr-ai::json-object "n" 1))))
+   (eval-flag (zerop (leftover-eval-result-type-p "x")))
+   (eval-flag (zerop (leftover-eval-result-type-p nil)))
+   4))
+
+
 (defun run-evals-harness-eval-result ()
   ;; Struct construction only — not eval-result-json (#36) and not
   ;; default-eval-model-resolver (skipped this cut).
@@ -12835,6 +12922,9 @@
          (argument-prefix (run-evals-harness-argument-prefix))
          (parse-arguments (run-evals-harness-parse-arguments))
          (validate-smoke (run-evals-harness-validate-smoke))
+         (validate-extension (run-evals-harness-validate-extension))
+         (suite-dispatch (run-evals-harness-suite-dispatch))
+         (eval-result-p (run-evals-harness-eval-result-p))
          (canonical-api (run-evals-harness-canonical-api))
          (legacy-api (run-evals-harness-legacy-api))
          (extension-error (run-evals-harness-extension-error-json))
@@ -12843,7 +12933,10 @@
          (prepare-default (run-evals-harness-prepare-default-prompt))
          (reporter-run-id (run-evals-harness-reporter-run-id))
          (artifact-reference (run-evals-harness-artifact-reference-json))
-         (reporter-artifacts (run-evals-harness-reporter-artifacts)))
+         (reporter-artifacts (run-evals-harness-reporter-artifacts))
+         (msg-content (run-evals-harness-content-text))
+         (eval-tools-list (run-evals-harness-agent-tools))
+         (eval-paths (run-evals-harness-extension-paths)))
     (json-object
      "observed"
      (json-object
@@ -12970,6 +13063,21 @@
       "vs_city" (nth 2 validate-smoke)
       "vs_tok" (nth 3 validate-smoke)
       "vs_n" (nth 4 validate-smoke)
+      "ve_ok" (nth 0 validate-extension)
+      "ve_greet" (nth 1 validate-extension)
+      "ve_paths" (nth 2 validate-extension)
+      "ve_empty" (nth 3 validate-extension)
+      "ve_n" (nth 4 validate-extension)
+      "sd_smoke" (nth 0 suite-dispatch)
+      "sd_ext" (nth 1 suite-dispatch)
+      "sd_auth" (nth 2 suite-dispatch)
+      "sd_unk" (nth 3 suite-dispatch)
+      "sd_n" (nth 4 suite-dispatch)
+      "er_yes" (nth 0 eval-result-p)
+      "er_hash" (nth 1 eval-result-p)
+      "er_str" (nth 2 eval-result-p)
+      "er_nil" (nth 3 eval-result-p)
+      "er_n" (nth 4 eval-result-p)
       "sca_def" (nth 0 canonical-api)
       "sca_pkg" (nth 1 canonical-api)
       "sca_case" (nth 2 canonical-api)
@@ -13014,7 +13122,22 @@
       "ra_sess" (nth 1 reporter-artifacts)
       "ra_rec" (nth 2 reporter-artifacts)
       "ra_case" (nth 3 reporter-artifacts)
-      "ra_n" (nth 4 reporter-artifacts))
+      "ra_n" (nth 4 reporter-artifacts)
+      "ct_plain" (nth 0 msg-content)
+      "ct_join" (nth 1 msg-content)
+      "ct_empty" (nth 2 msg-content)
+      "ct_blank" (nth 3 msg-content)
+      "ct_n" (nth 4 msg-content)
+      "at_empty" (nth 0 eval-tools-list)
+      "at_n" (nth 1 eval-tools-list)
+      "at_read" (nth 2 eval-tools-list)
+      "at_bash" (nth 3 eval-tools-list)
+      "at_keys" (nth 4 eval-tools-list)
+      "ep_none" (nth 0 eval-paths)
+      "ep_n" (nth 1 eval-paths)
+      "ep_path" (nth 2 eval-paths)
+      "ep_skip" (nth 3 eval-paths)
+      "ep_keys" (nth 4 eval-paths))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -13175,7 +13298,37 @@
      (collect "evals_harness.reporter_artifacts"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reporter-artifacts)))))))
+                  (run-evals-harness-reporter-artifacts))))
+     "validate_extension"
+     (collect "evals_harness.validate_extension"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-validate-extension))))
+     "suite_dispatch"
+     (collect "evals_harness.suite_dispatch"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-suite-dispatch))))
+     "eval_result_p"
+     (collect "evals_harness.eval_result_p"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-result-p))))
+     "msg_content"
+     (collect "evals_harness.msg_content"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-content-text))))
+     "eval_tools"
+     (collect "evals_harness.eval_tools"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-agent-tools))))
+     "eval_paths"
+     (collect "evals_harness.eval_paths"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-extension-paths)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -14236,6 +14389,14 @@
          (images (run-cli-print-rpc-images))
          (prompt (run-cli-print-rpc-prompt))
          (bash (run-cli-print-rpc-bash-result))
+         (leftover-queue (run-cli-print-rpc-queue-mode))
+         (leftover-asst
+           (run-cli-print-rpc-last-assistant
+            (rpc-last-assistant-fixture-agent)
+            (cadr-agent:make-agent)))
+         (leftover-cmds
+           (run-cli-print-rpc-command-list
+            (rpc-command-list-fixture-state))))
          (leftover-handle
            (leftover-rpc-handle-line-observed-pairs
             (run-cli-print-rpc-handle-bad-json)
@@ -14279,6 +14440,15 @@
       "br_tr" (nth 3 bash)
       "br_path" (nth 4 bash)
       "br_null" (nth 5 bash)
+      "qm_all" (nth 0 leftover-queue)
+      "qm_one" (nth 1 leftover-queue)
+      "qm_bad" (nth 2 leftover-queue)
+      "la_hit" (nth 0 leftover-asst)
+      "la_len" (nth 1 leftover-asst)
+      "la_miss" (nth 2 leftover-asst)
+      "cl_n" (nth 0 leftover-cmds)
+      "cl_ext" (nth 1 leftover-cmds)
+      "cl_prompt" (nth 2 leftover-cmds))
       "bj_cmd" (nth 0 leftover-handle)
       "bj_ok" (nth 1 leftover-handle)
       "bj_id" (nth 2 leftover-handle)
@@ -14327,6 +14497,24 @@
               (lambda ()
                 (lambda ()
                   (run-cli-print-rpc-bash-result))))
+     "queue_parse"
+     (collect "cli_print_rpc.queue_parse"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-queue-mode))))
+     "asst_text"
+     (collect "cli_print_rpc.asst_text"
+              (lambda ()
+                (let ((agent (rpc-last-assistant-fixture-agent))
+                      (empty (cadr-agent:make-agent)))
+                  (lambda ()
+                    (run-cli-print-rpc-last-assistant agent empty)))))
+     "cmd_list"
+     (collect "cli_print_rpc.cmd_list"
+              (lambda ()
+                (let ((state (rpc-command-list-fixture-state)))
+                  (lambda ()
+                    (run-cli-print-rpc-command-list state)))))
      "bad_line"
      (collect "cli_print_rpc.bad_line"
               (lambda ()
@@ -16517,6 +16705,16 @@
       (lambda ()
         (cadr-cli::resolve-tui-theme-value "missing" variables))))))
 
+(defparameter *goal20-tui-theme-required-color-names*
+  (remove-if
+   (lambda (name)
+     (member
+      name
+      '("thinkingMax" "scrollbarThumb"
+        "searchMatchBg" "searchMatchText")
+      :test #'string=))
+   (mapcar #'car cadr-cli::+tui-theme-json-color-map+)))
+
 (defun goal20-theme-required-colors ()
   (let ((colors (make-hash-table :test #'equal)))
     (dolist (name *goal20-tui-theme-required-color-names*)
@@ -16727,6 +16925,25 @@
    "ltf_miss" (nth 2 load)
    "ltf_bad" (nth 3 load)
    "ltf_empty" (nth 4 load)))
+
+
+(defun leftover-theme-prim-val-res-observed-pairs (prim val res)
+  (list
+   "tp_str" (nth 0 prim)
+   "tp_int" (nth 1 prim)
+   "tp_255" (nth 2 prim)
+   "tp_256" (nth 3 prim)
+   "tp_neg" (nth 4 prim)
+   "tp_nil" (nth 5 prim)
+   "tv_ok" (nth 0 val)
+   "tv_slash" (nth 1 val)
+   "tv_unknown" (nth 2 val)
+   "tr_int" (nth 0 res)
+   "tr_empty" (nth 1 res)
+   "tr_hex" (nth 2 res)
+   "tr_var" (nth 3 res)
+   "tr_cycle" (nth 4 res)
+   "tr_miss" (nth 5 res)))
 
 
 (defun leftover-user-bash-running-complete-stop-observed-pairs
@@ -17501,6 +17718,12 @@
           (run-cli-interactive-apply-tui-theme-summary))
         (leftover-theme-load
           (run-cli-interactive-load-tui-theme-file))
+        (leftover-theme-prim
+          (run-cli-interactive-theme-primitive))
+        (leftover-theme-val
+          (run-cli-interactive-theme-validate))
+        (leftover-theme-res
+          (run-cli-interactive-theme-resolve))
         (leftover-bash-running
           (run-cli-interactive-bash-append-running))
         (leftover-bash-string
@@ -17656,6 +17879,10 @@
               leftover-theme-overrides
               leftover-theme-apply
               leftover-theme-load)
+             (leftover-theme-prim-val-res-observed-pairs
+              leftover-theme-prim
+              leftover-theme-val
+              leftover-theme-res)
              (leftover-user-bash-running-complete-stop-observed-pairs
               leftover-bash-running
               leftover-bash-string
@@ -17780,6 +18007,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-load-tui-theme-file))))
+     "theme_prim"
+     (collect "cli_interactive_controller.theme_prim"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-primitive))))
+     "theme_val"
+     (collect "cli_interactive_controller.theme_val"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-validate))))
+     "theme_res"
+     (collect "cli_interactive_controller.theme_res"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-resolve))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -31973,6 +32215,18 @@
       "src/cadr-evals/reporter.lisp artifact-reference-json"
       "evals_harness.reporter_artifacts"
       "src/cadr-evals/reporter.lisp reporter-artifacts"
+      "evals_harness.validate_extension"
+      "src/cadr-evals/main.lisp validate-extension-result"
+      "evals_harness.suite_dispatch"
+      "src/cadr-evals/main.lisp %eval-main suite cond leftover replica"
+      "evals_harness.eval_result_p"
+      "src/cadr-evals/main.lisp %eval-main typep eval-result"
+      "evals_harness.msg_content"
+      "src/cadr-evals/harness.lisp message-content-text"
+      "evals_harness.eval_tools"
+      "src/cadr-evals/harness.lisp eval-agent-tools"
+      "evals_harness.eval_paths"
+      "src/cadr-evals/harness.lisp eval-extension-paths"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
@@ -32019,6 +32273,12 @@
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-prompt-message"
       "cli_print_rpc.bash_result"
       "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
+      "cli_print_rpc.queue_parse"
+      "src/cadr-cli/modes/rpc/commands.lisp parse-queue-mode"
+      "cli_print_rpc.asst_text"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-last-assistant-text"
+      "cli_print_rpc.cmd_list"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-command-list"
       "cli_print_rpc.bad_line"
       "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
       "cli_print_rpc.array_line"
@@ -32151,6 +32411,12 @@
       "src/cadr-cli/interactive/themes.lisp apply-tui-theme-summary"
       "cli_interactive_controller.load_tui_theme_file"
       "src/cadr-cli/interactive/themes.lisp load-tui-theme-file"
+      "cli_interactive_controller.theme_prim"
+      "src/cadr-cli/interactive/themes.lisp valid-tui-theme-primitive-p"
+      "cli_interactive_controller.theme_val"
+      "src/cadr-cli/interactive/themes.lisp validate-tui-theme-object"
+      "cli_interactive_controller.theme_res"
+      "src/cadr-cli/interactive/themes.lisp resolve-tui-theme-value"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
       "cli_interactive_controller.bash_complete_string"
