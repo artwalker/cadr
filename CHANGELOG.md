@@ -246,6 +246,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.th_lbl`
+  (`thinking-level-label` vs leftover replica of thinking level label).
+  Observed `tll_off` / `tll_max` exact. n=5 **1.547×**
+  (0.226 / 0.146 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1024). Over-1× booked. Does not remount
+  `thinking_level_label`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.th_qry`
+  (`thinking-selector-set-query` vs leftover replica of applyFilter from
+  search). Observed `tsq_empty` / `tsq_high` exact. n=5 **1.007×**
+  (11.741 / 11.657 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1025). Over-1× booked. Does not remount `thinking_selector_set_query`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.th_kb`
+  (`thinking-selector-keybindings` vs leftover replica of getKeybindings).
+  Observed `tskb_nil` / `tskb_custom` exact. n=5 **6.037×**
+  (3.062 / 0.507 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1026). Over-1× booked. Does not remount `thinking_selector_keybindings`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

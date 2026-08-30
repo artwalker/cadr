@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1024 — `cli_selectors` (th_lbl)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_lbl` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking level label |
+
+Leftover sibling of leftover 601–612 on the same needs-pair file. Does not remount `thinking_level_label`. Timed work is off/minimal/xhigh/max/low/bogus labels. Observed `tll_off` / `tll_max` are exact. First n=5 freeze **1.547×** (0.226 / 0.146 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1025 — `cli_selectors` (th_qry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_qry` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of applyFilter from search |
+
+Leftover sibling of Pair 1024. Does not remount `thinking_selector_set_query`. Timed work is empty / off / high / miss / nil / clear query. Observed `tsq_empty` / `tsq_high` are exact. First n=5 freeze **1.007×** (11.741 / 11.657 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1026 — `cli_selectors` (th_kb)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_kb` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of getKeybindings |
+
+Leftover sibling of Pairs 1024–1025. Does not remount `thinking_selector_keybindings`. Timed work is nil / default / custom / cancel / confirm first keys. Observed `tskb_nil` / `tskb_custom` are exact. First n=5 freeze **6.037×** (3.062 / 0.507 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
