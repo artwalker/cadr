@@ -531,4 +531,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
+| `oauth_pkce_device.github_domain` | 1.540 | 1.426 | 1.080× | 8.00× | measure-only leftover 913; `normalize-github-domain` vs leftoverNormalizeGitHubDomain | invent pause；地板优化另刀 |
+| `oauth_pkce_device.github_oauth_url` | 1.068 | 0.476 | 2.243× | 8.00× | measure-only leftover 914; `github-oauth-url` vs leftoverGithubOAuthUrl / getUrls | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

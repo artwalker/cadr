@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.github_domain`
+  (`normalize-github-domain` vs leftoverNormalizeGitHubDomain /
+  normalizeDomain). Observed `ghd_blank` / `ghd_plain` / `ghd_https` /
+  `ghd_trim` / `ghd_n` exact. n=5 **1.080×** (1.540 / 1.426 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 913). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_oauth_url`
+  (`github-oauth-url` vs leftoverGithubOAuthUrl / getUrls). Observed
+  `gou_dev` / `gou_tok` / `gou_ent` / `gou_https` / `gou_n` exact. n=5
+  **2.243×** (1.068 / 0.476 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 914). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_request_headers`
+  (`github-copilot-request-headers` vs leftover COPILOT_HEADERS +
+  Authorization Bearer). Observed `gch_n` / `gch_auth` / `gch_ua` /
+  `gch_acc` / `gch_ok` exact. n=5 **0.582×** (0.489 / 0.840 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 915). Under-1×.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

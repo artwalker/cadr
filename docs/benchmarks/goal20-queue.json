@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 913,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/github-copilot.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.github_domain",
+   "branch": "cursor/oauth-copilot-domain-url-headers-leftovers-913-915-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 913",
+   "ratio": 1.08,
+   "cadrUs": 1.54,
+   "piUs": 1.426,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 914,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/github-copilot.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.github_oauth_url",
+   "branch": "cursor/oauth-copilot-domain-url-headers-leftovers-913-915-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 914",
+   "ratio": 2.243,
+   "cadrUs": 1.068,
+   "piUs": 0.476,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 915,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/github-copilot.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.github_request_headers",
+   "branch": "cursor/oauth-copilot-domain-url-headers-leftovers-913-915-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 915",
+   "ratio": 0.582,
+   "cadrUs": 0.489,
+   "piUs": 0.84,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

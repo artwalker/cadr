@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `github_domain` | `normalize-github-domain` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverNormalizeGitHubDomain / normalizeDomain (`packages/ai/src/auth/oauth/github-copilot.ts`) |
 
-Leftover sibling of leftover copilot_url / copilot_auth on the same github-copilot hole. Timed work is domain normalize (blank / plain / https host / trim) — not base-url, not toAuth, not device login. Observed `ghd_blank` / `ghd_plain` / `ghd_https` / `ghd_trim` / `ghd_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover copilot_url / copilot_auth on the same github-copilot hole. Timed work is domain normalize (blank / plain / https host / trim) — not base-url, not toAuth, not device login. Observed `ghd_blank` / `ghd_plain` / `ghd_https` / `ghd_trim` / `ghd_n` are exact. First n=5 freeze **1.080×** (1.540 / 1.426 µs) on host `cursor`, ceiling 8.0. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 914 — `oauth_pkce_device` (github_oauth_url)
 
@@ -8742,7 +8742,7 @@ Leftover sibling of leftover copilot_url / copilot_auth on the same github-copil
 |---|---|---|
 | `github_oauth_url` | `github-oauth-url` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverGithubOAuthUrl / getUrls (`packages/ai/src/auth/oauth/github-copilot.ts`) |
 
-Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for device-code / access-token / enterprise host — not copilot_internal token URL. Observed `gou_dev` / `gou_tok` / `gou_ent` / `gou_https` / `gou_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for device-code / access-token / enterprise host — not copilot_internal token URL. Observed `gou_dev` / `gou_tok` / `gou_ent` / `gou_https` / `gou_n` are exact. First n=5 freeze **2.243×** (1.068 / 0.476 µs) on host `cursor`, ceiling 8.0. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 915 — `oauth_pkce_device` (github_request_headers)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for devi
 |---|---|---|
 | `github_request_headers` | `github-copilot-request-headers` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverGithubCopilotRequestHeaders / COPILOT_HEADERS + Authorization (`packages/ai/src/auth/oauth/github-copilot.ts`) |
 
-Leftover sibling of leftover 913–914. Timed work is extra Accept + Bearer + COPILOT_HEADERS — not oauth-flow-request. Observed `gch_n` / `gch_auth` / `gch_ua` / `gch_acc` / `gch_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 913–914. Timed work is extra Accept + Bearer + COPILOT_HEADERS — not oauth-flow-request. Observed `gch_n` / `gch_auth` / `gch_ua` / `gch_acc` / `gch_ok` are exact. First n=5 freeze **0.582×** (0.489 / 0.840 µs) on host `cursor`, ceiling 8.0. Under-1×. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

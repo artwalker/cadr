@@ -459,11 +459,17 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.provider_key": 8.0,
     "oauth_pkce_device.http_status_text": 8.0,
     "oauth_pkce_device.parse_callback_request": 8.0,
-    # Measure-only leftover 913; freeze pending.
+    # Frozen from the first leftover 913 n=5 freeze on host
+    # cursor: observed 1.080x (1.540 / 1.426 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
     "oauth_pkce_device.github_domain": 8.0,
-    # Measure-only leftover 914; freeze pending.
+    # Frozen from the first leftover 914 n=5 freeze on host
+    # cursor: observed 2.243x (1.068 / 0.476 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
     "oauth_pkce_device.github_oauth_url": 8.0,
-    # Measure-only leftover 915; freeze pending.
+    # Frozen from the first leftover 915 n=5 freeze on host
+    # cursor: observed 0.582x (0.489 / 0.840 us). cadr leads.
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "oauth_pkce_device.github_request_headers": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
