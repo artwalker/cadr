@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1078. cli_selectors oa_hri vs leftover replica of oauth-selector handleInput raw key dispatch
+;;;;      (does not remount oauth_selector_handle_raw_input)
+;;;; 1079. cli_selectors oa_esp vs leftover replica of env source regex
+;;;;      (does not remount oauth_environment_source_p)
+;;;; 1080. cli_selectors oa_lgo vs leftover replica of getLogoutProviderOptions
+;;;;      (does not remount logout_provider_options)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -833,14 +839,17 @@
     ("cli_selectors.oauth_option_status_rendered" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
+    ("cli_selectors.oa_esp" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
     ("cli_selectors.oauth_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
+    ("cli_selectors.oa_hri" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
+    ("cli_selectors.oa_lgo" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
@@ -29238,6 +29247,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-environment-source-p))))
+     "oa_esp"
+     (collect "cli_selectors.oa_esp"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-environment-source-p))))
      "oauth_selector_selection"
      (collect "cli_selectors.oauth_selector_selection"
               (lambda ()
@@ -29258,6 +29272,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-handle-raw-input))))
+     "oa_hri"
+     (collect "cli_selectors.oa_hri"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-handle-raw-input))))
      "oauth_selector_search_text"
      (collect "cli_selectors.oauth_selector_search_text"
               (lambda ()
@@ -29275,6 +29294,11 @@
                   (run-cli-selectors-login-provider-options))))
      "logout_provider_options"
      (collect "cli_selectors.logout_provider_options"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-logout-provider-options))))
+     "oa_lgo"
+     (collect "cli_selectors.oa_lgo"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-logout-provider-options))))
@@ -32918,6 +32942,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type"
       "cli_selectors.oauth_environment_source_p"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
+      "cli_selectors.oa_esp"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p leftover"
       "cli_selectors.oauth_selector_selection"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection"
       "cli_selectors.oauth_selector_apply_filter"
@@ -32926,6 +32952,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event"
       "cli_selectors.oauth_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
+      "cli_selectors.oa_hri"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input leftover"
       "cli_selectors.oauth_selector_search_text"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
       "cli_selectors.login_auth_type_route"
@@ -32934,6 +32962,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options"
       "cli_selectors.logout_provider_options"
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
+      "cli_selectors.oa_lgo"
+      "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options leftover"
       "cli_selectors.login_method_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
       "cli_selectors.oauth_selector_move"
