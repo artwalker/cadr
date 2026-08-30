@@ -1110,12 +1110,12 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.apply_tui_theme_summary": 8.0,
     # Measure-only leftover 639; first freeze 2.383× (233.265 / 97.883 µs).
     "cli_interactive_controller.load_tui_theme_file": 8.0,
-    # First-freeze headroom for leftover cli_interactive_controller.sess_make.
+    # Measure-only leftover 943; first freeze 1.130× (0.244 / 0.216 µs).
     # Does not remount tool_session_make / tool_session_update / tool_session_render.
     "cli_interactive_controller.sess_make": 8.0,
-    # First-freeze headroom for leftover cli_interactive_controller.sess_upd.
+    # Measure-only leftover 944; first freeze 1.132× (0.257 / 0.227 µs).
     "cli_interactive_controller.sess_upd": 8.0,
-    # First-freeze headroom for leftover cli_interactive_controller.sess_draw.
+    # Measure-only leftover 945; first freeze 0.842× (1.503 / 1.785 µs).
     "cli_interactive_controller.sess_draw": 8.0,
     # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,
