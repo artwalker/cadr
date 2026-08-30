@@ -1110,12 +1110,12 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.apply_tui_theme_summary": 8.0,
     # Measure-only leftover 639; first freeze 2.383× (233.265 / 97.883 µs).
     "cli_interactive_controller.load_tui_theme_file": 8.0,
-    # First-freeze headroom for leftover cli_interactive_controller.wrap_osc.
+    # Measure-only leftover 949; first freeze 0.981× (0.583 / 0.594 µs).
     # Does not remount wrap_transcript / output_padding / render_cacheable.
     "cli_interactive_controller.wrap_osc": 8.0,
-    # First-freeze headroom for leftover cli_interactive_controller.pad_str.
+    # Measure-only leftover 950; first freeze 1.041× (0.215 / 0.206 µs).
     "cli_interactive_controller.pad_str": 8.0,
-    # First-freeze headroom for leftover cli_interactive_controller.cache_p.
+    # Measure-only leftover 951; first freeze 2.014× (1.264 / 0.627 µs).
     "cli_interactive_controller.cache_p": 8.0,
     # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,

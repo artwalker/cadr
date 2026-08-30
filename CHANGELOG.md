@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.wrap_osc`
+  (`wrap-transcript-lines` vs leftover replica of UserMessageComponent
+  OSC 133 wrap). Observed `wt_nil` / `wt_one_n` / `wt_one_order` /
+  `wt_two_n` / `wt_two_first` / `wt_two_last` exact. n=5 **0.981×**
+  (0.583 / 0.594 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 949). Under-1×. Does not remount `wrap_transcript`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.pad_str`
+  (`output-padding-string` vs leftover replica of output padding spaces).
+  Observed `op_0` / `op_1` / `op_other` / `op_space` exact. n=5 **1.041×**
+  (0.215 / 0.206 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 950). Over-1× booked. Does not remount `output_padding`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.cache_p`
+  (`tui-entry-render-cacheable-p` vs leftover replica of TUI entry
+  render cacheable). Observed `rc_assist` / `rc_stream` / `rc_tool_nil` /
+  `rc_tool_done` / `rc_tool_run` / `rc_custom` exact. n=5 **2.014×**
+  (1.264 / 0.627 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 951). Over-1× booked. Does not remount `render_cacheable`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
