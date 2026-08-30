@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 907 — `cli_support` (provider_login_help)
+
+| metric | cadr | pi |
+|---|---|---|
+| `provider_login_help` | `get-provider-login-help` (`src/cadr-cli/support/model-help.lisp`) | `getProviderLoginHelp` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover sibling of leftover 460–462 on the same `model-help.lisp` hole. Timed work is the login-help wrapper itself — not format-no-models / no-model-selected / no-api-key. Observed `plh_pref` / `plh_login` / `plh_prov` / `plh_mod` / `plh_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 908 — `cli_support` (docs_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `docs_directory` | `docs-directory` (`src/cadr-cli/support/model-help.lisp`) | `getDocsPath` (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of leftover 460–462 / 907. Timed work is the docs-directory wrapper — not the three format-* messages. Observed `dd_docs` / `dd_len` / `dd_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 909 — `cli_support` (default_thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `default_thinking_level` | `+default-thinking-level+` (`src/cadr-cli/support/model-help.lisp`) | `DEFAULT_THINKING_LEVEL` (`packages/coding-agent/src/core/defaults.ts`) |
+
+Leftover sibling of leftover 460–462 / 907–908. Timed work is the default thinking keyword/string classify — not settings-manager get/set. Observed `dtl_med` / `dtl_high` / `dtl_name` / `dtl_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

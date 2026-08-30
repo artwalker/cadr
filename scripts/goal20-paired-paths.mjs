@@ -626,6 +626,9 @@ const REPETITIONS = {
 	"cli_support.no_models_help": 50,
 	"cli_support.no_model_selected": 50,
 	"cli_support.no_api_key": 50,
+	"cli_support.provider_login_help": 50,
+	"cli_support.docs_directory": 50,
+	"cli_support.default_thinking_level": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
@@ -1205,6 +1208,9 @@ const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts
 const uuidModule = await import(moduleUrl("packages/ai/src/utils/uuid.ts"));
 const authGuidanceModule = await import(
 	moduleUrl("packages/coding-agent/src/core/auth-guidance.ts")
+);
+const defaultsModule = await import(
+	moduleUrl("packages/coding-agent/src/core/defaults.ts")
 );
 const overflowModule = await import(moduleUrl("packages/ai/src/utils/overflow.ts"));
 const grammarModule = await import(moduleUrl("packages/ai/src/api/constrained-sampling.ts"));
@@ -15441,6 +15447,41 @@ function runCliSupportNoApiKey() {
 	};
 }
 
+
+function runCliSupportProviderLoginHelp() {
+	const text = authGuidanceModule.getProviderLoginHelp();
+	return {
+		plh_pref: authPrefix(text, 21),
+		plh_login: text.includes("Use /login") ? 1 : 0,
+		plh_prov: text.includes("providers.md") ? 1 : 0,
+		plh_mod: text.includes("models.md") ? 1 : 0,
+		plh_n: 1,
+	};
+}
+
+
+function runCliSupportDocsDirectory() {
+	const name = configModule.getDocsPath();
+	return {
+		dd_docs: name.includes("docs") ? 1 : 0,
+		dd_len: name.length > 3 ? 1 : 0,
+		dd_n: 1,
+	};
+}
+
+
+function runCliSupportDefaultThinkingLevel() {
+	const level = defaultsModule.DEFAULT_THINKING_LEVEL;
+	return {
+		dtl_med: level === "medium" ? 1 : 0,
+		dtl_high: level === "high" ? 1 : 0,
+		dtl_name: level === "medium" ? 1 : 0,
+		dtl_n: 1,
+	};
+}
+
+
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -15457,6 +15498,9 @@ async function measureCliSupportStripAnsi() {
 	const noModels = runCliSupportNoModelsHelp();
 	const noSelected = runCliSupportNoModelSelected();
 	const noKey = runCliSupportNoApiKey();
+	const loginHelp = runCliSupportProviderLoginHelp();
+	const docsDir = runCliSupportDocsDirectory();
+	const thinkLevel = runCliSupportDefaultThinkingLevel();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -15500,6 +15544,18 @@ async function measureCliSupportStripAnsi() {
 		no_api_key: await collect("cli_support.no_api_key", () => {
 			return () => runCliSupportNoApiKey();
 		}),
+		provider_login_help: await collect("cli_support.provider_login_help", () => {
+			return () => runCliSupportProviderLoginHelp();
+		}),
+		docs_directory: await collect("cli_support.docs_directory", () => {
+			return () => runCliSupportDocsDirectory();
+		}),
+		default_thinking_level: await collect(
+			"cli_support.default_thinking_level",
+			() => {
+				return () => runCliSupportDefaultThinkingLevel();
+			},
+		),
 		observed: {
 			...ansi,
 			...paths,
@@ -15515,6 +15571,9 @@ async function measureCliSupportStripAnsi() {
 			...noModels,
 			...noSelected,
 			...noKey,
+			...loginHelp,
+			...docsDir,
+			...thinkLevel,
 		},
 	};
 }
@@ -33691,6 +33750,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
 			"cli_support.no_api_key":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
+			"cli_support.provider_login_help":
+				"packages/coding-agent/src/core/auth-guidance.ts getProviderLoginHelp",
+			"cli_support.docs_directory":
+				"packages/coding-agent/src/config.ts getDocsPath",
+			"cli_support.default_thinking_level":
+				"packages/coding-agent/src/core/defaults.ts DEFAULT_THINKING_LEVEL",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":
