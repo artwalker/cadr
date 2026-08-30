@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1132 — `cli_selectors` (sl_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sl_ok` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector selected SelectList item |
+
+Leftover sibling of leftover 610–612 on the same needs-pair file. Does not remount `thinking_selector_selected_level`. Timed work is selected SelectList first / oob. Observed `tssl_first` / `tssl_oob` are exact. First n=5 freeze **0.666×** (0.498 / 0.747 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1133 — `cli_selectors` (dsc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dsc_ok` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of LEVEL_DESCRIPTIONS default suffix |
+
+Leftover sibling of Pair 1132. Does not remount `thinking_level_description_line`. Timed work is LEVEL_DESCRIPTIONS off-default / bogus. Observed `tsdl_off_def` / `tsdl_bogus` are exact. First n=5 freeze **1.292×** (0.290 / 0.225 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1134 — `cli_selectors` (rth_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rth_ok` | `render-thinking-selector` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of ThinkingSelectorComponent layout |
+
+Leftover sibling of Pairs 1132–1133. Does not remount `render_thinking_selector`. Timed work is ThinkingSelectorComponent layout. Observed `tsrd_default` / `tsrd_wide` are exact. First n=5 freeze **55.801×** (278.335 / 4.988 µs) on host `cursor`, ceiling 60.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
