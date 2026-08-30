@@ -9883,7 +9883,7 @@
     (list
      (bash-tool-truth
       (and (>= (length name) 4)
-           (string= ".log" name
+           (string= name ".log"
                     :start1 (- (length name) 4))))
      (bash-tool-truth
       (and hex (= (length hex) 16)
