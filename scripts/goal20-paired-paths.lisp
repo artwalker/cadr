@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1027. cli_selectors ld_wait vs leftover replica of LoginDialogComponent.showWaiting
+;;;;      (does not remount login_dialog_show_waiting)
+;;;; 1028. cli_selectors ld_prog vs leftover replica of LoginDialogComponent.showProgress
+;;;;      (does not remount login_dialog_show_progress)
+;;;; 1029. cli_selectors ld_man vs leftover replica of LoginDialogComponent.showManualInput
+;;;;      (does not remount login_dialog_show_manual_input)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -937,6 +943,9 @@
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
+    ("cli_selectors.ld_wait" . 50)
+    ("cli_selectors.ld_prog" . 50)
+    ("cli_selectors.ld_man" . 50)
     ("cli_selectors.login_dialog_show_prompt" . 50)
     ("cli_selectors.login_dialog_show_info" . 50)
     ("cli_selectors.login_dialog_show_details" . 50)
@@ -29756,6 +29765,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-dialog-show-manual-input))))
+     "ld_wait"
+     (collect "cli_selectors.ld_wait"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-waiting))))
+     "ld_prog"
+     (collect "cli_selectors.ld_prog"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-progress))))
+     "ld_man"
+     (collect "cli_selectors.ld_man"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-manual-input))))
      "login_dialog_show_prompt"
      (collect "cli_selectors.login_dialog_show_prompt"
               (lambda ()
@@ -33124,6 +33148,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-progress"
       "cli_selectors.login_dialog_show_manual_input"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-manual-input"
+      "cli_selectors.ld_wait"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting leftover"
+      "cli_selectors.ld_prog"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-progress leftover"
+      "cli_selectors.ld_man"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-manual-input leftover"
       "cli_selectors.login_dialog_show_prompt"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-prompt"
       "cli_selectors.login_dialog_show_info"
