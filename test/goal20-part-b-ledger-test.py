@@ -2931,6 +2931,9 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_selectors.thinking_selector_move", paired.RATIO_CEILINGS)
         self.assertIn("tsmv_down", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("tsmv_empty", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.th_mv", RECORD.METRIC_KEYS)
+        self.assertIn("th_mv", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.th_mv", paired.RATIO_CEILINGS)
         self.assertIn(
             "cli_selectors.thinking_selector_handle_raw_input", RECORD.METRIC_KEYS
         )
@@ -2956,6 +2959,9 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertIn("tssl_first", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("tssl_oob", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.th_lv", RECORD.METRIC_KEYS)
+        self.assertIn("th_lv", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.th_lv", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.thinking_level_description_line", RECORD.METRIC_KEYS)
         self.assertIn("thinking_level_description_line", paired.METRICS["cli_selectors"])
         self.assertIn(
@@ -2963,6 +2969,9 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertIn("tsdl_off_def", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("tsdl_bogus", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.th_ds", RECORD.METRIC_KEYS)
+        self.assertIn("th_ds", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.th_ds", paired.RATIO_CEILINGS)
         self.assertIn("cli_selectors.render_thinking_selector", RECORD.METRIC_KEYS)
         self.assertIn("render_thinking_selector", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.render_thinking_selector", paired.RATIO_CEILINGS)

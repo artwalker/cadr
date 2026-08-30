@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1045. cli_selectors th_mv vs leftover replica of thinking-selector wrap selected
+;;;;      (does not remount thinking_selector_move)
+;;;; 1046. cli_selectors th_lv vs leftover replica of thinking-selector selected level
+;;;;      (does not remount thinking_selector_selected_level)
+;;;; 1047. cli_selectors th_ds vs leftover replica of thinking-level description line
+;;;;      (does not remount thinking_level_description_line)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -923,10 +929,13 @@
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
     ("cli_selectors.thinking_selector_move" . 50)
+    ("cli_selectors.th_mv" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
     ("cli_selectors.thinking_selector_selected_level" . 50)
+    ("cli_selectors.th_lv" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
+    ("cli_selectors.th_ds" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
@@ -29686,6 +29695,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-move))))
+     "th_mv"
+     (collect "cli_selectors.th_mv"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-move))))
      "thinking_selector_handle_raw_input"
      (collect "cli_selectors.thinking_selector_handle_raw_input"
               (lambda ()
@@ -29701,8 +29715,18 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-selected-level))))
+     "th_lv"
+     (collect "cli_selectors.th_lv"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-selected-level))))
      "thinking_level_description_line"
      (collect "cli_selectors.thinking_level_description_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-description-line))))
+     "th_ds"
+     (collect "cli_selectors.th_ds"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-level-description-line))))
@@ -33096,14 +33120,20 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current"
       "cli_selectors.thinking_selector_move"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move"
+      "cli_selectors.th_mv"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move leftover"
       "cli_selectors.thinking_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input"
       "cli_selectors.thinking_selector_handle_event"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event"
       "cli_selectors.thinking_selector_selected_level"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
+      "cli_selectors.th_lv"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level leftover"
       "cli_selectors.thinking_level_description_line"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line"
+      "cli_selectors.th_ds"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line leftover"
       "cli_selectors.render_thinking_selector"
       "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector"
       "cli_selectors.trust_option_saved_p"
