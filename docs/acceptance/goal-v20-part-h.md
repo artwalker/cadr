@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1003 — `cli_selectors` (mlms_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mlms_ok` | `make-login-method-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent constructor |
+
+Leftover sibling of leftover 616–618 on the same needs-pair file. Does not remount `make_login_method_selector_state`. Timed work is login-method selector construct (default / three). Observed `mlms_default` / `mlms_three` are exact. First n=5 freeze **1.155×** (2.676 / 2.317 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1004 — `cli_selectors` (makis_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `makis_ok` | `make-api-key-input-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key Input constructor |
+
+Leftover sibling of Pair 1003. Does not remount `make_api_key_input_state`. Timed work is api-key input construct (anthropic / named). Observed `makis_anth` / `makis_named` are exact. First n=5 freeze **1.997×** (2.168 / 1.085 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1005 — `cli_selectors` (moss_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `moss_ok` | `make-oauth-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of OauthSelectorComponent constructor |
+
+Leftover sibling of Pairs 1003–1004. Does not remount `make_oauth_selector_state`. Timed work is oauth selector construct (login / logout). Observed `moss_default` / `moss_logout` are exact. First n=5 freeze **1.341×** (7.291 / 5.436 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

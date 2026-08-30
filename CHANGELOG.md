@@ -233,6 +233,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mlms_ok`
+  (`make-login-method-selector-state` vs leftover replica of
+  ExtensionSelectorComponent constructor). Observed `mlms_default` /
+  `mlms_three` exact. n=5 **1.155×** (2.676 / 2.317 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 1003). Over-1× booked. Does
+  not remount `make_login_method_selector_state`. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.makis_ok`
+  (`make-api-key-input-state` vs leftover replica of showPrompt api key
+  Input constructor). Observed `makis_anth` / `makis_named` exact. n=5
+  **1.997×** (2.168 / 1.085 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1004). Over-1× booked. Does not remount
+  `make_api_key_input_state`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.moss_ok`
+  (`make-oauth-selector-state` vs leftover replica of OauthSelectorComponent
+  constructor). Observed `moss_default` / `moss_logout` exact. n=5 **1.341×**
+  (7.291 / 5.436 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1005). Over-1× booked. Does not remount `make_oauth_selector_state`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
