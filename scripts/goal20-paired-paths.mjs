@@ -356,6 +356,9 @@ const REPETITIONS = {
 	"evals_harness.reporter_run_id": 50,
 	"evals_harness.artifact_reference_json": 50,
 	"evals_harness.reporter_artifacts": 50,
+	"evals_harness.rep_make": 50,
+	"evals_harness.fin_num": 50,
+	"evals_harness.art_meta": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -10593,6 +10596,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessReporterRunId(),
 		...runEvalsHarnessArtifactReferenceJson(),
 		...runEvalsHarnessReporterArtifacts(),
+		...runEvalsHarnessMakeReporter(),
+		...runEvalsHarnessFiniteNumber(),
+		...runEvalsHarnessArtifactMetadata(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -10690,6 +10696,15 @@ async function measureEvalsHarness() {
 		}),
 		reporter_artifacts: await collect("evals_harness.reporter_artifacts", () => {
 			return () => runEvalsHarnessReporterArtifacts();
+		}),
+		rep_make: await collect("evals_harness.rep_make", () => {
+			return () => runEvalsHarnessMakeReporter();
+		}),
+		fin_num: await collect("evals_harness.fin_num", () => {
+			return () => runEvalsHarnessFiniteNumber();
+		}),
+		art_meta: await collect("evals_harness.art_meta", () => {
+			return () => runEvalsHarnessArtifactMetadata();
 		}),
 		observed,
 	};
@@ -33551,6 +33566,12 @@ const result = {
 				"packages/evals/src/vitest-evals/artifacts.ts persist name/path (cadr artifact-reference-json)",
 			"evals_harness.reporter_artifacts":
 				"packages/evals/src/vitest-evals/reporter.ts test.artifacts assemble (cadr reporter-artifacts)",
+			"evals_harness.rep_make":
+				"packages/evals/src/vitest-evals/reporter.ts leftover replica of constructor artifactDirectory",
+			"evals_harness.fin_num":
+				"packages/evals/src/vitest-evals/reporter.ts leftover replica of finite number keep",
+			"evals_harness.art_meta":
+				"packages/evals/src/vitest-evals/reporter.ts leftover replica of artifact metadata filter",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

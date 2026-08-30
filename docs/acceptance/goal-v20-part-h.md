@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 952 — `evals_harness` (rep_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rep_make` | `make-eval-harness-reporter` (`src/cadr-evals/reporter.lisp`) | leftover replica of reporter constructor artifactDirectory |
+
+Leftover sibling of leftover 703–705 on the same needs-pair file. Does not remount `make_reporter`. Timed work is explicit dir, trimmed env fallback, missing env — not record-case, not persist. Observed `mr_explicit` / `mr_env` / `mr_miss` / `mr_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 953 — `evals_harness` (fin_num)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fin_num` | `reporter-finite-number` (`src/cadr-evals/reporter.lisp`) | leftover replica of finite number keep |
+
+Leftover sibling of Pair 952. Does not remount `finite_number`. Timed work is int/float keep and nil/inf/string drop — not observation walk, not persist. Observed `fn_int` / `fn_float` / `fn_nil` / `fn_inf` / `fn_str` / `fn_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 954 — `evals_harness` (art_meta)
+
+| metric | cadr | pi |
+|---|---|---|
+| `art_meta` | `reporter-artifact-metadata` (`src/cadr-evals/reporter.lisp`) | leftover replica of artifact metadata filter |
+
+Leftover sibling of Pairs 952–953. Does not remount `artifact_metadata`. Timed work is keep custom, drop runId and session snapshot — not JSONL, not persist. Observed `am_keep` / `am_runid` / `am_snap` / `am_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

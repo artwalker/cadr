@@ -573,6 +573,9 @@
     ("evals_harness.reporter_run_id" . 50)
     ("evals_harness.artifact_reference_json" . 50)
     ("evals_harness.reporter_artifacts" . 50)
+    ("evals_harness.rep_make" . 50)
+    ("evals_harness.fin_num" . 50)
+    ("evals_harness.art_meta" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -12838,7 +12841,10 @@
          (prepare-default (run-evals-harness-prepare-default-prompt))
          (reporter-run-id (run-evals-harness-reporter-run-id))
          (artifact-reference (run-evals-harness-artifact-reference-json))
-         (reporter-artifacts (run-evals-harness-reporter-artifacts)))
+         (reporter-artifacts (run-evals-harness-reporter-artifacts))
+         (leftover-rep-make (run-evals-harness-make-reporter))
+         (leftover-fin-num (run-evals-harness-finite-number))
+         (leftover-art-meta (run-evals-harness-artifact-metadata)))
     (json-object
      "observed"
      (json-object
@@ -13009,7 +13015,21 @@
       "ra_sess" (nth 1 reporter-artifacts)
       "ra_rec" (nth 2 reporter-artifacts)
       "ra_case" (nth 3 reporter-artifacts)
-      "ra_n" (nth 4 reporter-artifacts))
+      "ra_n" (nth 4 reporter-artifacts)
+      "mr_explicit" (nth 0 leftover-rep-make)
+      "mr_env" (nth 1 leftover-rep-make)
+      "mr_miss" (nth 2 leftover-rep-make)
+      "mr_n" (nth 3 leftover-rep-make)
+      "fn_int" (nth 0 leftover-fin-num)
+      "fn_float" (nth 1 leftover-fin-num)
+      "fn_nil" (nth 2 leftover-fin-num)
+      "fn_inf" (nth 3 leftover-fin-num)
+      "fn_str" (nth 4 leftover-fin-num)
+      "fn_n" (nth 5 leftover-fin-num)
+      "am_keep" (nth 0 leftover-art-meta)
+      "am_runid" (nth 1 leftover-art-meta)
+      "am_snap" (nth 2 leftover-art-meta)
+      "am_n" (nth 3 leftover-art-meta))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -13170,7 +13190,22 @@
      (collect "evals_harness.reporter_artifacts"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reporter-artifacts)))))))
+                  (run-evals-harness-reporter-artifacts))))
+     "rep_make"
+     (collect "evals_harness.rep_make"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-reporter))))
+     "fin_num"
+     (collect "evals_harness.fin_num"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-finite-number))))
+     "art_meta"
+     (collect "evals_harness.art_meta"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-metadata)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -31928,6 +31963,12 @@
       "src/cadr-evals/reporter.lisp artifact-reference-json"
       "evals_harness.reporter_artifacts"
       "src/cadr-evals/reporter.lisp reporter-artifacts"
+      "evals_harness.rep_make"
+      "src/cadr-evals/reporter.lisp make-eval-harness-reporter"
+      "evals_harness.fin_num"
+      "src/cadr-evals/reporter.lisp reporter-finite-number"
+      "evals_harness.art_meta"
+      "src/cadr-evals/reporter.lisp reporter-artifact-metadata"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
