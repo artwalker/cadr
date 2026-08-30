@@ -500,6 +500,9 @@ const REPETITIONS = {
 	"cli_selectors.dlg_make": 50,
 	"cli_selectors.dlg_auth": 50,
 	"cli_selectors.dlg_dev": 50,
+	"cli_selectors.dlg_new": 50,
+	"cli_selectors.dlg_key": 50,
+	"cli_selectors.dlg_code": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -31087,6 +31090,15 @@ async function measureCliSelectorsSessionSearch() {
 		dlg_dev: await collect("cli_selectors.dlg_dev", () => {
 			return () => runCliSelectorsLoginDialogDevice();
 		}),
+		dlg_new: await collect("cli_selectors.dlg_new", () => {
+			return () => runCliSelectorsLoginDialogMake();
+		}),
+		dlg_key: await collect("cli_selectors.dlg_key", () => {
+			return () => runCliSelectorsLoginDialogAuth();
+		}),
+		dlg_code: await collect("cli_selectors.dlg_code", () => {
+			return () => runCliSelectorsLoginDialogDevice();
+		}),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
 			return () => runCliSelectorsArminPixel();
 		}),
@@ -34538,6 +34550,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showAuth",
 			"cli_selectors.dlg_dev":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showDeviceCode",
+			"cli_selectors.dlg_new":
+				"packages/coding-agent leftover replica of LoginDialogComponent constructor (cadr make-login-dialog-state)",
+			"cli_selectors.dlg_key":
+				"packages/coding-agent leftover replica of showAuth (cadr login-dialog-show-auth)",
+			"cli_selectors.dlg_code":
+				"packages/coding-agent leftover replica of showDeviceCode (cadr login-dialog-show-device-code)",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
