@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 997 — `cli_selectors` (um_evt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_evt` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput structured events |
+
+Leftover sibling of leftover 628–630 on the same needs-pair file. Does not remount `user_message_handle_event`. Timed work is structured down/enter/escape/text/empty. Observed `umhe_down` / `umhe_empty` are exact. First n=5 freeze **0.703×** (1.352 / 1.922 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 998 — `cli_selectors` (um_raw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_raw` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput raw key dispatch |
+
+Leftover sibling of Pair 997. Does not remount `user_message_handle_raw`. Timed work is raw key dispatch (arrow-down / nop). Observed `umhr_down` / `umhr_nop` are exact. First n=5 freeze **17.827×** (84.555 / 4.743 µs) on host `cursor`, ceiling 30.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 999 — `cli_selectors` (um_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_draw` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageSelectorComponent layout |
+
+Leftover sibling of Pairs 997–998. Does not remount `render_user_message_selector`. Timed work is selector-frame layout (three items / hit initial). Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **62.446×** (244.644 / 3.918 µs) on host `cursor`, ceiling 100.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

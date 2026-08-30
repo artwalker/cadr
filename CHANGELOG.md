@@ -233,6 +233,28 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.um_evt`
+  (`user-message-selector-handle-event` vs leftover replica of
+  UserMessageList.handleInput structured events). Observed `umhe_down` /
+  `umhe_empty` exact. n=5 **0.703×** (1.352 / 1.922 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 997). Under-1×. Does not
+  remount `user_message_handle_event`. Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.um_raw`
+  (`user-message-selector-handle-raw-input` vs leftover replica of
+  UserMessageList.handleInput raw key dispatch). Observed `umhr_down` /
+  `umhr_nop` exact. n=5 **17.827×** (84.555 / 4.743 µs) on host `cursor`,
+  ceiling 30.0 first-freeze headroom. Measure-only leftover (Pair 998).
+  Over-1× booked. Does not remount `user_message_handle_raw`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.um_draw`
+  (`render-user-message-selector` vs leftover replica of
+  UserMessageSelectorComponent layout). Observed `umrd_three` / `umrd_hit`
+  exact. n=5 **62.446×** (244.644 / 3.918 µs) on host `cursor`, ceiling
+  100.0 first-freeze headroom. Measure-only leftover (Pair 999). Over-1×
+  booked. Does not remount `render_user_message_selector`. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

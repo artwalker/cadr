@@ -1533,13 +1533,13 @@ RATIO_CEILINGS = {
   # Measure-only leftover 630; first freeze 65.009× (265.302 / 4.081 µs).
   # 100.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_user_message_selector": 100.0,
-  # Measure-only leftover 997; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 997; first freeze 0.703× (1.352 / 1.922 µs). cadr leads.
   "cli_selectors.um_evt": 8.0,
-  # Measure-only leftover 998; first-freeze headroom 30.0 (sibling leftover 629
-  # froze 15.827×). Ratchet down only after a non-quick Friend-MachineD freeze.
+  # Measure-only leftover 998; first freeze 17.827× (84.555 / 4.743 µs).
+  # 30.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.um_raw": 30.0,
-  # Measure-only leftover 999; first-freeze headroom 100.0 (sibling leftover 630
-  # froze 65.009×). Ratchet down only after a non-quick Friend-MachineD freeze.
+  # Measure-only leftover 999; first freeze 62.446× (244.644 / 3.918 µs).
+  # 100.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.um_draw": 100.0,
   # Measure-only leftover 631; first freeze 1.496× (32.105 / 21.468 µs).
   "cli_selectors.make_models_selector_keybindings": 8.0,
