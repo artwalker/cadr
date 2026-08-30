@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1069. cli_selectors th_he vs leftover replica of thinking-selector typed input event dispatch
+;;;;      (does not remount thinking_selector_handle_event)
+;;;; 1070. cli_selectors th_mts vs leftover replica of thinking-selector constructor filter + select current
+;;;;      (does not remount make_thinking_selector_state)
+;;;; 1071. cli_selectors th_lst vs leftover replica of thinking-selector label + description search text
+;;;;      (does not remount thinking_level_search_text)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -915,16 +921,19 @@
     ("cli_selectors.make_model_selector_state" . 50)
     ("cli_selectors.thinking_level_label" . 50)
     ("cli_selectors.thinking_level_search_text" . 50)
+    ("cli_selectors.th_lst" . 50)
     ("cli_selectors.thinking_selector_set_query" . 50)
     ("cli_selectors.thinking_selector_key_p" . 50)
     ("cli_selectors.thinking_selector_keybindings" . 50)
     ("cli_selectors.make_thinking_selector_state" . 50)
+    ("cli_selectors.th_mts" . 50)
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
     ("cli_selectors.thinking_selector_move" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
+    ("cli_selectors.th_he" . 50)
     ("cli_selectors.thinking_selector_selected_level" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
@@ -29646,6 +29655,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-level-search-text))))
+     "th_lst"
+     (collect "cli_selectors.th_lst"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-search-text))))
      "thinking_selector_set_query"
      (collect "cli_selectors.thinking_selector_set_query"
               (lambda ()
@@ -29663,6 +29677,11 @@
                   (run-cli-selectors-thinking-selector-keybindings))))
      "make_thinking_selector_state"
      (collect "cli_selectors.make_thinking_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-thinking-selector-state))))
+     "th_mts"
+     (collect "cli_selectors.th_mts"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-thinking-selector-state))))
@@ -29693,6 +29712,11 @@
                   (run-cli-selectors-thinking-selector-handle-raw-input))))
      "thinking_selector_handle_event"
      (collect "cli_selectors.thinking_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-event))))
+     "th_he"
+     (collect "cli_selectors.th_he"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-handle-event))))
@@ -33080,6 +33104,8 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label"
       "cli_selectors.thinking_level_search_text"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text"
+      "cli_selectors.th_lst"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text leftover"
       "cli_selectors.thinking_selector_set_query"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query"
       "cli_selectors.thinking_selector_key_p"
@@ -33088,6 +33114,8 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings"
       "cli_selectors.make_thinking_selector_state"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
+      "cli_selectors.th_mts"
+      "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state leftover"
       "cli_selectors.thinking_selector_apply_filter"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter"
       "cli_selectors.thinking_selector_clamp_selected"
@@ -33100,6 +33128,8 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input"
       "cli_selectors.thinking_selector_handle_event"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event"
+      "cli_selectors.th_he"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event leftover"
       "cli_selectors.thinking_selector_selected_level"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
       "cli_selectors.thinking_level_description_line"
