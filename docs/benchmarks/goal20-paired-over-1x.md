@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `cli_selectors.tsmx_ok` | 255.762 | 68.284 | 3.746× | 8.00× | measure-only leftover 1210; `trust-selector-move` vs leftover wrap selection index | invent pause；地板优化另刀 |
+| `cli_selectors.tsex_ok` | 263.221 | 73.584 | 3.577× | 8.00× | measure-only leftover 1211; `trust-selector-handle-event` vs leftover handle-event dispatch | invent pause；地板优化另刀 |
+| `cli_selectors.tuix_ok` | 303.937 | 83.829 | 3.626× | 8.00× | measure-only leftover 1212; `trust-selector-ui-state` vs leftover TrustSelectorComponent UI state | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
