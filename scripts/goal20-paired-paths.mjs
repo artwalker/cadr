@@ -463,6 +463,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_set_query": 50,
 	"cli_selectors.thinking_selector_key_p": 50,
 	"cli_selectors.thinking_selector_keybindings": 50,
+	"cli_selectors.tllxxx_ok": 50,
+	"cli_selectors.tsqxxx_ok": 50,
+	"cli_selectors.tskbxxx_ok": 50,
 	"cli_selectors.make_thinking_selector_state": 50,
 	"cli_selectors.thinking_selector_apply_filter": 50,
 	"cli_selectors.thinking_selector_clamp_selected": 50,
@@ -30889,6 +30892,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsThinkingSelectorKeybindings();
 			},
 		),
+		tllxxx_ok: await collect("cli_selectors.tllxxx_ok", () => {
+			return () => runCliSelectorsThinkingLevelLabel();
+		}),
+		tsqxxx_ok: await collect("cli_selectors.tsqxxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorSetQuery();
+		}),
+		tskbxxx_ok: await collect("cli_selectors.tskbxxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorKeybindings();
+		}),
 		make_thinking_selector_state: await collect(
 			"cli_selectors.make_thinking_selector_state",
 			() => {
@@ -34482,6 +34494,12 @@ const result = {
 				"packages/tui/src/keybindings.ts KeybindingsManager.matches + CSI modified-arrow canonical compare (thinking-selector-key-p parity)",
 			"cli_selectors.thinking_selector_keybindings":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts getKeybindings slot-or-default",
+			"cli_selectors.tllxxx_ok":
+				"packages/coding-agent leftover replica of thinking level label",
+			"cli_selectors.tsqxxx_ok":
+				"packages/coding-agent leftover replica of applyFilter from search",
+			"cli_selectors.tskbxxx_ok":
+				"packages/coding-agent leftover replica of getKeybindings",
 			"cli_selectors.make_thinking_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts constructor filter + select current",
 			"cli_selectors.thinking_selector_apply_filter":
