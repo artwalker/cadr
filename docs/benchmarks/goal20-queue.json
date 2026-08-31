@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1237,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.utfx_ok",
+   "branch": "cursor/cli-powershell-utfx-pfxx-mtbx-ok-leftovers-1237-1239-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1237",
+   "ratio": 3.523,
+   "cadrUs": 0.651,
+   "piUs": 0.185,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1238,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.pfxx_ok",
+   "branch": "cursor/cli-powershell-utfx-pfxx-mtbx-ok-leftovers-1237-1239-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1238",
+   "ratio": 1.546,
+   "cadrUs": 0.536,
+   "piUs": 0.347,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1239,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.mtbx_ok",
+   "branch": "cursor/cli-powershell-utfx-pfxx-mtbx-ok-leftovers-1237-1239-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1239",
+   "ratio": 1.149,
+   "cadrUs": 2.172,
+   "piUs": 1.890,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
