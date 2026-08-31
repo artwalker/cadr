@@ -31691,7 +31691,7 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))
+                   (first file-pair) (second file-pair)))))
      "pbk_ok"
      (collect "cli_bootstrap_sessions.pbk_ok"
               (lambda ()
