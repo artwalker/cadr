@@ -246,6 +246,28 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.slx_ok`
+  (`thinking-selector-selected-level` vs leftover replica of thinking-selector
+  selected SelectList item). Observed `tssl_first` / `tssl_oob` exact. n=5
+  **0.745×** (0.556 / 0.746 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 1213). Under-1×. Does not remount
+  `thinking_selector_selected_level` / leftover 1132 `sl_ok`. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dscx_ok`
+  (`thinking-level-description-line` vs leftover replica of
+  LEVEL_DESCRIPTIONS default suffix). Observed `tsdl_off_def` /
+  `tsdl_bogus` exact. n=5 **1.375×** (0.309 / 0.225 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 1214). Over-1× booked. Does
+  not remount `thinking_level_description_line` / leftover 1133 `dsc_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.rthx_ok`
+  (`render-thinking-selector` vs leftover replica of
+  ThinkingSelectorComponent layout). Observed `tsrd_default` / `tsrd_wide`
+  exact. n=5 **53.487×** (269.249 / 5.034 µs) on host `cursor`, ceiling
+  60.0 matching leftover 1134. Measure-only leftover (Pair 1215). Over-1×
+  booked. Does not remount `render_thinking_selector` / leftover 1134 `rth_ok`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
