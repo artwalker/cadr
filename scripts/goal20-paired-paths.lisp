@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1261. cli_selectors mkbx_ok vs leftover replica of KeybindingsManager app.models.*
+;;;;      (does not remount leftover 1195 mkb_ok / leftover 1114 kb_ok / leftover 1039 ms_kb)
+;;;; 1262. cli_selectors msmsx_ok vs leftover replica of ScopedModelsSelectorComponent constructor
+;;;;      (does not remount leftover 1196 msms_ok / leftover 1115 sms_ok / leftover 1039 sm_st)
+;;;; 1263. cli_selectors mrmsx_ok vs leftover replica of ModelSelectorComponent layout
+;;;;      (does not remount leftover 1197 mrms_ok / leftover 1116 rms_ok / leftover 1039 rm_sel)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -949,6 +955,9 @@
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
+    ("cli_selectors.mkbx_ok" . 50)
+    ("cli_selectors.msmsx_ok" . 50)
+    ("cli_selectors.mrmsx_ok" . 50)
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
@@ -29816,6 +29825,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-model-selector))))
+     "mkbx_ok"
+     (collect "cli_selectors.mkbx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-models-selector-keybindings))))
+     "msmsx_ok"
+     (collect "cli_selectors.msmsx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-scoped-models-selector-state))))
+     "mrmsx_ok"
+     (collect "cli_selectors.mrmsx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-model-selector))))
      "daxnuts_rgb_at"
      (collect "cli_selectors.daxnuts_rgb_at"
               (lambda ()
@@ -33188,6 +33212,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state"
       "cli_selectors.render_model_selector"
       "src/cadr-cli/interactive/selectors/models.lisp render-model-selector"
+      "cli_selectors.mkbx_ok"
+      "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings leftover"
+      "cli_selectors.msmsx_ok"
+      "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state leftover"
+      "cli_selectors.mrmsx_ok"
+      "src/cadr-cli/interactive/selectors/models.lisp render-model-selector leftover"
       "cli_selectors.daxnuts_rgb_at"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at"
       "cli_selectors.make_daxnuts_component"
