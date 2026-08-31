@@ -198,6 +198,12 @@
 ;;;;      (does not remount leftover 1298 mtsxx_ok / leftover 1232 mtsx_ok / leftover 1151 mts_ok / leftover 1070 th_mts)
 ;;;; 1365. cli_selectors lstxxx_ok vs leftover replica of thinking-selector label + description search text
 ;;;;      (does not remount leftover 1299 lstxx_ok / leftover 1233 lstx_ok / leftover 1152 lst_ok / leftover 1071 th_lst)
+;;;; 1381. cli_selectors ldwxxx_ok vs leftover replica of LoginDialogComponent.showWaiting
+;;;;      (does not remount leftover 1315 ldwxx_ok / leftover 1183 ldw_ok / leftover 1102 wait_ok / leftover 1027 ld_wait / leftover 1249 ldwx_ok)
+;;;; 1382. cli_selectors ldpxxx_ok vs leftover replica of LoginDialogComponent.showProgress
+;;;;      (does not remount leftover 1316 ldpxx_ok / leftover 1184 ldp_ok / leftover 1103 prog_ok / leftover 1028 ld_prog / leftover 1250 ldpx_ok)
+;;;; 1383. cli_selectors ldmixxx_ok vs leftover replica of LoginDialogComponent.showManualInput
+;;;;      (does not remount leftover 1317 ldmixx_ok / leftover 1185 ldmi_ok / leftover 1104 man_ok / leftover 1029 ld_man / leftover 1251 ldmix_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -955,6 +961,9 @@
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
+    ("cli_selectors.ldwxxx_ok" . 50)
+    ("cli_selectors.ldpxxx_ok" . 50)
+    ("cli_selectors.ldmixxx_ok" . 50)
     ("cli_selectors.login_dialog_show_prompt" . 50)
     ("cli_selectors.login_dialog_show_info" . 50)
     ("cli_selectors.login_dialog_show_details" . 50)
@@ -29804,6 +29813,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-dialog-show-manual-input))))
+     "ldwxxx_ok"
+     (collect "cli_selectors.ldwxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-waiting))))
+     "ldpxxx_ok"
+     (collect "cli_selectors.ldpxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-progress))))
+     "ldmixxx_ok"
+     (collect "cli_selectors.ldmixxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-manual-input))))
      "login_dialog_show_prompt"
      (collect "cli_selectors.login_dialog_show_prompt"
               (lambda ()
@@ -33184,6 +33208,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-progress"
       "cli_selectors.login_dialog_show_manual_input"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-manual-input"
+      "cli_selectors.ldwxxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting leftover"
+      "cli_selectors.ldpxxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-progress leftover"
+      "cli_selectors.ldmixxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-manual-input leftover"
       "cli_selectors.login_dialog_show_prompt"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-prompt"
       "cli_selectors.login_dialog_show_info"
