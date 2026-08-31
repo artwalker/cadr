@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1201. cli_selectors thmv_ok vs leftover replica of thinking-selector wrap selected
+;;;;      (does not remount thinking_selector_move / leftover 1045 th_mv / leftover 1120 mv_ok)
+;;;; 1202. cli_selectors thhr_ok vs leftover replica of thinking-selector handleInput keybindings
+;;;;      (does not remount thinking_selector_handle_raw_input / leftover 1045 th_hri / leftover 1121 hri_ok)
+;;;; 1203. cli_selectors thhe_ok vs leftover replica of thinking-selector typed input event dispatch
+;;;;      (does not remount thinking_selector_handle_event / leftover 1045 th_hev / leftover 1122 hev_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -925,6 +931,9 @@
     ("cli_selectors.thinking_selector_move" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
+    ("cli_selectors.thmv_ok" . 50)
+    ("cli_selectors.thhr_ok" . 50)
+    ("cli_selectors.thhe_ok" . 50)
     ("cli_selectors.thinking_selector_selected_level" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
@@ -29696,6 +29705,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-handle-event))))
+     "thmv_ok"
+     (collect "cli_selectors.thmv_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-move))))
+     "thhr_ok"
+     (collect "cli_selectors.thhr_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-raw-input))))
+     "thhe_ok"
+     (collect "cli_selectors.thhe_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-event))))
      "thinking_selector_selected_level"
      (collect "cli_selectors.thinking_selector_selected_level"
               (lambda ()
@@ -33100,6 +33124,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input"
       "cli_selectors.thinking_selector_handle_event"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event"
+      "cli_selectors.thmv_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move leftover"
+      "cli_selectors.thhr_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input leftover"
+      "cli_selectors.thhe_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event leftover"
       "cli_selectors.thinking_selector_selected_level"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
       "cli_selectors.thinking_level_description_line"
