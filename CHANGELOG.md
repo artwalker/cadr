@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldw_ok`
+  (`login-dialog-show-waiting` vs leftover replica of
+  LoginDialogComponent.showWaiting). Observed `ldw_empty` / `ldw_device`
+  exact. n=5 **1.997×** (5.857 / 2.933 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1183). Over-1× booked. Does not remount
+  `login_dialog_show_waiting` / leftover 1027 `ld_wait` / leftover 1102
+  `wait_ok`. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldp_ok`
+  (`login-dialog-show-progress` vs leftover replica of
+  LoginDialogComponent.showProgress). Observed `ldp_empty` / `ldp_wait`
+  exact. n=5 **1.619×** (3.316 / 2.048 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1184). Over-1× booked. Does not remount
+  `login_dialog_show_progress` / leftover 1028 `ld_prog` / leftover 1103
+  `prog_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldmi_ok`
+  (`login-dialog-show-manual-input` vs leftover replica of
+  LoginDialogComponent.showManualInput). Observed `ldmi_empty` /
+  `ldmi_nocancel` exact. n=5 **1.941×** (5.501 / 2.834 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1185). Over-1×
+  booked. Does not remount `login_dialog_show_manual_input` / leftover
+  1029 `ld_man` / leftover 1104 `man_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

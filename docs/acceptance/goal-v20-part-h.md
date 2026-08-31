@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1183 — `cli_selectors` (ldw_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ldw_ok` | `login-dialog-show-waiting` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showWaiting |
+
+Leftover sibling of leftover 1102–1104 on the same needs-pair file (third unused slug after leftover 1027 `ld_wait` / leftover 1102 `wait_ok`). Does not remount `login_dialog_show_waiting`. Timed work is empty / device waiting UI. Observed `ldw_empty` / `ldw_device` are exact. First n=5 freeze **1.997×** (5.857 / 2.933 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1184 — `cli_selectors` (ldp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ldp_ok` | `login-dialog-show-progress` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showProgress |
+
+Leftover sibling of Pair 1183. Does not remount `login_dialog_show_progress` / leftover 1028 `ld_prog` / leftover 1103 `prog_ok`. Timed work is empty / wait progress UI. Observed `ldp_empty` / `ldp_wait` are exact. First n=5 freeze **1.619×** (3.316 / 2.048 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1185 — `cli_selectors` (ldmi_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ldmi_ok` | `login-dialog-show-manual-input` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showManualInput |
+
+Leftover sibling of Pairs 1183–1184. Does not remount `login_dialog_show_manual_input` / leftover 1029 `ld_man` / leftover 1104 `man_ok`. Timed work is empty / nocancel manual input UI. Observed `ldmi_empty` / `ldmi_nocancel` are exact. First n=5 freeze **1.941×** (5.501 / 2.834 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
