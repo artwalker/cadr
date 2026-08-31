@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1333 — `cli_selectors` (thmvxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thmvxx_ok` | `thinking-selector-move` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector wrap selected |
+
+Leftover sibling of leftover 1267–1269 on the same needs-pair file (fifth unused slug after leftover 1045 `th_mv` / leftover 1120 `mv_ok` / leftover 1201 `thmv_ok` / leftover 1267 `thmvx_ok`). Does not remount `thinking_selector_move`. Timed work is down / empty wrap-selected. Observed `tsmv_down` / `tsmv_empty` are exact. First n=5 freeze **1.805×** (0.659 / 0.365 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1334 — `cli_selectors` (thhrxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thhrxx_ok` | `thinking-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector handleInput keybindings |
+
+Leftover sibling of Pair 1333. Does not remount `thinking_selector_handle_raw_input` / leftover 1045 `th_hri` / leftover 1121 `hri_ok` / leftover 1202 `thhr_ok` / leftover 1268 `thhrx_ok`. Timed work is down / save raw handle. Observed `tshri_down` / `tshri_save` are exact. First n=5 freeze **23.115×** (143.405 / 6.204 µs) on host `cursor`, ceiling 30.0 matching leftover 1268. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1335 — `cli_selectors` (thhexx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thhexx_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector typed input event dispatch |
+
+Leftover sibling of Pairs 1333–1334. Does not remount `thinking_selector_handle_event` / leftover 1045 `th_hev` / leftover 1122 `hev_ok` / leftover 1203 `thhe_ok` / leftover 1269 `thhex_ok`. Timed work is down / text handle-event. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **0.957×** (3.365 / 3.517 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
