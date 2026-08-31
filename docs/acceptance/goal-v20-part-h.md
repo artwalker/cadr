@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1150 — `cli_selectors` (hen_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hen_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector typed input event dispatch |
+
+Leftover sibling of leftover 1069–1071 on the same needs-pair file (second unused slug after leftover 1069 `th_he` / leftover 1120 `hev_ok`). Does not remount `thinking_selector_handle_event`. Timed work is thinking handle-event down / text. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **0.908×** (3.184 / 3.506 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1151 — `cli_selectors` (mts_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mts_ok` | `make-thinking-selector-state` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector constructor filter + select current |
+
+Leftover sibling of Pair 1150. Does not remount `make_thinking_selector_state` / leftover 1070 `th_mts`. Timed work is thinking constructor high / default. Observed `tms_high` / `tms_default` are exact. First n=5 freeze **0.884×** (1.697 / 1.919 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1152 — `cli_selectors` (lst_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lst_ok` | `thinking-level-search-text` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector label + description search text |
+
+Leftover sibling of Pairs 1150–1151. Does not remount `thinking_level_search_text` / leftover 1071 `th_lst`. Timed work is thinking search-text off / high. Observed `tlst_off` / `tlst_high` are exact. First n=5 freeze **2.174×** (1.121 / 0.516 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

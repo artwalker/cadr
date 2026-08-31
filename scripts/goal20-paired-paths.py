@@ -1296,8 +1296,7 @@ RATIO_CEILINGS = {
     # First-freeze headroom for leftover cli_selectors.thinking_level_search_text.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.thinking_level_search_text": 8.0,
-  # Measure-only leftover 1152; first-freeze headroom matching leftover 1071
-  # th_lst (2.224×). Ratchet down only.
+  # Measure-only leftover 1152; first freeze 2.174× (1.121 / 0.516 µs).
   "cli_selectors.lst_ok": 8.0,
     # First-freeze headroom for leftover cli_selectors.thinking_selector_set_query.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
@@ -1476,8 +1475,7 @@ RATIO_CEILINGS = {
   "cli_selectors.thinking_selector_keybindings": 8.0,
   # Measure-only leftover 603; first freeze 0.638× (1.623 / 2.545 µs). cadr leads.
   "cli_selectors.make_thinking_selector_state": 8.0,
-  # Measure-only leftover 1151; first-freeze headroom matching leftover 1070
-  # th_mts (0.917×). Ratchet down only.
+  # Measure-only leftover 1151; first freeze 0.884× (1.697 / 1.919 µs). cadr leads.
   "cli_selectors.mts_ok": 8.0,
   # Measure-only leftover 604; first freeze 1.149× (13.399 / 11.664 µs).
   "cli_selectors.thinking_selector_apply_filter": 8.0,
@@ -1492,8 +1490,7 @@ RATIO_CEILINGS = {
   "cli_selectors.thinking_selector_handle_raw_input": 30.0,
   # Measure-only leftover 609; first freeze 0.834× (3.312 / 3.974 µs). cadr leads.
   "cli_selectors.thinking_selector_handle_event": 8.0,
-  # Measure-only leftover 1150; first-freeze headroom matching leftover 1069
-  # th_he (0.861×). Ratchet down only.
+  # Measure-only leftover 1150; first freeze 0.908× (3.184 / 3.506 µs). cadr leads.
   "cli_selectors.hen_ok": 8.0,
   # Measure-only leftover 610; first freeze 0.608× (0.467 / 0.768 µs). cadr leads.
   "cli_selectors.thinking_selector_selected_level": 8.0,
