@@ -9007,6 +9007,30 @@ Leftover sibling of Pair 1354. Does not remount `login_provider_options` / lefto
 
 Leftover sibling of Pairs 1354–1355. Does not remount `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143 `lgo_ok` / leftover 1224 `lgox_ok` / leftover 1290 `lgoxx_ok`. Timed work is logout provider options empty / mixed. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.122×** (7.260 / 3.422 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1378 — `cli_selectors` (tllxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tllxxx_ok` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking level label |
+
+Leftover sibling of leftover 1312–1314 on the same needs-pair file (sixth unused slug after leftover 1024 `th_lbl` / leftover 1099 `tlbl_ok` / leftover 1180 `tll_ok` / leftover 1246 `tllx_ok` / leftover 1312 `tllxx_ok`). Does not remount `thinking_level_label`. Timed work is off / max label. Observed `tll_off` / `tll_max` are exact. First n=5 freeze **1.762×** (0.265 / 0.150 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1379 — `cli_selectors` (tsqxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsqxxx_ok` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of applyFilter from search |
+
+Leftover sibling of Pair 1378. Does not remount `thinking_selector_set_query` / leftover 1025 `th_qry` / leftover 1100 `tqry_ok` / leftover 1181 `tsq_ok` / leftover 1247 `tsqx_ok` / leftover 1313 `tsqxx_ok`. Timed work is empty / high query. Observed `tsq_empty` / `tsq_high` are exact. First n=5 freeze **1.197×** (12.695 / 10.607 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1380 — `cli_selectors` (tskbxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tskbxxx_ok` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of getKeybindings |
+
+Leftover sibling of Pairs 1378–1379. Does not remount `thinking_selector_keybindings` / leftover 1026 `th_kb` / leftover 1101 `tkb_ok` / leftover 1182 `tskb_ok` / leftover 1248 `tskbx_ok` / leftover 1314 `tskbxx_ok`. Timed work is nil / custom keybindings. Observed `tskb_nil` / `tskb_custom` are exact. First n=5 freeze **5.612×** (2.960 / 0.528 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
