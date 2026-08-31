@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1192. cli_selectors umev_ok vs leftover replica of UserMessageList.handleInput (structured)
+;;;;      (does not remount user_message_handle_event / leftover 1036 um_he / leftover 1111 he_ok)
+;;;; 1193. cli_selectors umrw_ok vs leftover replica of UserMessageList.handleInput (raw)
+;;;;      (does not remount user_message_handle_raw / leftover 1036 um_hr / leftover 1112 raw_ok)
+;;;; 1194. cli_selectors umrs_ok vs leftover replica of UserMessageSelectorComponent layout
+;;;;      (does not remount render_user_message_selector / leftover 1036 um_rd / leftover 1113 sel_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -946,6 +952,9 @@
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
+    ("cli_selectors.umev_ok" . 50)
+    ("cli_selectors.umrw_ok" . 50)
+    ("cli_selectors.umrs_ok" . 50)
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
@@ -29801,6 +29810,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-user-message-selector))))
+     "umev_ok"
+     (collect "cli_selectors.umev_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-event))))
+     "umrw_ok"
+     (collect "cli_selectors.umrw_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-raw))))
+     "umrs_ok"
+     (collect "cli_selectors.umrs_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-user-message-selector))))
      "make_models_selector_keybindings"
      (collect "cli_selectors.make_models_selector_keybindings"
               (lambda ()
@@ -33182,6 +33206,12 @@
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input"
       "cli_selectors.render_user_message_selector"
       "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector"
+      "cli_selectors.umev_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-event leftover"
+      "cli_selectors.umrw_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input leftover"
+      "cli_selectors.umrs_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector leftover"
       "cli_selectors.make_models_selector_keybindings"
       "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings"
       "cli_selectors.make_scoped_models_selector_state"
