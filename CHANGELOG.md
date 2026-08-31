@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.akhe_ok`
+  (`api-key-input-state-handle-event` vs leftover replica of login
+  dialog api key prompt handleInput). Observed `akhe_esc` / `akhe_text`
+  exact. n=5 **0.907×** (5.328 / 5.875 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1147). Under-1×. Does not remount
+  `api_key_input_state_handle_event` / leftover 1066 `oa_akhe`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mls_ok`
+  (`make-login-method-selector-state` vs leftover replica of
+  ExtensionSelectorComponent constructor). Observed `mlms_default` /
+  `mlms_three` exact. n=5 **1.135×** (2.700 / 2.379 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1148). Over-1×
+  booked. Does not remount `make_login_method_selector_state` / leftover
+  1067 `oa_mls` / leftover 1126 `lms_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ais_ok`
+  (`make-api-key-input-state` vs leftover replica of showPrompt api
+  key Input constructor). Observed `makis_anth` / `makis_named` exact.
+  n=5 **1.879×** (2.227 / 1.185 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1149). Over-1× booked. Does not remount
+  `make_api_key_input_state` / leftover 1068 `oa_ais` / leftover 1127
+  `aki_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

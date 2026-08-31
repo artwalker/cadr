@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1147 — `cli_selectors` (akhe_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `akhe_ok` | `api-key-input-state-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login dialog api key prompt handleInput |
+
+Leftover sibling of leftover 1066–1068 on the same needs-pair file (second unused slug after leftover 1066 `oa_akhe`). Does not remount `api_key_input_state_handle_event`. Timed work is api-key handle-event esc / text. Observed `akhe_esc` / `akhe_text` are exact. First n=5 freeze **0.907×** (5.328 / 5.875 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1148 — `cli_selectors` (mls_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mls_ok` | `make-login-method-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent constructor |
+
+Leftover sibling of Pair 1147. Does not remount `make_login_method_selector_state` / leftover 1067 `oa_mls` / leftover 1126 `lms_ok`. Timed work is login-method constructor default / three. Observed `mlms_default` / `mlms_three` are exact. First n=5 freeze **1.135×** (2.700 / 2.379 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1149 — `cli_selectors` (ais_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ais_ok` | `make-api-key-input-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key Input constructor |
+
+Leftover sibling of Pairs 1147–1148. Does not remount `make_api_key_input_state` / leftover 1068 `oa_ais` / leftover 1127 `aki_ok`. Timed work is api-key constructor anth / named. Observed `makis_anth` / `makis_named` are exact. First n=5 freeze **1.879×** (2.227 / 1.185 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
