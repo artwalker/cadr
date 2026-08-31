@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1174 — `cli_selectors` (dra_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dra_ok` | `daxnuts-rgb-at` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of parseImage pixel lookup |
+
+Leftover sibling of leftover 1093–1095 on the same needs-pair file (third unused slug after leftover 1021 `dax_rgb` / leftover 1093 `dn_rgb`). Does not remount `daxnuts_rgb_at`. Timed work is pixel lookup at 00 / 0x / mid / last / 10. Observed `dra_00` / `dra_mid` are exact. First n=5 freeze **1.839×** (0.945 / 0.514 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1175 — `cli_selectors` (dmc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dmc_ok` | `make-daxnuts-component` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of DaxnutsComponent constructor |
+
+Leftover sibling of Pair 1174. Does not remount `make_daxnuts_component` / leftover 1022 `dax_make` / leftover 1094 `dn_make`. Timed work is constructor without startAnimation. Observed `dmc_tick` is exact. First n=5 freeze **3.556×** (0.720 / 0.202 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1176 — `cli_selectors` (dct_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dct_ok` | `daxnuts-component-tick` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of DaxnutsComponent interval |
+
+Leftover sibling of Pairs 1174–1175. Does not remount `daxnuts_component_tick` / leftover 1023 `dax_tick` / leftover 1095 `dn_tick`. Timed work is one tick / max / stop / after / renders. Observed `dct_one` / `dct_renders` are exact. First n=5 freeze **6.102×** (3.940 / 0.646 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
