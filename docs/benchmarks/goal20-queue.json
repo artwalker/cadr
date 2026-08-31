@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1285,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.oasxx_ok",
+   "branch": "cursor/cli-auth-oasxx-fltxx-qryxx-ok-leftovers-1285-1287-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1219",
+   "ratio": 16.119,
+   "cadrUs": 75.556,
+   "piUs": 4.687,
+   "ceiling": 20.0,
+   "rc": 2
+  },
+  {
+   "pair": 1286,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.fltxx_ok",
+   "branch": "cursor/cli-auth-oasxx-fltxx-qryxx-ok-leftovers-1285-1287-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1220",
+   "ratio": 10.231,
+   "cadrUs": 81.287,
+   "piUs": 7.945,
+   "ceiling": 12.0,
+   "rc": 2
+  },
+  {
+   "pair": 1287,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.qryxx_ok",
+   "branch": "cursor/cli-auth-oasxx-fltxx-qryxx-ok-leftovers-1285-1287-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1221",
+   "ratio": 2.161,
+   "cadrUs": 1.176,
+   "piUs": 0.544,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
