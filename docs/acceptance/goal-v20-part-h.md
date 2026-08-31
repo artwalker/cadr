@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1369 — `powershell_tool` (utfxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `utfxxx_ok` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling of leftover 1303–1305 on the same needs-pair file (sixth unused slug after leftover 1015 `up_ok` / leftover 1090 `ps_up` / leftover 1171 `utf_ok` / leftover 1237 `utfx_ok` / leftover 1303 `utfxx_ok`). Does not remount `utf8_prefix`. Timed work is prefix length / newline / try / utf8 / n. Observed `psu_len` / `psu_n` are exact. First n=5 freeze **2.585×** (0.713 / 0.276 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1370 — `powershell_tool` (pfxxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pfxxxx_ok` | UTF-8 prefix + command concatenate (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createLocalPowerShellOperations wrap |
+
+Leftover sibling of Pair 1369. Does not remount `prefix_command` / leftover 1016 `pc_ok` / leftover 1091 `ps_pc` / leftover 1172 `pfx_ok` / leftover 1238 `pfxx_ok` / leftover 1304 `pfxxx_ok`. Timed work is empty / date / write concatenations. Observed `psc_empty` / `psc_n` are exact. First n=5 freeze **1.251×** (0.671 / 0.536 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1371 — `powershell_tool` (mtbxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mtbxxx_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling of Pairs 1369–1370. Does not remount `make_tool` / leftover 1017 `mt_ok` / leftover 1092 `ps_mt` / leftover 1173 `mtb_ok` / leftover 1239 `mtbx_ok` / leftover 1305 `mtbxx_ok`. Timed work is name / description / required. Observed `pmt_name` / `pmt_n` are exact. First n=5 freeze **0.833×** (2.429 / 2.916 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 1354 — `cli_selectors` (latxxx_ok)
 
 | metric | cadr | pi |
