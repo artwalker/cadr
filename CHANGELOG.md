@@ -246,6 +246,32 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.draxxx_ok`
+  (`daxnuts-rgb-at` vs leftover replica of parseImage pixel lookup).
+  Observed `dra_00` / `dra_mid` exact. n=5 **1.734×**
+  (0.901 / 0.520 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1372). Over-1× booked. Does not remount
+  `daxnuts_rgb_at` / leftover 1021 `dax_rgb` / leftover 1093 `dn_rgb`
+  / leftover 1174 `dra_ok` / leftover 1240 `drax_ok` / leftover 1306
+  `draxx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dmcxxx_ok`
+  (`make-daxnuts-component` vs leftover replica of DaxnutsComponent
+  constructor). Observed `dmc_tick` exact. n=5 **3.028×**
+  (0.621 / 0.205 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1373). Over-1× booked. Does not remount `make_daxnuts_component` /
+  leftover 1022 `dax_make` / leftover 1094 `dn_make` / leftover 1175
+  `dmc_ok` / leftover 1241 `dmcx_ok` / leftover 1307 `dmcxx_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.dctxxx_ok`
+  (`daxnuts-component-tick` vs leftover replica of DaxnutsComponent
+  interval). Observed `dct_one` / `dct_renders` exact. n=5 **5.654×**
+  (3.752 / 0.664 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1374). Over-1× booked. Does not remount `daxnuts_component_tick` /
+  leftover 1023 `dax_tick` / leftover 1095 `dn_tick` / leftover 1176
+  `dct_ok` / leftover 1242 `dctx_ok` / leftover 1308 `dctxx_ok`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.latxxx_ok`
   (`login-auth-type-route` vs leftover replica of
   showLoginAuthTypeSelector routing). Observed `latr_none` /
