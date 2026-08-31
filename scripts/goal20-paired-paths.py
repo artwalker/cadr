@@ -1525,14 +1525,12 @@ RATIO_CEILINGS = {
   # Measure-only leftover 627; first freeze 32.688× (135.552 / 4.147 µs).
   # 50.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_login_dialog": 50.0,
-  # Measure-only leftover 1189; first-freeze headroom matching leftover 1108
-  # cmp_ok (2.365×). Ratchet down only.
+  # Measure-only leftover 1189; first freeze 2.247× (5.887 / 2.620 µs).
   "cli_selectors.ldci_ok": 8.0,
-  # Measure-only leftover 1190; first-freeze headroom matching leftover 1109
-  # evt_ok (2.722×). Ratchet down only.
+  # Measure-only leftover 1190; first freeze 2.627× (7.131 / 2.714 µs).
   "cli_selectors.ldhe_ok": 8.0,
-  # Measure-only leftover 1191; first-freeze headroom matching leftover 1110
-  # rnd_ok (36.604×, ceiling 50.0). Ratchet down only.
+  # Measure-only leftover 1191; first freeze 35.938× (106.531 / 2.964 µs).
+  # 50.0 is leftover-1110 sibling headroom. Ratchet down only.
   "cli_selectors.ldrd_ok": 50.0,
   # Measure-only leftover 628; first freeze 0.766× (1.754 / 2.288 µs).
   "cli_selectors.user_message_handle_event": 8.0,
