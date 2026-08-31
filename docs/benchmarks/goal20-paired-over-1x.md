@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `cli_selectors.drax_ok` | 0.912 | 0.534 | 1.707× | 8.00× | measure-only leftover 1240; `daxnuts-rgb-at` vs leftover parseImage pixel lookup | invent pause；地板优化另刀 |
+| `cli_selectors.dmcx_ok` | 0.629 | 0.207 | 3.038× | 8.00× | measure-only leftover 1241; `make-daxnuts-component` vs leftover DaxnutsComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.dctx_ok` | 3.772 | 0.639 | 5.902× | 8.00× | measure-only leftover 1242; `daxnuts-component-tick` vs leftover DaxnutsComponent interval | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
