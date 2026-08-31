@@ -2634,9 +2634,19 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_selectors.oauth_option_status_label", RECORD.METRIC_KEYS)
         self.assertIn("oauth_option_status_label", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oauth_option_status_label", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.osl_ok", RECORD.METRIC_KEYS)
+        self.assertIn("osl_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.osl_ok", paired.RATIO_CEILINGS)
+        self.assertIn("oosl_none", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("oosl_custom", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.credential_entry_auth_type", RECORD.METRIC_KEYS)
         self.assertIn("credential_entry_auth_type", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.credential_entry_auth_type", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.cet_ok", RECORD.METRIC_KEYS)
+        self.assertIn("cet_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.cet_ok", paired.RATIO_CEILINGS)
+        self.assertIn("ceat_oauth", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("ceat_api_key", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.oauth_environment_source_p", RECORD.METRIC_KEYS)
         self.assertIn("oauth_environment_source_p", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oauth_environment_source_p", paired.RATIO_CEILINGS)
@@ -2679,6 +2689,11 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.oauth_option_status_rendered", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.osr_ok", RECORD.METRIC_KEYS)
+        self.assertIn("osr_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.osr_ok", paired.RATIO_CEILINGS)
+        self.assertIn("oosr_none", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("oosr_custom", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.api_key_input_state_handle_event", RECORD.METRIC_KEYS)
         self.assertIn(
             "api_key_input_state_handle_event", paired.METRICS["cli_selectors"]
