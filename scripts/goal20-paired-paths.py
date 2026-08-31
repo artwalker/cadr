@@ -1500,14 +1500,12 @@ RATIO_CEILINGS = {
   # Measure-only leftover 615; first freeze 8.798× (1074.462 / 122.128 µs).
   # 15.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_trust_selector": 15.0,
-  # Measure-only leftover 1270; first-freeze headroom matching leftover 1204
-  # trsv_ok (5.003×). Ratchet down only.
+  # Measure-only leftover 1270; first freeze 4.735× (73.952 / 15.617 µs).
   "cli_selectors.trsvx_ok": 8.0,
-  # Measure-only leftover 1271; first-freeze headroom matching leftover 1205
-  # trmk_ok (2.533×). Ratchet down only.
+  # Measure-only leftover 1271; first freeze 2.479× (129.633 / 52.296 µs).
   "cli_selectors.trmkx_ok": 8.0,
-  # Measure-only leftover 1272; first-freeze headroom matching leftover 1206
-  # trrs_ok (9.558×, ceiling 15.0). Ratchet down only.
+  # Measure-only leftover 1272; first freeze 8.990× (1020.250 / 113.491 µs).
+  # 15.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.trrsx_ok": 15.0,
   # Measure-only leftover 616; first freeze 1.143× (2.654 / 2.323 µs).
   "cli_selectors.make_login_method_selector_state": 8.0,
