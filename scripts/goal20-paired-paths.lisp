@@ -192,6 +192,12 @@
 ;;;;      (does not remount leftover 1223 lpox_ok / leftover 1142 lpo_ok / leftover 1060 oa_lin / leftover 1289 lpoxx_ok)
 ;;;; 1356. cli_selectors lgoxxx_ok vs leftover replica of getLogoutProviderOptions
 ;;;;      (does not remount leftover 1224 lgox_ok / leftover 1143 lgo_ok / leftover 1060 oa_out / leftover 1290 lgoxx_ok)
+;;;; 1369. powershell_tool utfxxx_ok vs leftover replica of UTF8_OUTPUT_PREFIX
+;;;;      (does not remount utf8_prefix / leftover 1015 up_ok / leftover 1090 ps_up / leftover 1171 utf_ok / leftover 1237 utfx_ok / leftover 1303 utfxx_ok)
+;;;; 1370. powershell_tool pfxxxx_ok vs leftover replica of prefix+command wrap
+;;;;      (does not remount prefix_command / leftover 1016 pc_ok / leftover 1091 ps_pc / leftover 1172 pfx_ok / leftover 1238 pfxx_ok / leftover 1304 pfxxx_ok)
+;;;; 1371. powershell_tool mtbxxx_ok vs leftover replica of createPowerShellToolDefinition
+;;;;      (does not remount make_tool / leftover 1017 mt_ok / leftover 1092 ps_mt / leftover 1173 mtb_ok / leftover 1239 mtbx_ok / leftover 1305 mtbxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -466,6 +472,9 @@
     ("powershell_tool.utf8_prefix" . 50)
     ("powershell_tool.prefix_command" . 50)
     ("powershell_tool.make_tool" . 50)
+    ("powershell_tool.utfxxx_ok" . 50)
+    ("powershell_tool.pfxxxx_ok" . 50)
+    ("powershell_tool.mtbxxx_ok" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -8873,6 +8882,21 @@
                       (run-powershell-prefix-command))))
          "make_tool"
          (collect "powershell_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-make-tool))))
+         "utfxxx_ok"
+         (collect "powershell_tool.utfxxx_ok"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-utf8-prefix))))
+         "pfxxxx_ok"
+         (collect "powershell_tool.pfxxxx_ok"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-prefix-command))))
+         "mtbxxx_ok"
+         (collect "powershell_tool.mtbxxx_ok"
                   (lambda ()
                     (lambda ()
                       (run-powershell-make-tool)))))))))
@@ -32236,6 +32260,12 @@
       "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate"
       "powershell_tool.make_tool"
       "src/cadr-cli/tools/powershell.lisp make-powershell-tool"
+      "powershell_tool.utfxxx_ok"
+      "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+ leftover"
+      "powershell_tool.pfxxxx_ok"
+      "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate leftover"
+      "powershell_tool.mtbxxx_ok"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool leftover"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
