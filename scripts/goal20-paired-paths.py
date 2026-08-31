@@ -2143,14 +2143,14 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.oauth_selector_selection.
   # Measure-only pair (Pair 201); ceiling not lowered.
   "cli_selectors.oauth_selector_selection": 8.0,
-  # Measure-only leftover 1219; first-freeze headroom matching leftover 1138
-  # oas_ok (16.008×, ceiling 20.0). Ratchet down only.
+  # Measure-only leftover 1219; first freeze 15.976× (76.778 / 4.806 µs).
+  # 20.0 is leftover-1138 sibling headroom. Ratchet down only.
   "cli_selectors.oasx_ok": 20.0,
   # First-freeze headroom for cli_selectors.oauth_selector_apply_filter.
   # Measure-only pair (Pair 202); ceiling not lowered.
   "cli_selectors.oauth_selector_apply_filter": 8.0,
-  # Measure-only leftover 1220; first-freeze headroom matching leftover 1139
-  # flt_ok (10.195×, ceiling 12.0). Ratchet down only.
+  # Measure-only leftover 1220; first freeze 10.654× (84.562 / 7.937 µs).
+  # 12.0 is leftover-1139 sibling headroom. Ratchet down only.
   "cli_selectors.fltx_ok": 12.0,
   # First-freeze headroom for cli_selectors.oauth_selector_handle_event.
   # Measure-only pair (Pair 203); ceiling not lowered.
@@ -2161,8 +2161,7 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.oauth_selector_search_text.
   # Measure-only pair (Pair 205); ceiling not lowered.
   "cli_selectors.oauth_selector_search_text": 8.0,
-  # Measure-only leftover 1221; first-freeze headroom matching leftover 1140
-  # qry_ok (2.448×). Ratchet down only.
+  # Measure-only leftover 1221; first freeze 2.535× (1.347 / 0.531 µs).
   "cli_selectors.qryx_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_auth_type_route.
   # Measure-only pair (Pair 206); ceiling not lowered.
