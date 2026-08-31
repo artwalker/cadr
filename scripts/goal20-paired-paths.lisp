@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1318. cli_selectors ldprxx_ok vs leftover replica of LoginDialogComponent.showPrompt
+;;;;      (does not remount leftover 1186 ldpr_ok / leftover 1105 prmt_ok / leftover 1030 ld_prmt / leftover 1252 ldprx_ok)
+;;;; 1319. cli_selectors ldixx_ok vs leftover replica of LoginDialogComponent.showInfo
+;;;;      (does not remount leftover 1187 ldi_ok / leftover 1106 info_ok / leftover 1030 ld_info / leftover 1253 ldix_ok)
+;;;; 1320. cli_selectors lddtxx_ok vs leftover replica of LoginDialogComponent.showDetails
+;;;;      (does not remount leftover 1188 lddt_ok / leftover 1107 det_ok / leftover 1030 ld_det / leftover 1254 lddtx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -940,6 +946,9 @@
     ("cli_selectors.login_dialog_show_prompt" . 50)
     ("cli_selectors.login_dialog_show_info" . 50)
     ("cli_selectors.login_dialog_show_details" . 50)
+    ("cli_selectors.ldprxx_ok" . 50)
+    ("cli_selectors.ldixx_ok" . 50)
+    ("cli_selectors.lddtxx_ok" . 50)
     ("cli_selectors.login_dialog_complete_input" . 50)
     ("cli_selectors.login_dialog_handle_event" . 50)
     ("cli_selectors.render_login_dialog" . 50)
@@ -29771,6 +29780,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-dialog-show-details))))
+     "ldprxx_ok"
+     (collect "cli_selectors.ldprxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-prompt))))
+     "ldixx_ok"
+     (collect "cli_selectors.ldixx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-info))))
+     "lddtxx_ok"
+     (collect "cli_selectors.lddtxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-details))))
      "login_dialog_complete_input"
      (collect "cli_selectors.login_dialog_complete_input"
               (lambda ()
@@ -33130,6 +33154,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-info"
       "cli_selectors.login_dialog_show_details"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-details"
+      "cli_selectors.ldprxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-prompt leftover"
+      "cli_selectors.ldixx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-info leftover"
+      "cli_selectors.lddtxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-details leftover"
       "cli_selectors.login_dialog_complete_input"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-complete-input"
       "cli_selectors.login_dialog_handle_event"

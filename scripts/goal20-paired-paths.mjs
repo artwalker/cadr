@@ -485,6 +485,9 @@ const REPETITIONS = {
 	"cli_selectors.login_dialog_show_prompt": 50,
 	"cli_selectors.login_dialog_show_info": 50,
 	"cli_selectors.login_dialog_show_details": 50,
+	"cli_selectors.ldprxx_ok": 50,
+	"cli_selectors.ldixx_ok": 50,
+	"cli_selectors.lddtxx_ok": 50,
 	"cli_selectors.login_dialog_complete_input": 50,
 	"cli_selectors.login_dialog_handle_event": 50,
 	"cli_selectors.render_login_dialog": 50,
@@ -31009,6 +31012,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsLoginDialogShowDetails();
 			},
 		),
+		ldprxx_ok: await collect("cli_selectors.ldprxx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowPrompt();
+		}),
+		ldixx_ok: await collect("cli_selectors.ldixx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowInfo();
+		}),
+		lddtxx_ok: await collect("cli_selectors.lddtxx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowDetails();
+		}),
 		login_dialog_complete_input: await collect(
 			"cli_selectors.login_dialog_complete_input",
 			() => {
@@ -34508,6 +34520,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showInfo",
 			"cli_selectors.login_dialog_show_details":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showDetails",
+			"cli_selectors.ldprxx_ok":
+				"packages/coding-agent leftover replica of LoginDialogComponent.showPrompt",
+			"cli_selectors.ldixx_ok":
+				"packages/coding-agent leftover replica of LoginDialogComponent.showInfo",
+			"cli_selectors.lddtxx_ok":
+				"packages/coding-agent leftover replica of LoginDialogComponent.showDetails",
 			"cli_selectors.login_dialog_complete_input":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.replaceInputWithSubmittedText",
 			"cli_selectors.login_dialog_handle_event":
