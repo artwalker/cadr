@@ -232,6 +232,13 @@
 ;;;;      (does not remount leftover 1328 msmsxx_ok / leftover 1262 msmsx_ok / leftover 1196 msms_ok / leftover 1115 sms_ok / leftover 1039 sm_st)
 ;;;; 1395. cli_selectors mrmsxxx_ok vs leftover replica of ModelSelectorComponent layout
 ;;;;      (does not remount leftover 1329 mrmsxx_ok / leftover 1263 mrmsx_ok / leftover 1197 mrms_ok / leftover 1116 rms_ok / leftover 1039 rm_sel)
+
+;;;; 1396. cli_selectors thafxxx_ok vs leftover replica of thinking-selector applyFilter
+;;;;      (does not remount leftover 1330 thafxx_ok / leftover 1198 thaf_ok / leftover 1117 af_ok / leftover 1042 th_af / leftover 1264 thafx_ok)
+;;;; 1397. cli_selectors thclxxx_ok vs leftover replica of thinking-selector clamp selected
+;;;;      (does not remount leftover 1331 thclxx_ok / leftover 1199 thcl_ok / leftover 1118 cl_ok / leftover 1042 th_cl / leftover 1265 thclx_ok)
+;;;; 1398. cli_selectors thscxxx_ok vs leftover replica of thinking-selector select current
+;;;;      (does not remount leftover 1332 thscxx_ok / leftover 1200 thsc_ok / leftover 1119 sc_ok / leftover 1042 th_sc / leftover 1266 thscx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -973,6 +980,9 @@
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
+    ("cli_selectors.thafxxx_ok" . 50)
+    ("cli_selectors.thclxxx_ok" . 50)
+    ("cli_selectors.thscxxx_ok" . 50)
     ("cli_selectors.thinking_selector_move" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
@@ -29773,6 +29783,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-select-current))))
+     "thafxxx_ok"
+     (collect "cli_selectors.thafxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-apply-filter))))
+     "thclxxx_ok"
+     (collect "cli_selectors.thclxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-clamp-selected))))
+     "thscxxx_ok"
+     (collect "cli_selectors.thscxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-select-current))))
      "thinking_selector_move"
      (collect "cli_selectors.thinking_selector_move"
               (lambda ()
@@ -33276,6 +33301,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected"
       "cli_selectors.thinking_selector_select_current"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current"
+      "cli_selectors.thafxxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter leftover"
+      "cli_selectors.thclxxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected leftover"
+      "cli_selectors.thscxxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current leftover"
       "cli_selectors.thinking_selector_move"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move"
       "cli_selectors.thinking_selector_handle_raw_input"
