@@ -9007,6 +9007,30 @@ Leftover sibling of Pair 1354. Does not remount `login_provider_options` / lefto
 
 Leftover sibling of Pairs 1354–1355. Does not remount `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143 `lgo_ok` / leftover 1224 `lgox_ok` / leftover 1290 `lgoxx_ok`. Timed work is logout provider options empty / mixed. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.122×** (7.260 / 3.422 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1363 — `cli_selectors` (henxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `henxxx_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector typed input event dispatch |
+
+Leftover sibling of leftover 1297–1299 on the same needs-pair file (sixth unused slug after leftover 1069 `th_he` / leftover 1120 `hev_ok` / leftover 1150 `hen_ok` / leftover 1231 `henx_ok` / leftover 1297 `henxx_ok`). Does not remount `thinking_selector_handle_event`. Timed work is thinking handle-event down / text. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **0.839×** (3.337 / 3.979 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1364 — `cli_selectors` (mtsxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mtsxxx_ok` | `make-thinking-selector-state` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector constructor filter + select current |
+
+Leftover sibling of Pair 1363. Does not remount `make_thinking_selector_state` / leftover 1070 `th_mts` / leftover 1151 `mts_ok` / leftover 1232 `mtsx_ok` / leftover 1298 `mtsxx_ok`. Timed work is thinking constructor high / default. Observed `tms_high` / `tms_default` are exact. First n=5 freeze **0.775×** (1.706 / 2.200 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1365 — `cli_selectors` (lstxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lstxxx_ok` | `thinking-level-search-text` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking selector label + description search text |
+
+Leftover sibling of Pairs 1363–1364. Does not remount `thinking_level_search_text` / leftover 1071 `th_lst` / leftover 1152 `lst_ok` / leftover 1233 `lstx_ok` / leftover 1299 `lstxx_ok`. Timed work is thinking search-text off / high. Observed `tlst_off` / `tlst_high` are exact. First n=5 freeze **1.577×** (1.172 / 0.743 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
