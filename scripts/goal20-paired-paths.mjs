@@ -460,16 +460,19 @@ const REPETITIONS = {
 	"cli_selectors.login_dialog_device": 50,
 	"cli_selectors.thinking_level_label": 50,
 	"cli_selectors.thinking_level_search_text": 50,
+	"cli_selectors.lst_ok": 50,
 	"cli_selectors.thinking_selector_set_query": 50,
 	"cli_selectors.thinking_selector_key_p": 50,
 	"cli_selectors.thinking_selector_keybindings": 50,
 	"cli_selectors.make_thinking_selector_state": 50,
+	"cli_selectors.mts_ok": 50,
 	"cli_selectors.thinking_selector_apply_filter": 50,
 	"cli_selectors.thinking_selector_clamp_selected": 50,
 	"cli_selectors.thinking_selector_select_current": 50,
 	"cli_selectors.thinking_selector_move": 50,
 	"cli_selectors.thinking_selector_handle_raw_input": 50,
 	"cli_selectors.thinking_selector_handle_event": 50,
+	"cli_selectors.hen_ok": 50,
 	"cli_selectors.thinking_selector_selected_level": 50,
 	"cli_selectors.thinking_level_description_line": 50,
 	"cli_selectors.render_thinking_selector": 50,
@@ -30859,6 +30862,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsThinkingLevelSearchText();
 			},
 		),
+		lst_ok: await collect("cli_selectors.lst_ok", () => {
+			return () => runCliSelectorsThinkingLevelSearchText();
+		}),
 		thinking_selector_set_query: await collect(
 			"cli_selectors.thinking_selector_set_query",
 			() => {
@@ -30883,6 +30889,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeThinkingSelectorState();
 			},
 		),
+		mts_ok: await collect("cli_selectors.mts_ok", () => {
+			return () => runCliSelectorsMakeThinkingSelectorState();
+		}),
 		thinking_selector_apply_filter: await collect(
 			"cli_selectors.thinking_selector_apply_filter",
 			() => {
@@ -30919,6 +30928,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsThinkingSelectorHandleEvent();
 			},
 		),
+		hen_ok: await collect("cli_selectors.hen_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleEvent();
+		}),
 		thinking_selector_selected_level: await collect(
 			"cli_selectors.thinking_selector_selected_level",
 			() => {
@@ -34458,6 +34470,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts level label",
 			"cli_selectors.thinking_level_search_text":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts label + description search text",
+			"cli_selectors.lst_ok":
+				"packages/coding-agent leftover replica of thinking-selector label + description search text",
 			"cli_selectors.thinking_selector_set_query":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts applyFilter from search input",
 			"cli_selectors.thinking_selector_key_p":
@@ -34466,6 +34480,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts getKeybindings slot-or-default",
 			"cli_selectors.make_thinking_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts constructor filter + select current",
+			"cli_selectors.mts_ok":
+				"packages/coding-agent leftover replica of thinking-selector constructor filter + select current",
 			"cli_selectors.thinking_selector_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts applyFilter",
 			"cli_selectors.thinking_selector_clamp_selected":
@@ -34478,6 +34494,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts handleInput keybindings",
 			"cli_selectors.thinking_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts typed input event dispatch",
+			"cli_selectors.hen_ok":
+				"packages/coding-agent leftover replica of thinking-selector typed input event dispatch",
 			"cli_selectors.thinking_selector_selected_level":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts selected SelectList item",
 			"cli_selectors.thinking_level_description_line":
