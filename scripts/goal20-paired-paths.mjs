@@ -476,6 +476,9 @@ const REPETITIONS = {
 	"cli_selectors.trust_option_saved_p": 50,
 	"cli_selectors.make_trust_selector_state": 50,
 	"cli_selectors.render_trust_selector": 50,
+	"cli_selectors.trsv_ok": 50,
+	"cli_selectors.trmk_ok": 50,
+	"cli_selectors.trrs_ok": 50,
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
@@ -30955,6 +30958,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderTrustSelector();
 			},
 		),
+		trsv_ok: await collect("cli_selectors.trsv_ok", () => {
+			return () => runCliSelectorsTrustOptionSavedP();
+		}),
+		trmk_ok: await collect("cli_selectors.trmk_ok", () => {
+			return () => runCliSelectorsMakeTrustSelectorState();
+		}),
+		trrs_ok: await collect("cli_selectors.trrs_ok", () => {
+			return () => runCliSelectorsRenderTrustSelector();
+		}),
 		make_login_method_selector_state: await collect(
 			"cli_selectors.make_login_method_selector_state",
 			() => {
@@ -34490,6 +34502,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent constructor",
 			"cli_selectors.render_trust_selector":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent layout",
+			"cli_selectors.trsv_ok":
+				"packages/coding-agent leftover replica of trust-selector isSavedOption",
+			"cli_selectors.trmk_ok":
+				"packages/coding-agent leftover replica of TrustSelectorComponent constructor",
+			"cli_selectors.trrs_ok":
+				"packages/coding-agent leftover replica of TrustSelectorComponent layout",
 			"cli_selectors.make_login_method_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
 			"cli_selectors.make_api_key_input_state":
