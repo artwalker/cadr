@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1324 — `cli_selectors` (umevxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `umevxx_ok` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (structured events) |
+
+Leftover sibling of leftover 1258–1260 on the same needs-pair file (fifth unused slug after leftover 1036 `um_he` / leftover 1111 `he_ok` / leftover 1192 `umev_ok` / leftover 1258 `umevx_ok`). Does not remount `user_message_handle_event`. Timed work is down / empty structured handle-event. Observed `umhe_down` / `umhe_empty` are exact. First n=5 freeze **0.701×** (1.354 / 1.930 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1325 — `cli_selectors` (umrwxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `umrwxx_ok` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (raw key dispatch) |
+
+Leftover sibling of Pair 1324. Does not remount `user_message_handle_raw` / leftover 1036 `um_hr` / leftover 1112 `raw_ok` / leftover 1193 `umrw_ok` / leftover 1259 `umrwx_ok`. Timed work is down / nop raw handle. Observed `umhr_down` / `umhr_nop` are exact. First n=5 freeze **17.692×** (84.240 / 4.761 µs) on host `cursor`, ceiling 30.0 matching leftover 1259. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1326 — `cli_selectors` (umrsxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `umrsxx_ok` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageSelectorComponent layout |
+
+Leftover sibling of Pairs 1324–1325. Does not remount `render_user_message_selector` / leftover 1036 `um_rd` / leftover 1113 `sel_ok` / leftover 1194 `umrs_ok` / leftover 1260 `umrsx_ok`. Timed work is three-row / hit selector layout. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **61.058×** (238.034 / 3.898 µs) on host `cursor`, ceiling 100.0 matching leftover 1260. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
