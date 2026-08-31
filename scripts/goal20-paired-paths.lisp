@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1174. cli_selectors dra_ok vs leftover replica of parseImage pixel lookup
+;;;;      (does not remount daxnuts_rgb_at / leftover 1021 dax_rgb / leftover 1093 dn_rgb)
+;;;; 1175. cli_selectors dmc_ok vs leftover replica of DaxnutsComponent constructor
+;;;;      (does not remount make_daxnuts_component / leftover 1022 dax_make / leftover 1094 dn_make)
+;;;; 1176. cli_selectors dct_ok vs leftover replica of DaxnutsComponent interval
+;;;;      (does not remount daxnuts_component_tick / leftover 1023 dax_tick / leftover 1095 dn_tick)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -952,6 +958,9 @@
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
+    ("cli_selectors.dra_ok" . 50)
+    ("cli_selectors.dmc_ok" . 50)
+    ("cli_selectors.dct_ok" . 50)
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
@@ -29831,6 +29840,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+     "dra_ok"
+     (collect "cli_selectors.dra_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "dmc_ok"
+     (collect "cli_selectors.dmc_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "dct_ok"
+     (collect "cli_selectors.dct_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
@@ -33194,6 +33218,12 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
       "cli_selectors.daxnuts_component_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
+      "cli_selectors.dra_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at leftover"
+      "cli_selectors.dmc_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover"
+      "cli_selectors.dct_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"
