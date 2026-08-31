@@ -2119,14 +2119,12 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.trust_selector_move.
   # Measure-only pair (Pair 194); ceiling not lowered.
   "cli_selectors.trust_selector_move": 8.0,
-  # Measure-only leftover 1276; first-freeze headroom matching leftover 1210
-  # tsmx_ok (3.746×). Ratchet down only.
+  # Measure-only leftover 1276; first freeze 3.794× (255.584 / 67.364 µs).
   "cli_selectors.tsmxx_ok": 8.0,
   # First-freeze headroom for cli_selectors.trust_selector_handle_event.
   # Measure-only pair (Pair 195); ceiling not lowered.
   "cli_selectors.trust_selector_handle_event": 8.0,
-  # Measure-only leftover 1277; first-freeze headroom matching leftover 1211
-  # tsex_ok (3.577×). Ratchet down only.
+  # Measure-only leftover 1277; first freeze 3.574× (261.919 / 73.276 µs).
   "cli_selectors.tsexx_ok": 8.0,
   # First-freeze headroom for cli_selectors.trust_selector_handle_raw_input.
   # Measure-only pair (Pair 196); ceiling not lowered.
@@ -2134,8 +2132,7 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.trust_selector_ui_state.
   # Measure-only pair (Pair 197); ceiling not lowered.
   "cli_selectors.trust_selector_ui_state": 8.0,
-  # Measure-only leftover 1278; first-freeze headroom matching leftover 1212
-  # tuix_ok (3.626×). Ratchet down only.
+  # Measure-only leftover 1278; first freeze 3.642× (304.583 / 83.633 µs).
   "cli_selectors.tuixx_ok": 8.0,
   # First-freeze headroom for cli_selectors.oauth_option_status_label.
   # Measure-only pair (Pair 198); ceiling not lowered.

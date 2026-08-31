@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1276 — `cli_selectors` (tsmxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsmxx_ok` | `trust-selector-move` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of wrap selection index |
+
+Leftover sibling of leftover 1210–1212 on the same needs-pair file (fourth unused slug after leftover 1051 `tr_mv` / leftover 1129 `tsm_ok` / leftover 1210 `tsmx_ok`). Does not remount `trust_selector_move`. Timed work is wrap selection child-down / single-wrap. Observed `tsm_child_down` / `tsm_single_wrap` are exact. First n=5 freeze **3.794×** (255.584 / 67.364 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1277 — `cli_selectors` (tsexx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsexx_ok` | `trust-selector-handle-event` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector handle-event dispatch |
+
+Leftover sibling of Pair 1276. Does not remount `trust_selector_handle_event` / leftover 1052 `tr_he` / leftover 1130 `tse_ok` / leftover 1211 `tsex_ok`. Timed work is handle-event child-down / esc. Observed `tshe_child_down` / `tshe_child_esc` are exact. First n=5 freeze **3.574×** (261.919 / 73.276 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1278 — `cli_selectors` (tuixx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tuixx_ok` | `trust-selector-ui-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent UI state |
+
+Leftover sibling of Pairs 1276–1277. Does not remount `trust_selector_ui_state` / leftover 1053 `tr_ui` / leftover 1131 `tui_ok` / leftover 1212 `tuix_ok`. Timed work is TrustSelectorComponent UI state. Observed `rts_child_default` / `rts_single` are exact. First n=5 freeze **3.642×** (304.583 / 83.633 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

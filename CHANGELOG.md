@@ -246,6 +246,30 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.tsmxx_ok`
+  (`trust-selector-move` vs leftover replica of wrap selection index).
+  Observed `tsm_child_down` / `tsm_single_wrap` exact. n=5 **3.794×**
+  (255.584 / 67.364 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1276). Over-1× booked. Does not remount `trust_selector_move` /
+  leftover 1051 `tr_mv` / leftover 1129 `tsm_ok` / leftover 1210 `tsmx_ok`.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.tsexx_ok`
+  (`trust-selector-handle-event` vs leftover replica of trust-selector
+  handle-event dispatch). Observed `tshe_child_down` / `tshe_child_esc`
+  exact. n=5 **3.574×** (261.919 / 73.276 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 1277). Over-1× booked. Does not
+  remount `trust_selector_handle_event` / leftover 1052 `tr_he` / leftover
+  1130 `tse_ok` / leftover 1211 `tsex_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.tuixx_ok`
+  (`trust-selector-ui-state` vs leftover replica of
+  TrustSelectorComponent UI state). Observed `rts_child_default` /
+  `rts_single` exact. n=5 **3.642×** (304.583 / 83.633 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1278). Over-1×
+  booked. Does not remount `trust_selector_ui_state` / leftover 1053
+  `tr_ui` / leftover 1131 `tui_ok` / leftover 1212 `tuix_ok`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
