@@ -482,6 +482,9 @@ const REPETITIONS = {
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
+	"cli_selectors.ldwxx_ok": 50,
+	"cli_selectors.ldpxx_ok": 50,
+	"cli_selectors.ldmixx_ok": 50,
 	"cli_selectors.login_dialog_show_prompt": 50,
 	"cli_selectors.login_dialog_show_info": 50,
 	"cli_selectors.login_dialog_show_details": 50,
@@ -30991,6 +30994,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsLoginDialogShowManualInput();
 			},
 		),
+		ldwxx_ok: await collect("cli_selectors.ldwxx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowWaiting();
+		}),
+		ldpxx_ok: await collect("cli_selectors.ldpxx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowProgress();
+		}),
+		ldmixx_ok: await collect("cli_selectors.ldmixx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowManualInput();
+		}),
 		login_dialog_show_prompt: await collect(
 			"cli_selectors.login_dialog_show_prompt",
 			() => {
@@ -34502,6 +34514,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showProgress",
 			"cli_selectors.login_dialog_show_manual_input":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showManualInput",
+			"cli_selectors.ldwxx_ok":
+				"packages/coding-agent leftover replica of LoginDialogComponent.showWaiting",
+			"cli_selectors.ldpxx_ok":
+				"packages/coding-agent leftover replica of LoginDialogComponent.showProgress",
+			"cli_selectors.ldmixx_ok":
+				"packages/coding-agent leftover replica of LoginDialogComponent.showManualInput",
 			"cli_selectors.login_dialog_show_prompt":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showPrompt",
 			"cli_selectors.login_dialog_show_info":
