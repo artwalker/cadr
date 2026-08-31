@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1351. cli_selectors oasxxx_ok vs leftover replica of filteredProviders[selectedIndex]
+;;;;      (does not remount leftover 1219 oasx_ok / leftover 1138 oas_ok / leftover 1057 oa_sel / leftover 1285 oasxx_ok)
+;;;; 1352. cli_selectors fltxxx_ok vs leftover replica of filterProviders
+;;;;      (does not remount leftover 1220 fltx_ok / leftover 1139 flt_ok / leftover 1057 oa_flt / leftover 1286 fltxx_ok)
+;;;; 1353. cli_selectors qryxxx_ok vs leftover replica of filterProviders search text
+;;;;      (does not remount leftover 1221 qryx_ok / leftover 1140 qry_ok / leftover 1057 oa_qry / leftover 1287 qryxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -834,10 +840,13 @@
     ("cli_selectors.credential_entry_auth_type" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
+    ("cli_selectors.oasxxx_ok" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
+    ("cli_selectors.fltxxx_ok" . 50)
     ("cli_selectors.oauth_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
+    ("cli_selectors.qryxxx_ok" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
@@ -29243,8 +29252,18 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-selection))))
+     "oasxxx_ok"
+     (collect "cli_selectors.oasxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-selection))))
      "oauth_selector_apply_filter"
      (collect "cli_selectors.oauth_selector_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-apply-filter))))
+     "fltxxx_ok"
+     (collect "cli_selectors.fltxxx_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-apply-filter))))
@@ -29260,6 +29279,11 @@
                   (run-cli-selectors-oauth-selector-handle-raw-input))))
      "oauth_selector_search_text"
      (collect "cli_selectors.oauth_selector_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-search-text))))
+     "qryxxx_ok"
+     (collect "cli_selectors.qryxxx_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-search-text))))
@@ -32920,14 +32944,20 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
       "cli_selectors.oauth_selector_selection"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection"
+      "cli_selectors.oasxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection leftover"
       "cli_selectors.oauth_selector_apply_filter"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter"
+      "cli_selectors.fltxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter leftover"
       "cli_selectors.oauth_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event"
       "cli_selectors.oauth_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
       "cli_selectors.oauth_selector_search_text"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
+      "cli_selectors.qryxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text leftover"
       "cli_selectors.login_auth_type_route"
       "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
       "cli_selectors.login_provider_options"
