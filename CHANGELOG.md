@@ -337,6 +337,26 @@ tag/Release step.
   exact. n=5 **0.794×** (2.646 / 3.330 µs) on host `cursor`, ceiling 8.0.
   Measure-only leftover (Pair 1386). Under-1×. Does not remount
   `login_dialog_show_details` / leftover 1030 `ld_det` / leftover 1107 `det_ok` / leftover 1188 `lddt_ok` / leftover 1254 `lddtx_ok` / leftover 1320 `lddtxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldcixxx_ok`
+  (`login-dialog-complete-input` vs leftover replica of
+  LoginDialogComponent.replaceInputWithSubmittedText). Observed
+  `ldci_manual` / `ldci_prompt` exact. n=5 **3.230×** (5.854 / 1.813 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1387).
+  Over-1× booked. Does not remount `login_dialog_complete_input` / leftover 1033 `ld_cmp` / leftover 1108 `cmp_ok` / leftover 1189 `ldci_ok` / leftover 1255 `ldcix_ok` / leftover 1321 `ldcixx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldhexxx_ok`
+  (`login-dialog-handle-event` vs leftover replica of
+  LoginDialogComponent.handleInput). Observed `ldhe_esc` / `ldhe_cancel`
+  exact. n=5 **2.887×** (7.396 / 2.562 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1388). Over-1× booked. Does not remount
+  `login_dialog_handle_event` / leftover 1033 `ld_evt` / leftover 1109 `evt_ok` / leftover 1190 `ldhe_ok` / leftover 1256 `ldhex_ok` / leftover 1322 `ldhexx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldrdxxx_ok`
+  (`render-login-dialog-state` vs leftover replica of
+  LoginDialogComponent layout). Observed `ldrd_wait` / `ldrd_details`
+  exact. n=5 **29.776×** (106.883 / 3.590 µs) on host `cursor`, ceiling 50.0.
+  Measure-only leftover (Pair 1389). Over-1× booked. Does not remount
+  `render_login_dialog` / leftover 1033 `ld_rnd` / leftover 1110 `rnd_ok` / leftover 1191 `ldrd_ok` / leftover 1257 `ldrdx_ok` / leftover 1323 `ldrdxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
