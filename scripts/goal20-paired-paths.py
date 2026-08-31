@@ -2173,20 +2173,17 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.api_key_input_state_handle_event.
   # Measure-only pair (Pair 212); first freeze 1.66× (7.0 / 4.2 µs).
   "cli_selectors.api_key_input_state_handle_event": 8.0,
-  # Measure-only leftover 1167; first-freeze headroom matching leftover 1086
-  # oa_ahe (0.577×). Ratchet down only.
+  # Measure-only leftover 1167; first freeze 1.012× (5.768 / 5.699 µs).
   "cli_selectors.ahe_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_method_selector_ui_state.
   # Measure-only pair (Pair 213); first freeze 10.07× (622.6 / 61.8 µs).
   "cli_selectors.login_method_selector_ui_state": 12.0,
-  # Measure-only leftover 1165; first-freeze headroom matching leftover 1144
-  # lui_ok / Pair 213 (12.0). leftover 1084 oa_lms first freeze 4.116×.
+  # Measure-only leftover 1165; first freeze 6.172× (427.835 / 69.321 µs).
   "cli_selectors.lmsu_ok": 12.0,
   # First-freeze headroom for cli_selectors.api_key_input_ui_state.
   # Measure-only pair (Pair 214); first freeze 4.86× (263.5 / 54.2 µs).
   "cli_selectors.api_key_input_ui_state": 8.0,
-  # Measure-only leftover 1166; first-freeze headroom matching leftover 1085
-  # oa_aku (2.731×). Ratchet down only.
+  # Measure-only leftover 1166; first freeze 3.191× (214.027 / 67.081 µs).
   "cli_selectors.aui_ok": 8.0,
   # First-freeze headroom for cli_selectors.oauth_selector_ui_state.
   # Measure-only pair (Pair 215); first freeze 24.66× (372.1 / 15.1 µs).
