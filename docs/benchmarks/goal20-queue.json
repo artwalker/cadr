@@ -7429,6 +7429,51 @@
    "piUs": 3.422,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1375,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.pbkxxx_ok",
+   "branch": "cursor/cli-repl-pbkxxx-rtkxxx-dpkxxx-ok-leftovers-1375-1377-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1375 remount leftover 1309 pbkxx_ok",
+   "ratio": 0.472,
+   "cadrUs": 0.602,
+   "piUs": 1.276,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1376,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.rtkxxx_ok",
+   "branch": "cursor/cli-repl-pbkxxx-rtkxxx-dpkxxx-ok-leftovers-1375-1377-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1376 remount leftover 1310 rtkxx_ok",
+   "ratio": 1.162,
+   "cadrUs": 1.049,
+   "piUs": 0.902,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1377,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.dpkxxx_ok",
+   "branch": "cursor/cli-repl-pbkxxx-rtkxxx-dpkxxx-ok-leftovers-1375-1377-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1377 remount leftover 1311 dpkxx_ok",
+   "ratio": 0.435,
+   "cadrUs": 0.593,
+   "piUs": 1.361,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

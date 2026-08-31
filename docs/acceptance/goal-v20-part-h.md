@@ -9007,6 +9007,30 @@ Leftover sibling of Pair 1354. Does not remount `login_provider_options` / lefto
 
 Leftover sibling of Pairs 1354–1355. Does not remount `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143 `lgo_ok` / leftover 1224 `lgox_ok` / leftover 1290 `lgoxx_ok`. Timed work is logout provider options empty / mixed. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.122×** (7.260 / 3.422 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1375 — `cli_bootstrap_sessions` (pbkxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pbkxxx_ok` | `parse-user-bash-input` (`src/cadr-cli/repl.lisp`) | leftover replica of `!` / `!!` bash extract |
+
+Leftover sibling of leftover 1309–1311 on the same needs-pair file (sixth unused slug after leftover 1012 `pb_ok` / leftover 1096 `psb_ok` / leftover 1177 `pbk_ok` / leftover 1243 `pbkx_ok` / leftover 1309 `pbkxx_ok`). Does not remount `parse_bash`. Timed work is `!ls` / `!!echo` / `!` / whitespace / plain. Observed `pb_ls` / `pb_n` are exact. First n=5 freeze **0.472×** (0.602 / 1.276 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1376 — `cli_bootstrap_sessions` (rtkxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rtkxxx_ok` | `response-text` (`src/cadr-cli/repl.lisp`) | leftover replica of textParts.join |
+
+Leftover sibling of Pair 1375. Remount leftover 1310 `rtkxx_ok`. Does not remount `response_text` / leftover 1013 `rt_ok` / leftover 1097 `rst_ok` / leftover 1178 `rtk_ok` / leftover 1244 `rtkx_ok` / leftover 1310 `rtkxx_ok`. Timed work is one / two / empty assistant text. Observed `rt_one` / `rt_empty` are exact. First n=5 freeze **1.162×** (1.049 / 0.902 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1377 — `cli_bootstrap_sessions` (dpkxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dpkxxx_ok` | `dispatch-user-input` (`src/cadr-cli/repl.lisp`) | leftover replica of submit classify |
+
+Leftover sibling of Pairs 1375–1376. Remount leftover 1311 `dpkxx_ok`. Does not remount `dispatch_plain` / leftover 1014 `dp_ok` / leftover 1098 `dsp_ok` / leftover 1179 `dpk_ok` / leftover 1245 `dpkx_ok` / leftover 1311 `dpkxx_ok`. Timed work is empty / whitespace / plain / slash / bash / bang. Observed `dp_empty` / `dp_n` are exact. First n=5 freeze **0.435×** (0.593 / 1.361 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

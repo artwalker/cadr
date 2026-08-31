@@ -246,6 +246,32 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.pbkxxx_ok`
+  (`parse-user-bash-input` vs leftover replica of `!` / `!!` bash
+  extract). Observed `pb_ls` / `pb_n` exact. n=5 **0.472×** (0.602 /
+  1.276 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1375). Under-1×. Remount leftover 1309 `pbkxx_ok`. Does not
+  remount `parse_bash` / leftover 1012 `pb_ok` / leftover 1096 `psb_ok`
+  / leftover 1177 `pbk_ok` / leftover 1243 `pbkx_ok` / leftover 1309
+  `pbkxx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.rtkxxx_ok`
+  (`response-text` vs leftover replica of textParts.join). Observed
+  `rt_one` / `rt_empty` exact. n=5 **1.162×** (1.049 / 0.902 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1376).
+  Over-1× booked. Remount leftover 1310 `rtkxx_ok`. Does not remount
+  `response_text` / leftover 1013 `rt_ok` / leftover 1097 `rst_ok` /
+  leftover 1178 `rtk_ok` / leftover 1244 `rtkx_ok` / leftover 1310
+  `rtkxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.dpkxxx_ok`
+  (`dispatch-user-input` vs leftover replica of submit classify).
+  Observed `dp_empty` / `dp_n` exact. n=5 **0.435×** (0.593 / 1.361 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1377).
+  Under-1×. Remount leftover 1311 `dpkxx_ok`. Does not remount
+  `dispatch_plain` / leftover 1014 `dp_ok` / leftover 1098 `dsp_ok` /
+  leftover 1179 `dpk_ok` / leftover 1245 `dpkx_ok` / leftover 1311
+  `dpkxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.latxxx_ok`
   (`login-auth-type-route` vs leftover replica of
   showLoginAuthTypeSelector routing). Observed `latr_none` /
