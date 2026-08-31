@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1360. cli_selectors akhexxx_ok vs leftover replica of handleInput api key prompt dispatch
+;;;;      (does not remount leftover 1228 akhex_ok / leftover 1147 akhe_ok / leftover 1066 oa_akhe / leftover 1294 akhexx_ok)
+;;;; 1361. cli_selectors mlsxxx_ok vs leftover replica of ExtensionSelectorComponent constructor
+;;;;      (does not remount leftover 1229 mlsx_ok / leftover 1148 mls_ok / leftover 1126 lms_ok / leftover 1067 oa_mls / leftover 1295 mlsxx_ok)
+;;;; 1362. cli_selectors aisxxx_ok vs leftover replica of showPrompt api key Input constructor
+;;;;      (does not remount leftover 1230 aisx_ok / leftover 1149 ais_ok / leftover 1127 aki_ok / leftover 1068 oa_ais / leftover 1296 aisxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -844,6 +850,7 @@
     ("cli_selectors.login_method_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
+    ("cli_selectors.akhexxx_ok" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
     ("cli_selectors.api_key_input_ui_state" . 50)
     ("cli_selectors.oauth_selector_ui_state" . 50)
@@ -932,7 +939,9 @@
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
     ("cli_selectors.make_login_method_selector_state" . 50)
+    ("cli_selectors.mlsxxx_ok" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
+    ("cli_selectors.aisxxx_ok" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
@@ -29293,6 +29302,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-api-key-input-state-handle-event))))
+     "akhexxx_ok"
+     (collect "cli_selectors.akhexxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-state-handle-event))))
      "login_method_selector_ui_state"
      (collect "cli_selectors.login_method_selector_ui_state"
               (lambda ()
@@ -29731,8 +29745,18 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-login-method-selector-state))))
+     "mlsxxx_ok"
+     (collect "cli_selectors.mlsxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
      "make_api_key_input_state"
      (collect "cli_selectors.make_api_key_input_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "aisxxx_ok"
+     (collect "cli_selectors.aisxxx_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-api-key-input-state))))
@@ -32940,6 +32964,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
       "cli_selectors.api_key_input_state_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event"
+      "cli_selectors.akhexxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event leftover"
       "cli_selectors.login_method_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
       "cli_selectors.api_key_input_ui_state"
@@ -33114,8 +33140,12 @@
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.make_login_method_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
+      "cli_selectors.mlsxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover"
       "cli_selectors.make_api_key_input_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
+      "cli_selectors.aisxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover"
       "cli_selectors.make_oauth_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
       "cli_selectors.login_dialog_show_waiting"
