@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1234,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/countdown.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.cdsx_ok",
+   "branch": "cursor/cli-countdown-cdsx-cdtx-cdrx-ok-leftovers-1234-1236-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1234",
+   "ratio": 3.447,
+   "cadrUs": 0.879,
+   "piUs": 0.255,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1235,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/countdown.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.cdtx_ok",
+   "branch": "cursor/cli-countdown-cdsx-cdtx-cdrx-ok-leftovers-1234-1236-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1235",
+   "ratio": 2.757,
+   "cadrUs": 0.813,
+   "piUs": 0.295,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1236,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/countdown.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.cdrx_ok",
+   "branch": "cursor/cli-countdown-cdsx-cdtx-cdrx-ok-leftovers-1234-1236-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1236",
+   "ratio": 1.762,
+   "cadrUs": 1.063,
+   "piUs": 0.603,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
