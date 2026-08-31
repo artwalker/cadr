@@ -551,4 +551,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `cli_selectors.luixxx_ok` | 430.875 | 74.289 | 5.800× | 12.00× | measure-only leftover 1358; `login-method-selector-ui-state` vs leftover ExtensionSelectorComponent UI state | invent pause；地板优化另刀 |
+| `cli_selectors.akuxxx_ok` | 210.573 | 63.407 | 3.321× | 8.00× | measure-only leftover 1359; `api-key-input-ui-state` vs leftover showPrompt api key UI state | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
