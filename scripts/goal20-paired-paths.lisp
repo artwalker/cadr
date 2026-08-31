@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1264. cli_selectors thafx_ok vs leftover replica of thinking-selector applyFilter
+;;;;      (does not remount leftover 1198 thaf_ok / leftover 1117 af_ok / leftover 1042 th_af)
+;;;; 1265. cli_selectors thclx_ok vs leftover replica of thinking-selector clamp selected
+;;;;      (does not remount leftover 1199 thcl_ok / leftover 1118 cl_ok / leftover 1042 th_cl)
+;;;; 1266. cli_selectors thscx_ok vs leftover replica of thinking-selector select current
+;;;;      (does not remount leftover 1200 thsc_ok / leftover 1119 sc_ok / leftover 1042 th_sc)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -922,6 +928,9 @@
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
+    ("cli_selectors.thafx_ok" . 50)
+    ("cli_selectors.thclx_ok" . 50)
+    ("cli_selectors.thscx_ok" . 50)
     ("cli_selectors.thinking_selector_move" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
@@ -29681,6 +29690,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-select-current))))
+     "thafx_ok"
+     (collect "cli_selectors.thafx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-apply-filter))))
+     "thclx_ok"
+     (collect "cli_selectors.thclx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-clamp-selected))))
+     "thscx_ok"
+     (collect "cli_selectors.thscx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-select-current))))
      "thinking_selector_move"
      (collect "cli_selectors.thinking_selector_move"
               (lambda ()
@@ -33094,6 +33118,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected"
       "cli_selectors.thinking_selector_select_current"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current"
+      "cli_selectors.thafx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter leftover"
+      "cli_selectors.thclx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected leftover"
+      "cli_selectors.thscx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current leftover"
       "cli_selectors.thinking_selector_move"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move"
       "cli_selectors.thinking_selector_handle_raw_input"
