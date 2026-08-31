@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.cds_ok`
+  (`make-countdown-timer` remaining seconds vs leftover replica of
+  `Math.ceil(timeoutMs / 1000)`). Observed `cds_0` / `cds_1` exact. n=5
+  **3.481×** (0.862 / 0.248 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1168). Over-1× booked. Does not remount
+  `countdown_seconds` / leftover 1018 `cd_sec` / leftover 1087 `sec_ok`.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.cdt_ok`
+  (`countdown-timer-tick` vs leftover replica of countdown tick).
+  Observed `cdt_make` / `cdt_remain` exact. n=5 **2.582×** (0.731 /
+  0.283 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1169). Over-1× booked. Does not remount `countdown_tick` /
+  leftover 1019 `cd_tick` / leftover 1088 `tick_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.cdr_ok`
+  (`countdown-request-render` vs leftover replica of countdown
+  requestRender). Observed `cdr_fn1` / `cdr_fn2` exact. n=5 **1.647×**
+  (1.015 / 0.616 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1170). Over-1× booked. Does not remount `countdown_render` /
+  leftover 1020 `cd_rnd` / leftover 1089 `rnd_ok`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

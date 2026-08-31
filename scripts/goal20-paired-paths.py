@@ -1359,14 +1359,11 @@ RATIO_CEILINGS = {
   # observed 1.928x (0.892 / 0.463 us). 8.0 is first-freeze
   # headroom. Ratchet down only.
   "cli_selectors.countdown_render": 8.0,
-  # Measure-only leftover 1168; first-freeze headroom matching leftover 1087
-  # sec_ok (3.146×). Ratchet down only.
+  # Measure-only leftover 1168; first freeze 3.481× (0.862 / 0.248 µs).
   "cli_selectors.cds_ok": 8.0,
-  # Measure-only leftover 1169; first-freeze headroom matching leftover 1088
-  # tick_ok (2.327×). Ratchet down only.
+  # Measure-only leftover 1169; first freeze 2.582× (0.731 / 0.283 µs).
   "cli_selectors.cdt_ok": 8.0,
-  # Measure-only leftover 1170; first-freeze headroom matching leftover 1089
-  # rnd_ok (1.980×). Ratchet down only.
+  # Measure-only leftover 1170; first freeze 1.647× (1.015 / 0.616 µs).
   "cli_selectors.cdr_ok": 8.0,
   # cli_selectors.model_selector_provider_badge leftover 559 (samples=5):
   # observed 0.307x (0.126 / 0.411 us). 8.0 is first-freeze
