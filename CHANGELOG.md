@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.akhexxx_ok`
+  (`api-key-input-state-handle-event` vs leftover replica of login
+  dialog api key prompt handleInput). Observed `akhe_esc` / `akhe_text`
+  exact. n=5 **0.958×** (5.418 / 5.657 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1360). Under-1×. Does not remount
+  `api_key_input_state_handle_event` / leftover 1066 `oa_akhe` / leftover 1147 `akhe_ok` / leftover 1228 `akhex_ok` / leftover 1294 `akhexx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mlsxxx_ok`
+  (`make-login-method-selector-state` vs leftover replica of
+  ExtensionSelectorComponent constructor). Observed `mlms_default` /
+  `mlms_three` exact. n=5 **1.201×** (2.892 / 2.409 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1361). Over-1×
+  booked. Does not remount `make_login_method_selector_state` / leftover
+  1067 `oa_mls` / leftover 1126 `lms_ok` / leftover 1148 `mls_ok` / leftover 1295 `mlsxx_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.aisxxx_ok`
+  (`make-api-key-input-state` vs leftover replica of showPrompt api
+  key Input constructor). Observed `makis_anth` / `makis_named` exact.
+  n=5 **1.873×** (2.220 / 1.185 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1362). Over-1× booked. Does not remount
+  `make_api_key_input_state` / leftover 1068 `oa_ais` / leftover 1127
+  `aki_ok` / leftover 1149 `ais_ok` / leftover 1296 `aisxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

@@ -1502,13 +1502,11 @@ RATIO_CEILINGS = {
   "cli_selectors.render_trust_selector": 15.0,
   # Measure-only leftover 616; first freeze 1.143× (2.654 / 2.323 µs).
   "cli_selectors.make_login_method_selector_state": 8.0,
-  # Measure-only leftover 1361; first-freeze headroom matching leftover 1295
-  # mlsxx_ok (1.262×). Ratchet down only.
+  # Measure-only leftover 1361; first freeze 1.201× (2.892 / 2.409 µs).
   "cli_selectors.mlsxxx_ok": 8.0,
   # Measure-only leftover 617; first freeze 1.803× (2.203 / 1.222 µs).
   "cli_selectors.make_api_key_input_state": 8.0,
-  # Measure-only leftover 1362; first-freeze headroom matching leftover 1296
-  # aisxx_ok (1.852×). Ratchet down only.
+  # Measure-only leftover 1362; first freeze 1.873× (2.220 / 1.185 µs).
   "cli_selectors.aisxxx_ok": 8.0,
   # Measure-only leftover 618; first freeze 1.204× (7.245 / 6.020 µs).
   "cli_selectors.make_oauth_selector_state": 8.0,
@@ -2179,8 +2177,7 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.api_key_input_state_handle_event.
   # Measure-only pair (Pair 212); first freeze 1.66× (7.0 / 4.2 µs).
   "cli_selectors.api_key_input_state_handle_event": 8.0,
-  # Measure-only leftover 1360; first-freeze headroom matching leftover 1294
-  # akhexx_ok (0.892×). Ratchet down only.
+  # Measure-only leftover 1360; first freeze 0.958× (5.418 / 5.657 µs). cadr leads.
   "cli_selectors.akhexxx_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_method_selector_ui_state.
   # Measure-only pair (Pair 213); first freeze 10.07× (622.6 / 61.8 µs).
