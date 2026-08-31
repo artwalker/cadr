@@ -1506,14 +1506,11 @@ RATIO_CEILINGS = {
   "cli_selectors.make_api_key_input_state": 8.0,
   # Measure-only leftover 618; first freeze 1.204× (7.245 / 6.020 µs).
   "cli_selectors.make_oauth_selector_state": 8.0,
-  # Measure-only leftover 1273; first-freeze headroom matching leftover 1207
-  # lmsx_ok (1.226×). Ratchet down only.
+  # Measure-only leftover 1273; first freeze 1.200× (2.796 / 2.330 µs).
   "cli_selectors.lmsxx_ok": 8.0,
-  # Measure-only leftover 1274; first-freeze headroom matching leftover 1208
-  # akix_ok (2.179×). Ratchet down only.
+  # Measure-only leftover 1274; first freeze 1.997× (2.217 / 1.110 µs).
   "cli_selectors.akixx_ok": 8.0,
-  # Measure-only leftover 1275; first-freeze headroom matching leftover 1209
-  # ossx_ok (1.370×). Ratchet down only.
+  # Measure-only leftover 1275; first freeze 1.369× (7.356 / 5.375 µs).
   "cli_selectors.ossxx_ok": 8.0,
   # Measure-only leftover 619; first freeze 1.338× (5.469 / 4.088 µs).
   "cli_selectors.login_dialog_show_waiting": 8.0,

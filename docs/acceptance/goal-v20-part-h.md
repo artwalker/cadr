@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1273 — `cli_selectors` (lmsxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lmsxx_ok` | `make-login-method-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent constructor (login method selector) |
+
+Leftover sibling of leftover 1207–1209 on the same needs-pair file (fourth unused slug after leftover 1003 `mlms_ok` / leftover 1126 `lms_ok` / leftover 1207 `lmsx_ok`). Does not remount `make_login_method_selector_state`. Timed work is login-method selector constructor default / three. Observed `mlms_default` / `mlms_three` are exact. First n=5 freeze **1.200×** (2.796 / 2.330 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1274 — `cli_selectors` (akixx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `akixx_ok` | `make-api-key-input-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login-dialog showPrompt api key Input constructor |
+
+Leftover sibling of Pair 1273. Does not remount `make_api_key_input_state` / leftover 1003 `makis_ok` / leftover 1127 `aki_ok` / leftover 1208 `akix_ok`. Timed work is api-key input constructor anthropic / named. Observed `makis_anth` / `makis_named` are exact. First n=5 freeze **1.997×** (2.217 / 1.110 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1275 — `cli_selectors` (ossxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ossxx_ok` | `make-oauth-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of OauthSelectorComponent constructor |
+
+Leftover sibling of Pairs 1273–1274. Does not remount `make_oauth_selector_state` / leftover 1003 `moss_ok` / leftover 1128 `oss_ok` / leftover 1209 `ossx_ok`. Timed work is oauth selector constructor default / logout. Observed `moss_default` / `moss_logout` are exact. First n=5 freeze **1.369×** (7.356 / 5.375 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
