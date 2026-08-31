@@ -246,6 +246,32 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldcixx_ok`
+  (`login-dialog-complete-input` vs leftover replica of
+  LoginDialogComponent.replaceInputWithSubmittedText). Observed
+  `ldci_manual` / `ldci_prompt` exact. n=5 **2.231×** (5.903 / 2.646 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1321).
+  Over-1× booked. Does not remount `login_dialog_complete_input` /
+  leftover 1033 `ld_cmp` / leftover 1108 `cmp_ok` / leftover 1189
+  `ldci_ok` / leftover 1255 `ldcix_ok`. Gate `--only-enforce`; py rc=2
+  from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldhexx_ok`
+  (`login-dialog-state-handle-event` vs leftover replica of
+  LoginDialogComponent.handleInput). Observed `ldhe_esc` / `ldhe_cancel`
+  exact. n=5 **2.670×** (7.223 / 2.705 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1322). Over-1× booked. Does not remount
+  `login_dialog_handle_event` / leftover 1033 `ld_evt` / leftover 1109
+  `evt_ok` / leftover 1190 `ldhe_ok` / leftover 1256 `ldhex_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldrdxx_ok`
+  (`render-login-dialog-state` vs leftover replica of
+  LoginDialogComponent layout). Observed `ldrd_wait` / `ldrd_details`
+  exact. n=5 **36.415×** (108.405 / 2.977 µs) on host `cursor`, ceiling
+  50.0. Measure-only leftover (Pair 1323). Over-1× booked. Does not
+  remount `render_login_dialog` / leftover 1033 `ld_rnd` / leftover 1110
+  `rnd_ok` / leftover 1191 `ldrd_ok` / leftover 1257 `ldrdx_ok`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
