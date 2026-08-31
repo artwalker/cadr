@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1357. cli_selectors lmhxxx_ok vs leftover replica of login method selector handleInput
+;;;;      (does not remount leftover 1225 lmhx_ok / leftover 1144 lmh_ok / leftover 1063 oa_lmh / leftover 1291 lmhxx_ok)
+;;;; 1358. cli_selectors luixxx_ok vs leftover replica of ExtensionSelectorComponent UI state
+;;;;      (does not remount leftover 1226 luix_ok / leftover 1145 lui_ok / leftover 1064 oa_lui / leftover 1292 luixx_ok)
+;;;; 1359. cli_selectors akuxxx_ok vs leftover replica of showPrompt api key UI state
+;;;;      (does not remount leftover 1227 akux_ok / leftover 1146 aku_ok / leftover 1065 oa_aki / leftover 1293 akuxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -842,10 +848,13 @@
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
+    ("cli_selectors.lmhxxx_ok" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
+    ("cli_selectors.luixxx_ok" . 50)
     ("cli_selectors.api_key_input_ui_state" . 50)
+    ("cli_selectors.akuxxx_ok" . 50)
     ("cli_selectors.oauth_selector_ui_state" . 50)
     ("cli_selectors.model_selector_search_text" . 50)
     ("cli_selectors.qualified_model_id" . 50)
@@ -29283,6 +29292,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-method-selector-handle-event))))
+     "lmhxxx_ok"
+     (collect "cli_selectors.lmhxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event))))
      "oauth_selector_move"
      (collect "cli_selectors.oauth_selector_move"
               (lambda ()
@@ -29298,8 +29312,18 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-method-selector-ui-state))))
+     "luixxx_ok"
+     (collect "cli_selectors.luixxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-ui-state))))
      "api_key_input_ui_state"
      (collect "cli_selectors.api_key_input_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-ui-state))))
+     "akuxxx_ok"
+     (collect "cli_selectors.akuxxx_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-api-key-input-ui-state))))
@@ -32936,14 +32960,20 @@
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
       "cli_selectors.login_method_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
+      "cli_selectors.lmhxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event leftover"
       "cli_selectors.oauth_selector_move"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
       "cli_selectors.api_key_input_state_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event"
       "cli_selectors.login_method_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
+      "cli_selectors.luixxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector leftover"
       "cli_selectors.api_key_input_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state"
+      "cli_selectors.akuxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state leftover"
       "cli_selectors.oauth_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-oauth-selector"
       "cli_selectors.model_selector_search_text"
