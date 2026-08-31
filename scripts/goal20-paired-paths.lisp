@@ -192,6 +192,12 @@
 ;;;;      (does not remount leftover 1223 lpox_ok / leftover 1142 lpo_ok / leftover 1060 oa_lin / leftover 1289 lpoxx_ok)
 ;;;; 1356. cli_selectors lgoxxx_ok vs leftover replica of getLogoutProviderOptions
 ;;;;      (does not remount leftover 1224 lgox_ok / leftover 1143 lgo_ok / leftover 1060 oa_out / leftover 1290 lgoxx_ok)
+;;;; 1366. cli_selectors cdsxxx_ok vs leftover replica of Math.ceil(timeoutMs/1000)
+;;;;      (does not remount countdown_seconds / leftover 1018 cd_sec / leftover 1087 sec_ok / leftover 1168 cds_ok / leftover 1234 cdsx_ok / leftover 1300 cdsxx_ok)
+;;;; 1367. cli_selectors cdtxxx_ok vs leftover replica of countdown tick
+;;;;      (does not remount countdown_tick / leftover 1019 cd_tick / leftover 1088 tick_ok / leftover 1169 cdt_ok / leftover 1235 cdtx_ok / leftover 1301 cdtxx_ok)
+;;;; 1368. cli_selectors cdrxxx_ok vs leftover replica of countdown requestRender
+;;;;      (does not remount countdown_render / leftover 1020 cd_rnd / leftover 1089 rnd_ok / leftover 1170 cdr_ok / leftover 1236 cdrx_ok / leftover 1302 cdrxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -964,6 +970,9 @@
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
+    ("cli_selectors.cdsxxx_ok" . 50)
+    ("cli_selectors.cdtxxx_ok" . 50)
+    ("cli_selectors.cdrxxx_ok" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -29869,7 +29878,22 @@
      (collect "cli_selectors.dlg_dev"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-dialog-device)))))))
+                  (run-cli-selectors-login-dialog-device))))
+     "cdsxxx_ok"
+     (collect "cli_selectors.cdsxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "cdtxxx_ok"
+     (collect "cli_selectors.cdtxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "cdrxxx_ok"
+     (collect "cli_selectors.cdrxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -33230,6 +33254,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-auth"
       "cli_selectors.dlg_dev"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-device-code"
+      "cli_selectors.cdsxxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds leftover"
+      "cli_selectors.cdtxxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick leftover"
+      "cli_selectors.cdrxxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render leftover"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
