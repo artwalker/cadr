@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1261,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.mkbx_ok",
+   "branch": "cursor/cli-models-mkbx-msmsx-mrmsx-ok-leftovers-1261-1263-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1261",
+   "ratio": 1.565,
+   "cadrUs": 34.035,
+   "piUs": 21.747,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1262,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.msmsx_ok",
+   "branch": "cursor/cli-models-mkbx-msmsx-mrmsx-ok-leftovers-1261-1263-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1262",
+   "ratio": 26.246,
+   "cadrUs": 110.927,
+   "piUs": 4.226,
+   "ceiling": 40.0,
+   "rc": 2
+  },
+  {
+   "pair": 1263,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.mrmsx_ok",
+   "branch": "cursor/cli-models-mkbx-msmsx-mrmsx-ok-leftovers-1261-1263-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1263",
+   "ratio": 28.572,
+   "cadrUs": 196.816,
+   "piUs": 6.888,
+   "ceiling": 50.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
