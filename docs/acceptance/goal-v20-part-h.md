@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1345 — `cli_selectors` (slxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `slxxx_ok` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector selected SelectList item |
+
+Leftover sibling of leftover 1279–1281 on the same needs-pair file (fifth unused slug after leftover 1132 `sl_ok` / leftover 1213 `slx_ok` / leftover 1279 `slxx_ok`). Does not remount `thinking_selector_selected_level`. Timed work is selected SelectList first / oob. Observed `tssl_first` / `tssl_oob` are exact. First n=5 freeze **0.653×** (0.489 / 0.748 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1346 — `cli_selectors` (dscxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dscxxx_ok` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of LEVEL_DESCRIPTIONS default suffix |
+
+Leftover sibling of Pair 1345. Does not remount `thinking_level_description_line` / leftover 1133 `dsc_ok` / leftover 1214 `dscx_ok` / leftover 1280 `dscxx_ok`. Timed work is LEVEL_DESCRIPTIONS off-default / bogus. Observed `tsdl_off_def` / `tsdl_bogus` are exact. First n=5 freeze **1.255×** (0.281 / 0.224 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1347 — `cli_selectors` (rthxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rthxxx_ok` | `render-thinking-selector` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of ThinkingSelectorComponent layout |
+
+Leftover sibling of Pairs 1345–1346. Does not remount `render_thinking_selector` / leftover 1134 `rth_ok` / leftover 1215 `rthx_ok` / leftover 1281 `rthxx_ok`. Timed work is ThinkingSelectorComponent layout. Observed `tsrd_default` / `tsrd_wide` are exact. First n=5 freeze **52.562×** (264.466 / 5.031 µs) on host `cursor`, ceiling 60.0 matching leftover 1281. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

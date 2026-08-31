@@ -1488,19 +1488,17 @@ RATIO_CEILINGS = {
   "cli_selectors.thinking_selector_handle_event": 8.0,
   # Measure-only leftover 610; first freeze 0.608× (0.467 / 0.768 µs). cadr leads.
   "cli_selectors.thinking_selector_selected_level": 8.0,
-  # Measure-only leftover 1345; first-freeze headroom matching leftover 1279
-  # slxx_ok (0.646×). Ratchet down only.
+  # Measure-only leftover 1345; first freeze 0.653× (0.489 / 0.748 µs). cadr leads.
   "cli_selectors.slxxx_ok": 8.0,
   # Measure-only leftover 611; first freeze 1.155× (0.268 / 0.232 µs).
   "cli_selectors.thinking_level_description_line": 8.0,
-  # Measure-only leftover 1346; first-freeze headroom matching leftover 1280
-  # dscxx_ok (1.283×). Ratchet down only.
+  # Measure-only leftover 1346; first freeze 1.255× (0.281 / 0.224 µs).
   "cli_selectors.dscxxx_ok": 8.0,
   # Measure-only leftover 612; first freeze 44.726× (316.671 / 7.080 µs).
   # 60.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_thinking_selector": 60.0,
-  # Measure-only leftover 1347; first-freeze headroom matching leftover 1281
-  # rthxx_ok (53.740×, ceiling 60.0). Ratchet down only.
+  # Measure-only leftover 1347; first freeze 52.562× (264.466 / 5.031 µs).
+  # 60.0 is leftover-1281 sibling headroom. Ratchet down only.
   "cli_selectors.rthxxx_ok": 60.0,
   # Measure-only leftover 613; first freeze 2.292× (35.594 / 15.530 µs).
   "cli_selectors.trust_option_saved_p": 8.0,
