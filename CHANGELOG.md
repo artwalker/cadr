@@ -246,6 +246,28 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.trsvxx_ok`
+  (`trust-option-saved-p` vs leftover replica of trust-selector isSavedOption).
+  Observed `tosp_nil` / `tosp_distrust` exact. n=5 **4.739×** (73.418 / 15.492 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1336). Over-1× booked.
+  Does not remount `trust_option_saved_p` / leftover 1048 `tr_sv` / leftover 1123
+  `sv_ok` / leftover 1204 `trsv_ok` / leftover 1270 `trsvx_ok`. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`); this
+  metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.trmkxx_ok`
+  (`make-trust-selector-state` vs leftover replica of TrustSelectorComponent
+  constructor). Observed `mtss_child` / `mtss_single` exact. n=5 **2.509×**
+  (128.814 / 51.335 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1337). Over-1× booked. Does not remount `make_trust_selector_state` /
+  leftover 1048 `tr_mk` / leftover 1124 `mk_ok` / leftover 1205 `trmk_ok` /
+  leftover 1271 `trmkx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.trrsxx_ok`
+  (`render-trust-selector` vs leftover replica of TrustSelectorComponent layout).
+  Observed `rtrs_default` / `rtrs_single` exact. n=5 **9.370×** (1047.292 / 111.770 µs)
+  on host `cursor`, ceiling 15.0. Measure-only leftover (Pair 1338). Over-1× booked.
+  Does not remount `render_trust_selector` / leftover 1048 `tr_rnd` / leftover 1125
+  `trn_ok` / leftover 1206 `trrs_ok` / leftover 1272 `trrsx_ok`.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
