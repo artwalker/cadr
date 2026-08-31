@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mkb_ok`
+  (`make-models-selector-keybindings` vs leftover replica of
+  KeybindingsManager app.models.* constructor). Observed `mmskb_save` /
+  `mmskb_reorder` exact. n=5 **1.321×** (33.467 / 25.341 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1195). Over-1× booked.
+  Does not remount `make_models_selector_keybindings` / leftover 1039
+  `ms_kb` / leftover 1114 `kb_ok`. Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.msms_ok`
+  (`make-scoped-models-selector-state` vs leftover replica of
+  ScopedModelsSelectorComponent constructor). Observed `msmksc_all` /
+  `msmksc_copy` exact. n=5 **24.478×** (106.572 / 4.354 µs) on host
+  `cursor`, ceiling 40.0. Measure-only leftover (Pair 1196). Over-1× booked.
+  Does not remount `make_scoped_models_selector_state` / leftover 1039
+  `sm_st` / leftover 1115 `sms_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mrms_ok`
+  (`render-model-selector` vs leftover replica of ModelSelectorComponent
+  layout). Observed `rms_default` / `rms_miss` exact. n=5 **27.398×**
+  (200.402 / 7.314 µs) on host `cursor`, ceiling 50.0. Measure-only leftover
+  (Pair 1197). Over-1× booked. Does not remount `render_model_selector` /
+  leftover 1039 `rm_sel` / leftover 1116 `rms_ok`. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
