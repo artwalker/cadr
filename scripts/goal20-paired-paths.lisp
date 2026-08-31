@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1300. cli_selectors cdsxx_ok vs leftover replica of Math.ceil(timeoutMs/1000)
+;;;;      (does not remount countdown_seconds / leftover 1018 cd_sec / leftover 1087 sec_ok / leftover 1168 cds_ok / leftover 1234 cdsx_ok)
+;;;; 1301. cli_selectors cdtxx_ok vs leftover replica of countdown tick
+;;;;      (does not remount countdown_tick / leftover 1019 cd_tick / leftover 1088 tick_ok / leftover 1169 cdt_ok / leftover 1235 cdtx_ok)
+;;;; 1302. cli_selectors cdrxx_ok vs leftover replica of countdown requestRender
+;;;;      (does not remount countdown_render / leftover 1020 cd_rnd / leftover 1089 rnd_ok / leftover 1170 cdr_ok / leftover 1236 cdrx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -955,6 +961,9 @@
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
+    ("cli_selectors.cdsxx_ok" . 50)
+    ("cli_selectors.cdtxx_ok" . 50)
+    ("cli_selectors.cdrxx_ok" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -29845,7 +29854,22 @@
      (collect "cli_selectors.dlg_dev"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-dialog-device)))))))
+                  (run-cli-selectors-login-dialog-device))))
+     "cdsxx_ok"
+     (collect "cli_selectors.cdsxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "cdtxx_ok"
+     (collect "cli_selectors.cdtxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "cdrxx_ok"
+     (collect "cli_selectors.cdrxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -33200,6 +33224,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-auth"
       "cli_selectors.dlg_dev"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-device-code"
+      "cli_selectors.cdsxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds leftover"
+      "cli_selectors.cdtxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick leftover"
+      "cli_selectors.cdrxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render leftover"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

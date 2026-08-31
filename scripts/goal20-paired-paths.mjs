@@ -523,6 +523,9 @@ const REPETITIONS = {
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
+	"cli_selectors.cdsxx_ok": 50,
+	"cli_selectors.cdtxx_ok": 50,
+	"cli_selectors.cdrxx_ok": 50,
 	"cli_selectors.model_selector_provider_badge": 50,
 	"cli_selectors.scoped_models_copy_enabled": 50,
 	"cli_selectors.move_list_item": 50,
@@ -31087,6 +31090,15 @@ async function measureCliSelectorsSessionSearch() {
 		dlg_dev: await collect("cli_selectors.dlg_dev", () => {
 			return () => runCliSelectorsLoginDialogDevice();
 		}),
+		cdsxx_ok: await collect("cli_selectors.cdsxx_ok", () => {
+			return () => runCliSelectorsCountdownSeconds();
+		}),
+		cdtxx_ok: await collect("cli_selectors.cdtxx_ok", () => {
+			return () => runCliSelectorsCountdownTick();
+		}),
+		cdrxx_ok: await collect("cli_selectors.cdrxx_ok", () => {
+			return () => runCliSelectorsCountdownRender();
+		}),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
 			return () => runCliSelectorsArminPixel();
 		}),
@@ -34538,6 +34550,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showAuth",
 			"cli_selectors.dlg_dev":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showDeviceCode",
+			"cli_selectors.cdsxx_ok":
+				"packages/coding-agent leftover replica of Math.ceil(timeoutMs / 1000)",
+			"cli_selectors.cdtxx_ok":
+				"packages/coding-agent leftover replica of countdown tick",
+			"cli_selectors.cdrxx_ok":
+				"packages/coding-agent leftover replica of countdown requestRender",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
