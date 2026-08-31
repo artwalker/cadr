@@ -730,6 +730,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("psu_len", paired.OBSERVED_EXACT["powershell_tool"])
         self.assertIn("psc_empty", paired.OBSERVED_EXACT["powershell_tool"])
         self.assertIn("pmt_n", paired.OBSERVED_EXACT["powershell_tool"])
+        self.assertIn("powershell_tool.utf_ok", RECORD.METRIC_KEYS)
+        self.assertIn("utf_ok", paired.METRICS["powershell_tool"])
+        self.assertIn("powershell_tool.utf_ok", paired.RATIO_CEILINGS)
+        self.assertIn("powershell_tool.pfx_ok", RECORD.METRIC_KEYS)
+        self.assertIn("pfx_ok", paired.METRICS["powershell_tool"])
+        self.assertIn("powershell_tool.pfx_ok", paired.RATIO_CEILINGS)
+        self.assertIn("powershell_tool.mtb_ok", RECORD.METRIC_KEYS)
+        self.assertIn("mtb_ok", paired.METRICS["powershell_tool"])
+        self.assertIn("powershell_tool.mtb_ok", paired.RATIO_CEILINGS)
 
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
