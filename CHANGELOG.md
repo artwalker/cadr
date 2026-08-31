@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.rwi_ok`
+  (`oauth-selector-handle-raw-input` vs leftover replica of oauth-selector
+  handleInput raw key dispatch). Observed `oshri_down` / `oshri_j` exact.
+  n=5 **1.660×** (440.874 / 265.527 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1159). Over-1× booked. Does not remount
+  `oauth_selector_handle_raw_input` / leftover 1078 `oa_hri` / leftover
+  1120 `hri_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.esp_ok`
+  (`oauth-environment-source-p` vs leftover replica of env source
+  regex). Observed `oesp_nil` / `oesp_oauth` exact. n=5 **2.016×**
+  (0.816 / 0.405 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1160). Over-1× booked. Does not remount
+  `oauth_environment_source_p` / leftover 1079 `oa_esp`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.lgt_ok`
+  (`logout-provider-options` vs leftover replica of
+  getLogoutProviderOptions). Observed `lgo_empty` / `lgo_mixed` exact.
+  n=5 **1.894×** (7.276 / 3.842 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1161). Over-1× booked. Does not remount
+  `logout_provider_options` / leftover 1080 `oa_lgo` / leftover 1141
+  `lgo_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

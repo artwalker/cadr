@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1159 — `cli_selectors` (rwi_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rwi_ok` | `oauth-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauth-selector handleInput raw key dispatch |
+
+Leftover sibling of leftover 1078–1080 on the same needs-pair file (second unused slug after leftover 1078 `oa_hri`; does not remount leftover 1120 `hri_ok`). Does not remount `oauth_selector_handle_raw_input`. Timed work is down / j / enter / cancel / q / o / confirm. Observed `oshri_down` / `oshri_j` are exact. First n=5 freeze **1.660×** (440.874 / 265.527 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1160 — `cli_selectors` (esp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `esp_ok` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of env source regex |
+
+Leftover sibling of Pair 1159. Does not remount `oauth_environment_source_p` / leftover 1079 `oa_esp`. Timed work is nil / oauth / env / runtime / stored cases. Observed `oesp_nil` / `oesp_oauth` are exact. First n=5 freeze **2.016×** (0.816 / 0.405 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1161 — `cli_selectors` (lgt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lgt_ok` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
+
+Leftover sibling of Pairs 1159–1160. Does not remount `logout_provider_options` / leftover 1080 `oa_lgo` / leftover 1141 `lgo_ok`. Timed work is empty / mixed / unknown / sorted logout option lists. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **1.894×** (7.276 / 3.842 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
