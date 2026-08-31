@@ -2686,6 +2686,11 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.api_key_input_state_handle_event", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.ahe_ok", RECORD.METRIC_KEYS)
+        self.assertIn("ahe_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.ahe_ok", paired.RATIO_CEILINGS)
+        self.assertIn("akhe_esc", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("akhe_text", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.login_method_selector_ui_state", RECORD.METRIC_KEYS)
         self.assertIn(
             "login_method_selector_ui_state", paired.METRICS["cli_selectors"]
@@ -2693,9 +2698,19 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.login_method_selector_ui_state", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.lmsu_ok", RECORD.METRIC_KEYS)
+        self.assertIn("lmsu_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.lmsu_ok", paired.RATIO_CEILINGS)
+        self.assertIn("lmsui_default", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("lmsui_sel1", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.api_key_input_ui_state", RECORD.METRIC_KEYS)
         self.assertIn("api_key_input_ui_state", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.api_key_input_ui_state", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.aui_ok", RECORD.METRIC_KEYS)
+        self.assertIn("aui_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.aui_ok", paired.RATIO_CEILINGS)
+        self.assertIn("akiui_empty", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("akiui_key", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.oauth_selector_ui_state", RECORD.METRIC_KEYS)
         self.assertIn("oauth_selector_ui_state", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oauth_selector_ui_state", paired.RATIO_CEILINGS)
