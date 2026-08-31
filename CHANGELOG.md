@@ -246,6 +246,31 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.henxx_ok`
+  (`thinking-selector-handle-event` vs leftover replica of thinking
+  selector typed input event dispatch). Observed `tshe_down` / `tshe_text`
+  exact. n=5 **0.821×** (3.277 / 3.991 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1297). Under-1×. Does not remount
+  `thinking_selector_handle_event` / leftover 1069 `th_he` / leftover 1120
+  `hev_ok` / leftover 1150 `hen_ok` / leftover 1231 `henx_ok`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mtsxx_ok`
+  (`make-thinking-selector-state` vs leftover replica of thinking
+  selector constructor filter + select current). Observed `tms_high` /
+  `tms_default` exact. n=5 **0.885×** (1.686 / 1.905 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1298). Under-1×.
+  Does not remount `make_thinking_selector_state` / leftover 1070 `th_mts`
+  / leftover 1151 `mts_ok` / leftover 1232 `mtsx_ok`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.lstxx_ok`
+  (`thinking-level-search-text` vs leftover replica of thinking selector
+  label + description search text). Observed `tlst_off` / `tlst_high`
+  exact. n=5 **2.198×** (1.136 / 0.517 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1299). Over-1× booked. Does not remount
+  `thinking_level_search_text` / leftover 1071 `th_lst` / leftover 1152
+  `lst_ok` / leftover 1233 `lstx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
