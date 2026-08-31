@@ -210,6 +210,12 @@
 ;;;;      (does not remount leftover 1319 ldixx_ok / leftover 1187 ldi_ok / leftover 1106 info_ok / leftover 1030 ld_info / leftover 1253 ldix_ok)
 ;;;; 1386. cli_selectors lddtxxx_ok vs leftover replica of LoginDialogComponent.showDetails
 ;;;;      (does not remount leftover 1320 lddtxx_ok / leftover 1188 lddt_ok / leftover 1107 det_ok / leftover 1030 ld_det / leftover 1254 lddtx_ok)
+;;;; 1387. cli_selectors ldcixxx_ok vs leftover replica of LoginDialogComponent.replaceInputWithSubmittedText
+;;;;      (does not remount leftover 1321 ldcixx_ok / leftover 1189 ldci_ok / leftover 1108 cmp_ok / leftover 1033 ld_cmp / leftover 1255 ldcix_ok)
+;;;; 1388. cli_selectors ldhexxx_ok vs leftover replica of LoginDialogComponent.handleInput
+;;;;      (does not remount leftover 1322 ldhexx_ok / leftover 1190 ldhe_ok / leftover 1109 evt_ok / leftover 1033 ld_evt / leftover 1256 ldhex_ok)
+;;;; 1389. cli_selectors ldrdxxx_ok vs leftover replica of LoginDialogComponent layout
+;;;;      (does not remount leftover 1323 ldrdxx_ok / leftover 1191 ldrd_ok / leftover 1110 rnd_ok / leftover 1033 ld_rnd / leftover 1257 ldrdx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -979,6 +985,9 @@
     ("cli_selectors.login_dialog_complete_input" . 50)
     ("cli_selectors.login_dialog_handle_event" . 50)
     ("cli_selectors.render_login_dialog" . 50)
+    ("cli_selectors.ldcixxx_ok" . 50)
+    ("cli_selectors.ldhexxx_ok" . 50)
+    ("cli_selectors.ldrdxxx_ok" . 50)
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
@@ -29882,6 +29891,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-login-dialog))))
+     "ldcixxx_ok"
+     (collect "cli_selectors.ldcixxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-complete-input))))
+     "ldhexxx_ok"
+     (collect "cli_selectors.ldhexxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-handle-event))))
+     "ldrdxxx_ok"
+     (collect "cli_selectors.ldrdxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-login-dialog))))
      "user_message_handle_event"
      (collect "cli_selectors.user_message_handle_event"
               (lambda ()
@@ -33256,6 +33280,12 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event"
       "cli_selectors.render_login_dialog"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp render-login-dialog-state"
+      "cli_selectors.ldcixxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-complete-input leftover"
+      "cli_selectors.ldhexxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event leftover"
+      "cli_selectors.ldrdxxx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp render-login-dialog-state leftover"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
