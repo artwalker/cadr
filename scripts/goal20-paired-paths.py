@@ -2131,20 +2131,17 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.oauth_option_status_label.
   # Measure-only pair (Pair 198); ceiling not lowered.
   "cli_selectors.oauth_option_status_label": 8.0,
-  # Measure-only leftover 1157; first-freeze headroom matching leftover 1076
-  # oa_osl (1.791×). Ratchet down only.
+  # Measure-only leftover 1157; first freeze 1.514× (1.379 / 0.910 µs).
   "cli_selectors.osl_ok": 8.0,
   # First-freeze headroom for cli_selectors.oauth_option_status_rendered.
   # Measure-only pair (Pair 211); first freeze 10.63× (15.2 / 1.4 µs).
   "cli_selectors.oauth_option_status_rendered": 15.0,
-  # Measure-only leftover 1156; first-freeze headroom matching leftover 1075
-  # oa_osr (4.769×). Ratchet down only.
+  # Measure-only leftover 1156; first freeze 4.210× (7.900 / 1.876 µs).
   "cli_selectors.osr_ok": 8.0,
   # First-freeze headroom for cli_selectors.credential_entry_auth_type.
   # Measure-only pair (Pair 199); ceiling not lowered.
   "cli_selectors.credential_entry_auth_type": 8.0,
-  # Measure-only leftover 1158; first-freeze headroom matching leftover 1077
-  # oa_cet (1.402×). Ratchet down only.
+  # Measure-only leftover 1158; first freeze 1.276× (0.396 / 0.310 µs).
   "cli_selectors.cet_ok": 8.0,
   # First-freeze headroom for cli_selectors.oauth_environment_source_p.
   # Measure-only pair (Pair 200); ceiling not lowered.

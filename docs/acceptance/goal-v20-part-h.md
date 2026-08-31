@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1156 — `cli_selectors` (osr_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `osr_ok` | `oauth-option-status-rendered` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of formatStatusIndicator themed output |
+
+Leftover sibling of leftover 1075–1077 on the same needs-pair file (second unused slug after leftover 1075 `oa_osr`). Does not remount `oauth_option_status_rendered`. Timed work is none / custom themed status output. Observed `oosr_none` / `oosr_custom` are exact. First n=5 freeze **4.210×** (7.900 / 1.876 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1157 — `cli_selectors` (osl_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `osl_ok` | `oauth-option-status-label` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of formatStatusIndicator plain label |
+
+Leftover sibling of Pair 1156. Does not remount `oauth_option_status_label` / leftover 1076 `oa_osl`. Timed work is none / custom plain status label. Observed `oosl_none` / `oosl_custom` are exact. First n=5 freeze **1.514×** (1.379 / 0.910 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1158 — `cli_selectors` (cet_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cet_ok` | `credential-entry-auth-type` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of credential-entry authType |
+
+Leftover sibling of Pairs 1156–1157. Does not remount `credential_entry_auth_type` / leftover 1077 `oa_cet`. Timed work is oauth / api-key credential-entry authType. Observed `ceat_oauth` / `ceat_api_key` are exact. First n=5 freeze **1.276×** (0.396 / 0.310 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
