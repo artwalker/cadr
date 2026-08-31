@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1225. cli_selectors lmhx_ok vs leftover replica of login method selector handleInput
+;;;;      (does not remount login_method_selector_handle_event / leftover 1063 oa_lmh / leftover 1144 lmh_ok)
+;;;; 1226. cli_selectors luix_ok vs leftover replica of ExtensionSelectorComponent UI state
+;;;;      (does not remount login_method_selector_ui_state / leftover 1064 oa_lui / leftover 1145 lui_ok)
+;;;; 1227. cli_selectors akux_ok vs leftover replica of showPrompt api key UI state
+;;;;      (does not remount api_key_input_ui_state / leftover 1065 oa_aki / leftover 1146 aku_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -842,10 +848,13 @@
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
+    ("cli_selectors.lmhx_ok" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
+    ("cli_selectors.luix_ok" . 50)
     ("cli_selectors.api_key_input_ui_state" . 50)
+    ("cli_selectors.akux_ok" . 50)
     ("cli_selectors.oauth_selector_ui_state" . 50)
     ("cli_selectors.model_selector_search_text" . 50)
     ("cli_selectors.qualified_model_id" . 50)
@@ -29283,6 +29292,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-method-selector-handle-event))))
+     "lmhx_ok"
+     (collect "cli_selectors.lmhx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event))))
      "oauth_selector_move"
      (collect "cli_selectors.oauth_selector_move"
               (lambda ()
@@ -29298,8 +29312,18 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-method-selector-ui-state))))
+     "luix_ok"
+     (collect "cli_selectors.luix_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-ui-state))))
      "api_key_input_ui_state"
      (collect "cli_selectors.api_key_input_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-ui-state))))
+     "akux_ok"
+     (collect "cli_selectors.akux_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-api-key-input-ui-state))))
@@ -32936,14 +32960,20 @@
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
       "cli_selectors.login_method_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
+      "cli_selectors.lmhx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event leftover"
       "cli_selectors.oauth_selector_move"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
       "cli_selectors.api_key_input_state_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event"
       "cli_selectors.login_method_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
+      "cli_selectors.luix_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector leftover"
       "cli_selectors.api_key_input_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state"
+      "cli_selectors.akux_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state leftover"
       "cli_selectors.oauth_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-oauth-selector"
       "cli_selectors.model_selector_search_text"
