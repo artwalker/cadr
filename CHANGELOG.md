@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thafxx_ok`
+  (`thinking-selector-apply-filter` vs leftover replica of thinking-selector
+  applyFilter). Observed `tsaf_high` / `tsaf_empty` exact. n=5 **1.162×**
+  (13.559 / 11.667 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1330). Over-1× booked. Does not remount `thinking_selector_apply_filter`
+  / leftover 1042 `th_af` / leftover 1117 `af_ok` / leftover 1198 `thaf_ok`
+  / leftover 1264 `thafx_ok`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thclxx_ok`
+  (`thinking-selector-clamp-selected` vs leftover replica of thinking-selector
+  clamp selected). Observed `tscl_high` / `tscl_zero` exact. n=5 **0.910×**
+  (0.656 / 0.722 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1331). Under-1×. Does not remount `thinking_selector_clamp_selected` /
+  leftover 1042 `th_cl` / leftover 1118 `cl_ok` / leftover 1199 `thcl_ok` /
+  leftover 1265 `thclx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.thscxx_ok`
+  (`thinking-selector-select-current` vs leftover replica of thinking-selector
+  select current). Observed `tssc_high` / `tssc_only` exact. n=5 **0.890×**
+  (1.013 / 1.138 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1332). Under-1×. Does not remount `thinking_selector_select_current` /
+  leftover 1042 `th_sc` / leftover 1119 `sc_ok` / leftover 1200 `thsc_ok` /
+  leftover 1266 `thscx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

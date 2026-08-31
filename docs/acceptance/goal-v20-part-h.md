@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1330 — `cli_selectors` (thafxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thafxx_ok` | `thinking-selector-apply-filter` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector applyFilter |
+
+Leftover sibling of leftover 1264–1266 on the same needs-pair file (fifth unused slug after leftover 1042 `th_af` / leftover 1117 `af_ok` / leftover 1198 `thaf_ok` / leftover 1264 `thafx_ok`). Does not remount `thinking_selector_apply_filter`. Timed work is high / empty apply-filter. Observed `tsaf_high` / `tsaf_empty` are exact. First n=5 freeze **1.162×** (13.559 / 11.667 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1331 — `cli_selectors` (thclxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thclxx_ok` | `thinking-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector clamp selected |
+
+Leftover sibling of Pair 1330. Does not remount `thinking_selector_clamp_selected` / leftover 1042 `th_cl` / leftover 1118 `cl_ok` / leftover 1199 `thcl_ok` / leftover 1265 `thclx_ok`. Timed work is high / zero clamp. Observed `tscl_high` / `tscl_zero` are exact. First n=5 freeze **0.910×** (0.656 / 0.722 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1332 — `cli_selectors` (thscxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thscxx_ok` | `thinking-selector-select-current` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector select current |
+
+Leftover sibling of Pairs 1330–1331. Does not remount `thinking_selector_select_current` / leftover 1042 `th_sc` / leftover 1119 `sc_ok` / leftover 1200 `thsc_ok` / leftover 1266 `thscx_ok`. Timed work is high / only select-current. Observed `tssc_high` / `tssc_only` are exact. First n=5 freeze **0.890×** (1.013 / 1.138 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
