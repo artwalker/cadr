@@ -246,6 +246,31 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.oasxxx_ok`
+  (`oauth-selector-selection` vs leftover replica of
+  filteredProviders[selectedIndex]). Observed `oss_first` /
+  `oss_filter_miss` exact. n=5 **15.638×** (75.202 / 4.809 µs) on host
+  `cursor`, ceiling 20.0 matching leftover 1285. Measure-only leftover
+  (Pair 1351). Over-1× booked. Does not remount `oauth_selector_selection`
+  / leftover 1057 `oa_sel` / leftover 1138 `oas_ok` / leftover 1219 `oasx_ok` /
+  leftover 1285 `oasxx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.fltxxx_ok`
+  (`oauth-selector-apply-filter` vs leftover replica of filterProviders).
+  Observed `osaf_all` / `osaf_miss` exact. n=5 **9.950×** (81.055 /
+  8.146 µs) on host `cursor`, ceiling 12.0 matching leftover 1286.
+  Measure-only leftover (Pair 1352). Over-1× booked. Does not remount
+  `oauth_selector_apply_filter` / leftover 1057 `oa_flt` / leftover 1139
+  `flt_ok` / leftover 1220 `fltx_ok` / leftover 1286 `fltxx_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.qryxxx_ok`
+  (`oauth-selector-search-text` vs leftover replica of filterProviders
+  search text). Observed `osst_oauth` / `osst_api` exact. n=5 **2.185×**
+  (1.184 / 0.542 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1353). Over-1× booked. Does not remount `oauth_selector_search_text`
+  / leftover 1057 `oa_qry` / leftover 1140 `qry_ok` / leftover 1221 `qryx_ok` /
+  leftover 1287 `qryxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1351 — `cli_selectors` (oasxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oasxxx_ok` | `oauth-selector-selection` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filteredProviders[selectedIndex] |
+
+Leftover sibling of leftover 1285–1287 on the same needs-pair file (fifth unused slug after leftover 1057 `oa_sel` / leftover 1138 `oas_ok` / leftover 1219 `oasx_ok` / leftover 1285 `oasxx_ok`). Does not remount `oauth_selector_selection`. Timed work is filteredProviders first / filter-miss. Observed `oss_first` / `oss_filter_miss` are exact. First n=5 freeze **15.638×** (75.202 / 4.809 µs) on host `cursor`, ceiling 20.0 matching leftover 1285. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1352 — `cli_selectors` (fltxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fltxxx_ok` | `oauth-selector-apply-filter` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filterProviders |
+
+Leftover sibling of Pair 1351. Does not remount `oauth_selector_apply_filter` / leftover 1057 `oa_flt` / leftover 1139 `flt_ok` / leftover 1220 `fltx_ok` / leftover 1286 `fltxx_ok`. Timed work is filterProviders all / miss. Observed `osaf_all` / `osaf_miss` are exact. First n=5 freeze **9.950×** (81.055 / 8.146 µs) on host `cursor`, ceiling 12.0 matching leftover 1286. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1353 — `cli_selectors` (qryxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `qryxxx_ok` | `oauth-selector-search-text` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of filterProviders search text |
+
+Leftover sibling of Pairs 1351–1352. Does not remount `oauth_selector_search_text` / leftover 1057 `oa_qry` / leftover 1140 `qry_ok` / leftover 1221 `qryx_ok` / leftover 1287 `qryxx_ok`. Timed work is search text oauth / api. Observed `osst_oauth` / `osst_api` are exact. First n=5 freeze **2.185×** (1.184 / 0.542 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
