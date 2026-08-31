@@ -491,6 +491,9 @@ const REPETITIONS = {
 	"cli_selectors.user_message_handle_event": 50,
 	"cli_selectors.user_message_handle_raw": 50,
 	"cli_selectors.render_user_message_selector": 50,
+	"cli_selectors.umevx_ok": 50,
+	"cli_selectors.umrwx_ok": 50,
+	"cli_selectors.umrsx_ok": 50,
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
@@ -31045,6 +31048,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderUserMessageSelector();
 			},
 		),
+		umevx_ok: await collect("cli_selectors.umevx_ok", () => {
+			return () => runCliSelectorsUserMessageHandleEvent();
+		}),
+		umrwx_ok: await collect("cli_selectors.umrwx_ok", () => {
+			return () => runCliSelectorsUserMessageHandleRaw();
+		}),
+		umrsx_ok: await collect("cli_selectors.umrsx_ok", () => {
+			return () => runCliSelectorsRenderUserMessageSelector();
+		}),
 		make_models_selector_keybindings: await collect(
 			"cli_selectors.make_models_selector_keybindings",
 			() => {
@@ -34520,6 +34532,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
 			"cli_selectors.render_user_message_selector":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
+			"cli_selectors.umevx_ok":
+				"packages/coding-agent leftover replica of UserMessageList.handleInput (structured events)",
+			"cli_selectors.umrwx_ok":
+				"packages/coding-agent leftover replica of UserMessageList.handleInput (raw key dispatch)",
+			"cli_selectors.umrsx_ok":
+				"packages/coding-agent leftover replica of UserMessageSelectorComponent layout",
 			"cli_selectors.make_models_selector_keybindings":
 				"packages/coding-agent/src/core/keybindings.ts KEYBINDINGS app.models.* KeybindingsManager constructor",
 			"cli_selectors.make_scoped_models_selector_state":
