@@ -467,6 +467,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_apply_filter": 50,
 	"cli_selectors.thinking_selector_clamp_selected": 50,
 	"cli_selectors.thinking_selector_select_current": 50,
+	"cli_selectors.thaf_ok": 50,
+	"cli_selectors.thcl_ok": 50,
+	"cli_selectors.thsc_ok": 50,
 	"cli_selectors.thinking_selector_move": 50,
 	"cli_selectors.thinking_selector_handle_raw_input": 50,
 	"cli_selectors.thinking_selector_handle_event": 50,
@@ -30901,6 +30904,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsThinkingSelectorSelectCurrent();
 			},
 		),
+		thaf_ok: await collect("cli_selectors.thaf_ok", () => {
+			return () => runCliSelectorsThinkingSelectorApplyFilter();
+		}),
+		thcl_ok: await collect("cli_selectors.thcl_ok", () => {
+			return () => runCliSelectorsThinkingSelectorClampSelected();
+		}),
+		thsc_ok: await collect("cli_selectors.thsc_ok", () => {
+			return () => runCliSelectorsThinkingSelectorSelectCurrent();
+		}),
 		thinking_selector_move: await collect(
 			"cli_selectors.thinking_selector_move",
 			() => {
@@ -34472,6 +34484,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts clamp selected index",
 			"cli_selectors.thinking_selector_select_current":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts select current thinking level",
+			"cli_selectors.thaf_ok":
+				"packages/coding-agent leftover replica of thinking-selector applyFilter",
+			"cli_selectors.thcl_ok":
+				"packages/coding-agent leftover replica of thinking-selector clamp selected index",
+			"cli_selectors.thsc_ok":
+				"packages/coding-agent leftover replica of thinking-selector select current thinking level",
 			"cli_selectors.thinking_selector_move":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts wrap selected index",
 			"cli_selectors.thinking_selector_handle_raw_input":
