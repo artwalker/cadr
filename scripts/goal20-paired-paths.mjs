@@ -470,6 +470,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_move": 50,
 	"cli_selectors.thinking_selector_handle_raw_input": 50,
 	"cli_selectors.thinking_selector_handle_event": 50,
+	"cli_selectors.thmvxx_ok": 50,
+	"cli_selectors.thhrxx_ok": 50,
+	"cli_selectors.thhexx_ok": 50,
 	"cli_selectors.thinking_selector_selected_level": 50,
 	"cli_selectors.thinking_level_description_line": 50,
 	"cli_selectors.render_thinking_selector": 50,
@@ -30919,6 +30922,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsThinkingSelectorHandleEvent();
 			},
 		),
+		thmvxx_ok: await collect("cli_selectors.thmvxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorMove();
+		}),
+		thhrxx_ok: await collect("cli_selectors.thhrxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleRawInput();
+		}),
+		thhexx_ok: await collect("cli_selectors.thhexx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleEvent();
+		}),
 		thinking_selector_selected_level: await collect(
 			"cli_selectors.thinking_selector_selected_level",
 			() => {
@@ -34478,6 +34490,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts handleInput keybindings",
 			"cli_selectors.thinking_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts typed input event dispatch",
+			"cli_selectors.thmvxx_ok":
+				"packages/coding-agent leftover replica of thinking-selector wrap selected index",
+			"cli_selectors.thhrxx_ok":
+				"packages/coding-agent leftover replica of thinking-selector handleInput keybindings",
+			"cli_selectors.thhexx_ok":
+				"packages/coding-agent leftover replica of thinking-selector typed input event dispatch",
 			"cli_selectors.thinking_selector_selected_level":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts selected SelectList item",
 			"cli_selectors.thinking_level_description_line":
