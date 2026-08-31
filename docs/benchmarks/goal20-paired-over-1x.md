@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `powershell_tool.utfxx_ok` | 0.654 | 0.151 | 4.340× | 8.00× | measure-only leftover 1303; `+powershell-utf8-output-prefix+` vs leftover UTF8_OUTPUT_PREFIX | invent pause；地板优化另刀 |
+| `powershell_tool.pfxxx_ok` | 0.497 | 0.297 | 1.675× | 8.00× | measure-only leftover 1304; UTF-8 prefix + command concatenate vs leftover wrap | invent pause；地板优化另刀 |
+| `powershell_tool.mtbxx_ok` | 2.036 | 1.395 | 1.460× | 8.00× | measure-only leftover 1305; `make-powershell-tool` vs leftover createPowerShellToolDefinition | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
