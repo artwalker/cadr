@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1246 — `cli_selectors` (tllx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tllx_ok` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking level label |
+
+Leftover sibling of leftover 1180–1182 on the same needs-pair file (fourth unused slug after leftover 1024 `th_lbl` / leftover 1099 `tlbl_ok` / leftover 1180 `tll_ok`). Does not remount `thinking_level_label`. Timed work is off / min / low / medium / high / xhigh / max labels. Observed `tll_off` / `tll_max` are exact. First n=5 freeze **1.622×** (0.230 / 0.142 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1247 — `cli_selectors` (tsqx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsqx_ok` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of applyFilter from search |
+
+Leftover sibling of Pair 1246. Does not remount `thinking_selector_set_query` / leftover 1025 `th_qry` / leftover 1100 `tqry_ok` / leftover 1181 `tsq_ok`. Timed work is empty / high query applyFilter. Observed `tsq_empty` / `tsq_high` are exact. First n=5 freeze **1.146×** (11.727 / 10.235 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1248 — `cli_selectors` (tskbx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tskbx_ok` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of getKeybindings |
+
+Leftover sibling of Pairs 1246–1247. Does not remount `thinking_selector_keybindings` / leftover 1026 `th_kb` / leftover 1101 `tkb_ok` / leftover 1182 `tskb_ok`. Timed work is nil / custom keybindings. Observed `tskb_nil` / `tskb_custom` are exact. First n=5 freeze **5.941×** (3.004 / 0.506 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
