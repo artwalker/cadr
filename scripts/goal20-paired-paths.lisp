@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1243. cli_bootstrap_sessions pbkx_ok vs leftover replica of ! / !! bash extract
+;;;;      (does not remount parse_bash / leftover 1012 pb_ok / leftover 1096 psb_ok / leftover 1177 pbk_ok)
+;;;; 1244. cli_bootstrap_sessions rtkx_ok vs leftover replica of textParts.join
+;;;;      (does not remount response_text / leftover 1013 rt_ok / leftover 1097 rst_ok / leftover 1178 rtk_ok)
+;;;; 1245. cli_bootstrap_sessions dpkx_ok vs leftover replica of submit classify
+;;;;      (does not remount dispatch_plain / leftover 1014 dp_ok / leftover 1098 dsp_ok / leftover 1179 dpk_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -996,6 +1002,9 @@
     ("cli_bootstrap_sessions.cycle_wrap" . 50)
     ("cli_bootstrap_sessions.scope_hint" . 50)
     ("cli_bootstrap_sessions.file_tags" . 50)
+    ("cli_bootstrap_sessions.pbkx_ok" . 50)
+    ("cli_bootstrap_sessions.rtkx_ok" . 50)
+    ("cli_bootstrap_sessions.dpkx_ok" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -31682,7 +31691,22 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))))))
+                   (first file-pair) (second file-pair))))
+     "pbkx_ok"
+     (collect "cli_bootstrap_sessions.pbkx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-parse-bash))))
+     "rtkx_ok"
+     (collect "cli_bootstrap_sessions.rtkx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-response-text))))
+     "dpkx_ok"
+     (collect "cli_bootstrap_sessions.dpkx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-dispatch-plain))))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -33270,6 +33294,12 @@
       "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line"
       "cli_bootstrap_sessions.file_tags"
       "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments"
+      "cli_bootstrap_sessions.pbkx_ok"
+      "src/cadr-cli/repl.lisp parse-user-bash-input leftover"
+      "cli_bootstrap_sessions.rtkx_ok"
+      "src/cadr-cli/repl.lisp response-text leftover"
+      "cli_bootstrap_sessions.dpkx_ok"
+      "src/cadr-cli/repl.lisp dispatch-user-input leftover"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
