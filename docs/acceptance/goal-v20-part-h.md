@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1291 — `cli_selectors` (lmhxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lmhxx_ok` | `login-method-selector-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login method selector handleInput |
+
+Leftover sibling of leftover 1225–1227 on the same needs-pair file (fourth unused slug after leftover 1063 `oa_lmh` / leftover 1144 `lmh_ok` / leftover 1225 `lmhx_ok`). Does not remount `login_method_selector_handle_event`. Timed work is login-method handle-event down / esc. Observed `lmhe_down` / `lmhe_esc` are exact. First n=5 freeze **1.185×** (3.242 / 2.735 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1292 — `cli_selectors` (luixx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `luixx_ok` | `login-method-selector-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent UI state |
+
+Leftover sibling of Pair 1291. Does not remount `login_method_selector_ui_state` / leftover 1064 `oa_lui` / leftover 1145 `lui_ok` / leftover 1226 `luix_ok`. Timed work is login-method UI default / sel1. Observed `lmsui_default` / `lmsui_sel1` are exact. First n=5 freeze **6.738×** (456.476 / 67.744 µs) on host `cursor`, ceiling 12.0 matching leftover 1226. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1293 — `cli_selectors` (akuxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `akuxx_ok` | `api-key-input-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key UI state |
+
+Leftover sibling of Pairs 1291–1292. Does not remount `api_key_input_ui_state` / leftover 1065 `oa_aki` / leftover 1146 `aku_ok` / leftover 1227 `akux_ok`. Timed work is api-key UI empty / key. Observed `akiui_empty` / `akiui_key` are exact. First n=5 freeze **3.371×** (213.349 / 63.298 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
