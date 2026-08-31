@@ -1533,14 +1533,13 @@ RATIO_CEILINGS = {
   # Measure-only leftover 630; first freeze 65.009× (265.302 / 4.081 µs).
   # 100.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_user_message_selector": 100.0,
-  # Measure-only leftover 1192; first-freeze headroom matching leftover 1111
-  # he_ok (0.730×). Ratchet down only.
+  # Measure-only leftover 1192; first freeze 0.658× (1.359 / 2.066 µs).
   "cli_selectors.umev_ok": 8.0,
-  # Measure-only leftover 1193; first-freeze headroom matching leftover 1112
-  # raw_ok (17.845×, ceiling 30.0). Ratchet down only.
+  # Measure-only leftover 1193; first freeze 17.466× (84.004 / 4.809 µs).
+  # 30.0 is leftover-1112 sibling headroom. Ratchet down only.
   "cli_selectors.umrw_ok": 30.0,
-  # Measure-only leftover 1194; first-freeze headroom matching leftover 1113
-  # sel_ok (62.986×, ceiling 100.0). Ratchet down only.
+  # Measure-only leftover 1194; first freeze 61.442× (237.758 / 3.870 µs).
+  # 100.0 is leftover-1113 sibling headroom. Ratchet down only.
   "cli_selectors.umrs_ok": 100.0,
   # Measure-only leftover 631; first freeze 1.496× (32.105 / 21.468 µs).
   "cli_selectors.make_models_selector_keybindings": 8.0,
