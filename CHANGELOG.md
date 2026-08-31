@@ -246,6 +246,32 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldprxx_ok`
+  (`login-dialog-show-prompt` vs leftover replica of
+  LoginDialogComponent.showPrompt). Observed `ldpr_empty` / `ldpr_wait`
+  exact. n=5 **1.811×** (6.824 / 3.768 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1318). Over-1× booked. Does not remount
+  `login_dialog_show_prompt` / leftover 1030 `ld_prmt` / leftover 1105
+  `prmt_ok` / leftover 1186 `ldpr_ok` / leftover 1252 `ldprx_ok`. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldixx_ok`
+  (`login-dialog-show-info` vs leftover replica of
+  LoginDialogComponent.showInfo). Observed `ldi_labeled` / `ldi_nolink`
+  exact. n=5 **2.244×** (8.888 / 3.961 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1319). Over-1× booked. Does not remount
+  `login_dialog_show_info` / leftover 1030 `ld_info` / leftover 1106
+  `info_ok` / leftover 1187 `ldi_ok` / leftover 1253 `ldix_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.lddtxx_ok`
+  (`login-dialog-show-details` vs leftover replica of
+  LoginDialogComponent.showDetails). Observed `lddt_two` /
+  `lddt_styles` exact. n=5 **0.796×** (2.601 / 3.267 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1320). Under-1×.
+  Does not remount `login_dialog_show_details` / leftover 1030 `ld_det` /
+  leftover 1107 `det_ok` / leftover 1188 `lddt_ok` / leftover 1254
+  `lddtx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
