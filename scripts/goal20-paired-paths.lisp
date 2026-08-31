@@ -192,6 +192,12 @@
 ;;;;      (does not remount leftover 1223 lpox_ok / leftover 1142 lpo_ok / leftover 1060 oa_lin / leftover 1289 lpoxx_ok)
 ;;;; 1356. cli_selectors lgoxxx_ok vs leftover replica of getLogoutProviderOptions
 ;;;;      (does not remount leftover 1224 lgox_ok / leftover 1143 lgo_ok / leftover 1060 oa_out / leftover 1290 lgoxx_ok)
+;;;; 1375. cli_bootstrap_sessions pbkxxx_ok vs leftover replica of ! / !! bash extract
+;;;;      (does not remount parse_bash / leftover 1012 pb_ok / leftover 1096 psb_ok / leftover 1177 pbk_ok / leftover 1243 pbkx_ok / leftover 1309 pbkxx_ok)
+;;;; 1376. cli_bootstrap_sessions rtkxxx_ok vs leftover replica of textParts.join
+;;;;      (does not remount response_text / leftover 1013 rt_ok / leftover 1097 rst_ok / leftover 1178 rtk_ok / leftover 1244 rtkx_ok / leftover 1310 rtkxx_ok)
+;;;; 1377. cli_bootstrap_sessions dpkxxx_ok vs leftover replica of submit classify
+;;;;      (does not remount dispatch_plain / leftover 1014 dp_ok / leftover 1098 dsp_ok / leftover 1179 dpk_ok / leftover 1245 dpkx_ok / leftover 1311 dpkxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1005,6 +1011,9 @@
     ("cli_bootstrap_sessions.cycle_wrap" . 50)
     ("cli_bootstrap_sessions.scope_hint" . 50)
     ("cli_bootstrap_sessions.file_tags" . 50)
+    ("cli_bootstrap_sessions.pbkxxx_ok" . 50)
+    ("cli_bootstrap_sessions.rtkxxx_ok" . 50)
+    ("cli_bootstrap_sessions.dpkxxx_ok" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -31706,7 +31715,22 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))))))
+                   (first file-pair) (second file-pair)))))
+     "pbkxxx_ok"
+     (collect "cli_bootstrap_sessions.pbkxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-parse-bash))))
+     "rtkxxx_ok"
+     (collect "cli_bootstrap_sessions.rtkxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-response-text))))
+     "dpkxxx_ok"
+     (collect "cli_bootstrap_sessions.dpkxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-dispatch-plain)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -33300,6 +33324,12 @@
       "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line"
       "cli_bootstrap_sessions.file_tags"
       "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments"
+      "cli_bootstrap_sessions.pbkxxx_ok"
+      "src/cadr-cli/repl.lisp parse-user-bash-input leftover"
+      "cli_bootstrap_sessions.rtkxxx_ok"
+      "src/cadr-cli/repl.lisp response-text leftover"
+      "cli_bootstrap_sessions.dpkxxx_ok"
+      "src/cadr-cli/repl.lisp dispatch-user-input leftover"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
