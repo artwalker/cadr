@@ -297,6 +297,26 @@ tag/Release step.
   Measure-only leftover (Pair 1365). Over-1× booked. Does not remount
   `thinking_level_search_text` / leftover 1071 `th_lst` / leftover 1152
   `lst_ok` / leftover 1233 `lstx_ok` / leftover 1299 `lstxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldwxxx_ok`
+  (`login-dialog-show-waiting` vs leftover replica of
+  LoginDialogComponent.showWaiting). Observed `ldw_empty` / `ldw_device`
+  exact. n=5 **2.566×** (5.581 / 2.175 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1381). Over-1× booked. Does not remount
+  `login_dialog_show_waiting` / leftover 1027 `ld_wait` / leftover 1102 `wait_ok` / leftover 1183 `ldw_ok` / leftover 1249 `ldwx_ok` / leftover 1315 `ldwxx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldpxxx_ok`
+  (`login-dialog-show-progress` vs leftover replica of
+  LoginDialogComponent.showProgress). Observed `ldp_empty` / `ldp_wait`
+  exact. n=5 **1.770×** (3.206 / 1.811 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1382). Over-1× booked. Does not remount
+  `login_dialog_show_progress` / leftover 1028 `ld_prog` / leftover 1103 `prog_ok` / leftover 1184 `ldp_ok` / leftover 1250 `ldpx_ok` / leftover 1316 `ldpxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ldmixxx_ok`
+  (`login-dialog-show-manual-input` vs leftover replica of
+  LoginDialogComponent.showManualInput). Observed `ldmi_empty` /
+  `ldmi_nocancel` exact. n=5 **2.096×** (5.271 / 2.515 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1383). Over-1× booked.
+  Does not remount `login_dialog_show_manual_input` / leftover 1029 `ld_man` / leftover 1104 `man_ok` / leftover 1185 `ldmi_ok` / leftover 1251 `ldmix_ok` / leftover 1317 `ldmixx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
