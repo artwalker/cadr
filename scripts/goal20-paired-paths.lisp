@@ -31691,7 +31691,7 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))
+                   (first file-pair) (second file-pair)))))
      "pbkx_ok"
      (collect "cli_bootstrap_sessions.pbkx_ok"
               (lambda ()
@@ -31706,7 +31706,7 @@
      (collect "cli_bootstrap_sessions.dpkx_ok"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-dispatch-plain))))))))
+                  (run-cli-bootstrap-dispatch-plain)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
