@@ -494,6 +494,9 @@ const REPETITIONS = {
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
+	"cli_selectors.mkbxx_ok": 50,
+	"cli_selectors.msmsxx_ok": 50,
+	"cli_selectors.mrmsxx_ok": 50,
 	"cli_selectors.daxnuts_rgb_at": 50,
 	"cli_selectors.make_daxnuts_component": 50,
 	"cli_selectors.daxnuts_component_tick": 50,
@@ -31063,6 +31066,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderModelSelector();
 			},
 		),
+		mkbxx_ok: await collect("cli_selectors.mkbxx_ok", () => {
+			return () => runCliSelectorsMakeModelsSelectorKeybindings();
+		}),
+		msmsxx_ok: await collect("cli_selectors.msmsxx_ok", () => {
+			return () => runCliSelectorsMakeScopedModelsSelectorState();
+		}),
+		mrmsxx_ok: await collect("cli_selectors.mrmsxx_ok", () => {
+			return () => runCliSelectorsRenderModelSelector();
+		}),
 		daxnuts_rgb_at: await collect("cli_selectors.daxnuts_rgb_at", () => {
 			return () => runCliSelectorsDaxnutsRgbAt();
 		}),
@@ -34526,6 +34538,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts ScopedModelsSelectorComponent constructor",
 			"cli_selectors.render_model_selector":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts ModelSelectorComponent layout",
+			"cli_selectors.mkbxx_ok":
+				"packages/coding-agent leftover replica of KEYBINDINGS app.models.* KeybindingsManager constructor",
+			"cli_selectors.msmsxx_ok":
+				"packages/coding-agent leftover replica of ScopedModelsSelectorComponent constructor",
+			"cli_selectors.mrmsxx_ok":
+				"packages/coding-agent leftover replica of ModelSelectorComponent layout",
 			"cli_selectors.daxnuts_rgb_at":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts parseImage pixel lookup",
 			"cli_selectors.make_daxnuts_component":
