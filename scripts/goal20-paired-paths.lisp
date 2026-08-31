@@ -186,6 +186,12 @@
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 1213. cli_selectors slx_ok vs leftover replica of thinking-selector selected SelectList item
+;;;;      (does not remount thinking_selector_selected_level / leftover 1132 sl_ok)
+;;;; 1214. cli_selectors dscx_ok vs leftover replica of LEVEL_DESCRIPTIONS default suffix
+;;;;      (does not remount thinking_level_description_line / leftover 1133 dsc_ok)
+;;;; 1215. cli_selectors rthx_ok vs leftover replica of ThinkingSelectorComponent layout
+;;;;      (does not remount render_thinking_selector / leftover 1134 rth_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -926,8 +932,11 @@
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
     ("cli_selectors.thinking_selector_selected_level" . 50)
+    ("cli_selectors.slx_ok" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
+    ("cli_selectors.dscx_ok" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
+    ("cli_selectors.rthx_ok" . 50)
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
@@ -29701,13 +29710,28 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-selected-level))))
+     "slx_ok"
+     (collect "cli_selectors.slx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-selected-level))))
      "thinking_level_description_line"
      (collect "cli_selectors.thinking_level_description_line"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-level-description-line))))
+     "dscx_ok"
+     (collect "cli_selectors.dscx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-description-line))))
      "render_thinking_selector"
      (collect "cli_selectors.render_thinking_selector"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-thinking-selector))))
+     "rthx_ok"
+     (collect "cli_selectors.rthx_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-thinking-selector))))
@@ -33102,10 +33126,16 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event"
       "cli_selectors.thinking_selector_selected_level"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
+      "cli_selectors.slx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level leftover"
       "cli_selectors.thinking_level_description_line"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line"
+      "cli_selectors.dscx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line leftover"
       "cli_selectors.render_thinking_selector"
       "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector"
+      "cli_selectors.rthx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector leftover"
       "cli_selectors.trust_option_saved_p"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p"
       "cli_selectors.make_trust_selector_state"
