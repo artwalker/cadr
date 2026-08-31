@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `cli_selectors.ohe_ok` | 91.313 | 10.503 | 8.694× | 12.00× | measure-only leftover 1153; `oauth-selector-handle-event` vs leftover oauth-selector handleInput event dispatch | invent pause；地板优化另刀 |
+| `cli_selectors.mos_ok` | 7.173 | 5.432 | 1.320× | 8.00× | measure-only leftover 1154; `make-oauth-selector-state` vs leftover OauthSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.sst_ok` | 1.202 | 0.820 | 1.466× | 8.00× | measure-only leftover 1155; `oauth-selector-search-text` vs leftover oauth-selector filterProviders search text | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
