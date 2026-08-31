@@ -1479,14 +1479,11 @@ RATIO_CEILINGS = {
   "cli_selectors.thinking_selector_clamp_selected": 8.0,
   # Measure-only leftover 606; first freeze 0.854× (0.981 / 1.149 µs). cadr leads.
   "cli_selectors.thinking_selector_select_current": 8.0,
-  # Measure-only leftover 1198; first-freeze headroom matching leftover 1117
-  # af_ok (1.240×). Ratchet down only.
+  # Measure-only leftover 1198; first freeze 1.289× (13.798 / 10.704 µs).
   "cli_selectors.thaf_ok": 8.0,
-  # Measure-only leftover 1199; first-freeze headroom matching leftover 1118
-  # cl_ok (0.974×). Ratchet down only.
+  # Measure-only leftover 1199; first freeze 0.985× (0.735 / 0.746 µs).
   "cli_selectors.thcl_ok": 8.0,
-  # Measure-only leftover 1200; first-freeze headroom matching leftover 1119
-  # sc_ok (0.919×). Ratchet down only.
+  # Measure-only leftover 1200; first freeze 0.953× (1.125 / 1.180 µs).
   "cli_selectors.thsc_ok": 8.0,
   # Measure-only leftover 607; first freeze 1.353× (0.637 / 0.471 µs).
   "cli_selectors.thinking_selector_move": 8.0,
