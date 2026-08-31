@@ -246,6 +246,29 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.latxx_ok`
+  (`login-auth-type-route` vs leftover replica of
+  showLoginAuthTypeSelector routing). Observed `latr_none` /
+  `latr_oauth` exact. n=5 **2.098×** (2.543 / 1.212 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1288). Over-1×
+  booked. Does not remount `login_auth_type_route` / leftover 1060
+  `oa_rt` / leftover 1141 `lat_ok` / leftover 1222 `latx_ok`. Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.lpoxx_ok`
+  (`login-provider-options` vs leftover replica of
+  getLoginProviderOptions). Observed `lpo_all` / `lpo_oauth` exact.
+  n=5 **1.414×** (8.370 / 5.918 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1289). Over-1× booked. Does not remount
+  `login_provider_options` / leftover 1060 `oa_lin` / leftover 1142
+  `lpo_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.lgoxx_ok`
+  (`logout-provider-options` vs leftover replica of
+  getLogoutProviderOptions). Observed `lgo_empty` / `lgo_mixed` exact.
+  n=5 **2.164×** (7.317 / 3.382 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1290). Over-1× booked. Does not remount
+  `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143
+  `lgo_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

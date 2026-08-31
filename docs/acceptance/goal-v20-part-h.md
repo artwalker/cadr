@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1288 — `cli_selectors` (latxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `latxx_ok` | `login-auth-type-route` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showLoginAuthTypeSelector routing |
+
+Leftover sibling of leftover 1222–1224 on the same needs-pair file (fourth unused slug after leftover 1060 `oa_rt` / leftover 1141 `lat_ok` / leftover 1222 `latx_ok`). Does not remount `login_auth_type_route`. Timed work is auth-type route none / oauth. Observed `latr_none` / `latr_oauth` are exact. First n=5 freeze **2.098×** (2.543 / 1.212 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1289 — `cli_selectors` (lpoxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lpoxx_ok` | `login-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLoginProviderOptions |
+
+Leftover sibling of Pair 1288. Does not remount `login_provider_options` / leftover 1060 `oa_lin` / leftover 1142 `lpo_ok` / leftover 1223 `lpox_ok`. Timed work is login provider options all / oauth. Observed `lpo_all` / `lpo_oauth` are exact. First n=5 freeze **1.414×** (8.370 / 5.918 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1290 — `cli_selectors` (lgoxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lgoxx_ok` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
+
+Leftover sibling of Pairs 1288–1289. Does not remount `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143 `lgo_ok` / leftover 1224 `lgox_ok`. Timed work is logout provider options empty / mixed. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.164×** (7.317 / 3.382 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
