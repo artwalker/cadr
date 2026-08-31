@@ -246,6 +246,31 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mkbxx_ok`
+  (`make-models-selector-keybindings` vs leftover replica of
+  KeybindingsManager app.models.* constructor). Observed `mmskb_save` /
+  `mmskb_reorder` exact. n=5 **1.546×** (32.722 / 21.161 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 1327). Over-1× booked.
+  Does not remount `make_models_selector_keybindings` / leftover 1039
+  `ms_kb` / leftover 1114 `kb_ok` / leftover 1195 `mkb_ok` / leftover 1261
+  `mkbx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.msmsxx_ok`
+  (`make-scoped-models-selector-state` vs leftover replica of
+  ScopedModelsSelectorComponent constructor). Observed `msmksc_all` /
+  `msmksc_copy` exact. n=5 **24.874×** (105.189 / 4.229 µs) on host
+  `cursor`, ceiling 40.0. Measure-only leftover (Pair 1328). Over-1× booked.
+  Does not remount `make_scoped_models_selector_state` / leftover 1039
+  `sm_st` / leftover 1115 `sms_ok` / leftover 1196 `msms_ok` / leftover
+  1262 `msmsx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.mrmsxx_ok`
+  (`render-model-selector` vs leftover replica of ModelSelectorComponent
+  layout). Observed `rms_default` / `rms_miss` exact. n=5 **27.912×**
+  (192.726 / 6.905 µs) on host `cursor`, ceiling 50.0. Measure-only leftover
+  (Pair 1329). Over-1× booked. Does not remount `render_model_selector` /
+  leftover 1039 `rm_sel` / leftover 1116 `rms_ok` / leftover 1197 `mrms_ok`
+  / leftover 1263 `mrmsx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

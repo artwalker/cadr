@@ -1541,14 +1541,13 @@ RATIO_CEILINGS = {
   # Measure-only leftover 633; first freeze 26.593× (247.317 / 9.300 µs).
   # 50.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_model_selector": 50.0,
-  # Measure-only leftover 1327; first-freeze headroom matching leftover 1261
-  # mkbx_ok (1.565×). Ratchet down only.
+  # Measure-only leftover 1327; first freeze 1.546× (32.722 / 21.161 µs).
   "cli_selectors.mkbxx_ok": 8.0,
-  # Measure-only leftover 1328; first-freeze headroom matching leftover 1262
-  # msmsx_ok (26.246×, ceiling 40.0). Ratchet down only.
+  # Measure-only leftover 1328; first freeze 24.874× (105.189 / 4.229 µs).
+  # 40.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.msmsxx_ok": 40.0,
-  # Measure-only leftover 1329; first-freeze headroom matching leftover 1263
-  # mrmsx_ok (28.572×, ceiling 50.0). Ratchet down only.
+  # Measure-only leftover 1329; first freeze 27.912× (192.726 / 6.905 µs).
+  # 50.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.mrmsxx_ok": 50.0,
   # Measure-only leftover 634; first freeze 1.831× (0.910 / 0.497 µs).
   "cli_selectors.daxnuts_rgb_at": 8.0,

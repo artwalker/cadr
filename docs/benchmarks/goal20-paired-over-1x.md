@@ -551,4 +551,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_run` | 0.807 | 0.363 | 2.219× | 8.00× | measure-only leftover 955; `append-tui-user-bash-running` vs leftover BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_fin` | 0.785 | 0.300 | 2.620× | 8.00× | measure-only leftover 956; `complete-tui-user-bash-string` vs leftover setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_halt` | 0.635 | 0.221 | 2.872× | 8.00× | measure-only leftover 957; `stop-tui-user-bash-entry` vs leftover loader.stop without setComplete | invent pause；地板优化另刀 |
+| `cli_selectors.mkbxx_ok` | 32.722 | 21.161 | 1.546× | 8.00× | measure-only leftover 1327; `make-models-selector-keybindings` vs leftover KeybindingsManager app.models.* | invent pause；地板优化另刀 |
+| `cli_selectors.msmsxx_ok` | 105.189 | 4.229 | 24.874× | 40.00× | measure-only leftover 1328; `make-scoped-models-selector-state` vs leftover ScopedModelsSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.mrmsxx_ok` | 192.726 | 6.905 | 27.912× | 50.00× | measure-only leftover 1329; `render-model-selector` vs leftover ModelSelectorComponent layout | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
