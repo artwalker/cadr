@@ -246,6 +246,26 @@ tag/Release step.
   (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 957). Over-1× booked. Does not remount `bash_stop_entry`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.pbk_ok`
+  (`parse-user-bash-input` vs leftover replica of `!` / `!!` bash
+  extract). Observed `pb_ls` / `pb_n` exact. n=5 **0.446×** (0.559 /
+  1.255 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1177). Under-1×. Does not remount `parse_bash` / leftover 1012
+  `pb_ok` / leftover 1096 `psb_ok`. Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.rtk_ok`
+  (`response-text` vs leftover replica of textParts.join). Observed
+  `rt_one` / `rt_empty` exact. n=5 **1.209×** (0.989 / 0.818 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1178).
+  Over-1× booked. Does not remount `response_text` / leftover 1013
+  `rt_ok` / leftover 1097 `rst_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.dpk_ok`
+  (`dispatch-user-input` vs leftover replica of submit classify).
+  Observed `dp_empty` / `dp_n` exact. n=5 **0.460×** (0.588 / 1.279 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 1179).
+  Under-1×. Does not remount `dispatch_plain` / leftover 1014 `dp_ok` /
+  leftover 1098 `dsp_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

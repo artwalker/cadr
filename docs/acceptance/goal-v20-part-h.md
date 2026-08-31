@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1177 — `cli_bootstrap_sessions` (pbk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pbk_ok` | `parse-user-bash-input` (`src/cadr-cli/repl.lisp`) | leftover replica of `!` / `!!` bash extract |
+
+Leftover sibling of leftover 1096–1098 on the same needs-pair file (third unused slug after leftover 1012 `pb_ok` / leftover 1096 `psb_ok`). Does not remount `parse_bash`. Timed work is `!ls` / `!!echo` / `!` / whitespace / plain. Observed `pb_ls` / `pb_n` are exact. First n=5 freeze **0.446×** (0.559 / 1.255 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1178 — `cli_bootstrap_sessions` (rtk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rtk_ok` | `response-text` (`src/cadr-cli/repl.lisp`) | leftover replica of textParts.join |
+
+Leftover sibling of Pair 1177. Does not remount `response_text` / leftover 1013 `rt_ok` / leftover 1097 `rst_ok`. Timed work is one / two / empty assistant text. Observed `rt_one` / `rt_empty` are exact. First n=5 freeze **1.209×** (0.989 / 0.818 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1179 — `cli_bootstrap_sessions` (dpk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dpk_ok` | `dispatch-user-input` (`src/cadr-cli/repl.lisp`) | leftover replica of submit classify |
+
+Leftover sibling of Pairs 1177–1178. Does not remount `dispatch_plain` / leftover 1014 `dp_ok` / leftover 1098 `dsp_ok`. Timed work is empty / whitespace / plain / slash / bash / bang. Observed `dp_empty` / `dp_n` are exact. First n=5 freeze **0.460×** (0.588 / 1.279 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

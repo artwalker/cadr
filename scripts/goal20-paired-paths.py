@@ -984,14 +984,11 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.dispatch_plain leftover (samples=5): observed 0.446x
     # (0.543 / 1.216 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.dispatch_plain": 8.0,
-    # Measure-only leftover 1177; first-freeze headroom matching leftover 1096
-    # psb_ok (0.512×). Ratchet down only.
+    # Measure-only leftover 1177; first freeze 0.446× (0.559 / 1.255 µs).
     "cli_bootstrap_sessions.pbk_ok": 8.0,
-    # Measure-only leftover 1178; first-freeze headroom matching leftover 1097
-    # rst_ok (1.235×). Ratchet down only.
+    # Measure-only leftover 1178; first freeze 1.209× (0.989 / 0.818 µs).
     "cli_bootstrap_sessions.rtk_ok": 8.0,
-    # Measure-only leftover 1179; first-freeze headroom matching leftover 1098
-    # dsp_ok (0.441×). Ratchet down only.
+    # Measure-only leftover 1179; first freeze 0.460× (0.588 / 1.279 µs).
     "cli_bootstrap_sessions.dpk_ok": 8.0,
     # cli_interactive_controller.make_entry leftover (samples=5): observed 5.982x
     # (1.424 / 0.238 us). 8.0 is first-freeze headroom. Ratchet down only.
