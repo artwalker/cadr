@@ -7384,6 +7384,51 @@
    "piUs": 0.221,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1264,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.thafx_ok",
+   "branch": "cursor/cli-thinking-thafx-thclx-thscx-ok-leftovers-1264-1266-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1264",
+   "ratio": 1.212,
+   "cadrUs": 13.511,
+   "piUs": 11.147,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1265,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.thclx_ok",
+   "branch": "cursor/cli-thinking-thafx-thclx-thscx-ok-leftovers-1264-1266-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1265",
+   "ratio": 0.891,
+   "cadrUs": 0.666,
+   "piUs": 0.747,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1266,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.thscx_ok",
+   "branch": "cursor/cli-thinking-thafx-thclx-thscx-ok-leftovers-1264-1266-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 1266",
+   "ratio": 0.842,
+   "cadrUs": 0.996,
+   "piUs": 1.182,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

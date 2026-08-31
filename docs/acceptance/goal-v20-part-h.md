@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1264 — `cli_selectors` (thafx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thafx_ok` | `thinking-selector-apply-filter` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector applyFilter |
+
+Leftover sibling of leftover 1198–1200 on the same needs-pair file (fourth unused slug after leftover 1042 `th_af` / leftover 1117 `af_ok` / leftover 1198 `thaf_ok`). Does not remount `thinking_selector_apply_filter`. Timed work is high / empty apply-filter. Observed `tsaf_high` / `tsaf_empty` are exact. First n=5 freeze **1.212×** (13.511 / 11.147 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1265 — `cli_selectors` (thclx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thclx_ok` | `thinking-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector clamp selected |
+
+Leftover sibling of Pair 1264. Does not remount `thinking_selector_clamp_selected` / leftover 1042 `th_cl` / leftover 1118 `cl_ok` / leftover 1199 `thcl_ok`. Timed work is high / zero clamp. Observed `tscl_high` / `tscl_zero` are exact. First n=5 freeze **0.891×** (0.666 / 0.747 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1266 — `cli_selectors` (thscx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thscx_ok` | `thinking-selector-select-current` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector select current |
+
+Leftover sibling of Pairs 1264–1265. Does not remount `thinking_selector_select_current` / leftover 1042 `th_sc` / leftover 1119 `sc_ok` / leftover 1200 `thsc_ok`. Timed work is high / only select-current. Observed `tssc_high` / `tssc_only` are exact. First n=5 freeze **0.842×** (0.996 / 1.182 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
