@@ -558,4 +558,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ldwxxx_ok` | 5.581 | 2.175 | 2.566× | 8.00× | measure-only leftover 1381; `login-dialog-show-waiting` vs leftover showWaiting | invent pause；地板优化另刀 |
 | `cli_selectors.ldpxxx_ok` | 3.206 | 1.811 | 1.770× | 8.00× | measure-only leftover 1382; `login-dialog-show-progress` vs leftover showProgress | invent pause；地板优化另刀 |
 | `cli_selectors.ldmixxx_ok` | 5.271 | 2.515 | 2.096× | 8.00× | measure-only leftover 1383; `login-dialog-show-manual-input` vs leftover showManualInput | invent pause；地板优化另刀 |
+| `cli_selectors.ldprxxx_ok` | 7.001 | 3.234 | 2.164× | 8.00× | measure-only leftover 1384; `login-dialog-show-prompt` vs leftover showPrompt | invent pause；地板优化另刀 |
+| `cli_selectors.ldixxx_ok` | 9.135 | 3.977 | 2.297× | 8.00× | measure-only leftover 1385; `login-dialog-show-info` vs leftover showInfo | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
