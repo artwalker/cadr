@@ -554,4 +554,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.latxxx_ok` | 2.534 | 1.220 | 2.078× | 8.00× | measure-only leftover 1354; `login-auth-type-route` vs leftover showLoginAuthTypeSelector routing | invent pause；地板优化另刀 |
 | `cli_selectors.lpoxxx_ok` | 8.355 | 5.726 | 1.459× | 8.00× | measure-only leftover 1355; `login-provider-options` vs leftover getLoginProviderOptions | invent pause；地板优化另刀 |
 | `cli_selectors.lgoxxx_ok` | 7.260 | 3.422 | 2.122× | 8.00× | measure-only leftover 1356; `logout-provider-options` vs leftover getLogoutProviderOptions | invent pause；地板优化另刀 |
+| `cli_selectors.cdsxxx_ok` | 0.811 | 0.254 | 3.196× | 8.00× | measure-only leftover 1366; `make-countdown-timer` remaining seconds vs leftover Math.ceil(timeoutMs/1000) | invent pause；地板优化另刀 |
+| `cli_selectors.cdtxxx_ok` | 0.723 | 0.301 | 2.399× | 8.00× | measure-only leftover 1367; `countdown-timer-tick` vs leftover countdown tick | invent pause；地板优化另刀 |
+| `cli_selectors.cdrxxx_ok` | 0.966 | 0.620 | 1.558× | 8.00× | measure-only leftover 1368; `countdown-request-render` vs leftover countdown requestRender | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

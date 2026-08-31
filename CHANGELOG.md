@@ -272,6 +272,31 @@ tag/Release step.
   `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143
   `lgo_ok` / leftover 1224 `lgox_ok` / leftover 1290 `lgoxx_ok`.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.cdsxxx_ok`
+  (`make-countdown-timer` remaining seconds vs leftover replica of
+  `Math.ceil(timeoutMs / 1000)`). Observed `cds_0` / `cds_1` exact. n=5
+  **3.196×** (0.811 / 0.254 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 1366). Over-1× booked. Does not remount
+  `countdown_seconds` / leftover 1018 `cd_sec` / leftover 1087 `sec_ok`
+  / leftover 1168 `cds_ok` / leftover 1234 `cdsx_ok` / leftover 1300
+  `cdsxx_ok`. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.cdtxxx_ok`
+  (`countdown-timer-tick` vs leftover replica of countdown tick).
+  Observed `cdt_make` / `cdt_remain` exact. n=5 **2.399×** (0.723 /
+  0.301 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1367). Over-1× booked. Does not remount `countdown_tick` /
+  leftover 1019 `cd_tick` / leftover 1088 `tick_ok` / leftover 1169
+  `cdt_ok` / leftover 1235 `cdtx_ok` / leftover 1301 `cdtxx_ok`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.cdrxxx_ok`
+  (`countdown-request-render` vs leftover replica of countdown
+  requestRender). Observed `cdr_fn1` / `cdr_fn2` exact. n=5 **1.558×**
+  (0.966 / 0.620 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1368). Over-1× booked. Does not remount `countdown_render` /
+  leftover 1020 `cd_rnd` / leftover 1089 `rnd_ok` / leftover 1170 `cdr_ok`
+  / leftover 1236 `cdrx_ok` / leftover 1302 `cdrxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

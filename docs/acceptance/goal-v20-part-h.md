@@ -9007,6 +9007,30 @@ Leftover sibling of Pair 1354. Does not remount `login_provider_options` / lefto
 
 Leftover sibling of Pairs 1354–1355. Does not remount `logout_provider_options` / leftover 1060 `oa_out` / leftover 1143 `lgo_ok` / leftover 1224 `lgox_ok` / leftover 1290 `lgoxx_ok`. Timed work is logout provider options empty / mixed. Observed `lgo_empty` / `lgo_mixed` are exact. First n=5 freeze **2.122×** (7.260 / 3.422 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1366 — `cli_selectors` (cdsxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cdsxxx_ok` | `make-countdown-timer` remaining seconds (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of `Math.ceil(timeoutMs / 1000)` |
+
+Leftover sibling of leftover 1300–1302 on the same needs-pair file (sixth unused slug after leftover 1018 `cd_sec` / leftover 1087 `sec_ok` / leftover 1168 `cds_ok` / leftover 1234 `cdsx_ok` / leftover 1300 `cdsxx_ok`). Does not remount `countdown_seconds`. Timed work is remaining seconds for timeout 0 / 1 / 1000 / 1500 / 59999. Observed `cds_0` / `cds_1` are exact. First n=5 freeze **3.196×** (0.811 / 0.254 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1367 — `cli_selectors` (cdtxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cdtxxx_ok` | `countdown-timer-tick` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown tick |
+
+Leftover sibling of Pair 1366. Does not remount `countdown_tick` / leftover 1019 `cd_tick` / leftover 1088 `tick_ok` / leftover 1169 `cdt_ok` / leftover 1235 `cdtx_ok` / leftover 1301 `cdtxx_ok`. Timed work is make / remain / tick / expire. Observed `cdt_make` / `cdt_remain` are exact. First n=5 freeze **2.399×** (0.723 / 0.301 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1368 — `cli_selectors` (cdrxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cdrxxx_ok` | `countdown-request-render` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown requestRender |
+
+Leftover sibling of Pairs 1366–1367. Does not remount `countdown_render` / leftover 1020 `cd_rnd` / leftover 1089 `rnd_ok` / leftover 1170 `cdr_ok` / leftover 1236 `cdrx_ok` / leftover 1302 `cdrxx_ok`. Timed work is request-render with two functions. Observed `cdr_fn1` / `cdr_fn2` are exact. First n=5 freeze **1.558×** (0.966 / 0.620 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
