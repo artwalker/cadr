@@ -497,6 +497,9 @@ const REPETITIONS = {
 	"cli_selectors.daxnuts_rgb_at": 50,
 	"cli_selectors.make_daxnuts_component": 50,
 	"cli_selectors.daxnuts_component_tick": 50,
+	"cli_selectors.draxxx_ok": 50,
+	"cli_selectors.dmcxxx_ok": 50,
+	"cli_selectors.dctxxx_ok": 50,
 	"cli_selectors.dlg_make": 50,
 	"cli_selectors.dlg_auth": 50,
 	"cli_selectors.dlg_dev": 50,
@@ -31090,6 +31093,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsDaxnutsComponentTick();
 			},
 		),
+		draxxx_ok: await collect("cli_selectors.draxxx_ok", () => {
+			return () => runCliSelectorsDaxnutsRgbAt();
+		}),
+		dmcxxx_ok: await collect("cli_selectors.dmcxxx_ok", () => {
+			return () => runCliSelectorsMakeDaxnutsComponent();
+		}),
+		dctxxx_ok: await collect("cli_selectors.dctxxx_ok", () => {
+			return () => runCliSelectorsDaxnutsComponentTick();
+		}),
 		dlg_make: await collect("cli_selectors.dlg_make", () => {
 			return () => runCliSelectorsLoginDialogMake();
 		}),
@@ -34550,6 +34562,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent constructor (no startAnimation)",
 			"cli_selectors.daxnuts_component_tick":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent interval body",
+			"cli_selectors.draxxx_ok":
+				"packages/coding-agent leftover replica of parseImage pixel lookup",
+			"cli_selectors.dmcxxx_ok":
+				"packages/coding-agent leftover replica of DaxnutsComponent constructor",
+			"cli_selectors.dctxxx_ok":
+				"packages/coding-agent leftover replica of DaxnutsComponent interval",
 			"cli_selectors.dlg_make":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent constructor",
 			"cli_selectors.dlg_auth":

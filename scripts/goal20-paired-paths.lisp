@@ -192,6 +192,12 @@
 ;;;;      (does not remount leftover 1223 lpox_ok / leftover 1142 lpo_ok / leftover 1060 oa_lin / leftover 1289 lpoxx_ok)
 ;;;; 1356. cli_selectors lgoxxx_ok vs leftover replica of getLogoutProviderOptions
 ;;;;      (does not remount leftover 1224 lgox_ok / leftover 1143 lgo_ok / leftover 1060 oa_out / leftover 1290 lgoxx_ok)
+;;;; 1372. cli_selectors draxxx_ok vs leftover replica of parseImage pixel lookup
+;;;;      (does not remount daxnuts_rgb_at / leftover 1021 dax_rgb / leftover 1093 dn_rgb / leftover 1174 dra_ok / leftover 1240 drax_ok / leftover 1306 draxx_ok)
+;;;; 1373. cli_selectors dmcxxx_ok vs leftover replica of DaxnutsComponent constructor
+;;;;      (does not remount make_daxnuts_component / leftover 1022 dax_make / leftover 1094 dn_make / leftover 1175 dmc_ok / leftover 1241 dmcx_ok / leftover 1307 dmcxx_ok)
+;;;; 1374. cli_selectors dctxxx_ok vs leftover replica of DaxnutsComponent interval
+;;;;      (does not remount daxnuts_component_tick / leftover 1023 dax_tick / leftover 1095 dn_tick / leftover 1176 dct_ok / leftover 1242 dctx_ok / leftover 1308 dctxx_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -961,6 +967,9 @@
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
+    ("cli_selectors.draxxx_ok" . 50)
+    ("cli_selectors.dmcxxx_ok" . 50)
+    ("cli_selectors.dctxxx_ok" . 50)
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
@@ -29855,6 +29864,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+     "draxxx_ok"
+     (collect "cli_selectors.draxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "dmcxxx_ok"
+     (collect "cli_selectors.dmcxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "dctxxx_ok"
+     (collect "cli_selectors.dctxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
@@ -33224,6 +33248,12 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
       "cli_selectors.daxnuts_component_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
+      "cli_selectors.draxxx_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at leftover"
+      "cli_selectors.dmcxxx_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover"
+      "cli_selectors.dctxxx_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"
