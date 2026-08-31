@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1216 — `cli_selectors` (lblx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lblx_ok` | `oauth-option-status-label` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of formatStatusIndicator plain label |
+
+Leftover sibling of leftover 1135–1137 on the same needs-pair file (third unused slug after leftover 1054 `oa_lbl` / leftover 1135 `lbl_ok`). Does not remount `oauth_option_status_label`. Timed work is formatStatusIndicator none / custom. Observed `oosl_none` / `oosl_custom` are exact. First n=5 freeze **1.245×** (1.372 / 1.102 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1217 — `cli_selectors` (typx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `typx_ok` | `credential-entry-auth-type` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of credential-entry authType |
+
+Leftover sibling of Pair 1216. Does not remount `credential_entry_auth_type` / leftover 1054 `oa_typ` / leftover 1136 `typ_ok`. Timed work is authType oauth / api_key. Observed `ceat_oauth` / `ceat_api_key` are exact. First n=5 freeze **1.009×** (0.396 / 0.393 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1218 — `cli_selectors` (envx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `envx_ok` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of env source regex |
+
+Leftover sibling of Pairs 1216–1217. Does not remount `oauth_environment_source_p` / leftover 1054 `oa_env` / leftover 1137 `env_ok`. Timed work is env source nil / oauth. Observed `oesp_nil` / `oesp_oauth` are exact. First n=5 freeze **2.008×** (0.826 / 0.411 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
