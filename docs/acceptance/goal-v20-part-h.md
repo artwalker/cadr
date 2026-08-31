@@ -8983,6 +8983,30 @@ Leftover sibling of Pair 955. Does not remount `bash_complete_string`. Timed wor
 
 Leftover sibling of Pairs 955–956. Does not remount `bash_stop_entry`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **2.872×** (0.635 / 0.221 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1162 — `cli_selectors` (rte_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rte_ok` | `login-auth-type-route` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showLoginAuthTypeSelector routing |
+
+Leftover sibling of leftover 1081–1083 on the same needs-pair file (second unused slug after leftover 1081 `oa_lat` / leftover 1141 `lat_ok`). Does not remount `login_auth_type_route`. Timed work is none / oauth / api / both / generic route cases. Observed `latr_none` / `latr_oauth` are exact. First n=5 freeze **1.952×** (2.536 / 1.299 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1163 — `cli_selectors` (lpr_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lpr_ok` | `login-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLoginProviderOptions |
+
+Leftover sibling of Pair 1162. Does not remount `login_provider_options` / leftover 1082 `oa_lpo` / leftover 1141 `lpo_ok`. Timed work is all / oauth / api / labeled / status option lists. Observed `lpo_all` / `lpo_oauth` are exact. First n=5 freeze **1.061×** (8.395 / 7.915 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1164 — `cli_selectors` (lhe_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lhe_ok` | `login-method-selector-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login method selector handleInput |
+
+Leftover sibling of Pairs 1162–1163. Does not remount `login_method_selector_handle_event` / leftover 1083 `oa_lhe` / leftover 1144 `lmh_ok`. Timed work is down / up / enter-oauth / enter-api / esc / clear / interrupt. Observed `lmhe_down` / `lmhe_esc` are exact. First n=5 freeze **0.899×** (2.784 / 3.098 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

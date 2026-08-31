@@ -2158,14 +2158,12 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.login_auth_type_route.
   # Measure-only pair (Pair 206); ceiling not lowered.
   "cli_selectors.login_auth_type_route": 8.0,
-  # Measure-only leftover 1162; first-freeze headroom matching leftover 1081
-  # oa_lat (2.491×). Ratchet down only.
+  # Measure-only leftover 1162; first freeze 1.952× (2.536 / 1.299 µs).
   "cli_selectors.rte_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_provider_options.
   # Measure-only pair (Pair 207); ceiling not lowered.
   "cli_selectors.login_provider_options": 8.0,
-  # Measure-only leftover 1163; first-freeze headroom matching leftover 1082
-  # oa_lpo (1.307×). Ratchet down only.
+  # Measure-only leftover 1163; first freeze 1.061× (8.395 / 7.915 µs).
   "cli_selectors.lpr_ok": 8.0,
   # First-freeze headroom for cli_selectors.logout_provider_options.
   # Measure-only pair (Pair 208); ceiling not lowered.
@@ -2173,8 +2171,7 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.login_method_selector_handle_event.
   # Measure-only pair (Pair 209); ceiling not lowered.
   "cli_selectors.login_method_selector_handle_event": 8.0,
-  # Measure-only leftover 1164; first-freeze headroom matching leftover 1083
-  # oa_lhe (1.151×). Ratchet down only.
+  # Measure-only leftover 1164; first freeze 0.899× (2.784 / 3.098 µs). cadr leads.
   "cli_selectors.lhe_ok": 8.0,
   # First-freeze headroom for cli_selectors.oauth_selector_move.
   # Measure-only pair (Pair 210); ceiling not lowered.
