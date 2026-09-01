@@ -353,6 +353,11 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.watch_signature` | 23.825 | 6.843 | 3.482× | 8.00× | leftover collect restore pair 483; `watched-path-signature` vs statSync presence | invent pause；地板优化另刀 |
 | `cli_support.watch_retry_delay` | 0.157 | 0.118 | 1.335× | 8.00× | leftover collect restore pair 481; `+fs-watch-retry-delay-milliseconds+` vs FS_WATCH_RETRY_DELAY_MS | invent pause；地板优化另刀 |
 | `cli_support.close_watcher` | 0.162 | 0.155 | 1.046× | 8.00× | leftover collect restore pair 482; `close-watcher` vs closeWatcher | invent pause；地板优化另刀 |
+| `cli_support.write_hello` | 277.332 | 165.319 | 1.678× | 8.00× | leftover collect restore pair 871; `atomic-write-utf8` hello vs activateManagedRelease temp+rename | invent pause；地板优化另刀 |
+| `cli_support.write_overwrite` | 438.860 | 338.824 | 1.295× | 8.00× | leftover collect restore pair 872; `atomic-write-utf8` overwrite vs activateManagedRelease | invent pause；地板优化另刀 |
+| `cli_support.write_empty` | 129.194 | 46.306 | 2.790× | 15.00× | leftover collect restore pair 873; `atomic-write-utf8` empty vs activateManagedRelease | invent pause；地板优化另刀 |
+| `cli_support.threads_absent` | 0.192 | 0.118 | 1.631× | 8.00× | leftover collect restore pair 886; `stop-thread-for-cleanup` nil vs worker_threads absent | invent pause；地板优化另刀 |
+| `cli_support.threads_current` | 0.139 | 0.120 | 1.165× | 8.00× | leftover collect restore pair 887; `stop-thread-for-cleanup` current vs isMainThread | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.model_scope_line` | 37.431 | 23.274 | 1.608× | 8.00× | measure-only leftover pair 485; `model-scope-startup-line` vs interactive-mode init line | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.response_text` | 0.939 | 0.714 | 1.314× | 8.00× | measure-only pair 491; `response-text` vs `textParts.join` (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_entry` | 1.424 | 0.238 | 5.982× | 8.00× | measure-only pair 493; `make-tui-user-bash-entry` vs BashExecutionComponent constructor (sub-µs variance) | invent pause；地板优化另刀 |
