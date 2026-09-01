@@ -647,7 +647,10 @@
     "cli_support.threads_joined",
     "cli_interactive_controller.announcement_make",
     "cli_interactive_controller.announcement_url",
-    "cli_interactive_controller.announcement_title"
+    "cli_interactive_controller.announcement_title",
+    "ai_support.threads_absent",
+    "ai_support.threads_current",
+    "ai_support.threads_joined"
   ],
   "unpairablePaths": [
     {
@@ -1655,8 +1658,12 @@
     },
     {
       "prefix": "src/cadr-ai/support/threads.lisp",
-      "class": "needs-pair",
-      "hole": "ai_support"
+      "class": "paired",
+      "metrics": [
+        "ai_support.threads_absent",
+        "ai_support.threads_current",
+        "ai_support.threads_joined"
+      ]
     },
     {
       "prefix": "src/cadr-ai/support/token-estimation.lisp",

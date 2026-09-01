@@ -655,6 +655,9 @@ const REPETITIONS = {
 	"ai_support.grammar_delta": 50,
 	"ai_support.uuid_v7": 50,
 	"ai_support.auth_guidance": 50,
+	"ai_support.threads_absent": 50,
+	"ai_support.threads_current": 50,
+	"ai_support.threads_joined": 5,
 	"tui_select_settings_loaders.filter": 50,
 	"tui_select_settings_loaders.loader_frames": 50,
 	"tui_select_settings_loaders.loader_interval": 50,
@@ -14749,12 +14752,48 @@ function runAiSupportUuidV7() {
 	};
 }
 
+/** Leftover 883: worker_threads absent-handle replica of cadr ``:absent``. */
+function runAiSupportThreadsAbsent() {
+	const handle = null;
+	return {
+		tha_eq: handle == null ? 1 : 0,
+		tha_n: 1,
+	};
+}
+
+/** Leftover 884: ``isMainThread`` vs cadr-ai wrapper on the current thread (``:current``). */
+function runAiSupportThreadsCurrent() {
+	return {
+		thc_eq: isMainThread ? 1 : 0,
+		thc_n: 1,
+	};
+}
+
+/**
+ * Leftover 885: Worker eval-exit (cadr-ai wrapper ``:joined`` on a finished thread).
+ * Same Worker spawn as ``core_rest.threads_cleanup``.
+ */
+async function runAiSupportThreadsJoined() {
+	const joined = await new Promise((resolve) => {
+		const worker = new Worker("setImmediate(() => {})", { eval: true });
+		worker.on("exit", () => resolve(1));
+		worker.on("error", () => resolve(0));
+	});
+	return {
+		thj_eq: joined,
+		thj_n: 1,
+	};
+}
+
 async function measureAiSupportEstimate() {
 	const estimate = runAiSupportEstimate();
 	const overflow = runAiSupportContextOverflow();
 	const grammar = runAiSupportGrammarDelta();
 	const uuid = runAiSupportUuidV7();
 	const auth = runAiSupportAuthGuidance();
+	const threadsAbsent = runAiSupportThreadsAbsent();
+	const threadsCurrent = runAiSupportThreadsCurrent();
+	const threadsJoined = await runAiSupportThreadsJoined();
 	return {
 		estimate_text: await collect("ai_support.estimate_text", () => {
 			return () => runAiSupportEstimate();
@@ -14771,7 +14810,25 @@ async function measureAiSupportEstimate() {
 		auth_guidance: await collect("ai_support.auth_guidance", () => {
 			return () => runAiSupportAuthGuidance();
 		}),
-		observed: { ...estimate, ...overflow, ...grammar, ...uuid, ...auth },
+		threads_absent: await collect("ai_support.threads_absent", () => {
+			return () => runAiSupportThreadsAbsent();
+		}),
+		threads_current: await collect("ai_support.threads_current", () => {
+			return () => runAiSupportThreadsCurrent();
+		}),
+		threads_joined: await collect("ai_support.threads_joined", () => {
+			return () => runAiSupportThreadsJoined();
+		}),
+		observed: {
+			...estimate,
+			...overflow,
+			...grammar,
+			...uuid,
+			...auth,
+			...threadsAbsent,
+			...threadsCurrent,
+			...threadsJoined,
+		},
 	};
 }
 
@@ -34765,6 +34822,12 @@ const result = {
 			"ai_support.uuid_v7": "packages/ai/src/utils/uuid.ts uuidv7",
 			"ai_support.auth_guidance":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelsAvailableMessage",
+			"ai_support.threads_absent":
+				"node:worker_threads absent-handle branch (cadr-ai::stop-thread-for-cleanup nil; leftover source src/cadr-ai/support/threads.lisp)",
+			"ai_support.threads_current":
+				"node:worker_threads isMainThread (cadr-ai::stop-thread-for-cleanup current; leftover source src/cadr-ai/support/threads.lisp)",
+			"ai_support.threads_joined":
+				"node:worker_threads Worker eval-exit (cadr-ai::stop-thread-for-cleanup joined; leftover source src/cadr-ai/support/threads.lisp)",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
 			"tui_select_settings_loaders.loader_frames":

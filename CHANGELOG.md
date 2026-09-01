@@ -10,6 +10,16 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `ai_support.threads_absent` / `threads_current` / `threads_joined` on
+  `src/cadr-ai/support/threads.lisp`. n=5 freeze on host `Friend-MachineD`.
+  Over-1×: `threads_absent` **2.141×**,
+  `threads_current` **1.882×**.
+  `threads_joined` under 1×. Reclassified one file. `needs-pair` 6→5.
+  G.17 stays missing. `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_interactive_controller.announcement_make` / `announcement_url` /
   `announcement_title` on `src/cadr-cli/interactive/components/announcement.lisp`.
   n=5 freeze on host `Friend-MachineD`. All three under 1× (`make`

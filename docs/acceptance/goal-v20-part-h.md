@@ -5730,6 +5730,46 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 883 — `ai_support` (threads_absent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_absent` | `stop-thread-for-cleanup` nil (`src/cadr-ai/support/threads.lisp`) | worker_threads absent-handle (`node:worker_threads`) |
+
+Leftover of the `ai_support` hole on `cadr-ai/support/threads.lisp`. Timed
+work is the nil/absent branch. Observed `tha_eq` / `tha_n` are exact. Collect restore n=5 freeze **2.141×** (0.165 /
+0.077 µs) on host `Friend-MachineD`, gitHead `571ec063b`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 884 — `ai_support` (threads_current)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_current` | `stop-thread-for-cleanup` current (`src/cadr-ai/support/threads.lisp`) | `isMainThread` (`node:worker_threads`) |
+
+Leftover sibling of Pair 883. Timed work is the current-thread branch.
+Observed `thc_eq` / `thc_n` are exact. Collect restore n=5 freeze **1.882×** (0.135 /
+0.072 µs) on host `Friend-MachineD`, gitHead `571ec063b`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 885 — `ai_support` (threads_joined)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_joined` | `stop-thread-for-cleanup` joined (`src/cadr-ai/support/threads.lisp`) | Worker eval-exit (`node:worker_threads`) |
+
+Leftover sibling of Pairs 883–884. Timed work is the joined/finished-thread
+branch. Observed `thj_eq` / `thj_n` are exact. Collect restore n=5 freeze **0.005×** (142.465 /
+30428.377 µs) on host `Friend-MachineD`, gitHead `571ec063b`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -10023,13 +10063,13 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 238 | 103,001 | 79.6% | `no worse than baseline` is falsifiable |
+| `paired` | 239 | 103,007 | 79.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 6 | 1,352 | 1.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 5 | 1,346 | 1.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.6% of lines (238 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 79.6% of lines (239 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 85.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -10137,6 +10177,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | `ai_support.grammar_delta` |
 | `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
 | `src/cadr-ai/support/release.lisp` | 104 | `ai_support.auth_guidance` |
+| `src/cadr-ai/support/threads.lisp` | 6 | `ai_support.threads_absent`, `ai_support.threads_current`, `ai_support.threads_joined` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
 | `src/cadr-ai/support/uuid.lisp` | 93 | `ai_support.uuid_v7` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
@@ -10350,7 +10391,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 1 | 370 |
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
-| `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

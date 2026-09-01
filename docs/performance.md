@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T10:01:01Z) on `Friend-MachineD`, git `78aa2cb75802`, ratio_gate=`enforced-only:cli_interactive_controller.announcement_make,cli_interactive_controller.announcement_url,cli_interactive_controller.announcement_title`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T10:18:37Z) on `Friend-MachineD`, git `571ec063bd67`, ratio_gate=`enforced-only:ai_support.threads_absent,ai_support.threads_current,ai_support.threads_joined`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T09:46:39Z) on `Friend-MachineD`, git `c3c94ecf1125`, ratio_gate=`enforced-only:cli_support.write_hello,cli_support.write_overwrite,cli_support.write_empty,cli_support.editor_success,cli_support.editor_fail,cli_support.editor_empty,cli_support.threads_absent,cli_support.threads_current,cli_support.threads_joined`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T10:01:01Z) on `Friend-MachineD`, git `78aa2cb75802`, ratio_gate=`enforced-only:cli_interactive_controller.announcement_make,cli_interactive_controller.announcement_url,cli_interactive_controller.announcement_title`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1016,12 +1016,12 @@ Previous: `paired-paths` (2026-09-01T09:46:39Z) on `Friend-MachineD`, git `c3c94
 | `cli_interactive_controller.render_extension_custom_ui` | 32.6 | 1.4 | 23.04× | 23.04× | 40.00× |
 | `cli_interactive_controller.extension_custom_ui_handle_event` | 0.4 | 0.9 | 0.42× | 0.42× | 8.00× |
 | `cli_interactive_controller.render_tui_extension_overlay` | 145.9 | 1.7 | 87.63× | 87.63× | 160.00× |
-| `cli_interactive_controller.announcement_make` | 10.2 | 257.7 | 0.04× | — | 8.00× |
-| `cli_interactive_controller.announcement_url` | 70.6 | 475.4 | 0.15× | — | 8.00× |
-| `cli_interactive_controller.announcement_title` | 71.8 | 174.3 | 0.41× | — | 8.00× |
-| `cli_interactive_controller.announcement_make` | 10.2 | 257.7 | 0.04× | — | 8.00× |
-| `cli_interactive_controller.announcement_url` | 70.6 | 475.4 | 0.15× | — | 8.00× |
-| `cli_interactive_controller.announcement_title` | 71.8 | 174.3 | 0.41× | — | 8.00× |
+| `cli_interactive_controller.announcement_make` | 10.2 | 257.7 | 0.04× | 0.04× | 8.00× |
+| `cli_interactive_controller.announcement_url` | 70.6 | 475.4 | 0.15× | 0.15× | 8.00× |
+| `cli_interactive_controller.announcement_title` | 71.8 | 174.3 | 0.41× | 0.41× | 8.00× |
+| `cli_interactive_controller.announcement_make` | 10.2 | 257.7 | 0.04× | 0.04× | 8.00× |
+| `cli_interactive_controller.announcement_url` | 70.6 | 475.4 | 0.15× | 0.15× | 8.00× |
+| `cli_interactive_controller.announcement_title` | 71.8 | 174.3 | 0.41× | 0.41× | 8.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1205,6 +1205,9 @@ Previous: `paired-paths` (2026-09-01T09:46:39Z) on `Friend-MachineD`, git `c3c94
 | `ai_support.grammar_delta` | 1.1 | 0.8 | 1.31× | 1.31× | 8.00× |
 | `ai_support.uuid_v7` | 2.3 | 8.9 | 0.26× | 0.26× | 8.00× |
 | `ai_support.auth_guidance` | 1,063.3 | 36.4 | 29.22× | 29.22× | 50.00× |
+| `ai_support.threads_absent` | 0.2 | 0.1 | 2.14× | — | 8.00× |
+| `ai_support.threads_current` | 0.1 | 0.1 | 1.88× | — | 8.00× |
+| `ai_support.threads_joined` | 142.5 | 30,428.4 | 0.00× | — | 8.00× |
 | `tui_select_settings_loaders.filter` | 0.8 | 1.0 | 0.81× | 0.81× | 8.00× |
 | `tui_select_settings_loaders.loader_frames` | 0.2 | 0.2 | 1.14× | 1.14× | 8.00× |
 | `tui_select_settings_loaders.loader_interval` | 0.2 | 0.1 | 1.53× | 1.53× | 8.00× |
@@ -2198,6 +2201,7 @@ Previous: `paired-paths` (2026-09-01T09:46:39Z) on `Friend-MachineD`, git `c3c94
 | 2026-09-01T09:18:49Z | paired-paths | `9ae80d2b0836` | no | enforced-only:oauth_pkce_device.anth_oauth_name,oauth_pkce_device.anth_oauth_sub,oauth_pkce_device.anth_oauth_instructions,oauth_pkce_device.kimi_host_default,oauth_pkce_device.kimi_host_code,oauth_pkce_device.kimi_host_trim | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T09:46:39Z | paired-paths | `c3c94ecf1125` | no | enforced-only:cli_support.write_hello,cli_support.write_overwrite,cli_support.write_empty,cli_support.editor_success,cli_support.editor_fail,cli_support.editor_empty,cli_support.threads_absent,cli_support.threads_current,cli_support.threads_joined | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:01:01Z | paired-paths | `78aa2cb75802` | no | enforced-only:cli_interactive_controller.announcement_make,cli_interactive_controller.announcement_url,cli_interactive_controller.announcement_title | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T10:18:37Z | paired-paths | `571ec063bd67` | no | enforced-only:ai_support.threads_absent,ai_support.threads_current,ai_support.threads_joined | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
