@@ -357,6 +357,32 @@ tag/Release step.
   exact. n=5 **29.776×** (106.883 / 3.590 µs) on host `cursor`, ceiling 50.0.
   Measure-only leftover (Pair 1389). Over-1× booked. Does not remount
   `render_login_dialog` / leftover 1033 `ld_rnd` / leftover 1110 `rnd_ok` / leftover 1191 `ldrd_ok` / leftover 1257 `ldrdx_ok` / leftover 1323 `ldrdxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.umevxxx_ok`
+  (`user-message-selector-handle-event` vs leftover replica of
+  UserMessageList.handleInput structured events). Observed `umhe_down` /
+  `umhe_empty` exact. n=5 **0.707×** (1.371 / 1.940 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 1390). Under-1×. Does not
+  remount `user_message_handle_event` / leftover 1036 `um_he` / leftover
+  1111 `he_ok` / leftover 1192 `umev_ok` / leftover 1258 `umevx_ok` /
+  leftover 1324 `umevxx_ok`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.umrwxxx_ok`
+  (`user-message-selector-handle-raw-input` vs leftover replica of
+  UserMessageList.handleInput raw key dispatch). Observed `umhr_down` /
+  `umhr_nop` exact. n=5 **17.622×** (85.685 / 4.862 µs) on host `cursor`,
+  ceiling 30.0. Measure-only leftover (Pair 1391). Over-1× booked. Does
+  not remount `user_message_handle_raw` / leftover 1036 `um_hr` /
+  leftover 1112 `raw_ok` / leftover 1193 `umrw_ok` / leftover 1259
+  `umrwx_ok` / leftover 1325 `umrwxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.umrsxxx_ok`
+  (`render-user-message-selector` vs leftover replica of
+  UserMessageSelectorComponent layout). Observed `umrd_three` /
+  `umrd_hit` exact. n=5 **70.735×** (242.804 / 3.433 µs) on host
+  `cursor`, ceiling 100.0. Measure-only leftover (Pair 1392). Over-1×
+  booked. Does not remount `render_user_message_selector` / leftover 1036
+  `um_rd` / leftover 1113 `sel_ok` / leftover 1194 `umrs_ok` / leftover
+  1260 `umrsx_ok` / leftover 1326 `umrsxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
