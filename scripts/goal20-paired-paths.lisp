@@ -1056,6 +1056,12 @@
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
+    ("cli_selectors.countdown_seconds" . 50)
+    ("cli_selectors.countdown_tick" . 50)
+    ("cli_selectors.countdown_render" . 50)
+    ("cli_selectors.armin_pixel" . 50)
+    ("cli_selectors.armin_cell" . 50)
+    ("cli_selectors.armin_grid_height" . 50)
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
@@ -30100,6 +30106,36 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+     "countdown_seconds"
+     (collect "cli_selectors.countdown_seconds"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "countdown_tick"
+     (collect "cli_selectors.countdown_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "countdown_render"
+     (collect "cli_selectors.countdown_render"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render))))
+     "armin_pixel"
+     (collect "cli_selectors.armin_pixel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-pixel))))
+     "armin_cell"
+     (collect "cli_selectors.armin_cell"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-cell))))
+     "armin_grid_height"
+     (collect "cli_selectors.armin_grid_height"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-grid-height))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
@@ -33529,6 +33565,18 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
       "cli_selectors.daxnuts_component_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
+      "cli_selectors.countdown_seconds"
+      "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds"
+      "cli_selectors.countdown_tick"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick"
+      "cli_selectors.countdown_render"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render"
+      "cli_selectors.armin_pixel"
+      "src/cadr-cli/interactive/components/armin.lisp armin-pixel-p"
+      "cli_selectors.armin_cell"
+      "src/cadr-cli/interactive/components/armin.lisp armin-cell"
+      "cli_selectors.armin_grid_height"
+      "src/cadr-cli/interactive/components/armin.lisp armin-grid-height"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"
