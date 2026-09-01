@@ -616,4 +616,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_http_idle_timeout` | 11.3 | 8.0 | 1.41× | 8.00× | measure-only leftover 766; `sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs | invent pause；地板优化另刀 |
 | `settings_load.sdk_apply_overrides` | 47.3 | 6.2 | 7.58× | 8.00× | measure-only leftover 767; `sdk-settings-apply-overrides` vs applyOverrides | invent pause；地板优化另刀 |
 | `settings_load.sdk_model_thinking_level` | 16.8 | 3.1 | 5.35× | 8.00× | measure-only leftover 768; `sdk-settings-model-thinking-level` vs getModelThinkingLevel | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_value` | 33.5 | 0.3 | 114.68× | 150.00× | measure-only leftover 769; `sdk-settings-value` vs Settings json-get | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_thinking_level` | 10.3 | 4.1 | 2.54× | 8.00× | measure-only leftover 770; `sdk-settings-default-thinking-level` vs getDefaultThinkingLevel | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

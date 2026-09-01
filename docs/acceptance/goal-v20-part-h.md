@@ -9874,6 +9874,30 @@ Leftover sibling of Pair 766. Timed work is overlay merge last-wins — not logi
 
 Leftover sibling of Pairs 766–767. Timed work is per-model thinking lookup — not `stream-chat`. Observed `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` are exact. First n=5 freeze **4.323×** (16.293 / 3.769 µs) on host `cursor`; remesure Friend-MachineD **5.346×** (16.830 / 3.148 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 769 — `settings_load` (sdk_settings_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_settings_value` | `sdk-settings-value` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object json-get replica (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 766–768. Timed work is in-memory json-get hit/miss/default — not login I/O. Observed `ssv_hit` / `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` are exact. First n=5 freeze **114.678×** (33.477 / 0.292 µs) on host `cursor`, ceiling 150.0. Over-1× booked. Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution (`parsed_provider`); this metric did not fail observed-exact. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 770 — `settings_load` (sdk_default_thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_default_thinking_level` | `sdk-settings-default-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 769. Timed work is defaultThinkingLevel lookup. Empty cadr returns `:medium`; pi returns `undefined` — encoded as cadr `eq :medium` → 1 and pi `== null` → 1. Invalid `"nope"` is not an exact key. Observed `sdt_high` / `sdt_off` / `sdt_empty` / `sdt_ok` / `sdt_n` are exact. First n=5 freeze **2.541×** (10.345 / 4.072 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 771 — `settings_load` (sdk_drain_errors)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_drain_errors` | `sdk-settings-drain-errors` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.drainErrors` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 769–770. Timed work is empty-memory drain by length — not `listp` vs `Array.isArray([])`, not `flush()`. Observed `sde_len` / `sde_empty` / `sde_again` / `sde_ok` / `sde_n` are exact. First n=5 freeze **0.806×** (1.002 / 1.244 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate `--only-enforce`; py rc=2 from known METRICS pollution. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -10604,7 +10628,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/resource-service.lisp` | 370 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
-| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level` |
+| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |

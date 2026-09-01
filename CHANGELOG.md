@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD remesure + ledger book leftover 769–771
+  (`settings_load.sdk_settings_value` **114.678×**,
+  `sdk_default_thinking_level` **2.541×**, `sdk_drain_errors` **0.806×**).
+  Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
+  G.17 stays missing.
 - Goal 20: Friend-MachineD remesure + ledger book leftover 766–768
   (`settings_load.sdk_http_idle_timeout` **1.412×**,
   `sdk_apply_overrides` **7.583×**, `sdk_model_thinking_level` **5.346×**).
@@ -22,6 +27,25 @@ tag/Release step.
   (`settings_load.read_cli_config` **1.188×**, `provider_config_secrets`
   **33.085×**, `resolve_provider_config` **1.031×**). Scoped gate PASS;
   history overlay booked; inventory `pairedMetrics` +3. G.17 stays missing.
+- Goal 20 leftover: pair `settings_load.sdk_settings_value`
+  (`sdk-settings-value` vs Settings object json-get). Observed `ssv_hit` /
+  `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` exact. n=5 **114.678×**
+  (33.477 / 0.292 µs) on host `cursor`, ceiling 150.0. Measure-only leftover
+  (Pair 769). Over-1× booked. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_default_thinking_level`
+  (`sdk-settings-default-thinking-level` vs getDefaultThinkingLevel).
+  Observed `sdt_high` / `sdt_off` / `sdt_empty` / `sdt_ok` / `sdt_n` exact.
+  Empty encoded as cadr `:medium` / pi `null`. n=5 **2.541×** (10.345 / 4.072 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 770). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_drain_errors`
+  (`sdk-settings-drain-errors` vs drainErrors). Observed `sde_len` /
+  `sde_empty` / `sde_again` / `sde_ok` / `sde_n` exact. n=5 **0.806×**
+  (1.002 / 1.244 µs) on host `cursor`, ceiling 8.0. cadr leads.
+  Measure-only leftover (Pair 771). Gate `--only-enforce`; py rc=2 from known
+  METRICS pollution. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_http_idle_timeout`
   (`sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs). Observed
   `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` exact. n=5

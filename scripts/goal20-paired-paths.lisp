@@ -581,6 +581,9 @@
     ("settings_load.sdk_http_idle_timeout" . 50)
     ("settings_load.sdk_apply_overrides" . 50)
     ("settings_load.sdk_model_thinking_level" . 50)
+    ("settings_load.sdk_settings_value" . 150)
+    ("settings_load.sdk_default_thinking_level" . 50)
+    ("settings_load.sdk_drain_errors" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4511,6 +4514,53 @@
          1
          0)
      5)))
+(defun run-settings-load-sdk-settings-value ()
+  ;; Leftover sibling: json-get with miss/default. Not stream-chat.
+  (let* ((manager (leftover-sdk-settings-fixture))
+         (hit (cadr-cli::sdk-settings-value manager "defaultProvider"))
+         (miss (cadr-cli::sdk-settings-value manager "nope"))
+         (def (cadr-cli::sdk-settings-value manager "nope" "fb")))
+    (list
+     (if (equal hit "openai") 1 0)
+     (if (null miss) 1 0)
+     (if (equal def "fb") 1 0)
+     (if (and (equal hit "openai") (null miss) (equal def "fb")) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-default-thinking-level ()
+  ;; Leftover sibling: defaultThinkingLevel. Empty cadr is :medium;
+  ;; pi getDefaultThinkingLevel() is undefined. Encode empty as
+  ;; cadr eq :medium → 1 and pi == null → 1.
+  (let ((high
+          (cadr-cli::sdk-settings-default-thinking-level
+           (cadr-cli::make-memory-sdk-settings-manager
+            (cadr-ai::json-object "defaultThinkingLevel" "high"))))
+        (off
+          (cadr-cli::sdk-settings-default-thinking-level
+           (cadr-cli::make-memory-sdk-settings-manager
+            (cadr-ai::json-object "defaultThinkingLevel" "off"))))
+        (empty
+          (cadr-cli::sdk-settings-default-thinking-level
+           (cadr-cli::make-memory-sdk-settings-manager))))
+    (list
+     (if (eq high :high) 1 0)
+     (if (eq off :off) 1 0)
+     (if (eq empty :medium) 1 0)
+     (if (and (eq high :high) (eq off :off) (eq empty :medium)) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-drain-errors ()
+  ;; Leftover sibling: drainErrors. Memory manager starts empty.
+  ;; Do not compare listp vs Array.isArray([]).
+  (let* ((mgr (cadr-cli::make-memory-sdk-settings-manager))
+         (first (cadr-cli::sdk-settings-drain-errors mgr))
+         (again (cadr-cli::sdk-settings-drain-errors mgr)))
+    (list
+     (length first)
+     (if (null first) 1 0)
+     (if (null again) 1 0)
+     (if (and (zerop (length first)) (null first) (null again)) 1 0)
+     5)))
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4820,7 +4870,13 @@
               (sdk-apply-overrides
                 (run-settings-load-sdk-apply-overrides))
               (sdk-model-thinking-level
-                (run-settings-load-sdk-model-thinking-level)))
+                (run-settings-load-sdk-model-thinking-level))
+              (sdk-settings-value
+                (run-settings-load-sdk-settings-value))
+              (sdk-default-thinking-level
+                (run-settings-load-sdk-default-thinking-level))
+              (sdk-drain-errors
+                (run-settings-load-sdk-drain-errors)))
         (json-object
          "observed"
          (json-object
@@ -4941,7 +4997,22 @@
           "smt_miss" (nth 1 sdk-model-thinking-level)
           "smt_other" (nth 2 sdk-model-thinking-level)
           "smt_sym" (nth 3 sdk-model-thinking-level)
-          "smt_n" (nth 4 sdk-model-thinking-level))
+          "smt_n" (nth 4 sdk-model-thinking-level)
+          "ssv_hit" (nth 0 sdk-settings-value)
+          "ssv_miss" (nth 1 sdk-settings-value)
+          "ssv_def" (nth 2 sdk-settings-value)
+          "ssv_ok" (nth 3 sdk-settings-value)
+          "ssv_n" (nth 4 sdk-settings-value)
+          "sdt_high" (nth 0 sdk-default-thinking-level)
+          "sdt_off" (nth 1 sdk-default-thinking-level)
+          "sdt_empty" (nth 2 sdk-default-thinking-level)
+          "sdt_ok" (nth 3 sdk-default-thinking-level)
+          "sdt_n" (nth 4 sdk-default-thinking-level)
+          "sde_len" (nth 0 sdk-drain-errors)
+          "sde_empty" (nth 1 sdk-drain-errors)
+          "sde_again" (nth 2 sdk-drain-errors)
+          "sde_ok" (nth 3 sdk-drain-errors)
+          "sde_n" (nth 4 sdk-drain-errors))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -5059,7 +5130,22 @@
          (collect "settings_load.sdk_model_thinking_level"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-sdk-model-thinking-level))))))))))
+                      (run-settings-load-sdk-model-thinking-level))))
+         "sdk_settings_value"
+         (collect "settings_load.sdk_settings_value"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-settings-value))))
+         "sdk_default_thinking_level"
+         (collect "settings_load.sdk_default_thinking_level"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-default-thinking-level))))
+         "sdk_drain_errors"
+         (collect "settings_load.sdk_drain_errors"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-drain-errors))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -34471,6 +34557,12 @@
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-apply-overrides"
       "settings_load.sdk_model_thinking_level"
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-model-thinking-level"
+      "settings_load.sdk_settings_value"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-value"
+      "settings_load.sdk_default_thinking_level"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-thinking-level"
+      "settings_load.sdk_drain_errors"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-drain-errors"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
