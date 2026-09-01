@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_command_stats`
+  (`session-command-stats` vs leftover getSessionStats). Observed
+  `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` exact.
+  n=5 **2.362×** (2.578 / 1.092 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 814). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_usage_breakdown`
+  (`session-usage-breakdown` vs leftover getUsageCostBreakdown). Observed
+  `sub_empty` / `sub_n` / `sub_first` / `sub_tok` / `sub_second` exact.
+  n=5 **3.689×** (7.127 / 1.932 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 815). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_label_timestamps`
+  (`session-tree-label-timestamps` vs leftover label timestamps). Observed
+  `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` exact.
+  n=5 **2.873×** (4.218 / 1.468 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 816). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.last_assistant_text`
   (`last-assistant-text` vs leftover getLastAssistantText). Observed
   `lat_none` / `lat_hit` / `lat_skip` / `lat_ws` / `lat_n` exact.

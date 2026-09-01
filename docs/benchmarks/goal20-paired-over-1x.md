@@ -702,4 +702,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.last_assistant_text` | 4.006 | 1.182 | 3.389× | 8.00× | measure-only leftover 811; `last-assistant-text` vs leftover getLastAssistantText; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_export_basename` | 12.308 | 2.292 | 5.369× | 8.00× | measure-only leftover 812; `session-export-basename` vs leftover APP_NAME-session ISO_id.html; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_user_messages_for_forking` | 2.542 | 0.944 | 2.692× | 8.00× | measure-only leftover 813; `session-user-messages-for-forking` vs leftover getUserMessagesForForking; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_command_stats` | 2.578 | 1.092 | 2.362× | 8.00× | measure-only leftover 814; `session-command-stats` vs leftover getSessionStats; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_usage_breakdown` | 7.127 | 1.932 | 3.689× | 8.00× | measure-only leftover 815; `session-usage-breakdown` vs leftover getUsageCostBreakdown; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_tree_label_timestamps` | 4.218 | 1.468 | 2.873× | 8.00× | measure-only leftover 816; `session-tree-label-timestamps` vs leftover label timestamps; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

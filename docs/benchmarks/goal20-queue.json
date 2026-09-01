@@ -8691,6 +8691,51 @@
    "piUs": 1.296,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 814,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/bootstrap/sessions.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.session_command_stats",
+   "branch": "g20-freeze-814-816",
+   "note": "remeasure on tip Friend-MachineD; leftover id 814",
+   "ratio": 2.362,
+   "cadrUs": 2.578,
+   "piUs": 1.092,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 815,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/bootstrap/sessions.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.session_usage_breakdown",
+   "branch": "g20-freeze-814-816",
+   "note": "remeasure on tip Friend-MachineD; leftover id 815",
+   "ratio": 3.689,
+   "cadrUs": 7.127,
+   "piUs": 1.932,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 816,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/bootstrap/sessions.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.session_tree_label_timestamps",
+   "branch": "g20-freeze-814-816",
+   "note": "remeasure on tip Friend-MachineD; leftover id 816",
+   "ratio": 2.873,
+   "cadrUs": 4.218,
+   "piUs": 1.468,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
