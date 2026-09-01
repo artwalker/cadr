@@ -671,7 +671,10 @@
     "settings_load.sdk_retry_settings",
     "cli_bootstrap_sessions.pb_ok",
     "cli_bootstrap_sessions.rt_ok",
-    "cli_bootstrap_sessions.dp_ok"
+    "cli_bootstrap_sessions.dp_ok",
+    "settings_load.read_cli_config",
+    "settings_load.provider_config_secrets",
+    "settings_load.resolve_provider_config"
   ],
   "unpairablePaths": [
     {
@@ -1782,7 +1785,10 @@
         "settings_load.provider_settings",
         "settings_load.provider_symbol",
         "settings_load.split_command_line",
-        "settings_load.stored_auth_secrets"
+        "settings_load.stored_auth_secrets",
+        "settings_load.read_cli_config",
+        "settings_load.provider_config_secrets",
+        "settings_load.resolve_provider_config"
       ]
     },
     {

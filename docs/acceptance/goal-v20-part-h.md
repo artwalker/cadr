@@ -9808,7 +9808,7 @@ Leftover sibling of Pairs 1405–1406. Does not remount `make_oauth_selector_sta
 |---|---|---|
 | `read_cli_config` | `read-cli-config` (`src/cadr-cli/config.lisp`) | JSON.parse settings.json object (`packages/coding-agent/src/config.ts`) |
 
-Leftover sibling on a different needs-pair file. Timed work is missing/object/bad/array config.json — not `stream-chat`. Observed `rcc_miss` / `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` are exact. First n=5 freeze **2.098×** (200.606 / 95.628 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling on a different needs-pair file. Timed work is missing/object/bad/array config.json — not `stream-chat`. Observed `rcc_miss` / `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` are exact. First n=5 freeze **2.098×** (200.606 / 95.628 µs) on host `cursor`; remesure Friend-MachineD **1.188×** (260.569 / 219.256 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 761 — `settings_load` (provider_config_secrets)
 
@@ -9816,7 +9816,7 @@ Leftover sibling on a different needs-pair file. Timed work is missing/object/ba
 |---|---|---|
 | `provider_config_secrets` | `provider-config-secrets` (`src/cadr-cli/config.lisp`) | apiKey/oauth/env secret collect (`packages/coding-agent/src/config.ts`) |
 
-Leftover sibling of Pair 760. Timed work is provider plus environment secret collection — not login I/O. Observed `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` are exact. First n=5 freeze **43.688×** (59.914 / 1.371 µs) on host `cursor`, ceiling 50.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 760. Timed work is provider plus environment secret collection — not login I/O. Observed `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` are exact. First n=5 freeze **43.688×** (59.914 / 1.371 µs) on host `cursor`; remesure Friend-MachineD **33.085×** (61.333 / 1.854 µs), ceiling 50.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 762 — `settings_load` (resolve_provider_config)
 
@@ -9824,7 +9824,7 @@ Leftover sibling of Pair 760. Timed work is provider plus environment secret col
 |---|---|---|
 | `resolve_provider_config` | `resolve-provider-config` (`src/cadr-cli/config.lisp`) | `openaiProvider` construct (`packages/ai/src/providers/openai.ts`) |
 
-Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`; remesure Friend-MachineD **1.031×** (208.703 / 202.485 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -10484,7 +10484,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/bootstrap/sessions.lisp` | 1,968 | `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.split_command` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 957 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 91 | `cli_bootstrap_sessions.coding_tools` |
-| `src/cadr-cli/config.lisp` | 284 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets` |
+| `src/cadr-cli/config.lisp` | 284 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
 | `src/cadr-cli/extensions/commands.lisp` | 56 | `cli_extensions_install.handle_plain`, `cli_extensions_install.handle_unknown`, `cli_extensions_install.split_command` |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
 | `src/cadr-cli/extensions/installer.lisp` | 209 | `cli_extensions_install.unsafe_git`, `cli_extensions_install.git_path`, `cli_extensions_install.normalize_git` |
