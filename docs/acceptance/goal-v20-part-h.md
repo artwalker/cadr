@@ -6757,10 +6757,10 @@ Leftover sibling of the `cli_extensions_install` hole on `llama/ui.lisp`.
 Timed work is n_ctx / n_ctx_train / `--ctx-size`/`-c` format — not
 Hugging Face search, not the framed selector. Observed `cl_meta` /
 `cl_train` / `cl_args` / `cl_small` / `cl_none` / `cl_dashc` are exact.
-First n=5 freeze **1.143×** (1.279 / 1.119 µs) on host `cursor`,
-ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
-holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric
-did not fail). Over-1× booked. Same commit no optimize.
+Collect restore n=5 freeze **1.257×** (1.425 / 1.134 µs) on host `cursor`,
+gitHead `cf07413d6`, ceiling 8.0. Overlay recorded; py full gate rc=2 from
+leftover `parsed_provider` METRICS pollution (this metric did not fail
+observed). Over-1× booked. Same commit no optimize.
 
 ### Pair 545 — `cli_extensions_install` (llama_model_description)
 
@@ -6771,9 +6771,10 @@ did not fail). Over-1× booked. Same commit no optimize.
 Leftover sibling of Pair 544 on the same file. Timed work is loaded /
 sleeping / status / context join — not TUI render. Observed `md_loaded` /
 `md_sleep` / `md_unload` / `md_load` / `md_down` / `md_nocontext` are exact.
-First n=5 freeze **1.130×** (1.450 / 1.283 µs) on host `cursor`,
-ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
-holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+Collect restore n=5 freeze **1.156×** (1.569 / 1.357 µs) on host `cursor`,
+gitHead `cf07413d6`, ceiling 8.0. Overlay recorded; py full gate rc=2 from
+leftover `parsed_provider` METRICS pollution. Over-1× booked. Same commit
+no optimize.
 
 ### Pair 546 — `cli_extensions_install` (llama_compact_count)
 
@@ -6783,10 +6784,11 @@ holes; this metric did not fail). Over-1× booked. Same commit no optimize.
 
 Leftover sibling of Pairs 544–545 on the same file. Timed work is 1.2k /
 3M `toFixed` cutoffs — not download UI. Observed `cc_small` / `cc_k` /
-`cc_k0` / `cc_m` / `cc_m0` / `cc_999` are exact. First n=5 freeze
-**1.511×** (0.968 / 0.641 µs) on host `cursor`, ceiling 8.0. Gate used
-`--only-enforce` (script rc=1 only from known old holes; this metric did
-not fail). Over-1× booked. Same commit no optimize.
+`cc_k0` / `cc_m` / `cc_m0` / `cc_999` are exact. Collect restore n=5 freeze
+**1.593×** (1.017 / 0.638 µs) on host `cursor`, gitHead `cf07413d6`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
 
 ### Pair 547 — `cli_selectors` (daxnuts_parse_image)
 
@@ -9777,14 +9779,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 221 | 99,282 | 76.7% | `no worse than baseline` is falsifiable |
+| `paired` | 222 | 100,045 | 77.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 23 | 5,071 | 3.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 22 | 4,308 | 3.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 76.7% of lines (221 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 82.6% of lines.
+- **Falsifiable vs baseline:** 77.3% of lines (222 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 83.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -9903,6 +9905,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/client.lisp` | 485 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 337 | `cli_extensions_install.llama_catalog` |
+| `src/cadr-cli/extensions/llama/ui.lisp` | 763 | `cli_extensions_install.llama_context_label`, `cli_extensions_install.llama_model_description`, `cli_extensions_install.llama_compact_count` |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_pixel`, `cli_selectors.armin_cell`, `cli_selectors.armin_grid_height` |
@@ -10083,7 +10086,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_extensions_install` | 4 | 2,144 |
+| `cli_extensions_install` | 3 | 1,381 |
 | `oauth_pkce_device` | 6 | 850 |
 | `cli_bootstrap_sessions` | 2 | 624 |
 | `skill_prompt_load` | 1 | 370 |

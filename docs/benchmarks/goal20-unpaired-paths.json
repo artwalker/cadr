@@ -41,6 +41,9 @@
   "cli_extensions_install.hf_token",
   "cli_extensions_install.llama_catalog",
   "cli_extensions_install.extension_discovery",
+  "cli_extensions_install.llama_context_label",
+  "cli_extensions_install.llama_model_description",
+  "cli_extensions_install.llama_compact_count",
   "evals_harness.summarize",
   "evals_harness.group_key",
   "evals_harness.artifact_persist",
@@ -1724,8 +1727,12 @@
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/ui.lisp",
-   "class": "needs-pair",
-   "hole": "cli_extensions_install"
+   "class": "paired",
+   "metrics": [
+    "cli_extensions_install.llama_context_label",
+    "cli_extensions_install.llama_model_description",
+    "cli_extensions_install.llama_compact_count"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/loader.lisp",

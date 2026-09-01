@@ -369,9 +369,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.fit_footer_text` | 21.385 | 20.600 | 1.038× | 8.00× | measure-only pair 541; `fit-footer-text` vs `truncateToWidth` | invent pause；地板优化另刀 |
 | `cli_interactive_controller.footer_usage` | 7.216 | 3.522 | 2.049× | 8.00× | measure-only pair 542; `footer-usage-summary` vs `addUsageToTotals` + cadr format | invent pause；地板优化另刀 |
 | `cli_interactive_controller.footer_git_paths` | 214.734 | 130.225 | 1.649× | 8.00× | measure-only pair 543; `find-git-footer-paths` vs `findGitPaths` | invent pause；地板优化另刀 |
-| `cli_extensions_install.llama_context_label` | 1.279 | 1.119 | 1.143× | 8.00× | measure-only pair 544; `llama-context-label` vs `contextLabel` | invent pause；地板优化另刀 |
-| `cli_extensions_install.llama_model_description` | 1.450 | 1.283 | 1.130× | 8.00× | measure-only pair 545; `llama-model-description` vs `modelDescription` | invent pause；地板优化另刀 |
-| `cli_extensions_install.llama_compact_count` | 0.968 | 0.641 | 1.511× | 8.00× | measure-only pair 546; `llama-compact-count` vs `compactCount` | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_context_label` | 1.425 | 1.134 | 1.257× | 8.00× | leftover collect restore pair 544; `llama-context-label` vs `contextLabel` | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_model_description` | 1.569 | 1.357 | 1.156× | 8.00× | leftover collect restore pair 545; `llama-model-description` vs `modelDescription` | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_compact_count` | 1.017 | 0.638 | 1.593× | 8.00× | leftover collect restore pair 546; `llama-compact-count` vs `compactCount` | invent pause；地板优化另刀 |
 | `cli_selectors.daxnuts_image_line` | 36.319 | 16.357 | 2.220× | 8.00× | measure-only leftover 548; `daxnuts-image-line` vs `buildImage` half-block row | invent pause；地板优化另刀 |
 | `cli_interactive_controller.framed_select_title` | 0.775 | 0.551 | 1.406× | 8.00× | measure-only leftover 550; `framed-select-title` vs countdown `${title} (${s}s)` (sub-µs) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.extension_overlay_options` | 1.270 | 0.601 | 2.114× | 8.00× | measure-only leftover 551; `extension-overlay-options` vs resolveOptions | invent pause；地板优化另刀 |
