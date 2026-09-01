@@ -454,6 +454,29 @@ tag/Release step.
   (Pair 1401). Under-1×. Does not remount `thinking_selector_handle_event` /
   leftover 1363 `henxxx_ok` / leftover 1045 `th_hev` / leftover 1122 `hev_ok` /
   leftover 1203 `thhe_ok` / leftover 1269 `thhex_ok` / leftover 1335 `thhexx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.trsvxxx_ok`
+  (`trust-option-saved-p` vs leftover replica of trust-selector isSavedOption).
+  Observed `tosp_nil` / `tosp_distrust` exact. n=5 **5.065×**
+  (76.972 / 15.197 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1402). Over-1× booked. Does not remount `trust_option_saved_p`
+  / leftover 1048 `tr_sv` / leftover 1123 `sv_ok` / leftover 1204 `trsv_ok`
+  / leftover 1270 `trsvx_ok` / leftover 1336 `trsvxx_ok`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.trmkxxx_ok`
+  (`make-trust-selector-state` vs leftover replica of TrustSelectorComponent
+  constructor). Observed `mtss_child` / `mtss_single` exact. n=5 **2.552×**
+  (131.369 / 51.480 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1403). Over-1× booked. Does not remount `make_trust_selector_state` /
+  leftover 1048 `tr_mk` / leftover 1124 `mk_ok` / leftover 1205 `trmk_ok` /
+  leftover 1271 `trmkx_ok` / leftover 1337 `trmkxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.trrsxxx_ok`
+  (`render-trust-selector` vs leftover replica of TrustSelectorComponent layout).
+  Observed `rtrs_default` / `rtrs_single` exact. n=5 **9.157×**
+  (1023.386 / 111.757 µs) on host `cursor`, ceiling 15.0. Measure-only leftover
+  (Pair 1404). Over-1× booked. Does not remount `render_trust_selector` /
+  leftover 1048 `tr_rnd` / leftover 1125 `trn_ok` / leftover 1206 `trrs_ok` /
+  leftover 1272 `trrsx_ok` / leftover 1338 `trrsxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
