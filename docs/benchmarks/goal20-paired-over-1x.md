@@ -565,4 +565,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ldrdxxx_ok` | 106.883 | 3.590 | 29.776× | 50.00× | measure-only leftover 1389; `render-login-dialog-state` vs leftover LoginDialogComponent layout | invent pause；地板优化另刀 |
 | `cli_selectors.umrwxxx_ok` | 85.685 | 4.862 | 17.622× | 30.00× | measure-only leftover 1391; `user-message-selector-handle-raw-input` vs leftover handleInput raw | invent pause；地板优化另刀 |
 | `cli_selectors.umrsxxx_ok` | 242.804 | 3.433 | 70.735× | 100.00× | measure-only leftover 1392; `render-user-message-selector` vs leftover UserMessageSelectorComponent layout | invent pause；地板优化另刀 |
+| `cli_selectors.mkbxxx_ok` | 32.739 | 21.614 | 1.515× | 8.00× | measure-only leftover 1393; `make-models-selector-keybindings` vs leftover KeybindingsManager app.models.* | invent pause；地板优化另刀 |
+| `cli_selectors.msmsxxx_ok` | 105.397 | 4.314 | 24.432× | 40.00× | measure-only leftover 1394; `make-scoped-models-selector-state` vs leftover ScopedModelsSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.mrmsxxx_ok` | 196.853 | 7.167 | 27.467× | 50.00× | measure-only leftover 1395; `render-model-selector` vs leftover ModelSelectorComponent layout | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

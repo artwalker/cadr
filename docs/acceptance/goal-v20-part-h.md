@@ -9127,6 +9127,30 @@ Leftover sibling of Pair 1390. Does not remount `user_message_handle_raw` / left
 
 Leftover sibling of Pairs 1390–1391. Does not remount `render_user_message_selector` / leftover 1036 `um_rd` / leftover 1113 `sel_ok` / leftover 1194 `umrs_ok` / leftover 1260 `umrsx_ok` / leftover 1326 `umrsxx_ok`. Timed work is three-row / hit selector layout. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **70.735×** (242.804 / 3.433 µs) on host `cursor`, ceiling 100.0 matching leftover 1326. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1393 — `cli_selectors` (mkbxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mkbxxx_ok` | `make-models-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of KeybindingsManager app.models.* constructor |
+
+Leftover sibling of leftover 1327–1329 on the same needs-pair file (sixth unused slug after leftover 1039 `ms_kb` / leftover 1114 `kb_ok` / leftover 1195 `mkb_ok` / leftover 1261 `mkbx_ok` / leftover 1327 `mkbxx_ok`). Does not remount `make_models_selector_keybindings`. Timed work is save / reorder keybinding construction. Observed `mmskb_save` / `mmskb_reorder` are exact. First n=5 freeze **1.515×** (32.739 / 21.614 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1394 — `cli_selectors` (msmsxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `msmsxxx_ok` | `make-scoped-models-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ScopedModelsSelectorComponent constructor |
+
+Leftover sibling of Pair 1393. Does not remount `make_scoped_models_selector_state` / leftover 1039 `sm_st` / leftover 1115 `sms_ok` / leftover 1196 `msms_ok` / leftover 1262 `msmsx_ok` / leftover 1328 `msmsxx_ok`. Timed work is all / copy scoped-models state. Observed `msmksc_all` / `msmksc_copy` are exact. First n=5 freeze **24.432×** (105.397 / 4.314 µs) on host `cursor`, ceiling 40.0 matching leftover 1328. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1395 — `cli_selectors` (mrmsxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mrmsxxx_ok` | `render-model-selector` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ModelSelectorComponent layout |
+
+Leftover sibling of Pairs 1393–1394. Does not remount `render_model_selector` / leftover 1039 `rm_sel` / leftover 1116 `rms_ok` / leftover 1197 `mrms_ok` / leftover 1263 `mrmsx_ok` / leftover 1329 `mrmsxx_ok`. Timed work is default / miss model-selector layout. Observed `rms_default` / `rms_miss` are exact. First n=5 freeze **27.467×** (196.853 / 7.167 µs) on host `cursor`, ceiling 50.0 matching leftover 1329. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
