@@ -5984,12 +5984,34 @@ def fold_pi_roles(roles: dict) -> dict:
     return dict(sorted(folded.items()))
 
 
+def observed_table(report: dict, group: str) -> dict:
+    groups = report.get("metrics")
+    if not isinstance(groups, dict):
+        return {}
+    named = groups.get(group)
+    if not isinstance(named, dict):
+        return {}
+    observed = named.get("observed")
+    return observed if isinstance(observed, dict) else {}
+
+
 def check_observed(cadr: dict, pi: dict, failures: list[str]) -> list[str]:
     notes: list[str] = []
     for group, keys in OBSERVED_EXACT.items():
-        cadr_observed = cadr["metrics"][group]["observed"]
-        pi_observed = pi["metrics"][group]["observed"]
+        cadr_observed = observed_table(cadr, group)
+        pi_observed = observed_table(pi, group)
         for key in keys:
+            cadr_has = key in cadr_observed
+            pi_has = key in pi_observed
+            if not cadr_has and not pi_has:
+                continue
+            if not cadr_has or not pi_has:
+                check(
+                    False,
+                    f"{group}.{key} observed on only one report",
+                    failures,
+                )
+                continue
             check(
                 cadr_observed[key] == pi_observed[key],
                 f"{group}.{key} differs: pi={pi_observed[key]!r} cadr={cadr_observed[key]!r}",

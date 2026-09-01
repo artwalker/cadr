@@ -4230,6 +4230,15 @@ class TestPairedPathRecord(unittest.TestCase):
         paired.check_parameters(cadr, pi, failures)
         self.assertEqual(failures, [])
 
+    def test_observed_table_skips_mill_keys_absent_from_both_reports(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        report = {"metrics": {"cli_dispatch": {"observed": {"parsed_provider": "openai"}}}}
+        self.assertEqual(
+            paired.observed_table(report, "cli_dispatch").get("gru_ascii"),
+            None,
+        )
+        self.assertNotIn("gru_ascii", paired.observed_table(report, "cli_dispatch"))
+
     def test_only_enforce_fails_when_named_slot_is_not_timed(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         cadr = fake_cadr(quick=False)

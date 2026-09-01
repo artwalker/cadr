@@ -10,8 +10,9 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair gate: skip METRICS names that have no timed `median_us`
-  slot on both reports (`check_parameters` and `check_ratios`), and fail
-  `--only-enforce` when it names one.
+  slot on both reports (`check_parameters` and `check_ratios`), skip
+  `OBSERVED_EXACT` keys absent from both reports, and fail
+  `--only-enforce` when it names an untimed slot.
   `record-paired-paths.py` inherits missing official keys from the
   previous history entry. Leftover mill observed-key pollution no longer
   makes a freeze `EXIT:2` (`parsed_provider`). Does not reclassify files
