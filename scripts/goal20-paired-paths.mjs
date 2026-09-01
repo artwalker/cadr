@@ -356,6 +356,9 @@ const REPETITIONS = {
 	"cli_extensions_install.llama_format_context": 50,
 	"cli_extensions_install.llama_js_to_fixed": 50,
 	"cli_extensions_install.llama_search_exact": 50,
+	"cli_extensions_install.llama_search_status": 50,
+	"cli_extensions_install.llama_search_filter": 50,
+	"cli_extensions_install.llama_view_width": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -14811,6 +14814,84 @@ function runCliExtensionsLlamaSearchExact() {
 }
 
 
+function leftoverLlamaSearchStatusText(search) {
+	if (search.status === "searching") return "Searching Hugging Face…";
+	return search.status || "";
+}
+
+
+function runCliExtensionsLlamaSearchStatus() {
+	const text = leftoverLlamaSearchStatusText;
+	return {
+		lss_type: text({ status: "Type at least 2 characters" }),
+		lss_search: text({ status: "searching" }),
+		lss_empty: text({ status: "" }),
+		lss_found: text({ status: "No GGUF models found" }),
+		lss_n: 5,
+	};
+}
+
+
+function leftoverLlamaSearchModels() {
+	return [{ id: "org/alpha" }, { id: "org/beta" }, { id: "zzz/other" }];
+}
+
+
+function leftoverLlamaSearchFilter(query, selected) {
+	const results = leftoverLlamaSearchModels();
+	const search = { query, results, filtered: [], selected };
+	if (query) {
+		const matches = new Set(
+			fuzzyModule.fuzzyFilter(results, query, (model) => model.id).map((model) => model.id),
+		);
+		search.filtered = results.filter((model) => matches.has(model.id));
+	} else {
+		search.filtered = results.slice();
+	}
+	search.selected = Math.min(search.selected, Math.max(0, search.filtered.length - 1));
+	return search;
+}
+
+
+function runCliExtensionsLlamaSearchFilter() {
+	const empty = leftoverLlamaSearchFilter("", 0);
+	const miss = leftoverLlamaSearchFilter("nope", 0);
+	const hit = leftoverLlamaSearchFilter("org", 0);
+	const clamp = leftoverLlamaSearchFilter("", 9);
+	return {
+		lsf_empty: empty.filtered.length,
+		lsf_miss: miss.filtered.length,
+		lsf_hit: hit.filtered.length,
+		lsf_sel: clamp.selected,
+		lsf_n: 5,
+	};
+}
+
+
+function leftoverMakeLlamaView() {
+	return { lastWidth: 80 };
+}
+
+
+function leftoverLlamaViewWidth(view) {
+	return view.lastWidth;
+}
+
+
+function runCliExtensionsLlamaViewWidth() {
+	const view = leftoverMakeLlamaView();
+	const fresh = leftoverMakeLlamaView();
+	view.lastWidth = 40;
+	return {
+		lvw_def: leftoverLlamaViewWidth(fresh),
+		lvw_set: leftoverLlamaViewWidth(view),
+		lvw_n: 5,
+		lvw_pos: leftoverLlamaViewWidth(fresh) > 0 ? 1 : 0,
+		lvw_eq: leftoverLlamaViewWidth(view) === 40 ? 1 : 0,
+	};
+}
+
+
 function llamaContextLabelOrEmpty(model) {
 	return llamaUiContextLabel(model) ?? "";
 }
@@ -14896,6 +14977,9 @@ async function measureCliExtensionsInstall() {
 	const formatContext = runCliExtensionsLlamaFormatContext();
 	const jsToFixed = runCliExtensionsLlamaJsToFixed();
 	const searchExact = runCliExtensionsLlamaSearchExact();
+	const searchStatus = runCliExtensionsLlamaSearchStatus();
+	const searchFilter = runCliExtensionsLlamaSearchFilter();
+	const viewWidth = runCliExtensionsLlamaViewWidth();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -14972,6 +15056,15 @@ async function measureCliExtensionsInstall() {
 		llama_search_exact: await collect("cli_extensions_install.llama_search_exact", () => {
 			return () => runCliExtensionsLlamaSearchExact();
 		}),
+		llama_search_status: await collect("cli_extensions_install.llama_search_status", () => {
+			return () => runCliExtensionsLlamaSearchStatus();
+		}),
+		llama_search_filter: await collect("cli_extensions_install.llama_search_filter", () => {
+			return () => runCliExtensionsLlamaSearchFilter();
+		}),
+		llama_view_width: await collect("cli_extensions_install.llama_view_width", () => {
+			return () => runCliExtensionsLlamaViewWidth();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -15025,6 +15118,9 @@ async function measureCliExtensionsInstall() {
 			...formatContext,
 			...jsToFixed,
 			...searchExact,
+			...searchStatus,
+			...searchFilter,
+			...viewWidth,
 		},
 	};
 }
@@ -37913,6 +38009,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/ui.ts leftover Number.toFixed (cadr llama-js-to-fixed)",
 			"cli_extensions_install.llama_search_exact":
 				"packages/coding-agent/src/extensions/llama/ui.ts leftover org/name regex (cadr llama-search-exact-query-p)",
+			"cli_extensions_install.llama_search_status":
+				"packages/coding-agent/src/extensions/llama/ui.ts leftover HuggingFaceSearch status (cadr llama-search-status-text)",
+			"cli_extensions_install.llama_search_filter":
+				"packages/coding-agent/src/extensions/llama/ui.ts leftover filterResults (cadr llama-search-filter)",
+			"cli_extensions_install.llama_view_width":
+				"packages/coding-agent/src/extensions/llama/ui.ts leftover last width (cadr llama-view-width)",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

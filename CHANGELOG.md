@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.llama_search_status`
+  (`llama-search-status-text` vs leftover HuggingFaceSearch status). Observed
+  `lss_type` / `lss_search` / `lss_empty` / `lss_found` / `lss_n` exact.
+  n=5 **2.908×** (0.456 / 0.157 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 826). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_search_filter`
+  (`llama-search-filter` vs leftover filterResults). Observed
+  `lsf_empty` / `lsf_miss` / `lsf_hit` / `lsf_sel` / `lsf_n` exact.
+  n=5 **0.472×** (3.792 / 8.027 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 827). Under 1× — not booked on over-1×.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_view_width`
+  (`llama-view-width` vs leftover last width). Observed
+  `lvw_def` / `lvw_set` / `lvw_n` / `lvw_pos` / `lvw_eq` exact.
+  n=5 **149.278×** (27.079 / 0.181 µs) on host `cursor`, ceiling 180.0
+  (CLOS `make-llama-view` vs leftover replica lastWidth). Measure-only
+  leftover (Pair 828). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.validate_cli_session_flags`
   (`validate-cli-session-flags` vs leftover fork/session-id flag conflicts).
   Observed `vcsf_ok` / `vcsf_fork` / `vcsf_fork2` / `vcsf_sid` / `vcsf_sidok`
