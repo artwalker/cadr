@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T06:15:04Z) on `cursor`, git `2270fa2197f1`, ratio_gate=`enforced-only:oauth_pkce_device.account_id,oauth_pkce_device.base64url_decode,oauth_pkce_device.base64url_value,oauth_pkce_device.device_start,oauth_pkce_device.ensure_success,oauth_pkce_device.error_detail,oauth_pkce_device.interval_seconds,oauth_pkce_device.json_copy,oauth_pkce_device.notify_device,oauth_pkce_device.openrouter_exchange,oauth_pkce_device.openrouter_input,oauth_pkce_device.openrouter_refresh`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T09:01:00Z) on `Friend-MachineD`, git `1cc6098c91ed`, ratio_gate=`enforced-only:package_manager.update_argv,package_manager.update_env,package_manager.git_object_id,cli_print_rpc.dialog_request,cli_print_rpc.dialog_result,cli_print_rpc.dialog_expired,cli_support.watch_retry_delay,cli_support.close_watcher,cli_support.watch_signature`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`, ratio_gate=`enforced-only:cli_extensions_install.unsafe_git,cli_extensions_install.git_path,cli_extensions_install.normalize_git,cli_extensions_install.package_fragment,cli_extensions_install.local_system_name,cli_extensions_install.inline_factory,cli_extensions_install.gated_approval,cli_extensions_install.split_args,cli_extensions_install.quant_label`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T06:15:04Z) on `cursor`, git `2270fa2197f1`, ratio_gate=`enforced-only:oauth_pkce_device.account_id,oauth_pkce_device.base64url_decode,oauth_pkce_device.base64url_value,oauth_pkce_device.device_start,oauth_pkce_device.ensure_success,oauth_pkce_device.error_detail,oauth_pkce_device.interval_seconds,oauth_pkce_device.json_copy,oauth_pkce_device.notify_device,oauth_pkce_device.openrouter_exchange,oauth_pkce_device.openrouter_input,oauth_pkce_device.openrouter_refresh`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -824,9 +824,9 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | `evals_harness.prompt_eval_agent` | 21.0 | 2.0 | 10.63× | 10.63× | 20.00× |
 | `evals_harness.reload_shutdown` | 1,209.1 | 160.8 | 7.52× | 7.52× | 8.00× |
 | `evals_harness.run_coding_agent_eval` | 2,050.3 | 164.2 | 12.48× | 12.48× | 8.00× |
-| `oauth_pkce_device.base64url_value` | 0.7 | 0.3 | 2.52× | — | 8.00× |
-| `oauth_pkce_device.base64url_decode` | 2.9 | 0.5 | 6.46× | — | 8.00× |
-| `oauth_pkce_device.account_id` | 6.1 | 1.2 | 5.17× | — | 8.00× |
+| `oauth_pkce_device.base64url_value` | 0.7 | 0.3 | 2.52× | 2.52× | 8.00× |
+| `oauth_pkce_device.base64url_decode` | 2.9 | 0.5 | 6.46× | 6.46× | 8.00× |
+| `oauth_pkce_device.account_id` | 6.1 | 1.2 | 5.17× | 5.17× | 8.00× |
 | `evals_harness.content_text` | — | — | — | — | — |
 | `evals_harness.transcript_event` | — | — | — | — | — |
 | `evals_harness.elapsed` | — | — | — | — | — |
@@ -842,9 +842,9 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | `evals_harness.argument_prefix` | 0.2 | 0.3 | 0.92× | 0.92× | 8.00× |
 | `evals_harness.parse_arguments` | 1.2 | 9.8 | 0.13× | 0.13× | 8.00× |
 | `evals_harness.validate_smoke` | 2.5 | 4.7 | 0.54× | 0.54× | 8.00× |
-| `oauth_pkce_device.error_detail` | 0.8 | 0.4 | 2.18× | — | 8.00× |
-| `oauth_pkce_device.ensure_success` | 1.7 | 2.5 | 0.69× | — | 8.00× |
-| `oauth_pkce_device.notify_device` | 0.9 | 0.3 | 2.64× | — | 8.00× |
+| `oauth_pkce_device.error_detail` | 0.8 | 0.4 | 2.18× | 2.18× | 8.00× |
+| `oauth_pkce_device.ensure_success` | 1.7 | 2.5 | 0.69× | 0.69× | 8.00× |
+| `oauth_pkce_device.notify_device` | 0.9 | 0.3 | 2.64× | 2.64× | 8.00× |
 | `evals_harness.eval_result` | — | — | — | — | — |
 | `evals_harness.root_observer` | — | — | — | — | — |
 | `evals_harness.model_resolver` | — | — | — | — | — |
@@ -854,9 +854,9 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | `evals_harness.status_name` | — | — | — | — | — |
 | `evals_harness.case_observation` | — | — | — | — | — |
 | `evals_harness.finish` | — | — | — | — | — |
-| `oauth_pkce_device.json_copy` | 0.9 | 0.4 | 2.17× | — | 8.00× |
-| `oauth_pkce_device.interval_seconds` | 3.8 | 4.6 | 0.82× | — | 8.00× |
-| `oauth_pkce_device.device_start` | 8.6 | 8.1 | 1.07× | — | 8.00× |
+| `oauth_pkce_device.json_copy` | 0.9 | 0.4 | 2.17× | 2.17× | 8.00× |
+| `oauth_pkce_device.interval_seconds` | 3.8 | 4.6 | 0.82× | 0.82× | 8.00× |
+| `oauth_pkce_device.device_start` | 8.6 | 8.1 | 1.07× | 1.07× | 8.00× |
 | `grep_tool.read_utf8` | — | — | — | — | — |
 | `grep_tool.file_lines` | — | — | — | — | — |
 | `grep_tool.context_block` | — | — | — | — | — |
@@ -866,9 +866,9 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | `tui_select_settings_loaders.update_display` | — | — | — | — | — |
 | `tui_select_settings_loaders.make_cancellable_loader` | — | — | — | — | — |
 | `tui_select_settings_loaders.cancellation_token_aborted` | — | — | — | — | — |
-| `oauth_pkce_device.openrouter_input` | 4.9 | 7.5 | 0.66× | — | 8.00× |
-| `oauth_pkce_device.openrouter_refresh` | 0.2 | 0.2 | 0.73× | — | 8.00× |
-| `oauth_pkce_device.openrouter_exchange` | 7.5 | 6.5 | 1.16× | — | 8.00× |
+| `oauth_pkce_device.openrouter_input` | 4.9 | 7.5 | 0.66× | 0.66× | 8.00× |
+| `oauth_pkce_device.openrouter_refresh` | 0.2 | 0.2 | 0.73× | 0.73× | 8.00× |
+| `oauth_pkce_device.openrouter_exchange` | 7.5 | 6.5 | 1.16× | 1.16× | 8.00× |
 | `evals_harness.make_reporter` | — | — | — | — | — |
 | `evals_harness.finite_number` | — | — | — | — | — |
 | `evals_harness.artifact_metadata` | — | — | — | — | — |
@@ -893,15 +893,15 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | `evals_harness.rep_make` | 0.4 | 0.4 | 1.06× | 1.06× | 8.00× |
 | `evals_harness.fin_num` | 0.1 | 0.2 | 0.58× | 0.58× | 8.00× |
 | `evals_harness.art_meta` | 1.1 | 1.0 | 1.06× | 1.06× | 8.00× |
-| `package_manager.update_argv` | — | — | — | — | — |
-| `package_manager.update_env` | — | — | — | — | — |
-| `package_manager.git_object_id` | — | — | — | — | — |
+| `package_manager.update_argv` | 8.4 | 3.3 | 2.58× | — | 8.00× |
+| `package_manager.update_env` | 13.0 | 55.8 | 0.23× | — | 8.00× |
+| `package_manager.git_object_id` | 3.3 | 1.1 | 3.01× | — | 8.00× |
 | `cli_bootstrap_sessions.legacy_product` | — | — | — | — | — |
 | `cli_bootstrap_sessions.shell_quote` | — | — | — | — | — |
 | `cli_bootstrap_sessions.affirmative` | — | — | — | — | — |
-| `cli_print_rpc.dialog_request` | — | — | — | — | — |
-| `cli_print_rpc.dialog_result` | — | — | — | — | — |
-| `cli_print_rpc.dialog_expired` | — | — | — | — | — |
+| `cli_print_rpc.dialog_request` | 1.6 | 0.6 | 2.42× | — | 8.00× |
+| `cli_print_rpc.dialog_result` | 2.4 | 0.3 | 6.82× | — | 8.00× |
+| `cli_print_rpc.dialog_expired` | 0.2 | 0.4 | 0.49× | — | 8.00× |
 | `settings_load.sdk_nonempty` | — | — | — | — | — |
 | `settings_load.sdk_boolean` | — | — | — | — | — |
 | `settings_load.sdk_tools` | — | — | — | — | — |
@@ -911,9 +911,9 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | `skill_prompt_load.sdk_prompt_input` | — | — | — | — | — |
 | `skill_prompt_load.sdk_list_override` | — | — | — | — | — |
 | `skill_prompt_load.sdk_context_files` | — | — | — | — | — |
-| `cli_support.watch_retry_delay` | — | — | — | — | — |
-| `cli_support.close_watcher` | — | — | — | — | — |
-| `cli_support.watch_signature` | — | — | — | — | — |
+| `cli_support.watch_retry_delay` | 0.2 | 0.1 | 1.34× | — | 8.00× |
+| `cli_support.close_watcher` | 0.2 | 0.2 | 1.05× | — | 8.00× |
+| `cli_support.watch_signature` | 23.8 | 6.8 | 3.48× | — | 8.00× |
 | `cli_bootstrap_sessions.model_cycle` | — | — | — | — | — |
 | `cli_bootstrap_sessions.model_scope_line` | — | — | — | — | — |
 | `cli_bootstrap_sessions.process_files` | — | — | — | — | — |
@@ -2170,6 +2170,7 @@ Previous: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`,
 | 2026-09-01T04:38:25Z | paired-paths | `cf07413d6aa3` | no | enforced-only:cli_extensions_install.llama_compact_count,cli_extensions_install.llama_context_label,cli_extensions_install.llama_model_description | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T04:51:28Z | paired-paths | `04b38a745484` | no | enforced-only:cli_extensions_install.unsafe_git,cli_extensions_install.git_path,cli_extensions_install.normalize_git,cli_extensions_install.package_fragment,cli_extensions_install.local_system_name,cli_extensions_install.inline_factory,cli_extensions_install.gated_approval,cli_extensions_install.split_args,cli_extensions_install.quant_label | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T06:15:04Z | paired-paths | `2270fa2197f1` | no | enforced-only:oauth_pkce_device.account_id,oauth_pkce_device.base64url_decode,oauth_pkce_device.base64url_value,oauth_pkce_device.device_start,oauth_pkce_device.ensure_success,oauth_pkce_device.error_detail,oauth_pkce_device.interval_seconds,oauth_pkce_device.json_copy,oauth_pkce_device.notify_device,oauth_pkce_device.openrouter_exchange,oauth_pkce_device.openrouter_input,oauth_pkce_device.openrouter_refresh | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T09:01:00Z | paired-paths | `1cc6098c91ed` | no | enforced-only:package_manager.update_argv,package_manager.update_env,package_manager.git_object_id,cli_print_rpc.dialog_request,cli_print_rpc.dialog_result,cli_print_rpc.dialog_expired,cli_support.watch_retry_delay,cli_support.close_watcher,cli_support.watch_signature | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

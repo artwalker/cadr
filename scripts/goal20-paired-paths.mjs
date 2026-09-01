@@ -1306,6 +1306,7 @@ const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
 const experimentalModule = await import(moduleUrl("packages/coding-agent/src/core/experimental.ts"));
+const fsWatchModule = await import(moduleUrl("packages/coding-agent/src/utils/fs-watch.ts"));
 const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
 const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
@@ -7542,6 +7543,9 @@ async function measurePackageManager() {
 	const deltaResourceState = runPackageManagerDeltaResourceState();
 	const projectTopLevelState = runPackageManagerProjectTopLevelState();
 	const derivedProjectState = runPackageManagerDerivedProjectState();
+	const updateArgv = runPackageManagerUpdateArgv();
+	const updateEnv = runPackageManagerUpdateEnv();
+	const gitObjectId = runPackageManagerGitObjectId();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -7669,6 +7673,15 @@ async function measurePackageManager() {
 		derived_project_state: await collect("package_manager.derived_project_state", () => {
 			return () => runPackageManagerDerivedProjectState();
 		}),
+		update_argv: await collect("package_manager.update_argv", () => {
+			return () => runPackageManagerUpdateArgv();
+		}),
+		update_env: await collect("package_manager.update_env", () => {
+			return () => runPackageManagerUpdateEnv();
+		}),
+		git_object_id: await collect("package_manager.git_object_id", () => {
+			return () => runPackageManagerGitObjectId();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -7713,6 +7726,9 @@ async function measurePackageManager() {
 			...deltaResourceState,
 			...projectTopLevelState,
 			...derivedProjectState,
+			...updateArgv,
+			...updateEnv,
+			...gitObjectId,
 		},
 	};
 }
@@ -14080,6 +14096,9 @@ async function measureCliPrintRpc() {
 			...runCliPrintRpcLastAssistant(),
 			...runCliPrintRpcCommandList(),
 			...leftoverRpcHandleLineObservedPairs(),
+			...runCliPrintRpcDialogRequest(),
+			...runCliPrintRpcDialogResult(),
+			...runCliPrintRpcDialogExpired(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -14120,6 +14139,15 @@ async function measureCliPrintRpc() {
 			}),
 			ui_absent: await collect("cli_print_rpc.ui_absent", () => {
 				return () => runCliPrintRpcHandleUiMiss();
+			}),
+			dialog_request: await collect("cli_print_rpc.dialog_request", () => {
+				return () => runCliPrintRpcDialogRequest();
+			}),
+			dialog_result: await collect("cli_print_rpc.dialog_result", () => {
+				return () => runCliPrintRpcDialogResult();
+			}),
+			dialog_expired: await collect("cli_print_rpc.dialog_expired", () => {
+				return () => runCliPrintRpcDialogExpired();
 			}),
 			observed,
 		};
@@ -15851,6 +15879,13 @@ async function measureCliSupportStripAnsi() {
 	const noModels = runCliSupportNoModelsHelp();
 	const noSelected = runCliSupportNoModelSelected();
 	const noKey = runCliSupportNoApiKey();
+	const watchPresent = cliSupportWatchPresentFile();
+	const watchRetry = runCliSupportWatchRetryDelay();
+	const closeWatcher = runCliSupportCloseWatcher();
+	const watchSignature = runCliSupportWatchSignature(
+		path.join(scratch, "cadr-goal20-watch-missing"),
+		watchPresent,
+	);
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -15894,6 +15929,20 @@ async function measureCliSupportStripAnsi() {
 		no_api_key: await collect("cli_support.no_api_key", () => {
 			return () => runCliSupportNoApiKey();
 		}),
+		watch_retry_delay: await collect("cli_support.watch_retry_delay", () => {
+			return () => runCliSupportWatchRetryDelay();
+		}),
+		close_watcher: await collect("cli_support.close_watcher", () => {
+			return () => runCliSupportCloseWatcher();
+		}),
+		watch_signature: await collect("cli_support.watch_signature", () => {
+			const present = cliSupportWatchPresentFile();
+			return () =>
+				runCliSupportWatchSignature(
+					path.join(scratch, "cadr-goal20-watch-missing"),
+					present,
+				);
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -15909,6 +15958,9 @@ async function measureCliSupportStripAnsi() {
 			...noModels,
 			...noSelected,
 			...noKey,
+			...watchRetry,
+			...closeWatcher,
+			...watchSignature,
 		},
 	};
 }
@@ -34032,6 +34084,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts project top-level state (cadr config-selector-project-top-level-state)",
 			"package_manager.derived_project_state":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts derived project state (cadr config-selector-derived-project-state)",
+			"package_manager.update_argv":
+				"packages/coding-agent/src/core/package-manager.ts git argv wrap for runGitRemoteCommand (cadr package-update-check-process-argv)",
+			"package_manager.update_env":
+				"packages/coding-agent/src/core/package-manager.ts GIT_TERMINAL_PROMPT=0 (cadr package-update-check-environment)",
+			"package_manager.git_object_id":
+				"packages/coding-agent/src/core/package-manager.ts getRemoteGitHead 40-hex extract (cadr package-update-git-object-id)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
@@ -34267,6 +34325,12 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine require JSON object",
 			"cli_print_rpc.ui_absent":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine unknown extension_ui_response",
+			"cli_print_rpc.dialog_request":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts createDialogPromise request object (cadr rpc-dialog-request-object)",
+			"cli_print_rpc.dialog_result":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts createDialogPromise parseResponse (cadr rpc-dialog-result)",
+			"cli_print_rpc.dialog_expired":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts createDialogPromise timeout (cadr rpc-dialog-expired-p)",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",
@@ -34362,6 +34426,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
 			"cli_support.no_api_key":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
+			"cli_support.watch_retry_delay":
+				"packages/coding-agent/src/utils/fs-watch.ts FS_WATCH_RETRY_DELAY_MS (cadr +fs-watch-retry-delay-milliseconds+)",
+			"cli_support.close_watcher":
+				"packages/coding-agent/src/utils/fs-watch.ts closeWatcher (cadr close-watcher)",
+			"cli_support.watch_signature":
+				"packages/coding-agent/src/core/footer-data-provider.ts statSync mtime+size (cadr watched-path-signature)",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":
