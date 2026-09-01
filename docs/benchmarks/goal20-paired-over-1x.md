@@ -649,7 +649,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_compaction_enabled` | 15.262 | 5.436 | 2.808× | 8.00× | measure-only leftover 777; `sdk-settings-compaction-enabled-p` vs getCompactionEnabled | invent pause；地板优化另刀 |
 | `evals_harness.matching_hello_call` | 3.448 | 1.294 | 2.665× | 8.00× | measure-only leftover 778; `matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call | invent pause；地板优化另刀 |
 | `evals_harness.authoring_judge` | 13.153 | 3.689 | 3.565× | 8.00× | measure-only leftover 779; `judge-extension-authoring-result` vs ExtensionAuthoringJudge | invent pause；地板优化另刀 |
-| `package_manager.resource_item_key` | 34.919 | 0.914 | 38.223× | 50.00× | measure-only leftover 781; `config-resource-item-key` vs leftover getResourceItemKey; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
-| `package_manager.project_override_state` | 52.878 | 2.954 | 17.903× | 20.00× | measure-only leftover 782; `config-selector-project-state` vs leftover override hash; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
-| `package_manager.next_project_state` | 52.464 | 4.986 | 10.522× | 15.00× | measure-only leftover 783; `config-selector-next-project-state` vs leftover nextProjectOverrideState; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.resource_item_key` | 15.782 | 0.672 | 23.49× | 50.00× | measure-only leftover 781; `config-resource-item-key` vs leftover getResourceItemKey; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `package_manager.project_override_state` | 44.722 | 2.605 | 17.17× | 20.00× | measure-only leftover 782; `config-selector-project-state` vs leftover override hash; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.next_project_state` | 40.473 | 4.330 | 9.35× | 15.00× | measure-only leftover 783; `config-selector-next-project-state` vs leftover nextProjectOverrideState; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
