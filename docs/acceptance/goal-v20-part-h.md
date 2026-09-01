@@ -9994,6 +9994,30 @@ Leftover sibling of Pair 781. Timed work is hash lookup load/unload/inherit — 
 
 Leftover sibling of Pairs 781–782. Timed work is inherit/unload/load cycle given inherited-enabled — not TUI checkbox. Observed `nps_inh_t` / `nps_inh_f` / `nps_unl` / `nps_load` / `nps_n` are exact. First n=5 freeze **9.35×** (40.473 / 4.330 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 784 — `package_manager` (inherited_enabled)
+
+| metric | cadr | pi |
+|---|---|---|
+| `inherited_enabled` | `config-selector-inherited-enabled-p` (`src/cadr-cli/packages/config-selector.lisp`) | leftover inheritedEnabled map (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 781–783 on the same `config-selector.lisp` `package_manager` hole. Timed work is inherited-enabled hash lookup plus item `enabled-p` default — not TUI checkbox. Observed `ie_hash_t` / `ie_hash_f` / `ie_def_t` / `ie_def_f` / `ie_n` are exact. First n=5 freeze **7.81×** (28.743 / 3.682 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 785 — `package_manager` (resource_group_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_group_key` | `config-resource-group-key` (`src/cadr-cli/packages/config-selector.lisp`) | leftover group-key replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 784. Timed work is `origin:scope:source:` prefix of the group key — not TUI label, not directory walk. Observed `rgk_top` / `rgk_pkg` / `rgk_src` / `rgk_diff` / `rgk_n` are exact. First n=5 freeze **16.47×** (12.761 / 0.775 µs) on host `cursor`, ceiling 50.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 786 — `package_manager` (package_entry_index)
+
+| metric | cadr | pi |
+|---|---|---|
+| `package_entry_index` | `config-selector-package-entry-index` (`src/cadr-cli/packages/config-selector.lisp`) | leftover npm identity index (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 784–785. Timed work is npm package-source identity position (hit / first / miss / scoped pin) — not git/local path I/O. Observed `pei_hit` / `pei_first` / `pei_miss` / `pei_pin` / `pei_n` are exact. First n=5 freeze **7.45×** (14.402 / 1.934 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

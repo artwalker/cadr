@@ -652,4 +652,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.resource_item_key` | 15.782 | 0.672 | 23.49× | 50.00× | measure-only leftover 781; `config-resource-item-key` vs leftover getResourceItemKey; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `package_manager.project_override_state` | 44.722 | 2.605 | 17.17× | 20.00× | measure-only leftover 782; `config-selector-project-state` vs leftover override hash; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `package_manager.next_project_state` | 40.473 | 4.330 | 9.35× | 15.00× | measure-only leftover 783; `config-selector-next-project-state` vs leftover nextProjectOverrideState; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.inherited_enabled` | 28.743 | 3.682 | 7.81× | 20.00× | measure-only leftover 784; `config-selector-inherited-enabled-p` vs leftover inheritedEnabled map; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.resource_group_key` | 12.761 | 0.775 | 16.47× | 50.00× | measure-only leftover 785; `config-resource-group-key` vs leftover group key; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `package_manager.package_entry_index` | 14.402 | 1.934 | 7.45× | 20.00× | measure-only leftover 786; `config-selector-package-entry-index` vs leftover npm identity index; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

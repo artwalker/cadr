@@ -304,6 +304,9 @@ const REPETITIONS = {
 	"package_manager.resource_item_key": 50,
 	"package_manager.project_override_state": 50,
 	"package_manager.next_project_state": 50,
+	"package_manager.inherited_enabled": 50,
+	"package_manager.resource_group_key": 50,
+	"package_manager.package_entry_index": 50,
 	"package_manager.records_project_first": 50,
 	"package_manager.candidate_record": 50,
 	"package_manager.update_offline": 50,
@@ -8113,6 +8116,124 @@ function runPackageManagerNextProjectState() {
 	};
 }
 
+function leftoverConfigResourceGroupKey(item) {
+	const origin = String(item.origin || "top-level").replace(/^:/, "").toLowerCase();
+	const scope = String(item.scope || "global").replace(/^:/, "").toLowerCase();
+	const source = String(item.source ?? "");
+	let base = String(item.baseDirectory || "/tmp/");
+	if (!base.startsWith("/")) {
+		base = path.resolve(base);
+	}
+	return `${origin}:${scope}:${source}:${base}`;
+}
+
+function leftoverPackageEntries(...sources) {
+	return sources.map((source) => ({ source }));
+}
+
+function leftoverConfigSelectorPackageEntryIndex(_state, item, packages) {
+	const itemIdentity = leftoverPackageSourceIdentity(item.source);
+	const index = packages.findIndex((entry) => {
+		const source = typeof entry === "string" ? entry : entry?.source;
+		return source && leftoverPackageSourceIdentity(source) === itemIdentity;
+	});
+	return index;
+}
+
+function leftoverConfigResourceGroupKeyPrefixP(key, prefix) {
+	return typeof key === "string" && key.startsWith(prefix);
+}
+
+function runPackageManagerInheritedEnabled() {
+	const item = leftoverConfigSelectorHelloItem();
+	return {
+		ie_hash_t: leftoverConfigSelectorInheritedEnabledP(
+			leftoverConfigSelectorOverrideState(item, null, { inherited: true }),
+			item,
+		)
+			? 1
+			: 0,
+		ie_hash_f: leftoverConfigSelectorInheritedEnabledP(
+			leftoverConfigSelectorOverrideState(item, null, { inherited: false }),
+			item,
+		)
+			? 0
+			: 1,
+		ie_def_t: leftoverConfigSelectorInheritedEnabledP(
+			leftoverConfigSelectorOverrideState(item, null),
+			item,
+		)
+			? 1
+			: 0,
+		ie_def_f: leftoverConfigSelectorInheritedEnabledP(
+			leftoverConfigSelectorOverrideState(item, null, { enabledP: false }),
+			item,
+		)
+			? 0
+			: 1,
+		ie_n: 5,
+	};
+}
+
+function runPackageManagerResourceGroupKey() {
+	const top = leftoverConfigResourceGroupKey(leftoverConfigSelectorHelloItem());
+	const pkg = leftoverConfigResourceGroupKey(
+		leftoverConfigResourceItemLabeled("package", "user", "npm:foo", {
+			baseDirectory: "/tmp/agent/pkg/",
+		}),
+	);
+	return {
+		rgk_top: leftoverConfigResourceGroupKeyPrefixP(top, "top-level:project:auto:") ? 1 : 0,
+		rgk_pkg:
+			leftoverConfigResourceGroupKeyPrefixP(pkg, "package:user:") && pkg.includes("npm:foo")
+				? 1
+				: 0,
+		rgk_src: top.includes(":auto:") ? 1 : 0,
+		rgk_diff: top === pkg ? 0 : 1,
+		rgk_n: 5,
+	};
+}
+
+function runPackageManagerPackageEntryIndex() {
+	const state = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+	});
+	const foo = leftoverConfigResourceItemLabeled("package", "user", "npm:foo", {
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const pin = leftoverConfigResourceItemLabeled("package", "user", "npm:@scope/pkg@1.2.3", {
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const hit = leftoverConfigSelectorPackageEntryIndex(
+		state,
+		foo,
+		leftoverPackageEntries("npm:bar", "npm:foo", "npm:baz"),
+	);
+	const first = leftoverConfigSelectorPackageEntryIndex(
+		state,
+		foo,
+		leftoverPackageEntries("npm:foo", "npm:bar"),
+	);
+	const miss = leftoverConfigSelectorPackageEntryIndex(
+		state,
+		foo,
+		leftoverPackageEntries("npm:bar", "npm:baz"),
+	);
+	const scoped = leftoverConfigSelectorPackageEntryIndex(
+		state,
+		pin,
+		leftoverPackageEntries("npm:foo", "npm:@scope/pkg@9.9.9", "npm:bar"),
+	);
+	return {
+		pei_hit: hit === 1 ? 1 : 0,
+		pei_first: first === 0 ? 1 : 0,
+		pei_miss: miss < 0 ? 1 : 0,
+		pei_pin: scoped === 1 ? 1 : 0,
+		pei_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -8327,6 +8448,9 @@ async function measurePackageManager() {
 	const resourceItemKey = runPackageManagerResourceItemKey();
 	const projectOverrideState = runPackageManagerProjectOverrideState();
 	const nextProjectState = runPackageManagerNextProjectState();
+	const inheritedEnabled = runPackageManagerInheritedEnabled();
+	const resourceGroupKey = runPackageManagerResourceGroupKey();
+	const packageEntryIndex = runPackageManagerPackageEntryIndex();
 	const recordsProjectFirst = runPackageManagerRecordsProjectFirst();
 	const candidateRecord = runPackageManagerCandidateRecord();
 	const updateOffline = runPackageManagerUpdateOffline();
@@ -8475,6 +8599,15 @@ async function measurePackageManager() {
 		next_project_state: await collect("package_manager.next_project_state", () => {
 			return () => runPackageManagerNextProjectState();
 		}),
+		inherited_enabled: await collect("package_manager.inherited_enabled", () => {
+			return () => runPackageManagerInheritedEnabled();
+		}),
+		resource_group_key: await collect("package_manager.resource_group_key", () => {
+			return () => runPackageManagerResourceGroupKey();
+		}),
+		package_entry_index: await collect("package_manager.package_entry_index", () => {
+			return () => runPackageManagerPackageEntryIndex();
+		}),
 		records_project_first: await collect("package_manager.records_project_first", () => {
 			return () => runPackageManagerRecordsProjectFirst();
 		}),
@@ -8534,6 +8667,9 @@ async function measurePackageManager() {
 			...resourceItemKey,
 			...projectOverrideState,
 			...nextProjectState,
+			...inheritedEnabled,
+			...resourceGroupKey,
+			...packageEntryIndex,
 			...recordsProjectFirst,
 			...candidateRecord,
 			...updateOffline,
@@ -35937,6 +36073,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover override hash (cadr config-selector-project-state)",
 			"package_manager.next_project_state":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts nextProjectOverrideState leftover (cadr config-selector-next-project-state)",
+			"package_manager.inherited_enabled":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover inheritedEnabled map (cadr config-selector-inherited-enabled-p)",
+			"package_manager.resource_group_key":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover group key (cadr config-resource-group-key)",
+			"package_manager.package_entry_index":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover package identity index (cadr config-selector-package-entry-index)",
 			"package_manager.records_project_first":
 				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates project-then-user collect (cadr package-update-records-project-first)",
 			"package_manager.candidate_record":
