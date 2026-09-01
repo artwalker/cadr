@@ -8562,13 +8562,13 @@
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_format_context",
-   "branch": "cursor/llama-ui-format-fixed-exact-leftovers-805-807-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 805",
-   "ratio": 1.959,
-   "cadrUs": 0.586,
-   "piUs": 0.299,
+   "branch": "g20-freeze-805-807",
+   "note": "remeasure on tip Friend-MachineD; leftover id 805",
+   "ratio": 4.332,
+   "cadrUs": 0.868,
+   "piUs": 0.2,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 806,
@@ -8577,13 +8577,13 @@
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_js_to_fixed",
-   "branch": "cursor/llama-ui-format-fixed-exact-leftovers-805-807-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 806",
-   "ratio": 1.577,
-   "cadrUs": 0.807,
-   "piUs": 0.511,
+   "branch": "g20-freeze-805-807",
+   "note": "remeasure on tip Friend-MachineD; leftover id 806",
+   "ratio": 3.076,
+   "cadrUs": 1.301,
+   "piUs": 0.423,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 807,
@@ -8592,13 +8592,13 @@
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_search_exact",
-   "branch": "cursor/llama-ui-format-fixed-exact-leftovers-805-807-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 807",
-   "ratio": 2.389,
-   "cadrUs": 0.678,
-   "piUs": 0.284,
+   "branch": "g20-freeze-805-807",
+   "note": "remeasure on tip Friend-MachineD; leftover id 807",
+   "ratio": 4.086,
+   "cadrUs": 0.945,
+   "piUs": 0.231,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   }
  ],
  "mergeQueue": []

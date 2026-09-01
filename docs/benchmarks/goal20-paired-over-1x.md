@@ -693,7 +693,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.override_suffix` | 49.261 | 2.679 | 18.389× | 25.00× | measure-only leftover 800; `config-selector-override-suffix` vs leftover getItemSuffix; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
 | `package_manager.checkbox` | 51.092 | 2.611 | 19.566× | 25.00× | measure-only leftover 801; `config-selector-checkbox` vs leftover renderCheckbox; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.split_path_segments` | 0.635 | 0.295 | 2.152× | 8.00× | measure-only leftover 803; `split-path-segments` vs leftover split("/"); first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-| `cli_extensions_install.llama_format_context` | 0.586 | 0.299 | 1.959× | 8.00× | measure-only leftover 805; `llama-format-context-size` vs leftover Math.round k; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-| `cli_extensions_install.llama_js_to_fixed` | 0.807 | 0.511 | 1.577× | 8.00× | measure-only leftover 806; `llama-js-to-fixed` vs leftover Number.toFixed; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-| `cli_extensions_install.llama_search_exact` | 0.678 | 0.284 | 2.389× | 8.00× | measure-only leftover 807; `llama-search-exact-query-p` vs leftover org/name regex; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_format_context` | 0.868 | 0.200 | 4.332× | 8.00× | measure-only leftover 805; `llama-format-context-size` vs leftover Math.round k; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_js_to_fixed` | 1.301 | 0.423 | 3.076× | 8.00× | measure-only leftover 806; `llama-js-to-fixed` vs leftover Number.toFixed; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_search_exact` | 0.945 | 0.231 | 4.086× | 8.00× | measure-only leftover 807; `llama-search-exact-query-p` vs leftover org/name regex; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
