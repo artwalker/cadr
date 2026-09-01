@@ -5849,6 +5849,80 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 838 — `cli_bootstrap_sessions` (data_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `data_directory` | `data-directory` (`src/cadr-cli/migration.lisp`) | `join(home, CONFIG_DIR_NAME)` |
+
+Leftover of the `cli_bootstrap_sessions` hole on `migration.lisp`. Timed work is
+user data dir under an explicit home. Observed `dd_under` / `dd_neq` / `dd_dot` are exact. Collect restore n=5 freeze **9.926×** (8.765 /
+0.883 µs) on host `Friend-MachineD`, gitHead `cc0d0c6ea`,
+ceiling 40.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 839 — `cli_bootstrap_sessions` (legacy_data_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `legacy_data_directory` | `legacy-data-directory` (`src/cadr-cli/migration.lisp`) | `join(home, '.' + legacy product)` |
+
+Leftover sibling of Pair 838. Observed `ldd_under` / `ldd_neq` / `ldd_leaf` are exact. Collect restore n=5 freeze **7.950×** (8.924 /
+1.122 µs) on host `Friend-MachineD`, gitHead `cc0d0c6ea`,
+ceiling 40.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 840 — `cli_bootstrap_sessions` (manual_migration_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `manual_migration_command` | `manual-migration-command` (`src/cadr-cli/migration.lisp`) | `mv --` + quoted paths |
+
+Leftover sibling of Pairs 838–839. Observed `mmc_mv` / `mmc_old` / `mmc_new` / `mmc_space` / `mmc_quote` are exact. Collect restore n=5 freeze **2.726×** (4.577 /
+1.679 µs) on host `Friend-MachineD`, gitHead `cc0d0c6ea`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 841 — `cli_bootstrap_sessions` (managed_binary_names)
+
+| metric | cadr | pi |
+|---|---|---|
+| `managed_binary_names` | `+managed-binary-names+` (`src/cadr-cli/migration.lisp`) | fd/rg (+ `.exe`) names |
+
+Leftover sibling of Pairs 838–840. Observed `mbn_n` / `mbn_fd` / `mbn_rg` / `mbn_fdexe` / `mbn_rgexe` are exact. Collect restore n=5 freeze **1.362×** (0.430 /
+0.315 µs) on host `Friend-MachineD`, gitHead `cc0d0c6ea`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 842 — `cli_bootstrap_sessions` (migration_guide_url)
+
+| metric | cadr | pi |
+|---|---|---|
+| `migration_guide_url` | `+migration-guide-url+` (`src/cadr-cli/migration.lisp`) | `MIGRATION_GUIDE_URL` |
+
+Leftover sibling of Pair 841. Observed `mgu_eq` / `mgu_https` / `mgu_gh` / `mgu_n` are exact. Collect restore n=5 freeze **3.089×** (0.656 /
+0.212 µs) on host `Friend-MachineD`, gitHead `cc0d0c6ea`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 843 — `cli_bootstrap_sessions` (extensions_doc_url)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extensions_doc_url` | `+extensions-doc-url+` (`src/cadr-cli/migration.lisp`) | `EXTENSIONS_DOC_URL` |
+
+Leftover sibling of Pair 842. Observed `edu_eq` / `edu_https` / `edu_gh` / `edu_n` are exact. Collect restore n=5 freeze **2.691×** (0.549 /
+0.204 µs) on host `Friend-MachineD`, gitHead `cc0d0c6ea`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -10142,14 +10216,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 240 | 103,164 | 79.7% | `no worse than baseline` is falsifiable |
+| `paired` | 241 | 103,676 | 80.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 4 | 1,189 | 0.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 3 | 677 | 0.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.7% of lines (240 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.6% of lines.
+- **Falsifiable vs baseline:** 80.1% of lines (241 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 86.0% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -10313,6 +10387,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/transcript.lisp` | 1,070 | `cli_interactive_controller.accumulate_usage`, `cli_interactive_controller.append_user_message`, `cli_interactive_controller.assistant_display_blocks`, `cli_interactive_controller.assistant_has_tools`, `cli_interactive_controller.assistant_price_known`, `cli_interactive_controller.assistant_stop_error`, `cli_interactive_controller.cache_p`, `cli_interactive_controller.pad_str`, `cli_interactive_controller.render_assistant_blocks`, `cli_interactive_controller.render_assistant_lines`, `cli_interactive_controller.render_package_notification`, `cli_interactive_controller.render_transcript_summary`, `cli_interactive_controller.render_tui_entries`, `cli_interactive_controller.render_tui_entry`, `cli_interactive_controller.render_tui_entry_uncached`, `cli_interactive_controller.render_user_lines`, `cli_interactive_controller.render_version_notification`, `cli_interactive_controller.reset_tui_messages`, `cli_interactive_controller.seed_tui_message`, `cli_interactive_controller.syntax_highlight`, `cli_interactive_controller.theme_message_background`, `cli_interactive_controller.transcript_summary_label`, `cli_interactive_controller.transcript_summary_text`, `cli_interactive_controller.transform_tui_markdown`, `cli_interactive_controller.update_notification_border`, `cli_interactive_controller.update_notification_text`, `cli_interactive_controller.wrap_osc` |
 | `src/cadr-cli/interactive/user-bash.lisp` | 213 | `cli_interactive_controller.append_output`, `cli_interactive_controller.bash_append_running`, `cli_interactive_controller.bash_complete_string`, `cli_interactive_controller.bash_stop_entry`, `cli_interactive_controller.complete_entry`, `cli_interactive_controller.make_entry` |
 | `src/cadr-cli/media.lisp` | 1,277 | `image_runtime.mime_type` |
+| `src/cadr-cli/migration.lisp` | 512 | `cli_bootstrap_sessions.data_directory`, `cli_bootstrap_sessions.legacy_data_directory`, `cli_bootstrap_sessions.manual_migration_command`, `cli_bootstrap_sessions.managed_binary_names`, `cli_bootstrap_sessions.migration_guide_url`, `cli_bootstrap_sessions.extensions_doc_url` |
 | `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
 | `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
@@ -10467,9 +10542,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_bootstrap_sessions` | 2 | 624 |
 | `skill_prompt_load` | 1 | 370 |
 | `settings_load` | 1 | 195 |
+| `cli_bootstrap_sessions` | 1 | 112 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

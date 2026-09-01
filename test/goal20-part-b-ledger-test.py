@@ -3985,6 +3985,25 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("pf_hello", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("pf_img", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
 
+
+    def test_cli_bootstrap_sessions_migration_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("data_directory", ("dd_under", "dd_dot")),
+            ("legacy_data_directory", ("ldd_leaf",)),
+            ("manual_migration_command", ("mmc_mv", "mmc_quote")),
+            ("managed_binary_names", ("mbn_fd", "mbn_rgexe")),
+            ("migration_guide_url", ("mgu_eq",)),
+            ("extensions_doc_url", ("edu_eq",)),
+        ):
+            full = f"cli_bootstrap_sessions.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["cli_bootstrap_sessions"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+
+
     def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("ai_runtime_faux.blocks", RECORD.METRIC_KEYS)

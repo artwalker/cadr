@@ -656,7 +656,13 @@
     "provider_registry_defs.models_runtime",
     "provider_registry_defs.protocol_provider",
     "provider_registry_defs.protocol_provider_anthropic",
-    "provider_registry_defs.instantiate_provider"
+    "provider_registry_defs.instantiate_provider",
+    "cli_bootstrap_sessions.data_directory",
+    "cli_bootstrap_sessions.legacy_data_directory",
+    "cli_bootstrap_sessions.manual_migration_command",
+    "cli_bootstrap_sessions.managed_binary_names",
+    "cli_bootstrap_sessions.migration_guide_url",
+    "cli_bootstrap_sessions.extensions_doc_url"
   ],
   "unpairablePaths": [
     {
@@ -2259,8 +2265,15 @@
     },
     {
       "prefix": "src/cadr-cli/migration.lisp",
-      "class": "needs-pair",
-      "hole": "cli_bootstrap_sessions"
+      "class": "paired",
+      "metrics": [
+        "cli_bootstrap_sessions.data_directory",
+        "cli_bootstrap_sessions.legacy_data_directory",
+        "cli_bootstrap_sessions.manual_migration_command",
+        "cli_bootstrap_sessions.managed_binary_names",
+        "cli_bootstrap_sessions.migration_guide_url",
+        "cli_bootstrap_sessions.extensions_doc_url"
+      ]
     },
     {
       "prefix": "src/cadr-cli/models/auth-storage.lisp",

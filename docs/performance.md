@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T10:31:28Z) on `Friend-MachineD`, git `473e3bb84933`, ratio_gate=`enforced-only:provider_registry_defs.runtime_provider,provider_registry_defs.runtime_provider_copilot,provider_registry_defs.models_runtime,provider_registry_defs.protocol_provider,provider_registry_defs.protocol_provider_anthropic,provider_registry_defs.instantiate_provider`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0c6eabba`, ratio_gate=`enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T10:18:37Z) on `Friend-MachineD`, git `571ec063bd67`, ratio_gate=`enforced-only:ai_support.threads_absent,ai_support.threads_current,ai_support.threads_joined`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T10:31:28Z) on `Friend-MachineD`, git `473e3bb84933`, ratio_gate=`enforced-only:provider_registry_defs.runtime_provider,provider_registry_defs.runtime_provider_copilot,provider_registry_defs.models_runtime,provider_registry_defs.protocol_provider,provider_registry_defs.protocol_provider_anthropic,provider_registry_defs.instantiate_provider`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1424,12 +1424,12 @@ Previous: `paired-paths` (2026-09-01T10:18:37Z) on `Friend-MachineD`, git `571ec
 | `provider_registry_defs.api_key_login_function` | 0.2 | 215.9 | 0.00× | 0.00× | 8.00× |
 | `provider_registry_defs.api_key_auth` | 0.7 | 212.9 | 0.00× | 0.00× | 8.00× |
 | `provider_registry_defs.model_filter_function` | 0.6 | 217.4 | 0.00× | 0.00× | 8.00× |
-| `provider_registry_defs.runtime_provider` | 10.1 | 276.5 | 0.04× | — | 8.00× |
-| `provider_registry_defs.runtime_provider_copilot` | 8.4 | 15.4 | 0.55× | — | 8.00× |
-| `provider_registry_defs.models_runtime` | 412.1 | 258.2 | 1.60× | — | 8.00× |
-| `provider_registry_defs.protocol_provider` | 1.8 | 1.4 | 1.29× | — | 8.00× |
-| `provider_registry_defs.protocol_provider_anthropic` | 0.7 | 6.0 | 0.11× | — | 8.00× |
-| `provider_registry_defs.instantiate_provider` | 1.3 | 7.2 | 0.19× | — | 8.00× |
+| `provider_registry_defs.runtime_provider` | 10.1 | 276.5 | 0.04× | 0.04× | 8.00× |
+| `provider_registry_defs.runtime_provider_copilot` | 8.4 | 15.4 | 0.55× | 0.55× | 8.00× |
+| `provider_registry_defs.models_runtime` | 412.1 | 258.2 | 1.60× | 1.60× | 8.00× |
+| `provider_registry_defs.protocol_provider` | 1.8 | 1.4 | 1.29× | 1.29× | 8.00× |
+| `provider_registry_defs.protocol_provider_anthropic` | 0.7 | 6.0 | 0.11× | 0.11× | 8.00× |
+| `provider_registry_defs.instantiate_provider` | 1.3 | 7.2 | 0.19× | 0.19× | 8.00× |
 | `core_rest.cancellation_abort` | 0.6 | 4.3 | 0.15× | 0.15× | 8.00× |
 | `core_rest.redacted_secrets` | 2.8 | 0.6 | 4.55× | 4.55× | 8.00× |
 | `core_rest.threads_cleanup` | 206.6 | 24,900.3 | 0.01× | 0.01× | 8.00× |
@@ -1448,6 +1448,12 @@ Previous: `paired-paths` (2026-09-01T10:18:37Z) on `Friend-MachineD`, git `571ec
 | `cli_bootstrap_sessions.cycle_wrap` | 0.7 | 0.9 | 0.75× | 0.75× | 8.00× |
 | `cli_bootstrap_sessions.scope_hint` | 36.1 | 48.1 | 0.75× | 0.75× | 8.00× |
 | `cli_bootstrap_sessions.file_tags` | 104.3 | 144.2 | 0.72× | 0.72× | 8.00× |
+| `cli_bootstrap_sessions.data_directory` | 8.8 | 0.9 | 9.93× | — | 40.00× |
+| `cli_bootstrap_sessions.legacy_data_directory` | 8.9 | 1.1 | 7.95× | — | 40.00× |
+| `cli_bootstrap_sessions.manual_migration_command` | 4.6 | 1.7 | 2.73× | — | 8.00× |
+| `cli_bootstrap_sessions.managed_binary_names` | 0.4 | 0.3 | 1.36× | — | 8.00× |
+| `cli_bootstrap_sessions.migration_guide_url` | 0.7 | 0.2 | 3.09× | — | 8.00× |
+| `cli_bootstrap_sessions.extensions_doc_url` | 0.5 | 0.2 | 2.69× | — | 8.00× |
 | `ai_runtime_faux.blocks` | 0.1 | 0.2 | 0.92× | 0.92× | 8.00× |
 | `http_transport.parse_url` | 0.8 | 0.8 | 0.99× | 0.99× | 8.00× |
 | `core_rest.cancellation_wait` | 53.0 | 9.4 | 5.67× | 5.67× | 8.00× |
@@ -2209,6 +2215,7 @@ Previous: `paired-paths` (2026-09-01T10:18:37Z) on `Friend-MachineD`, git `571ec
 | 2026-09-01T10:01:01Z | paired-paths | `78aa2cb75802` | no | enforced-only:cli_interactive_controller.announcement_make,cli_interactive_controller.announcement_url,cli_interactive_controller.announcement_title | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:18:37Z | paired-paths | `571ec063bd67` | no | enforced-only:ai_support.threads_absent,ai_support.threads_current,ai_support.threads_joined | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:31:28Z | paired-paths | `473e3bb84933` | no | enforced-only:provider_registry_defs.runtime_provider,provider_registry_defs.runtime_provider_copilot,provider_registry_defs.models_runtime,provider_registry_defs.protocol_provider,provider_registry_defs.protocol_provider_anthropic,provider_registry_defs.instantiate_provider | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T10:47:21Z | paired-paths | `cc0d0c6eabba` | no | enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
