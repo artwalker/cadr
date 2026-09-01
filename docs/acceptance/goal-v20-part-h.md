@@ -5580,10 +5580,10 @@ Over-1× booked. Same commit no optimize.
 Leftover of the `package_manager` hole on `update-checks.lisp`. Timed work
 is setsid `--fork --wait` argv construction on POSIX — not spawn, not
 `default-package-update-check-runner`. Observed `ua_setsid` / `ua_fork` /
-`ua_tail` / `ua_rest` are exact. First n=5 freeze **3.587×** (5.696 /
-1.588 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). Over-1× booked. Same commit no optimize.
+`ua_tail` / `ua_rest` are exact. Collect restore n=5 freeze **2.579×** (8.431 /
+3.270 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`, ceiling 8.0. Overlay
+recorded; py full gate rc=2 from leftover `parsed_provider` METRICS pollution.
+Over-1× booked. Same commit no optimize.
 
 ### Pair 446 — `package_manager` (update_env)
 
@@ -5593,10 +5593,10 @@ this metric did not fail). Over-1× booked. Same commit no optimize.
 
 Leftover sibling of Pair 445 on the same `package_manager` hole. Timed work
 is injecting `GIT_TERMINAL_PROMPT=0` and dropping prior copies — not git
-exec. Observed `ue_first` / `ue_one` are exact. First n=5 freeze
-**0.108×** (3.829 / 35.512 µs) on host `cursor`, ceiling 8.0. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+exec. Observed `ue_first` / `ue_one` are exact. Collect restore n=5 freeze
+**0.232×** (12.977 / 55.823 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under-1×. Same commit no optimize.
 
 ### Pair 447 — `package_manager` (git_object_id)
 
@@ -5607,10 +5607,10 @@ exec. Observed `ue_first` / `ue_one` are exact. First n=5 freeze
 Leftover sibling of Pairs 445–446 on the same `package_manager` hole. Timed
 work is trimming the first 40-hex token (rev-parse / ls-remote) — not
 `package-git-update-available-p`. Observed `go_plain` / `go_nl` / `go_ls` /
-`go_upper` / `go_bad` are exact. First n=5 freeze **1.916×** (2.328 /
-1.215 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). Over-1× booked. Same commit no optimize.
+`go_upper` / `go_bad` are exact. Collect restore n=5 freeze **3.013×** (3.300 /
+1.095 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`, ceiling 8.0. Overlay
+recorded; py full gate rc=2 from leftover `parsed_provider` METRICS pollution.
+Over-1× booked. Same commit no optimize.
 
 ### Pair 448 — `find_tool` (glob_regex)
 
@@ -5838,9 +5838,10 @@ booked.
 
 Leftover of the `cli_print_rpc` hole on `ui.lisp`. Timed work is extension UI
 request object assembly. Observed `dr_type` / `dr_method` / `dr_msg` /
-`dr_opt_n` / `dr_ph` / `dr_to` are exact. First n=5 freeze **3.471×** (1.129 /
-0.325 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same
-commit no optimize. Over-1× booked.
+`dr_opt_n` / `dr_ph` / `dr_to` are exact. Collect restore n=5 freeze **2.423×**
+(1.570 / 0.648 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`, ceiling 8.0.
+Overlay recorded; py full gate rc=2 from leftover `parsed_provider` METRICS
+pollution. Over-1× booked. Same commit no optimize.
 
 ### Pair 467 — `cli_print_rpc` (dialog_result)
 
@@ -5850,9 +5851,10 @@ commit no optimize. Over-1× booked.
 
 Leftover sibling of Pair 466 on the same hole. Timed work is confirm/select
 response parse (cancelled, confirmed, string value). Observed `rs_nil` /
-`rs_can` / `rs_ok` / `rs_val` / `rs_num` are exact. First n=5 freeze **4.257×**
-(1.233 / 0.290 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`.
-Same commit no optimize. Over-1× booked.
+`rs_can` / `rs_ok` / `rs_val` / `rs_num` are exact. Collect restore n=5 freeze
+**6.823×** (2.387 / 0.350 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no optimize.
 
 ### Pair 468 — `cli_print_rpc` (dialog_expired)
 
@@ -5862,8 +5864,10 @@ Same commit no optimize. Over-1× booked.
 
 Leftover sibling of Pairs 466–467 on the same hole. Timed work is dialog
 deadline comparison. Observed `ex_nil` / `ex_zero` / `ex_future` are exact.
-First n=5 freeze **0.410×** (0.094 / 0.229 µs) on host `cursor`, ceiling 8.0.
-Gate used `--only-enforce`. Same commit no optimize.
+Collect restore n=5 freeze **0.488×** (0.188 / 0.386 µs) on host
+`Friend-MachineD`, gitHead `1cc6098c9`, ceiling 8.0. Overlay recorded; py full
+gate rc=2 from leftover `parsed_provider` METRICS pollution. Under-1×. Same
+commit no optimize.
 
 ### Pair 469 — `settings_load` (sdk_nonempty)
 
@@ -6038,11 +6042,10 @@ optimize.
 
 Leftover of the `cli_support` hole on `file-watcher.lisp`. Timed work is
 the 5000ms retry constant — not poll, not native `fs.watch`. Observed
-`rd_eq` / `rd_ms` / `rd_pos` are exact. First n=5 freeze **0.669×**
-(0.067 / 0.101 µs) on host `cursor`, ceiling 8.0. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no
-optimize.
+`rd_eq` / `rd_ms` / `rd_pos` are exact. Collect restore n=5 freeze **1.335×**
+(0.157 / 0.118 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`, ceiling 8.0.
+Overlay recorded; py full gate rc=2 from leftover `parsed_provider` METRICS
+pollution. Over-1× booked. Same commit no optimize.
 
 ### Pair 482 — `cli_support` (close_watcher)
 
@@ -6052,10 +6055,10 @@ optimize.
 
 Leftover sibling of Pair 481 on the same hole. Timed work is close on a
 null watcher twice — not start-watch, not thread join. Observed `cl_nil`
-/ `cl_twice` / `cl_ok` are exact. First n=5 freeze **0.645×** (0.068 /
-0.105 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). Same commit no optimize.
+/ `cl_twice` / `cl_ok` are exact. Collect restore n=5 freeze **1.046×** (0.162 /
+0.155 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`, ceiling 8.0. Overlay
+recorded; py full gate rc=2 from leftover `parsed_provider` METRICS pollution.
+Over-1× booked. Same commit no optimize.
 
 ### Pair 483 — `cli_support` (watch_signature)
 
@@ -6065,10 +6068,10 @@ this metric did not fail). Same commit no optimize.
 
 Leftover sibling of Pairs 481–482 on the same hole. Timed work is missing
 vs present path signature shape — not `watchWithErrorHandler`, not
-poll. Observed `sg_miss` / `sg_hit` / `sg_n` are exact. First n=5 freeze
-**5.379×** (12.165 / 2.262 µs) on host `cursor`, ceiling 8.0. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no
+poll. Observed `sg_miss` / `sg_hit` / `sg_n` are exact. Collect restore n=5 freeze
+**3.482×** (23.825 / 6.843 µs) on host `Friend-MachineD`, gitHead `1cc6098c9`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
 optimize.
 
 ### Pair 484 — `cli_bootstrap_sessions` (model_cycle)
@@ -9776,14 +9779,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 229 | 102,202 | 79.0% | `no worse than baseline` is falsifiable |
+| `paired` | 232 | 102,852 | 79.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 15 | 2,151 | 1.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 12 | 1,501 | 1.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.0% of lines (229 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
+- **Falsifiable vs baseline:** 79.5% of lines (232 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -9954,12 +9957,14 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/prompt-bash.lisp` | 248 | `cli_print_rpc.bash_result`, `cli_print_rpc.rpc_images`, `cli_print_rpc.rpc_prompt` |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
+| `src/cadr-cli/modes/rpc/ui.lisp` | 288 | `cli_print_rpc.dialog_request`, `cli_print_rpc.dialog_result`, `cli_print_rpc.dialog_expired` |
 | `src/cadr-cli/output-accumulator.lisp` | 199 | `output_accumulator.append`, `output_accumulator.snapshot`, `output_accumulator.finish`, `output_accumulator.last_line_bytes`, `output_accumulator.needs_file`, `output_accumulator.close_temp_file` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/config-selector.lisp` | 1,518 | `package_manager.autoload_disabled`, `package_manager.config_fit_line`, `package_manager.config_glob_regex`, `package_manager.delta_resource_state`, `package_manager.derived_project_state`, `package_manager.enabled_by_patterns`, `package_manager.entry_target`, `package_manager.find_item_index`, `package_manager.group_less_p`, `package_manager.item_matches`, `package_manager.item_ordinal`, `package_manager.item_source_base`, `package_manager.normalize_pattern`, `package_manager.package_entry_filter`, `package_manager.package_entry_has_filters`, `package_manager.package_override_source`, `package_manager.package_resource_pattern`, `package_manager.pattern_candidates`, `package_manager.pattern_matches`, `package_manager.project_top_level_state`, `package_manager.relative_pattern`, `package_manager.replace_pattern`, `package_manager.resource_display_name`, `package_manager.resource_file_p`, `package_manager.resource_group_label`, `package_manager.resource_key`, `package_manager.resource_kinds`, `package_manager.resource_specification`, `package_manager.scope_base`, `package_manager.selected_entry`, `package_manager.selector_items`, `package_manager.selector_move`, `package_manager.settings_array`, `package_manager.settings_values`, `package_manager.type_label`, `package_manager.visible_range` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
+| `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id` |
 | `src/cadr-cli/resource-loader.lisp` | 376 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
@@ -9972,6 +9977,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
+| `src/cadr-cli/support/file-watcher.lisp` | 69 | `cli_support.watch_retry_delay`, `cli_support.close_watcher`, `cli_support.watch_signature` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/html.lisp` | 63 | `cli_support.experimental` |
 | `src/cadr-cli/support/model-help.lisp` | 20 | `cli_support.no_api_key`, `cli_support.no_model_selected`, `cli_support.no_models_help` |
@@ -10092,13 +10098,11 @@ Grouped by hole. Do not invent a file-level idle bench.
 |---|---:|---:|
 | `cli_bootstrap_sessions` | 2 | 624 |
 | `skill_prompt_load` | 1 | 370 |
-| `package_manager` | 1 | 293 |
-| `cli_print_rpc` | 1 | 288 |
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
-| `cli_support` | 4 | 103 |
 | `oauth_pkce_device` | 2 | 74 |
 | `cli_selectors` | 1 | 41 |
+| `cli_support` | 3 | 34 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

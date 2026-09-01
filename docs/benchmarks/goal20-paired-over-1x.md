@@ -322,8 +322,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.extension_authoring_input` | 1.148 | 0.246 | 4.662× | 8.00× | measure-only pair 439; `extension-authoring-input` types/length leftover (sub-µs variance) | invent pause；地板优化另刀 |
 | `evals_harness.json_string` | 0.902 | 0.180 | 5.012× | 8.00× | measure-only pair 441; `json-string` leftover vs missing/false JSON accessor (sub-µs variance) | invent pause；地板优化另刀 |
 | `package_manager.type_label` | 0.135 | 0.134 | 1.002× | 8.00× | measure-only pair 444; `config-resource-type-label` leftover (sub-µs variance) | invent pause；地板优化另刀 |
-| `package_manager.update_argv` | 5.696 | 1.588 | 3.587× | 8.00× | measure-only pair 445; leftover `package-update-check-process-argv` (sub-µs path) | invent pause；地板优化另刀 |
-| `package_manager.git_object_id` | 2.328 | 1.215 | 1.916× | 8.00× | measure-only pair 447; leftover `package-update-git-object-id` (sub-µs path) | invent pause；地板优化另刀 |
+| `package_manager.update_argv` | 8.431 | 3.270 | 2.579× | 8.00× | leftover collect restore pair 445; `package-update-check-process-argv` (sub-µs path) | invent pause；地板优化另刀 |
+| `package_manager.git_object_id` | 3.300 | 1.095 | 3.013× | 8.00× | leftover collect restore pair 447; `package-update-git-object-id` vs getRemoteGitHead extract | invent pause；地板优化另刀 |
 | `find_tool.glob_regex` | 0.527 | 0.220 | 2.403× | 8.00× | measure-only pair 448; leftover `glob-regex-source` (sub-µs path) | invent pause；地板优化另刀 |
 | `find_tool.gitignore_regex` | 0.693 | 0.607 | 1.142× | 8.00× | measure-only pair 450; leftover `gitignore-regex-source` (sub-µs path) | invent pause；地板优化另刀 |
 | `settings_load.provider_symbol` | 0.313 | 0.231 | 1.351× | 8.00× | measure-only pair 454; leftover `provider-symbol` (sub-µs path) | invent pause；地板优化另刀 |
@@ -333,8 +333,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.no_api_key` | 480.3 | 17.48 | 27.48× | 50.00× | measure-only pair 462; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_print_rpc.rpc_prompt` | 1.323 | 0.584 | 2.266× | 8.00× | measure-only leftover 464; `rpc-prompt-message` vs RPC prompt message+images (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.bash_result` | 2.165 | 0.743 | 2.913× | 8.00× | measure-only leftover 465; `rpc-bash-result-json` vs RPC bash result payload (sub-µs variance) | invent pause；地板优化另刀 |
-| `cli_print_rpc.dialog_request` | 1.129 | 0.325 | 3.471× | 8.00× | measure-only leftover 466; `rpc-dialog-request-object` vs createDialogPromise request (sub-µs variance) | invent pause；地板优化另刀 |
-| `cli_print_rpc.dialog_result` | 1.233 | 0.290 | 4.257× | 8.00× | measure-only leftover 467; `rpc-dialog-result` vs createDialogPromise parseResponse (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_print_rpc.dialog_request` | 1.570 | 0.648 | 2.423× | 8.00× | leftover collect restore pair 466; `rpc-dialog-request-object` vs createDialogPromise request | invent pause；地板优化另刀 |
+| `cli_print_rpc.dialog_result` | 2.387 | 0.350 | 6.823× | 8.00× | leftover collect restore pair 467; `rpc-dialog-result` vs createDialogPromise parseResponse | invent pause；地板优化另刀 |
 | `settings_load.sdk_nonempty` | 20.855 | 6.284 | 3.319× | 8.00× | measure-only pair 469; leftover `sdk-nonempty-setting-string` vs `getDefaultProvider` | invent pause；地板优化另刀 |
 | `settings_load.sdk_boolean` | 13.423 | 6.283 | 2.136× | 8.00× | measure-only pair 470; leftover `sdk-settings-boolean` vs `getCompactionEnabled` | invent pause；地板优化另刀 |
 | `settings_load.sdk_tools` | 12.769 | 6.268 | 2.037× | 8.00× | measure-only pair 471; leftover `sdk-settings-enabled-tools` vs `getDefaultTools` | invent pause；地板优化另刀 |
@@ -344,7 +344,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.command_list` | 1.490 | 0.359 | 4.151× | 8.00× | measure-only leftover pair 477; `rpc-command-list` vs `get_commands` walk | invent pause；地板优化另刀 |
 | `skill_prompt_load.sdk_prompt_input` | 15.179 | 3.512 | 4.322× | 8.00× | measure-only leftover pair 478; `sdk-resolve-prompt-input` vs `resolvePromptInput` | invent pause；地板优化另刀 |
 | `skill_prompt_load.sdk_context_files` | 7.556 | 2.625 | 2.879× | 8.00× | measure-only leftover pair 480; `sdk-context-file-records` vs agentsFiles records | invent pause；地板优化另刀 |
-| `cli_support.watch_signature` | 12.165 | 2.262 | 5.379× | 8.00× | measure-only leftover pair 483; `watched-path-signature` vs `statSync` presence | invent pause；地板优化另刀 |
+| `cli_support.watch_signature` | 23.825 | 6.843 | 3.482× | 8.00× | leftover collect restore pair 483; `watched-path-signature` vs statSync presence | invent pause；地板优化另刀 |
+| `cli_support.watch_retry_delay` | 0.157 | 0.118 | 1.335× | 8.00× | leftover collect restore pair 481; `+fs-watch-retry-delay-milliseconds+` vs FS_WATCH_RETRY_DELAY_MS | invent pause；地板优化另刀 |
+| `cli_support.close_watcher` | 0.162 | 0.155 | 1.046× | 8.00× | leftover collect restore pair 482; `close-watcher` vs closeWatcher | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.model_scope_line` | 37.431 | 23.274 | 1.608× | 8.00× | measure-only leftover pair 485; `model-scope-startup-line` vs interactive-mode init line | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.response_text` | 0.939 | 0.714 | 1.314× | 8.00× | measure-only pair 491; `response-text` vs `textParts.join` (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_entry` | 1.424 | 0.238 | 5.982× | 8.00× | measure-only pair 493; `make-tui-user-bash-entry` vs BashExecutionComponent constructor (sub-µs variance) | invent pause；地板优化另刀 |
