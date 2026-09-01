@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.llama_format_context`
+  (`llama-format-context-size` vs leftover Math.round k). Observed
+  `lfc_small` / `lfc_1k` / `lfc_8k` / `lfc_round` / `lfc_n` exact.
+  n=5 **1.959×** (0.586 / 0.299 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 805). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_js_to_fixed`
+  (`llama-js-to-fixed` vs leftover Number.toFixed). Observed
+  `ltf_one` / `ltf_zero` / `ltf_pi` / `ltf_ten` / `ltf_n` exact.
+  n=5 **1.577×** (0.807 / 0.511 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 806). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.llama_search_exact`
+  (`llama-search-exact-query-p` vs leftover org/name regex). Observed
+  `lseq_ok` / `lseq_tag` / `lseq_space` / `lseq_slash` / `lseq_n` exact.
+  n=5 **2.389×** (0.678 / 0.284 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 807). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.string_prefix`
   (`string-prefix-p` vs leftover startsWith). Observed
   `sp_git` / `sp_http` / `sp_case` / `sp_empty` / `sp_n` exact.
