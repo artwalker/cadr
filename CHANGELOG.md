@@ -14,21 +14,27 @@ tag/Release step.
   `sdk_settings_set` **2.210×**, `sdk_settings_remove` **35.830×**).
   Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
   G.17 stays missing.
+- Goal 20: Friend-MachineD remesure + ledger book leftover 775–777
+  (`settings_load.sdk_settings_reload` **4.144×**,
+  `sdk_settings_flush` **5.937×**, `sdk_compaction_enabled` **3.643×**).
+  Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
+  G.17 stays missing.
+
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /
-  `srl_model` / `srl_same` / `srl_empty` / `srl_n` exact. Measure-only
-  leftover (Pair 775). Freeze pending n=5 `--only-enforce`. `nextPairNum`
-  left unchanged.
+  `srl_model` / `srl_same` / `srl_empty` / `srl_n` exact. n=5 **4.144×**
+  (24.265 / 5.855 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 775). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_settings_flush`
   (`sdk-settings-flush` vs SettingsManager.flush). Observed `sfl_hit` /
-  `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` exact. Measure-only
-  leftover (Pair 776). Freeze pending n=5 `--only-enforce`. `nextPairNum`
-  left unchanged.
+  `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` exact. n=5 **5.937×**
+  (26.442 / 4.454 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 776). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_compaction_enabled`
   (`sdk-settings-compaction-enabled-p` vs getCompactionEnabled). Observed
-  `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` exact. Measure-only
-  leftover (Pair 777). Freeze pending n=5 `--only-enforce`. `nextPairNum`
-  left unchanged.
+  `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` exact. n=5 **3.643×**
+  (17.188 / 4.718 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 777). Over-1× booked. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_effective_object`
   (`sdk-settings-effective-object` vs Settings object merge replica).
