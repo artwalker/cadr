@@ -69,7 +69,10 @@
     "cli_extensions_install.llama_catalog",
     "cli_extensions_install.llama_compact_count",
     "cli_extensions_install.llama_context_label",
+    "cli_extensions_install.llama_format_context",
+    "cli_extensions_install.llama_js_to_fixed",
     "cli_extensions_install.llama_model_description",
+    "cli_extensions_install.llama_search_exact",
     "cli_extensions_install.llama_url",
     "cli_extensions_install.local_system_name",
     "cli_extensions_install.normalize_git",
@@ -1897,7 +1900,10 @@
       "metrics": [
         "cli_extensions_install.llama_context_label",
         "cli_extensions_install.llama_model_description",
-        "cli_extensions_install.llama_compact_count"
+        "cli_extensions_install.llama_compact_count",
+        "cli_extensions_install.llama_format_context",
+        "cli_extensions_install.llama_js_to_fixed",
+        "cli_extensions_install.llama_search_exact"
       ]
     },
     {
