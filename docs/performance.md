@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T16:31:38Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `2e5d17da9b95`, ratio_gate=`enforced-only:settings_load.sdk_compaction_enabled,settings_load.sdk_settings_flush,settings_load.sdk_settings_reload`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T17:00:06Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `59fddf4cfe40`, ratio_gate=`enforced-only:evals_harness.authoring_judge,evals_harness.matching_hello_call,evals_harness.source_bundle`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T16:17:16Z) on `Friend-MachineD`, git `21d88b4647c2`, ratio_gate=`enforced-only:settings_load.sdk_effective_object,settings_load.sdk_settings_remove,settings_load.sdk_settings_set`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T16:31:38Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `2e5d17da9b95`, ratio_gate=`enforced-only:settings_load.sdk_compaction_enabled,settings_load.sdk_settings_flush,settings_load.sdk_settings_reload`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -747,9 +747,9 @@ Previous: `paired-paths` (2026-09-01T16:17:16Z) on `Friend-MachineD`, git `21d88
 | `settings_load.sdk_effective_object` | 15.8 | 0.2 | 86.67× | 86.67× | 100.00× |
 | `settings_load.sdk_settings_set` | 17.9 | 8.1 | 2.21× | 2.21× | 8.00× |
 | `settings_load.sdk_settings_remove` | 32.7 | 0.9 | 35.83× | 35.83× | 40.00× |
-| `settings_load.sdk_settings_reload` | 24.3 | 5.9 | 4.14× | — | 8.00× |
-| `settings_load.sdk_settings_flush` | 26.4 | 4.5 | 5.94× | — | 8.00× |
-| `settings_load.sdk_compaction_enabled` | 17.2 | 4.7 | 3.64× | — | 8.00× |
+| `settings_load.sdk_settings_reload` | 24.3 | 5.9 | 4.14× | 4.14× | 8.00× |
+| `settings_load.sdk_settings_flush` | 26.4 | 4.5 | 5.94× | 5.94× | 8.00× |
+| `settings_load.sdk_compaction_enabled` | 17.2 | 4.7 | 3.64× | 3.64× | 8.00× |
 | `resource_loader.reload` | 413.0 | 849.1 | 0.49× | 0.49× | 1.50× |
 | `resource_loader.dedupe_by_name` | 162.0 | 395.7 | 0.41× | 0.41× | 8.00× |
 | `resource_loader.context_from_dir` | 96.6 | 38.3 | 2.52× | 2.52× | 8.00× |
@@ -911,6 +911,9 @@ Previous: `paired-paths` (2026-09-01T16:17:16Z) on `Friend-MachineD`, git `21d88
 | `evals_harness.rep_make` | 0.6 | 0.3 | 1.95× | 1.95× | 8.00× |
 | `evals_harness.fin_num` | 0.2 | 0.2 | 1.04× | 1.04× | 8.00× |
 | `evals_harness.art_meta` | 1.5 | 0.8 | 1.82× | 1.82× | 8.00× |
+| `evals_harness.matching_hello_call` | 5.6 | 2.1 | 2.60× | — | 8.00× |
+| `evals_harness.authoring_judge` | 16.7 | 7.2 | 2.33× | — | 8.00× |
+| `evals_harness.source_bundle` | 0.8 | 1.7 | 0.46× | — | 8.00× |
 | `package_manager.update_argv` | 7.8 | 1.9 | 4.16× | 4.16× | 8.00× |
 | `package_manager.update_env` | 8.2 | 42.1 | 0.19× | 0.19× | 8.00× |
 | `package_manager.git_object_id` | 2.4 | 1.0 | 2.34× | 2.34× | 8.00× |
@@ -2252,6 +2255,7 @@ Previous: `paired-paths` (2026-09-01T16:17:16Z) on `Friend-MachineD`, git `21d88
 | 2026-09-01T16:00:15Z | paired-paths | `73496779fd9f` | no | enforced-only:settings_load.sdk_default_thinking_level,settings_load.sdk_drain_errors,settings_load.sdk_settings_value | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T16:17:16Z | paired-paths | `21d88b4647c2` | no | enforced-only:settings_load.sdk_effective_object,settings_load.sdk_settings_remove,settings_load.sdk_settings_set | 0.96× | 1.06× | 1.09× | 0.06× |
 | 2026-09-01T16:31:38Z | paired-paths | `2e5d17da9b95` | no | enforced-only:settings_load.sdk_compaction_enabled,settings_load.sdk_settings_flush,settings_load.sdk_settings_reload | 0.96× | 1.06× | 1.09× | 0.06× |
+| 2026-09-01T17:00:06Z | paired-paths | `59fddf4cfe40` | no | enforced-only:evals_harness.authoring_judge,evals_harness.matching_hello_call,evals_harness.source_bundle | 0.96× | 1.06× | 1.09× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -9952,7 +9952,7 @@ Leftover sibling of Pairs 775–776. Timed work is compaction enabled default/tr
 |---|---|---|
 | `matching_hello_call` | `matching-hello-tool-call-p` (`src/cadr-evals/suites.lisp`) | ExtensionAuthoringJudge hello-call replica (`packages/evals/src/extensions.eval.ts`) |
 
-Leftover sibling of Pairs 700–702. Timed work is the hello({name:Bob}) event walk — not live eval, not rationale copy. Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 700–702. Timed work is the hello({name:Bob}) event walk — not live eval, not rationale copy. Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` are exact. First n=5 freeze **2.600×** (5.560 / 2.138 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 779 — `evals_harness` (authoring_judge)
 
@@ -9960,7 +9960,7 @@ Leftover sibling of Pairs 700–702. Timed work is the hello({name:Bob}) event w
 |---|---|---|
 | `authoring_judge` | `judge-extension-authoring-result` (`src/cadr-evals/suites.lisp`) | ExtensionAuthoringJudge replica (`packages/evals/src/extensions.eval.ts`) |
 
-Leftover sibling of Pair 778. Timed work is judge score (pass / missing source / non-canonical API / wrong response). Do not compare rationale product copy. Observed `aj_pass` / `aj_src` / `aj_api` / `aj_resp` / `aj_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 778. Timed work is judge score (pass / missing source / non-canonical API / wrong response). Do not compare rationale product copy. Observed `aj_pass` / `aj_src` / `aj_api` / `aj_resp` / `aj_n` are exact. First n=5 freeze **2.331×** (16.713 / 7.170 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 780 — `evals_harness` (source_bundle)
 
@@ -9968,7 +9968,7 @@ Leftover sibling of Pair 778. Timed work is judge score (pass / missing source /
 |---|---|---|
 | `source_bundle` | `extension-source-bundle` (`src/cadr-evals/suites.lisp`) | hello-tool bundle pick replica (`packages/evals/src/extensions.eval.ts`) |
 
-Leftover sibling of Pairs 778–779. Timed work is pick hello bundle else first — not `read-extension-source` path I/O. Observed `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 778–779. Timed work is pick hello bundle else first — not `read-extension-source` path I/O. Observed `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` are exact. First n=5 freeze **0.465×** (0.776 / 1.671 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
