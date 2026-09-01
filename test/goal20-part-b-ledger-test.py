@@ -809,6 +809,22 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("olf_codex", paired.OBSERVED_EXACT["settings_load"])
         self.assertIn("olf_diff", paired.OBSERVED_EXACT["settings_load"])
 
+
+    def test_settings_load_sdk_default_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("sdk_default_provider", ("sdp_hit", "sdp_n")),
+            ("sdk_default_model", ("sdm_hit", "sdm_n")),
+            ("sdk_retry_settings", ("srs_en", "srs_n")),
+        ):
+            full = f"settings_load.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["settings_load"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
+
+
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("resource_loader.reload", RECORD.METRIC_KEYS)

@@ -239,6 +239,9 @@ const REPETITIONS = {
 	"settings_load.provider_default_model": 50,
 	"settings_load.oauth_refresh_function": 50,
 	"settings_load.oauth_login_function": 50,
+	"settings_load.sdk_default_provider": 50,
+	"settings_load.sdk_default_model": 50,
+	"settings_load.sdk_retry_settings": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -3138,6 +3141,57 @@ function runSettingsLoadSdkTools() {
 }
 
 
+function leftoverSdkSettingsEmpty() {
+	return settingsModule.SettingsManager.inMemory({});
+}
+
+function leftoverSdkSettingsFixture() {
+	return settingsModule.SettingsManager.inMemory({
+		defaultProvider: "openai",
+		defaultModel: "gpt-4",
+		retry: { enabled: true, maxRetries: 5, baseDelayMs: 2000 },
+	});
+}
+
+function runSettingsLoadSdkDefaultProvider() {
+	const manager = leftoverSdkSettingsFixture();
+	const empty = leftoverSdkSettingsEmpty();
+	const hit = manager.getDefaultProvider();
+	return {
+		sdp_hit: hit === "openai" ? 1 : 0,
+		sdp_miss: empty.getDefaultProvider() == null ? 1 : 0,
+		sdp_len: typeof hit === "string" ? hit.length : 0,
+		sdp_str: typeof hit === "string" ? 1 : 0,
+		sdp_n: 5,
+	};
+}
+
+function runSettingsLoadSdkDefaultModel() {
+	const manager = leftoverSdkSettingsFixture();
+	const empty = leftoverSdkSettingsEmpty();
+	const hit = manager.getDefaultModel();
+	return {
+		sdm_hit: hit === "gpt-4" ? 1 : 0,
+		sdm_miss: empty.getDefaultModel() == null ? 1 : 0,
+		sdm_len: typeof hit === "string" ? hit.length : 0,
+		sdm_str: typeof hit === "string" ? 1 : 0,
+		sdm_n: 5,
+	};
+}
+
+function runSettingsLoadSdkRetrySettings() {
+	const hit = leftoverSdkSettingsFixture().getRetrySettings();
+	const empty = leftoverSdkSettingsEmpty().getRetrySettings();
+	return {
+		srs_en: hit.enabled === true ? 1 : 0,
+		srs_max: hit.maxRetries === 5 ? 1 : 0,
+		srs_base: hit.baseDelayMs === 2000 ? 1 : 0,
+		srs_empty: empty.enabled === true && empty.maxRetries === 3 ? 1 : 0,
+		srs_n: 5,
+	};
+}
+
+
 async function measureSettingsLoad() {
 	const configPathsAgent = stageSettingsLoadConfigPaths();
 	const { empty, project, agent } = stageSettingsLoadTrust();
@@ -3156,6 +3210,9 @@ async function measureSettingsLoad() {
 	const providerDefaultModel = runSettingsLoadProviderDefaultModel();
 	const oauthRefreshFunction = runSettingsLoadOauthRefreshFunction();
 	const oauthLoginFunction = runSettingsLoadOauthLoginFunction();
+	const sdkDefaultProvider = runSettingsLoadSdkDefaultProvider();
+	const sdkDefaultModel = runSettingsLoadSdkDefaultModel();
+	const sdkRetrySettings = runSettingsLoadSdkRetrySettings();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3205,6 +3262,15 @@ async function measureSettingsLoad() {
 		oauth_login_function: await collect("settings_load.oauth_login_function", () => {
 			return () => runSettingsLoadOauthLoginFunction();
 		}),
+		sdk_default_provider: await collect("settings_load.sdk_default_provider", () => {
+			return () => runSettingsLoadSdkDefaultProvider();
+		}),
+		sdk_default_model: await collect("settings_load.sdk_default_model", () => {
+			return () => runSettingsLoadSdkDefaultModel();
+		}),
+		sdk_retry_settings: await collect("settings_load.sdk_retry_settings", () => {
+			return () => runSettingsLoadSdkRetrySettings();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3220,6 +3286,9 @@ async function measureSettingsLoad() {
 			...providerDefaultModel,
 			...oauthRefreshFunction,
 			...oauthLoginFunction,
+			...sdkDefaultProvider,
+			...sdkDefaultModel,
+			...sdkRetrySettings,
 		},
 	};
 }
