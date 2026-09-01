@@ -675,6 +675,9 @@
     "settings_load.sdk_http_idle_timeout",
     "settings_load.sdk_apply_overrides",
     "settings_load.sdk_model_thinking_level",
+    "settings_load.sdk_settings_value",
+    "settings_load.sdk_default_thinking_level",
+    "settings_load.sdk_drain_errors",
     "cli_bootstrap_sessions.pb_ok",
     "cli_bootstrap_sessions.rt_ok",
     "cli_bootstrap_sessions.dp_ok",
@@ -2532,7 +2535,10 @@
         "settings_load.sdk_retry_settings",
         "settings_load.sdk_http_idle_timeout",
         "settings_load.sdk_apply_overrides",
-        "settings_load.sdk_model_thinking_level"
+        "settings_load.sdk_model_thinking_level",
+        "settings_load.sdk_settings_value",
+        "settings_load.sdk_default_thinking_level",
+        "settings_load.sdk_drain_errors"
       ]
     },
     {
