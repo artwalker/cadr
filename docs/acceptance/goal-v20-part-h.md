@@ -10288,7 +10288,7 @@ Leftover sibling of Pairs 817–818. Timed work is fixed `Keyboard Shortcuts` pl
 |---|---|---|
 | `find_session_by_id_or_prefix` | `find-session-by-id-or-prefix` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover find by id or prefix (`packages/coding-agent/src/core/session-manager.ts`) |
 
-Leftover sibling of leftover 808–819 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is exact session-id then prefix match over an in-memory list — not `list-sessions` disk I/O. Observed `fsb_exact` / `fsb_prefix` / `fsb_xy` / `fsb_miss` / `fsb_empty` are exact. First n=5 freeze **1.135×** (1.086 / 0.957 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 808–819 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is exact session-id then prefix match over an in-memory list — not `list-sessions` disk I/O. Observed `fsb_exact` / `fsb_prefix` / `fsb_xy` / `fsb_miss` / `fsb_empty` are exact. First n=5 freeze **1.888×** (1.627 / 0.862 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 821 — `cli_bootstrap_sessions` (session_display_messages)
 
@@ -10296,7 +10296,7 @@ Leftover sibling of leftover 808–819 on the same `sessions.lisp` `cli_bootstra
 |---|---|---|
 | `session_display_messages` | `session-display-messages` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover display message projection (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of Pair 820. Timed work is message-only context projection (parent chain + leaf/by-id) — not TUI. Observed `sdm_empty` / `sdm_n` / `sdm_first` / `sdm_asst` / `sdm_tool` are exact. First n=5 freeze **2.136×** (2.106 / 0.986 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 820. Timed work is message-only context projection (parent chain + leaf/by-id) — not TUI. Observed `sdm_empty` / `sdm_n` / `sdm_first` / `sdm_asst` / `sdm_tool` are exact. First n=5 freeze **3.471×** (3.262 / 0.940 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 822 — `cli_bootstrap_sessions` (session_tree_selector_data)
 
@@ -10304,7 +10304,7 @@ Leftover sibling of Pair 820. Timed work is message-only context projection (par
 |---|---|---|
 | `session_tree_selector_data` | `session-tree-selector-data` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover tree row map (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
 
-Leftover sibling of Pairs 820–821. Timed work is tree row plists (id/text/leaf) — not tree TUI render. Observed `stsd_nil` / `stsd_n` / `stsd_leaf` / `stsd_id` / `stsd_text` are exact. First n=5 freeze **2.275×** (2.739 / 1.204 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 820–821. Timed work is tree row plists (id/text/leaf) — not tree TUI render. Observed `stsd_nil` / `stsd_n` / `stsd_leaf` / `stsd_id` / `stsd_text` are exact. First n=5 freeze **3.574×** (4.557 / 1.275 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

@@ -1543,11 +1543,11 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.write_hotkeys_command": 8.0,
     # leftover 820–822 sessions.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 820–822.
-    # leftover 820; first freeze 1.135× (1.086 / 0.957 µs).
+    # leftover 820; first freeze 1.888× (1.627 / 0.862 µs).
     "cli_bootstrap_sessions.find_session_by_id_or_prefix": 8.0,
-    # leftover 821; first freeze 2.136× (2.106 / 0.986 µs).
+    # leftover 821; first freeze 3.471× (3.262 / 0.940 µs).
     "cli_bootstrap_sessions.session_display_messages": 8.0,
-    # leftover 822; first freeze 2.275× (2.739 / 1.204 µs).
+    # leftover 822; first freeze 3.574× (4.557 / 1.275 µs).
     "cli_bootstrap_sessions.session_tree_selector_data": 8.0,
   # cli_selectors.countdown_seconds leftover 556 (samples=5):
   # observed 2.292x (0.768 / 0.335 us). 8.0 is first-freeze
