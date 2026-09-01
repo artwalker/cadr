@@ -14879,6 +14879,15 @@ async function measureCliExtensionsInstall() {
 		quant_label: await collect("cli_extensions_install.quant_label", () => {
 			return () => runCliExtensionsQuantLabel();
 		}),
+		string_prefix: await collect("cli_extensions_install.string_prefix", () => {
+			return () => runCliExtensionsStringPrefix();
+		}),
+		split_path_segments: await collect("cli_extensions_install.split_path_segments", () => {
+			return () => runCliExtensionsSplitPathSegments();
+		}),
+		strip_git_query: await collect("cli_extensions_install.strip_git_query", () => {
+			return () => runCliExtensionsStripGitQuery();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -14926,12 +14935,6 @@ async function measureCliExtensionsInstall() {
 				["ql_name", "ql_rec", "ql_bytes", "ql_both"],
 				runCliExtensionsQuantLabel(),
 			),
-		string_prefix: await collect("cli_extensions_install.string_prefix", () => {
-			return () => runCliExtensionsStringPrefix();
-		split_path_segments: await collect("cli_extensions_install.split_path_segments", () => {
-			return () => runCliExtensionsSplitPathSegments();
-		strip_git_query: await collect("cli_extensions_install.strip_git_query", () => {
-			return () => runCliExtensionsStripGitQuery();
 			...stringPrefix,
 			...splitPathSegments,
 			...stripGitQuery,

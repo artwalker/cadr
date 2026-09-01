@@ -13633,15 +13633,21 @@
      (collect "cli_extensions_install.quant_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-quant-label)))))))
+                  (run-cli-extensions-quant-label))))
      "string_prefix"
      (collect "cli_extensions_install.string_prefix"
+              (lambda ()
+                (lambda ()
                   (run-cli-extensions-string-prefix))))
      "split_path_segments"
      (collect "cli_extensions_install.split_path_segments"
+              (lambda ()
+                (lambda ()
                   (run-cli-extensions-split-path-segments))))
      "strip_git_query"
      (collect "cli_extensions_install.strip_git_query"
+              (lambda ()
+                (lambda ()
                   (run-cli-extensions-strip-git-query)))))))
 
 (defun evals-harness-observation
