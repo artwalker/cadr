@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD remesure + ledger book leftover 766–768
+  (`settings_load.sdk_http_idle_timeout` **1.412×**,
+  `sdk_apply_overrides` **7.583×**, `sdk_model_thinking_level` **5.346×**).
+  Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
+  G.17 stays missing.
 - Goal 20: Friend-MachineD remesure + ledger book leftover 757–759
   (`package_manager.records_project_first` **1.059×**,
   `candidate_record` **3.048×**, `update_offline` **1.568×**). Scoped gate
@@ -17,6 +22,26 @@ tag/Release step.
   (`settings_load.read_cli_config` **1.188×**, `provider_config_secrets`
   **33.085×**, `resolve_provider_config` **1.031×**). Scoped gate PASS;
   history overlay booked; inventory `pairedMetrics` +3. G.17 stays missing.
+- Goal 20 leftover: pair `settings_load.sdk_http_idle_timeout`
+  (`sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs). Observed
+  `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` exact. n=5
+  **1.249×** (10.990 / 8.800 µs) on host `cursor`, ceiling 8.0; remesure
+  Friend-MachineD **1.412×** (11.259 / 7.976 µs). Measure-only leftover
+  (Pair 766). Over-1× booked. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_apply_overrides`
+  (`sdk-settings-apply-overrides` vs applyOverrides). Observed `sao_prov` /
+  `sao_last` / `sao_len` / `sao_base` / `sao_n` exact. n=5 **6.960×**
+  (45.476 / 6.534 µs) on host `cursor`, ceiling 8.0; remesure
+  Friend-MachineD **7.583×** (47.291 / 6.236 µs). Measure-only leftover
+  (Pair 767). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_model_thinking_level`
+  (`sdk-settings-model-thinking-level` vs getModelThinkingLevel). Observed
+  `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` exact. n=5
+  **4.323×** (16.293 / 3.769 µs) on host `cursor`, ceiling 8.0; remesure
+  Friend-MachineD **5.346×** (16.830 / 3.148 µs). Measure-only leftover
+  (Pair 768). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.records_project_first`
   (`package-update-records-project-first` vs project-then-user collect).
   Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` exact.

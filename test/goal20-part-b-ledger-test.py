@@ -825,12 +825,27 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("rpc_type", paired.OBSERVED_EXACT["settings_load"])
 
 
+
     def test_settings_load_sdk_default_leftovers_wired(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         for key, obs in (
             ("sdk_default_provider", ("sdp_hit", "sdp_n")),
             ("sdk_default_model", ("sdm_hit", "sdm_n")),
             ("sdk_retry_settings", ("srs_en", "srs_n")),
+        ):
+            full = f"settings_load.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["settings_load"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
+
+    def test_settings_load_sdk_idle_override_thinking_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("sdk_http_idle_timeout", ("shi_hit", "shi_n")),
+            ("sdk_apply_overrides", ("sao_prov", "sao_n")),
+            ("sdk_model_thinking_level", ("smt_hit", "smt_n")),
         ):
             full = f"settings_load.{key}"
             self.assertIn(full, RECORD.METRIC_KEYS)

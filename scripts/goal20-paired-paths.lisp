@@ -139,6 +139,9 @@
 ;;;; 760. settings_load read-cli-config vs JSON.parse config.json
 ;;;; 761. settings_load provider-config-secrets vs apiKey/oauth/env secrets
 ;;;; 762. settings_load resolve-provider-config vs createProvider/openaiProvider construct
+;;;; 766. settings_load sdk-settings-http-idle-timeout-ms vs SettingsManager.getHttpIdleTimeoutMs
+;;;; 767. settings_load sdk-settings-apply-overrides vs SettingsManager.applyOverrides
+;;;; 768. settings_load sdk-settings-model-thinking-level vs SettingsManager.getModelThinkingLevel
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 254. agent_conditions error-slot probe vs agent error shapes
 ;;;; 257. execution_env exists/remove/temps vs NodeExecutionEnv exists/remove/createTemp*
@@ -575,6 +578,9 @@
     ("settings_load.sdk_default_provider" . 50)
     ("settings_load.sdk_default_model" . 50)
     ("settings_load.sdk_retry_settings" . 50)
+    ("settings_load.sdk_http_idle_timeout" . 50)
+    ("settings_load.sdk_apply_overrides" . 50)
+    ("settings_load.sdk_model_thinking_level" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4414,6 +4420,97 @@
             0)
         5)))))
 
+(defun leftover-sdk-http-idle-caught (manager)
+  (handler-case
+      (progn
+        (cadr-cli::sdk-settings-http-idle-timeout-ms manager)
+        0)
+    (cadr-ai:configuration-error () 1)
+    (error () 0)))
+
+(defun run-settings-load-sdk-http-idle-timeout ()
+  ;; Leftover sibling: SDK httpIdleTimeoutMs. Not stream-chat.
+  (let ((hit
+          (cadr-cli::make-memory-sdk-settings-manager
+           (cadr-ai::json-object "httpIdleTimeoutMs" 120000)))
+        (empty (cadr-cli::make-memory-sdk-settings-manager))
+        (bad
+          (cadr-cli::make-memory-sdk-settings-manager
+           (cadr-ai::json-object "httpIdleTimeoutMs" "nope"))))
+    (list
+     (if (= (cadr-cli::sdk-settings-http-idle-timeout-ms hit) 120000)
+         1
+         0)
+     (if (= (cadr-cli::sdk-settings-http-idle-timeout-ms empty) 300000)
+         1
+         0)
+     (leftover-sdk-http-idle-caught bad)
+     (if (integerp (cadr-cli::sdk-settings-http-idle-timeout-ms hit))
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-apply-overrides ()
+  ;; Leftover sibling: SDK overlay merge. Not login I/O.
+  (let ((manager (leftover-sdk-settings-fixture)))
+    (cadr-cli::sdk-settings-apply-overrides
+     manager
+     (cadr-ai::json-object "defaultModel" "gpt-4o"))
+    (cadr-cli::sdk-settings-apply-overrides
+     manager
+     (cadr-ai::json-object "defaultModel" "gpt-5"))
+    (list
+     (if (string=
+          (cadr-cli::sdk-settings-default-provider manager)
+          "openai")
+         1
+         0)
+     (if (string=
+          (cadr-cli::sdk-settings-default-model manager)
+          "gpt-5")
+         1
+         0)
+     (length
+      (or (cadr-cli::sdk-settings-default-model manager) ""))
+     (if (string=
+          (cadr-cli::sdk-settings-default-model
+           (leftover-sdk-settings-fixture))
+          "gpt-4")
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-model-thinking-level ()
+  ;; Leftover sibling: per-model thinking. Not stream-chat.
+  (let ((manager
+          (cadr-cli::make-memory-sdk-settings-manager
+           (cadr-ai::json-object
+            "modelThinkingLevels"
+            (cadr-ai::json-object "openai/gpt-4" "high"))))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (eq
+          (cadr-cli::sdk-settings-model-thinking-level
+           manager "openai" "gpt-4")
+          :high)
+         1
+         0)
+     (if (null
+          (cadr-cli::sdk-settings-model-thinking-level
+           empty "openai" "gpt-4"))
+         1
+         0)
+     (if (null
+          (cadr-cli::sdk-settings-model-thinking-level
+           manager "anthropic" "claude"))
+         1
+         0)
+     (if (symbolp
+          (cadr-cli::sdk-settings-model-thinking-level
+           manager "openai" "gpt-4"))
+         1
+         0)
+     5)))
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4717,7 +4814,13 @@
               (sdk-default-model
                 (run-settings-load-sdk-default-model))
               (sdk-retry-settings
-                (run-settings-load-sdk-retry-settings)))
+                (run-settings-load-sdk-retry-settings))
+              (sdk-http-idle-timeout
+                (run-settings-load-sdk-http-idle-timeout))
+              (sdk-apply-overrides
+                (run-settings-load-sdk-apply-overrides))
+              (sdk-model-thinking-level
+                (run-settings-load-sdk-model-thinking-level)))
         (json-object
          "observed"
          (json-object
@@ -4823,7 +4926,22 @@
           "srs_max" (nth 1 sdk-retry-settings)
           "srs_base" (nth 2 sdk-retry-settings)
           "srs_empty" (nth 3 sdk-retry-settings)
-          "srs_n" (nth 4 sdk-retry-settings))
+          "srs_n" (nth 4 sdk-retry-settings)
+          "shi_hit" (nth 0 sdk-http-idle-timeout)
+          "shi_def" (nth 1 sdk-http-idle-timeout)
+          "shi_bad" (nth 2 sdk-http-idle-timeout)
+          "shi_int" (nth 3 sdk-http-idle-timeout)
+          "shi_n" (nth 4 sdk-http-idle-timeout)
+          "sao_prov" (nth 0 sdk-apply-overrides)
+          "sao_last" (nth 1 sdk-apply-overrides)
+          "sao_len" (nth 2 sdk-apply-overrides)
+          "sao_base" (nth 3 sdk-apply-overrides)
+          "sao_n" (nth 4 sdk-apply-overrides)
+          "smt_hit" (nth 0 sdk-model-thinking-level)
+          "smt_miss" (nth 1 sdk-model-thinking-level)
+          "smt_other" (nth 2 sdk-model-thinking-level)
+          "smt_sym" (nth 3 sdk-model-thinking-level)
+          "smt_n" (nth 4 sdk-model-thinking-level))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -4926,7 +5044,22 @@
          (collect "settings_load.sdk_retry_settings"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-sdk-retry-settings))))))))))
+                      (run-settings-load-sdk-retry-settings))))
+         "sdk_http_idle_timeout"
+         (collect "settings_load.sdk_http_idle_timeout"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-http-idle-timeout))))
+         "sdk_apply_overrides"
+         (collect "settings_load.sdk_apply_overrides"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-apply-overrides))))
+         "sdk_model_thinking_level"
+         (collect "settings_load.sdk_model_thinking_level"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-model-thinking-level))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -34332,6 +34465,12 @@
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-model"
       "settings_load.sdk_retry_settings"
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-retry-settings"
+      "settings_load.sdk_http_idle_timeout"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-http-idle-timeout-ms"
+      "settings_load.sdk_apply_overrides"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-apply-overrides"
+      "settings_load.sdk_model_thinking_level"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-model-thinking-level"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"

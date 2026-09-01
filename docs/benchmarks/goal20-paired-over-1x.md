@@ -613,4 +613,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.records_project_first` | 0.6 | 0.5 | 1.06× | 8.00× | measure-only leftover 757; `package-update-records-project-first` vs project-then-user collect | invent pause；地板优化另刀 |
 | `package_manager.candidate_record` | 7.8 | 2.5 | 3.05× | 20.00× | measure-only leftover 758; `package-update-candidate-record-p` vs git/unpinned/exists; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `package_manager.update_offline` | 0.4 | 0.3 | 1.57× | 8.00× | measure-only leftover 759; `check-for-available-package-updates` offline vs isOfflineModeEnabled | invent pause；地板优化另刀 |
+| `settings_load.sdk_http_idle_timeout` | 11.3 | 8.0 | 1.41× | 8.00× | measure-only leftover 766; `sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs | invent pause；地板优化另刀 |
+| `settings_load.sdk_apply_overrides` | 47.3 | 6.2 | 7.58× | 8.00× | measure-only leftover 767; `sdk-settings-apply-overrides` vs applyOverrides | invent pause；地板优化另刀 |
+| `settings_load.sdk_model_thinking_level` | 16.8 | 3.1 | 5.35× | 8.00× | measure-only leftover 768; `sdk-settings-model-thinking-level` vs getModelThinkingLevel | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
