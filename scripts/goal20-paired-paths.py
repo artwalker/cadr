@@ -6149,6 +6149,34 @@ def parse_only_enforce(values: list[str]) -> frozenset[str] | None:
     return frozenset(keys)
 
 
+def timed_metric_slot(report: dict, group: str, name: str) -> dict | None:
+    """Return a timed collect slot, or None for observed-only METRICS names.
+
+    Leftover mill restored unused slugs into METRICS without a median_us
+    collect. Those names live under observed, not under metrics[group][name].
+    """
+    groups = report.get("metrics")
+    if not isinstance(groups, dict):
+        return None
+    named = groups.get(group)
+    if not isinstance(named, dict):
+        return None
+    slot = named.get(name)
+    if not isinstance(slot, dict):
+        return None
+    if "median_us" not in slot or "mad_us" not in slot:
+        return None
+    return slot
+
+
+def timed_metric_ratio(cadr: dict, pi: dict, group: str, name: str) -> float | None:
+    cadr_metric = timed_metric_slot(cadr, group, name)
+    pi_metric = timed_metric_slot(pi, group, name)
+    if cadr_metric is None or pi_metric is None:
+        return None
+    return cadr_metric["median_us"] / max(1e-9, pi_metric["median_us"])
+
+
 def check_ratios(
     cadr: dict,
     pi: dict,
@@ -6160,8 +6188,23 @@ def check_ratios(
     for group, names in METRICS.items():
         for name in names:
             key = f"{group}.{name}"
-            cadr_metric = cadr["metrics"][group][name]
-            pi_metric = pi["metrics"][group][name]
+            cadr_metric = timed_metric_slot(cadr, group, name)
+            pi_metric = timed_metric_slot(pi, group, name)
+            if cadr_metric is None and pi_metric is None:
+                if only_enforce is not None and key in only_enforce:
+                    check(
+                        False,
+                        f"{key} is not a timed median_us slot on both reports",
+                        failures,
+                    )
+                continue
+            if cadr_metric is None or pi_metric is None:
+                check(
+                    False,
+                    f"{key} timed median_us slot present on only one report",
+                    failures,
+                )
+                continue
             ratio = cadr_metric["median_us"] / max(1e-9, pi_metric["median_us"])
             ceiling = RATIO_CEILINGS[key]
             limit = paired_limit_us(
@@ -6248,12 +6291,13 @@ def main() -> int:
                     "only_enforce": sorted(only_enforce) if only_enforce else None,
                     "failures": failures,
                     "ratios": {
-                        f"{group}.{name}": (
-                            cadr["metrics"][group][name]["median_us"]
-                            / max(1e-9, pi["metrics"][group][name]["median_us"])
-                        )
+                        f"{group}.{name}": ratio
                         for group, names in METRICS.items()
                         for name in names
+                        if (
+                            ratio := timed_metric_ratio(cadr, pi, group, name)
+                        )
+                        is not None
                     },
                     "ceilings": RATIO_CEILINGS,
                     "notes": notes,

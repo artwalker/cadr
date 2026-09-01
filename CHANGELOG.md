@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 pair gate: skip METRICS names that have no timed `median_us`
+  slot on both reports, and fail `--only-enforce` when it names one.
+  `record-paired-paths.py` inherits missing official keys from the
+  previous history entry. Leftover mill observed-key pollution no longer
+  makes a freeze `EXIT:2` (`parsed_provider`). Does not reclassify files
+  or mark G.17. `nextPairNum` left unchanged.
+
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_extensions_install` slugs on `src/cadr-cli/extensions/installer.lisp`,
   `loader.lisp`, and `llama/extension.lisp`. n=5 freeze on host `cursor`.

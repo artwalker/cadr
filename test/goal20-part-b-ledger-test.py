@@ -4197,6 +4197,56 @@ class TestPairedPathRecord(unittest.TestCase):
             )
             self.assertEqual(markdown.count("GOAL20_PAIRED_PATHS_START"), 1)
 
+    def test_check_ratios_skips_observed_only_metrics_names(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        cadr = fake_cadr(quick=False)
+        pi = fake_cadr(quick=False)
+        for report in (cadr, pi):
+            report["metrics"]["cli_dispatch"].pop("parsed_provider", None)
+        failures: list[str] = []
+        summary = paired.check_ratios(cadr, pi, True, failures, None)
+        self.assertEqual(failures, [])
+        self.assertTrue(any(item.startswith("cli_dispatch.argv_parse=") for item in summary))
+        self.assertFalse(
+            any("parsed_provider" in item for item in summary)
+        )
+
+    def test_only_enforce_fails_when_named_slot_is_not_timed(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        cadr = fake_cadr(quick=False)
+        pi = fake_cadr(quick=False)
+        failures: list[str] = []
+        paired.check_ratios(
+            cadr,
+            pi,
+            True,
+            failures,
+            frozenset({"cli_dispatch.parsed_provider"}),
+        )
+        self.assertTrue(
+            any("parsed_provider" in item and "timed" in item for item in failures)
+        )
+
+    def test_timed_metric_slot_rejects_median_without_mad(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        report = {"metrics": {"cli_dispatch": {"argv_parse": {"median_us": 1.0}}}}
+        self.assertIsNone(paired.timed_metric_slot(report, "cli_dispatch", "argv_parse"))
+
+    def test_build_entry_inherits_missing_official_keys(self) -> None:
+        cadr = fake_cadr()
+        summary = fake_summary(cadr)
+        dropped = "cli_dispatch.help_render"
+        summary["ratios"].pop(dropped)
+        previous = RECORD.build_entry(fake_summary(cadr), cadr, "2026-09-01T00:00:00Z")
+        entry = RECORD.build_entry(
+            summary,
+            cadr,
+            "2026-09-01T01:00:00Z",
+            previous["metrics"],
+        )
+        self.assertEqual(entry["metrics"][dropped], previous["metrics"][dropped])
+        self.assertIn("cli_dispatch.argv_parse", entry["metrics"])
+
 
 class TestNativeImageHistory(unittest.TestCase):
     def test_extract_omits_bytes_when_absent(self) -> None:
