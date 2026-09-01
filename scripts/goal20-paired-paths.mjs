@@ -403,6 +403,9 @@ const REPETITIONS = {
 	"evals_harness.matching_hello_call": 50,
 	"evals_harness.authoring_judge": 50,
 	"evals_harness.source_bundle": 50,
+	"evals_harness.bundle_tool_names": 50,
+	"evals_harness.visible_extension_bundles": 50,
+	"evals_harness.authoring_harness_table": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -12077,13 +12080,38 @@ function leftoverAuthoringJudge(result) {
 }
 
 
-function leftoverHelloBundle(id, tools) {
-	return { id, path: id, tools: tools.map((name) => ({ name })) };
+function leftoverHelloBundle(id, tools, hiddenP = false) {
+	return {
+		id,
+		path: id,
+		tools: tools.map((name) => ({ name })),
+		hiddenP: Boolean(hiddenP),
+	};
 }
 
 
 function leftoverExtensionBundleToolNames(bundle) {
 	return (bundle?.tools || []).map((tool) => tool.name);
+}
+
+
+function leftoverHelloExtensionManager(bundles) {
+	return { host: { snapshot: { bundles: bundles || [] } } };
+}
+
+
+function leftoverVisibleExtensionBundles(manager) {
+	return (manager?.host?.snapshot?.bundles || []).filter(
+		(bundle) => !bundle.hiddenP,
+	);
+}
+
+
+function leftoverExtensionAuthoringHarnessTable() {
+	return [
+		{ name: "system-prompt-without-docs", repetition: 1 },
+		{ name: "default-system-prompt", repetition: 1 },
+	];
 }
 
 
@@ -12164,6 +12192,56 @@ function runEvalsHarnessSourceBundle() {
 				? 1
 				: 0,
 		esb_n: 5,
+	};
+}
+
+
+function runEvalsHarnessBundleToolNames() {
+	const hello = leftoverHelloBundle("hello", ["hello"]);
+	const multi = leftoverHelloBundle("multi", ["hello", "read"]);
+	const empty = leftoverHelloBundle("empty", []);
+	const helloNames = leftoverExtensionBundleToolNames(hello);
+	const multiNames = leftoverExtensionBundleToolNames(multi);
+	const emptyNames = leftoverExtensionBundleToolNames(empty);
+	return {
+		ebt_hello: JSON.stringify(helloNames) === JSON.stringify(["hello"]) ? 1 : 0,
+		ebt_multi:
+			JSON.stringify(multiNames) === JSON.stringify(["hello", "read"]) ? 1 : 0,
+		ebt_empty: emptyNames.length === 0 ? 1 : 0,
+		ebt_eq: JSON.stringify(helloNames) !== JSON.stringify(multiNames) ? 1 : 0,
+		ebt_n: 5,
+	};
+}
+
+
+function runEvalsHarnessVisibleExtensionBundles() {
+	const hello = leftoverHelloBundle("hello", ["hello"]);
+	const hidden = leftoverHelloBundle("secret", ["hide"], true);
+	const visible = leftoverVisibleExtensionBundles(
+		leftoverHelloExtensionManager([hello, hidden]),
+	);
+	const hiddenOnly = leftoverVisibleExtensionBundles(
+		leftoverHelloExtensionManager([hidden]),
+	);
+	const empty = leftoverVisibleExtensionBundles(leftoverHelloExtensionManager([]));
+	return {
+		veb_vis: visible[0] === hello ? 1 : 0,
+		veb_hid: hiddenOnly.length === 0 ? 1 : 0,
+		veb_empty: empty.length === 0 ? 1 : 0,
+		veb_nvis: visible.length === 1 ? 1 : 0,
+		veb_n: 5,
+	};
+}
+
+
+function runEvalsHarnessAuthoringHarnessTable() {
+	const rows = leftoverExtensionAuthoringHarnessTable();
+	return {
+		eht_len: rows.length === 2 ? 1 : 0,
+		eht_base: rows[0]?.name === "system-prompt-without-docs" ? 1 : 0,
+		eht_cand: rows[1]?.name === "default-system-prompt" ? 1 : 0,
+		eht_rep: rows[0]?.repetition === 1 ? 1 : 0,
+		eht_n: 5,
 	};
 }
 
@@ -12315,6 +12393,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessMatchingHelloCall(),
 		...runEvalsHarnessAuthoringJudge(),
 		...runEvalsHarnessSourceBundle(),
+		...runEvalsHarnessBundleToolNames(),
+		...runEvalsHarnessVisibleExtensionBundles(),
+		...runEvalsHarnessAuthoringHarnessTable(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -12449,6 +12530,21 @@ async function measureEvalsHarness() {
 		source_bundle: await collect("evals_harness.source_bundle", () => {
 			return () => runEvalsHarnessSourceBundle();
 		}),
+		bundle_tool_names: await collect("evals_harness.bundle_tool_names", () => {
+			return () => runEvalsHarnessBundleToolNames();
+		}),
+		visible_extension_bundles: await collect(
+			"evals_harness.visible_extension_bundles",
+			() => {
+				return () => runEvalsHarnessVisibleExtensionBundles();
+			},
+		),
+		authoring_harness_table: await collect(
+			"evals_harness.authoring_harness_table",
+			() => {
+				return () => runEvalsHarnessAuthoringHarnessTable();
+			},
+		),
 		observed,
 	};
 }
@@ -36705,6 +36801,12 @@ const result = {
 				"packages/evals/src/extensions.eval.ts ExtensionAuthoringJudge (cadr judge-extension-authoring-result)",
 			"evals_harness.source_bundle":
 				"packages/evals/src/extensions.eval.ts hello extension bundle pick (cadr extension-source-bundle)",
+			"evals_harness.bundle_tool_names":
+				"packages/evals/src/extensions.eval.ts leftover bundle tool names (cadr extension-bundle-tool-names)",
+			"evals_harness.visible_extension_bundles":
+				"packages/evals/src/extensions.eval.ts leftover visible bundles (cadr visible-extension-bundles)",
+			"evals_harness.authoring_harness_table":
+				"packages/evals/src/extensions.eval.ts leftover authoring harness table (cadr extension-authoring-harness-table)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
