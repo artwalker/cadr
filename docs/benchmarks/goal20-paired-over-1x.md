@@ -571,4 +571,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thafxxx_ok` | 13.551 | 10.831 | 1.251× | 8.00× | measure-only leftover 1396; `thinking-selector-apply-filter` vs leftover applyFilter | invent pause；地板优化另刀 |
 | `cli_selectors.thmvxxx_ok` | 0.633 | 0.378 | 1.675× | 8.00× | measure-only leftover 1399; `thinking-selector-move` vs leftover wrap selected | invent pause；地板优化另刀 |
 | `cli_selectors.thhrxxx_ok` | 143.544 | 5.996 | 23.939× | 30.00× | measure-only leftover 1400; `thinking-selector-handle-raw-input` vs leftover handleInput | invent pause；地板优化另刀 |
+| `cli_selectors.trsvxxx_ok` | 76.972 | 15.197 | 5.065× | 8.00× | measure-only leftover 1402; `trust-option-saved-p` vs leftover isSavedOption | invent pause；地板优化另刀 |
+| `cli_selectors.trmkxxx_ok` | 131.369 | 51.480 | 2.552× | 8.00× | measure-only leftover 1403; `make-trust-selector-state` vs leftover TrustSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.trrsxxx_ok` | 1023.386 | 111.757 | 9.157× | 15.00× | measure-only leftover 1404; `render-trust-selector` vs leftover TrustSelectorComponent layout | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

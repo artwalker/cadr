@@ -9199,6 +9199,30 @@ Leftover sibling of Pair 1399. Does not remount `thinking_selector_handle_raw_in
 
 Leftover sibling of Pairs 1399–1400. Does not remount `thinking_selector_handle_event` / leftover 1363 `henxxx_ok` / leftover 1045 `th_hev` / leftover 1122 `hev_ok` / leftover 1203 `thhe_ok` / leftover 1269 `thhex_ok` / leftover 1335 `thhexx_ok`. Timed work is down / text dispatch. Observed `tshe_down` / `tshe_text` are exact. First n=5 freeze **0.914×** (3.238 / 3.542 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1402 — `cli_selectors` (trsvxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trsvxxx_ok` | `trust-option-saved-p` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector isSavedOption |
+
+Leftover sibling of leftover 1336–1338 on the same needs-pair file (unused slug after leftover 1048 `tr_sv` / leftover 1123 `sv_ok` / leftover 1204 `trsv_ok` / leftover 1270 `trsvx_ok` / leftover 1336 `trsvxx_ok`). Does not remount `trust_option_saved_p`. Timed work is nil / distrust saved-option. Observed `tosp_nil` / `tosp_distrust` are exact. First n=5 freeze **5.065×** (76.972 / 15.197 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1403 — `cli_selectors` (trmkxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trmkxxx_ok` | `make-trust-selector-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent constructor |
+
+Leftover sibling of Pair 1402. Does not remount `make_trust_selector_state` / leftover 1048 `tr_mk` / leftover 1124 `mk_ok` / leftover 1205 `trmk_ok` / leftover 1271 `trmkx_ok` / leftover 1337 `trmkxx_ok`. Timed work is child / single constructor. Observed `mtss_child` / `mtss_single` are exact. First n=5 freeze **2.552×** (131.369 / 51.480 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1404 — `cli_selectors` (trrsxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trrsxxx_ok` | `render-trust-selector` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent layout |
+
+Leftover sibling of Pairs 1402–1403. Does not remount `render_trust_selector` / leftover 1048 `tr_rnd` / leftover 1125 `trn_ok` / leftover 1206 `trrs_ok` / leftover 1272 `trrsx_ok` / leftover 1338 `trrsxx_ok`. Timed work is default / single layout. Observed `rtrs_default` / `rtrs_single` are exact. First n=5 freeze **9.157×** (1023.386 / 111.757 µs) on host `cursor`, ceiling 15.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
