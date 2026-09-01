@@ -8465,6 +8465,7 @@ async function measurePackageManager() {
 		}),
 		git_object_id: await collect("package_manager.git_object_id", () => {
 			return () => runPackageManagerGitObjectId();
+		}),
 		resource_item_key: await collect("package_manager.resource_item_key", () => {
 			return () => runPackageManagerResourceItemKey();
 		}),
