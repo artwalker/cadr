@@ -954,7 +954,7 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.manual_migration_command": 50,
 	"cli_bootstrap_sessions.managed_binary_names": 50,
 	"cli_bootstrap_sessions.migration_guide_url": 50,
-	"cli_bootstrap_sessions.extensions_doc_url": 50
+	"cli_bootstrap_sessions.extensions_doc_url": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
