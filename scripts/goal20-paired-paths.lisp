@@ -1292,6 +1292,9 @@
     ("cli_bootstrap_sessions.session_command_stats" . 50)
     ("cli_bootstrap_sessions.session_usage_breakdown" . 50)
     ("cli_bootstrap_sessions.session_tree_label_timestamps" . 50)
+    ("cli_bootstrap_sessions.session_tree_tool_calls" . 50)
+    ("cli_bootstrap_sessions.session_compaction_display_state" . 50)
+    ("cli_bootstrap_sessions.write_hotkeys_command" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -35683,6 +35686,123 @@
   (or (gethash key table) ""))
 
 
+(defun leftover-display-session ()
+  ;; Message-only parent chain: session-display-messages walks
+  ;; session-context-entries (leaf + by-id). No compaction entry
+  ;; (invalid first-kept-id errors).
+  (let* ((u1
+           (cadr-agent::make-session-entry
+            :type :message
+            :id "u1"
+            :message (cadr-ai:make-user-message :content "hi")))
+         (a1
+           (cadr-agent::make-session-entry
+            :type :message
+            :id "a1"
+            :parent-id "u1"
+            :message
+            (cadr-ai:make-assistant-message
+             :provider :openai
+             :model "gpt-4"
+             :content
+             (list
+              (cadr-ai:make-text-content :text "ok")
+              (cadr-ai:make-tool-call :id "t1" :name "read")))))
+         (r1
+           (cadr-agent::make-session-entry
+            :type :message
+            :id "r1"
+            :parent-id "a1"
+            :message
+            (cadr-ai:make-tool-result-message
+             :tool-call-id "t1"
+             :tool-name "read"
+             :content nil)))
+         (session
+           (cadr-agent::%make-session
+            :id "s"
+            :%entries (list u1 a1 r1)
+            :leaf-id "r1")))
+    (setf (gethash "u1" (cadr-agent::session-by-id session)) u1
+          (gethash "a1" (cadr-agent::session-by-id session)) a1
+          (gethash "r1" (cadr-agent::session-by-id session)) r1)
+    session))
+
+
+(defun leftover-first-message-role (messages)
+  (let ((message (first messages)))
+    (cond
+      ((typep message 'cadr-ai:user-message) "user")
+      ((typep message 'cadr-ai:assistant-message) "assistant")
+      ((typep message 'cadr-ai:tool-result-message) "toolResult")
+      (t ""))))
+
+
+(defun leftover-tool-call-name (table id)
+  (or (getf (gethash id table) :name) ""))
+
+
+(defun run-cli-bootstrap-session-tree-tool-calls ()
+  ;; Leftover on sessions.lisp: tool-call id→name map. Not tree TUI.
+  (let ((empty
+          (cadr-cli::session-tree-tool-calls
+           (cadr-agent::%make-session :id "e" :%entries nil)))
+        (filled
+          (cadr-cli::session-tree-tool-calls
+           (leftover-stats-session))))
+    (list
+     (hash-table-count empty)
+     (hash-table-count filled)
+     (leftover-tool-call-name filled "t1")
+     (if (gethash "t1" filled) 1 0)
+     (leftover-tool-call-name filled "missing"))))
+
+
+(defun leftover-compaction-display-values (session)
+  (multiple-value-bind (messages summary kept)
+      (cadr-cli::session-compaction-display-state session)
+    (list
+     (length messages)
+     (if summary 1 0)
+     (if kept 1 0)
+     (leftover-first-message-role messages))))
+
+
+(defun run-cli-bootstrap-session-compaction-display-state ()
+  ;; Leftover on sessions.lisp: display projection + nil summary/kept.
+  ;; Not /compact TUI. Message-only session (no invalid compaction boundary).
+  (let ((empty
+          (leftover-compaction-display-values
+           (cadr-agent::%make-session :id "e" :%entries nil)))
+        (filled
+          (leftover-compaction-display-values
+           (leftover-display-session))))
+    (list
+     (nth 0 empty)
+     (nth 0 filled)
+     (nth 1 filled)
+     (nth 2 filled)
+     (nth 3 filled))))
+
+
+(defun leftover-write-hotkeys-text (&optional bindings)
+  (with-output-to-string (out)
+    (cadr-cli::write-hotkeys-command out bindings)))
+
+
+(defun run-cli-bootstrap-write-hotkeys-command ()
+  ;; Leftover on sessions.lisp: Keyboard Shortcuts + definitions.
+  ;; Not hotkeys-command-markdown (keybinding display can drift).
+  (let ((plain (leftover-write-hotkeys-text))
+        (bound (leftover-write-hotkeys-text '(("save" "ctrl+s")))))
+    (list
+     (length plain)
+     (if (search "Keyboard Shortcuts" plain) 1 0)
+     (if (search "ctrl+c" plain) 1 0)
+     (length bound)
+     (if (search "Configured bindings" bound) 1 0))))
+
+
 (defun run-cli-bootstrap-session-tree-label-timestamps ()
   ;; Leftover on sessions.lisp: label timestamp map. Not tree TUI.
   (let ((empty
@@ -35729,7 +35849,11 @@
          (fork-users (run-cli-bootstrap-session-user-messages-for-forking))
          (command-stats (run-cli-bootstrap-session-command-stats))
          (usage-breakdown (run-cli-bootstrap-session-usage-breakdown))
-         (label-timestamps (run-cli-bootstrap-session-tree-label-timestamps)))
+         (label-timestamps (run-cli-bootstrap-session-tree-label-timestamps))
+         (tree-tool-calls (run-cli-bootstrap-session-tree-tool-calls))
+         (compaction-display
+          (run-cli-bootstrap-session-compaction-display-state))
+         (write-hotkeys (run-cli-bootstrap-write-hotkeys-command)))
     (json-object
      "observed"
      (json-object
@@ -35863,7 +35987,22 @@
       "stl_n" (nth 1 label-timestamps)
       "stl_a" (nth 2 label-timestamps)
       "stl_b" (nth 3 label-timestamps)
-      "stl_c" (nth 4 label-timestamps))
+      "stl_c" (nth 4 label-timestamps)
+      "sttc_empty" (nth 0 tree-tool-calls)
+      "sttc_n" (nth 1 tree-tool-calls)
+      "sttc_t1" (nth 2 tree-tool-calls)
+      "sttc_args" (nth 3 tree-tool-calls)
+      "sttc_miss" (nth 4 tree-tool-calls)
+      "scds_empty" (nth 0 compaction-display)
+      "scds_n" (nth 1 compaction-display)
+      "scds_sum" (nth 2 compaction-display)
+      "scds_kept" (nth 3 compaction-display)
+      "scds_first" (nth 4 compaction-display)
+      "whc_plain" (nth 0 write-hotkeys)
+      "whc_hdr" (nth 1 write-hotkeys)
+      "whc_ctrlc" (nth 2 write-hotkeys)
+      "whc_bound" (nth 3 write-hotkeys)
+      "whc_cfg" (nth 4 write-hotkeys))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -35994,7 +36133,22 @@
      (collect "cli_bootstrap_sessions.session_tree_label_timestamps"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-session-tree-label-timestamps)))))))
+                  (run-cli-bootstrap-session-tree-label-timestamps))))
+     "session_tree_tool_calls"
+     (collect "cli_bootstrap_sessions.session_tree_tool_calls"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-tree-tool-calls))))
+     "session_compaction_display_state"
+     (collect "cli_bootstrap_sessions.session_compaction_display_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-compaction-display-state))))
+     "write_hotkeys_command"
+     (collect "cli_bootstrap_sessions.write_hotkeys_command"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-write-hotkeys-command)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -37924,6 +38078,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-usage-breakdown"
       "cli_bootstrap_sessions.session_tree_label_timestamps"
       "src/cadr-cli/bootstrap/sessions.lisp session-tree-label-timestamps"
+      "cli_bootstrap_sessions.session_tree_tool_calls"
+      "src/cadr-cli/bootstrap/sessions.lisp session-tree-tool-calls"
+      "cli_bootstrap_sessions.session_compaction_display_state"
+      "src/cadr-cli/bootstrap/sessions.lisp session-compaction-display-state"
+      "cli_bootstrap_sessions.write_hotkeys_command"
+      "src/cadr-cli/bootstrap/sessions.lisp write-hotkeys-command"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
