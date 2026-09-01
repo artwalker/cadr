@@ -783,6 +783,15 @@
     ("cli_support.watch_retry_delay" . 50)
     ("cli_support.close_watcher" . 50)
     ("cli_support.watch_signature" . 50)
+    ("cli_support.write_hello" . 5)
+    ("cli_support.write_overwrite" . 5)
+    ("cli_support.write_empty" . 5)
+    ("cli_support.editor_success" . 5)
+    ("cli_support.editor_fail" . 5)
+    ("cli_support.editor_empty" . 5)
+    ("cli_support.threads_absent" . 50)
+    ("cli_support.threads_current" . 50)
+    ("cli_support.threads_joined" . 5)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -16895,6 +16904,136 @@
      (if (and (consp hit) (= (length hit) 2)) 1 0))))
 
 
+(defun cli-support-atomic-write-path (name)
+  (merge-pathnames
+   (format nil "atomic-write/~A" name)
+   *scratch-directory*))
+
+
+(defun run-cli-support-write-hello ()
+  ;; Leftover 871: atomic-write-utf8 vs pi activateManagedRelease temp+rename.
+  (let ((path (cli-support-atomic-write-path "hello.txt")))
+    (ensure-directories-exist path)
+    (cadr-cli::atomic-write-utf8 path "hello")
+    (let ((text (uiop:read-file-string path)))
+      (list
+       (if (string= text "hello") 1 0)
+       (if (= (length text) 5) 1 0)
+       (if (probe-file path) 1 0)
+       3))))
+
+
+(defun run-cli-support-write-overwrite ()
+  ;; Leftover 872: second write replaces the first payload.
+  (let ((path (cli-support-atomic-write-path "over.txt")))
+    (ensure-directories-exist path)
+    (cadr-cli::atomic-write-utf8 path "first")
+    (cadr-cli::atomic-write-utf8 path "second")
+    (let ((text (uiop:read-file-string path)))
+      (list
+       (if (string= text "second") 1 0)
+       (if (search "first" text) 0 1)
+       (if (= (length text) 6) 1 0)
+       3))))
+
+
+(defun run-cli-support-write-empty ()
+  ;; Leftover 873: empty payload still creates the file.
+  (let ((path (cli-support-atomic-write-path "empty.txt")))
+    (ensure-directories-exist path)
+    (cadr-cli::atomic-write-utf8 path "")
+    (let ((text (uiop:read-file-string path)))
+      (list
+       (if (string= text "") 1 0)
+       (if (zerop (length text)) 1 0)
+       (if (probe-file path) 1 0)
+       3))))
+
+(defun run-cli-support-editor-success ()
+  ;; Leftover 868: edit-in-external-editor success vs pi true-exit complete.
+  (flet ((ok (text)
+           (cadr-cli::edit-in-external-editor
+            text
+            (lambda (path)
+              (declare (ignore path))
+              0))))
+    (let ((hello (ok "hello"))
+          (again (ok "hello"))
+          (no-nl (ok "hello")))
+      (list
+       (if (string= hello "hello") 1 0)
+       (if (= (length hello) 5) 1 0)
+       (if (string= again "hello") 1 0)
+       (if (string= no-nl "hello") 1 0)
+       4))))
+
+
+(defun run-cli-support-editor-fail ()
+  ;; Leftover 869: non-zero runner keeps original; pi false-exit is failed.
+  (flet ((bad (text)
+           (cadr-cli::edit-in-external-editor
+            text
+            (lambda (path)
+              (declare (ignore path))
+              1))))
+    (let ((keep (bad "keep-me"))
+          (empty (bad ""))
+          (twice (bad "keep-me")))
+      (list
+       (if (string= keep "keep-me") 1 0)
+       (if (string= empty "") 1 0)
+       (if (string= twice "keep-me") 1 0)
+       3))))
+
+
+(defun run-cli-support-editor-empty ()
+  ;; Leftover 870: empty and one-cell success payloads.
+  (flet ((ok (text)
+           (cadr-cli::edit-in-external-editor
+            text
+            (lambda (path)
+              (declare (ignore path))
+              0))))
+    (let ((empty (ok ""))
+          (one (ok "x")))
+      (list
+       (if (string= empty "") 1 0)
+       (if (zerop (length empty)) 1 0)
+       (if (string= one "x") 1 0)
+       (if (= (length one) 1) 1 0)
+       4))))
+
+(defun run-cli-support-threads-absent ()
+  ;; Leftover 886: cadr-cli wrapper on nil vs worker_threads absent.
+  (list
+   (if (eq (cadr-cli::stop-thread-for-cleanup nil) :absent) 1 0)
+   1))
+
+(defun run-cli-support-threads-current ()
+  ;; Leftover 887: cadr-cli wrapper on the current thread vs isMainThread.
+  (list
+   (if (eq
+        (cadr-cli::stop-thread-for-cleanup sb-thread:*current-thread*)
+        :current)
+       1
+       0)
+   1))
+
+(defun run-cli-support-threads-joined ()
+  ;; Leftover 888: cadr-cli wrapper on a finished thread vs Worker eval-exit.
+  (let* ((done
+           (sb-thread:make-thread
+            (lambda () :done)
+            :name "cadr-cli-support-threads-join"))
+         (joined
+           (progn
+             (sb-thread:join-thread done)
+             (cadr-cli::stop-thread-for-cleanup done))))
+    (list
+     (if (eq joined :joined) 1 0)
+     1)))
+
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let* ((ansi (run-cli-support-strip-ansi))
@@ -16918,7 +17057,16 @@
           (run-cli-support-watch-signature
            (namestring
             (merge-pathnames "cadr-goal20-watch-missing" *scratch-directory*))
-           (namestring watch-present))))
+           (namestring watch-present)))
+        (write-hello (run-cli-support-write-hello))
+        (write-overwrite (run-cli-support-write-overwrite))
+        (write-empty (run-cli-support-write-empty))
+        (editor-success (run-cli-support-editor-success))
+        (editor-fail (run-cli-support-editor-fail))
+        (editor-empty (run-cli-support-editor-empty))
+        (threads-absent (run-cli-support-threads-absent))
+        (threads-current (run-cli-support-threads-current))
+        (threads-joined (run-cli-support-threads-joined)))
     (json-object
      "observed"
      (json-object
@@ -17003,7 +17151,39 @@
       "cl_ok" (nth 2 close-watcher)
       "sg_miss" (nth 0 watch-signature)
       "sg_hit" (nth 1 watch-signature)
-      "sg_n" (nth 2 watch-signature))
+      "sg_n" (nth 2 watch-signature)
+      "awh_hello" (nth 0 write-hello)
+      "awh_len" (nth 1 write-hello)
+      "awh_file" (nth 2 write-hello)
+      "awh_n" (nth 3 write-hello)
+      "awo_second" (nth 0 write-overwrite)
+      "awo_no_first" (nth 1 write-overwrite)
+      "awo_len" (nth 2 write-overwrite)
+      "awo_n" (nth 3 write-overwrite)
+      "awe_ok" (nth 0 write-empty)
+      "awe_len" (nth 1 write-empty)
+      "awe_file" (nth 2 write-empty)
+      "awe_n" (nth 3 write-empty)
+      "eed_hello" (nth 0 editor-success)
+      "eed_len" (nth 1 editor-success)
+      "eed_round" (nth 2 editor-success)
+      "eed_nonl" (nth 3 editor-success)
+      "eed_n" (nth 4 editor-success)
+      "eef_orig" (nth 0 editor-fail)
+      "eef_empty" (nth 1 editor-fail)
+      "eef_twice" (nth 2 editor-fail)
+      "eef_n" (nth 3 editor-fail)
+      "eee_ok" (nth 0 editor-empty)
+      "eee_len" (nth 1 editor-empty)
+      "eee_x" (nth 2 editor-empty)
+      "eee_xlen" (nth 3 editor-empty)
+      "eee_n" (nth 4 editor-empty)
+      "cta_eq" (nth 0 threads-absent)
+      "cta_n" (nth 1 threads-absent)
+      "ctc_eq" (nth 0 threads-current)
+      "ctc_n" (nth 1 threads-current)
+      "ctj_eq" (nth 0 threads-joined)
+      "ctj_n" (nth 1 threads-joined))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -17094,7 +17274,52 @@
                       (merge-pathnames
                        "cadr-goal20-watch-missing"
                        *scratch-directory*))
-                     (namestring present)))))))))
+                     (namestring present))))))
+     "write_hello"
+     (collect "cli_support.write_hello"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-write-hello))))
+     "write_overwrite"
+     (collect "cli_support.write_overwrite"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-write-overwrite))))
+     "write_empty"
+     (collect "cli_support.write_empty"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-write-empty))))
+     "editor_success"
+     (collect "cli_support.editor_success"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-editor-success))))
+     "editor_fail"
+     (collect "cli_support.editor_fail"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-editor-fail))))
+     "editor_empty"
+     (collect "cli_support.editor_empty"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-editor-empty))))
+     "threads_absent"
+     (collect "cli_support.threads_absent"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-threads-absent))))
+     "threads_current"
+     (collect "cli_support.threads_current"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-threads-current))))
+     "threads_joined"
+     (collect "cli_support.threads_joined"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-threads-joined)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -33543,6 +33768,24 @@
       "src/cadr-cli/support/file-watcher.lisp close-watcher"
       "cli_support.watch_signature"
       "src/cadr-cli/support/file-watcher.lisp watched-path-signature"
+      "cli_support.write_hello"
+      "src/cadr-cli/support/atomic-write.lisp atomic-write-utf8"
+      "cli_support.write_overwrite"
+      "src/cadr-cli/support/atomic-write.lisp atomic-write-utf8"
+      "cli_support.write_empty"
+      "src/cadr-cli/support/atomic-write.lisp atomic-write-utf8"
+      "cli_support.editor_success"
+      "src/cadr-cli/support/external-editor.lisp edit-in-external-editor"
+      "cli_support.editor_fail"
+      "src/cadr-cli/support/external-editor.lisp edit-in-external-editor"
+      "cli_support.editor_empty"
+      "src/cadr-cli/support/external-editor.lisp edit-in-external-editor"
+      "cli_support.threads_absent"
+      "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup nil"
+      "cli_support.threads_current"
+      "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup current"
+      "cli_support.threads_joined"
+      "src/cadr-cli/support/threads.lisp stop-thread-for-cleanup joined"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"
