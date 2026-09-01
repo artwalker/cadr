@@ -19,6 +19,21 @@ tag/Release step.
   `sdk_settings_flush` **5.937×**, `sdk_compaction_enabled` **3.643×**).
   Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
   G.17 stays missing.
+- Goal 20 leftover: pair `evals_harness.matching_hello_call`
+  (`matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call).
+  Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` exact.
+  Measure-only leftover (Pair 778). Freeze pending n=5 `--only-enforce`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.authoring_judge`
+  (`judge-extension-authoring-result` vs ExtensionAuthoringJudge). Observed
+  `aj_pass` / `aj_src` / `aj_api` / `aj_resp` / `aj_n` exact. Do not compare
+  rationale copy. Measure-only leftover (Pair 779). Freeze pending n=5
+  `--only-enforce`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.source_bundle`
+  (`extension-source-bundle` vs hello-tool bundle pick). Observed
+  `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` exact.
+  Measure-only leftover (Pair 780). Freeze pending n=5 `--only-enforce`.
+  `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /

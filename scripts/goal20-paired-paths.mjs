@@ -388,6 +388,9 @@ const REPETITIONS = {
 	"evals_harness.rep_make": 50,
 	"evals_harness.fin_num": 50,
 	"evals_harness.art_meta": 50,
+	"evals_harness.matching_hello_call": 50,
+	"evals_harness.authoring_judge": 50,
+	"evals_harness.source_bundle": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -11251,6 +11254,201 @@ function leftoverReporterRunId(result) {
 }
 
 
+function leftoverMatchingHelloEvents({
+	name = "Bob",
+	content = "Hello, Bob!",
+	includeResult = true,
+} = {}) {
+	const call = {
+		type: "tool_call",
+		id: "hello-call",
+		name: "hello",
+		arguments: { name },
+	};
+	if (!includeResult) {
+		return [call];
+	}
+	return [
+		call,
+		{
+			type: "tool_result",
+			toolCallId: "hello-call",
+			name: "hello",
+			content,
+		},
+	];
+}
+
+
+function leftoverMatchingHelloToolCall(events) {
+	const list = events || [];
+	return list.some((call) => {
+		if (jsonString(call, "type") !== "tool_call") {
+			return false;
+		}
+		if (jsonString(call, "name") !== "hello") {
+			return false;
+		}
+		if (jsonString(call.arguments, "name") !== "Bob") {
+			return false;
+		}
+		const callId = call.id;
+		return list.some(
+			(result) =>
+				jsonString(result, "type") === "tool_result" &&
+				jsonString(result, "toolCallId") === String(callId ?? "") &&
+				result.error == null &&
+				jsonString(result, "content") === "Hello, Bob!",
+		);
+	});
+}
+
+
+function leftoverAuthoringOutput({
+	source = "(define-tool hello ())",
+	response = "Hello, Bob!",
+	tools = ["hello"],
+	errors = [],
+} = {}) {
+	return {
+		response,
+		extensionErrors: errors,
+		loadedExtensions: [
+			{
+				path: "/tmp/hello/extension.lisp",
+				tools,
+			},
+		],
+		extensionSource: source,
+	};
+}
+
+
+function leftoverAuthoringJudge(result) {
+	const output = result.output || {};
+	const source = output.extensionSource;
+	const failures = [];
+	if (typeof source !== "string") {
+		failures.push("generated extension source is unavailable");
+	} else {
+		if (!leftoverCanonicalApi(source)) {
+			failures.push("extension does not use the canonical cadr-agent extension API");
+		}
+		if (leftoverLegacyApi(source)) {
+			failures.push("extension uses a legacy TypeScript extension API");
+		}
+	}
+	if (jsonArrayItems(output.extensionErrors)?.length > 0) {
+		failures.push("extension loader reported errors");
+	}
+	if (
+		!(jsonArrayItems(output.loadedExtensions) || []).some((extension) =>
+			(jsonArrayItems(extension.tools) || []).includes("hello"),
+		)
+	) {
+		failures.push("no loaded extension registered the hello tool");
+	}
+	if (!leftoverMatchingHelloToolCall(result.events)) {
+		failures.push("no successful hello({ name: Bob }) call returned Hello, Bob!");
+	}
+	if (jsonString(output, "response") !== "Hello, Bob!") {
+		failures.push("final response was not exactly Hello, Bob!");
+	}
+	return { score: failures.length === 0 ? 1 : 0 };
+}
+
+
+function leftoverHelloBundle(id, tools) {
+	return { id, path: id, tools: tools.map((name) => ({ name })) };
+}
+
+
+function leftoverExtensionBundleToolNames(bundle) {
+	return (bundle?.tools || []).map((tool) => tool.name);
+}
+
+
+function leftoverExtensionSourceBundle(bundles) {
+	return (
+		(bundles || []).find((bundle) =>
+			leftoverExtensionBundleToolNames(bundle).includes("hello"),
+		) ||
+		(bundles || [])[0] ||
+		null
+	);
+}
+
+
+function runEvalsHarnessMatchingHelloCall() {
+	return {
+		mh_hit: leftoverMatchingHelloToolCall(
+			leftoverMatchingHelloEvents({ includeResult: true }),
+		)
+			? 1
+			: 0,
+		mh_alice: leftoverMatchingHelloToolCall(
+			leftoverMatchingHelloEvents({ name: "Alice", includeResult: true }),
+		)
+			? 0
+			: 1,
+		mh_empty: leftoverMatchingHelloToolCall(null) ? 0 : 1,
+		mh_no_res: leftoverMatchingHelloToolCall(
+			leftoverMatchingHelloEvents({ includeResult: false }),
+		)
+			? 0
+			: 1,
+		mh_n: 5,
+	};
+}
+
+
+function runEvalsHarnessAuthoringJudge() {
+	const pass = leftoverAuthoringJudge({
+		output: leftoverAuthoringOutput(),
+		events: leftoverMatchingHelloEvents({ includeResult: true }),
+	});
+	const missing = leftoverAuthoringJudge({
+		output: leftoverAuthoringOutput({ source: null }),
+		events: leftoverMatchingHelloEvents({ includeResult: true }),
+	});
+	const api = leftoverAuthoringJudge({
+		output: leftoverAuthoringOutput({ source: "(defun unrelated () nil)" }),
+		events: leftoverMatchingHelloEvents({ includeResult: true }),
+	});
+	const resp = leftoverAuthoringJudge({
+		output: leftoverAuthoringOutput({ response: "nope" }),
+		events: leftoverMatchingHelloEvents({ includeResult: true }),
+	});
+	return {
+		aj_pass: pass.score === 1 ? 1 : 0,
+		aj_src: missing.score === 0 ? 1 : 0,
+		aj_api: api.score === 0 ? 1 : 0,
+		aj_resp: resp.score === 0 ? 1 : 0,
+		aj_n: 5,
+	};
+}
+
+
+function runEvalsHarnessSourceBundle() {
+	const hello = leftoverHelloBundle("hello", ["hello"]);
+	const other = leftoverHelloBundle("other", ["read"]);
+	const picked = leftoverExtensionSourceBundle([other, hello]);
+	const fallback = leftoverExtensionSourceBundle([other]);
+	const empty = leftoverExtensionSourceBundle([]);
+	return {
+		esb_hello: picked === hello ? 1 : 0,
+		esb_first: fallback === other ? 1 : 0,
+		esb_empty: empty == null ? 1 : 0,
+		esb_tools:
+			JSON.stringify(leftoverExtensionBundleToolNames(hello)) ===
+			JSON.stringify(["hello"])
+				? 1
+				: 0,
+		esb_n: 5,
+	};
+}
+
+
 function leftoverArtifactReferenceJson(name, path) {
 	return { name, path };
 }
@@ -11395,6 +11593,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessMakeReporter(),
 		...runEvalsHarnessFiniteNumber(),
 		...runEvalsHarnessArtifactMetadata(),
+		...runEvalsHarnessMatchingHelloCall(),
+		...runEvalsHarnessAuthoringJudge(),
+		...runEvalsHarnessSourceBundle(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -11519,6 +11720,15 @@ async function measureEvalsHarness() {
 		}),
 		art_meta: await collect("evals_harness.art_meta", () => {
 			return () => runEvalsHarnessArtifactMetadata();
+		}),
+		matching_hello_call: await collect("evals_harness.matching_hello_call", () => {
+			return () => runEvalsHarnessMatchingHelloCall();
+		}),
+		authoring_judge: await collect("evals_harness.authoring_judge", () => {
+			return () => runEvalsHarnessAuthoringJudge();
+		}),
+		source_bundle: await collect("evals_harness.source_bundle", () => {
+			return () => runEvalsHarnessSourceBundle();
 		}),
 		observed,
 	};
@@ -35746,6 +35956,12 @@ const result = {
 				"packages/evals/src/vitest-evals/reporter.ts leftover replica of finite number keep",
 			"evals_harness.art_meta":
 				"packages/evals/src/vitest-evals/reporter.ts leftover replica of artifact metadata filter",
+			"evals_harness.matching_hello_call":
+				"packages/evals/src/extensions.eval.ts ExtensionAuthoringJudge hello-call (cadr matching-hello-tool-call-p)",
+			"evals_harness.authoring_judge":
+				"packages/evals/src/extensions.eval.ts ExtensionAuthoringJudge (cadr judge-extension-authoring-result)",
+			"evals_harness.source_bundle":
+				"packages/evals/src/extensions.eval.ts hello extension bundle pick (cadr extension-source-bundle)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
