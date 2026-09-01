@@ -36089,6 +36089,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
 			"cli_bootstrap_sessions.file_tags":
 				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
+			"cli_bootstrap_sessions.pb_ok":
+				"packages/coding-agent leftover replica of ! / !! bash extract (cadr parse-user-bash-input)",
+			"cli_bootstrap_sessions.rt_ok":
+				"packages/coding-agent leftover replica of textParts.join (cadr response-text)",
+			"cli_bootstrap_sessions.dp_ok":
+				"packages/coding-agent leftover replica of submit classify (cadr dispatch-user-input)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

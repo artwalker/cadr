@@ -83,6 +83,12 @@
 ;;;;      leftover 940-942: model-cycle-target-entry / model-scope-startup-line /
 ;;;;      process-cli-file-arguments (does not remount model_cycle /
 ;;;;      model_scope_line / process_files)
+;;;; 1012. cli_bootstrap_sessions pb_ok vs leftover replica of ! / !! bash extract
+;;;;      (does not remount parse_bash)
+;;;; 1013. cli_bootstrap_sessions rt_ok vs leftover replica of textParts.join
+;;;;      (does not remount response_text)
+;;;; 1014. cli_bootstrap_sessions dp_ok vs leftover replica of submit classify
+;;;;      (does not remount dispatch_plain)
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
