@@ -650,7 +650,13 @@
     "cli_interactive_controller.announcement_title",
     "ai_support.threads_absent",
     "ai_support.threads_current",
-    "ai_support.threads_joined"
+    "ai_support.threads_joined",
+    "provider_registry_defs.runtime_provider",
+    "provider_registry_defs.runtime_provider_copilot",
+    "provider_registry_defs.models_runtime",
+    "provider_registry_defs.protocol_provider",
+    "provider_registry_defs.protocol_provider_anthropic",
+    "provider_registry_defs.instantiate_provider"
   ],
   "unpairablePaths": [
     {
@@ -1593,8 +1599,12 @@
     },
     {
       "prefix": "src/cadr-ai/providers/registry.lisp",
-      "class": "needs-pair",
-      "hole": "provider_registry_defs"
+      "class": "paired",
+      "metrics": [
+        "provider_registry_defs.protocol_provider",
+        "provider_registry_defs.protocol_provider_anthropic",
+        "provider_registry_defs.instantiate_provider"
+      ]
     },
     {
       "prefix": "src/cadr-ai/providers/runtime-projection.lisp",
@@ -1611,7 +1621,10 @@
         "provider_registry_defs.provider_options",
         "provider_registry_defs.runtime_models",
         "provider_registry_defs.strip_runtime_options",
-        "provider_registry_defs.structured_api_key_login"
+        "provider_registry_defs.structured_api_key_login",
+        "provider_registry_defs.runtime_provider",
+        "provider_registry_defs.runtime_provider_copilot",
+        "provider_registry_defs.models_runtime"
       ]
     },
     {

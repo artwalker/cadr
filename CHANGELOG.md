@@ -10,6 +10,17 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `provider_registry_defs.runtime_provider` / `runtime_provider_copilot` /
+  `models_runtime` / `protocol_provider` / `protocol_provider_anthropic` /
+  `instantiate_provider` (pairs 751–756). n=5 freeze on host `Friend-MachineD`.
+  Over-1×: `models_runtime` **1.596×**,
+  `protocol_provider` **1.293×**.
+  Reclassified `src/cadr-ai/providers/registry.lisp`. `needs-pair` 5→4.
+  G.17 stays missing. `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `ai_support.threads_absent` / `threads_current` / `threads_joined` on
   `src/cadr-ai/support/threads.lisp`. n=5 freeze on host `Friend-MachineD`.
   Over-1×: `threads_absent` **2.141×**,
