@@ -60,6 +60,9 @@
     "cli_bootstrap_sessions.session_export_basename",
     "cli_bootstrap_sessions.session_path",
     "cli_bootstrap_sessions.session_user_messages_for_forking",
+    "cli_bootstrap_sessions.session_command_stats",
+    "cli_bootstrap_sessions.session_usage_breakdown",
+    "cli_bootstrap_sessions.session_tree_label_timestamps",
     "cli_bootstrap_sessions.split_command",
     "cli_dispatch.argv_parse",
     "cli_dispatch.help_render",
@@ -1811,6 +1814,9 @@
         "cli_bootstrap_sessions.session_export_basename",
         "cli_bootstrap_sessions.session_path",
         "cli_bootstrap_sessions.session_user_messages_for_forking",
+        "cli_bootstrap_sessions.session_command_stats",
+        "cli_bootstrap_sessions.session_usage_breakdown",
+        "cli_bootstrap_sessions.session_tree_label_timestamps",
         "cli_bootstrap_sessions.split_command"
       ]
     },
