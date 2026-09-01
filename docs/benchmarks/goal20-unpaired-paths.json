@@ -384,6 +384,8 @@
     "evals_harness.artifact_persist",
     "evals_harness.artifact_reference_json",
     "evals_harness.authoring_judge",
+    "evals_harness.authoring_harness_table",
+    "evals_harness.bundle_tool_names",
     "evals_harness.canonical_api",
     "evals_harness.eval_environment",
     "evals_harness.eval_paths",
@@ -422,6 +424,7 @@
     "evals_harness.usage",
     "evals_harness.validate_extension",
     "evals_harness.validate_smoke",
+    "evals_harness.visible_extension_bundles",
     "execution_env.absolute_path",
     "execution_env.exists_remove_temps",
     "execution_env.file_info",
@@ -2934,7 +2937,10 @@
         "evals_harness.required_prompt_boundary",
         "evals_harness.matching_hello_call",
         "evals_harness.authoring_judge",
-        "evals_harness.source_bundle"
+        "evals_harness.source_bundle",
+        "evals_harness.bundle_tool_names",
+        "evals_harness.visible_extension_bundles",
+        "evals_harness.authoring_harness_table"
       ]
     },
     {
