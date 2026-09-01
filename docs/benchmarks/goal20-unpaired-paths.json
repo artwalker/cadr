@@ -629,7 +629,13 @@
     "cli_print_rpc.dialog_expired",
     "cli_support.watch_retry_delay",
     "cli_support.close_watcher",
-    "cli_support.watch_signature"
+    "cli_support.watch_signature",
+    "oauth_pkce_device.anth_oauth_name",
+    "oauth_pkce_device.anth_oauth_sub",
+    "oauth_pkce_device.anth_oauth_instructions",
+    "oauth_pkce_device.kimi_host_default",
+    "oauth_pkce_device.kimi_host_code",
+    "oauth_pkce_device.kimi_host_trim"
   ],
   "unpairablePaths": [
     {
@@ -1497,8 +1503,12 @@
     },
     {
       "prefix": "src/cadr-ai/oauth/providers/anthropic.lisp",
-      "class": "needs-pair",
-      "hole": "oauth_pkce_device"
+      "class": "paired",
+      "metrics": [
+        "oauth_pkce_device.anth_oauth_name",
+        "oauth_pkce_device.anth_oauth_sub",
+        "oauth_pkce_device.anth_oauth_instructions"
+      ]
     },
     {
       "prefix": "src/cadr-ai/oauth/providers/github-copilot.lisp",
@@ -1509,8 +1519,12 @@
     },
     {
       "prefix": "src/cadr-ai/oauth/providers/kimi.lisp",
-      "class": "needs-pair",
-      "hole": "oauth_pkce_device"
+      "class": "paired",
+      "metrics": [
+        "oauth_pkce_device.kimi_host_default",
+        "oauth_pkce_device.kimi_host_code",
+        "oauth_pkce_device.kimi_host_trim"
+      ]
     },
     {
       "prefix": "src/cadr-ai/oauth/providers/openai-device.lisp",

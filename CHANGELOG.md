@@ -10,6 +10,16 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `oauth_pkce_device.anth_oauth_*` on `src/cadr-ai/oauth/providers/anthropic.lisp`
+  and `kimi_host_*` on `providers/kimi.lisp`. n=5 freeze on host
+  `Friend-MachineD`. Over-1×: `anth_oauth_name` **3.755×**, `anth_oauth_sub`
+  **1.913×**, `anth_oauth_instructions` **7.100×**, `kimi_host_default`
+  **2.293×**, `kimi_host_code` **2.773×**, `kimi_host_trim` **3.014×**.
+  Reclassified two files. `needs-pair` 12→10. G.17 stays missing.
+  `nextPairNum` left unchanged.
+
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `oauth_pkce_device` slugs on `src/cadr-ai/oauth/openai-anthropic.lisp`,
   `providers/openai-device.lisp`, `providers/xai.lisp`, and
   `providers/openrouter.lisp`. n=5 freeze on host `cursor`. Over-1×:
