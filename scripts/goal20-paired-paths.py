@@ -5950,8 +5950,17 @@ def check_provenance(cadr: dict, pi: dict, failures: list[str]) -> None:
     )
 
 
-def check_parameters(cadr: dict, pi: dict, failures: list[str]) -> None:
+def check_parameters(cadr: dict, pi: dict, failures: list[str], only_enforce: frozenset[str] | None = None) -> None:
     for field in ("repetitions", "samples", "warmups", "quick", "journal_append_entry_count"):
+        if field == "repetitions" and only_enforce is not None:
+            for key in sorted(only_enforce):
+                check(
+                    cadr["parameters"]["repetitions"].get(key)
+                    == pi["parameters"]["repetitions"].get(key),
+                    f"parameter repetitions[{key}] differs between the two reports",
+                    failures,
+                )
+            continue
         check(
             cadr["parameters"][field] == pi["parameters"][field],
             f"parameter {field} differs between the two reports",
@@ -5995,12 +6004,7 @@ def observed_table(report: dict, group: str) -> dict:
     return observed if isinstance(observed, dict) else {}
 
 
-def check_observed(
-    cadr: dict,
-    pi: dict,
-    failures: list[str],
-    only_enforce: frozenset[str] | None = None,
-) -> list[str]:
+def check_observed(cadr: dict, pi: dict, failures: list[str], only_enforce: frozenset[str] | None = None) -> list[str]:
     notes: list[str] = []
     scoped = (
         None
@@ -6290,7 +6294,7 @@ def main() -> int:
         cadr = load_json(arguments.cadr)
         pi = load_json(arguments.pi)
         check_provenance(cadr, pi, failures)
-        check_parameters(cadr, pi, failures)
+        check_parameters(cadr, pi, failures, only_enforce)
         notes += check_observed(cadr, pi, failures, only_enforce)
 
         host_match = goal11.same_machine(cadr, pi)

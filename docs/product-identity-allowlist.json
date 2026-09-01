@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1339,
+  "expected_findings": 1352,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -94,7 +94,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  (`session.jsonl` \u2192 HTML; cadr `export-session-html` vs pi",
+      "line": "  (`session.jsonl` → HTML; cadr `export-session-html` vs pi",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -542,7 +542,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  >1.0\u00d7 (load / journal_read / pi_messages / mistral /",
+      "line": "  >1.0× (load / journal_read / pi_messages / mistral /",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -614,7 +614,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  Ratio up on load is pi drift (1773\u21921532 \u00b5s).",
+      "line": "  Ratio up on load is pi drift (1773→1532 µs).",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -862,7 +862,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `provider_pi_messages` **1081\u21921153 \u00b5s** (worse;",
+      "line": "  `provider_pi_messages` **1081→1153 µs** (worse;",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1014,7 +1014,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `tool_read.text_file` 0.41\u00d7\u21920.45\u00d7 (1757\u21921634 \u00b5s; pi also",
+      "line": "  `tool_read.text_file` 0.41×→0.45× (1757→1634 µs; pi also",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1030,7 +1030,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `truncate_head` 1.33\u00d7\u21920.70\u00d7 (708\u2192377 \u00b5s). Faster than pi.",
+      "line": "  `truncate_head` 1.33×→0.70× (708→377 µs). Faster than pi.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1038,7 +1038,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `truncate_tail` 1.44\u00d7\u21920.85\u00d7 (758\u2192461 \u00b5s). Faster than pi.",
+      "line": "  `truncate_tail` 1.44×→0.85× (758→461 µs). Faster than pi.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1086,7 +1086,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  cadr 0.2.0 \u00b7 aligned with pi v0.84.2 (+0, 914cf1472).  `--alt` is replaced",
+      "line": "  cadr 0.2.0 · aligned with pi v0.84.2 (+0, 914cf1472).  `--alt` is replaced",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1094,7 +1094,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  cadr 0.2.0 \u00b7 aligned with pi v0.84.3 (+0, 4e58f324f). `/thinking`",
+      "line": "  cadr 0.2.0 · aligned with pi v0.84.3 (+0, 4e58f324f). `/thinking`",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1102,7 +1102,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  cadr 0.2.0 \u00b7 aligned with pi v0.84.4 (+0, b79e4cc83). Terminal capability",
+      "line": "  cadr 0.2.0 · aligned with pi v0.84.4 (+0, b79e4cc83). Terminal capability",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1206,7 +1206,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  cadr load 3033 \u00b5s \u2192 3026 \u00b5s. Ratio up is pi drift",
+      "line": "  cadr load 3033 µs → 3026 µs. Ratio up is pi drift",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1454,7 +1454,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi 540 \u00b5s). Extra newline count pass is slower on the",
+      "line": "  pi 540 µs). Extra newline count pass is slower on the",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1462,7 +1462,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi MockWebSocket). Friend-MachineD n=5 **507.72\u00d7**",
+      "line": "  pi MockWebSocket). Friend-MachineD n=5 **507.72×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1470,7 +1470,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi `Input.render`). Friend-MachineD n=5 **0.05\u00d7** (39.4 / 272.8 \u00b5s),",
+      "line": "  pi `Input.render`). Friend-MachineD n=5 **0.05×** (39.4 / 272.8 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1494,7 +1494,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi `formatCwdForFooter`). Friend-MachineD n=5 **0.34\u00d7**",
+      "line": "  pi `formatCwdForFooter`). Friend-MachineD n=5 **0.34×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1502,7 +1502,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi `formatLabelTimestamp`). Friend-MachineD n=5 **1.85\u00d7** (9.2 / 4.9 \u00b5s),",
+      "line": "  pi `formatLabelTimestamp`). Friend-MachineD n=5 **1.85×** (9.2 / 4.9 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1510,7 +1510,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi `getEntryDisplayText` normalize). Friend-MachineD n=5 **2.88\u00d7**",
+      "line": "  pi `getEntryDisplayText` normalize). Friend-MachineD n=5 **2.88×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1526,7 +1526,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi `parseModelPattern`). Friend-MachineD n=5 **1.65\u00d7**",
+      "line": "  pi `parseModelPattern`). Friend-MachineD n=5 **1.65×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1542,7 +1542,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi fails fast with `429: {\u2026}`. Fix signal-api-error",
+      "line": "  pi fails fast with `429: {…}`. Fix signal-api-error",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1558,7 +1558,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi jitter; cadr \u00b5s down). Not labels macrolet. Not empty",
+      "line": "  pi jitter; cadr µs down). Not labels macrolet. Not empty",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1670,7 +1670,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  to look native. Performance floor is pi; beating pi is not a stop \u2014",
+      "line": "  to look native. Performance floor is pi; beating pi is not a stop —",
       "occurrences": 2,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1710,7 +1710,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi DFS entry order). Friend-MachineD n=5 **1.21\u00d7**",
+      "line": "  vs pi DFS entry order). Friend-MachineD n=5 **1.21×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1742,7 +1742,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `LabelInput.handleInput`). Friend-MachineD n=5 **0.69\u00d7**",
+      "line": "  vs pi `LabelInput.handleInput`). Friend-MachineD n=5 **0.69×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1750,7 +1750,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `LabelInput` onCancel). Friend-MachineD n=5 **1.57\u00d7**",
+      "line": "  vs pi `LabelInput` onCancel). Friend-MachineD n=5 **1.57×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1758,7 +1758,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `LabelInput` onSubmit). Friend-MachineD n=5 **4.37\u00d7**",
+      "line": "  vs pi `LabelInput` onSubmit). Friend-MachineD n=5 **4.37×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1766,7 +1766,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `THINKING_DESCRIPTIONS`). Friend-MachineD n=5 **0.80\u00d7** (0.3 / 0.3 \u00b5s),",
+      "line": "  vs pi `THINKING_DESCRIPTIONS`). Friend-MachineD n=5 **0.80×** (0.3 / 0.3 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1774,7 +1774,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `ThemeSubmenu.getActiveAutomaticTheme`). Friend-MachineD n=5 **1.33\u00d7**",
+      "line": "  vs pi `ThemeSubmenu.getActiveAutomaticTheme`). Friend-MachineD n=5 **1.33×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1782,7 +1782,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `ThemeSubmenu.getAutomaticThemeSetting`). Friend-MachineD n=5 **2.42\u00d7**",
+      "line": "  vs pi `ThemeSubmenu.getAutomaticThemeSetting`). Friend-MachineD n=5 **2.42×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1790,7 +1790,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeHelp.render`). Friend-MachineD n=5 **3.33\u00d7** (979.6 / 293.8 \u00b5s),",
+      "line": "  vs pi `TreeHelp.render`). Friend-MachineD n=5 **3.33×** (979.6 / 293.8 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1798,7 +1798,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList.filteredNodes` ids). Friend-MachineD n=5 **5.78\u00d7**",
+      "line": "  vs pi `TreeList.filteredNodes` ids). Friend-MachineD n=5 **5.78×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1806,7 +1806,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList.filteredNodes` selected id). Friend-MachineD n=5 **2.50\u00d7**",
+      "line": "  vs pi `TreeList.filteredNodes` selected id). Friend-MachineD n=5 **2.50×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1814,7 +1814,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList.getSelectedNode`). Friend-MachineD n=5 **5.14\u00d7**",
+      "line": "  vs pi `TreeList.getSelectedNode`). Friend-MachineD n=5 **5.14×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1822,7 +1822,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList.handleInput`). Friend-MachineD n=5 **0.73\u00d7**",
+      "line": "  vs pi `TreeList.handleInput`). Friend-MachineD n=5 **0.73×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1830,7 +1830,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList.handleInput`). Friend-MachineD n=5 **4.06\u00d7**",
+      "line": "  vs pi `TreeList.handleInput`). Friend-MachineD n=5 **4.06×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1838,7 +1838,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList.render`). Friend-MachineD n=5 **0.83\u00d7**",
+      "line": "  vs pi `TreeList.render`). Friend-MachineD n=5 **0.83×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1846,7 +1846,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList` filterMode + applyFilter). Friend-MachineD n=5 **0.60\u00d7**",
+      "line": "  vs pi `TreeList` filterMode + applyFilter). Friend-MachineD n=5 **0.60×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1854,7 +1854,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList` index by id). Friend-MachineD n=5 **4.64\u00d7**",
+      "line": "  vs pi `TreeList` index by id). Friend-MachineD n=5 **4.64×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1862,7 +1862,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList` index wrap). Friend-MachineD n=5 **1.74\u00d7**",
+      "line": "  vs pi `TreeList` index wrap). Friend-MachineD n=5 **1.74×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1870,7 +1870,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `TreeList` searchQuery + applyFilter). Friend-MachineD n=5 **0.66\u00d7**",
+      "line": "  vs pi `TreeList` searchQuery + applyFilter). Friend-MachineD n=5 **0.66×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1886,7 +1886,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `applyFilter`). Friend-MachineD n=5 **3.60\u00d7**",
+      "line": "  vs pi `applyFilter`). Friend-MachineD n=5 **3.60×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1894,7 +1894,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `buildActivePath`). Friend-MachineD n=5 **2.43\u00d7** (11.8 / 4.8 \u00b5s),",
+      "line": "  vs pi `buildActivePath`). Friend-MachineD n=5 **2.43×** (11.8 / 4.8 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1910,7 +1910,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `copySelected`). Friend-MachineD n=5 **2.87\u00d7**",
+      "line": "  vs pi `copySelected`). Friend-MachineD n=5 **2.87×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1918,7 +1918,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `createEventBus`). Friend-MachineD n=5 **0.33\u00d7**",
+      "line": "  vs pi `createEventBus`). Friend-MachineD n=5 **0.33×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1934,7 +1934,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `enableAll`/`clearAll` targetIds). Friend-MachineD n=5 **5.27\u00d7**",
+      "line": "  vs pi `enableAll`/`clearAll` targetIds). Friend-MachineD n=5 **5.27×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1942,7 +1942,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `filterProviders` search text). Friend-MachineD n=5 **1.52\u00d7**",
+      "line": "  vs pi `filterProviders` search text). Friend-MachineD n=5 **1.52×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1950,7 +1950,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `filterProviders`). Friend-MachineD n=5 **3.84\u00d7**",
+      "line": "  vs pi `filterProviders`). Friend-MachineD n=5 **3.84×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1966,7 +1966,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `findBranchSegmentStart`). Friend-MachineD n=5 **1.82\u00d7**",
+      "line": "  vs pi `findBranchSegmentStart`). Friend-MachineD n=5 **1.82×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1974,7 +1974,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `findNearestVisibleIndex` id walk). Friend-MachineD n=5 **2.34\u00d7**",
+      "line": "  vs pi `findNearestVisibleIndex` id walk). Friend-MachineD n=5 **2.34×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1982,7 +1982,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `flattenTree` active-branch ordering). Friend-MachineD n=5 **1.83\u00d7**",
+      "line": "  vs pi `flattenTree` active-branch ordering). Friend-MachineD n=5 **1.83×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1990,7 +1990,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `foldOrUp` handleInput). Friend-MachineD n=5 **1.76\u00d7**",
+      "line": "  vs pi `foldOrUp` handleInput). Friend-MachineD n=5 **1.76×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -1998,7 +1998,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `formatDecision`). Friend-MachineD n=5 **2.36\u00d7**",
+      "line": "  vs pi `formatDecision`). Friend-MachineD n=5 **2.36×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2014,7 +2014,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `formatHelpKeys`). Friend-MachineD n=5 **4.56\u00d7** (190.2 / 41.7 \u00b5s),",
+      "line": "  vs pi `formatHelpKeys`). Friend-MachineD n=5 **4.56×** (190.2 / 41.7 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2038,7 +2038,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `getLoginProviderOptions`). Friend-MachineD n=5 **0.87\u00d7**",
+      "line": "  vs pi `getLoginProviderOptions`). Friend-MachineD n=5 **0.87×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2046,7 +2046,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `getLogoutProviderOptions`). Friend-MachineD n=5 **2.71\u00d7**",
+      "line": "  vs pi `getLogoutProviderOptions`). Friend-MachineD n=5 **2.71×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2054,7 +2054,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `getProjectTrustOptions` index). Friend-MachineD n=5 **3.78\u00d7**",
+      "line": "  vs pi `getProjectTrustOptions` index). Friend-MachineD n=5 **3.78×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2062,7 +2062,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `getProjectTrustOptions`). Friend-MachineD n=5 **1.16\u00d7**",
+      "line": "  vs pi `getProjectTrustOptions`). Friend-MachineD n=5 **1.16×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2070,7 +2070,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `handleInput` confirm). Friend-MachineD n=5 **2.95\u00d7** (247.0 / 83.7 \u00b5s),",
+      "line": "  vs pi `handleInput` confirm). Friend-MachineD n=5 **2.95×** (247.0 / 83.7 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2078,7 +2078,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `handleInput` dispatch). Friend-MachineD n=5 **1.22\u00d7**",
+      "line": "  vs pi `handleInput` dispatch). Friend-MachineD n=5 **1.22×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2086,7 +2086,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `handleInput` raw dispatch). Friend-MachineD n=5 **5.02\u00d7**",
+      "line": "  vs pi `handleInput` raw dispatch). Friend-MachineD n=5 **5.02×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2094,7 +2094,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `parseAuthCommand`). Friend-MachineD n=5 **0.47\u00d7**",
+      "line": "  vs pi `parseAuthCommand`). Friend-MachineD n=5 **0.47×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2102,7 +2102,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `parseKey`). Friend-MachineD n=5 **11.56\u00d7** (47.3 / 4.1 \u00b5s),",
+      "line": "  vs pi `parseKey`). Friend-MachineD n=5 **11.56×** (47.3 / 4.1 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2110,7 +2110,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `recalculateVisualStructure` DFS). Friend-MachineD n=5 **0.92\u00d7**",
+      "line": "  vs pi `recalculateVisualStructure` DFS). Friend-MachineD n=5 **0.92×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2118,7 +2118,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `recalculateVisualStructure`). Friend-MachineD n=5 **1.49\u00d7**",
+      "line": "  vs pi `recalculateVisualStructure`). Friend-MachineD n=5 **1.49×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2126,7 +2126,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `renderHorizontalViewport`). Friend-MachineD n=5 **0.89\u00d7**",
+      "line": "  vs pi `renderHorizontalViewport`). Friend-MachineD n=5 **0.89×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2134,7 +2134,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `resolveConfigValue`). Friend-MachineD n=5 **0.43\u00d7**",
+      "line": "  vs pi `resolveConfigValue`). Friend-MachineD n=5 **0.43×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2142,7 +2142,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `selector-keybinding-matches-p`). Friend-MachineD n=5 **0.63\u00d7**",
+      "line": "  vs pi `selector-keybinding-matches-p`). Friend-MachineD n=5 **0.63×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2150,7 +2150,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `shortenPath`). Friend-MachineD n=5 **5.05\u00d7** (5.5 / 1.1 \u00b5s),",
+      "line": "  vs pi `shortenPath`). Friend-MachineD n=5 **5.05×** (5.5 / 1.1 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2158,7 +2158,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `showLabelInput`). Friend-MachineD n=5 **2.40\u00d7**",
+      "line": "  vs pi `showLabelInput`). Friend-MachineD n=5 **2.40×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2166,7 +2166,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `showLabelTimestamps` toggle). Friend-MachineD n=5 **0.04\u00d7**",
+      "line": "  vs pi `showLabelTimestamps` toggle). Friend-MachineD n=5 **0.04×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2174,7 +2174,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `showLoginAuthTypeSelector`). Friend-MachineD n=5 **3.44\u00d7**",
+      "line": "  vs pi `showLoginAuthTypeSelector`). Friend-MachineD n=5 **3.44×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2182,7 +2182,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `unfoldOrDown` handleInput). Friend-MachineD n=5 **1.82\u00d7**",
+      "line": "  vs pi `unfoldOrDown` handleInput). Friend-MachineD n=5 **1.82×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2190,7 +2190,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi `validateToolArguments`). Friend-MachineD n=5 **0.38\u00d7**",
+      "line": "  vs pi `validateToolArguments`). Friend-MachineD n=5 **0.38×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2198,7 +2198,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi event dispatch). Friend-MachineD n=5 **2.35\u00d7**",
+      "line": "  vs pi event dispatch). Friend-MachineD n=5 **2.35×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2206,7 +2206,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi flat-entry id map). Friend-MachineD n=5 **2.76\u00d7**",
+      "line": "  vs pi flat-entry id map). Friend-MachineD n=5 **2.76×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2214,7 +2214,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi keybinding lookup with fallbacks). Friend-MachineD n=5 **1.70\u00d7**",
+      "line": "  vs pi keybinding lookup with fallbacks). Friend-MachineD n=5 **1.70×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2222,7 +2222,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi local `YYYY-MM-DDTHH:MM:SS` formatter). Friend-MachineD n=5 **1.43\u00d7**",
+      "line": "  vs pi local `YYYY-MM-DDTHH:MM:SS` formatter). Friend-MachineD n=5 **1.43×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2230,7 +2230,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi logout authType normalization). Friend-MachineD n=5 **1.87\u00d7**",
+      "line": "  vs pi logout authType normalization). Friend-MachineD n=5 **1.87×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2238,7 +2238,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi phrase indexOf). Friend-MachineD n=5 **1.29\u00d7** (11.0 / 8.6 \u00b5s),",
+      "line": "  vs pi phrase indexOf). Friend-MachineD n=5 **1.29×** (11.0 / 8.6 µs),",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2246,7 +2246,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi raw-input dispatch). Friend-MachineD n=5 **2.98\u00d7**",
+      "line": "  vs pi raw-input dispatch). Friend-MachineD n=5 **2.98×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2254,7 +2254,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi session list label). Friend-MachineD n=5 **1.84\u00d7** (2.6 /",
+      "line": "  vs pi session list label). Friend-MachineD n=5 **1.84×** (2.6 /",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2262,7 +2262,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi trust selector UI state digest). Friend-MachineD n=5 **2.27\u00d7**",
+      "line": "  vs pi trust selector UI state digest). Friend-MachineD n=5 **2.27×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2270,7 +2270,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  vs pi wrap index on trust option count). Friend-MachineD n=5 **2.46\u00d7**",
+      "line": "  vs pi wrap index on trust option count). Friend-MachineD n=5 **2.46×**",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2278,7 +2278,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "line": "**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -2310,7 +2310,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner \u2014 the",
+      "line": "- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner — the",
       "occurrences": 1,
       "reason": "Changelog records the baseline-anchor ownership change; the fixed pi baseline is reference input, not Cadr identity."
     },
@@ -2622,7 +2622,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.84.4 (+0, b79e4cc83)**",
+      "line": "**cadr 0.2.0 · aligned with pi v0.84.4 (+0, b79e4cc83)**",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -5558,14 +5558,6 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            / max(1e-9, pi[\"metrics\"][group][name][\"median_us\"])",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "                    f\"limit={limit:.2f}us ({ratio:.2f}x pi, ceiling {ceiling:.2f}x)\",",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
@@ -5582,7 +5574,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                f\"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}\",",
+      "line": "                    f\"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}\",",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5598,7 +5590,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                pi_count == cadr_count,",
+      "line": "                    pi_count == cadr_count,",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5614,7 +5606,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            (pi_count, cadr_count) == (recorded[\"pi\"], recorded[\"cadr\"]),",
+      "line": "                (pi_count, cadr_count) == (recorded[\"pi\"], recorded[\"cadr\"]),",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5638,7 +5630,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            cadr_journal[\"written_body_bytes\"] / pi_journal[\"written_body_bytes\"] - 1,",
+      "line": "                cadr_journal[\"written_body_bytes\"] / pi_journal[\"written_body_bytes\"] - 1,",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5646,7 +5638,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            cadr_journal[field] <= JOURNAL_BYTE_TOLERANCE * pi_journal[field],",
+      "line": "                cadr_journal[field] <= JOURNAL_BYTE_TOLERANCE * pi_journal[field],",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5654,7 +5646,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            f\"cadr {field} exceeds {JOURNAL_BYTE_TOLERANCE:.2f}x pi: \"",
+      "line": "                f\"cadr {field} exceeds {JOURNAL_BYTE_TOLERANCE:.2f}x pi: \"",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5662,7 +5654,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            f\"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}\",",
+      "line": "                f\"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}\",",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5670,7 +5662,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            f\"pi={pi_journal[field]} cadr={cadr_journal[field]}\",",
+      "line": "                f\"pi={pi_journal[field]} cadr={cadr_journal[field]}\",",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5678,7 +5670,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            f\"recorded {kind} divergence moved: expected pi={recorded['pi']} \"",
+      "line": "                f\"recorded {kind} divergence moved: expected pi={recorded['pi']} \"",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5702,16 +5694,8 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            pi_journal[\"written_body_bytes\"],",
+      "line": "                pi_journal[\"written_body_bytes\"],",
       "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "            pi_metric = pi[\"metrics\"][group][name]",
-      "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
     {
@@ -5734,7 +5718,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        \"journal_body_bytes=pi{}/cadr{} ({:+.1%})\".format(",
+      "line": "            \"journal_body_bytes=pi{}/cadr{} ({:+.1%})\".format(",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5758,7 +5742,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,",
+      "line": "            abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5766,7 +5750,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        cadr_journal[\"journal_cwd\"].rstrip(\"/\") == pi_journal[\"journal_cwd\"].rstrip(\"/\"),",
+      "line": "            cadr_journal[\"journal_cwd\"].rstrip(\"/\") == pi_journal[\"journal_cwd\"].rstrip(\"/\"),",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5774,7 +5758,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        cadr_roles == pi_roles,",
+      "line": "            cadr_roles == pi_roles,",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5790,14 +5774,6 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        check_parameters(cadr, pi, failures)",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "        check_provenance(cadr, pi, failures)",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
@@ -5806,7 +5782,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        f\"context message roles differ after folding pi's synthetic roles: \"",
+      "line": "            f\"context message roles differ after folding pi's synthetic roles: \"",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5822,7 +5798,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        f\"pi={pi_help} cadr={cadr_help}\",",
+      "line": "            f\"pi={pi_help} cadr={cadr_help}\",",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5830,7 +5806,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        f\"pi={pi_roles!r} cadr={cadr_roles!r}\",",
+      "line": "            f\"pi={pi_roles!r} cadr={cadr_roles!r}\",",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5886,15 +5862,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        notes += check_observed(cadr, pi, failures)",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        notes.append(f\"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}\")",
+      "line": "            notes.append(f\"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}\")",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5918,7 +5886,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        pi_count = pi_kinds.get(kind)",
+      "line": "            pi_count = pi_kinds.get(kind)",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5942,14 +5910,6 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        pi_observed = pi[\"metrics\"][group][\"observed\"]",
-      "occurrences": 2,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "        quick = bool(cadr[\"parameters\"][\"quick\"] or pi[\"parameters\"][\"quick\"])",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
@@ -5966,7 +5926,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        sorted(cadr_kinds) == sorted(pi_kinds),",
+      "line": "            sorted(cadr_kinds) == sorted(pi_kinds),",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5984,22 +5944,6 @@
       "token": "pi",
       "line": "      [--cadr-journal /tmp/cadr.jsonl --pi-journal /tmp/pi.jsonl] \\",
       "occurrences": 2,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "    \"evals_harness\": (\"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"sv_hash\", \"sv_plist\", \"sv_intern\", \"sv_miss\", \"sv_n\", \"us_in\", \"us_out\", \"us_total\", \"us_tools\", \"us_prov\", \"us_model\", \"us_cost\", \"us_n\", \"rj_out\", \"rj_ev\", \"rj_err\", \"rj_art\", \"rj_time\", \"rj_n\", \"ee_trim\", \"ee_model\", \"ee_ws\", \"ee_miss\", \"ee_n\", \"ps_type\", \"ps_content\", \"ps_n\", \"rs_type\", \"rs_no_content\", \"rs_n\", \"mer_exists\", \"mer_prefix\", \"mer_no_ws\", \"mer_n\", \"nst_kw\", \"nst_sym\", \"nst_str\", \"nst_bad\", \"nst_n\", \"set_n\", \"set_names\", \"set_all\", \"set_filt_n\", \"set_no_bash\", \"set_cases\", \"pea_out\", \"pea_msgs\", \"pea_stop\", \"pea_n\", \"rld_err\", \"rld_active\", \"rld_reports\", \"rld_n\", \"rca_out\", \"rca_events\", \"rca_err\", \"rca_ms\", \"rca_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"apr_val\", \"apr_empty\", \"apr_miss\", \"apr_model\", \"apr_n\", \"pa_space\", \"pa_eq\", \"pa_mix\", \"pa_miss\", \"pa_empty\", \"pa_unknown\", \"pa_n\", \"vs_ok\", \"vs_trim\", \"vs_city\", \"vs_tok\", \"vs_n\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\"),",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "    \"evals_harness\": (\"summarize\", \"group_key\", \"artifact_persist\", \"format\", \"normalize_steps\", \"resolve_selection\", \"transcript\", \"last_assistant\", \"step_value\", \"usage\", \"result_json\", \"eval_environment\", \"prompt_step\", \"reload_step\", \"make_eval_root\", \"normalize_step_type\", \"selected_eval_tools\", \"prompt_eval_agent\", \"reload_shutdown\", \"run_coding_agent_eval\", \"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"release_extensions\", \"agent_tools\", \"extension_paths\", \"argument_prefix\", \"parse_arguments\", \"validate_smoke\", \"eval_result\", \"root_observer\", \"model_resolver\", \"status_name\", \"case_observation\", \"finish\", \"eval_layout\", \"system_prompt\", \"output_selector\", \"make_reporter\", \"finite_number\", \"artifact_metadata\", \"extension_authoring_input\", \"json_array_items\", \"json_string\", \"canonical_api\", \"legacy_api\", \"extension_error_json\", \"required_prompt_boundary\", \"exclude_guidelines\", \"prepare_default_prompt\", \"reporter_run_id\", \"artifact_reference_json\", \"reporter_artifacts\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\"),",
-      "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
     {
@@ -6134,7 +6078,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    for kind in sorted(set(cadr_kinds) | set(pi_kinds)):",
+      "line": "        for kind in sorted(set(cadr_kinds) | set(pi_kinds)):",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6158,7 +6102,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    notes.append(f\"help_characters=pi{pi_help}/cadr{cadr_help}\")",
+      "line": "        notes.append(f\"help_characters=pi{pi_help}/cadr{cadr_help}\")",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6198,7 +6142,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    pi_help = pi[\"metrics\"][\"cli_dispatch\"][\"observed\"][\"help_characters\"]",
+      "line": "        pi_help = pi[\"metrics\"][\"cli_dispatch\"][\"observed\"][\"help_characters\"]",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6206,7 +6150,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    pi_journal = pi[\"metrics\"][\"storage_journal\"][\"observed\"]",
+      "line": "        pi_journal = pi[\"metrics\"][\"storage_journal\"][\"observed\"]",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6214,7 +6158,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    pi_kinds = pi[\"metrics\"][\"provider_stream\"][\"observed\"][\"event_kind_counts\"]",
+      "line": "        pi_kinds = pi[\"metrics\"][\"provider_stream\"][\"observed\"][\"event_kind_counts\"]",
       "occurrences": 2,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6222,7 +6166,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    pi_roles = fold_pi_roles(pi[\"metrics\"][\"session_pipeline\"][\"observed\"][\"context_message_roles\"])",
+      "line": "        pi_roles = fold_pi_roles(pi[\"metrics\"][\"session_pipeline\"][\"observed\"][\"context_message_roles\"])",
       "occurrences": 3,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6247,14 +6191,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "# Divergences the pairing found that are real cadr-vs-pi gaps rather than",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "# Recorded cadr/pi median ratios plus headroom.  Observed spread over repeated",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6302,22 +6238,6 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "# state so further drift fails; they are NOT a claim that cadr matches pi on",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "# swings on pi's own jitter; the MICROSECOND_FLOOR_US term below, not the ratio,",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "Goal 11 paired cadr against pi on three TUI-input ratios (mouse drag, wheel,",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
@@ -6335,22 +6255,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "def check_journals(pi_path: str, cadr_path: str, failures: list[str]) -> list[str]:",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "def check_observed(cadr: dict, pi: dict, failures: list[str]) -> list[str]:",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "def check_parameters(cadr: dict, pi: dict, failures: list[str]) -> None:",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -8302,7 +8206,7 @@
       "path": "src/cadr-agent/extensions/lifecycle.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                         ;; pi@b79e4cc83 extensions/types.ts:1075-1079 \u2014 the",
+      "line": "                         ;; pi@b79e4cc83 extensions/types.ts:1075-1079 — the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8318,7 +8222,7 @@
       "path": "src/cadr-agent/extensions/snapshot.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@b79e4cc83 extensions/loader.ts:205-218,410-424 \u2014 invalidating",
+      "line": "    ;; pi@b79e4cc83 extensions/loader.ts:205-218,410-424 — invalidating",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8350,7 +8254,7 @@
       "path": "src/cadr-agent/loop/turns.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                 ;; pi@b79e4cc83 \u2014 an abort already pending when the",
+      "line": "                 ;; pi@b79e4cc83 — an abort already pending when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8406,7 +8310,7 @@
       "path": "src/cadr-agent/tool.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@b79e4cc83 agent-loop.ts:637-640 \u2014 a before-hook",
+      "line": "              ;; pi@b79e4cc83 agent-loop.ts:637-640 — a before-hook",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8470,7 +8374,7 @@
       "path": "src/cadr-ai/oauth/pkce.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 packages/ai/src/auth/oauth/*.ts \u2014 subscription-backed",
+      "line": "  ;; pi@b79e4cc83 packages/ai/src/auth/oauth/*.ts — subscription-backed",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8566,7 +8470,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@b79e4cc83 api/openai-completions.ts:779-793 \u2014 chat",
+      "line": "       ;; pi@b79e4cc83 api/openai-completions.ts:779-793 — chat",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8574,7 +8478,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@b79e4cc83 api/openai-completions.ts:847-866 \u2014 vLLM caps",
+      "line": "    ;; pi@b79e4cc83 api/openai-completions.ts:847-866 — vLLM caps",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8582,7 +8486,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@b79e4cc83 openai-completions.ts:838 \u2014 omit tool_choice when",
+      "line": "    ;; pi@b79e4cc83 openai-completions.ts:838 — omit tool_choice when",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8590,7 +8494,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 api/openai-completions.ts:892-940 \u2014 each entry",
+      "line": "  ;; pi@b79e4cc83 api/openai-completions.ts:892-940 — each entry",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8686,7 +8590,7 @@
       "path": "src/cadr-ai/support/release.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "     \"~A ~A \u00b7 aligned with pi ~A (+~D, ~A)\"",
+      "line": "     \"~A ~A · aligned with pi ~A (+~D, ~A)\"",
       "occurrences": 1,
       "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
     },
@@ -8726,7 +8630,7 @@
       "path": "src/cadr-cli/arguments.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                      ;; pi@b79e4cc83 cli/args.ts:180-191 \u2014 space form",
+      "line": "                      ;; pi@b79e4cc83 cli/args.ts:180-191 — space form",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -8750,7 +8654,7 @@
       "path": "src/cadr-cli/bootstrap/auth.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "             ;; pi@b79e4cc83 interactive-mode.ts:5548,5662 \u2014 when the",
+      "line": "             ;; pi@b79e4cc83 interactive-mode.ts:5548,5662 — when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8758,7 +8662,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@b79e4cc83 footer.ts:139-141 \u2014 Kimi Coding is",
+      "line": "              ;; pi@b79e4cc83 footer.ts:139-141 — Kimi Coding is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8766,7 +8670,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@b79e4cc83 model-runtime.ts:532 \u2014 non-nil when the",
+      "line": "              ;; pi@b79e4cc83 model-runtime.ts:532 — non-nil when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8774,7 +8678,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            ;; pi@b79e4cc83 model-runtime.ts:532 \u2014 non-nil when the",
+      "line": "            ;; pi@b79e4cc83 model-runtime.ts:532 — non-nil when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8782,7 +8686,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@b79e4cc83 interactive-mode.ts:530-531 \u2014 the CLI flag",
+      "line": "           ;; pi@b79e4cc83 interactive-mode.ts:530-531 — the CLI flag",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8798,7 +8702,7 @@
       "path": "src/cadr-cli/bootstrap/main.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 cli.ts:13-15 \u2014 the running agent publishes its",
+      "line": "  ;; pi@b79e4cc83 cli.ts:13-15 — the running agent publishes its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8806,7 +8710,7 @@
       "path": "src/cadr-cli/bootstrap/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                   ;; pi@b79e4cc83 interactive-mode.ts:5956-5960 \u2014",
+      "line": "                   ;; pi@b79e4cc83 interactive-mode.ts:5956-5960 —",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8862,7 +8766,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 settings-manager.ts:1128-1130 \u2014 only the exact string",
+      "line": "  ;; pi@b79e4cc83 settings-manager.ts:1128-1130 — only the exact string",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8870,7 +8774,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 settings-manager.ts:1138-1141 \u2014 \"always\"/\"hidden\" pass",
+      "line": "  ;; pi@b79e4cc83 settings-manager.ts:1138-1141 — \"always\"/\"hidden\" pass",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8878,7 +8782,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 settings-manager.ts:1252-1255 \u2014 markdown.mermaid is",
+      "line": "  ;; pi@b79e4cc83 settings-manager.ts:1252-1255 — markdown.mermaid is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8902,7 +8806,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            ;; pi@b79e4cc83 interactive-mode.ts:5399 \u2014",
+      "line": "                            ;; pi@b79e4cc83 interactive-mode.ts:5399 —",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8910,7 +8814,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            ;; pi@b79e4cc83 interactive-mode.ts:5548 \u2014",
+      "line": "                            ;; pi@b79e4cc83 interactive-mode.ts:5548 —",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8950,7 +8854,7 @@
       "path": "src/cadr-cli/interactive/images.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 utils/tool-result-images.ts \u2014 normalize image blocks",
+      "line": "  ;; pi@b79e4cc83 utils/tool-result-images.ts — normalize image blocks",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8982,7 +8886,7 @@
       "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 session-selector.ts:140-143 \u2014 incremental load",
+      "line": "  ;; pi@b79e4cc83 session-selector.ts:140-143 — incremental load",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -8998,7 +8902,7 @@
       "path": "src/cadr-cli/interactive/state.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; the loader in the persist gap pi never paints (message_end \u2192",
+      "line": "  ;; the loader in the persist gap pi never paints (message_end →",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9006,7 +8910,7 @@
       "path": "src/cadr-cli/interactive/themes.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@b79e4cc83 theme.ts:326-332 \u2014 optional scrollbarThumb",
+      "line": "       ;; pi@b79e4cc83 theme.ts:326-332 — optional scrollbarThumb",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9606,7 +9510,7 @@
       "path": "src/cadr-tui/components/markdown.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; pi@b79e4cc83 components/markdown.ts:25-122 \u2014 inline and block",
+      "line": ";;; pi@b79e4cc83 components/markdown.ts:25-122 — inline and block",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9622,7 +9526,7 @@
       "path": "src/cadr-tui/editor.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "      ;; pi@b79e4cc83 components/editor.ts:768-777 \u2014 the dedicated",
+      "line": "      ;; pi@b79e4cc83 components/editor.ts:768-777 — the dedicated",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9646,7 +9550,7 @@
       "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@b79e4cc83 tui/keybindings.ts:154-178 \u2014 the alt-screen",
+      "line": "    ;; pi@b79e4cc83 tui/keybindings.ts:154-178 — the alt-screen",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9654,7 +9558,7 @@
       "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@b79e4cc83 tui/keybindings.ts:68-75 \u2014 prompt history",
+      "line": "    ;; pi@b79e4cc83 tui/keybindings.ts:68-75 — prompt history",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9662,7 +9566,7 @@
       "path": "src/cadr-tui/keys.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@b79e4cc83 tui/keybindings.ts:170-175 \u2014 the prompt-jump",
+      "line": "    ;; pi@b79e4cc83 tui/keybindings.ts:170-175 — the prompt-jump",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9670,7 +9574,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "Pi",
-      "line": "   (cons \"Pi\" \"\u03a0\")",
+      "line": "   (cons \"Pi\" \"Π\")",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -9678,7 +9582,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "   (cons \"pi\" \"\u03c0\")",
+      "line": "   (cons \"pi\" \"π\")",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -9686,7 +9590,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 packages/tui/src/latex.ts layoutNodes.push \u2014 O(1) append",
+      "line": "  ;; pi@b79e4cc83 packages/tui/src/latex.ts layoutNodes.push — O(1) append",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -9702,7 +9606,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; pi@b79e4cc83 packages/tui/src/latex.ts \u2014 terminal-friendly Unicode",
+      "line": ";;; pi@b79e4cc83 packages/tui/src/latex.ts — terminal-friendly Unicode",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -9718,7 +9622,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 components/scroll-view.ts:62-70 \u2014 \"always\" whenever a",
+      "line": "  ;; pi@b79e4cc83 components/scroll-view.ts:62-70 — \"always\" whenever a",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9726,7 +9630,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 layout.ts:242-267 \u2014 the last-column cell keeps its",
+      "line": "  ;; pi@b79e4cc83 layout.ts:242-267 — the last-column cell keeps its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9734,7 +9638,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 layout.ts:268-303 \u2014 thumb height is the",
+      "line": "  ;; pi@b79e4cc83 layout.ts:268-303 — thumb height is the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9742,7 +9646,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            ;; pi@b79e4cc83 tui-alt-screen.ts:896 \u2014 the fullscreen",
+      "line": "            ;; pi@b79e4cc83 tui-alt-screen.ts:896 — the fullscreen",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9758,7 +9662,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@b79e4cc83 tui-alt-screen.ts:813-833 \u2014 word/line ranges",
+      "line": "         ;; pi@b79e4cc83 tui-alt-screen.ts:813-833 — word/line ranges",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9782,7 +9686,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 components/alt-screen-flash.ts \u2014 transient",
+      "line": "  ;; pi@b79e4cc83 components/alt-screen-flash.ts — transient",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9790,7 +9694,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 components/alt-screen-flash.ts:20-38 \u2014 transient",
+      "line": "  ;; pi@b79e4cc83 components/alt-screen-flash.ts:20-38 — transient",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9798,7 +9702,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 components/scroll-view.ts:140-150 \u2014 scroll activity",
+      "line": "  ;; pi@b79e4cc83 components/scroll-view.ts:140-150 — scroll activity",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9806,7 +9710,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 components/scroll-view.ts:62-70 \u2014 :auto shows the",
+      "line": "  ;; pi@b79e4cc83 components/scroll-view.ts:62-70 — :auto shows the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9822,7 +9726,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:147-149 \u2014 multi-click selection",
+      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:147-149 — multi-click selection",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9830,7 +9734,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:236-247 \u2014 multiplexers lag when",
+      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:236-247 — multiplexers lag when",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9838,7 +9742,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:366-378 \u2014 scan the scroll content",
+      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:366-378 — scan the scroll content",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9846,7 +9750,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:56 \u2014 /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
+      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:56 — /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9862,7 +9766,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:855-869 \u2014 a boundary end (word or",
+      "line": "  ;; pi@b79e4cc83 tui-alt-screen.ts:855-869 — a boundary end (word or",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9878,7 +9782,7 @@
       "path": "src/cadr-tui/terminal-image.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 terminal-image.ts:139-141 \u2014 only \"1\" and \"0\" override;",
+      "line": "  ;; pi@b79e4cc83 terminal-image.ts:139-141 — only \"1\" and \"0\" override;",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -9886,7 +9790,191 @@
       "path": "src/cadr-tui/terminal-image.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@b79e4cc83 terminal-image.ts:179-189 \u2014 skip work when the three",
+      "line": "  ;; pi@b79e4cc83 terminal-image.ts:179-189 — skip work when the three",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                            ratio := timed_metric_ratio(cadr, pi, group, name)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    == pi[\"parameters\"][\"repetitions\"].get(key),",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            if cadr_metric is None and pi_metric is None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            if cadr_metric is None or pi_metric is None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            if not cadr_has and not pi_has:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            if not cadr_has or not pi_has:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            pi_has = key in pi_observed",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            pi_metric = timed_metric_slot(pi, group, name)",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        check_parameters(cadr, pi, failures, only_enforce)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        notes += check_observed(cadr, pi, failures, only_enforce)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_observed = observed_table(pi, group)",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"evals_harness\": (\"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"sv_hash\", \"sv_plist\", \"sv_intern\", \"sv_miss\", \"sv_n\", \"us_in\", \"us_out\", \"us_total\", \"us_tools\", \"us_prov\", \"us_model\", \"us_cost\", \"us_n\", \"rj_out\", \"rj_ev\", \"rj_err\", \"rj_art\", \"rj_time\", \"rj_n\", \"ee_trim\", \"ee_model\", \"ee_ws\", \"ee_miss\", \"ee_n\", \"ps_type\", \"ps_content\", \"ps_n\", \"rs_type\", \"rs_no_content\", \"mer_exists\", \"mer_prefix\", \"mer_no_ws\", \"mer_n\", \"nst_kw\", \"nst_sym\", \"nst_str\", \"nst_bad\", \"nst_n\", \"set_n\", \"set_names\", \"set_all\", \"set_filt_n\", \"set_no_bash\", \"set_cases\", \"pea_out\", \"pea_msgs\", \"pea_stop\", \"pea_n\", \"rld_err\", \"rld_active\", \"rld_reports\", \"rld_n\", \"rca_out\", \"rca_events\", \"rca_err\", \"rca_ms\", \"rca_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"apr_val\", \"apr_empty\", \"apr_miss\", \"apr_model\", \"apr_n\", \"pa_space\", \"pa_eq\", \"pa_mix\", \"pa_miss\", \"pa_empty\", \"pa_unknown\", \"pa_n\", \"vs_ok\", \"vs_trim\", \"vs_city\", \"vs_tok\", \"vs_n\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\", \"ve_ok\", \"ve_greet\", \"ve_paths\", \"ve_empty\", \"ve_n\", \"sd_smoke\", \"sd_ext\", \"sd_auth\", \"sd_unk\", \"sd_n\", \"er_yes\", \"er_hash\", \"er_str\", \"er_nil\", \"er_n\", \"at_empty\", \"at_n\", \"at_read\", \"at_bash\", \"at_keys\", \"ep_none\", \"ep_n\", \"ep_path\", \"ep_skip\", \"ep_keys\", \"ai_crypto_model_data\", \"mr_explicit\", \"mr_env\", \"mr_miss\", \"mr_n\", \"fn_int\", \"fn_float\", \"fn_nil\", \"fn_inf\", \"fn_str\", \"fn_n\", \"am_keep\", \"am_runid\", \"am_snap\", \"am_n\"),",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"evals_harness\": (\"summarize\", \"group_key\", \"artifact_persist\", \"format\", \"normalize_steps\", \"resolve_selection\", \"transcript\", \"last_assistant\", \"step_value\", \"usage\", \"result_json\", \"eval_environment\", \"prompt_step\", \"reload_step\", \"make_eval_root\", \"normalize_step_type\", \"selected_eval_tools\", \"prompt_eval_agent\", \"reload_shutdown\", \"run_coding_agent_eval\", \"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"release_extensions\", \"agent_tools\", \"extension_paths\", \"argument_prefix\", \"parse_arguments\", \"validate_smoke\", \"eval_result\", \"root_observer\", \"model_resolver\", \"status_name\", \"case_observation\", \"finish\", \"eval_layout\", \"system_prompt\", \"output_selector\", \"make_reporter\", \"finite_number\", \"artifact_metadata\", \"extension_authoring_input\", \"json_array_items\", \"json_string\", \"canonical_api\", \"legacy_api\", \"extension_error_json\", \"required_prompt_boundary\", \"exclude_guidelines\", \"prepare_default_prompt\", \"reporter_run_id\", \"artifact_reference_json\", \"reporter_artifacts\", \"validate_extension\", \"suite_dispatch\", \"eval_result_p\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\", \"ve_ok\", \"ve_greet\", \"ve_paths\", \"ve_empty\", \"ve_n\", \"sd_smoke\", \"sd_ext\", \"sd_auth\", \"sd_unk\", \"sd_n\", \"er_yes\", \"er_hash\", \"er_str\", \"er_nil\", \"er_n\", \"msg_content\", \"eval_tools\", \"eval_paths\", \"at_empty\", \"at_n\", \"at_read\", \"at_bash\", \"at_keys\", \"ep_none\", \"ep_n\", \"ep_path\", \"ep_skip\", \"ep_keys\", \"ai_crypto_model_data\", \"manifest\", \"schema_version\", \"structure_hash\", \"generated_at\", \"file_count\", \"openai_json_hash\", \"anthropic_json_hash\", \"rep_make\", \"fin_num\", \"art_meta\", \"mr_explicit\", \"mr_env\", \"mr_miss\", \"mr_n\", \"fn_int\", \"fn_float\", \"fn_nil\", \"fn_inf\", \"fn_str\", \"fn_n\", \"am_keep\", \"am_runid\", \"am_snap\", \"am_n\"),",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if cadr_metric is None or pi_metric is None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi_metric = timed_metric_slot(pi, group, name)",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    return cadr_metric[\"median_us\"] / max(1e-9, pi_metric[\"median_us\"])",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_observed(cadr: dict, pi: dict, failures: list[str], only_enforce: frozenset[str] | None = None) -> list[str]:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_parameters(cadr: dict, pi: dict, failures: list[str], only_enforce: frozenset[str] | None = None) -> None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def timed_metric_ratio(cadr: dict, pi: dict, group: str, name: str) -> float | None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (leftover replica of `%eval-main` suite cond; pi has no `--suite`).",
+      "occurrences": 1,
+      "reason": "Immutable changelog records a leftover evals replica note that names the baseline CLI; no runtime identity change."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; Do not exact cadr vs pi error copy.",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi run-evals.mjs has no --suite.",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t\t\"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)\",",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     }
