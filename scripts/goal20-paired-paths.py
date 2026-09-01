@@ -933,11 +933,11 @@ RATIO_CEILINGS = {
     "package_manager.update_record_result": 8.0,
     # leftover 799–801 config-selector.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 799–801.
-    # leftover 799; first freeze 16.742× (11.293 / 0.675 µs).
+    # leftover 799; remesure on tip 15.49× (10.635 / 0.687 µs).
     "package_manager.selector_hint": 20.0,
-    # leftover 800; first freeze 18.389× (49.261 / 2.679 µs).
+    # leftover 800; remesure on tip 9.075× (35.220 / 3.881 µs).
     "package_manager.override_suffix": 25.0,
-    # leftover 801; first freeze 19.566× (51.092 / 2.611 µs).
+    # leftover 801; remesure on tip 10.47× (36.479 / 3.484 µs).
     "package_manager.checkbox": 25.0,
     # find_tool leftover trio on glob.lisp (samples=5): first-freeze
     # headroom. Ratchet down only.

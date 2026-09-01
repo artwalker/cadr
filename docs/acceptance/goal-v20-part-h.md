@@ -10120,7 +10120,7 @@ Leftover sibling of Pairs 796–797. Timed work is host/path when mock oids diff
 |---|---|---|
 | `selector_hint` | `config-selector-hint` (`src/cadr-cli/packages/config-selector.lisp`) | leftover keyHint wrap (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
 
-Leftover sibling of leftover 790–792 on the same `config-selector.lisp` `package_manager` hole. Timed work is dim key plus muted description — not `config-selector-header-lines` / `render-entry`. Observed `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` are exact. First n=5 freeze **16.742×** (11.293 / 0.675 µs) on host `cursor`, ceiling 20.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 790–792 on the same `config-selector.lisp` `package_manager` hole. Timed work is dim key plus muted description — not `config-selector-header-lines` / `render-entry`. Observed `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` are exact. First n=5 freeze **15.49×** (10.635 / 0.687 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 800 — `package_manager` (override_suffix)
 
@@ -10128,7 +10128,7 @@ Leftover sibling of leftover 790–792 on the same `config-selector.lisp` `packa
 |---|---|---|
 | `override_suffix` | `config-selector-override-suffix` (`src/cadr-cli/packages/config-selector.lisp`) | leftover getItemSuffix (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
 
-Leftover sibling of Pair 799. Timed work is project load/unload/inherit suffix strings — not writers, not full TUI. Observed `cos_load` / `cos_unload` / `cos_global` / `cos_inh` / `cos_n` are exact. First n=5 freeze **18.389×** (49.261 / 2.679 µs) on host `cursor`, ceiling 25.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 799. Timed work is project load/unload/inherit suffix strings — not writers, not full TUI. Observed `cos_load` / `cos_unload` / `cos_global` / `cos_inh` / `cos_n` are exact. First n=5 freeze **9.075×** (35.220 / 3.881 µs) on host `cursor`, ceiling 25.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 801 — `package_manager` (checkbox)
 
@@ -10136,7 +10136,7 @@ Leftover sibling of Pair 799. Timed work is project load/unload/inherit suffix s
 |---|---|---|
 | `checkbox` | `config-selector-checkbox` (`src/cadr-cli/packages/config-selector.lisp`) | leftover renderCheckbox (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
 
-Leftover sibling of Pairs 799–800. Timed work is `[x]` / `[ ]` / `[+]` / `[-]` marks — not `render-entry`. Observed `ccb_on` / `ccb_off` / `ccb_plus` / `ccb_minus` / `ccb_n` are exact. First n=5 freeze **19.566×** (51.092 / 2.611 µs) on host `cursor`, ceiling 25.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 799–800. Timed work is `[x]` / `[ ]` / `[+]` / `[-]` marks — not `render-entry`. Observed `ccb_on` / `ccb_off` / `ccb_plus` / `ccb_minus` / `ccb_n` are exact. First n=5 freeze **10.47×** (36.479 / 3.484 µs) on host `cursor`, ceiling 25.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

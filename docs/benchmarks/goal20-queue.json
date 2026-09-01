@@ -8474,9 +8474,9 @@
    "metric": "package_manager.selector_hint",
    "branch": "cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9",
    "note": "nextPairNum left at tip 328; leftover id 799",
-   "ratio": 16.742,
-   "cadrUs": 11.293,
-   "piUs": 0.675,
+   "ratio": 15.49,
+   "cadrUs": 10.635,
+   "piUs": 0.687,
    "ceiling": 20.0,
    "rc": 2
   },
@@ -8489,9 +8489,9 @@
    "metric": "package_manager.override_suffix",
    "branch": "cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9",
    "note": "nextPairNum left at tip 328; leftover id 800",
-   "ratio": 18.389,
-   "cadrUs": 49.261,
-   "piUs": 2.679,
+   "ratio": 9.075,
+   "cadrUs": 35.22,
+   "piUs": 3.881,
    "ceiling": 25.0,
    "rc": 2
   },
@@ -8504,9 +8504,9 @@
    "metric": "package_manager.checkbox",
    "branch": "cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9",
    "note": "nextPairNum left at tip 328; leftover id 801",
-   "ratio": 19.566,
-   "cadrUs": 51.092,
-   "piUs": 2.611,
+   "ratio": 10.47,
+   "cadrUs": 36.479,
+   "piUs": 3.484,
    "ceiling": 25.0,
    "rc": 2
   }
