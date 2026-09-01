@@ -9826,6 +9826,30 @@ Leftover sibling of Pair 760. Timed work is provider plus environment secret col
 
 Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`; remesure Friend-MachineD **1.031×** (208.703 / 202.485 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 757 — `package_manager` (records_project_first)
+
+| metric | cadr | pi |
+|---|---|---|
+| `records_project_first` | `package-update-records-project-first` (`src/cadr-cli/packages/update-checks.lisp`) | project-then-user collect (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
+
+Leftover sibling on a different needs-pair file. Timed work is reordering user/project/user records so project comes first — not git ls-remote. Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` are exact. First n=5 freeze **0.614×** (0.433 / 0.706 µs) on host `cursor`; remesure Friend-MachineD **1.059×** (0.576 / 0.544 µs), ceiling 8.0. Over-1× booked on Friend-MachineD. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 758 — `package_manager` (candidate_record)
+
+| metric | cadr | pi |
+|---|---|---|
+| `candidate_record` | `package-update-candidate-record-p` (`src/cadr-cli/packages/update-checks.lisp`) | git/unpinned/exists filter (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
+
+Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path — not ls-remote. Observed `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` are exact. First n=5 freeze **17.132×** (30.746 / 1.795 µs) on host `cursor`; remesure Friend-MachineD **3.048×** (7.755 / 2.544 µs), ceiling 20.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 759 — `package_manager` (update_offline)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_offline` | `check-for-available-package-updates` (`src/cadr-cli/packages/update-checks.lisp`) | `isOfflineModeEnabled` short-circuit (`packages/coding-agent/src/core/package-manager.ts` `checkForAvailableUpdates`) |
+
+Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and empty-record no-op — not git. Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` / `uoff_n` are exact. First n=5 freeze **1.316×** (0.333 / 0.253 µs) on host `cursor`; remesure Friend-MachineD **1.568×** (0.416 / 0.266 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -10547,7 +10571,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
-| `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id` |
+| `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id`, `package_manager.records_project_first`, `package_manager.candidate_record`, `package_manager.update_offline` |
 | `src/cadr-cli/repl.lisp` | 112 | `cli_bootstrap_sessions.pb_ok`, `cli_bootstrap_sessions.rt_ok`, `cli_bootstrap_sessions.dp_ok` |
 | `src/cadr-cli/resource-loader.lisp` | 376 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
