@@ -10216,7 +10216,7 @@ Leftover sibling of Pairs 808–809. Timed work is `Session compacted N time(s)`
 |---|---|---|
 | `last_assistant_text` | `last-assistant-text` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getLastAssistantText (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of leftover 808–810 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is last non-aborted-empty assistant text join/trim — not clipboard TUI. Observed `lat_none` / `lat_hit` / `lat_skip` / `lat_ws` / `lat_n` are exact. First n=5 freeze **1.859×** (2.947 / 1.585 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 808–810 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is last non-aborted-empty assistant text join/trim — not clipboard TUI. Observed `lat_none` / `lat_hit` / `lat_skip` / `lat_ws` / `lat_n` are exact. First n=5 freeze **3.389×** (4.006 / 1.182 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 812 — `cli_bootstrap_sessions` (session_export_basename)
 
@@ -10224,7 +10224,7 @@ Leftover sibling of leftover 808–810 on the same `sessions.lisp` `cli_bootstra
 |---|---|---|
 | `session_export_basename` | `session-export-basename` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover APP_NAME-session ISO_id.html (`packages/coding-agent/src/core/export-html/index.ts`) |
 
-Leftover sibling of Pair 811. Timed work is `cadr-session-{ISO}_{id}.html` with `[:.]` replaced — not HTML write. Observed `seb_epoch` / `seb_ms` / `seb_sec` / `seb_999` / `seb_n` are exact. First n=5 freeze **4.018×** (10.859 / 2.703 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 811. Timed work is `cadr-session-{ISO}_{id}.html` with `[:.]` replaced — not HTML write. Observed `seb_epoch` / `seb_ms` / `seb_sec` / `seb_999` / `seb_n` are exact. First n=5 freeze **5.369×** (12.308 / 2.292 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 813 — `cli_bootstrap_sessions` (session_user_messages_for_forking)
 
@@ -10232,7 +10232,7 @@ Leftover sibling of Pair 811. Timed work is `cadr-session-{ISO}_{id}.html` with 
 |---|---|---|
 | `session_user_messages_for_forking` | `session-user-messages-for-forking` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getUserMessagesForForking (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of Pairs 811–812. Timed work is nonempty trimmed user-entry texts for fork — not fork TUI. Observed `sumf_none` / `sumf_n` / `sumf_first` / `sumf_id` / `sumf_last` are exact. First n=5 freeze **1.332×** (1.726 / 1.296 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 811–812. Timed work is nonempty trimmed user-entry texts for fork — not fork TUI. Observed `sumf_none` / `sumf_n` / `sumf_first` / `sumf_id` / `sumf_last` are exact. First n=5 freeze **2.692×** (2.542 / 0.944 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

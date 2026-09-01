@@ -699,7 +699,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.assistant_tool_call_only` | 1.423 | 0.671 | 2.121× | 8.00× | measure-only leftover 808; `assistant-tool-call-only-p` vs leftover hasTextContent invert; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_entry_user_text` | 1.431 | 0.651 | 2.198× | 8.00× | measure-only leftover 809; `session-entry-user-text` vs leftover contentText user entry; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_compaction_status` | 2.150 | 0.609 | 3.530× | 8.00× | measure-only leftover 810; `session-compaction-status` vs leftover compaction count string; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.last_assistant_text` | 2.947 | 1.585 | 1.859× | 8.00× | measure-only leftover 811; `last-assistant-text` vs leftover getLastAssistantText | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.session_export_basename` | 10.859 | 2.703 | 4.018× | 8.00× | measure-only leftover 812; `session-export-basename` vs leftover APP_NAME-session ISO_id.html | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.session_user_messages_for_forking` | 1.726 | 1.296 | 1.332× | 8.00× | measure-only leftover 813; `session-user-messages-for-forking` vs leftover getUserMessagesForForking | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.last_assistant_text` | 4.006 | 1.182 | 3.389× | 8.00× | measure-only leftover 811; `last-assistant-text` vs leftover getLastAssistantText; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_export_basename` | 12.308 | 2.292 | 5.369× | 8.00× | measure-only leftover 812; `session-export-basename` vs leftover APP_NAME-session ISO_id.html; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_user_messages_for_forking` | 2.542 | 0.944 | 2.692× | 8.00× | measure-only leftover 813; `session-user-messages-for-forking` vs leftover getUserMessagesForForking; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

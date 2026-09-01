@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-01T21:11:32Z) on `Friend-MachineD`, git `4b5e4943c943`, ratio_gate=`enforced-only:cli_bootstrap_sessions.assistant_tool_call_only,cli_bootstrap_sessions.session_compaction_status,cli_bootstrap_sessions.session_entry_user_text`, quick=no, samples=5
+Current: `—` (2026-09-01T21:36:21Z) on `Friend-MachineD`, git `5f088c8fbc2d`, ratio_gate=`enforced-only:cli_bootstrap_sessions.last_assistant_text,cli_bootstrap_sessions.session_export_basename,cli_bootstrap_sessions.session_user_messages_for_forking`, quick=no, samples=5
 
-Previous: `—` (2026-09-01T21:11:20Z) on `Friend-MachineD`, git `4b5e4943c943`, ratio_gate=`enforced-only:cli_bootstrap_sessions.assistant_tool_call_only,cli_bootstrap_sessions.session_compaction_status,cli_bootstrap_sessions.session_entry_user_text`, quick=no, samples=5
+Previous: `—` (2026-09-01T21:11:32Z) on `Friend-MachineD`, git `4b5e4943c943`, ratio_gate=`enforced-only:cli_bootstrap_sessions.assistant_tool_call_only,cli_bootstrap_sessions.session_compaction_status,cli_bootstrap_sessions.session_entry_user_text`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1112,6 +1112,9 @@ Previous: `—` (2026-09-01T21:11:20Z) on `Friend-MachineD`, git `4b5e4943c943`,
 | `cli_bootstrap_sessions.assistant_tool_call_only` | — | — | 2.12× | 2.12× | 8.00× |
 | `cli_bootstrap_sessions.session_entry_user_text` | — | — | 2.20× | 2.20× | 8.00× |
 | `cli_bootstrap_sessions.session_compaction_status` | — | — | 3.53× | 3.53× | 8.00× |
+| `cli_bootstrap_sessions.last_assistant_text` | — | — | 3.39× | — | 8.00× |
+| `cli_bootstrap_sessions.session_export_basename` | — | — | 5.37× | — | 8.00× |
+| `cli_bootstrap_sessions.session_user_messages_for_forking` | — | — | 2.69× | — | 8.00× |
 | `cli_selectors.model_selector_provider_badge` | 0.3 | 0.6 | 0.42× | 0.42× | 8.00× |
 | `cli_selectors.scoped_models_copy_enabled` | 1.5 | 0.7 | 2.28× | 2.28× | 8.00× |
 | `cli_selectors.move_list_item` | 1.5 | 1.4 | 1.07× | 1.07× | 8.00× |
@@ -2297,6 +2300,7 @@ Previous: `—` (2026-09-01T21:11:20Z) on `Friend-MachineD`, git `4b5e4943c943`,
 | 2026-09-01T20:29:03Z | paired-paths | `cf4c9412d1b4` | no | enforced-only:cli_extensions_install.llama_format_context,cli_extensions_install.llama_js_to_fixed,cli_extensions_install.llama_search_exact | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T21:11:20Z | — | `4b5e4943c943` | no | enforced-only:cli_bootstrap_sessions.assistant_tool_call_only,cli_bootstrap_sessions.session_compaction_status,cli_bootstrap_sessions.session_entry_user_text | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T21:11:32Z | — | `4b5e4943c943` | no | enforced-only:cli_bootstrap_sessions.assistant_tool_call_only,cli_bootstrap_sessions.session_compaction_status,cli_bootstrap_sessions.session_entry_user_text | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-01T21:36:21Z | — | `5f088c8fbc2d` | no | enforced-only:cli_bootstrap_sessions.last_assistant_text,cli_bootstrap_sessions.session_export_basename,cli_bootstrap_sessions.session_user_messages_for_forking | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
