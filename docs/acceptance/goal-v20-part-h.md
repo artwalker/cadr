@@ -9970,6 +9970,30 @@ Leftover sibling of Pair 778. Timed work is judge score (pass / missing source /
 
 Leftover sibling of Pairs 778–779. Timed work is pick hello bundle else first — not `read-extension-source` path I/O. Observed `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` are exact. First n=5 freeze **0.465×** (0.776 / 1.671 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 781 — `package_manager` (resource_item_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_item_key` | `config-resource-item-key` (`src/cadr-cli/packages/config-selector.lisp`) | leftover `getResourceItemKey` replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 736–738 on the same `config-selector.lisp` `package_manager` hole. Timed work is type-prefixed item key (`extensions:` / `skills:` plus path) — not TUI render, not directory discovery. Observed `rik_ext` / `rik_skill` / `rik_diff` / `rik_hello` / `rik_n` are exact. First n=5 freeze **23.49×** (15.782 / 0.672 µs) on host `cursor`, ceiling 50.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 782 — `package_manager` (project_override_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_override_state` | `config-selector-project-state` (`src/cadr-cli/packages/config-selector.lisp`) | leftover override-hash replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 781. Timed work is hash lookup load/unload/inherit — not `getProjectOverrideState` settings walk. Observed `cps_load` / `cps_unload` / `cps_miss` / `cps_eq` / `cps_n` are exact. First n=5 freeze **17.17×** (44.722 / 2.605 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 783 — `package_manager` (next_project_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `next_project_state` | `config-selector-next-project-state` (`src/cadr-cli/packages/config-selector.lisp`) | leftover `nextProjectOverrideState` replica (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 781–782. Timed work is inherit/unload/load cycle given inherited-enabled — not TUI checkbox. Observed `nps_inh_t` / `nps_inh_f` / `nps_unl` / `nps_load` / `nps_n` are exact. First n=5 freeze **9.35×** (40.473 / 4.330 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
