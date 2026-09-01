@@ -620,6 +620,15 @@
     ("cli_extensions_install.llama_context_label" . 50)
     ("cli_extensions_install.llama_model_description" . 50)
     ("cli_extensions_install.llama_compact_count" . 50)
+    ("cli_extensions_install.unsafe_git" . 50)
+    ("cli_extensions_install.git_path" . 50)
+    ("cli_extensions_install.normalize_git" . 50)
+    ("cli_extensions_install.package_fragment" . 50)
+    ("cli_extensions_install.local_system_name" . 50)
+    ("cli_extensions_install.inline_factory" . 50)
+    ("cli_extensions_install.gated_approval" . 50)
+    ("cli_extensions_install.split_args" . 50)
+    ("cli_extensions_install.quant_label" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -11266,7 +11275,16 @@
          (unknown (run-cli-extensions-handle-unknown manager))
          (context-label (run-cli-extensions-llama-context-label))
          (model-description (run-cli-extensions-llama-model-description))
-         (compact-count (run-cli-extensions-llama-compact-count)))
+         (compact-count (run-cli-extensions-llama-compact-count))
+         (unsafe-git (run-cli-extensions-unsafe-git))
+         (git-path (run-cli-extensions-git-path))
+         (normalize-git (run-cli-extensions-normalize-git))
+         (package-fragment (run-cli-extensions-package-fragment))
+         (local-system (run-cli-extensions-local-system-name))
+         (inline-factory (run-cli-extensions-inline-factory))
+         (gated-approval (run-cli-extensions-gated-approval))
+         (split-args (run-cli-extensions-split-args))
+         (quant-label (run-cli-extensions-quant-label)))
     (json-object
      "observed"
      (json-object
@@ -11326,7 +11344,53 @@
       "cc_k0" (nth 2 compact-count)
       "cc_m" (nth 3 compact-count)
       "cc_m0" (nth 4 compact-count)
-      "cc_999" (nth 5 compact-count))
+      "cc_999" (nth 5 compact-count)
+      "ug_empty" (nth 0 unsafe-git)
+      "ug_dash" (nth 1 unsafe-git)
+      "ug_null" (nth 2 unsafe-git)
+      "ug_bs" (nth 3 unsafe-git)
+      "ug_dot" (nth 4 unsafe-git)
+      "ug_ok" (nth 5 unsafe-git)
+      "ug_n" (nth 6 unsafe-git)
+      "gp_https" (nth 0 git-path)
+      "gp_scp" (nth 1 git-path)
+      "gp_slash" (nth 2 git-path)
+      "gp_miss" (nth 3 git-path)
+      "gp_n" (nth 4 git-path)
+      "ng_https" (nth 0 normalize-git)
+      "ng_git" (nth 1 normalize-git)
+      "ng_file" (nth 2 normalize-git)
+      "ng_empty" (nth 3 normalize-git)
+      "ng_bare" (nth 4 normalize-git)
+      "pf_plain" (nth 0 package-fragment)
+      "pf_hyphen" (nth 1 package-fragment)
+      "pf_keep" (nth 2 package-fragment)
+      "pf_empty" (nth 3 package-fragment)
+      "pf_n" (nth 4 package-fragment)
+      "ls_ok" (nth 0 local-system)
+      "ls_empty" (nth 1 local-system)
+      "ls_dot" (nth 2 local-system)
+      "ls_dotdot" (nth 3 local-system)
+      "ls_slash" (nth 4 local-system)
+      "ls_n" (nth 5 local-system)
+      "if_fn" (nth 0 inline-factory)
+      "if_plist" (nth 1 inline-factory)
+      "if_empty_name" (nth 2 inline-factory)
+      "if_no_factory" (nth 3 inline-factory)
+      "if_odd" (nth 4 inline-factory)
+      "ga_manual" (nth 0 gated-approval)
+      "ga_auto" (nth 1 gated-approval)
+      "ga_str" (nth 2 gated-approval)
+      "ga_nil" (nth 3 gated-approval)
+      "sa_login" (nth 0 split-args)
+      "sa_view" (nth 1 split-args)
+      "sa_bare" (nth 2 split-args)
+      "sa_tab" (nth 3 split-args)
+      "sa_n" (nth 4 split-args)
+      "ql_name" (nth 0 quant-label)
+      "ql_rec" (nth 1 quant-label)
+      "ql_bytes" (nth 2 quant-label)
+      "ql_both" (nth 3 quant-label))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -11377,7 +11441,52 @@
      (collect "cli_extensions_install.llama_compact_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-llama-compact-count)))))))
+                  (run-cli-extensions-llama-compact-count))))
+     "unsafe_git"
+     (collect "cli_extensions_install.unsafe_git"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-unsafe-git))))
+     "git_path"
+     (collect "cli_extensions_install.git_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-git-path))))
+     "normalize_git"
+     (collect "cli_extensions_install.normalize_git"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-normalize-git))))
+     "package_fragment"
+     (collect "cli_extensions_install.package_fragment"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-package-fragment))))
+     "local_system_name"
+     (collect "cli_extensions_install.local_system_name"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-local-system-name))))
+     "inline_factory"
+     (collect "cli_extensions_install.inline_factory"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-inline-factory))))
+     "gated_approval"
+     (collect "cli_extensions_install.gated_approval"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-gated-approval))))
+     "split_args"
+     (collect "cli_extensions_install.split_args"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-split-args))))
+     "quant_label"
+     (collect "cli_extensions_install.quant_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-quant-label)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -32734,6 +32843,24 @@
       "src/cadr-cli/extensions/llama/ui.lisp llama-model-description"
       "cli_extensions_install.llama_compact_count"
       "src/cadr-cli/extensions/llama/ui.lisp llama-compact-count"
+      "cli_extensions_install.unsafe_git"
+      "src/cadr-cli/extensions/installer.lisp unsafe-git-source-p"
+      "cli_extensions_install.git_path"
+      "src/cadr-cli/extensions/installer.lisp git-source-path"
+      "cli_extensions_install.normalize_git"
+      "src/cadr-cli/extensions/installer.lisp normalize-git-install-source"
+      "cli_extensions_install.package_fragment"
+      "src/cadr-cli/extensions/loader.lisp extension-package-fragment"
+      "cli_extensions_install.local_system_name"
+      "src/cadr-cli/extensions/loader.lisp extension-local-system-name-p"
+      "cli_extensions_install.inline_factory"
+      "src/cadr-cli/extensions/loader.lisp valid-inline-extension-factory-p"
+      "cli_extensions_install.gated_approval"
+      "src/cadr-cli/extensions/llama/extension.lisp llama-gated-approval-text"
+      "cli_extensions_install.split_args"
+      "src/cadr-cli/extensions/llama/extension.lisp split-llama-command-arguments"
+      "cli_extensions_install.quant_label"
+      "src/cadr-cli/extensions/llama/extension.lisp llama-quantization-option-label"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

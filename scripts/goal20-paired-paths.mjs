@@ -12501,6 +12501,15 @@ function runCliExtensionsQuantLabel() {
 }
 
 
+function leftoverNamed(keys, values) {
+	const observed = {};
+	for (let index = 0; index < keys.length; index += 1) {
+		observed[keys[index]] = values[index];
+	}
+	return observed;
+}
+
+
 function llamaUiContextLabel(model) {
 	const context = model.meta?.n_ctx ?? model.meta?.n_ctx_train;
 	if (context) return context >= 1000 ? `${Math.round(context / 1000)}k` : String(context);
@@ -12643,6 +12652,33 @@ async function measureCliExtensionsInstall() {
 		llama_compact_count: await collect("cli_extensions_install.llama_compact_count", () => {
 			return () => runCliExtensionsLlamaCompactCount();
 		}),
+		unsafe_git: await collect("cli_extensions_install.unsafe_git", () => {
+			return () => runCliExtensionsUnsafeGit();
+		}),
+		git_path: await collect("cli_extensions_install.git_path", () => {
+			return () => runCliExtensionsGitPath();
+		}),
+		normalize_git: await collect("cli_extensions_install.normalize_git", () => {
+			return () => runCliExtensionsNormalizeGit();
+		}),
+		package_fragment: await collect("cli_extensions_install.package_fragment", () => {
+			return () => runCliExtensionsPackageFragment();
+		}),
+		local_system_name: await collect("cli_extensions_install.local_system_name", () => {
+			return () => runCliExtensionsLocalSystemName();
+		}),
+		inline_factory: await collect("cli_extensions_install.inline_factory", () => {
+			return () => runCliExtensionsInlineFactory();
+		}),
+		gated_approval: await collect("cli_extensions_install.gated_approval", () => {
+			return () => runCliExtensionsGatedApproval();
+		}),
+		split_args: await collect("cli_extensions_install.split_args", () => {
+			return () => runCliExtensionsSplitArgs();
+		}),
+		quant_label: await collect("cli_extensions_install.quant_label", () => {
+			return () => runCliExtensionsQuantLabel();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -12654,6 +12690,42 @@ async function measureCliExtensionsInstall() {
 			...runCliExtensionsLlamaContextLabel(),
 			...runCliExtensionsLlamaModelDescription(),
 			...runCliExtensionsLlamaCompactCount(),
+			...leftoverNamed(
+				["ug_empty", "ug_dash", "ug_null", "ug_bs", "ug_dot", "ug_ok", "ug_n"],
+				runCliExtensionsUnsafeGit(),
+			),
+			...leftoverNamed(
+				["gp_https", "gp_scp", "gp_slash", "gp_miss", "gp_n"],
+				runCliExtensionsGitPath(),
+			),
+			...leftoverNamed(
+				["ng_https", "ng_git", "ng_file", "ng_empty", "ng_bare"],
+				runCliExtensionsNormalizeGit(),
+			),
+			...leftoverNamed(
+				["pf_plain", "pf_hyphen", "pf_keep", "pf_empty", "pf_n"],
+				runCliExtensionsPackageFragment(),
+			),
+			...leftoverNamed(
+				["ls_ok", "ls_empty", "ls_dot", "ls_dotdot", "ls_slash", "ls_n"],
+				runCliExtensionsLocalSystemName(),
+			),
+			...leftoverNamed(
+				["if_fn", "if_plist", "if_empty_name", "if_no_factory", "if_odd"],
+				runCliExtensionsInlineFactory(),
+			),
+			...leftoverNamed(
+				["ga_manual", "ga_auto", "ga_str", "ga_nil"],
+				runCliExtensionsGatedApproval(),
+			),
+			...leftoverNamed(
+				["sa_login", "sa_view", "sa_bare", "sa_tab", "sa_n"],
+				runCliExtensionsSplitArgs(),
+			),
+			...leftoverNamed(
+				["ql_name", "ql_rec", "ql_bytes", "ql_both"],
+				runCliExtensionsQuantLabel(),
+			),
 		},
 	};
 }
@@ -33953,6 +34025,24 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/ui.ts modelDescription",
 			"cli_extensions_install.llama_compact_count":
 				"packages/coding-agent/src/extensions/llama/ui.ts compactCount",
+			"cli_extensions_install.unsafe_git":
+				"packages/coding-agent/src/utils/git.ts hasUnsafeGitInstallPart",
+			"cli_extensions_install.git_path":
+				"packages/coding-agent/src/utils/git.ts parseGenericGitUrl path slice",
+			"cli_extensions_install.normalize_git":
+				"packages/coding-agent/src/utils/git.ts parseGitUrl + extension name",
+			"cli_extensions_install.package_fragment":
+				"packages/coding-agent/src/core/extensions/loader.ts package-name sanitize",
+			"cli_extensions_install.local_system_name":
+				"packages/coding-agent/src/core/extensions/loader.ts local system name predicate",
+			"cli_extensions_install.inline_factory":
+				"packages/coding-agent/src/core/extensions/loader.ts loadExtensionFromFactory input check",
+			"cli_extensions_install.gated_approval":
+				"packages/coding-agent/src/extensions/llama/index.ts gated-repo approval copy",
+			"cli_extensions_install.split_args":
+				"packages/coding-agent/src/extensions/llama/index.ts llama command argv split",
+			"cli_extensions_install.quant_label":
+				"packages/coding-agent/src/extensions/llama/index.ts downloadModel option text",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `cli_extensions_install` slugs on `src/cadr-cli/extensions/installer.lisp`,
+  `loader.lisp`, and `llama/extension.lisp`. Run-fns, METRICS, and the pi
+  half already existed. Freeze and inventory reclassify follow. G.17 stays
+  missing. `nextPairNum` left unchanged.
+
 - Goal 20 pair restore: lisp collect + `file_tags` for
   `cli_extensions_install.llama_context_label` /
   `llama_model_description` / `llama_compact_count` on
