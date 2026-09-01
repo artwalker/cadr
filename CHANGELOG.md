@@ -28,6 +28,14 @@ tag/Release step.
   `python3 scripts/goal20-unpaired-paths.py --write && --check` green.
   Does not mark G.17 `met`. `nextPairNum` left unchanged.
 
+- Goal 20 pair restore: lisp collect + `file_tags` for `countdown_seconds` /
+  `countdown_tick` / `countdown_render` and `armin_pixel` / `armin_cell` /
+  `armin_grid_height`. n=5 freeze on host `cursor`: countdown **2.376×** /
+  **2.489×** / **2.122×** (ceilings 8.0); armin **0.682×** / **0.473×** /
+  **0.890×** (under-1×, not booked over-1×). Reclassified
+  `countdown.lisp` and `armin.lisp`. `needs-pair` 25→23. G.17 stays
+  missing. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `evals_harness.validate_extension`
   (`validate-extension-result` vs leftover replica of extension greeting
   + path-count). Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty`
