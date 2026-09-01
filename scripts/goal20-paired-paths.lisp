@@ -610,6 +610,18 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.base64url_value" . 50)
+    ("oauth_pkce_device.base64url_decode" . 50)
+    ("oauth_pkce_device.account_id" . 50)
+    ("oauth_pkce_device.error_detail" . 50)
+    ("oauth_pkce_device.ensure_success" . 50)
+    ("oauth_pkce_device.notify_device" . 50)
+    ("oauth_pkce_device.json_copy" . 50)
+    ("oauth_pkce_device.interval_seconds" . 50)
+    ("oauth_pkce_device.device_start" . 50)
+    ("oauth_pkce_device.openrouter_input" . 50)
+    ("oauth_pkce_device.openrouter_refresh" . 50)
+    ("oauth_pkce_device.openrouter_exchange" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10616,7 +10628,19 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (base64url-value (run-oauth-pkce-device-base64url-value))
+        (base64url-decode (run-oauth-pkce-device-base64url-decode))
+        (account-id (run-oauth-pkce-device-account-id))
+        (error-detail (run-oauth-pkce-device-error-detail))
+        (ensure-success (run-oauth-pkce-device-ensure-success))
+        (notify-device (run-oauth-pkce-device-notify-device))
+        (json-copy (run-oauth-pkce-device-json-copy))
+        (interval-seconds (run-oauth-pkce-device-interval-seconds))
+        (device-start (run-oauth-pkce-device-device-start))
+        (openrouter-input (run-oauth-pkce-device-openrouter-input))
+        (openrouter-refresh (run-oauth-pkce-device-openrouter-refresh))
+        (openrouter-exchange (run-oauth-pkce-device-openrouter-exchange)))
     (json-object
      "observed"
      (json-object
@@ -10673,7 +10697,59 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "bv_A" (nth 0 base64url-value)
+      "bv_a" (nth 1 base64url-value)
+      "bv_0" (nth 2 base64url-value)
+      "bv_dash" (nth 3 base64url-value)
+      "bv_us" (nth 4 base64url-value)
+      "bv_n" (nth 5 base64url-value)
+      "bd_obj" (nth 0 base64url-decode)
+      "bd_foo" (nth 1 base64url-decode)
+      "bd_acct" (nth 2 base64url-decode)
+      "bd_n" (nth 3 base64url-decode)
+      "aid_ok" (nth 0 account-id)
+      "aid_miss" (nth 1 account-id)
+      "aid_bad" (nth 2 account-id)
+      "aid_n" (nth 3 account-id)
+      "ed_desc" (nth 0 error-detail)
+      "ed_error" (nth 1 error-detail)
+      "ed_n" (nth 2 error-detail)
+      "es_ok" (nth 0 ensure-success)
+      "es_created" (nth 1 ensure-success)
+      "es_fail" (nth 2 ensure-success)
+      "es_n" (nth 3 ensure-success)
+      "nd_complete" (nth 0 notify-device)
+      "nd_plain" (nth 1 notify-device)
+      "nd_code" (nth 2 notify-device)
+      "nd_n" (nth 3 notify-device)
+      "jc_empty" (nth 0 json-copy)
+      "jc_ok" (nth 1 json-copy)
+      "jc_nil" (nth 2 json-copy)
+      "jc_n" (nth 3 json-copy)
+      "iv_num" (nth 0 interval-seconds)
+      "iv_str" (nth 1 interval-seconds)
+      "iv_zero" (nth 2 interval-seconds)
+      "iv_neg" (nth 3 interval-seconds)
+      "iv_bad" (nth 4 interval-seconds)
+      "iv_n" (nth 5 interval-seconds)
+      "ds_ok" (nth 0 device-start)
+      "ds_404" (nth 1 device-start)
+      "ds_fail" (nth 2 device-start)
+      "ds_bad" (nth 3 device-start)
+      "ds_n" (nth 4 device-start)
+      "ori_url" (nth 0 openrouter-input)
+      "ori_qs" (nth 1 openrouter-input)
+      "ori_plain" (nth 2 openrouter-input)
+      "ori_n" (nth 3 openrouter-input)
+      "orr_same" (nth 0 openrouter-refresh)
+      "orr_access" (nth 1 openrouter-refresh)
+      "orr_empty" (nth 2 openrouter-refresh)
+      "orr_n" (nth 3 openrouter-refresh)
+      "ox_ok" (nth 0 openrouter-exchange)
+      "ox_fail" (nth 1 openrouter-exchange)
+      "ox_bad" (nth 2 openrouter-exchange)
+      "ox_n" (nth 3 openrouter-exchange))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10733,7 +10809,67 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "base64url_value"
+     (collect "oauth_pkce_device.base64url_value"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-base64url-value))))
+     "base64url_decode"
+     (collect "oauth_pkce_device.base64url_decode"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-base64url-decode))))
+     "account_id"
+     (collect "oauth_pkce_device.account_id"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-account-id))))
+     "error_detail"
+     (collect "oauth_pkce_device.error_detail"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-error-detail))))
+     "ensure_success"
+     (collect "oauth_pkce_device.ensure_success"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-ensure-success))))
+     "notify_device"
+     (collect "oauth_pkce_device.notify_device"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-notify-device))))
+     "json_copy"
+     (collect "oauth_pkce_device.json_copy"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-json-copy))))
+     "interval_seconds"
+     (collect "oauth_pkce_device.interval_seconds"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-interval-seconds))))
+     "device_start"
+     (collect "oauth_pkce_device.device_start"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-device-start))))
+     "openrouter_input"
+     (collect "oauth_pkce_device.openrouter_input"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-input))))
+     "openrouter_refresh"
+     (collect "oauth_pkce_device.openrouter_refresh"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-refresh))))
+     "openrouter_exchange"
+     (collect "oauth_pkce_device.openrouter_exchange"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-exchange)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -32823,6 +32959,30 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.base64url_value"
+      "src/cadr-ai/oauth/openai-anthropic.lisp base64url-value"
+      "oauth_pkce_device.base64url_decode"
+      "src/cadr-ai/oauth/openai-anthropic.lisp base64url-decode"
+      "oauth_pkce_device.account_id"
+      "src/cadr-ai/oauth/openai-anthropic.lisp openai-account-id-from-token"
+      "oauth_pkce_device.error_detail"
+      "src/cadr-ai/oauth/providers/xai.lisp oauth-response-error-detail"
+      "oauth_pkce_device.ensure_success"
+      "src/cadr-ai/oauth/providers/xai.lisp ensure-oauth-response-success"
+      "oauth_pkce_device.notify_device"
+      "src/cadr-ai/oauth/providers/xai.lisp notify-device-authorization"
+      "oauth_pkce_device.json_copy"
+      "src/cadr-ai/oauth/providers/openai-device.lisp oauth-response-json-copy"
+      "oauth_pkce_device.interval_seconds"
+      "src/cadr-ai/oauth/providers/openai-device.lisp openai-device-interval-seconds"
+      "oauth_pkce_device.device_start"
+      "src/cadr-ai/oauth/providers/openai-device.lisp start-openai-codex-device-authorization"
+      "oauth_pkce_device.openrouter_input"
+      "src/cadr-ai/oauth/providers/openrouter.lisp parse-openrouter-authorization-input"
+      "oauth_pkce_device.openrouter_refresh"
+      "src/cadr-ai/oauth/providers/openrouter.lisp refresh-openrouter-oauth-credential"
+      "oauth_pkce_device.openrouter_exchange"
+      "src/cadr-ai/oauth/providers/openrouter.lisp openrouter-exchange-code"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
