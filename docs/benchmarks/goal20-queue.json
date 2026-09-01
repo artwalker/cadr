@@ -8517,13 +8517,13 @@
    "source": "src/cadr-cli/extensions/installer.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.string_prefix",
-   "branch": "cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 802",
-   "ratio": 0.686,
-   "cadrUs": 0.144,
-   "piUs": 0.209,
+   "branch": "g20-freeze-802-804",
+   "note": "remeasure on tip Friend-MachineD; leftover id 802",
+   "ratio": 1.109,
+   "cadrUs": 0.236,
+   "piUs": 0.213,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 803,
@@ -8532,13 +8532,13 @@
    "source": "src/cadr-cli/extensions/installer.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.split_path_segments",
-   "branch": "cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 803",
-   "ratio": 2.152,
-   "cadrUs": 0.635,
-   "piUs": 0.295,
+   "branch": "g20-freeze-802-804",
+   "note": "remeasure on tip Friend-MachineD; leftover id 803",
+   "ratio": 2.742,
+   "cadrUs": 0.885,
+   "piUs": 0.323,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 804,
@@ -8547,13 +8547,13 @@
    "source": "src/cadr-cli/extensions/installer.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.strip_git_query",
-   "branch": "cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 804",
-   "ratio": 0.364,
-   "cadrUs": 0.473,
-   "piUs": 1.299,
+   "branch": "g20-freeze-802-804",
+   "note": "remeasure on tip Friend-MachineD; leftover id 804",
+   "ratio": 2.811,
+   "cadrUs": 0.697,
+   "piUs": 0.248,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   }
  ],
  "mergeQueue": []
