@@ -5689,6 +5689,47 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 874 — `cli_interactive_controller` (announcement_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `announcement_make` | `make-earendil-announcement-component` (`src/cadr-cli/interactive/components/announcement.lisp`) | `EarendilAnnouncementComponent` (`packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts`) |
+
+Leftover of the `cli_selectors` hole on `announcement.lisp` (timed under
+`cli_interactive_controller`). Timed work is component construction.
+Observed `eam_ok` / `eam_min` / `eam_n` are exact. Collect restore n=5 freeze **0.039×** (10.159 /
+257.748 µs) on host `Friend-MachineD`, gitHead `78aa2cb75`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 875 — `cli_interactive_controller` (announcement_url)
+
+| metric | cadr | pi |
+|---|---|---|
+| `announcement_url` | `+earendil-blog-url+` in render (`src/cadr-cli/interactive/components/announcement.lisp`) | `BLOG_URL` in render (`packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts`) |
+
+Leftover sibling of Pair 874. Timed work is blog URL presence in the
+rendered announcement. Observed `eau_eq` / `eau_sold` / `eau_n` are exact. Collect restore n=5 freeze **0.149×** (70.638 /
+475.352 µs) on host `Friend-MachineD`, gitHead `78aa2cb75`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 876 — `cli_interactive_controller` (announcement_title)
+
+| metric | cadr | pi |
+|---|---|---|
+| `announcement_title` | title string in render (`src/cadr-cli/interactive/components/announcement.lisp`) | `"pi has joined Earendil"` (`packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts`) |
+
+Leftover sibling of Pairs 874–875. Timed work is title string presence.
+Observed `eat_eq` / `eat_pi` / `eat_n` are exact. Collect restore n=5 freeze **0.412×** (71.844 /
+174.317 µs) on host `Friend-MachineD`, gitHead `78aa2cb75`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -9982,14 +10023,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 237 | 102,960 | 79.6% | `no worse than baseline` is falsifiable |
+| `paired` | 238 | 103,001 | 79.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 7 | 1,393 | 1.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 6 | 1,352 | 1.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.6% of lines (237 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.4% of lines.
+- **Falsifiable vs baseline:** 79.6% of lines (238 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -10120,6 +10161,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/loader.lisp` | 702 | `cli_extensions_install.package_fragment`, `cli_extensions_install.local_system_name`, `cli_extensions_install.inline_factory` |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
+| `src/cadr-cli/interactive/components/announcement.lisp` | 41 | `cli_interactive_controller.announcement_make`, `cli_interactive_controller.announcement_url`, `cli_interactive_controller.announcement_title` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_pixel`, `cli_selectors.armin_cell`, `cli_selectors.armin_grid_height` |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_seconds`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_render` |
 | `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
@@ -10308,7 +10350,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 1 | 370 |
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
-| `cli_selectors` | 1 | 41 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

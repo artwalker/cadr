@@ -644,7 +644,10 @@
     "cli_support.editor_empty",
     "cli_support.threads_absent",
     "cli_support.threads_current",
-    "cli_support.threads_joined"
+    "cli_support.threads_joined",
+    "cli_interactive_controller.announcement_make",
+    "cli_interactive_controller.announcement_url",
+    "cli_interactive_controller.announcement_title"
   ],
   "unpairablePaths": [
     {
@@ -1836,8 +1839,12 @@
     },
     {
       "prefix": "src/cadr-cli/interactive/components/announcement.lisp",
-      "class": "needs-pair",
-      "hole": "cli_selectors"
+      "class": "paired",
+      "metrics": [
+        "cli_interactive_controller.announcement_make",
+        "cli_interactive_controller.announcement_url",
+        "cli_interactive_controller.announcement_title"
+      ]
     },
     {
       "prefix": "src/cadr-cli/interactive/components/armin.lisp",
