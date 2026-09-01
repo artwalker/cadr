@@ -540,6 +540,7 @@
     "package_manager.package_override_source",
     "package_manager.package_resource_pattern",
     "package_manager.package_setting_record",
+    "package_manager.package_setting_records",
     "package_manager.package_source",
     "package_manager.pattern_candidates",
     "package_manager.pattern_matches",
@@ -563,8 +564,10 @@
     "package_manager.selected_entry",
     "package_manager.selector_items",
     "package_manager.selector_move",
+    "package_manager.selector_rebuild",
     "package_manager.settings_array",
     "package_manager.settings_values",
+    "package_manager.switch_scope",
     "package_manager.type_label",
     "package_manager.update_argv",
     "package_manager.update_env",
@@ -2482,7 +2485,10 @@
         "package_manager.package_entry_index",
         "package_manager.project_package_entry",
         "package_manager.project_package_state",
-        "package_manager.package_setting_record"
+        "package_manager.package_setting_record",
+        "package_manager.package_setting_records",
+        "package_manager.selector_rebuild",
+        "package_manager.switch_scope"
       ]
     },
     {
