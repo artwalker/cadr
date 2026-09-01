@@ -5995,9 +5995,21 @@ def observed_table(report: dict, group: str) -> dict:
     return observed if isinstance(observed, dict) else {}
 
 
-def check_observed(cadr: dict, pi: dict, failures: list[str]) -> list[str]:
+def check_observed(
+    cadr: dict,
+    pi: dict,
+    failures: list[str],
+    only_enforce: frozenset[str] | None = None,
+) -> list[str]:
     notes: list[str] = []
+    scoped = (
+        None
+        if only_enforce is None
+        else {key.split(".", 1)[0] for key in only_enforce}
+    )
     for group, keys in OBSERVED_EXACT.items():
+        if scoped is not None and group not in scoped:
+            continue
         cadr_observed = observed_table(cadr, group)
         pi_observed = observed_table(pi, group)
         for key in keys:
@@ -6018,72 +6030,76 @@ def check_observed(cadr: dict, pi: dict, failures: list[str]) -> list[str]:
                 failures,
             )
 
-    cadr_kinds = cadr["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
-    pi_kinds = pi["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
-    check(
-        sorted(cadr_kinds) == sorted(pi_kinds),
-        "provider_stream event kinds differ between the two sides",
-        failures,
-    )
-    for kind in sorted(set(cadr_kinds) | set(pi_kinds)):
-        recorded = KNOWN_EVENT_KIND_DIVERGENCES.get(kind)
-        pi_count = pi_kinds.get(kind)
-        cadr_count = cadr_kinds.get(kind)
-        if recorded is None:
+    if scoped is None or "provider_stream" in scoped:
+        cadr_kinds = cadr["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
+        pi_kinds = pi["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
+        check(
+            sorted(cadr_kinds) == sorted(pi_kinds),
+            "provider_stream event kinds differ between the two sides",
+            failures,
+        )
+        for kind in sorted(set(cadr_kinds) | set(pi_kinds)):
+            recorded = KNOWN_EVENT_KIND_DIVERGENCES.get(kind)
+            pi_count = pi_kinds.get(kind)
+            cadr_count = cadr_kinds.get(kind)
+            if recorded is None:
+                check(
+                    pi_count == cadr_count,
+                    f"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}",
+                    failures,
+                )
+                continue
             check(
-                pi_count == cadr_count,
-                f"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}",
+                (pi_count, cadr_count) == (recorded["pi"], recorded["cadr"]),
+                f"recorded {kind} divergence moved: expected pi={recorded['pi']} "
+                f"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}",
                 failures,
             )
-            continue
+            notes.append(f"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}")
+
+    if scoped is None or "session_pipeline" in scoped:
+        cadr_roles = cadr["metrics"]["session_pipeline"]["observed"]["context_message_roles"]
+        pi_roles = fold_pi_roles(pi["metrics"]["session_pipeline"]["observed"]["context_message_roles"])
         check(
-            (pi_count, cadr_count) == (recorded["pi"], recorded["cadr"]),
-            f"recorded {kind} divergence moved: expected pi={recorded['pi']} "
-            f"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}",
+            cadr_roles == pi_roles,
+            f"context message roles differ after folding pi's synthetic roles: "
+            f"pi={pi_roles!r} cadr={cadr_roles!r}",
             failures,
         )
-        notes.append(f"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}")
 
-    cadr_roles = cadr["metrics"]["session_pipeline"]["observed"]["context_message_roles"]
-    pi_roles = fold_pi_roles(pi["metrics"]["session_pipeline"]["observed"]["context_message_roles"])
-    check(
-        cadr_roles == pi_roles,
-        f"context message roles differ after folding pi's synthetic roles: "
-        f"pi={pi_roles!r} cadr={cadr_roles!r}",
-        failures,
-    )
-
-    cadr_help = cadr["metrics"]["cli_dispatch"]["observed"]["help_characters"]
-    pi_help = pi["metrics"]["cli_dispatch"]["observed"]["help_characters"]
-    check(
-        abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,
-        f"help text size gap exceeds {HELP_CHARACTER_TOLERANCE:.0%}: "
-        f"pi={pi_help} cadr={cadr_help}",
-        failures,
-    )
-    notes.append(f"help_characters=pi{pi_help}/cadr{cadr_help}")
-
-    cadr_journal = cadr["metrics"]["storage_journal"]["observed"]
-    pi_journal = pi["metrics"]["storage_journal"]["observed"]
-    check(
-        cadr_journal["journal_cwd"].rstrip("/") == pi_journal["journal_cwd"].rstrip("/"),
-        "the two sides wrote journals for different working directories",
-        failures,
-    )
-    for field in ("written_bytes", "written_body_bytes"):
+    if scoped is None or "cli_dispatch" in scoped:
+        cadr_help = cadr["metrics"]["cli_dispatch"]["observed"]["help_characters"]
+        pi_help = pi["metrics"]["cli_dispatch"]["observed"]["help_characters"]
         check(
-            cadr_journal[field] <= JOURNAL_BYTE_TOLERANCE * pi_journal[field],
-            f"cadr {field} exceeds {JOURNAL_BYTE_TOLERANCE:.2f}x pi: "
-            f"pi={pi_journal[field]} cadr={cadr_journal[field]}",
+            abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,
+            f"help text size gap exceeds {HELP_CHARACTER_TOLERANCE:.0%}: "
+            f"pi={pi_help} cadr={cadr_help}",
             failures,
         )
-    notes.append(
-        "journal_body_bytes=pi{}/cadr{} ({:+.1%})".format(
-            pi_journal["written_body_bytes"],
-            cadr_journal["written_body_bytes"],
-            cadr_journal["written_body_bytes"] / pi_journal["written_body_bytes"] - 1,
+        notes.append(f"help_characters=pi{pi_help}/cadr{cadr_help}")
+
+    if scoped is None or "storage_journal" in scoped:
+        cadr_journal = cadr["metrics"]["storage_journal"]["observed"]
+        pi_journal = pi["metrics"]["storage_journal"]["observed"]
+        check(
+            cadr_journal["journal_cwd"].rstrip("/") == pi_journal["journal_cwd"].rstrip("/"),
+            "the two sides wrote journals for different working directories",
+            failures,
         )
-    )
+        for field in ("written_bytes", "written_body_bytes"):
+            check(
+                cadr_journal[field] <= JOURNAL_BYTE_TOLERANCE * pi_journal[field],
+                f"cadr {field} exceeds {JOURNAL_BYTE_TOLERANCE:.2f}x pi: "
+                f"pi={pi_journal[field]} cadr={cadr_journal[field]}",
+                failures,
+            )
+        notes.append(
+            "journal_body_bytes=pi{}/cadr{} ({:+.1%})".format(
+                pi_journal["written_body_bytes"],
+                cadr_journal["written_body_bytes"],
+                cadr_journal["written_body_bytes"] / pi_journal["written_body_bytes"] - 1,
+            )
+        )
     return notes
 
 
@@ -6223,11 +6239,12 @@ def check_ratios(
                     )
                 continue
             if cadr_metric is None or pi_metric is None:
-                check(
-                    False,
-                    f"{key} timed median_us slot present on only one report",
-                    failures,
-                )
+                if only_enforce is None or key in only_enforce:
+                    check(
+                        False,
+                        f"{key} timed median_us slot present on only one report",
+                        failures,
+                    )
                 continue
             ratio = cadr_metric["median_us"] / max(1e-9, pi_metric["median_us"])
             ceiling = RATIO_CEILINGS[key]
@@ -6274,7 +6291,7 @@ def main() -> int:
         pi = load_json(arguments.pi)
         check_provenance(cadr, pi, failures)
         check_parameters(cadr, pi, failures)
-        notes += check_observed(cadr, pi, failures)
+        notes += check_observed(cadr, pi, failures, only_enforce)
 
         host_match = goal11.same_machine(cadr, pi)
         quick = bool(cadr["parameters"]["quick"] or pi["parameters"]["quick"])
