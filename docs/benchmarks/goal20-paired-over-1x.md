@@ -563,4 +563,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ldcixxx_ok` | 5.854 | 1.813 | 3.230× | 8.00× | measure-only leftover 1387; `login-dialog-complete-input` vs leftover replaceInputWithSubmittedText | invent pause；地板优化另刀 |
 | `cli_selectors.ldhexxx_ok` | 7.396 | 2.562 | 2.887× | 8.00× | measure-only leftover 1388; `login-dialog-handle-event` vs leftover handleInput | invent pause；地板优化另刀 |
 | `cli_selectors.ldrdxxx_ok` | 106.883 | 3.590 | 29.776× | 50.00× | measure-only leftover 1389; `render-login-dialog-state` vs leftover LoginDialogComponent layout | invent pause；地板优化另刀 |
+| `cli_selectors.umrwxxx_ok` | 85.685 | 4.862 | 17.622× | 30.00× | measure-only leftover 1391; `user-message-selector-handle-raw-input` vs leftover handleInput raw | invent pause；地板优化另刀 |
+| `cli_selectors.umrsxxx_ok` | 242.804 | 3.433 | 70.735× | 100.00× | measure-only leftover 1392; `render-user-message-selector` vs leftover UserMessageSelectorComponent layout | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

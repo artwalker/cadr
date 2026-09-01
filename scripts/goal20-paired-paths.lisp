@@ -216,6 +216,14 @@
 ;;;;      (does not remount leftover 1322 ldhexx_ok / leftover 1190 ldhe_ok / leftover 1109 evt_ok / leftover 1033 ld_evt / leftover 1256 ldhex_ok)
 ;;;; 1389. cli_selectors ldrdxxx_ok vs leftover replica of LoginDialogComponent layout
 ;;;;      (does not remount leftover 1323 ldrdxx_ok / leftover 1191 ldrd_ok / leftover 1110 rnd_ok / leftover 1033 ld_rnd / leftover 1257 ldrdx_ok)
+
+
+;;;; 1390. cli_selectors umevxxx_ok vs leftover replica of UserMessageList.handleInput (structured)
+;;;;      (does not remount leftover 1324 umevxx_ok / leftover 1258 umevx_ok / leftover 1192 umev_ok / leftover 1111 he_ok / leftover 1036 um_he)
+;;;; 1391. cli_selectors umrwxxx_ok vs leftover replica of UserMessageList.handleInput (raw)
+;;;;      (does not remount leftover 1325 umrwxx_ok / leftover 1259 umrwx_ok / leftover 1193 umrw_ok / leftover 1112 raw_ok / leftover 1036 um_hr)
+;;;; 1392. cli_selectors umrsxxx_ok vs leftover replica of UserMessageSelectorComponent layout
+;;;;      (does not remount leftover 1326 umrsxx_ok / leftover 1260 umrsx_ok / leftover 1194 umrs_ok / leftover 1113 sel_ok / leftover 1036 um_rd)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -991,6 +999,9 @@
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
+    ("cli_selectors.umevxxx_ok" . 50)
+    ("cli_selectors.umrwxxx_ok" . 50)
+    ("cli_selectors.umrsxxx_ok" . 50)
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
@@ -29921,6 +29932,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-user-message-selector))))
+     "umevxxx_ok"
+     (collect "cli_selectors.umevxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-event))))
+     "umrwxxx_ok"
+     (collect "cli_selectors.umrwxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-raw))))
+     "umrsxxx_ok"
+     (collect "cli_selectors.umrsxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-user-message-selector))))
      "make_models_selector_keybindings"
      (collect "cli_selectors.make_models_selector_keybindings"
               (lambda ()
@@ -33332,6 +33358,12 @@
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input"
       "cli_selectors.render_user_message_selector"
       "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector"
+      "cli_selectors.umevxxx_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-event leftover"
+      "cli_selectors.umrwxxx_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input leftover"
+      "cli_selectors.umrsxxx_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector leftover"
       "cli_selectors.make_models_selector_keybindings"
       "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings"
       "cli_selectors.make_scoped_models_selector_state"
