@@ -705,7 +705,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.session_command_stats` | 2.578 | 1.092 | 2.362× | 8.00× | measure-only leftover 814; `session-command-stats` vs leftover getSessionStats; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_usage_breakdown` | 7.127 | 1.932 | 3.689× | 8.00× | measure-only leftover 815; `session-usage-breakdown` vs leftover getUsageCostBreakdown; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_tree_label_timestamps` | 4.218 | 1.468 | 2.873× | 8.00× | measure-only leftover 816; `session-tree-label-timestamps` vs leftover label timestamps; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.session_tree_tool_calls` | 1.825 | 1.122 | 1.626× | 8.00× | measure-only leftover 817; `session-tree-tool-calls` vs leftover tool-call id→name map | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.session_compaction_display_state` | 2.152 | 1.094 | 1.968× | 8.00× | measure-only leftover 818; `session-compaction-display-state` vs leftover display messages + nil summary | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.write_hotkeys_command` | 7.658 | 3.116 | 2.458× | 8.00× | measure-only leftover 819; `write-hotkeys-command` vs leftover Keyboard Shortcuts list | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_tree_tool_calls` | 2.883 | 1.047 | 2.754× | 8.00× | measure-only leftover 817; `session-tree-tool-calls` vs leftover tool-call id→name map; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_compaction_display_state` | 3.306 | 1.006 | 3.286× | 8.00× | measure-only leftover 818; `session-compaction-display-state` vs leftover display messages + nil summary; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.write_hotkeys_command` | 8.281 | 2.421 | 3.421× | 8.00× | measure-only leftover 819; `write-hotkeys-command` vs leftover Keyboard Shortcuts list; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -8746,11 +8746,11 @@
    "metric": "cli_bootstrap_sessions.session_tree_tool_calls",
    "branch": "cursor/bootstrap-sessions-tree-display-hotkeys-leftovers-817-819-34f9",
    "note": "nextPairNum left at tip 328; leftover id 817",
-   "ratio": 1.626,
-   "cadrUs": 1.825,
-   "piUs": 1.122,
+   "ratio": 2.754,
+   "cadrUs": 2.883,
+   "piUs": 1.047,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 818,
@@ -8761,11 +8761,11 @@
    "metric": "cli_bootstrap_sessions.session_compaction_display_state",
    "branch": "cursor/bootstrap-sessions-tree-display-hotkeys-leftovers-817-819-34f9",
    "note": "nextPairNum left at tip 328; leftover id 818",
-   "ratio": 1.968,
-   "cadrUs": 2.152,
-   "piUs": 1.094,
+   "ratio": 3.286,
+   "cadrUs": 3.306,
+   "piUs": 1.006,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 819,
@@ -8776,11 +8776,11 @@
    "metric": "cli_bootstrap_sessions.write_hotkeys_command",
    "branch": "cursor/bootstrap-sessions-tree-display-hotkeys-leftovers-817-819-34f9",
    "note": "nextPairNum left at tip 328; leftover id 819",
-   "ratio": 2.458,
-   "cadrUs": 7.658,
-   "piUs": 3.116,
+   "ratio": 3.421,
+   "cadrUs": 8.281,
+   "piUs": 2.421,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   }
  ],
  "mergeQueue": []
