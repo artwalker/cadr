@@ -476,6 +476,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_handle_raw_input": 50,
 	"cli_selectors.thinking_selector_handle_event": 50,
 	"cli_selectors.henxxx_ok": 50,
+	"cli_selectors.thmvxxx_ok": 50,
+	"cli_selectors.thhrxxx_ok": 50,
+	"cli_selectors.thhexxx_ok": 50,
 	"cli_selectors.thinking_selector_selected_level": 50,
 	"cli_selectors.thinking_level_description_line": 50,
 	"cli_selectors.render_thinking_selector": 50,
@@ -30970,6 +30973,15 @@ async function measureCliSelectorsSessionSearch() {
 		henxxx_ok: await collect("cli_selectors.henxxx_ok", () => {
 			return () => runCliSelectorsThinkingSelectorHandleEvent();
 		}),
+		thmvxxx_ok: await collect("cli_selectors.thmvxxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorMove();
+		}),
+		thhrxxx_ok: await collect("cli_selectors.thhrxxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleRawInput();
+		}),
+		thhexxx_ok: await collect("cli_selectors.thhexxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleEvent();
+		}),
 		thinking_selector_selected_level: await collect(
 			"cli_selectors.thinking_selector_selected_level",
 			() => {
@@ -34592,6 +34604,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts typed input event dispatch",
 			"cli_selectors.henxxx_ok":
 				"packages/coding-agent leftover replica of thinking-selector typed input event dispatch",
+			"cli_selectors.thmvxxx_ok":
+				"packages/coding-agent leftover replica of thinking-selector wrap selected index",
+			"cli_selectors.thhrxxx_ok":
+				"packages/coding-agent leftover replica of thinking-selector handleInput keybindings",
+			"cli_selectors.thhexxx_ok":
+				"packages/coding-agent leftover replica of thinking-selector typed input event dispatch leftover 1401",
 			"cli_selectors.thinking_selector_selected_level":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts selected SelectList item",
 			"cli_selectors.thinking_level_description_line":
