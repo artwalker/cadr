@@ -22,6 +22,12 @@ tag/Release step.
   no tools, and interactive fd/rg ensure via TUI `Warning:` lines
   before restored session messages (matching `showManagedToolStatus`).
 
+- Goal 20 inventory: reclassified 31 `needs-pair` files to `paired` because
+  live Part H `file_tags` already name them as timed production work (not
+  leftover remount slugs). `pairedMetrics` 245→586. `needs-pair` 56→25.
+  `python3 scripts/goal20-unpaired-paths.py --write && --check` green.
+  Does not mark G.17 `met`. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `evals_harness.validate_extension`
   (`validate-extension-result` vs leftover replica of extension greeting
   + path-count). Observed `ve_ok` / `ve_greet` / `ve_paths` / `ve_empty`
