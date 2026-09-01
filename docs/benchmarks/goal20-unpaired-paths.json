@@ -38,6 +38,7 @@
     "bash_tool.strip_truncation",
     "bash_tool.truncation_notice",
     "bash_tool.user_bash_result",
+    "cli_bootstrap_sessions.assistant_tool_call_only",
     "cli_bootstrap_sessions.bootstrap_auth",
     "cli_bootstrap_sessions.coding_tools",
     "cli_bootstrap_sessions.cycle_wrap",
@@ -53,6 +54,8 @@
     "cli_bootstrap_sessions.pb_ok",
     "cli_bootstrap_sessions.rt_ok",
     "cli_bootstrap_sessions.scope_hint",
+    "cli_bootstrap_sessions.session_compaction_status",
+    "cli_bootstrap_sessions.session_entry_user_text",
     "cli_bootstrap_sessions.session_path",
     "cli_bootstrap_sessions.split_command",
     "cli_dispatch.argv_parse",
@@ -1797,7 +1800,10 @@
       "prefix": "src/cadr-cli/bootstrap/sessions.lisp",
       "class": "paired",
       "metrics": [
+        "cli_bootstrap_sessions.assistant_tool_call_only",
         "cli_bootstrap_sessions.path_argument",
+        "cli_bootstrap_sessions.session_compaction_status",
+        "cli_bootstrap_sessions.session_entry_user_text",
         "cli_bootstrap_sessions.session_path",
         "cli_bootstrap_sessions.split_command"
       ]
