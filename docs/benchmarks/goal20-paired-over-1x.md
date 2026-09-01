@@ -353,9 +353,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.handle_bad_json` | 5.390 | 4.937 | 1.092× | 8.00× | measure-only pair 496; `rpc-handle-line` JSON.parse catch (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.handle_not_object` | 5.213 | 4.889 | 1.066× | 8.00× | measure-only pair 497; `rpc-handle-line` require-object | invent pause；地板优化另刀 |
 | `cli_print_rpc.handle_ui_miss` | 6.190 | 1.521 | 4.070× | 8.00× | measure-only pair 498; `rpc-handle-line` unknown extension_ui_response | invent pause；地板优化另刀 |
-| `cli_extensions_install.unsafe_git` | 0.762 | 0.658 | 1.159× | 8.00× | measure-only pair 499; `unsafe-git-source-p` vs hasUnsafeGitInstallPart (sub-µs variance) | invent pause；地板优化另刀 |
-| `cli_extensions_install.git_path` | 1.055 | 0.569 | 1.852× | 8.00× | measure-only pair 500; `git-source-path` vs git URL path slice | invent pause；地板优化另刀 |
-| `cli_extensions_install.quant_label` | 1.033 | 0.827 | 1.249× | 8.00× | measure-only leftover pair 507; `llama-quantization-option-label` vs downloadModel option text | invent pause；地板优化另刀 |
+| `cli_extensions_install.unsafe_git` | 0.776 | 0.610 | 1.272× | 8.00× | leftover collect restore pair 499; `unsafe-git-source-p` vs hasUnsafeGitInstallPart (sub-µs) | invent pause；地板优化另刀 |
+| `cli_extensions_install.git_path` | 1.075 | 0.579 | 1.855× | 8.00× | leftover collect restore pair 500; `git-source-path` vs git URL path slice | invent pause；地板优化另刀 |
+| `cli_extensions_install.quant_label` | 1.070 | 0.868 | 1.232× | 8.00× | leftover collect restore pair 507; `llama-quantization-option-label` vs downloadModel option text | invent pause；地板优化另刀 |
 | `bash_tool.strip_truncation` | 2.331 | 0.396 | 5.885× | 8.00× | measure-only leftover pair 510; `bash-strip-truncation-footer` vs `[Showing … Full output:]` suffix strip | invent pause；地板优化另刀 |
 | `cli_interactive_controller.wrap_transcript` | 0.601 | 0.599 | 1.003× | 8.00× | measure-only leftover pair 517; `wrap-transcript-lines` OSC 133 wrap (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_cacheable` | 1.461 | 0.581 | 2.515× | 8.00× | measure-only leftover pair 519; `tui-entry-render-cacheable-p` vs TUI entry render cache gate | invent pause；地板优化另刀 |

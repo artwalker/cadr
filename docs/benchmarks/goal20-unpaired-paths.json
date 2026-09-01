@@ -44,6 +44,15 @@
   "cli_extensions_install.llama_context_label",
   "cli_extensions_install.llama_model_description",
   "cli_extensions_install.llama_compact_count",
+  "cli_extensions_install.unsafe_git",
+  "cli_extensions_install.git_path",
+  "cli_extensions_install.normalize_git",
+  "cli_extensions_install.package_fragment",
+  "cli_extensions_install.local_system_name",
+  "cli_extensions_install.inline_factory",
+  "cli_extensions_install.gated_approval",
+  "cli_extensions_install.split_args",
+  "cli_extensions_install.quant_label",
   "evals_harness.summarize",
   "evals_harness.group_key",
   "evals_harness.artifact_persist",
@@ -1696,8 +1705,12 @@
   },
   {
    "prefix": "src/cadr-cli/extensions/installer.lisp",
-   "class": "needs-pair",
-   "hole": "cli_extensions_install"
+   "class": "paired",
+   "metrics": [
+    "cli_extensions_install.unsafe_git",
+    "cli_extensions_install.git_path",
+    "cli_extensions_install.normalize_git"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/client.lisp",
@@ -1708,8 +1721,12 @@
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/extension.lisp",
-   "class": "needs-pair",
-   "hole": "cli_extensions_install"
+   "class": "paired",
+   "metrics": [
+    "cli_extensions_install.gated_approval",
+    "cli_extensions_install.split_args",
+    "cli_extensions_install.quant_label"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/huggingface.lisp",
@@ -1736,8 +1753,12 @@
   },
   {
    "prefix": "src/cadr-cli/extensions/loader.lisp",
-   "class": "needs-pair",
-   "hole": "cli_extensions_install"
+   "class": "paired",
+   "metrics": [
+    "cli_extensions_install.package_fragment",
+    "cli_extensions_install.local_system_name",
+    "cli_extensions_install.inline_factory"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/autocomplete.lisp",

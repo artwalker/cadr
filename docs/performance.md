@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T04:38:25Z) on `cursor`, git `cf07413d6aa3`, ratio_gate=`enforced-only:cli_extensions_install.llama_compact_count,cli_extensions_install.llama_context_label,cli_extensions_install.llama_model_description`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T04:51:28Z) on `cursor`, git `04b38a745484`, ratio_gate=`enforced-only:cli_extensions_install.unsafe_git,cli_extensions_install.git_path,cli_extensions_install.normalize_git,cli_extensions_install.package_fragment,cli_extensions_install.local_system_name,cli_extensions_install.inline_factory,cli_extensions_install.gated_approval,cli_extensions_install.split_args,cli_extensions_install.quant_label`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T04:05:41Z) on `cursor`, git `fe4af8a30`, ratio_gate=`enforced-only:cli_selectors.armin_cell,cli_selectors.armin_grid_height,cli_selectors.armin_pixel,cli_selectors.countdown_render,cli_selectors.countdown_seconds,cli_selectors.countdown_tick`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T04:38:25Z) on `cursor`, git `cf07413d6aa3`, ratio_gate=`enforced-only:cli_extensions_install.llama_compact_count,cli_extensions_install.llama_context_label,cli_extensions_install.llama_model_description`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -923,15 +923,15 @@ Previous: `paired-paths` (2026-09-01T04:05:41Z) on `cursor`, git `fe4af8a30`, ra
 | `cli_print_rpc.handle_bad_json` | — | — | — | — | — |
 | `cli_print_rpc.handle_not_object` | — | — | — | — | — |
 | `cli_print_rpc.handle_ui_miss` | — | — | — | — | — |
-| `cli_extensions_install.unsafe_git` | — | — | — | — | — |
-| `cli_extensions_install.git_path` | — | — | — | — | — |
-| `cli_extensions_install.normalize_git` | — | — | — | — | — |
-| `cli_extensions_install.package_fragment` | — | — | — | — | — |
-| `cli_extensions_install.local_system_name` | — | — | — | — | — |
-| `cli_extensions_install.inline_factory` | — | — | — | — | — |
-| `cli_extensions_install.gated_approval` | — | — | — | — | — |
-| `cli_extensions_install.split_args` | — | — | — | — | — |
-| `cli_extensions_install.quant_label` | — | — | — | — | — |
+| `cli_extensions_install.unsafe_git` | 0.8 | 0.6 | 1.27× | — | 8.00× |
+| `cli_extensions_install.git_path` | 1.1 | 0.6 | 1.86× | — | 8.00× |
+| `cli_extensions_install.normalize_git` | 5.0 | 13.1 | 0.38× | — | 8.00× |
+| `cli_extensions_install.package_fragment` | 0.6 | 1.6 | 0.38× | — | 8.00× |
+| `cli_extensions_install.local_system_name` | 0.2 | 0.8 | 0.26× | — | 8.00× |
+| `cli_extensions_install.inline_factory` | 0.2 | 0.7 | 0.26× | — | 8.00× |
+| `cli_extensions_install.gated_approval` | 0.1 | 0.2 | 0.58× | — | 8.00× |
+| `cli_extensions_install.split_args` | 1.0 | 2.2 | 0.44× | — | 8.00× |
+| `cli_extensions_install.quant_label` | 1.1 | 0.9 | 1.23× | — | 8.00× |
 | `cli_interactive_controller.sanitize_title` | — | — | — | — | — |
 | `cli_interactive_controller.title_basename` | — | — | — | — | — |
 | `cli_interactive_controller.terminal_title` | — | — | — | — | — |
@@ -1026,9 +1026,9 @@ Previous: `paired-paths` (2026-09-01T04:05:41Z) on `cursor`, git `fe4af8a30`, ra
 | `cli_interactive_controller.fit_footer_text` | — | — | — | — | — |
 | `cli_interactive_controller.footer_usage` | — | — | — | — | — |
 | `cli_interactive_controller.footer_git_paths` | — | — | — | — | — |
-| `cli_extensions_install.llama_context_label` | 1.4 | 1.1 | 1.26× | — | 8.00× |
-| `cli_extensions_install.llama_model_description` | 1.6 | 1.4 | 1.16× | — | 8.00× |
-| `cli_extensions_install.llama_compact_count` | 1.0 | 0.6 | 1.59× | — | 8.00× |
+| `cli_extensions_install.llama_context_label` | 1.4 | 1.1 | 1.26× | 1.26× | 8.00× |
+| `cli_extensions_install.llama_model_description` | 1.6 | 1.4 | 1.16× | 1.16× | 8.00× |
+| `cli_extensions_install.llama_compact_count` | 1.0 | 0.6 | 1.59× | 1.59× | 8.00× |
 | `cli_selectors.daxnuts_parse_image` | — | — | — | — | — |
 | `cli_selectors.daxnuts_image_line` | — | — | — | — | — |
 | `cli_selectors.daxnuts_center_line` | — | — | — | — | — |
@@ -2168,6 +2168,7 @@ Previous: `paired-paths` (2026-09-01T04:05:41Z) on `cursor`, git `fe4af8a30`, ra
 | 2026-09-01T03:31:23Z | paired-paths | `9d91300b0` | no | enforced-only:cli_selectors.akixxxx_ok,cli_selectors.lmsxxxx_ok,cli_selectors.ossxxxx_ok | 1.05× | 0.83× | 1.06× | 0.08× |
 | 2026-09-01T04:05:41Z | paired-paths | `fe4af8a30` | no | enforced-only:cli_selectors.armin_cell,cli_selectors.armin_grid_height,cli_selectors.armin_pixel,cli_selectors.countdown_render,cli_selectors.countdown_seconds,cli_selectors.countdown_tick | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T04:38:25Z | paired-paths | `cf07413d6aa3` | no | enforced-only:cli_extensions_install.llama_compact_count,cli_extensions_install.llama_context_label,cli_extensions_install.llama_model_description | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T04:51:28Z | paired-paths | `04b38a745484` | no | enforced-only:cli_extensions_install.unsafe_git,cli_extensions_install.git_path,cli_extensions_install.normalize_git,cli_extensions_install.package_fragment,cli_extensions_install.local_system_name,cli_extensions_install.inline_factory,cli_extensions_install.gated_approval,cli_extensions_install.split_args,cli_extensions_install.quant_label | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -6294,10 +6294,10 @@ Leftover of the `cli_extensions_install` hole on `installer.lisp`. Timed
 work is empty / dash / NUL / backslash / `..` / safe path flags — not
 `git clone`, not `install-extension-package`. Observed `ug_empty` /
 `ug_dash` / `ug_null` / `ug_bs` / `ug_dot` / `ug_ok` / `ug_n` are exact.
-First n=5 freeze **1.159×** (0.762 / 0.658 µs) on host `cursor`,
-ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
-holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this
-metric did not fail). Same commit no optimize.
+Collect restore n=5 freeze **1.272×** (0.776 / 0.610 µs) on host `cursor`,
+gitHead `04b38a745`, ceiling 8.0. Overlay recorded; py full gate rc=2 from
+leftover `parsed_provider` METRICS pollution. Over-1× booked. Same commit
+no optimize.
 
 ### Pair 500 — `cli_extensions_install` (git_path)
 
@@ -6308,10 +6308,10 @@ metric did not fail). Same commit no optimize.
 Leftover sibling of Pair 499 on the same hole. Timed work is HTTPS /
 `git@` / slash / missing-path extraction — not hosted-git-info, not
 clone. Observed `gp_https` / `gp_scp` / `gp_slash` / `gp_miss` / `gp_n`
-are exact. First n=5 freeze **1.852×** (1.055 / 0.569 µs) on host
-`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
-known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
-this metric did not fail). Same commit no optimize.
+are exact. Collect restore n=5 freeze **1.855×** (1.075 / 0.579 µs) on host
+`cursor`, gitHead `04b38a745`, ceiling 8.0. Overlay recorded; py full gate
+rc=2 from leftover `parsed_provider` METRICS pollution. Over-1× booked.
+Same commit no optimize.
 
 ### Pair 501 — `cli_extensions_install` (normalize_git)
 
@@ -6323,11 +6323,10 @@ Leftover sibling of Pairs 499–500 on the same hole. Timed work is HTTPS
 success / `git:` prefix / `file://` / empty / bare-host reject — not
 staging, not `reload-cli-extensions`. Observed `ng_https` / `ng_git` /
 `ng_file` / `ng_empty` / `ng_bare` are exact. Do not exact full error
-strings. First n=5 freeze **0.369×** (4.884 / 13.233 µs) on host
-`cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script
-rc=1 only from known old holes `lc_n` / `lc_sleep` / help text /
-`execution_env.tmp_*`; this metric did not fail). Same commit no
-optimize.
+strings. Collect restore n=5 freeze **0.378×** (4.969 / 13.148 µs) on host
+`cursor`, gitHead `04b38a745`, ceiling 8.0. cadr leads. Overlay recorded;
+py full gate rc=2 from leftover `parsed_provider` METRICS pollution. Same
+commit no optimize.
 
 ### Pair 502 — `cli_extensions_install` (package_fragment)
 
@@ -6338,11 +6337,10 @@ optimize.
 Leftover of the `cli_extensions_install` hole on `loader.lisp`. Timed
 work is alphanumeric / hyphen / underscore keep plus other-char hyphen
 — not ASDF load, not `reload-cli-extensions`. Observed `pf_plain` /
-`pf_hyphen` / `pf_keep` / `pf_empty` / `pf_n` are exact. First n=5
-freeze **0.351×** (0.468 / 1.334 µs) on host `cursor`, ceiling 8.0. cadr
-leads. Gate used `--only-enforce` (script rc=1 only from known old holes
-`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did
-not fail). Same commit no optimize.
+`pf_hyphen` / `pf_keep` / `pf_empty` / `pf_n` are exact. Collect restore n=5
+freeze **0.376×** (0.603 / 1.603 µs) on host `cursor`, gitHead `04b38a745`,
+ceiling 8.0. cadr leads. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Same commit no optimize.
 
 ### Pair 503 — `cli_extensions_install` (local_system_name)
 
@@ -6354,10 +6352,10 @@ Leftover sibling of Pair 502 on the same hole. Timed work is name
 accept / empty / `.` / `..` / slash reject — not
 `read-extension-local-systems`, not network. Observed `ls_ok` /
 `ls_empty` / `ls_dot` / `ls_dotdot` / `ls_slash` / `ls_n` are exact.
-First n=5 freeze **0.273×** (0.192 / 0.704 µs) on host `cursor`, ceiling
-8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known
-old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this
-metric did not fail). Same commit no optimize.
+Collect restore n=5 freeze **0.261×** (0.197 / 0.758 µs) on host `cursor`,
+gitHead `04b38a745`, ceiling 8.0. cadr leads. Overlay recorded; py full
+gate rc=2 from leftover `parsed_provider` METRICS pollution. Same commit
+no optimize.
 
 ### Pair 504 — `cli_extensions_install` (inline_factory)
 
@@ -6368,11 +6366,10 @@ metric did not fail). Same commit no optimize.
 Leftover sibling of Pairs 502–503 on the same hole. Timed work is
 function / named plist / empty name / missing factory / odd list — not
 factory invoke, not host load. Observed `if_fn` / `if_plist` /
-`if_empty_name` / `if_no_factory` / `if_odd` are exact. First n=5 freeze
-**0.260×** (0.188 / 0.725 µs) on host `cursor`, ceiling 8.0. cadr leads.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n`
-/ `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
-fail). Same commit no optimize.
+`if_empty_name` / `if_no_factory` / `if_odd` are exact. Collect restore n=5
+freeze **0.262×** (0.197 / 0.749 µs) on host `cursor`, gitHead `04b38a745`,
+ceiling 8.0. cadr leads. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Same commit no optimize.
 
 ### Pair 505 — `cli_extensions_install` (gated_approval)
 
@@ -6383,11 +6380,10 @@ fail). Same commit no optimize.
 Leftover of the `cli_extensions_install` hole on `llama/extension.lisp`.
 Timed work is `:manual` vs other gated values — not login, not catalog
 HTTP. Observed `ga_manual` / `ga_auto` / `ga_str` / `ga_nil` are exact.
-First n=5 freeze **0.579×** (0.120 / 0.208 µs) on host `cursor`,
-ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text /
-`execution_env.tmp_*`; this metric did not fail). Same commit no
-optimize.
+Collect restore n=5 freeze **0.580×** (0.130 / 0.223 µs) on host `cursor`,
+gitHead `04b38a745`, ceiling 8.0. cadr leads. Overlay recorded; py full
+gate rc=2 from leftover `parsed_provider` METRICS pollution. Same commit
+no optimize.
 
 ### Pair 506 — `cli_extensions_install` (split_args)
 
@@ -6398,11 +6394,10 @@ optimize.
 Leftover sibling of Pair 505 on the same hole. Timed work is trim /
 first-token downcase / remainder left-trim — not `handle-llama-command`,
 not network. Observed `sa_login` / `sa_view` / `sa_bare` / `sa_tab` /
-`sa_n` are exact. First n=5 freeze **0.408×** (0.827 / 2.025 µs) on host
-`cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script
-rc=1 only from known old holes `lc_n` / `lc_sleep` / help text /
-`execution_env.tmp_*`; this metric did not fail). Same commit no
-optimize.
+`sa_n` are exact. Collect restore n=5 freeze **0.442×** (0.975 / 2.206 µs)
+on host `cursor`, gitHead `04b38a745`, ceiling 8.0. cadr leads. Overlay
+recorded; py full gate rc=2 from leftover `parsed_provider` METRICS
+pollution. Same commit no optimize.
 
 ### Pair 507 — `cli_extensions_install` (quant_label)
 
@@ -6413,10 +6408,10 @@ optimize.
 Leftover sibling of Pairs 505–506 on the same hole. Timed work is name /
 size / Q4_K_M recommended join — not download, not Hugging Face search.
 Observed `ql_name` / `ql_rec` / `ql_bytes` / `ql_both` are exact. First
-n=5 freeze **1.249×** (1.033 / 0.827 µs) on host `cursor`, ceiling 8.0.
-Over-1× booked. Gate used `--only-enforce` (script rc=1 only from known
-old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this
-metric did not fail). Same commit no optimize.
+n=5 freeze **1.232×** (1.070 / 0.868 µs) on host `cursor`, gitHead
+`04b38a745`, ceiling 8.0. Over-1× booked. Overlay recorded; py full gate
+rc=2 from leftover `parsed_provider` METRICS pollution. Same commit no
+optimize.
 
 ### Pair 508 — `bash_tool` (live_output)
 
