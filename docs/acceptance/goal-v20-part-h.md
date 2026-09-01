@@ -10018,6 +10018,30 @@ Leftover sibling of Pair 784. Timed work is `origin:scope:source:` prefix of the
 
 Leftover sibling of Pairs 784–785. Timed work is npm package-source identity position (hit / first / miss / scoped pin) — not git/local path I/O. Observed `pei_hit` / `pei_first` / `pei_miss` / `pei_pin` / `pei_n` are exact. First n=5 freeze **7.45×** (14.402 / 1.934 µs) on host `cursor`, ceiling 20.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 787 — `package_manager` (project_package_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_package_entry` | `config-selector-project-package-entry` (`src/cadr-cli/packages/config-selector.lisp`) | leftover project npm identity find (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 784–786 on the same `config-selector.lisp` `package_manager` hole. Timed work is project-settings identity find (hit / miss / scoped pin) — not TUI, not directory walk. Observed `ppe_hit` / `ppe_miss` / `ppe_pin` / `ppe_eq` / `ppe_n` are exact. First n=5 freeze **6.71×** (18.051 / 2.691 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 788 — `package_manager` (project_package_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_package_state` | `config-selector-project-package-state` (`src/cadr-cli/packages/config-selector.lisp`) | leftover project package filter walk (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 787. Timed work is load/unload/inherit from `+-!` exact pattern match plus empty-filter unload — not TUI checkbox. Observed `pps_load` / `pps_unload` / `pps_miss` / `pps_nofilter` / `pps_n` are exact. First n=5 freeze **7.90×** (25.317 / 3.203 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 789 — `package_manager` (package_setting_record)
+
+| metric | cadr | pi |
+|---|---|---|
+| `package_setting_record` | `config-package-setting-record` (`src/cadr-cli/packages/config-selector.lisp`) | leftover npm setting record (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 787–788. Timed work is npm record identity / nil path / autoload-disabled — not git/local install path I/O. Observed `psr_npm` / `psr_id` / `psr_path` / `psr_auto` / `psr_n` are exact. First n=5 freeze **11.91×** (10.399 / 0.873 µs) on host `cursor`, ceiling 40.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -307,6 +307,9 @@ const REPETITIONS = {
 	"package_manager.inherited_enabled": 50,
 	"package_manager.resource_group_key": 50,
 	"package_manager.package_entry_index": 50,
+	"package_manager.project_package_entry": 50,
+	"package_manager.project_package_state": 50,
+	"package_manager.package_setting_record": 50,
 	"package_manager.records_project_first": 50,
 	"package_manager.candidate_record": 50,
 	"package_manager.update_offline": 50,
@@ -6957,7 +6960,7 @@ function leftoverConfigSelectorStateCode(state) {
 	return -1;
 }
 
-function leftoverPackageSourceIdentity(source) {
+function leftoverPackageSourceIdentity(source, _sourceBase) {
 	const trimmed = String(source ?? "");
 	if (trimmed.startsWith("npm:")) {
 		const rest = trimmed.slice(4);
@@ -7095,7 +7098,7 @@ function leftoverConfigSelectorProjectTopLevelState(state, item) {
 	return result;
 }
 
-function leftoverConfigSelectorProjectPackageState(state, item) {
+function leftoverConfigSelectorProjectPackageEntry(state, item) {
 	const manager = state.settingsManager;
 	const projectBase = leftoverProjectConfigDirectory(state.cwd || "");
 	const sourceBase =
@@ -7103,14 +7106,54 @@ function leftoverConfigSelectorProjectPackageState(state, item) {
 			? projectBase
 			: leftoverEnsureDir(state.agentDirectory || "");
 	const identity = leftoverPackageSourceIdentity(item.source, sourceBase);
-	const entry = leftoverSettingsPackageEntries(manager, "project").find((candidate) => {
-		const source = candidate?.source;
-		return source && leftoverPackageSourceIdentity(source, projectBase) === identity;
-	});
+	return (
+		leftoverSettingsPackageEntries(manager, "project").find((candidate) => {
+			const source = leftoverPackageEntrySource(candidate);
+			return (
+				source && leftoverPackageSourceIdentity(source, projectBase) === identity
+			);
+		}) ?? null
+	);
+}
+
+function leftoverConfigSelectorProjectPackageState(state, item) {
+	const entry = leftoverConfigSelectorProjectPackageEntry(state, item);
 	if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
 		return "inherit";
 	}
-	return "inherit";
+	const typeKey = String(item.type || "")
+		.replace(/^:/, "")
+		.toLowerCase();
+	if (!Object.prototype.hasOwnProperty.call(entry, typeKey)) {
+		return "inherit";
+	}
+	const raw = entry[typeKey];
+	const patterns = Array.isArray(raw) ? raw : [];
+	if (
+		patterns.length === 0 &&
+		!leftoverConfigPackageEntryAutoloadDisabledP(entry)
+	) {
+		return "unload";
+	}
+	let result = "inherit";
+	for (const pattern of patterns) {
+		if (typeof pattern !== "string" || pattern.length === 0) {
+			continue;
+		}
+		const prefix = pattern[0];
+		const target = leftoverConfigSelectorEntryTarget(pattern);
+		if (
+			leftoverConfigPatternMatchesP(
+				item.path,
+				target,
+				leftoverEnsureDir(item.baseDirectory || ""),
+				true,
+			)
+		) {
+			result = prefix === "-" || prefix === "!" ? "unload" : "load";
+		}
+	}
+	return result;
 }
 
 function leftoverConfigSelectorDerivedProjectState(state, item) {
@@ -8127,6 +8170,51 @@ function leftoverConfigResourceGroupKey(item) {
 	return `${origin}:${scope}:${source}:${base}`;
 }
 
+function leftoverPackageEntrySource(entry) {
+	if (typeof entry === "string") {
+		return entry;
+	}
+	if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+		return entry.source ?? null;
+	}
+	return null;
+}
+
+function leftoverConfigPackageEntry(source, extras = {}) {
+	const entry = { source };
+	if (Object.prototype.hasOwnProperty.call(extras, "extensions")) {
+		entry.extensions = extras.extensions;
+	}
+	if (Object.prototype.hasOwnProperty.call(extras, "autoload")) {
+		entry.autoload = extras.autoload;
+	}
+	return entry;
+}
+
+function leftoverConfigSelectorProjectPackagesState(entries) {
+	return leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+		settingsManager: leftoverMemorySettingsManager({}, { packages: entries.slice() }),
+	});
+}
+
+function leftoverConfigPackageSettingRecord(entry, scope, baseDirectory, _installRoot) {
+	const source = leftoverPackageEntrySource(entry);
+	if (!source) {
+		return null;
+	}
+	return {
+		entry,
+		scope,
+		source,
+		base: leftoverEnsureDir(baseDirectory || ""),
+		path: null,
+		identity: leftoverPackageSourceIdentity(source, baseDirectory),
+		autoloadDisabledP: leftoverConfigPackageEntryAutoloadDisabledP(entry),
+	};
+}
+
 function leftoverPackageEntries(...sources) {
 	return sources.map((source) => ({ source }));
 }
@@ -8231,6 +8319,88 @@ function runPackageManagerPackageEntryIndex() {
 		pei_miss: miss < 0 ? 1 : 0,
 		pei_pin: scoped === 1 ? 1 : 0,
 		pei_n: 5,
+	};
+}
+
+function runPackageManagerProjectPackageEntry() {
+	const state = leftoverConfigSelectorProjectPackagesState(
+		leftoverPackageEntries("npm:bar", "npm:foo", "npm:baz", "npm:@scope/pkg@1.2.3"),
+	);
+	const foo = leftoverConfigResourceItemLabeled("package", "user", "npm:foo", {
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const pin = leftoverConfigResourceItemLabeled("package", "user", "npm:@scope/pkg@9.9.9", {
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const miss = leftoverConfigResourceItemLabeled("package", "user", "npm:zzz", {
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const hit = leftoverConfigSelectorProjectPackageEntry(state, foo);
+	const scoped = leftoverConfigSelectorProjectPackageEntry(state, pin);
+	return {
+		ppe_hit: hit && typeof hit === "object" ? 1 : 0,
+		ppe_miss: leftoverConfigSelectorProjectPackageEntry(state, miss) == null ? 1 : 0,
+		ppe_pin: scoped && typeof scoped === "object" ? 1 : 0,
+		ppe_eq: leftoverPackageEntrySource(hit) === "npm:foo" ? 1 : 0,
+		ppe_n: 5,
+	};
+}
+
+function runPackageManagerProjectPackageState() {
+	const item = leftoverConfigSelectorHelloItem({ origin: "package", source: "npm:foo" });
+	const loadState = leftoverConfigSelectorProjectPackagesState([
+		leftoverConfigPackageEntry("npm:foo", { extensions: ["+hello.lisp"] }),
+	]);
+	const unloadState = leftoverConfigSelectorProjectPackagesState([
+		leftoverConfigPackageEntry("npm:foo", { extensions: [] }),
+	]);
+	const nofilterState = leftoverConfigSelectorProjectPackagesState([
+		leftoverConfigPackageEntry("npm:foo"),
+	]);
+	const missState = leftoverConfigSelectorProjectPackagesState(
+		leftoverPackageEntries("npm:bar"),
+	);
+	return {
+		pps_load:
+			leftoverConfigSelectorProjectPackageState(loadState, item) === "load" ? 1 : 0,
+		pps_unload:
+			leftoverConfigSelectorProjectPackageState(unloadState, item) === "unload" ? 1 : 0,
+		pps_miss:
+			leftoverConfigSelectorProjectPackageState(missState, item) === "inherit" ? 1 : 0,
+		pps_nofilter:
+			leftoverConfigSelectorProjectPackageState(nofilterState, item) === "inherit"
+				? 1
+				: 0,
+		pps_n: 5,
+	};
+}
+
+function runPackageManagerPackageSettingRecord() {
+	const npm = leftoverConfigPackageSettingRecord(
+		leftoverConfigPackageEntry("npm:lodash", { autoload: null }),
+		"project",
+		"/tmp/proj/.cadr/",
+		"/tmp/proj/.cadr/packages/",
+	);
+	const foo = leftoverConfigPackageSettingRecord(
+		leftoverConfigPackageEntry("npm:foo"),
+		"user",
+		"/tmp/agent/",
+		"/tmp/agent/packages/",
+	);
+	const pin = leftoverConfigPackageSettingRecord(
+		leftoverConfigPackageEntry("npm:@scope/x@1.0.0"),
+		"project",
+		"/tmp/proj/.cadr/",
+		"/tmp/proj/.cadr/packages/",
+	);
+	return {
+		psr_npm: npm && npm.path == null && String(npm.identity).startsWith("npm:") ? 1 : 0,
+		psr_id: npm && npm.identity === "npm:lodash" ? 1 : 0,
+		psr_path: foo && foo.path == null ? 1 : 0,
+		psr_auto:
+			npm && npm.autoloadDisabledP && pin && pin.identity === "npm:@scope/x" ? 1 : 0,
+		psr_n: 5,
 	};
 }
 
@@ -8451,6 +8621,9 @@ async function measurePackageManager() {
 	const inheritedEnabled = runPackageManagerInheritedEnabled();
 	const resourceGroupKey = runPackageManagerResourceGroupKey();
 	const packageEntryIndex = runPackageManagerPackageEntryIndex();
+	const projectPackageEntry = runPackageManagerProjectPackageEntry();
+	const projectPackageState = runPackageManagerProjectPackageState();
+	const packageSettingRecord = runPackageManagerPackageSettingRecord();
 	const recordsProjectFirst = runPackageManagerRecordsProjectFirst();
 	const candidateRecord = runPackageManagerCandidateRecord();
 	const updateOffline = runPackageManagerUpdateOffline();
@@ -8608,6 +8781,15 @@ async function measurePackageManager() {
 		package_entry_index: await collect("package_manager.package_entry_index", () => {
 			return () => runPackageManagerPackageEntryIndex();
 		}),
+		project_package_entry: await collect("package_manager.project_package_entry", () => {
+			return () => runPackageManagerProjectPackageEntry();
+		}),
+		project_package_state: await collect("package_manager.project_package_state", () => {
+			return () => runPackageManagerProjectPackageState();
+		}),
+		package_setting_record: await collect("package_manager.package_setting_record", () => {
+			return () => runPackageManagerPackageSettingRecord();
+		}),
 		records_project_first: await collect("package_manager.records_project_first", () => {
 			return () => runPackageManagerRecordsProjectFirst();
 		}),
@@ -8670,6 +8852,9 @@ async function measurePackageManager() {
 			...inheritedEnabled,
 			...resourceGroupKey,
 			...packageEntryIndex,
+			...projectPackageEntry,
+			...projectPackageState,
+			...packageSettingRecord,
 			...recordsProjectFirst,
 			...candidateRecord,
 			...updateOffline,
@@ -36079,6 +36264,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover group key (cadr config-resource-group-key)",
 			"package_manager.package_entry_index":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover package identity index (cadr config-selector-package-entry-index)",
+			"package_manager.project_package_entry":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover project package identity find (cadr config-selector-project-package-entry)",
+			"package_manager.project_package_state":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover project package filter walk (cadr config-selector-project-package-state)",
+			"package_manager.package_setting_record":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover npm setting record (cadr config-package-setting-record)",
 			"package_manager.records_project_first":
 				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates project-then-user collect (cadr package-update-records-project-first)",
 			"package_manager.candidate_record":
