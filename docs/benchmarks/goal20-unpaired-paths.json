@@ -590,7 +590,13 @@
   "evals_harness.extension_error_json",
   "evals_harness.legacy_api",
   "evals_harness.prepare_default_prompt",
-  "evals_harness.required_prompt_boundary"
+  "evals_harness.required_prompt_boundary",
+  "cli_selectors.armin_pixel",
+  "cli_selectors.armin_cell",
+  "cli_selectors.armin_grid_height",
+  "cli_selectors.countdown_seconds",
+  "cli_selectors.countdown_tick",
+  "cli_selectors.countdown_render"
  ],
  "unpairablePaths": [
   {
@@ -1747,13 +1753,21 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/components/armin.lisp",
-   "class": "needs-pair",
-   "hole": "cli_selectors"
+   "class": "paired",
+   "metrics": [
+    "cli_selectors.armin_pixel",
+    "cli_selectors.armin_cell",
+    "cli_selectors.armin_grid_height"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/components/countdown.lisp",
-   "class": "needs-pair",
-   "hole": "cli_selectors"
+   "class": "paired",
+   "metrics": [
+    "cli_selectors.countdown_seconds",
+    "cli_selectors.countdown_tick",
+    "cli_selectors.countdown_render"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/components/daxnuts.lisp",

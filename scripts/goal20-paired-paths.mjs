@@ -31210,6 +31210,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsDaxnutsComponentTick();
 			},
 		),
+		countdown_seconds: await collect("cli_selectors.countdown_seconds", () => {
+			return () => runCliSelectorsCountdownSeconds();
+		}),
+		countdown_tick: await collect("cli_selectors.countdown_tick", () => {
+			return () => runCliSelectorsCountdownTick();
+		}),
+		countdown_render: await collect("cli_selectors.countdown_render", () => {
+			return () => runCliSelectorsCountdownRender();
+		}),
 		dlg_make: await collect("cli_selectors.dlg_make", () => {
 			return () => runCliSelectorsLoginDialogMake();
 		}),
@@ -34730,6 +34739,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent constructor (no startAnimation)",
 			"cli_selectors.daxnuts_component_tick":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent interval body",
+			"cli_selectors.countdown_seconds":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts Math.ceil(timeoutMs/1000)",
+			"cli_selectors.countdown_tick":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts countdown tick",
+			"cli_selectors.countdown_render":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts countdown requestRender",
 			"cli_selectors.dlg_make":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent constructor",
 			"cli_selectors.dlg_auth":

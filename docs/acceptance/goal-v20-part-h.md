@@ -9777,14 +9777,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 219 | 98,910 | 76.5% | `no worse than baseline` is falsifiable |
+| `paired` | 221 | 99,282 | 76.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 25 | 5,443 | 4.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 23 | 5,071 | 3.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 76.5% of lines (219 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 82.3% of lines.
+- **Falsifiable vs baseline:** 76.7% of lines (221 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 82.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -9905,6 +9905,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/provider.lisp` | 337 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
+| `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_pixel`, `cli_selectors.armin_cell`, `cli_selectors.armin_grid_height` |
+| `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_seconds`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_render` |
 | `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 155 | `cli_selectors.key_text` |
 | `src/cadr-cli/interactive/controller.lisp` | 2,999 | `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.tui_command_error` |
@@ -10084,13 +10086,13 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 4 | 2,144 |
 | `oauth_pkce_device` | 6 | 850 |
 | `cli_bootstrap_sessions` | 2 | 624 |
-| `cli_selectors` | 3 | 413 |
 | `skill_prompt_load` | 1 | 370 |
 | `package_manager` | 1 | 293 |
 | `cli_print_rpc` | 1 | 288 |
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
 | `cli_support` | 4 | 103 |
+| `cli_selectors` | 1 | 41 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
