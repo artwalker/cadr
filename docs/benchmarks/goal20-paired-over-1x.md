@@ -352,6 +352,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.command_list` | 1.490 | 0.359 | 4.151× | 8.00× | measure-only leftover pair 477; `rpc-command-list` vs `get_commands` walk | invent pause；地板优化另刀 |
 | `skill_prompt_load.sdk_prompt_input` | 15.179 | 3.512 | 4.322× | 8.00× | measure-only leftover pair 478; `sdk-resolve-prompt-input` vs `resolvePromptInput` | invent pause；地板优化另刀 |
 | `skill_prompt_load.sdk_context_files` | 7.556 | 2.625 | 2.879× | 8.00× | measure-only leftover pair 480; `sdk-context-file-records` vs agentsFiles records | invent pause；地板优化另刀 |
+| `skill_prompt_load.sdk_get_skills` | 0.175 | 0.110 | 1.587× | 8.00× | leftover collect restore pair 919; `sdk-resource-loader-skills` vs DefaultResourceLoader.getSkills | invent pause；地板优化另刀 |
+| `skill_prompt_load.sdk_get_prompts` | 0.167 | 0.123 | 1.367× | 8.00× | leftover collect restore pair 920; `sdk-resource-loader-prompts` vs getPrompts | invent pause；地板优化另刀 |
+| `skill_prompt_load.sdk_get_themes` | 0.298 | 0.117 | 2.560× | 8.00× | leftover collect restore pair 921; `sdk-resource-loader-themes` vs getThemes | invent pause；地板优化另刀 |
 | `cli_support.watch_signature` | 23.825 | 6.843 | 3.482× | 8.00× | leftover collect restore pair 483; `watched-path-signature` vs statSync presence | invent pause；地板优化另刀 |
 | `cli_support.watch_retry_delay` | 0.157 | 0.118 | 1.335× | 8.00× | leftover collect restore pair 481; `+fs-watch-retry-delay-milliseconds+` vs FS_WATCH_RETRY_DELAY_MS | invent pause；地板优化另刀 |
 | `cli_support.close_watcher` | 0.162 | 0.155 | 1.046× | 8.00× | leftover collect restore pair 482; `close-watcher` vs closeWatcher | invent pause；地板优化另刀 |

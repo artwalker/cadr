@@ -5923,6 +5923,44 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 919 — `skill_prompt_load` (sdk_get_skills)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_get_skills` | `sdk-resource-loader-skills` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getSkills` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover of the `skill_prompt_load` hole on `resource-service.lisp`. Timed work is
+the skills getter after isolated no-discovery reload. Observed `sk_n` / `sk_list` / `sk_ok` are exact. Collect restore n=5 freeze **1.587×** (0.175 /
+0.110 µs) on host `Friend-MachineD`, gitHead `a2fe765ab`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 920 — `skill_prompt_load` (sdk_get_prompts)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_get_prompts` | `sdk-resource-loader-prompts` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getPrompts` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pair 919. Observed `pr_n` / `pr_list` / `pr_ok` are exact. Collect restore n=5 freeze **1.367×** (0.167 /
+0.123 µs) on host `Friend-MachineD`, gitHead `a2fe765ab`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 921 — `skill_prompt_load` (sdk_get_themes)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_get_themes` | `sdk-resource-loader-themes` (`src/cadr-cli/sdk/resource-service.lisp`) | `DefaultResourceLoader.getThemes` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pairs 919–920. Observed `th_n` / `th_list` / `th_ok` are exact. Collect restore n=5 freeze **2.560×** (0.298 /
+0.117 µs) on host `Friend-MachineD`, gitHead `a2fe765ab`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -10216,14 +10254,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 241 | 103,676 | 80.1% | `no worse than baseline` is falsifiable |
+| `paired` | 242 | 104,046 | 80.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 3 | 677 | 0.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 2 | 307 | 0.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.1% of lines (241 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 86.0% of lines.
+- **Falsifiable vs baseline:** 80.4% of lines (242 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 86.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -10412,6 +10450,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
+| `src/cadr-cli/sdk/resource-service.lisp` | 370 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
@@ -10542,7 +10581,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `skill_prompt_load` | 1 | 370 |
 | `settings_load` | 1 | 195 |
 | `cli_bootstrap_sessions` | 1 | 112 |
 

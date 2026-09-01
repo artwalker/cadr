@@ -662,7 +662,10 @@
     "cli_bootstrap_sessions.manual_migration_command",
     "cli_bootstrap_sessions.managed_binary_names",
     "cli_bootstrap_sessions.migration_guide_url",
-    "cli_bootstrap_sessions.extensions_doc_url"
+    "cli_bootstrap_sessions.extensions_doc_url",
+    "skill_prompt_load.sdk_get_skills",
+    "skill_prompt_load.sdk_get_prompts",
+    "skill_prompt_load.sdk_get_themes"
   ],
   "unpairablePaths": [
     {
@@ -2474,8 +2477,12 @@
     },
     {
       "prefix": "src/cadr-cli/sdk/resource-service.lisp",
-      "class": "needs-pair",
-      "hole": "skill_prompt_load"
+      "class": "paired",
+      "metrics": [
+        "skill_prompt_load.sdk_get_skills",
+        "skill_prompt_load.sdk_get_prompts",
+        "skill_prompt_load.sdk_get_themes"
+      ]
     },
     {
       "prefix": "src/cadr-cli/sdk/session-manager.lisp",
