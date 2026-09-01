@@ -133,6 +133,9 @@
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
 ;;;; 253. settings_load default-config-path/default-auth-path vs getSettingsPath/getAuthPath
+;;;; 760. settings_load read-cli-config vs JSON.parse config.json
+;;;; 761. settings_load provider-config-secrets vs apiKey/oauth/env secrets
+;;;; 762. settings_load resolve-provider-config vs createProvider/openaiProvider construct
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 254. agent_conditions error-slot probe vs agent error shapes
 ;;;; 257. execution_env exists/remove/temps vs NodeExecutionEnv exists/remove/createTemp*
@@ -563,6 +566,9 @@
     ("settings_load.provider_default_model" . 50)
     ("settings_load.oauth_refresh_function" . 50)
     ("settings_load.oauth_login_function" . 50)
+    ("settings_load.read_cli_config" . 50)
+    ("settings_load.provider_config_secrets" . 50)
+    ("settings_load.resolve_provider_config" . 50)
     ("settings_load.sdk_default_provider" . 50)
     ("settings_load.sdk_default_model" . 50)
     ("settings_load.sdk_retry_settings" . 50)
@@ -4279,6 +4285,129 @@
         nil)
     (error () t)))
 
+(defun leftover-settings-load-write-file (name contents)
+  (ensure-directories-exist *scratch-directory*)
+  (let ((path (merge-pathnames name *scratch-directory*)))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create)
+      (write-string contents out))
+    path))
+
+(defun leftover-read-cli-config-caught (path)
+  (handler-case
+      (progn
+        (cadr-cli::read-cli-config path)
+        0)
+    (cadr-ai:configuration-error () 1)
+    (error () 0)))
+
+(defun run-settings-load-read-cli-config ()
+  ;; Leftover sibling: read-cli-config JSON object. Not stream-chat.
+  (let* ((missing
+           (merge-pathnames
+            "cadr-goal20-no-such-config.json" *scratch-directory*))
+         (hit
+           (leftover-settings-load-write-file
+            "cadr-goal20-config.json"
+            "{\"providers\":{\"openai\":{\"model\":\"gpt-4\"}}}"))
+         (bad
+           (leftover-settings-load-write-file
+            "cadr-goal20-config-bad.json" "not-json"))
+         (arr
+           (leftover-settings-load-write-file
+            "cadr-goal20-config-arr.json" "[1]"))
+         (empty (cadr-cli::read-cli-config missing))
+         (object (cadr-cli::read-cli-config hit)))
+    (list
+     (if (null (cadr-ai::json-get empty "providers")) 1 0)
+     (if (string=
+          (cadr-ai::json-get
+           (cadr-ai::json-get
+            (cadr-ai::json-get object "providers")
+            "openai")
+           "model")
+          "gpt-4")
+         1
+         0)
+     (leftover-read-cli-config-caught bad)
+     (leftover-read-cli-config-caught arr)
+     5)))
+
+(defun run-settings-load-provider-config-secrets ()
+  ;; Leftover sibling: provider + env secrets. Isolated env; not login I/O.
+  (let* ((provider
+           (cadr-ai:make-openai-provider
+            :api-key "sk-cfg"
+            :oauth-access-token "tok"))
+         (config
+           (cadr-cli::make-provider-config
+            :name "openai"
+            :provider provider
+            :auth-source :cli))
+         (secrets
+           (leftover-call-with-environment
+            '(("OPENAI_API_KEY" . "sk-env")
+              ("ANTHROPIC_API_KEY" . nil)
+              ("GEMINI_API_KEY" . nil)
+              ("DEEPSEEK_API_KEY" . nil))
+            (lambda ()
+              (cadr-cli::provider-config-secrets config))))
+         (env-only
+           (leftover-call-with-environment
+            '(("OPENAI_API_KEY" . "sk-env")
+              ("ANTHROPIC_API_KEY" . nil)
+              ("GEMINI_API_KEY" . nil)
+              ("DEEPSEEK_API_KEY" . nil))
+            (lambda ()
+              (cadr-cli::provider-config-secrets nil)))))
+    (list
+     (if (member "sk-cfg" secrets :test #'string=) 1 0)
+     (if (member "tok" secrets :test #'string=) 1 0)
+     (if (member "sk-env" secrets :test #'string=) 1 0)
+     (if (member "sk-env" env-only :test #'string=) 1 0)
+     5)))
+
+(defun run-settings-load-resolve-provider-config ()
+  ;; Leftover sibling: instantiate openai with explicit key. Not stream.
+  (leftover-call-with-environment
+   nil
+   (lambda ()
+     (let* ((config-path
+              (leftover-settings-load-write-file
+               "cadr-goal20-resolve-config.json" "{}"))
+            (auth-path
+              (merge-pathnames
+               "cadr-goal20-no-such-auth.json" *scratch-directory*))
+            (resolved
+              (cadr-cli:resolve-provider-config
+               :provider "openai"
+               :api-key "sk-cli"
+               :config-path config-path
+               :auth-path auth-path
+               :allow-missing-auth-p t)))
+       (list
+        (if (string= (cadr-cli:provider-config-name resolved) "openai")
+            1
+            0)
+        (if (eq (cadr-cli::provider-config-auth-source resolved) :cli)
+            1
+            0)
+        (if (plusp
+             (length
+              (cadr-ai:model-id
+               (cadr-cli::provider-config-model resolved))))
+            1
+            0)
+        (if (typep
+             (cadr-cli::provider-config-provider resolved)
+             'cadr-ai:openai-provider)
+            1
+            0)
+        5)))))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4572,6 +4701,11 @@
                 (run-settings-load-oauth-refresh-function))
               (oauth-login-function
                 (run-settings-load-oauth-login-function))
+              (read-cli-config (run-settings-load-read-cli-config))
+              (provider-config-secrets
+                (run-settings-load-provider-config-secrets))
+              (resolve-provider-config
+                (run-settings-load-resolve-provider-config))
               (sdk-default-provider
                 (run-settings-load-sdk-default-provider))
               (sdk-default-model
@@ -4654,6 +4788,21 @@
           "olf_miss" (nth 2 oauth-login-function)
           "olf_diff" (nth 3 oauth-login-function)
           "olf_n" (nth 4 oauth-login-function)
+          "rcc_miss" (nth 0 read-cli-config)
+          "rcc_hit" (nth 1 read-cli-config)
+          "rcc_bad" (nth 2 read-cli-config)
+          "rcc_arr" (nth 3 read-cli-config)
+          "rcc_n" (nth 4 read-cli-config)
+          "pcs_key" (nth 0 provider-config-secrets)
+          "pcs_oauth" (nth 1 provider-config-secrets)
+          "pcs_env" (nth 2 provider-config-secrets)
+          "pcs_nil" (nth 3 provider-config-secrets)
+          "pcs_n" (nth 4 provider-config-secrets)
+          "rpc_name" (nth 0 resolve-provider-config)
+          "rpc_cli" (nth 1 resolve-provider-config)
+          "rpc_model" (nth 2 resolve-provider-config)
+          "rpc_type" (nth 3 resolve-provider-config)
+          "rpc_n" (nth 4 resolve-provider-config)
           "sdp_hit" (nth 0 sdk-default-provider)
           "sdp_miss" (nth 1 sdk-default-provider)
           "sdp_len" (nth 2 sdk-default-provider)
@@ -4742,6 +4891,21 @@
                   (lambda ()
                     (lambda ()
                       (run-settings-load-oauth-login-function))))
+         "read_cli_config"
+         (collect "settings_load.read_cli_config"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-read-cli-config))))
+         "provider_config_secrets"
+         (collect "settings_load.provider_config_secrets"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-provider-config-secrets))))
+         "resolve_provider_config"
+         (collect "settings_load.resolve_provider_config"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-resolve-provider-config))))
          "sdk_default_provider"
          (collect "settings_load.sdk_default_provider"
                   (lambda ()
@@ -34050,6 +34214,12 @@
       "src/cadr-cli/config.lisp oauth-refresh-function"
       "settings_load.oauth_login_function"
       "src/cadr-cli/config.lisp oauth-login-function"
+      "settings_load.read_cli_config"
+      "src/cadr-cli/config.lisp read-cli-config"
+      "settings_load.provider_config_secrets"
+      "src/cadr-cli/config.lisp provider-config-secrets"
+      "settings_load.resolve_provider_config"
+      "src/cadr-cli/config.lisp resolve-provider-config"
       "settings_load.sdk_default_provider"
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-provider"
       "settings_load.sdk_default_model"

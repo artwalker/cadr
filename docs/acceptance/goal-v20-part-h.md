@@ -9802,6 +9802,30 @@ Leftover sibling of Pair 1405. Does not remount `make_api_key_input_state` / lef
 
 Leftover sibling of Pairs 1405–1406. Does not remount `make_oauth_selector_state` / leftover 1003 `moss_ok` / leftover 1128 `oss_ok` / leftover 1209 `ossx_ok` / leftover 1275 `ossxx_ok` / leftover 1341 `ossxxx_ok`. Timed work is default / logout constructors. Observed `moss_default` / `moss_logout` are exact. First n=5 freeze **1.340×** (7.239 / 5.400 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 760 — `settings_load` (read_cli_config)
+
+| metric | cadr | pi |
+|---|---|---|
+| `read_cli_config` | `read-cli-config` (`src/cadr-cli/config.lisp`) | JSON.parse settings.json object (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling on a different needs-pair file. Timed work is missing/object/bad/array config.json — not `stream-chat`. Observed `rcc_miss` / `rcc_hit` / `rcc_bad` / `rcc_arr` / `rcc_n` are exact. First n=5 freeze **2.098×** (200.606 / 95.628 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 761 — `settings_load` (provider_config_secrets)
+
+| metric | cadr | pi |
+|---|---|---|
+| `provider_config_secrets` | `provider-config-secrets` (`src/cadr-cli/config.lisp`) | apiKey/oauth/env secret collect (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of Pair 760. Timed work is provider plus environment secret collection — not login I/O. Observed `pcs_key` / `pcs_oauth` / `pcs_env` / `pcs_nil` / `pcs_n` are exact. First n=5 freeze **43.688×** (59.914 / 1.371 µs) on host `cursor`, ceiling 50.0 first-freeze headroom. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 762 — `settings_load` (resolve_provider_config)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resolve_provider_config` | `resolve-provider-config` (`src/cadr-cli/config.lisp`) | `openaiProvider` construct (`packages/ai/src/providers/openai.ts`) |
+
+Leftover sibling of Pairs 760–761. Timed work is constructing openai with an explicit CLI key — not `stream-chat`. Observed `rpc_name` / `rpc_cli` / `rpc_model` / `rpc_type` / `rpc_n` are exact. First n=5 freeze **5.300×** (225.982 / 42.635 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
