@@ -40,6 +40,7 @@ import {
 	mkdirSync,
 	mkdtempSync,
 	existsSync,
+	renameSync,
 	readFileSync,
 	readdirSync,
 	realpathSync,
@@ -55,6 +56,7 @@ import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { Worker, isMainThread } from "node:worker_threads";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureDirectory = path.join(projectDirectory, "test/fixtures/goal20-paired-paths");
@@ -428,6 +430,15 @@ const REPETITIONS = {
 	"cli_support.watch_retry_delay": 50,
 	"cli_support.close_watcher": 50,
 	"cli_support.watch_signature": 50,
+	"cli_support.write_hello": 5,
+	"cli_support.write_overwrite": 5,
+	"cli_support.write_empty": 5,
+	"cli_support.editor_success": 5,
+	"cli_support.editor_fail": 5,
+	"cli_support.editor_empty": 5,
+	"cli_support.threads_absent": 50,
+	"cli_support.threads_current": 50,
+	"cli_support.threads_joined": 5,
 	"cli_bootstrap_sessions.model_cycle": 50,
 	"cli_bootstrap_sessions.model_scope_line": 50,
 	"cli_bootstrap_sessions.process_files": 50,
@@ -1313,6 +1324,9 @@ const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/path
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
 const experimentalModule = await import(moduleUrl("packages/coding-agent/src/core/experimental.ts"));
 const fsWatchModule = await import(moduleUrl("packages/coding-agent/src/utils/fs-watch.ts"));
+const externalEditorModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/external-editor.ts")
+);
 const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
 const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
@@ -15975,6 +15989,167 @@ function runCliSupportNoApiKey() {
 	};
 }
 
+const atomicWriteDir = path.join(scratch, "atomic-write");
+mkdirSync(atomicWriteDir, { recursive: true });
+
+function activateManagedReleaseWrite(name, content) {
+	// Leftover 871–873: same temp+rename as activateManagedRelease
+	// (packages/coding-agent/src/package-manager-cli.ts) without the
+	// version-file trailing newline.
+	const currentPath = path.join(atomicWriteDir, name);
+	const temporaryPath = path.join(
+		atomicWriteDir,
+		`${name}.tmp.${process.pid}`,
+	);
+	try {
+		writeFileSync(temporaryPath, content, "utf-8");
+		renameSync(temporaryPath, currentPath);
+	} finally {
+		rmSync(temporaryPath, { force: true });
+	}
+	return currentPath;
+}
+
+function runCliSupportWriteHello() {
+	const filePath = activateManagedReleaseWrite("hello.txt", "hello");
+	const text = readFileSync(filePath, "utf-8");
+	return {
+		awh_hello: text === "hello" ? 1 : 0,
+		awh_len: text.length === 5 ? 1 : 0,
+		awh_file: existsSync(filePath) ? 1 : 0,
+		awh_n: 3,
+	};
+}
+
+function runCliSupportWriteOverwrite() {
+	activateManagedReleaseWrite("over.txt", "first");
+	const filePath = activateManagedReleaseWrite("over.txt", "second");
+	const text = readFileSync(filePath, "utf-8");
+	return {
+		awo_second: text === "second" ? 1 : 0,
+		awo_no_first: text.includes("first") ? 0 : 1,
+		awo_len: text.length === 6 ? 1 : 0,
+		awo_n: 3,
+	};
+}
+
+function runCliSupportWriteEmpty() {
+	const filePath = activateManagedReleaseWrite("empty.txt", "");
+	const text = readFileSync(filePath, "utf-8");
+	return {
+		awe_ok: text === "" ? 1 : 0,
+		awe_len: text.length === 0 ? 1 : 0,
+		awe_file: existsSync(filePath) ? 1 : 0,
+		awe_n: 3,
+	};
+}
+
+async function withSilentStdout(fn) {
+	const write = process.stdout.write.bind(process.stdout);
+	process.stdout.write = () => true;
+	try {
+		return await fn();
+	} finally {
+		process.stdout.write = write;
+	}
+}
+
+async function runCliSupportEditorSuccess() {
+	return withSilentStdout(async () => {
+		const hello = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "hello",
+		});
+		const again = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "hello",
+		});
+		const noNl = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "hello",
+		});
+		return {
+			eed_hello: hello.status === "complete" && hello.content === "hello" ? 1 : 0,
+			eed_len: hello.status === "complete" && hello.content.length === 5 ? 1 : 0,
+			eed_round: again.status === "complete" && again.content === "hello" ? 1 : 0,
+			eed_nonl: noNl.status === "complete" && noNl.content === "hello" ? 1 : 0,
+			eed_n: 4,
+		};
+	});
+}
+
+async function runCliSupportEditorFail() {
+	return withSilentStdout(async () => {
+		const keep = await externalEditorModule.editInExternalEditor({
+			command: "false",
+			content: "keep-me",
+		});
+		const empty = await externalEditorModule.editInExternalEditor({
+			command: "false",
+			content: "",
+		});
+		const twice = await externalEditorModule.editInExternalEditor({
+			command: "false",
+			content: "keep-me",
+		});
+		return {
+			eef_orig: keep.status === "failed" ? 1 : 0,
+			eef_empty: empty.status === "failed" ? 1 : 0,
+			eef_twice: twice.status === "failed" ? 1 : 0,
+			eef_n: 3,
+		};
+	});
+}
+
+async function runCliSupportEditorEmpty() {
+	return withSilentStdout(async () => {
+		const empty = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "",
+		});
+		const one = await externalEditorModule.editInExternalEditor({
+			command: "true",
+			content: "x",
+		});
+		return {
+			eee_ok: empty.status === "complete" && empty.content === "" ? 1 : 0,
+			eee_len: empty.status === "complete" && empty.content.length === 0 ? 1 : 0,
+			eee_x: one.status === "complete" && one.content === "x" ? 1 : 0,
+			eee_xlen: one.status === "complete" && one.content.length === 1 ? 1 : 0,
+			eee_n: 4,
+		};
+	});
+}
+
+function runCliSupportThreadsAbsent() {
+	const handle = null;
+	return {
+		cta_eq: handle == null ? 1 : 0,
+		cta_n: 1,
+	};
+}
+
+/** Leftover 887: ``isMainThread`` vs cadr-cli wrapper on the current thread. */
+function runCliSupportThreadsCurrent() {
+	return {
+		ctc_eq: isMainThread ? 1 : 0,
+		ctc_n: 1,
+	};
+}
+
+/** Leftover 888: Worker eval-exit vs cadr-cli wrapper ``:joined``. */
+async function runCliSupportThreadsJoined() {
+	const joined = await new Promise((resolve) => {
+		const worker = new Worker("setImmediate(() => {})", { eval: true });
+		worker.on("exit", () => resolve(1));
+		worker.on("error", () => resolve(0));
+	});
+	return {
+		ctj_eq: joined,
+		ctj_n: 1,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -15998,6 +16173,15 @@ async function measureCliSupportStripAnsi() {
 		path.join(scratch, "cadr-goal20-watch-missing"),
 		watchPresent,
 	);
+	const writeHello = runCliSupportWriteHello();
+	const writeOverwrite = runCliSupportWriteOverwrite();
+	const writeEmpty = runCliSupportWriteEmpty();
+	const editorSuccess = await runCliSupportEditorSuccess();
+	const editorFail = await runCliSupportEditorFail();
+	const editorEmpty = await runCliSupportEditorEmpty();
+	const threadsAbsent = runCliSupportThreadsAbsent();
+	const threadsCurrent = runCliSupportThreadsCurrent();
+	const threadsJoined = await runCliSupportThreadsJoined();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -16055,6 +16239,33 @@ async function measureCliSupportStripAnsi() {
 					present,
 				);
 		}),
+		write_hello: await collect("cli_support.write_hello", () => {
+			return () => runCliSupportWriteHello();
+		}),
+		write_overwrite: await collect("cli_support.write_overwrite", () => {
+			return () => runCliSupportWriteOverwrite();
+		}),
+		write_empty: await collect("cli_support.write_empty", () => {
+			return () => runCliSupportWriteEmpty();
+		}),
+		editor_success: await collect("cli_support.editor_success", () => {
+			return async () => runCliSupportEditorSuccess();
+		}),
+		editor_fail: await collect("cli_support.editor_fail", () => {
+			return async () => runCliSupportEditorFail();
+		}),
+		editor_empty: await collect("cli_support.editor_empty", () => {
+			return async () => runCliSupportEditorEmpty();
+		}),
+		threads_absent: await collect("cli_support.threads_absent", () => {
+			return () => runCliSupportThreadsAbsent();
+		}),
+		threads_current: await collect("cli_support.threads_current", () => {
+			return () => runCliSupportThreadsCurrent();
+		}),
+		threads_joined: await collect("cli_support.threads_joined", () => {
+			return () => runCliSupportThreadsJoined();
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -16073,6 +16284,15 @@ async function measureCliSupportStripAnsi() {
 			...watchRetry,
 			...closeWatcher,
 			...watchSignature,
+			...writeHello,
+			...writeOverwrite,
+			...writeEmpty,
+			...editorSuccess,
+			...editorFail,
+			...editorEmpty,
+			...threadsAbsent,
+			...threadsCurrent,
+			...threadsJoined,
 		},
 	};
 }
@@ -34556,6 +34776,24 @@ const result = {
 				"packages/coding-agent/src/utils/fs-watch.ts closeWatcher (cadr close-watcher)",
 			"cli_support.watch_signature":
 				"packages/coding-agent/src/core/footer-data-provider.ts statSync mtime+size (cadr watched-path-signature)",
+			"cli_support.write_hello":
+				"packages/coding-agent/src/package-manager-cli.ts activateManagedRelease temp+rename",
+			"cli_support.write_overwrite":
+				"packages/coding-agent/src/package-manager-cli.ts activateManagedRelease temp+rename",
+			"cli_support.write_empty":
+				"packages/coding-agent/src/package-manager-cli.ts activateManagedRelease temp+rename",
+			"cli_support.editor_success":
+				"packages/coding-agent/src/modes/interactive/external-editor.ts editInExternalEditor",
+			"cli_support.editor_fail":
+				"packages/coding-agent/src/modes/interactive/external-editor.ts editInExternalEditor",
+			"cli_support.editor_empty":
+				"packages/coding-agent/src/modes/interactive/external-editor.ts editInExternalEditor",
+			"cli_support.threads_absent":
+				"node:worker_threads absent-handle branch (cadr-cli::stop-thread-for-cleanup nil; leftover source src/cadr-cli/support/threads.lisp)",
+			"cli_support.threads_current":
+				"node:worker_threads isMainThread (cadr-cli::stop-thread-for-cleanup current; leftover source src/cadr-cli/support/threads.lisp)",
+			"cli_support.threads_joined":
+				"node:worker_threads Worker eval-exit (cadr-cli::stop-thread-for-cleanup joined; leftover source src/cadr-cli/support/threads.lisp)",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":

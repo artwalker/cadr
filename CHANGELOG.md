@@ -10,6 +10,21 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `cli_support.write_hello` / `write_overwrite` / `write_empty` on
+  `src/cadr-cli/support/atomic-write.lisp`, `editor_success` / `editor_fail` /
+  `editor_empty` on `external-editor.lisp`, and `threads_absent` /
+  `threads_current` / `threads_joined` on `support/threads.lisp`. n=5 freeze on
+  host `Friend-MachineD`. Over-1×: `write_hello` **1.678×**,
+  `write_overwrite` **1.295×**,
+  `write_empty` **2.790×**,
+  `threads_absent` **1.631×**,
+  `threads_current` **1.165×**.
+  Editor trio and `threads_joined` under 1×. Reclassified three files.
+  `needs-pair` 10→7. G.17 stays missing. `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `oauth_pkce_device.anth_oauth_*` on `src/cadr-ai/oauth/providers/anthropic.lisp`
   and `kimi_host_*` on `providers/kimi.lisp`. n=5 freeze on host
   `Friend-MachineD`. Over-1×: `anth_oauth_name` **3.755×**, `anth_oauth_sub`

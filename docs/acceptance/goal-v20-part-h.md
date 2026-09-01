@@ -5571,6 +5571,124 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 `parsed_provider` METRICS pollution. Over-1× booked. Same commit no
 optimize.
 
+### Pair 868 — `cli_support` (editor_success)
+
+| metric | cadr | pi |
+|---|---|---|
+| `editor_success` | `edit-in-external-editor` success (`src/cadr-cli/support/external-editor.lisp`) | `editInExternalEditor` true-exit complete (`packages/coding-agent/src/modes/interactive/external-editor.ts`) |
+
+Leftover of the `cli_support` hole on `external-editor.lisp`. Timed work is
+the success path (runner exit 0 keeps edited buffer). Observed `eed_hello` / `eed_len` / `eed_round` / `eed_nonl` / `eed_n` are exact. Collect restore n=5 freeze **0.011×** (231.411 /
+20933.089 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 869 — `cli_support` (editor_fail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `editor_fail` | `edit-in-external-editor` non-zero runner (`src/cadr-cli/support/external-editor.lisp`) | `editInExternalEditor` false-exit failed (`packages/coding-agent/src/modes/interactive/external-editor.ts`) |
+
+Leftover sibling of Pair 868. Timed work is the fail path (original content
+kept). Observed `eef_orig` / `eef_empty` / `eef_twice` / `eef_n` are exact. Collect restore n=5 freeze **0.009×** (185.235 /
+21216.830 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 870 — `cli_support` (editor_empty)
+
+| metric | cadr | pi |
+|---|---|---|
+| `editor_empty` | `edit-in-external-editor` empty/one-cell (`src/cadr-cli/support/external-editor.lisp`) | `editInExternalEditor` empty/one-cell complete (`packages/coding-agent/src/modes/interactive/external-editor.ts`) |
+
+Leftover sibling of Pairs 868–869. Timed work is empty and one-cell success
+payloads. Observed `eee_ok` / `eee_len` / `eee_x` / `eee_xlen` / `eee_n` are exact. Collect restore n=5 freeze **0.011×** (164.411 /
+14612.956 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 871 — `cli_support` (write_hello)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_hello` | `atomic-write-utf8` hello (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
+
+Leftover of the `cli_support` hole on `atomic-write.lisp`. Timed work is first
+write of a new file. Observed `awh_hello` / `awh_len` / `awh_file` / `awh_n` are exact. Collect restore n=5 freeze **1.678×** (277.332 /
+165.319 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 872 — `cli_support` (write_overwrite)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_overwrite` | `atomic-write-utf8` overwrite (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` second write (`packages/coding-agent/src/package-manager-cli.ts`) |
+
+Leftover sibling of Pair 871. Timed work is replacing an existing payload.
+Observed `awo_second` / `awo_no_first` / `awo_len` / `awo_n` are exact. Collect restore n=5 freeze **1.295×** (438.860 /
+338.824 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 873 — `cli_support` (write_empty)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_empty` | `atomic-write-utf8` empty (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` empty (`packages/coding-agent/src/package-manager-cli.ts`) |
+
+Leftover sibling of Pairs 871–872. Timed work is empty payload still creating
+the file. Observed `awe_ok` / `awe_len` / `awe_file` / `awe_n` are exact. Collect restore n=5 freeze **2.790×** (129.194 /
+46.306 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 15.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 886 — `cli_support` (threads_absent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_absent` | `stop-thread-for-cleanup` nil (`src/cadr-cli/support/threads.lisp`) | worker_threads absent-handle branch (`node:worker_threads`) |
+
+Leftover of the `cli_support` hole on `cadr-cli/support/threads.lisp`. Timed
+work is the nil/absent branch. Observed `cta_eq` / `cta_n` are exact. Collect restore n=5 freeze **1.631×** (0.192 /
+0.118 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 887 — `cli_support` (threads_current)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_current` | `stop-thread-for-cleanup` current (`src/cadr-cli/support/threads.lisp`) | `isMainThread` (`node:worker_threads`) |
+
+Leftover sibling of Pair 886. Timed work is the current-thread branch.
+Observed `ctc_eq` / `ctc_n` are exact. Collect restore n=5 freeze **1.165×** (0.139 /
+0.120 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 888 — `cli_support` (threads_joined)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_joined` | `stop-thread-for-cleanup` joined (`src/cadr-cli/support/threads.lisp`) | Worker eval-exit (`node:worker_threads`) |
+
+Leftover sibling of Pairs 886–887. Timed work is the joined/finished-thread
+branch. Observed `ctj_eq` / `ctj_n` are exact. Collect restore n=5 freeze **0.005×** (151.395 /
+28910.926 µs) on host `Friend-MachineD`, gitHead `c3c94ecf1`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -9864,13 +9982,13 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 234 | 102,926 | 79.6% | `no worse than baseline` is falsifiable |
+| `paired` | 237 | 102,960 | 79.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 10 | 1,427 | 1.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 7 | 1,393 | 1.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.6% of lines (234 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 79.6% of lines (237 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 85.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -10062,8 +10180,10 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
+| `src/cadr-cli/support/atomic-write.lisp` | 7 | `cli_support.write_hello`, `cli_support.write_overwrite`, `cli_support.write_empty` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
+| `src/cadr-cli/support/external-editor.lisp` | 20 | `cli_support.editor_success`, `cli_support.editor_fail`, `cli_support.editor_empty` |
 | `src/cadr-cli/support/file-watcher.lisp` | 69 | `cli_support.watch_retry_delay`, `cli_support.close_watcher`, `cli_support.watch_signature` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/html.lisp` | 63 | `cli_support.experimental` |
@@ -10071,6 +10191,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 151 | `cli_support.shell_config`, `cli_support.sanitize_output` |
+| `src/cadr-cli/support/threads.lisp` | 7 | `cli_support.threads_absent`, `cli_support.threads_current`, `cli_support.threads_joined` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/system-prompt.lisp` | 53 | `skill_prompt_load.resolve_prompt`, `skill_prompt_load.node_read_error`, `skill_prompt_load.prompt_appends` |
 | `src/cadr-cli/tool-manager.lisp` | 295 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
@@ -10188,7 +10309,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
 | `cli_selectors` | 1 | 41 |
-| `cli_support` | 3 | 34 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
