@@ -8104,6 +8104,51 @@
    "piUs": 0.913,
    "ceiling": 40.0,
    "rc": 2
+  },
+  {
+   "pair": 775,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_settings_reload",
+   "branch": "g20-freeze-775-777",
+   "note": "nextPairNum left at tip 328; leftover id 775",
+   "ratio": 4.144,
+   "cadrUs": 24.265,
+   "piUs": 5.855,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 776,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_settings_flush",
+   "branch": "g20-freeze-775-777",
+   "note": "nextPairNum left at tip 328; leftover id 776",
+   "ratio": 5.937,
+   "cadrUs": 26.442,
+   "piUs": 4.454,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 777,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_compaction_enabled",
+   "branch": "g20-freeze-775-777",
+   "note": "nextPairNum left at tip 328; leftover id 777",
+   "ratio": 3.643,
+   "cadrUs": 17.188,
+   "piUs": 4.718,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

@@ -9922,6 +9922,30 @@ Leftover sibling of Pair 772. Timed work is in-memory set (nil path; no `setting
 
 Leftover sibling of Pairs 772–773. Timed work is memory remhash; pi has no generic `remove`. Observed `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` are exact. First n=5 freeze **35.830×** (32.715 / 0.913 µs) on host `cursor`, ceiling 40.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 775 — `settings_load` (sdk_settings_reload)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_settings_reload` | `sdk-settings-reload` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.reload` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 772–774. Timed work is in-memory reload (nil path; no `settings.json` read). cadr returns the manager; pi resolves to `undefined` — encoded as cadr `eq` manager → 1 and pi `== null` → 1. Observed `srl_hit` / `srl_model` / `srl_same` / `srl_empty` / `srl_n` are exact. First n=5 freeze **4.144×** (24.265 / 5.855 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 776 — `settings_load` (sdk_settings_flush)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_settings_flush` | `sdk-settings-flush` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.flush` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 775. Timed work is flush identity vs `await flush()`. Do not compare manager vs Promise. Observed `sfl_hit` / `sfl_model` / `sfl_same` / `sfl_empty` / `sfl_n` are exact. First n=5 freeze **5.937×** (26.442 / 4.454 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 777 — `settings_load` (sdk_compaction_enabled)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_compaction_enabled` | `sdk-settings-compaction-enabled-p` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getCompactionEnabled` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 775–776. Timed work is compaction enabled default/true/false — not login I/O. Observed `sce_on` / `sce_off` / `sce_def` / `sce_eq` / `sce_n` are exact. First n=5 freeze **3.643×** (17.188 / 4.718 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -10652,7 +10676,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/resource-service.lisp` | 370 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
-| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove` |
+| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |

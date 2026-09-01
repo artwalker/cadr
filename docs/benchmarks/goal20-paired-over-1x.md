@@ -621,4 +621,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_effective_object` | 15.8 | 0.2 | 86.67× | 100.00× | measure-only leftover 772; `sdk-settings-effective-object` vs merge replica; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
 | `settings_load.sdk_settings_set` | 17.9 | 8.1 | 2.21× | 8.00× | measure-only leftover 773; `sdk-settings-set` vs setDefaultProvider/setDefaultModel/setTheme | invent pause；地板优化另刀 |
 | `settings_load.sdk_settings_remove` | 32.7 | 0.9 | 35.83× | 40.00× | measure-only leftover 774; `sdk-settings-remove` vs delete-key replica; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_reload` | 24.3 | 5.9 | 4.14× | 8.00× | measure-only leftover 775; `sdk-settings-reload` vs SettingsManager.reload | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_flush` | 26.4 | 4.5 | 5.94× | 8.00× | measure-only leftover 776; `sdk-settings-flush` vs SettingsManager.flush | invent pause；地板优化另刀 |
+| `settings_load.sdk_compaction_enabled` | 17.2 | 4.7 | 3.64× | 8.00× | measure-only leftover 777; `sdk-settings-compaction-enabled-p` vs getCompactionEnabled | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

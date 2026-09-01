@@ -681,6 +681,9 @@
     "settings_load.sdk_effective_object",
     "settings_load.sdk_settings_set",
     "settings_load.sdk_settings_remove",
+    "settings_load.sdk_settings_reload",
+    "settings_load.sdk_settings_flush",
+    "settings_load.sdk_compaction_enabled",
     "cli_bootstrap_sessions.pb_ok",
     "cli_bootstrap_sessions.rt_ok",
     "cli_bootstrap_sessions.dp_ok",
@@ -2544,7 +2547,10 @@
         "settings_load.sdk_drain_errors",
         "settings_load.sdk_effective_object",
         "settings_load.sdk_settings_set",
-        "settings_load.sdk_settings_remove"
+        "settings_load.sdk_settings_remove",
+        "settings_load.sdk_settings_reload",
+        "settings_load.sdk_settings_flush",
+        "settings_load.sdk_compaction_enabled"
       ]
     },
     {
