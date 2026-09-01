@@ -667,6 +667,9 @@
     ("package_manager.records_project_first" . 50)
     ("package_manager.candidate_record" . 50)
     ("package_manager.update_offline" . 50)
+    ("package_manager.git_output" . 50)
+    ("package_manager.remote_ref" . 50)
+    ("package_manager.update_record_result" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -7289,6 +7292,105 @@
       (null (cadr-cli::run-package-update-checks nil #'identity 4)))
      5)))
 
+(defun leftover-capturing-git-runner (box reply)
+  (lambda (argv)
+    (setf (car box) argv)
+    reply))
+
+(defun leftover-upstream-runner (upstream)
+  (lambda (argv)
+    (declare (ignore argv))
+    upstream))
+
+(defun leftover-update-avail-runner (local upstream remote)
+  (lambda (argv)
+    (cond
+      ((find "--abbrev-ref" argv :test #'string=) upstream)
+      ((find "ls-remote" argv :test #'string=) remote)
+      ((find "rev-parse" argv :test #'string=) local)
+      (t ""))))
+
+(defun run-package-manager-git-output ()
+  ;; Leftover on update-checks.lisp: argv to runner. Not git spawn.
+  (let* ((box (list nil))
+         (out
+           (cadr-cli::package-update-git-output
+            (leftover-capturing-git-runner box "ok")
+            "/tmp/pkg"
+            "rev-parse" "HEAD"))
+         (argv (car box)))
+    (list
+     (package-manager-leftover-truth
+      (string= (first argv) "git"))
+     (package-manager-leftover-truth
+      (string= (second argv) "-C"))
+     (package-manager-leftover-truth
+      (string= (third argv) (namestring "/tmp/pkg")))
+     (package-manager-leftover-truth (string= out "ok"))
+     5)))
+
+(defun run-package-manager-remote-ref ()
+  ;; Leftover on update-checks.lisp: origin/ prefix. Not ls-remote spawn.
+  (list
+   (package-manager-leftover-truth
+    (string=
+     (cadr-cli::package-update-remote-ref
+      (leftover-upstream-runner (format nil "origin/main~%"))
+      "/tmp/pkg")
+     "refs/heads/main"))
+   (package-manager-leftover-truth
+    (string=
+     (cadr-cli::package-update-remote-ref
+      (leftover-upstream-runner "origin/feat/x")
+      "/tmp/pkg")
+     "refs/heads/feat/x"))
+   (package-manager-leftover-truth
+    (null
+     (cadr-cli::package-update-remote-ref
+      (leftover-upstream-runner "main")
+      "/tmp/pkg")))
+   (package-manager-leftover-truth
+    (null
+     (cadr-cli::package-update-remote-ref
+      (leftover-upstream-runner "")
+      "/tmp/pkg")))
+   5))
+
+(defun run-package-manager-update-record-result ()
+  ;; Leftover on update-checks.lisp: host/path when oids differ. Not git spawn.
+  (let* ((oid-a "0123456789abcdef0123456789abcdef01234567")
+         (oid-b "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+         (rec
+           (leftover-update-check-record :project "/tmp/pkg" :git))
+         (hit
+           (cadr-cli::package-update-record-result
+            rec
+            (leftover-update-avail-runner
+             oid-a "origin/main" oid-b)))
+         (same
+           (cadr-cli::package-update-record-result
+            rec
+            (leftover-update-avail-runner
+             oid-a "origin/main" oid-a)))
+         (boom
+           (cadr-cli::package-update-record-result
+            rec
+            (lambda (argv)
+              (declare (ignore argv))
+              (error "boom"))))
+         (bad
+           (cadr-cli::package-update-record-result
+            rec
+            (leftover-update-avail-runner
+             oid-a "origin/main" "notasha"))))
+    (list
+     (package-manager-leftover-truth
+      (string= hit "github.com/acme/pkg"))
+     (package-manager-leftover-truth (null same))
+     (package-manager-leftover-truth (null boom))
+     (package-manager-leftover-truth (null bad))
+     5)))
+
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
       (stage-package-layout)
@@ -7387,7 +7489,13 @@
            (candidate-record
              (run-package-manager-candidate-record))
            (update-offline
-             (run-package-manager-update-offline)))
+             (run-package-manager-update-offline))
+           (git-output
+             (run-package-manager-git-output))
+           (remote-ref
+             (run-package-manager-remote-ref))
+           (update-record-result
+             (run-package-manager-update-record-result)))
       (json-object
        "observed"
        (json-object
@@ -7674,7 +7782,22 @@
         "uoff_empty_off" (nth 1 update-offline)
         "uoff_empty" (nth 2 update-offline)
         "uoff_run" (nth 3 update-offline)
-        "uoff_n" (nth 4 update-offline))
+        "uoff_n" (nth 4 update-offline)
+        "pug_git" (nth 0 git-output)
+        "pug_cwd" (nth 1 git-output)
+        "pug_rev" (nth 2 git-output)
+        "pug_out" (nth 3 git-output)
+        "pug_n" (nth 4 git-output)
+        "pur_main" (nth 0 remote-ref)
+        "pur_feat" (nth 1 remote-ref)
+        "pur_plain" (nth 2 remote-ref)
+        "pur_empty" (nth 3 remote-ref)
+        "pur_n" (nth 4 remote-ref)
+        "prr_hit" (nth 0 update-record-result)
+        "prr_same" (nth 1 update-record-result)
+        "prr_err" (nth 2 update-record-result)
+        "prr_bad" (nth 3 update-record-result)
+        "prr_n" (nth 4 update-record-result))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -7960,7 +8083,22 @@
        (collect "package_manager.update_offline"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-update-offline))))))))
+                    (run-package-manager-update-offline))))
+       "git_output"
+       (collect "package_manager.git_output"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-git-output))))
+       "remote_ref"
+       (collect "package_manager.remote_ref"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-remote-ref))))
+       "update_record_result"
+       (collect "package_manager.update_record_result"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-update-record-result))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -35825,6 +35963,12 @@
       "src/cadr-cli/packages/update-checks.lisp package-update-candidate-record-p"
       "package_manager.update_offline"
       "src/cadr-cli/packages/update-checks.lisp check-for-available-package-updates"
+      "package_manager.git_output"
+      "src/cadr-cli/packages/update-checks.lisp package-update-git-output"
+      "package_manager.remote_ref"
+      "src/cadr-cli/packages/update-checks.lisp package-update-remote-ref"
+      "package_manager.update_record_result"
+      "src/cadr-cli/packages/update-checks.lisp package-update-record-result"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

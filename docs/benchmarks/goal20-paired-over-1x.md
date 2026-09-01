@@ -663,4 +663,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.switch_scope` | 36.289 | 6.020 | 6.03× | 12.00× | measure-only leftover 792; `config-selector-switch-scope` vs leftover scope flip; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
 | `evals_harness.visible_extension_bundles` | 12.635 | 0.585 | 21.59× | 25.00× | measure-only leftover 794; `visible-extension-bundles` vs leftover hidden-p filter; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
 | `evals_harness.authoring_harness_table` | 0.880 | 0.205 | 4.301× | 8.00× | measure-only leftover 795; `extension-authoring-harness-table` vs leftover two-row table | invent pause；地板优化另刀 |
+| `package_manager.git_output` | 3.208 | 0.221 | 14.54× | 120.00× | measure-only leftover 796; `package-update-git-output` vs leftover git argv runner; first-freeze headroom 120.0 | invent pause；地板优化另刀 |
+| `package_manager.remote_ref` | 4.714 | 1.155 | 4.082× | 25.00× | measure-only leftover 797; `package-update-remote-ref` vs leftover origin/ upstream ref; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
+| `package_manager.update_record_result` | 11.610 | 6.399 | 1.814× | 8.00× | measure-only leftover 798; `package-update-record-result` vs leftover host/path result | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

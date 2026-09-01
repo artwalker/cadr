@@ -10090,6 +10090,30 @@ Leftover sibling of Pair 793. Timed work is drop `hidden-p` bundles from a memor
 
 Leftover sibling of Pairs 793–794. Timed work is construct the two named rows (system-prompt-without-docs / default-system-prompt, repetition 1) — do not invoke `:run`. Observed `eht_len` / `eht_base` / `eht_cand` / `eht_rep` / `eht_n` are exact. First n=5 freeze **4.301×** (0.880 / 0.205 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 796 — `package_manager` (git_output)
+
+| metric | cadr | pi |
+|---|---|---|
+| `git_output` | `package-update-git-output` (`src/cadr-cli/packages/update-checks.lisp`) | leftover git argv runner (`packages/coding-agent/src/core/package-manager.ts`) |
+
+Leftover sibling of Pairs 757–759 on the same `update-checks.lisp` `package_manager` hole. Timed work is `git -C path` argv plus runner reply — not git spawn. Observed `pug_git` / `pug_cwd` / `pug_rev` / `pug_out` / `pug_n` are exact. First n=5 freeze **14.54×** (3.208 / 0.221 µs) on host `cursor`, ceiling 120.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 797 — `package_manager` (remote_ref)
+
+| metric | cadr | pi |
+|---|---|---|
+| `remote_ref` | `package-update-remote-ref` (`src/cadr-cli/packages/update-checks.lisp`) | leftover origin/ upstream ref (`packages/coding-agent/src/core/package-manager.ts`) |
+
+Leftover sibling of Pair 796. Timed work is origin/ prefix to `refs/heads/` — not `ls-remote` spawn. Observed `pur_main` / `pur_feat` / `pur_plain` / `pur_empty` / `pur_n` are exact. First n=5 freeze **4.082×** (4.714 / 1.155 µs) on host `cursor`, ceiling 25.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 798 — `package_manager` (update_record_result)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_record_result` | `package-update-record-result` (`src/cadr-cli/packages/update-checks.lisp`) | leftover host/path update result (`packages/coding-agent/src/core/package-manager.ts`) |
+
+Leftover sibling of Pairs 796–797. Timed work is host/path when mock oids differ, nil on match/error/bad oid — not git spawn. Observed `prr_hit` / `prr_same` / `prr_err` / `prr_bad` / `prr_n` are exact. First n=5 freeze **1.814×** (11.610 / 6.399 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

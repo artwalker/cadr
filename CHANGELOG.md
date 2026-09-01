@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.git_output`
+  (`package-update-git-output` vs leftover git argv runner). Observed
+  `pug_git` / `pug_cwd` / `pug_rev` / `pug_out` / `pug_n` exact.
+  n=5 **95.093×** (24.678 / 0.260 µs) on host `cursor`, ceiling 120.0.
+  Measure-only leftover (Pair 796). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.remote_ref`
+  (`package-update-remote-ref` vs leftover origin/ upstream ref). Observed
+  `pur_main` / `pur_feat` / `pur_plain` / `pur_empty` / `pur_n` exact.
+  n=5 **20.001×** (26.081 / 1.304 µs) on host `cursor`, ceiling 25.0.
+  Measure-only leftover (Pair 797). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.update_record_result`
+  (`package-update-record-result` vs leftover host/path result). Observed
+  `prr_hit` / `prr_same` / `prr_err` / `prr_bad` / `prr_n` exact.
+  n=5 **4.640×** (32.630 / 7.033 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 798). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `evals_harness.bundle_tool_names`
   (`extension-bundle-tool-names` vs leftover tool-name list). Observed
   `ebt_hello` / `ebt_multi` / `ebt_empty` / `ebt_eq` / `ebt_n` exact.

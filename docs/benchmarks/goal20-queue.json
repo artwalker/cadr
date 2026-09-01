@@ -8419,6 +8419,51 @@
    "piUs": 0.205,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 796,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.git_output",
+   "branch": "cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 796",
+   "ratio": 14.54,
+   "cadrUs": 3.208,
+   "piUs": 0.221,
+   "ceiling": 120.0,
+   "rc": 2
+  },
+  {
+   "pair": 797,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.remote_ref",
+   "branch": "cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 797",
+   "ratio": 4.082,
+   "cadrUs": 4.714,
+   "piUs": 1.155,
+   "ceiling": 25.0,
+   "rc": 2
+  },
+  {
+   "pair": 798,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.update_record_result",
+   "branch": "cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 798",
+   "ratio": 1.814,
+   "cadrUs": 11.61,
+   "piUs": 6.399,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
