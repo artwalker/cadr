@@ -1,0 +1,289 @@
+#!/usr/bin/env bash
+# Drive cadr the way a user does: isolated HOME, captured stdout/stderr/exit
+# (and optional tmux TUI). Cleanup deletes run state, never evidence.
+set -euo pipefail
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SKILL_DIR="$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(CDPATH= cd -- "$SKILL_DIR/../../.." && pwd)"
+STATE_DIR="${CADR_VERIFY_STATE:-$SKILL_DIR/.run}"
+EVIDENCE_DIR="${CADR_VERIFY_EVIDENCE:-$SKILL_DIR/artifacts}"
+CADR_BIN="${CADR_VERIFY_BIN:-$REPO_ROOT/cadr}"
+HOME_DIR="$STATE_DIR/home"
+SESSION_DIR="$STATE_DIR/sessions"
+TMUX_NAME_FILE="$STATE_DIR/tmux-session"
+PID_FILE="$STATE_DIR/tui.pid"
+
+die() { printf 'control-cadr: %s\n' "$*" >&2; exit 1; }
+
+usage() {
+  cat <<'EOF'
+Usage:
+  control-cadr root
+  control-cadr init
+  control-cadr doctor
+  control-cadr expected-identity
+  control-cadr cli -- <cadr-args...>
+  control-cadr tui start -- <cadr-args...>
+  control-cadr tui capture [--path FILE]
+  control-cadr tui send --keys KEYS...
+  control-cadr tui status
+  control-cadr tui stop
+  control-cadr cleanup
+
+Environment:
+  CADR_VERIFY_FEATURE   Evidence subdirectory (default: misc)
+  CADR_VERIFY_EVIDENCE  Proof directory (default: skill artifacts/)
+  CADR_VERIFY_STATE     Disposable HOME/sessions (default: skill .run/)
+  CADR_VERIFY_BIN       cadr binary (default: <repo>/cadr)
+  CADR_VERIFY_RAW=1     Do not prepend --session-dir / --offline / --approve / --no-extensions
+EOF
+}
+
+cmd_root() { printf '%s\n' "$REPO_ROOT"; }
+
+expected_identity() {
+  local version commit release distance sha
+  version="$(tr -d '"[:space:]' <"$REPO_ROOT/version.sexp")"
+  commit="$(awk '{print $1}' "$REPO_ROOT/BASELINE")"
+  release="$(awk '{print $2}' "$REPO_ROOT/BASELINE")"
+  distance="$(awk '{print $3}' "$REPO_ROOT/BASELINE")"
+  sha="${commit:0:9}"
+  printf 'cadr %s · aligned with pi %s (+%s, %s)\n' "$version" "$release" "$distance" "$sha"
+}
+
+ensure_init() {
+  mkdir -p "$HOME_DIR" "$SESSION_DIR" "$EVIDENCE_DIR"
+  if [ ! -f "$STATE_DIR/run-id" ]; then
+    date -u +%Y%m%dT%H%M%SZ >"$STATE_DIR/run-id"
+  fi
+  git -C "$REPO_ROOT" rev-parse HEAD >"$STATE_DIR/git-head" 2>/dev/null || true
+}
+
+cadr_env() {
+  # Isolated product data. Runtime is CADR_* only; do not set PI_*.
+  export HOME="$HOME_DIR"
+  export CADR_VERIFY=1
+  unset PI_CONFIG_DIR PI_SESSION_DIR PI_API_KEY || true
+}
+
+compute_extra_flags() {
+  _CADR_EXTRA=()
+  if [ "${CADR_VERIFY_RAW:-0}" = 1 ]; then
+    return
+  fi
+  case "${1:-}" in
+    list|install|remove|uninstall|update|config|auth)
+      return
+      ;;
+  esac
+  _CADR_EXTRA=(--session-dir "$SESSION_DIR" --offline --approve --no-extensions)
+}
+
+run_cadr() {
+  cadr_env
+  compute_extra_flags "$@"
+  "$CADR_BIN" "${_CADR_EXTRA[@]}" "$@"
+}
+
+record_cli() {
+  local feature="${CADR_VERIFY_FEATURE:-misc}"
+  local dest="$EVIDENCE_DIR/$feature"
+  mkdir -p "$dest"
+  compute_extra_flags "$@"
+  {
+    printf 'cwd: %s\n' "$REPO_ROOT"
+    printf 'bin: %s\n' "$CADR_BIN"
+    printf 'home: %s\n' "$HOME_DIR"
+    printf 'session-dir: %s\n' "$SESSION_DIR"
+    printf 'git-head: %s\n' "$(cat "$STATE_DIR/git-head" 2>/dev/null || echo unknown)"
+    printf 'command:'
+    printf ' %q' "$CADR_BIN" "${_CADR_EXTRA[@]}" "$@"
+    printf '\n'
+  } >"$dest/command.txt"
+  local rc=0
+  set +e
+  run_cadr "$@" >"$dest/stdout.txt" 2>"$dest/stderr.txt"
+  rc=$?
+  set -e
+  printf '%s\n' "$rc" >"$dest/exit.txt"
+  printf 'control-cadr: feature=%s exit=%s stdout=%s stderr=%s\n' \
+    "$feature" "$rc" "$dest/stdout.txt" "$dest/stderr.txt"
+  return "$rc"
+}
+
+cmd_init() {
+  ensure_init
+  printf 'control-cadr: init repo=%s home=%s evidence=%s run-id=%s\n' \
+    "$REPO_ROOT" "$HOME_DIR" "$EVIDENCE_DIR" "$(cat "$STATE_DIR/run-id")"
+}
+
+cmd_doctor() {
+  ensure_init
+  local ok=0
+  if [ ! -x "$CADR_BIN" ]; then
+    printf 'doctor: FAIL binary missing or not executable: %s\n' "$CADR_BIN"
+    printf 'doctor: build with CADR_BUILD_SKIP_TEST_CL=1 QUICKLISP_SETUP=$HOME/quicklisp/setup.lisp ./build.sh\n'
+    printf 'doctor: if ASDF cannot find slynk/mrepl, install sly-20260101-git into Quicklisp local-projects (see SKILL.md Launch).\n'
+    ok=1
+  else
+    printf 'doctor: OK binary %s\n' "$CADR_BIN"
+  fi
+  local expected actual
+  expected="$(expected_identity)"
+  local rc=0
+  set +e
+  actual="$(HOME="$HOME_DIR" "$CADR_BIN" --version 2>/dev/null)"
+  rc=$?
+  set -e
+  actual="$(printf '%s' "$actual" | tr -d '\r' | head -n 1)"
+  if [ "$rc" -ne 0 ] || [ "$actual" != "$expected" ]; then
+    printf 'doctor: FAIL --version exit=%s\n  expected: %s\n  actual:   %s\n' "$rc" "$expected" "$actual"
+    ok=1
+  else
+    printf 'doctor: OK identity %s\n' "$actual"
+  fi
+  if [ ! -d "$HOME_DIR" ]; then
+    printf 'doctor: FAIL isolated HOME missing %s\n' "$HOME_DIR"
+    ok=1
+  else
+    printf 'doctor: OK isolated HOME %s\n' "$HOME_DIR"
+  fi
+  case "$HOME_DIR" in
+    "$HOME"|/home/*/.cadr|"$HOME"/.cadr)
+      printf 'doctor: FAIL isolated HOME must not be the login home (%s)\n' "$HOME_DIR"
+      ok=1
+      ;;
+  esac
+  printf 'doctor: evidence dir %s\n' "$EVIDENCE_DIR"
+  return "$ok"
+}
+
+tmux_name() {
+  if [ -f "$TMUX_NAME_FILE" ]; then
+    cat "$TMUX_NAME_FILE"
+    return
+  fi
+  local id
+  id="$(cat "$STATE_DIR/run-id" 2>/dev/null || date -u +%Y%m%dT%H%M%SZ)"
+  printf 'cadr-verify-%s\n' "$id"
+}
+
+cmd_tui_start() {
+  ensure_init
+  command -v tmux >/dev/null 2>&1 || die "tmux is required for TUI drives"
+  local name
+  name="$(tmux_name)"
+  printf '%s\n' "$name" >"$TMUX_NAME_FILE"
+  if tmux has-session -t "=$name" 2>/dev/null; then
+    die "tmux session $name already exists; run control-cadr tui stop first"
+  fi
+  cadr_env
+  local extra=(--session-dir "$SESSION_DIR" --offline --approve --no-extensions --no-session)
+  if [ "${CADR_VERIFY_RAW:-0}" = 1 ]; then
+    extra=()
+  fi
+  tmux new-session -d -s "$name" -c "$REPO_ROOT" -- \
+    env HOME="$HOME_DIR" "$CADR_BIN" "${extra[@]}" "$@"
+  tmux set-option -t "$name" remain-on-exit on
+  local pane_pid
+  pane_pid="$(tmux list-panes -t "$name:0.0" -F '#{pane_pid}')"
+  printf '%s\n' "$pane_pid" >"$PID_FILE"
+  printf 'control-cadr: tui started session=%s pid=%s\n' "$name" "$pane_pid"
+}
+
+cmd_tui_capture() {
+  local name path feature dest
+  name="$(tmux_name)"
+  tmux has-session -t "=$name" 2>/dev/null || die "no tui session $name"
+  feature="${CADR_VERIFY_FEATURE:-interactive-tui}"
+  dest="$EVIDENCE_DIR/$feature"
+  mkdir -p "$dest"
+  path="${1:-$dest/pane.txt}"
+  if [ "${1:-}" = "--path" ]; then
+    path="$2"
+  fi
+  mkdir -p "$(dirname -- "$path")"
+  tmux capture-pane -p -J -t "$name:0.0" >"$path"
+  printf 'control-cadr: captured %s\n' "$path"
+}
+
+cmd_tui_send() {
+  local name
+  name="$(tmux_name)"
+  tmux has-session -t "=$name" 2>/dev/null || die "no tui session $name"
+  if [ "${1:-}" = "--keys" ]; then shift; fi
+  tmux send-keys -t "$name:0.0" "$@"
+}
+
+cmd_tui_status() {
+  local name
+  name="$(tmux_name)"
+  tmux has-session -t "=$name" 2>/dev/null || die "no tui session $name"
+  tmux list-panes -t "$name:0.0" -F 'session=#{session_name} dead=#{pane_dead} status=#{pane_dead_status} pid=#{pane_pid}'
+}
+
+cmd_tui_stop() {
+  local name pid
+  name="$(cat "$TMUX_NAME_FILE" 2>/dev/null || true)"
+  if [ -n "$name" ] && tmux has-session -t "=$name" 2>/dev/null; then
+    tmux kill-session -t "=$name"
+    printf 'control-cadr: killed tmux session %s\n' "$name"
+  fi
+  pid="$(cat "$PID_FILE" 2>/dev/null || true)"
+  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+    kill "$pid" || true
+    printf 'control-cadr: sent TERM to pane pid %s\n' "$pid"
+  fi
+  rm -f "$TMUX_NAME_FILE" "$PID_FILE"
+}
+
+cmd_cleanup() {
+  cmd_tui_stop || true
+  if [ -d "$STATE_DIR" ]; then
+    rm -rf -- "$STATE_DIR"
+    printf 'control-cadr: removed state %s (evidence kept at %s)\n' "$STATE_DIR" "$EVIDENCE_DIR"
+  else
+    printf 'control-cadr: no state dir; evidence at %s\n' "$EVIDENCE_DIR"
+  fi
+}
+
+main() {
+  local cmd="${1:-}"
+  shift || true
+  case "$cmd" in
+    root) cmd_root ;;
+    init) cmd_init ;;
+    doctor) cmd_doctor ;;
+    expected-identity) expected_identity ;;
+    cli)
+      ensure_init
+      if [ "${1:-}" = "--" ]; then shift; fi
+      record_cli "$@"
+      ;;
+    tui)
+      local sub="${1:-}"
+      shift || true
+      case "$sub" in
+        start)
+          if [ "${1:-}" = "--" ]; then shift; fi
+          cmd_tui_start "$@"
+          ;;
+        capture)
+          cmd_tui_capture "$@"
+          ;;
+        send)
+          cmd_tui_send "$@"
+          ;;
+        status) cmd_tui_status ;;
+        stop) cmd_tui_stop ;;
+        *) die "unknown tui subcommand: ${sub:-} (start|capture|send|stop|status)" ;;
+      esac
+      ;;
+    cleanup) cmd_cleanup ;;
+    -h|--help|help|"") usage ;;
+    *) die "unknown command: $cmd" ;;
+  esac
+}
+
+main "$@"
