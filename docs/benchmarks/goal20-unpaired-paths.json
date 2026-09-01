@@ -539,10 +539,13 @@
     "package_manager.package_entry_index",
     "package_manager.package_override_source",
     "package_manager.package_resource_pattern",
+    "package_manager.package_setting_record",
     "package_manager.package_source",
     "package_manager.pattern_candidates",
     "package_manager.pattern_matches",
     "package_manager.project_override_state",
+    "package_manager.project_package_entry",
+    "package_manager.project_package_state",
     "package_manager.project_top_level_state",
     "package_manager.records_project_first",
     "package_manager.relative_pattern",
@@ -2476,7 +2479,10 @@
         "package_manager.next_project_state",
         "package_manager.inherited_enabled",
         "package_manager.resource_group_key",
-        "package_manager.package_entry_index"
+        "package_manager.package_entry_index",
+        "package_manager.project_package_entry",
+        "package_manager.project_package_state",
+        "package_manager.package_setting_record"
       ]
     },
     {
