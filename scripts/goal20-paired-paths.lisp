@@ -617,6 +617,9 @@
     ("cli_extensions_install.split_command" . 50)
     ("cli_extensions_install.handle_plain" . 50)
     ("cli_extensions_install.handle_unknown" . 50)
+    ("cli_extensions_install.llama_context_label" . 50)
+    ("cli_extensions_install.llama_model_description" . 50)
+    ("cli_extensions_install.llama_compact_count" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -11260,7 +11263,10 @@
          (split (run-cli-extensions-split-command))
          (plain (run-cli-extensions-handle-plain))
          (manager (cli-extensions-command-manager))
-         (unknown (run-cli-extensions-handle-unknown manager)))
+         (unknown (run-cli-extensions-handle-unknown manager))
+         (context-label (run-cli-extensions-llama-context-label))
+         (model-description (run-cli-extensions-llama-model-description))
+         (compact-count (run-cli-extensions-llama-compact-count)))
     (json-object
      "observed"
      (json-object
@@ -11302,7 +11308,25 @@
       "hp_blank" (nth 2 plain)
       "hu_nope" (nth 0 unknown)
       "hu_miss" (nth 1 unknown)
-      "hu_n" (nth 2 unknown))
+      "hu_n" (nth 2 unknown)
+      "cl_meta" (nth 0 context-label)
+      "cl_train" (nth 1 context-label)
+      "cl_args" (nth 2 context-label)
+      "cl_small" (nth 3 context-label)
+      "cl_none" (nth 4 context-label)
+      "cl_dashc" (nth 5 context-label)
+      "md_loaded" (nth 0 model-description)
+      "md_sleep" (nth 1 model-description)
+      "md_unload" (nth 2 model-description)
+      "md_load" (nth 3 model-description)
+      "md_down" (nth 4 model-description)
+      "md_nocontext" (nth 5 model-description)
+      "cc_small" (nth 0 compact-count)
+      "cc_k" (nth 1 compact-count)
+      "cc_k0" (nth 2 compact-count)
+      "cc_m" (nth 3 compact-count)
+      "cc_m0" (nth 4 compact-count)
+      "cc_999" (nth 5 compact-count))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -11338,7 +11362,22 @@
               (lambda ()
                 (lambda ()
                   (run-cli-extensions-handle-unknown
-                   manager)))))))
+                   manager))))
+     "llama_context_label"
+     (collect "cli_extensions_install.llama_context_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-context-label))))
+     "llama_model_description"
+     (collect "cli_extensions_install.llama_model_description"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-model-description))))
+     "llama_compact_count"
+     (collect "cli_extensions_install.llama_compact_count"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-compact-count)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -32689,6 +32728,12 @@
       "src/cadr-cli/extensions/commands.lisp handle-extension-command"
       "cli_extensions_install.handle_unknown"
       "src/cadr-cli/extensions/commands.lisp handle-extension-command unknown slash"
+      "cli_extensions_install.llama_context_label"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-context-label"
+      "cli_extensions_install.llama_model_description"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-model-description"
+      "cli_extensions_install.llama_compact_count"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-compact-count"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
