@@ -19,6 +19,29 @@ tag/Release step.
   `sdk_settings_flush` **5.937×**, `sdk_compaction_enabled` **3.643×**).
   Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
   G.17 stays missing.
+- Goal 20: Friend-MachineD remesure + ledger book leftover 778–780
+  (`evals_harness.matching_hello_call` **2.600×**,
+  `authoring_judge` **2.331×**, `source_bundle` **0.465×**).
+  Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
+  G.17 stays missing.
+- Goal 20 leftover: pair `evals_harness.matching_hello_call`
+  (`matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call).
+  Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` exact.
+  n=5 **2.600×** (5.560 / 2.138 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 778). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.authoring_judge`
+  (`judge-extension-authoring-result` vs ExtensionAuthoringJudge). Observed
+  `aj_pass` / `aj_src` / `aj_api` / `aj_resp` / `aj_n` exact. Do not compare
+  rationale copy. n=5 **2.331×** (16.713 / 7.170 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 779). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.source_bundle`
+  (`extension-source-bundle` vs hello-tool bundle pick). Observed
+  `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` exact.
+  n=5 **0.465×** (0.776 / 1.671 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 780). `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /

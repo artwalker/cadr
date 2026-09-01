@@ -609,6 +609,9 @@
     "evals_harness.rep_make",
     "evals_harness.reporter_artifacts",
     "evals_harness.reporter_run_id",
+    "evals_harness.matching_hello_call",
+    "evals_harness.authoring_judge",
+    "evals_harness.source_bundle",
     "evals_harness.canonical_api",
     "evals_harness.exclude_guidelines",
     "evals_harness.extension_error_json",
@@ -2904,7 +2907,10 @@
         "evals_harness.extension_error_json",
         "evals_harness.legacy_api",
         "evals_harness.prepare_default_prompt",
-        "evals_harness.required_prompt_boundary"
+        "evals_harness.required_prompt_boundary",
+        "evals_harness.matching_hello_call",
+        "evals_harness.authoring_judge",
+        "evals_harness.source_bundle"
       ]
     },
     {
