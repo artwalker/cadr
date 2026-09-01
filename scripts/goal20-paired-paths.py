@@ -1133,12 +1133,11 @@ RATIO_CEILINGS = {
     "cli_extensions_install.llama_js_to_fixed": 8.0,
     # leftover 807; remeasure on tip 4.086× (0.945 / 0.231 µs).
     "cli_extensions_install.llama_search_exact": 8.0,
-    # leftover 826; first freeze 2.908× (0.456 / 0.157 µs).
+    # leftover 826; remeasure on tip 4.854× (0.880 / 0.181 µs).
     "cli_extensions_install.llama_search_status": 8.0,
-    # leftover 827; first freeze 0.472× (3.792 / 8.027 µs). cadr leads.
+    # leftover 827; remeasure on tip 0.602× (4.961 / 8.243 µs). cadr leads.
     "cli_extensions_install.llama_search_filter": 8.0,
-    # leftover 828; first n=5 freeze (host cursor, 2026-08-29).
-    # llama_ui.llama_view_width 149.278× (27.079 / 0.181 µs) —
+    # leftover 828; remeasure on tip 114.091× (27.891 / 0.244 µs).
     # Lisp times make-llama-view (CLOS) vs leftover replica lastWidth
     # property on a plain object. Ceiling 180.0 is leftover first-freeze
     # headroom, not a src/ rewrite of llama-view.

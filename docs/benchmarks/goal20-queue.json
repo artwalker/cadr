@@ -8685,8 +8685,6 @@
    "branch": "g20-freeze-811-813",
    "note": "remeasure on tip Friend-MachineD; leftover id 813",
    "ratio": 2.692,
-   "cadrUs": 2.542,
-   "piUs": 0.944,
    "cadrUs": 1.726,
    "piUs": 1.296,
    "ceiling": 8.0,
@@ -8808,7 +8806,7 @@
    "note": "nextPairNum left at tip 328; leftover id 821",
    "ratio": 3.471,
    "cadrUs": 3.262,
-   "piUs": 0.940,
+   "piUs": 0.94,
    "ceiling": 8.0,
    "rc": 0
   },
@@ -8852,8 +8850,8 @@
    "branch": "cursor/bootstrap-sessions-flags-entry-restored-leftovers-823-825-34f9",
    "note": "nextPairNum left at tip 328; leftover id 824",
    "ratio": 4.596,
-   "cadrUs": 4.460,
-   "piUs": 0.970,
+   "cadrUs": 4.46,
+   "piUs": 0.97,
    "ceiling": 8.0,
    "rc": 0
   },
@@ -8879,13 +8877,13 @@
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_search_status",
-   "branch": "cursor/llama-ui-search-filter-width-leftovers-826-828-34f9",
+   "branch": "g20-freeze-826-828",
    "note": "nextPairNum left at tip 328; leftover id 826",
-   "ratio": 2.908,
-   "cadrUs": 0.456,
-   "piUs": 0.157,
+   "ratio": 4.854,
+   "cadrUs": 0.88,
+   "piUs": 0.181,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 827,
@@ -8894,13 +8892,13 @@
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_search_filter",
-   "branch": "cursor/llama-ui-search-filter-width-leftovers-826-828-34f9",
+   "branch": "g20-freeze-826-828",
    "note": "nextPairNum left at tip 328; leftover id 827",
-   "ratio": 0.472,
-   "cadrUs": 3.792,
-   "piUs": 8.027,
+   "ratio": 0.602,
+   "cadrUs": 4.961,
+   "piUs": 8.243,
    "ceiling": 8.0,
-   "rc": 2
+   "rc": 0
   },
   {
    "pair": 828,
@@ -8909,13 +8907,13 @@
    "source": "src/cadr-cli/extensions/llama/ui.lisp",
    "measure": "measure-cli-extensions-install",
    "metric": "cli_extensions_install.llama_view_width",
-   "branch": "cursor/llama-ui-search-filter-width-leftovers-826-828-34f9",
+   "branch": "g20-freeze-826-828",
    "note": "nextPairNum left at tip 328; leftover id 828",
-   "ratio": 149.278,
-   "cadrUs": 27.079,
-   "piUs": 0.181,
+   "ratio": 114.091,
+   "cadrUs": 27.891,
+   "piUs": 0.244,
    "ceiling": 180.0,
-   "rc": 2
+   "rc": 0
   }
  ],
  "mergeQueue": []
