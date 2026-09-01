@@ -949,6 +949,12 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.cycle_wrap": 50,
 	"cli_bootstrap_sessions.scope_hint": 50,
 	"cli_bootstrap_sessions.file_tags": 50,
+	"cli_bootstrap_sessions.data_directory": 50,
+	"cli_bootstrap_sessions.legacy_data_directory": 50,
+	"cli_bootstrap_sessions.manual_migration_command": 50,
+	"cli_bootstrap_sessions.managed_binary_names": 50,
+	"cli_bootstrap_sessions.migration_guide_url": 50,
+	"cli_bootstrap_sessions.extensions_doc_url": 50
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -33729,6 +33735,120 @@ function runCliBootstrapPathCommandArgument() {
 }
 
 
+function leftoverTrimmedPath(value) {
+	return String(value).replace(/\/+$/, "");
+}
+
+function leftoverManualMigrationCommand(oldDir, newDir) {
+	return `mv -- ${migrationShellSingleQuote(oldDir)} ${migrationShellSingleQuote(newDir)}`;
+}
+
+function leftoverPathLeaf(value) {
+	const trimmed = leftoverTrimmedPath(value);
+	const slash = trimmed.lastIndexOf("/");
+	return slash === -1 ? trimmed : trimmed.slice(slash + 1);
+}
+
+function leftoverPathUnderP(home, dir) {
+	const homeString = leftoverTrimmedPath(home);
+	const pathString = leftoverTrimmedPath(dir);
+	return (
+		pathString === homeString ||
+		(pathString.startsWith(homeString) && pathString[homeString.length] === "/")
+	);
+}
+
+function leftoverDataDirectory(home) {
+	return path.join(home, ".pi");
+}
+
+function leftoverLegacyDataDirectory(home) {
+	return path.join(home, `.${migrationLegacyProductName()}`);
+}
+
+function leftoverUrlFlags(url, expected) {
+	return {
+		eq: url === expected ? 1 : 0,
+		https: url.startsWith("https://") ? 1 : 0,
+		gh: url.includes("github.com") ? 1 : 0,
+		n: url.length,
+	};
+}
+
+const leftoverMigrationGuideUrl =
+	"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration";
+
+const leftoverExtensionsDocUrl =
+	"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md";
+
+const leftoverManagedBinaryNames = ["fd", "rg", "fd.exe", "rg.exe"];
+
+function runCliBootstrapDataDirectory() {
+	const home = "/tmp/g20-migration-home";
+	const dir = leftoverDataDirectory(home);
+	const leaf = leftoverPathLeaf(dir);
+	return {
+		dd_under: leftoverPathUnderP(home, dir) ? 1 : 0,
+		dd_neq: leftoverTrimmedPath(dir) === leftoverTrimmedPath(home) ? 0 : 1,
+		dd_dot: leaf.charAt(0) === "." ? 1 : 0,
+	};
+}
+
+function runCliBootstrapLegacyDataDirectory() {
+	const home = "/tmp/g20-migration-home";
+	const dir = leftoverLegacyDataDirectory(home);
+	return {
+		ldd_under: leftoverPathUnderP(home, dir) ? 1 : 0,
+		ldd_neq: leftoverTrimmedPath(dir) === leftoverTrimmedPath(home) ? 0 : 1,
+		ldd_leaf: leftoverPathLeaf(dir) === ".pi-cl" ? 1 : 0,
+	};
+}
+
+function runCliBootstrapManualMigrationCommand() {
+	const oldDir = "/tmp/g20-old/.pi-cl";
+	const newDir = "/tmp/g20-new/.cadr";
+	const cmd = leftoverManualMigrationCommand(oldDir, newDir);
+	return {
+		mmc_mv: cmd.startsWith("mv -- ") ? 1 : 0,
+		mmc_old: cmd.includes(oldDir) ? 1 : 0,
+		mmc_new: cmd.includes(newDir) ? 1 : 0,
+		mmc_space: cmd.includes(" ") ? 1 : 0,
+		mmc_quote: cmd.includes("'") ? 1 : 0,
+	};
+}
+
+function runCliBootstrapManagedBinaryNames() {
+	const names = leftoverManagedBinaryNames;
+	return {
+		mbn_n: names.length,
+		mbn_fd: names.includes("fd") ? 1 : 0,
+		mbn_rg: names.includes("rg") ? 1 : 0,
+		mbn_fdexe: names.includes("fd.exe") ? 1 : 0,
+		mbn_rgexe: names.includes("rg.exe") ? 1 : 0,
+	};
+}
+
+function runCliBootstrapMigrationGuideUrl() {
+	const flags = leftoverUrlFlags(leftoverMigrationGuideUrl, leftoverMigrationGuideUrl);
+	return {
+		mgu_eq: flags.eq,
+		mgu_https: flags.https,
+		mgu_gh: flags.gh,
+		mgu_n: flags.n,
+	};
+}
+
+function runCliBootstrapExtensionsDocUrl() {
+	const flags = leftoverUrlFlags(leftoverExtensionsDocUrl, leftoverExtensionsDocUrl);
+	return {
+		edu_eq: flags.eq,
+		edu_https: flags.https,
+		edu_gh: flags.gh,
+		edu_n: flags.n,
+	};
+}
+
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -33739,6 +33859,12 @@ async function measureCliBootstrapCodingTools() {
 	const leftoverScope = runCliBootstrapModelScope();
 	const filePair = writeCliBootstrapProcessFiles();
 	const leftoverFiles = await runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
+	const dataDirectoryObserved = runCliBootstrapDataDirectory();
+	const legacyDataDirectoryObserved = runCliBootstrapLegacyDataDirectory();
+	const manualMigrationCommandObserved = runCliBootstrapManualMigrationCommand();
+	const managedBinaryNamesObserved = runCliBootstrapManagedBinaryNames();
+	const migrationGuideUrlObserved = runCliBootstrapMigrationGuideUrl();
+	const extensionsDocUrlObserved = runCliBootstrapExtensionsDocUrl();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -33764,6 +33890,24 @@ async function measureCliBootstrapCodingTools() {
 		file_tags: await collect("cli_bootstrap_sessions.file_tags", () => {
 			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 		}),
+		data_directory: await collect("cli_bootstrap_sessions.data_directory", () => {
+			return () => runCliBootstrapDataDirectory();
+		}),
+		legacy_data_directory: await collect("cli_bootstrap_sessions.legacy_data_directory", () => {
+			return () => runCliBootstrapLegacyDataDirectory();
+		}),
+		manual_migration_command: await collect("cli_bootstrap_sessions.manual_migration_command", () => {
+			return () => runCliBootstrapManualMigrationCommand();
+		}),
+		managed_binary_names: await collect("cli_bootstrap_sessions.managed_binary_names", () => {
+			return () => runCliBootstrapManagedBinaryNames();
+		}),
+		migration_guide_url: await collect("cli_bootstrap_sessions.migration_guide_url", () => {
+			return () => runCliBootstrapMigrationGuideUrl();
+		}),
+		extensions_doc_url: await collect("cli_bootstrap_sessions.extensions_doc_url", () => {
+			return () => runCliBootstrapExtensionsDocUrl();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -33773,6 +33917,12 @@ async function measureCliBootstrapCodingTools() {
 			...leftoverCycle,
 			...leftoverScope,
 			...leftoverFiles,
+			...dataDirectoryObserved,
+			...legacyDataDirectoryObserved,
+			...manualMigrationCommandObserved,
+			...managedBinaryNamesObserved,
+			...migrationGuideUrlObserved,
+			...extensionsDocUrlObserved,
 		},
 	};
 }
