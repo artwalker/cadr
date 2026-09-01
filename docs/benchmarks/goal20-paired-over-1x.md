@@ -569,4 +569,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.msmsxxx_ok` | 105.397 | 4.314 | 24.432× | 40.00× | measure-only leftover 1394; `make-scoped-models-selector-state` vs leftover ScopedModelsSelectorComponent constructor | invent pause；地板优化另刀 |
 | `cli_selectors.mrmsxxx_ok` | 196.853 | 7.167 | 27.467× | 50.00× | measure-only leftover 1395; `render-model-selector` vs leftover ModelSelectorComponent layout | invent pause；地板优化另刀 |
 | `cli_selectors.thafxxx_ok` | 13.551 | 10.831 | 1.251× | 8.00× | measure-only leftover 1396; `thinking-selector-apply-filter` vs leftover applyFilter | invent pause；地板优化另刀 |
+| `cli_selectors.thmvxxx_ok` | 0.633 | 0.378 | 1.675× | 8.00× | measure-only leftover 1399; `thinking-selector-move` vs leftover wrap selected | invent pause；地板优化另刀 |
+| `cli_selectors.thhrxxx_ok` | 143.544 | 5.996 | 23.939× | 30.00× | measure-only leftover 1400; `thinking-selector-handle-raw-input` vs leftover handleInput | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
