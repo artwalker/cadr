@@ -1306,6 +1306,7 @@ const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
 const experimentalModule = await import(moduleUrl("packages/coding-agent/src/core/experimental.ts"));
+const fsWatchModule = await import(moduleUrl("packages/coding-agent/src/utils/fs-watch.ts"));
 const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
 const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")

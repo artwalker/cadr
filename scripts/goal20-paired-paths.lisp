@@ -14895,7 +14895,7 @@
             (run-cli-print-rpc-handle-ui-miss)))
          (dialog-request (run-cli-print-rpc-dialog-request))
          (dialog-result (run-cli-print-rpc-dialog-result))
-         (dialog-expired (run-cli-print-rpc-dialog-expired))))
+         (dialog-expired (run-cli-print-rpc-dialog-expired)))
     (json-object
      "observed"
      (json-object
@@ -16728,6 +16728,9 @@
       (write-string "watched" out))
     path))
 
+(defun stage-cli-support-watch-present ()
+  (cli-support-watch-present-file))
+
 
 (defun run-cli-support-watch-retry-delay ()
   (list
@@ -16761,7 +16764,7 @@
 
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
-  (let ((ansi (run-cli-support-strip-ansi))
+  (let* ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
         (timings (run-cli-support-timings))
         (bus (run-cli-support-event-bus))
