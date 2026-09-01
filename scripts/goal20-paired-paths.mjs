@@ -961,6 +961,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.managed_binary_names": 50,
 	"cli_bootstrap_sessions.migration_guide_url": 50,
 	"cli_bootstrap_sessions.extensions_doc_url": 50,
+	"cli_bootstrap_sessions.pb_ok": 50,
+	"cli_bootstrap_sessions.rt_ok": 50,
+	"cli_bootstrap_sessions.dp_ok": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -34005,6 +34008,9 @@ async function measureCliBootstrapCodingTools() {
 	const managedBinaryNamesObserved = runCliBootstrapManagedBinaryNames();
 	const migrationGuideUrlObserved = runCliBootstrapMigrationGuideUrl();
 	const extensionsDocUrlObserved = runCliBootstrapExtensionsDocUrl();
+	const leftoverParse = runCliBootstrapParseBash();
+	const leftoverResponse = runCliBootstrapResponseText();
+	const leftoverDispatch = runCliBootstrapDispatchPlain();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -34048,6 +34054,15 @@ async function measureCliBootstrapCodingTools() {
 		extensions_doc_url: await collect("cli_bootstrap_sessions.extensions_doc_url", () => {
 			return () => runCliBootstrapExtensionsDocUrl();
 		}),
+		pb_ok: await collect("cli_bootstrap_sessions.pb_ok", () => {
+			return () => runCliBootstrapParseBash();
+		}),
+		rt_ok: await collect("cli_bootstrap_sessions.rt_ok", () => {
+			return () => runCliBootstrapResponseText();
+		}),
+		dp_ok: await collect("cli_bootstrap_sessions.dp_ok", () => {
+			return () => runCliBootstrapDispatchPlain();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -34063,6 +34078,9 @@ async function measureCliBootstrapCodingTools() {
 			...managedBinaryNamesObserved,
 			...migrationGuideUrlObserved,
 			...extensionsDocUrlObserved,
+			...leftoverParse,
+			...leftoverResponse,
+			...leftoverDispatch,
 		},
 	};
 }

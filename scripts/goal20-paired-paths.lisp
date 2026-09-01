@@ -1196,6 +1196,9 @@
     ("cli_bootstrap_sessions.managed_binary_names" . 50)
     ("cli_bootstrap_sessions.migration_guide_url" . 50)
     ("cli_bootstrap_sessions.extensions_doc_url" . 50)
+    ("cli_bootstrap_sessions.pb_ok" . 50)
+    ("cli_bootstrap_sessions.rt_ok" . 50)
+    ("cli_bootstrap_sessions.dp_ok" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -33311,7 +33314,10 @@
           (run-cli-bootstrap-manual-migration-command))
          (managed-binary-names (run-cli-bootstrap-managed-binary-names))
          (migration-guide-url (run-cli-bootstrap-migration-guide-url))
-         (extensions-doc-url (run-cli-bootstrap-extensions-doc-url)))
+         (extensions-doc-url (run-cli-bootstrap-extensions-doc-url))
+         (leftover-parse (run-cli-bootstrap-parse-bash))
+         (leftover-response (run-cli-bootstrap-response-text))
+         (leftover-dispatch (run-cli-bootstrap-dispatch-plain)))
     (json-object
      "observed"
      (json-object
@@ -33375,7 +33381,32 @@
       "edu_eq" (nth 0 extensions-doc-url)
       "edu_https" (nth 1 extensions-doc-url)
       "edu_gh" (nth 2 extensions-doc-url)
-      "edu_n" (nth 3 extensions-doc-url))
+      "edu_n" (nth 3 extensions-doc-url)
+      "pb_ls" (nth 0 leftover-parse)
+      "pb_ls_ex" (nth 1 leftover-parse)
+      "pb_ls_ok" (nth 2 leftover-parse)
+      "pb_excl" (nth 3 leftover-parse)
+      "pb_excl_ex" (nth 4 leftover-parse)
+      "pb_excl_ok" (nth 5 leftover-parse)
+      "pb_bang" (nth 6 leftover-parse)
+      "pb_bang_ok" (nth 7 leftover-parse)
+      "pb_ws" (nth 8 leftover-parse)
+      "pb_ws_ok" (nth 9 leftover-parse)
+      "pb_plain_ok" (nth 10 leftover-parse)
+      "pb_n" (nth 11 leftover-parse)
+      "rt_one" (nth 0 leftover-response)
+      "rt_two" (nth 1 leftover-response)
+      "rt_empty" (nth 2 leftover-response)
+      "rt_n" (nth 3 leftover-response)
+      "dp_empty" (nth 0 leftover-dispatch)
+      "dp_ws" (nth 1 leftover-dispatch)
+      "dp_plain" (nth 2 leftover-dispatch)
+      "dp_plain_n" (nth 3 leftover-dispatch)
+      "dp_slash" (nth 4 leftover-dispatch)
+      "dp_bash" (nth 5 leftover-dispatch)
+      "dp_bash_n" (nth 6 leftover-dispatch)
+      "dp_bang" (nth 7 leftover-dispatch)
+      "dp_n" (nth 8 leftover-dispatch))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -33446,7 +33477,22 @@
      (collect "cli_bootstrap_sessions.extensions_doc_url"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-extensions-doc-url)))))))
+                  (run-cli-bootstrap-extensions-doc-url))))
+     "pb_ok"
+     (collect "cli_bootstrap_sessions.pb_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-parse-bash))))
+     "rt_ok"
+     (collect "cli_bootstrap_sessions.rt_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-response-text))))
+     "dp_ok"
+     (collect "cli_bootstrap_sessions.dp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-dispatch-plain)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -35256,6 +35302,12 @@
       "src/cadr-cli/migration.lisp +migration-guide-url+"
       "cli_bootstrap_sessions.extensions_doc_url"
       "src/cadr-cli/migration.lisp +extensions-doc-url+"
+      "cli_bootstrap_sessions.pb_ok"
+      "src/cadr-cli/repl.lisp parse-user-bash-input leftover"
+      "cli_bootstrap_sessions.rt_ok"
+      "src/cadr-cli/repl.lisp response-text leftover"
+      "cli_bootstrap_sessions.dp_ok"
+      "src/cadr-cli/repl.lisp dispatch-user-input leftover"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
