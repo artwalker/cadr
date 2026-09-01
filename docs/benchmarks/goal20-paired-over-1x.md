@@ -362,6 +362,12 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.threads_current` | 0.139 | 0.120 | 1.165× | 8.00× | leftover collect restore pair 887; `stop-thread-for-cleanup` current vs isMainThread | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.model_scope_line` | 37.431 | 23.274 | 1.608× | 8.00× | measure-only leftover pair 485; `model-scope-startup-line` vs interactive-mode init line | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.response_text` | 0.939 | 0.714 | 1.314× | 8.00× | measure-only pair 491; `response-text` vs `textParts.join` (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.data_directory` | 8.765 | 0.883 | 9.926× | 40.00× | leftover collect restore pair 838; `data-directory` vs join(home, CONFIG_DIR_NAME) | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.legacy_data_directory` | 8.924 | 1.122 | 7.950× | 40.00× | leftover collect restore pair 839; `legacy-data-directory` vs join(home, .legacy) | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.manual_migration_command` | 4.577 | 1.679 | 2.726× | 8.00× | leftover collect restore pair 840; `manual-migration-command` vs mv -- quoted paths | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.managed_binary_names` | 0.430 | 0.315 | 1.362× | 8.00× | leftover collect restore pair 841; `+managed-binary-names+` vs fd/rg names | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.migration_guide_url` | 0.656 | 0.212 | 3.089× | 8.00× | leftover collect restore pair 842; `+migration-guide-url+` vs MIGRATION_GUIDE_URL | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.extensions_doc_url` | 0.549 | 0.204 | 2.691× | 8.00× | leftover collect restore pair 843; `+extensions-doc-url+` vs EXTENSIONS_DOC_URL | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_entry` | 1.424 | 0.238 | 5.982× | 8.00× | measure-only pair 493; `make-tui-user-bash-entry` vs BashExecutionComponent constructor (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.append_output` | 0.776 | 0.290 | 2.670× | 8.00× | measure-only pair 494; `append-tui-user-bash-output` vs appendOutput concatenate (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.complete_entry` | 0.974 | 0.404 | 2.411× | 8.00× | measure-only pair 495; `complete-tui-user-bash-entry` vs setComplete (sub-µs variance) | invent pause；地板优化另刀 |

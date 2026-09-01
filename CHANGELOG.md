@@ -10,6 +10,17 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `cli_bootstrap_sessions.data_directory` / `legacy_data_directory` /
+  `manual_migration_command` / `managed_binary_names` /
+  `migration_guide_url` / `extensions_doc_url` (pairs 838–843).
+  n=5 freeze on host `Friend-MachineD`. Over-1× across the board;
+  data/legacy ceilings 40.0, others 8.0. Reclassified
+  `src/cadr-cli/migration.lisp`. `needs-pair` 4→3. G.17 stays missing.
+  `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `provider_registry_defs.runtime_provider` / `runtime_provider_copilot` /
   `models_runtime` / `protocol_provider` / `protocol_provider_anthropic` /
   `instantiate_provider` (pairs 751–756). n=5 freeze on host `Friend-MachineD`.
