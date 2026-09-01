@@ -618,4 +618,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_model_thinking_level` | 16.8 | 3.1 | 5.35× | 8.00× | measure-only leftover 768; `sdk-settings-model-thinking-level` vs getModelThinkingLevel | invent pause；地板优化另刀 |
 | `settings_load.sdk_settings_value` | 33.5 | 0.3 | 114.68× | 150.00× | measure-only leftover 769; `sdk-settings-value` vs Settings json-get | invent pause；地板优化另刀 |
 | `settings_load.sdk_default_thinking_level` | 10.3 | 4.1 | 2.54× | 8.00× | measure-only leftover 770; `sdk-settings-default-thinking-level` vs getDefaultThinkingLevel | invent pause；地板优化另刀 |
+| `settings_load.sdk_effective_object` | 15.8 | 0.2 | 86.67× | 100.00× | measure-only leftover 772; `sdk-settings-effective-object` vs merge replica; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_set` | 17.9 | 8.1 | 2.21× | 8.00× | measure-only leftover 773; `sdk-settings-set` vs setDefaultProvider/setDefaultModel/setTheme | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_remove` | 32.7 | 0.9 | 35.83× | 40.00× | measure-only leftover 774; `sdk-settings-remove` vs delete-key replica; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

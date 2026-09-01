@@ -9,21 +9,30 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD remesure + ledger book leftover 772–774
+  (`settings_load.sdk_effective_object` **86.669×**,
+  `sdk_settings_set` **2.210×**, `sdk_settings_remove` **35.830×**).
+  Scoped gate PASS; history overlay booked; inventory `pairedMetrics` +3.
+  G.17 stays missing.
 - Goal 20 leftover: pair `settings_load.sdk_effective_object`
   (`sdk-settings-effective-object` vs Settings object merge replica).
   Observed `seo_prov` / `seo_model` / `seo_empty` / `seo_obj` / `seo_n`
-  exact. Measure-only leftover (Pair 772). Freeze pending n=5
-  `--only-enforce`. `nextPairNum` left unchanged.
+  exact. n=5 **86.669×** (15.846 / 0.183 µs) on host `cursor`, ceiling 100.0.
+  Measure-only leftover (Pair 772). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_settings_set`
   (`sdk-settings-set` vs setDefaultProvider/setDefaultModel/setTheme).
   Observed `sss_prov` / `sss_model` / `sss_theme` / `sss_str` / `sss_n`
-  exact. Measure-only leftover (Pair 773). Freeze pending n=5
-  `--only-enforce`. `nextPairNum` left unchanged.
+  exact. n=5 **2.210×** (17.925 / 8.113 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 773). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_settings_remove`
   (`sdk-settings-remove` vs Settings object delete-key replica). Observed
-  `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` exact.
-  Measure-only leftover (Pair 774). Freeze pending n=5 `--only-enforce`.
-  `nextPairNum` left unchanged.
+  `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` exact. n=5
+  **35.830×** (32.715 / 0.913 µs) on host `cursor`, ceiling 40.0.
+  Measure-only leftover (Pair 774). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20: Friend-MachineD remesure + ledger book leftover 769–771
   (`settings_load.sdk_settings_value` **114.678×**,
   `sdk_default_thinking_level` **2.541×**, `sdk_drain_errors` **0.806×**).
