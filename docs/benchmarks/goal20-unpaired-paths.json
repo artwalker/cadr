@@ -77,6 +77,9 @@
     "cli_extensions_install.quant_label",
     "cli_extensions_install.split_args",
     "cli_extensions_install.split_command",
+    "cli_extensions_install.split_path_segments",
+    "cli_extensions_install.string_prefix",
+    "cli_extensions_install.strip_git_query",
     "cli_extensions_install.unsafe_git",
     "cli_interactive_controller.accumulate_usage",
     "cli_interactive_controller.announcement_make",
@@ -1852,7 +1855,10 @@
       "metrics": [
         "cli_extensions_install.unsafe_git",
         "cli_extensions_install.git_path",
-        "cli_extensions_install.normalize_git"
+        "cli_extensions_install.normalize_git",
+        "cli_extensions_install.string_prefix",
+        "cli_extensions_install.split_path_segments",
+        "cli_extensions_install.strip_git_query"
       ]
     },
     {
