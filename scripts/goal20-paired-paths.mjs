@@ -636,6 +636,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.find_session_by_id_or_prefix": 50,
 	"cli_bootstrap_sessions.session_display_messages": 50,
 	"cli_bootstrap_sessions.session_tree_selector_data": 50,
+	"cli_bootstrap_sessions.validate_cli_session_flags": 50,
+	"cli_bootstrap_sessions.session_entry_tree_selector_data": 50,
+	"cli_bootstrap_sessions.session_restored_model": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -36487,6 +36490,118 @@ function runCliBootstrapSessionTreeSelectorData() {
 	};
 }
 
+function leftoverValidateCliSessionFlags(opts) {
+	const continueP = opts.continueP;
+	const resumeSelectorP = opts.resumeSelectorP;
+	const noSessionP = opts.noSessionP;
+	const sessionPath = opts.sessionPath;
+	const sessionId = opts.sessionId;
+	const forkSource = opts.forkSource;
+	if (forkSource) {
+		const conflicts = [];
+		if (sessionPath) conflicts.push("--session");
+		if (continueP) conflicts.push("--continue");
+		if (resumeSelectorP) conflicts.push("--resume");
+		if (noSessionP) conflicts.push("--no-session");
+		if (conflicts.length) {
+			return `Error: --fork cannot be combined with ${conflicts.join(", ")}`;
+		}
+	}
+	if (sessionId) {
+		const conflicts = [];
+		if (sessionPath) conflicts.push("--session");
+		if (continueP) conflicts.push("--continue");
+		if (resumeSelectorP) conflicts.push("--resume");
+		if (conflicts.length) {
+			return `Error: --session-id cannot be combined with ${conflicts.join(", ")}`;
+		}
+	}
+	return "";
+}
+
+function runCliBootstrapValidateCliSessionFlags() {
+	return {
+		vcsf_ok: leftoverValidateCliSessionFlags({}),
+		vcsf_fork: leftoverValidateCliSessionFlags({ forkSource: true, sessionPath: true }),
+		vcsf_fork2: leftoverValidateCliSessionFlags({
+			forkSource: true,
+			continueP: true,
+			resumeSelectorP: true,
+		}),
+		vcsf_sid: leftoverValidateCliSessionFlags({ sessionId: "x", sessionPath: true }),
+		vcsf_sidok: leftoverValidateCliSessionFlags({ sessionId: "x" }),
+	};
+}
+
+function leftoverSessionEntryTreeSelectorData(session, entry) {
+	const message = entry && entry.message;
+	let role = "";
+	if (message) {
+		if (message.role === "user") role = "user";
+		else if (message.role === "assistant") role = "assistant";
+		else if (message.role === "toolResult") role = "toolResult";
+	}
+	return {
+		id: entry ? entry.id : "",
+		role,
+		text: leftoverSessionMessageSearchText(message),
+		type: entry && entry.type ? entry.type : "",
+	};
+}
+
+function runCliBootstrapSessionEntryTreeSelectorData() {
+	const session = leftoverDisplaySession();
+	const user = leftoverSessionEntryTreeSelectorData(session, session.entries[0]);
+	const asst = leftoverSessionEntryTreeSelectorData(session, session.entries[1]);
+	return {
+		sets_id: user.id || "",
+		sets_role: user.role,
+		sets_text: user.text || "",
+		sets_type: user.type || "",
+		sets_asst: asst.id || "",
+	};
+}
+
+function leftoverProviderKey(value) {
+	return String(value || "").toLowerCase();
+}
+
+function leftoverSessionRestoredModel(session, registryModels, availableIds) {
+	if (!session) return "";
+	let change = null;
+	for (const entry of session.entries || []) {
+		if (entry.type === "model-change") change = entry;
+	}
+	const messages = leftoverSessionDisplayMessages(session);
+	let assistant = null;
+	for (const message of messages) {
+		if (message.role === "assistant") assistant = message;
+	}
+	const provider =
+		(change && change.provider) || (assistant && assistant.provider);
+	const modelId = (change && change.modelId) || (assistant && assistant.model);
+	if (!provider || !modelId) return "";
+	const found = registryModels.find(
+		(model) => leftoverProviderKey(model.provider) === leftoverProviderKey(provider) && model.id === modelId,
+	);
+	if (!found) return "";
+	return availableIds.includes(found.id) ? found.id : "";
+}
+
+function runCliBootstrapSessionRestoredModel() {
+	const model = { id: "gpt-4", provider: "openai" };
+	const wrong = { id: "other", provider: "openai" };
+	const filled = leftoverDisplaySession();
+	const empty = { entries: [] };
+	return {
+		srm_none: leftoverSessionRestoredModel(empty, [model], ["gpt-4"]),
+		srm_hit: leftoverSessionRestoredModel(filled, [model], ["gpt-4"]),
+		srm_noreg: leftoverSessionRestoredModel(filled, [], ["gpt-4"]),
+		srm_noavail: leftoverSessionRestoredModel(filled, [model], []),
+		srm_wrong: leftoverSessionRestoredModel(filled, [wrong], ["other"]),
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -36521,6 +36636,9 @@ async function measureCliBootstrapCodingTools() {
 	const findSessionObserved = runCliBootstrapFindSessionByIdOrPrefix();
 	const displayMessagesObserved = runCliBootstrapSessionDisplayMessages();
 	const treeSelectorObserved = runCliBootstrapSessionTreeSelectorData();
+	const validateFlagsObserved = runCliBootstrapValidateCliSessionFlags();
+	const entrySelectorObserved = runCliBootstrapSessionEntryTreeSelectorData();
+	const restoredModelObserved = runCliBootstrapSessionRestoredModel();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -36624,6 +36742,18 @@ async function measureCliBootstrapCodingTools() {
 		session_tree_selector_data: await collect("cli_bootstrap_sessions.session_tree_selector_data", () => {
 			return () => runCliBootstrapSessionTreeSelectorData();
 		}),
+		validate_cli_session_flags: await collect("cli_bootstrap_sessions.validate_cli_session_flags", () => {
+			return () => runCliBootstrapValidateCliSessionFlags();
+		}),
+		session_entry_tree_selector_data: await collect(
+			"cli_bootstrap_sessions.session_entry_tree_selector_data",
+			() => {
+				return () => runCliBootstrapSessionEntryTreeSelectorData();
+			},
+		),
+		session_restored_model: await collect("cli_bootstrap_sessions.session_restored_model", () => {
+			return () => runCliBootstrapSessionRestoredModel();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -36657,6 +36787,9 @@ async function measureCliBootstrapCodingTools() {
 			...findSessionObserved,
 			...displayMessagesObserved,
 			...treeSelectorObserved,
+			...validateFlagsObserved,
+			...entrySelectorObserved,
+			...restoredModelObserved,
 		},
 	};
 }
@@ -38821,6 +38954,12 @@ const result = {
 				"packages/coding-agent/src/core/agent-session.ts leftover display message projection (cadr session-display-messages)",
 			"cli_bootstrap_sessions.session_tree_selector_data":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover tree row map (cadr session-tree-selector-data)",
+			"cli_bootstrap_sessions.validate_cli_session_flags":
+				"packages/coding-agent/src/cli/main.ts leftover validateForkFlags/validateSessionIdFlags (cadr validate-cli-session-flags)",
+			"cli_bootstrap_sessions.session_entry_tree_selector_data":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover one tree row (cadr session-entry-tree-selector-data)",
+			"cli_bootstrap_sessions.session_restored_model":
+				"packages/coding-agent/src/core/agent-session.ts leftover restored model lookup (cadr session-restored-model)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
