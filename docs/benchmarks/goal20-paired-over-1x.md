@@ -51,6 +51,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.timings` | 4.55 | 2.66 | 1.71× | 8.00× | measure-only pair `477f6d74f`; sibling of strip_ansi/normalize_path | invent pause；地板优化另刀 |
 | `ai_support.context_overflow` | 1.85 | 1.11 | 1.67× | 8.00× | measure-only pair `e03a52133`; sibling of estimate_text | invent pause；地板优化另刀 |
 | `ai_support.grammar_delta` | 1.52 | 0.53 | 2.87× | 8.00× | measure-only pair `1cc632962`; sibling of estimate/overflow | invent pause；地板优化另刀 |
+| `ai_support.threads_absent` | 0.165 | 0.077 | 2.141× | 8.00× | leftover collect restore pair 883; `stop-thread-for-cleanup` nil vs worker_threads absent | invent pause；地板优化另刀 |
+| `ai_support.threads_current` | 0.135 | 0.072 | 1.882× | 8.00× | leftover collect restore pair 884; `stop-thread-for-cleanup` current vs isMainThread | invent pause；地板优化另刀 |
 
 | `cli_support.shell_config` | 21.07 | 8.54 | 2.47× | 8.00× | measure-only pair `ae3b0c1c9`; sibling of strip_ansi/timings/event_bus/attribution | invent pause；地板优化另刀 |
 
