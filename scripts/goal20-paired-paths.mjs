@@ -633,6 +633,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.session_tree_tool_calls": 50,
 	"cli_bootstrap_sessions.session_compaction_display_state": 50,
 	"cli_bootstrap_sessions.write_hotkeys_command": 50,
+	"cli_bootstrap_sessions.find_session_by_id_or_prefix": 50,
+	"cli_bootstrap_sessions.session_display_messages": 50,
+	"cli_bootstrap_sessions.session_tree_selector_data": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -36314,6 +36317,8 @@ function leftoverSessionTreeToolCalls(session) {
 
 function leftoverDisplaySession() {
 	return {
+		id: "s",
+		leafId: "r1",
 		entries: leftoverStatsSession().entries.filter((entry) => entry.type === "message"),
 	};
 }
@@ -36400,6 +36405,88 @@ function runCliBootstrapWriteHotkeysCommand() {
 	};
 }
 
+function leftoverFindSessions() {
+	return [{ id: "abc" }, { id: "abcd" }, { id: "xyz" }];
+}
+
+function leftoverFindSessionByIdOrPrefix(argument, sessions) {
+	const exact = sessions.find((session) => session.id === argument);
+	if (exact) return exact;
+	return sessions.find((session) => session.id.startsWith(argument)) || null;
+}
+
+function leftoverFindSessionId(argument, sessions) {
+	const hit = leftoverFindSessionByIdOrPrefix(argument, sessions);
+	return hit ? hit.id : "";
+}
+
+function runCliBootstrapFindSessionByIdOrPrefix() {
+	const sessions = leftoverFindSessions();
+	return {
+		fsb_exact: leftoverFindSessionId("abc", sessions),
+		fsb_prefix: leftoverFindSessionId("ab", sessions),
+		fsb_xy: leftoverFindSessionId("xy", sessions),
+		fsb_miss: leftoverFindSessionId("no", sessions),
+		fsb_empty: leftoverFindSessionId("abc", []),
+	};
+}
+
+function leftoverSessionDisplayRole(messages, index) {
+	const message = messages[index];
+	if (!message) return "";
+	return message.role || "";
+}
+
+function runCliBootstrapSessionDisplayMessages() {
+	const empty = leftoverSessionDisplayMessages({ entries: [] });
+	const filled = leftoverSessionDisplayMessages(leftoverDisplaySession());
+	return {
+		sdm_empty: empty.length,
+		sdm_n: filled.length,
+		sdm_first: leftoverSessionDisplayRole(filled, 0),
+		sdm_asst: leftoverSessionDisplayRole(filled, 1),
+		sdm_tool: leftoverSessionDisplayRole(filled, 2),
+	};
+}
+
+function leftoverSessionMessageSearchText(message) {
+	if (!message) return "";
+	const content = message.content;
+	if (typeof content === "string") return content;
+	if (Array.isArray(content)) {
+		return content
+			.filter((block) => block && block.type === "text")
+			.map((block) => block.text || "")
+			.join("\n");
+	}
+	return "";
+}
+
+function leftoverSessionTreeSelectorData(session) {
+	if (!session) return [[], ""];
+	const rows = (session.entries || []).map((entry) => {
+		const message = entry.message;
+		return {
+			id: entry.id,
+			text: leftoverSessionMessageSearchText(message),
+		};
+	});
+	return [rows, session.leafId || ""];
+}
+
+function runCliBootstrapSessionTreeSelectorData() {
+	const empty = leftoverSessionTreeSelectorData(null);
+	const filled = leftoverSessionTreeSelectorData(leftoverDisplaySession());
+	const first = filled[0][0] || {};
+	return {
+		stsd_nil: empty[0].length,
+		stsd_n: filled[0].length,
+		stsd_leaf: filled[1],
+		stsd_id: first.id || "",
+		stsd_text: first.text || "",
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -36431,6 +36518,9 @@ async function measureCliBootstrapCodingTools() {
 	const treeToolCallsObserved = runCliBootstrapSessionTreeToolCalls();
 	const compactionDisplayObserved = runCliBootstrapSessionCompactionDisplayState();
 	const writeHotkeysObserved = runCliBootstrapWriteHotkeysCommand();
+	const findSessionObserved = runCliBootstrapFindSessionByIdOrPrefix();
+	const displayMessagesObserved = runCliBootstrapSessionDisplayMessages();
+	const treeSelectorObserved = runCliBootstrapSessionTreeSelectorData();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -36525,6 +36615,15 @@ async function measureCliBootstrapCodingTools() {
 		write_hotkeys_command: await collect("cli_bootstrap_sessions.write_hotkeys_command", () => {
 			return () => runCliBootstrapWriteHotkeysCommand();
 		}),
+		find_session_by_id_or_prefix: await collect("cli_bootstrap_sessions.find_session_by_id_or_prefix", () => {
+			return () => runCliBootstrapFindSessionByIdOrPrefix();
+		}),
+		session_display_messages: await collect("cli_bootstrap_sessions.session_display_messages", () => {
+			return () => runCliBootstrapSessionDisplayMessages();
+		}),
+		session_tree_selector_data: await collect("cli_bootstrap_sessions.session_tree_selector_data", () => {
+			return () => runCliBootstrapSessionTreeSelectorData();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -36555,6 +36654,9 @@ async function measureCliBootstrapCodingTools() {
 			...treeToolCallsObserved,
 			...compactionDisplayObserved,
 			...writeHotkeysObserved,
+			...findSessionObserved,
+			...displayMessagesObserved,
+			...treeSelectorObserved,
 		},
 	};
 }
@@ -38713,6 +38815,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts leftover display messages + nil summary (cadr session-compaction-display-state)",
 			"cli_bootstrap_sessions.write_hotkeys_command":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts leftover Keyboard Shortcuts list (cadr write-hotkeys-command)",
+			"cli_bootstrap_sessions.find_session_by_id_or_prefix":
+				"packages/coding-agent/src/core/session-manager.ts leftover find by id or prefix (cadr find-session-by-id-or-prefix)",
+			"cli_bootstrap_sessions.session_display_messages":
+				"packages/coding-agent/src/core/agent-session.ts leftover display message projection (cadr session-display-messages)",
+			"cli_bootstrap_sessions.session_tree_selector_data":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover tree row map (cadr session-tree-selector-data)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

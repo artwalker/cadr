@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.find_session_by_id_or_prefix`
+  (`find-session-by-id-or-prefix` vs leftover find by id or prefix). Observed
+  `fsb_exact` / `fsb_prefix` / `fsb_xy` / `fsb_miss` / `fsb_empty` exact.
+  n=5 **1.888×** (1.627 / 0.862 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 820). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_display_messages`
+  (`session-display-messages` vs leftover display message projection). Observed
+  `sdm_empty` / `sdm_n` / `sdm_first` / `sdm_asst` / `sdm_tool` exact.
+  n=5 **3.471×** (3.262 / 0.940 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 821). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_selector_data`
+  (`session-tree-selector-data` vs leftover tree row map). Observed
+  `stsd_nil` / `stsd_n` / `stsd_leaf` / `stsd_id` / `stsd_text` exact.
+  n=5 **3.574×** (4.557 / 1.275 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 822). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_tool_calls`
   (`session-tree-tool-calls` vs leftover tool-call id→name map). Observed
   `sttc_empty` / `sttc_n` / `sttc_t1` / `sttc_args` / `sttc_miss` exact.
