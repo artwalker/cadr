@@ -10,6 +10,18 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `cli_interactive_controller.announcement_make` / `announcement_url` /
+  `announcement_title` on `src/cadr-cli/interactive/components/announcement.lisp`.
+  n=5 freeze on host `Friend-MachineD`. All three under 1× (`make`
+  **0.039×**,
+  `url` **0.149×**,
+  `title` **0.412×**).
+  Reclassified one file. `needs-pair` 7→6. G.17 stays missing.
+  `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_support.write_hello` / `write_overwrite` / `write_empty` on
   `src/cadr-cli/support/atomic-write.lisp`, `editor_success` / `editor_fail` /
   `editor_empty` on `external-editor.lisp`, and `threads_absent` /

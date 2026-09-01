@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T09:46:39Z) on `Friend-MachineD`, git `c3c94ecf1125`, ratio_gate=`enforced-only:cli_support.write_hello,cli_support.write_overwrite,cli_support.write_empty,cli_support.editor_success,cli_support.editor_fail,cli_support.editor_empty,cli_support.threads_absent,cli_support.threads_current,cli_support.threads_joined`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T10:01:01Z) on `Friend-MachineD`, git `78aa2cb75802`, ratio_gate=`enforced-only:cli_interactive_controller.announcement_make,cli_interactive_controller.announcement_url,cli_interactive_controller.announcement_title`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T09:18:49Z) on `Friend-MachineD`, git `9ae80d2b0836`, ratio_gate=`enforced-only:oauth_pkce_device.anth_oauth_name,oauth_pkce_device.anth_oauth_sub,oauth_pkce_device.anth_oauth_instructions,oauth_pkce_device.kimi_host_default,oauth_pkce_device.kimi_host_code,oauth_pkce_device.kimi_host_trim`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T09:46:39Z) on `Friend-MachineD`, git `c3c94ecf1125`, ratio_gate=`enforced-only:cli_support.write_hello,cli_support.write_overwrite,cli_support.write_empty,cli_support.editor_success,cli_support.editor_fail,cli_support.editor_empty,cli_support.threads_absent,cli_support.threads_current,cli_support.threads_joined`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -914,15 +914,15 @@ Previous: `paired-paths` (2026-09-01T09:18:49Z) on `Friend-MachineD`, git `9ae80
 | `cli_support.watch_retry_delay` | 0.2 | 0.1 | 1.34× | 1.34× | 8.00× |
 | `cli_support.close_watcher` | 0.2 | 0.2 | 1.05× | 1.05× | 8.00× |
 | `cli_support.watch_signature` | 23.8 | 6.8 | 3.48× | 3.48× | 8.00× |
-| `cli_support.write_hello` | 277.3 | 165.3 | 1.68× | — | 8.00× |
-| `cli_support.write_overwrite` | 438.9 | 338.8 | 1.30× | — | 8.00× |
-| `cli_support.write_empty` | 129.2 | 46.3 | 2.79× | — | 15.00× |
-| `cli_support.editor_success` | 231.4 | 20,933.1 | 0.01× | — | 8.00× |
-| `cli_support.editor_fail` | 185.2 | 21,216.8 | 0.01× | — | 8.00× |
-| `cli_support.editor_empty` | 164.4 | 14,613.0 | 0.01× | — | 8.00× |
-| `cli_support.threads_absent` | 0.2 | 0.1 | 1.63× | — | 8.00× |
-| `cli_support.threads_current` | 0.1 | 0.1 | 1.16× | — | 8.00× |
-| `cli_support.threads_joined` | 151.4 | 28,910.9 | 0.01× | — | 8.00× |
+| `cli_support.write_hello` | 277.3 | 165.3 | 1.68× | 1.68× | 8.00× |
+| `cli_support.write_overwrite` | 438.9 | 338.8 | 1.30× | 1.30× | 8.00× |
+| `cli_support.write_empty` | 129.2 | 46.3 | 2.79× | 2.79× | 15.00× |
+| `cli_support.editor_success` | 231.4 | 20,933.1 | 0.01× | 0.01× | 8.00× |
+| `cli_support.editor_fail` | 185.2 | 21,216.8 | 0.01× | 0.01× | 8.00× |
+| `cli_support.editor_empty` | 164.4 | 14,613.0 | 0.01× | 0.01× | 8.00× |
+| `cli_support.threads_absent` | 0.2 | 0.1 | 1.63× | 1.63× | 8.00× |
+| `cli_support.threads_current` | 0.1 | 0.1 | 1.16× | 1.16× | 8.00× |
+| `cli_support.threads_joined` | 151.4 | 28,910.9 | 0.01× | 0.01× | 8.00× |
 | `cli_bootstrap_sessions.model_cycle` | — | — | — | — | — |
 | `cli_bootstrap_sessions.model_scope_line` | — | — | — | — | — |
 | `cli_bootstrap_sessions.process_files` | — | — | — | — | — |
@@ -1016,6 +1016,12 @@ Previous: `paired-paths` (2026-09-01T09:18:49Z) on `Friend-MachineD`, git `9ae80
 | `cli_interactive_controller.render_extension_custom_ui` | 32.6 | 1.4 | 23.04× | 23.04× | 40.00× |
 | `cli_interactive_controller.extension_custom_ui_handle_event` | 0.4 | 0.9 | 0.42× | 0.42× | 8.00× |
 | `cli_interactive_controller.render_tui_extension_overlay` | 145.9 | 1.7 | 87.63× | 87.63× | 160.00× |
+| `cli_interactive_controller.announcement_make` | 10.2 | 257.7 | 0.04× | — | 8.00× |
+| `cli_interactive_controller.announcement_url` | 70.6 | 475.4 | 0.15× | — | 8.00× |
+| `cli_interactive_controller.announcement_title` | 71.8 | 174.3 | 0.41× | — | 8.00× |
+| `cli_interactive_controller.announcement_make` | 10.2 | 257.7 | 0.04× | — | 8.00× |
+| `cli_interactive_controller.announcement_url` | 70.6 | 475.4 | 0.15× | — | 8.00× |
+| `cli_interactive_controller.announcement_title` | 71.8 | 174.3 | 0.41× | — | 8.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1235,15 +1241,15 @@ Previous: `paired-paths` (2026-09-01T09:18:49Z) on `Friend-MachineD`, git `9ae80
 | `cli_support.no_models_help` | 315.9 | 9.3 | 34.09× | 34.09× | 50.00× |
 | `cli_support.no_model_selected` | 314.2 | 8.9 | 35.34× | 35.34× | 50.00× |
 | `cli_support.no_api_key` | 565.2 | 17.5 | 32.23× | 32.23× | 50.00× |
-| `cli_support.write_hello` | 277.3 | 165.3 | 1.68× | — | 8.00× |
-| `cli_support.write_overwrite` | 438.9 | 338.8 | 1.30× | — | 8.00× |
-| `cli_support.write_empty` | 129.2 | 46.3 | 2.79× | — | 15.00× |
-| `cli_support.editor_success` | 231.4 | 20,933.1 | 0.01× | — | 8.00× |
-| `cli_support.editor_fail` | 185.2 | 21,216.8 | 0.01× | — | 8.00× |
-| `cli_support.editor_empty` | 164.4 | 14,613.0 | 0.01× | — | 8.00× |
-| `cli_support.threads_absent` | 0.2 | 0.1 | 1.63× | — | 8.00× |
-| `cli_support.threads_current` | 0.1 | 0.1 | 1.16× | — | 8.00× |
-| `cli_support.threads_joined` | 151.4 | 28,910.9 | 0.01× | — | 8.00× |
+| `cli_support.write_hello` | 277.3 | 165.3 | 1.68× | 1.68× | 8.00× |
+| `cli_support.write_overwrite` | 438.9 | 338.8 | 1.30× | 1.30× | 8.00× |
+| `cli_support.write_empty` | 129.2 | 46.3 | 2.79× | 2.79× | 15.00× |
+| `cli_support.editor_success` | 231.4 | 20,933.1 | 0.01× | 0.01× | 8.00× |
+| `cli_support.editor_fail` | 185.2 | 21,216.8 | 0.01× | 0.01× | 8.00× |
+| `cli_support.editor_empty` | 164.4 | 14,613.0 | 0.01× | 0.01× | 8.00× |
+| `cli_support.threads_absent` | 0.2 | 0.1 | 1.63× | 1.63× | 8.00× |
+| `cli_support.threads_current` | 0.1 | 0.1 | 1.16× | 1.16× | 8.00× |
+| `cli_support.threads_joined` | 151.4 | 28,910.9 | 0.01× | 0.01× | 8.00× |
 | `cli_interactive_controller.decode_entity` | 0.5 | 0.7 | 0.73× | 0.73× | 8.00× |
 | `cli_interactive_controller.wayland` | 0.2 | 0.3 | 0.87× | 0.87× | 8.00× |
 | `cli_interactive_controller.cwd_footer` | 0.5 | 3.1 | 0.17× | 0.17× | 8.00× |
@@ -2191,6 +2197,7 @@ Previous: `paired-paths` (2026-09-01T09:18:49Z) on `Friend-MachineD`, git `9ae80
 | 2026-09-01T09:01:00Z | paired-paths | `1cc6098c91ed` | no | enforced-only:package_manager.update_argv,package_manager.update_env,package_manager.git_object_id,cli_print_rpc.dialog_request,cli_print_rpc.dialog_result,cli_print_rpc.dialog_expired,cli_support.watch_retry_delay,cli_support.close_watcher,cli_support.watch_signature | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T09:18:49Z | paired-paths | `9ae80d2b0836` | no | enforced-only:oauth_pkce_device.anth_oauth_name,oauth_pkce_device.anth_oauth_sub,oauth_pkce_device.anth_oauth_instructions,oauth_pkce_device.kimi_host_default,oauth_pkce_device.kimi_host_code,oauth_pkce_device.kimi_host_trim | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T09:46:39Z | paired-paths | `c3c94ecf1125` | no | enforced-only:cli_support.write_hello,cli_support.write_overwrite,cli_support.write_empty,cli_support.editor_success,cli_support.editor_fail,cli_support.editor_empty,cli_support.threads_absent,cli_support.threads_current,cli_support.threads_joined | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T10:01:01Z | paired-paths | `78aa2cb75802` | no | enforced-only:cli_interactive_controller.announcement_make,cli_interactive_controller.announcement_url,cli_interactive_controller.announcement_title | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
