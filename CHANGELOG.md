@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `cli_extensions_install` slugs on `src/cadr-cli/extensions/installer.lisp`,
+  `loader.lisp`, and `llama/extension.lisp`. n=5 freeze on host `cursor`.
+  Over-1×: `unsafe_git` **1.272×**, `git_path` **1.855×**, `quant_label`
+  **1.232×**. The other six slugs are under 1×. Reclassified three files.
+  `needs-pair` 22→19. G.17 stays missing. `nextPairNum` left unchanged.
+
 - Goal 20 pair restore: lisp collect + `file_tags` for
   `cli_extensions_install.llama_context_label` /
   `llama_model_description` / `llama_compact_count` on
