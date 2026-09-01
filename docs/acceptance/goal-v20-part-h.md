@@ -10240,7 +10240,7 @@ Leftover sibling of Pairs 811–812. Timed work is nonempty trimmed user-entry t
 |---|---|---|
 | `session_command_stats` | `session-command-stats` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getSessionStats (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of leftover 808–813 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is user/assistant/tool-result/tool-call counts — not `/session` TUI. Observed `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` are exact. First n=5 freeze **1.366×** (1.615 / 1.182 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 808–813 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is user/assistant/tool-result/tool-call counts — not `/session` TUI. Observed `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` are exact. First n=5 freeze **2.362×** (2.578 / 1.092 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 815 — `cli_bootstrap_sessions` (session_usage_breakdown)
 
@@ -10248,7 +10248,7 @@ Leftover sibling of leftover 808–813 on the same `sessions.lisp` `cli_bootstra
 |---|---|---|
 | `session_usage_breakdown` | `session-usage-breakdown` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getUsageCostBreakdown (`packages/coding-agent/src/core/usage-totals.ts`) |
 
-Leftover sibling of Pair 814. Timed work is provider/model and Tools/summaries token totals — not `/session` TUI. Observed `sub_empty` / `sub_n` / `sub_first` / `sub_tok` / `sub_second` are exact. First n=5 freeze **2.504×** (4.688 / 1.872 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 814. Timed work is provider/model and Tools/summaries token totals — not `/session` TUI. Observed `sub_empty` / `sub_n` / `sub_first` / `sub_tok` / `sub_second` are exact. First n=5 freeze **3.689×** (7.127 / 1.932 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 816 — `cli_bootstrap_sessions` (session_tree_label_timestamps)
 
@@ -10256,7 +10256,7 @@ Leftover sibling of Pair 814. Timed work is provider/model and Tools/summaries t
 |---|---|---|
 | `session_tree_label_timestamps` | `session-tree-label-timestamps` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover label timestamps (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
 
-Leftover sibling of Pairs 814–815. Timed work is nonempty label ISO map (empty label remhash) — not tree TUI. Observed `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` are exact. First n=5 freeze **1.982×** (3.096 / 1.562 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 814–815. Timed work is nonempty label ISO map (empty label remhash) — not tree TUI. Observed `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` are exact. First n=5 freeze **2.873×** (4.218 / 1.468 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
