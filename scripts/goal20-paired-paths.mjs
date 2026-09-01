@@ -491,6 +491,9 @@ const REPETITIONS = {
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
+	"cli_selectors.lmsxxxx_ok": 50,
+	"cli_selectors.akixxxx_ok": 50,
+	"cli_selectors.ossxxxx_ok": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
@@ -31048,6 +31051,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeOauthSelectorState();
 			},
 		),
+		lmsxxxx_ok: await collect("cli_selectors.lmsxxxx_ok", () => {
+			return () => runCliSelectorsMakeLoginMethodSelectorState();
+		}),
+		akixxxx_ok: await collect("cli_selectors.akixxxx_ok", () => {
+			return () => runCliSelectorsMakeApiKeyInputState();
+		}),
+		ossxxxx_ok: await collect("cli_selectors.ossxxxx_ok", () => {
+			return () => runCliSelectorsMakeOauthSelectorState();
+		}),
 		login_dialog_show_waiting: await collect(
 			"cli_selectors.login_dialog_show_waiting",
 			() => {
@@ -34646,6 +34658,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
 			"cli_selectors.make_oauth_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
+			"cli_selectors.lmsxxxx_ok":
+				"packages/coding-agent leftover replica of ExtensionSelector login-method constructor",
+			"cli_selectors.akixxxx_ok":
+				"packages/coding-agent leftover replica of showPrompt api key Input constructor",
+			"cli_selectors.ossxxxx_ok":
+				"packages/coding-agent leftover replica of OauthSelectorComponent constructor leftover 1407",
 			"cli_selectors.login_dialog_show_waiting":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
 			"cli_selectors.login_dialog_show_progress":

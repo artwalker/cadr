@@ -251,6 +251,12 @@
 ;;;;      (does not remount leftover 1337 trmkxx_ok / leftover 1271 trmkx_ok / leftover 1205 trmk_ok / leftover 1124 mk_ok / leftover 1048 tr_mk)
 ;;;; 1404. cli_selectors trrsxxx_ok vs leftover replica of TrustSelectorComponent layout
 ;;;;      (does not remount leftover 1338 trrsxx_ok / leftover 1272 trrsx_ok / leftover 1206 trrs_ok / leftover 1125 trn_ok / leftover 1048 tr_rnd)
+;;;; 1405. cli_selectors lmsxxxx_ok vs leftover replica of ExtensionSelector login-method constructor
+;;;;      (does not remount leftover 1339 lmsxxx_ok / leftover 1273 lmsxx_ok / leftover 1207 lmsx_ok / leftover 1126 lms_ok / leftover 1003 mlms_ok)
+;;;; 1406. cli_selectors akixxxx_ok vs leftover replica of showPrompt api key Input constructor
+;;;;      (does not remount leftover 1340 akixxx_ok / leftover 1274 akixx_ok / leftover 1208 akix_ok / leftover 1127 aki_ok / leftover 1003 makis_ok)
+;;;; 1407. cli_selectors ossxxxx_ok vs leftover replica of OauthSelectorComponent constructor
+;;;;      (does not remount leftover 1341 ossxxx_ok / leftover 1275 ossxx_ok / leftover 1209 ossx_ok / leftover 1128 oss_ok / leftover 1003 moss_ok)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1014,6 +1020,9 @@
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
+    ("cli_selectors.lmsxxxx_ok" . 50)
+    ("cli_selectors.akixxxx_ok" . 50)
+    ("cli_selectors.ossxxxx_ok" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -29911,6 +29920,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
+     "lmsxxxx_ok"
+     (collect "cli_selectors.lmsxxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "akixxxx_ok"
+     (collect "cli_selectors.akixxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "ossxxxx_ok"
+     (collect "cli_selectors.ossxxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
      "login_dialog_show_waiting"
      (collect "cli_selectors.login_dialog_show_waiting"
               (lambda ()
@@ -33393,6 +33417,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
       "cli_selectors.make_oauth_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
+      "cli_selectors.lmsxxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover"
+      "cli_selectors.akixxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover"
+      "cli_selectors.ossxxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover 1407"
       "cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
       "cli_selectors.login_dialog_show_progress"
