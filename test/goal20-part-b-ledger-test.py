@@ -1267,6 +1267,12 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("orr_same", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("oauth_pkce_device.openrouter_exchange", RECORD.METRIC_KEYS)
         self.assertIn("openrouter_exchange", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("anth_oauth_name", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("anth_oauth_sub", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("anth_oauth_instructions", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("kimi_host_default", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("kimi_host_code", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("kimi_host_trim", paired.METRICS["oauth_pkce_device"])
         self.assertIn("ox_ok", paired.OBSERVED_EXACT["oauth_pkce_device"])
 
     def test_cli_extensions_install_is_a_recorded_metric(self) -> None:

@@ -10,6 +10,12 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `oauth_pkce_device.anth_oauth_*` on `src/cadr-ai/oauth/providers/anthropic.lisp`
+  and `kimi_host_*` on `providers/kimi.lisp`. Freeze and inventory reclassify
+  follow. G.17 stays missing. `nextPairNum` left unchanged.
+
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `oauth_pkce_device` slugs on `src/cadr-ai/oauth/openai-anthropic.lisp`,
   `providers/openai-device.lisp`, `providers/xai.lisp`, and
   `providers/openrouter.lisp`. n=5 freeze on host `cursor`. Over-1×:

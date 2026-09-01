@@ -67,6 +67,9 @@
 ;;;; 748. provider_registry_defs built-in-api-key-login-function vs bedrock/vertex ApiKeyAuth.login
 ;;;; 749. provider_registry_defs built-in-api-key-auth vs envApiKeyAuth.resolve (in-memory env)
 ;;;; 750. provider_registry_defs built-in-model-filter-function vs github-copilot filterModels
+;;;; 877. oauth_pkce_device kimi-oauth-host default vs getOauthHost DEFAULT_OAUTH_HOST
+;;;; 878. leftover: kimi-oauth-host KIMI_CODE_OAUTH_HOST vs getOauthHost
+;;;; 879. leftover: kimi-oauth-host trailing-slash trim vs getOauthHost replace /+$
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;      leftover: resolve-system-prompt / node-read-error-message /
 ;;;;      resolve-system-prompt-with-appends
@@ -374,6 +377,9 @@
 ;;;; 334. oauth_pkce_device oauth-callback-provider-key vs Anthropic/Radius display-name map
 ;;;; 335. oauth_pkce_device oauth-http-status-text vs node:http STATUS_CODES
 ;;;; 336. oauth_pkce_device parse-oauth-callback-request vs openai-codex startLocalOAuthServer handler
+;;;; 880. oauth_pkce_device anthropic method-name vs anthropicOAuth.name
+;;;; 881. oauth_pkce_device anthropic is-subscription-p vs anthropicOAuth.isSubscription
+;;;; 882. oauth_pkce_device anthropic auth-url-instructions vs login notify instructions
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -625,6 +631,12 @@
     ("oauth_pkce_device.openrouter_input" . 50)
     ("oauth_pkce_device.openrouter_refresh" . 50)
     ("oauth_pkce_device.openrouter_exchange" . 50)
+    ("oauth_pkce_device.anth_oauth_name" . 50)
+    ("oauth_pkce_device.anth_oauth_sub" . 50)
+    ("oauth_pkce_device.anth_oauth_instructions" . 50)
+    ("oauth_pkce_device.kimi_host_default" . 50)
+    ("oauth_pkce_device.kimi_host_code" . 50)
+    ("oauth_pkce_device.kimi_host_trim" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10660,6 +10672,73 @@
    3))
 
 
+
+(defun run-oauth-anth-oauth-name ()
+  (let ((name
+          (cadr-ai:oauth-provider-metadata-method-name
+           cadr-ai::+anthropic-oauth-metadata+)))
+    (list
+     (if (string= name "Anthropic (Claude Pro/Max)") 1 0)
+     (if (search "Claude" name) 1 0)
+     2)))
+
+
+(defun run-oauth-anth-oauth-sub ()
+  (let ((flag
+          (cadr-ai::oauth-provider-metadata-is-subscription-p
+           cadr-ai::+anthropic-oauth-metadata+)))
+    (list
+     (if flag 1 0)
+     (if (eq flag t) 1 0)
+     2)))
+
+
+(defun run-oauth-anth-oauth-instructions ()
+  (let ((text
+          (cadr-ai:oauth-provider-metadata-auth-url-instructions
+           cadr-ai::+anthropic-oauth-metadata+)))
+    (list
+     (if (string=
+          text
+          "Complete login in your browser. If the browser is on another machine, paste the final redirect URL here.")
+         1
+         0)
+     (if (search "paste" text) 1 0)
+     2)))
+
+
+(defun run-oauth-kimi-host-default ()
+  (let ((host (cadr-ai::kimi-oauth-host nil)))
+    (list
+     (if (string= host "https://auth.kimi.com") 1 0)
+     (if (and (>= (length host) 8)
+              (string= (subseq host 0 8) "https://"))
+         1
+         0)
+     2)))
+
+
+(defun run-oauth-kimi-host-code ()
+  (let ((host
+          (cadr-ai::kimi-oauth-host
+           '(("KIMI_CODE_OAUTH_HOST" . "https://code.example")
+             ("KIMI_OAUTH_HOST" . "https://other.example")))))
+    (list
+     (if (string= host "https://code.example") 1 0)
+     (if (search "other" host) 0 1)
+     2)))
+
+
+(defun run-oauth-kimi-host-trim ()
+  (let ((host
+          (cadr-ai::kimi-oauth-host
+           '(("KIMI_OAUTH_HOST" . "https://auth.example.com///")))))
+    (list
+     (if (string= host "https://auth.example.com") 1 0)
+     (if (search "///" host) 0 1)
+     2)))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -10684,7 +10763,13 @@
         (device-start (run-oauth-pkce-device-device-start))
         (openrouter-input (run-oauth-pkce-device-openrouter-input))
         (openrouter-refresh (run-oauth-pkce-device-openrouter-refresh))
-        (openrouter-exchange (run-oauth-pkce-device-openrouter-exchange)))
+        (openrouter-exchange (run-oauth-pkce-device-openrouter-exchange))
+        (anth-oauth-name (run-oauth-anth-oauth-name))
+        (anth-oauth-sub (run-oauth-anth-oauth-sub))
+        (anth-oauth-instructions (run-oauth-anth-oauth-instructions))
+        (kimi-host-default (run-oauth-kimi-host-default))
+        (kimi-host-code (run-oauth-kimi-host-code))
+        (kimi-host-trim (run-oauth-kimi-host-trim)))
     (json-object
      "observed"
      (json-object
@@ -10793,7 +10878,25 @@
       "ox_ok" (nth 0 openrouter-exchange)
       "ox_fail" (nth 1 openrouter-exchange)
       "ox_bad" (nth 2 openrouter-exchange)
-      "ox_n" (nth 3 openrouter-exchange))
+      "ox_n" (nth 3 openrouter-exchange)
+      "anm_eq" (nth 0 anth-oauth-name)
+      "anm_claude" (nth 1 anth-oauth-name)
+      "anm_n" (nth 2 anth-oauth-name)
+      "ans_sub" (nth 0 anth-oauth-sub)
+      "ans_t" (nth 1 anth-oauth-sub)
+      "ans_n" (nth 2 anth-oauth-sub)
+      "ani_eq" (nth 0 anth-oauth-instructions)
+      "ani_paste" (nth 1 anth-oauth-instructions)
+      "ani_n" (nth 2 anth-oauth-instructions)
+      "khd_eq" (nth 0 kimi-host-default)
+      "khd_https" (nth 1 kimi-host-default)
+      "khd_n" (nth 2 kimi-host-default)
+      "khc_eq" (nth 0 kimi-host-code)
+      "khc_win" (nth 1 kimi-host-code)
+      "khc_n" (nth 2 kimi-host-code)
+      "kht_eq" (nth 0 kimi-host-trim)
+      "kht_noslash" (nth 1 kimi-host-trim)
+      "kht_n" (nth 2 kimi-host-trim))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10913,7 +11016,37 @@
      (collect "oauth_pkce_device.openrouter_exchange"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-openrouter-exchange)))))))
+                  (run-oauth-pkce-device-openrouter-exchange))))
+     "anth_oauth_name"
+     (collect "oauth_pkce_device.anth_oauth_name"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-anth-oauth-name))))
+     "anth_oauth_sub"
+     (collect "oauth_pkce_device.anth_oauth_sub"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-anth-oauth-sub))))
+     "anth_oauth_instructions"
+     (collect "oauth_pkce_device.anth_oauth_instructions"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-anth-oauth-instructions))))
+     "kimi_host_default"
+     (collect "oauth_pkce_device.kimi_host_default"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-kimi-host-default))))
+     "kimi_host_code"
+     (collect "oauth_pkce_device.kimi_host_code"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-kimi-host-code))))
+     "kimi_host_trim"
+     (collect "oauth_pkce_device.kimi_host_trim"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-kimi-host-trim)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -33106,6 +33239,18 @@
       "src/cadr-ai/oauth/providers/openrouter.lisp refresh-openrouter-oauth-credential"
       "oauth_pkce_device.openrouter_exchange"
       "src/cadr-ai/oauth/providers/openrouter.lisp openrouter-exchange-code"
+      "oauth_pkce_device.anth_oauth_name"
+      "src/cadr-ai/oauth/providers/anthropic.lisp login-anthropic-runtime-oauth metadata name"
+      "oauth_pkce_device.anth_oauth_sub"
+      "src/cadr-ai/oauth/providers/anthropic.lisp login-anthropic-runtime-oauth metadata subscription"
+      "oauth_pkce_device.anth_oauth_instructions"
+      "src/cadr-ai/oauth/providers/anthropic.lisp login-anthropic-runtime-oauth metadata instructions"
+      "oauth_pkce_device.kimi_host_default"
+      "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host default"
+      "oauth_pkce_device.kimi_host_code"
+      "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host KIMI_CODE_OAUTH_HOST"
+      "oauth_pkce_device.kimi_host_trim"
+      "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host trailing-slash trim"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

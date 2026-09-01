@@ -395,6 +395,12 @@ const REPETITIONS = {
 	"oauth_pkce_device.openrouter_input": 50,
 	"oauth_pkce_device.openrouter_refresh": 50,
 	"oauth_pkce_device.openrouter_exchange": 50,
+	"oauth_pkce_device.anth_oauth_name": 50,
+	"oauth_pkce_device.anth_oauth_sub": 50,
+	"oauth_pkce_device.anth_oauth_instructions": 50,
+	"oauth_pkce_device.kimi_host_default": 50,
+	"oauth_pkce_device.kimi_host_code": 50,
+	"oauth_pkce_device.kimi_host_trim": 50,
 	"evals_harness.make_reporter": 50,
 	"evals_harness.finite_number": 50,
 	"evals_harness.artifact_metadata": 50,
@@ -11810,6 +11816,88 @@ function runOauthPkceDeviceOpenrouterExchange() {
 }
 
 
+
+const leftoverAnthropicOAuth = {
+	name: "Anthropic (Claude Pro/Max)",
+	isSubscription: true,
+};
+
+const leftoverAnthropicInstructions =
+	"Complete login in your browser. If the browser is on another machine, paste the final redirect URL here.";
+
+function runOauthAnthOauthName() {
+	const name = leftoverAnthropicOAuth.name;
+	return {
+		anm_eq: name === "Anthropic (Claude Pro/Max)" ? 1 : 0,
+		anm_claude: name.includes("Claude") ? 1 : 0,
+		anm_n: 2,
+	};
+}
+
+function runOauthAnthOauthSub() {
+	const flag = leftoverAnthropicOAuth.isSubscription;
+	return {
+		ans_sub: flag ? 1 : 0,
+		ans_t: flag === true ? 1 : 0,
+		ans_n: 2,
+	};
+}
+
+function runOauthAnthOauthInstructions() {
+	const text = leftoverAnthropicInstructions;
+	return {
+		ani_eq:
+			text ===
+			"Complete login in your browser. If the browser is on another machine, paste the final redirect URL here."
+				? 1
+				: 0,
+		ani_paste: text.includes("paste") ? 1 : 0,
+		ani_n: 2,
+	};
+}
+
+const leftoverKimiOauthDefaultHost = "https://auth.kimi.com";
+
+function leftoverKimiGetOauthHost(environment) {
+	const override =
+		(environment && environment.KIMI_CODE_OAUTH_HOST) ||
+		(environment && environment.KIMI_OAUTH_HOST);
+	return (override || leftoverKimiOauthDefaultHost).replace(/\/+$/, "");
+}
+
+function runOauthKimiHostDefault() {
+	const host = leftoverKimiGetOauthHost(undefined);
+	return {
+		khd_eq: host === "https://auth.kimi.com" ? 1 : 0,
+		khd_https: host.startsWith("https://") ? 1 : 0,
+		khd_n: 2,
+	};
+}
+
+function runOauthKimiHostCode() {
+	const host = leftoverKimiGetOauthHost({
+		KIMI_CODE_OAUTH_HOST: "https://code.example",
+		KIMI_OAUTH_HOST: "https://other.example",
+	});
+	return {
+		khc_eq: host === "https://code.example" ? 1 : 0,
+		khc_win: host.includes("other") ? 0 : 1,
+		khc_n: 2,
+	};
+}
+
+function runOauthKimiHostTrim() {
+	const host = leftoverKimiGetOauthHost({
+		KIMI_OAUTH_HOST: "https://auth.example.com///",
+	});
+	return {
+		kht_eq: host === "https://auth.example.com" ? 1 : 0,
+		kht_noslash: host.includes("///") ? 0 : 1,
+		kht_n: 2,
+	};
+}
+
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -11908,6 +11996,24 @@ async function measureOauthPkceDevice() {
 		openrouter_exchange: await collect("oauth_pkce_device.openrouter_exchange", () => {
 			return () => runOauthPkceDeviceOpenrouterExchange();
 		}),
+		anth_oauth_name: await collect("oauth_pkce_device.anth_oauth_name", () => {
+			return () => runOauthAnthOauthName();
+		}),
+		anth_oauth_sub: await collect("oauth_pkce_device.anth_oauth_sub", () => {
+			return () => runOauthAnthOauthSub();
+		}),
+		anth_oauth_instructions: await collect("oauth_pkce_device.anth_oauth_instructions", () => {
+			return () => runOauthAnthOauthInstructions();
+		}),
+		kimi_host_default: await collect("oauth_pkce_device.kimi_host_default", () => {
+			return () => runOauthKimiHostDefault();
+		}),
+		kimi_host_code: await collect("oauth_pkce_device.kimi_host_code", () => {
+			return () => runOauthKimiHostCode();
+		}),
+		kimi_host_trim: await collect("oauth_pkce_device.kimi_host_trim", () => {
+			return () => runOauthKimiHostTrim();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -11933,6 +12039,12 @@ async function measureOauthPkceDevice() {
 			...openrouterInput,
 			...openrouterRefresh,
 			...openrouterExchange,
+			...runOauthAnthOauthName(),
+			...runOauthAnthOauthSub(),
+			...runOauthAnthOauthInstructions(),
+			...runOauthKimiHostDefault(),
+			...runOauthKimiHostCode(),
+			...runOauthKimiHostTrim(),
 		},
 	};
 }
@@ -34154,6 +34266,18 @@ const result = {
 				"packages/ai/src/oauth/openrouter.ts refresh identity (cadr refresh-openrouter-oauth-credential)",
 			"oauth_pkce_device.openrouter_exchange":
 				"packages/ai/src/oauth/openrouter.ts exchangeAuthorizationCodeFromResponse (cadr openrouter-exchange-code)",
+			"oauth_pkce_device.anth_oauth_name":
+				"packages/ai/src/auth/oauth/anthropic.ts anthropicOAuth.name",
+			"oauth_pkce_device.anth_oauth_sub":
+				"packages/ai/src/auth/oauth/anthropic.ts anthropicOAuth.isSubscription",
+			"oauth_pkce_device.anth_oauth_instructions":
+				"packages/ai/src/auth/oauth/anthropic.ts login notify instructions",
+			"oauth_pkce_device.kimi_host_default":
+				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost DEFAULT_OAUTH_HOST",
+			"oauth_pkce_device.kimi_host_code":
+				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost KIMI_CODE_OAUTH_HOST",
+			"oauth_pkce_device.kimi_host_trim":
+				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost trailing-slash trim",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":
