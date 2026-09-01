@@ -9856,7 +9856,7 @@ Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and emp
 |---|---|---|
 | `sdk_http_idle_timeout` | `sdk-settings-http-idle-timeout-ms` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getHttpIdleTimeoutMs` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 763–765. Timed work is in-memory idle timeout parse — not `stream-chat`. Observed `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 763–765. Timed work is in-memory idle timeout parse — not `stream-chat`. Observed `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` are exact. First n=5 freeze **1.249×** (10.990 / 8.800 µs) on host `cursor`; remesure Friend-MachineD **1.412×** (11.259 / 7.976 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 767 — `settings_load` (sdk_apply_overrides)
 
@@ -9864,7 +9864,7 @@ Leftover sibling of Pairs 763–765. Timed work is in-memory idle timeout parse 
 |---|---|---|
 | `sdk_apply_overrides` | `sdk-settings-apply-overrides` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.applyOverrides` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pair 766. Timed work is overlay merge last-wins — not login I/O. Observed `sao_prov` / `sao_last` / `sao_len` / `sao_base` / `sao_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 766. Timed work is overlay merge last-wins — not login I/O. Observed `sao_prov` / `sao_last` / `sao_len` / `sao_base` / `sao_n` are exact. First n=5 freeze **6.960×** (45.476 / 6.534 µs) on host `cursor`; remesure Friend-MachineD **7.583×** (47.291 / 6.236 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 768 — `settings_load` (sdk_model_thinking_level)
 
@@ -9872,7 +9872,7 @@ Leftover sibling of Pair 766. Timed work is overlay merge last-wins — not logi
 |---|---|---|
 | `sdk_model_thinking_level` | `sdk-settings-model-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getModelThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 766–767. Timed work is per-model thinking lookup — not `stream-chat`. Observed `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 766–767. Timed work is per-model thinking lookup — not `stream-chat`. Observed `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` are exact. First n=5 freeze **4.323×** (16.293 / 3.769 µs) on host `cursor`; remesure Friend-MachineD **5.346×** (16.830 / 3.148 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -10604,7 +10604,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/resource-service.lisp` | 370 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
-| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings` |
+| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |

@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T15:06:48Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `349b69e8bf8d`, ratio_gate=`enforced-only:package_manager.candidate_record,package_manager.records_project_first,package_manager.update_offline`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T15:35:58Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `a3603e2aaebb`, ratio_gate=`enforced-only:settings_load.sdk_apply_overrides,settings_load.sdk_http_idle_timeout,settings_load.sdk_model_thinking_level`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T14:38:15Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `5903c073b857`, ratio_gate=`enforced-only:settings_load.provider_config_secrets,settings_load.read_cli_config,settings_load.resolve_provider_config`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T15:06:48Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `349b69e8bf8d`, ratio_gate=`enforced-only:package_manager.candidate_record,package_manager.records_project_first,package_manager.update_offline`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -738,6 +738,9 @@ Previous: `paired-paths` (2026-09-01T14:38:15Z) on `{'lisp': 'SBCL', 'lisp_versi
 | `settings_load.sdk_default_provider` | 35.0 | 15.0 | 2.34× | 2.34× | 8.00× |
 | `settings_load.sdk_default_model` | 36.3 | 7.2 | 5.02× | 5.02× | 8.00× |
 | `settings_load.sdk_retry_settings` | 19.3 | 10.6 | 1.82× | 1.82× | 8.00× |
+| `settings_load.sdk_http_idle_timeout` | 11.3 | 8.0 | 1.41× | — | 8.00× |
+| `settings_load.sdk_apply_overrides` | 47.3 | 6.2 | 7.58× | — | 8.00× |
+| `settings_load.sdk_model_thinking_level` | 16.8 | 3.1 | 5.35× | — | 8.00× |
 | `resource_loader.reload` | 1,252.4 | 580.1 | 2.16× | 2.16× | 1.50× |
 | `resource_loader.dedupe_by_name` | 165.3 | 221.9 | 0.74× | 0.74× | 8.00× |
 | `resource_loader.context_from_dir` | 112.9 | 26.4 | 4.28× | 4.28× | 8.00× |
@@ -2236,6 +2239,7 @@ Previous: `paired-paths` (2026-09-01T14:38:15Z) on `{'lisp': 'SBCL', 'lisp_versi
 | 2026-09-01T11:23:26Z | paired-paths | `ceb8a4cb3cb7` | no | enforced-only:cli_bootstrap_sessions.pb_ok,cli_bootstrap_sessions.rt_ok,cli_bootstrap_sessions.dp_ok | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T14:38:15Z | paired-paths | `5903c073b857` | no | enforced-only:settings_load.provider_config_secrets,settings_load.read_cli_config,settings_load.resolve_provider_config | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T15:06:48Z | paired-paths | `349b69e8bf8d` | no | enforced-only:package_manager.candidate_record,package_manager.records_project_first,package_manager.update_offline | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T15:35:58Z | paired-paths | `a3603e2aaebb` | no | enforced-only:settings_load.sdk_apply_overrides,settings_load.sdk_http_idle_timeout,settings_load.sdk_model_thinking_level | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
