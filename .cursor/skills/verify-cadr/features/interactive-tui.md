@@ -30,7 +30,7 @@ Preconditions:
 
 ## Gotchas
 
-- Startup in an empty HOME may download `fd` into `$HOME/.cadr/agent/bin/fd`. Wait for that to finish before asserting the prompt; do not treat the download lines as a failed launch.
+- Startup in an empty HOME may download `fd` into `$HOME/.cadr/agent/bin/fd`. Wait for that to finish before asserting the prompt; do not treat the download lines as a failed launch. `control-cadr tui start` passes `--offline`, but `ensure-tool` only skips the download when `CADR_OFFLINE` is set in the environment. Do not expect `fd not found. Offline mode enabled, skipping download.` from the CLI flag alone.
 - The no-models text in the TUI is prefixed with `Warning: `. `--list-models` is not.
 - Without a TTY, cadr may take `--mode text` / REPL instead of the TUI. Always start through `control-cadr tui start`, not a raw pipe.
 - A trust or login overlay can appear before the prompt. `--approve` skips the project-trust prompt for the run. Login is not required to prove `/quit`.

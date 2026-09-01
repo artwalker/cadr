@@ -119,7 +119,7 @@ Standards:
 - Exercise the real `./cadr` user path. Do not call Lisp functions or FiveAM helpers as a substitute for `--help` / `--print` / TUI.
 - Capture the command and the resulting streams, not only a final screenshot.
 - Isolated HOME must stay empty of operator `auth.json` unless the feature file seeds credentials. Do not paste keys into evidence.
-- `--offline` is startup-network suppression (`CADR_OFFLINE=1` equivalent), not a mock of providers. `--print` with no keys still talks to no network if it exits on the auth-guidance path; confirm by the stderr copy, not by the flag name.
+- `--offline` is startup-network suppression for CLI startup checks, not a mock of providers. It is not the same as setting `CADR_OFFLINE=1` for bundled tool ensure (`fd`/`rg` still download under isolated HOME unless that env is set). `--print` with no keys still talks to no network if it exits on the auth-guidance path; confirm by the stderr copy, not by the flag name.
 - A green render-diff SHA is not proof of a mapped feature.
 
 ## Cleanup
