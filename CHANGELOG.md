@@ -12,8 +12,13 @@ tag/Release step.
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `oauth_pkce_device` slugs on `src/cadr-ai/oauth/openai-anthropic.lisp`,
   `providers/openai-device.lisp`, `providers/xai.lisp`, and
-  `providers/openrouter.lisp`. Does not reclassify until n=5 freeze.
-  G.17 stays missing. `nextPairNum` left unchanged.
+  `providers/openrouter.lisp`. n=5 freeze on host `cursor`. Over-1×:
+  `base64url_value` **2.520×**, `base64url_decode` **6.461×**,
+  `account_id` **5.167×**, `error_detail` **2.184×**, `notify_device`
+  **2.643×**, `json_copy` **2.173×**, `device_start` **1.067×**,
+  `openrouter_exchange` **1.164×**. The other four slugs are under 1×.
+  Reclassified four files. `needs-pair` 19→15. G.17 stays missing.
+  `nextPairNum` left unchanged.
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_extensions_install` slugs on `src/cadr-cli/extensions/installer.lisp`,

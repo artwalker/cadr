@@ -11272,6 +11272,7 @@ const OAUTH_BASE64URL_ALPHABET =
 const OAUTH_ACCOUNT_ID_PAYLOAD =
 	"eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ";
 const OAUTH_ACCOUNT_ID_TOKEN = `e30.${OAUTH_ACCOUNT_ID_PAYLOAD}.sig`;
+const JWT_CLAIM_PATH = "https://api.openai.com/auth";
 
 function base64urlValueFlag(character, expected) {
 	try {
