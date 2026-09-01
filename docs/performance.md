@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T18:52:40Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `52f6997d6baf`, ratio_gate=`enforced-only:package_manager.git_output,package_manager.remote_ref,package_manager.update_record_result`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T19:09:02Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `780890e3be2d`, ratio_gate=`enforced-only:package_manager.checkbox,package_manager.override_suffix,package_manager.selector_hint`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T18:39:43Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `d007f13bbc6b`, ratio_gate=`enforced-only:evals_harness.authoring_harness_table,evals_harness.bundle_tool_names,evals_harness.visible_extension_bundles`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T18:52:40Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `52f6997d6baf`, ratio_gate=`enforced-only:package_manager.git_output,package_manager.remote_ref,package_manager.update_record_result`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -923,9 +923,12 @@ Previous: `paired-paths` (2026-09-01T18:39:43Z) on `{'lisp': 'SBCL', 'lisp_versi
 | `package_manager.records_project_first` | 0.6 | 0.5 | 1.09× | 1.09× | 8.00× |
 | `package_manager.candidate_record` | 7.7 | 2.3 | 3.35× | 3.35× | 20.00× |
 | `package_manager.update_offline` | 0.5 | 0.3 | 1.64× | 1.64× | 8.00× |
-| `package_manager.git_output` | 3.2 | 0.2 | 14.54× | — | 120.00× |
-| `package_manager.remote_ref` | 4.7 | 1.2 | 4.08× | — | 25.00× |
-| `package_manager.update_record_result` | 11.6 | 6.4 | 1.81× | — | 8.00× |
+| `package_manager.git_output` | 3.2 | 0.2 | 14.54× | 14.54× | 120.00× |
+| `package_manager.remote_ref` | 4.7 | 1.2 | 4.08× | 4.08× | 25.00× |
+| `package_manager.update_record_result` | 11.6 | 6.4 | 1.81× | 1.81× | 8.00× |
+| `package_manager.selector_hint` | 10.6 | 0.7 | 15.49× | — | 20.00× |
+| `package_manager.override_suffix` | 35.2 | 3.9 | 9.08× | — | 25.00× |
+| `package_manager.checkbox` | 36.5 | 3.5 | 10.47× | — | 25.00× |
 | `package_manager.resource_item_key` | 15.8 | 0.7 | 23.49× | 23.49× | 50.00× |
 | `package_manager.project_override_state` | 44.7 | 2.6 | 17.17× | 17.17× | 20.00× |
 | `package_manager.next_project_state` | 40.5 | 4.3 | 9.35× | 9.35× | 15.00× |
@@ -2280,6 +2283,7 @@ Previous: `paired-paths` (2026-09-01T18:39:43Z) on `{'lisp': 'SBCL', 'lisp_versi
 | 2026-09-01T18:19:24Z | paired-paths | `d5484b0cc6ec` | no | enforced-only:package_manager.package_setting_records,package_manager.selector_rebuild,package_manager.switch_scope | 0.96× | 1.06× | 1.09× | 0.06× |
 | 2026-09-01T18:39:43Z | paired-paths | `d007f13bbc6b` | no | enforced-only:evals_harness.authoring_harness_table,evals_harness.bundle_tool_names,evals_harness.visible_extension_bundles | 0.96× | 1.06× | 1.09× | 0.06× |
 | 2026-09-01T18:52:40Z | paired-paths | `52f6997d6baf` | no | enforced-only:package_manager.git_output,package_manager.remote_ref,package_manager.update_record_result | 0.96× | 1.06× | 1.09× | 0.06× |
+| 2026-09-01T19:09:02Z | paired-paths | `780890e3be2d` | no | enforced-only:package_manager.checkbox,package_manager.override_suffix,package_manager.selector_hint | 0.96× | 1.06× | 1.09× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

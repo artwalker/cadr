@@ -8464,6 +8464,51 @@
    "piUs": 6.399,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 799,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.selector_hint",
+   "branch": "cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 799",
+   "ratio": 15.49,
+   "cadrUs": 10.635,
+   "piUs": 0.687,
+   "ceiling": 20.0,
+   "rc": 2
+  },
+  {
+   "pair": 800,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.override_suffix",
+   "branch": "cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 800",
+   "ratio": 9.075,
+   "cadrUs": 35.22,
+   "piUs": 3.881,
+   "ceiling": 25.0,
+   "rc": 2
+  },
+  {
+   "pair": 801,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.checkbox",
+   "branch": "cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 801",
+   "ratio": 10.47,
+   "cadrUs": 36.479,
+   "piUs": 3.484,
+   "ceiling": 25.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

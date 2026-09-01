@@ -219,6 +219,9 @@
 ;;;; 790. package_manager config-package-setting-records vs leftover npm merge
 ;;;; 791. package_manager config-selector-rebuild vs leftover flat rebuild
 ;;;; 792. package_manager config-selector-switch-scope vs leftover scope flip
+;;;; 799. package_manager config-selector-hint vs leftover keyHint wrap
+;;;; 800. package_manager config-selector-override-suffix vs leftover getItemSuffix
+;;;; 801. package_manager config-selector-checkbox vs leftover renderCheckbox
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -670,6 +673,9 @@
     ("package_manager.git_output" . 50)
     ("package_manager.remote_ref" . 50)
     ("package_manager.update_record_result" . 50)
+    ("package_manager.selector_hint" . 50)
+    ("package_manager.override_suffix" . 50)
+    ("package_manager.checkbox" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -6165,6 +6171,28 @@
        inherited))
     state))
 
+(defun leftover-config-selector-project-write-state
+    (item override &rest args)
+  (let ((state
+          (apply #'leftover-config-selector-override-state
+                 item override args)))
+    (setf (cadr-cli::config-selector-state-write-scope state)
+          :project)
+    state))
+
+(defun leftover-config-visible-has (text needle)
+  (package-manager-leftover-truth
+   (and (search needle text) t)))
+
+(defun leftover-config-selector-hint (key description)
+  (cadr-cli::config-selector-hint key description))
+
+(defun leftover-config-selector-override-suffix (state item)
+  (cadr-cli::config-selector-override-suffix state item))
+
+(defun leftover-config-selector-checkbox (state item)
+  (cadr-cli::config-selector-checkbox state item))
+
 (defun leftover-config-selector-project-extensions-state (patterns)
   (leftover-config-selector-state
    0
@@ -7356,6 +7384,81 @@
       "/tmp/pkg")))
    5))
 
+(defun run-package-manager-selector-hint ()
+  ;; Leftover on config-selector.lisp: dim key + muted description.
+  ;; Not header-lines / render-entry TUI.
+  (let ((tab (leftover-config-selector-hint "tab" "switch mode"))
+        (space (leftover-config-selector-hint "space" "toggle"))
+        (esc (leftover-config-selector-hint "esc" "close"))
+        (empty (leftover-config-selector-hint "" "")))
+    (list
+     (leftover-config-visible-has tab "tab")
+     (leftover-config-visible-has space " toggle")
+     (leftover-config-visible-has esc "esc")
+     (leftover-config-visible-has empty " ")
+     5)))
+
+(defun run-package-manager-override-suffix ()
+  ;; Leftover on config-selector.lisp: project load/unload/inherit suffix.
+  ;; Not set-package-state writers, not full render.
+  (let* ((item (leftover-config-selector-hello-item))
+         (user
+           (leftover-config-resource-item-labeled
+            :top-level :user "auto"
+            :path "/tmp/proj/.cadr/hello.lisp"
+            :base-directory "/tmp/proj/.cadr/"))
+         (load
+           (leftover-config-selector-override-suffix
+            (leftover-config-selector-project-write-state item :load)
+            item))
+         (unload
+           (leftover-config-selector-override-suffix
+            (leftover-config-selector-project-write-state item :unload)
+            item))
+         (global
+           (leftover-config-selector-override-suffix
+            (leftover-config-selector-override-state item :load)
+            item))
+         (inherited
+           (leftover-config-selector-override-suffix
+            (leftover-config-selector-project-write-state user nil)
+            user)))
+    (list
+     (leftover-config-visible-has load "  project load")
+     (leftover-config-visible-has unload "  project unload")
+     (package-manager-leftover-truth (string= global ""))
+     (leftover-config-visible-has inherited "  inherited global")
+     5)))
+
+(defun run-package-manager-checkbox ()
+  ;; Leftover on config-selector.lisp: [x]/[ ]/[+]/[-]. Not render-entry.
+  (let* ((on-item (leftover-config-selector-hello-item))
+         (off-item (leftover-config-selector-hello-item))
+         (plus-item (leftover-config-selector-hello-item))
+         (minus-item (leftover-config-selector-hello-item))
+         (on-state (leftover-config-selector-override-state on-item nil))
+         (off-state
+           (leftover-config-selector-override-state
+            off-item nil :enabled-p nil))
+         (plus
+           (leftover-config-selector-checkbox
+            (leftover-config-selector-project-write-state plus-item :load)
+            plus-item))
+         (minus
+           (leftover-config-selector-checkbox
+            (leftover-config-selector-project-write-state minus-item :unload)
+            minus-item)))
+    (list
+     (leftover-config-visible-has
+      (leftover-config-selector-checkbox on-state on-item)
+      "[x]")
+     (leftover-config-visible-has
+      (leftover-config-selector-checkbox off-state off-item)
+      "[ ]")
+     (leftover-config-visible-has plus "[+]")
+     (leftover-config-visible-has minus "[-]")
+     5)))
+
 (defun run-package-manager-update-record-result ()
   ;; Leftover on update-checks.lisp: host/path when oids differ. Not git spawn.
   (let* ((oid-a "0123456789abcdef0123456789abcdef01234567")
@@ -7495,7 +7598,13 @@
            (remote-ref
              (run-package-manager-remote-ref))
            (update-record-result
-             (run-package-manager-update-record-result)))
+             (run-package-manager-update-record-result))
+           (selector-hint
+             (run-package-manager-selector-hint))
+           (override-suffix
+             (run-package-manager-override-suffix))
+           (checkbox
+             (run-package-manager-checkbox)))
       (json-object
        "observed"
        (json-object
@@ -7797,7 +7906,22 @@
         "prr_same" (nth 1 update-record-result)
         "prr_err" (nth 2 update-record-result)
         "prr_bad" (nth 3 update-record-result)
-        "prr_n" (nth 4 update-record-result))
+        "prr_n" (nth 4 update-record-result)
+        "csh_tab" (nth 0 selector-hint)
+        "csh_space" (nth 1 selector-hint)
+        "csh_esc" (nth 2 selector-hint)
+        "csh_empty" (nth 3 selector-hint)
+        "csh_n" (nth 4 selector-hint)
+        "cos_load" (nth 0 override-suffix)
+        "cos_unload" (nth 1 override-suffix)
+        "cos_global" (nth 2 override-suffix)
+        "cos_inh" (nth 3 override-suffix)
+        "cos_n" (nth 4 override-suffix)
+        "ccb_on" (nth 0 checkbox)
+        "ccb_off" (nth 1 checkbox)
+        "ccb_plus" (nth 2 checkbox)
+        "ccb_minus" (nth 3 checkbox)
+        "ccb_n" (nth 4 checkbox))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -8098,7 +8222,22 @@
        (collect "package_manager.update_record_result"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-update-record-result))))))))
+                    (run-package-manager-update-record-result))))
+       "selector_hint"
+       (collect "package_manager.selector_hint"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-selector-hint))))
+       "override_suffix"
+       (collect "package_manager.override_suffix"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-override-suffix))))
+       "checkbox"
+       (collect "package_manager.checkbox"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-checkbox))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -35969,6 +36108,12 @@
       "src/cadr-cli/packages/update-checks.lisp package-update-remote-ref"
       "package_manager.update_record_result"
       "src/cadr-cli/packages/update-checks.lisp package-update-record-result"
+      "package_manager.selector_hint"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-hint"
+      "package_manager.override_suffix"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-override-suffix"
+      "package_manager.checkbox"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-checkbox"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
