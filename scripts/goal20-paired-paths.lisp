@@ -64,6 +64,12 @@
 ;;;; 403. provider_registry_defs api-key-auth-strategy-entry vs Bedrock/Vertex structured table
 ;;;; 404. provider_registry_defs built-in-provider-options vs Azure/Cloudflare/Google env keys
 ;;;; 405. provider_registry_defs remove-runtime-only-options vs omit apiKey/headers/environment/authType
+;;;; 751. provider_registry_defs make-built-in-runtime-provider vs builtinProviders openai
+;;;; 752. provider_registry_defs make-built-in-runtime-provider github-copilot vs githubCopilotProvider
+;;;; 753. provider_registry_defs make-built-in-models-runtime vs builtinProviders map
+;;;; 754. provider_registry_defs make-protocol-provider openai-responses vs openAIResponsesApi
+;;;; 755. provider_registry_defs make-protocol-provider anthropic-messages vs anthropicMessagesApi
+;;;; 756. provider_registry_defs instantiate-provider openai vs openaiProvider
 ;;;; 748. provider_registry_defs built-in-api-key-login-function vs bedrock/vertex ApiKeyAuth.login
 ;;;; 749. provider_registry_defs built-in-api-key-auth vs envApiKeyAuth.resolve (in-memory env)
 ;;;; 750. provider_registry_defs built-in-model-filter-function vs github-copilot filterModels
@@ -1148,6 +1154,12 @@
     ("provider_registry_defs.api_key_login_function" . 50)
     ("provider_registry_defs.api_key_auth" . 50)
     ("provider_registry_defs.model_filter_function" . 50)
+    ("provider_registry_defs.runtime_provider" . 50)
+    ("provider_registry_defs.runtime_provider_copilot" . 50)
+    ("provider_registry_defs.models_runtime" . 5)
+    ("provider_registry_defs.protocol_provider" . 50)
+    ("provider_registry_defs.protocol_provider_anthropic" . 50)
+    ("provider_registry_defs.instantiate_provider" . 50)
     ("core_rest.cancellation_abort" . 50)
     ("core_rest.redacted_secrets" . 50)
     ("core_rest.threads_cleanup" . 5)
@@ -31980,6 +31992,159 @@
          0)
      5)))
 
+(defun leftover-runtime-make-provider (id)
+  (cadr-ai::make-built-in-runtime-provider
+   (leftover-runtime-oauth-definition id)))
+
+(defun run-provider-runtime-provider ()
+  ;; Leftover sibling: construct openai runtime-provider. Not stream-chat.
+  (let ((openai (leftover-runtime-make-provider :openai)))
+    (list
+     (if (eq (cadr-ai:runtime-provider-id openai) :openai)
+         1
+         0)
+     (if (cadr-ai::runtime-provider-api-key-auth-p openai)
+         1
+         0)
+     (if (cadr-ai::runtime-provider-oauth-auth-p openai)
+         0
+         1)
+     (if (plusp (length (cadr-ai:runtime-provider-models openai)))
+         1
+         0)
+     5)))
+
+(defun run-provider-runtime-provider-copilot ()
+  ;; Leftover sibling: github-copilot runtime-provider flags. Not login I/O.
+  (let ((copilot (leftover-runtime-make-provider :github-copilot)))
+    (list
+     (if (cadr-ai::runtime-provider-oauth-auth-p copilot)
+         1
+         0)
+     (if (cadr-ai:runtime-provider-oauth-login-function copilot)
+         1
+         0)
+     (if (cadr-ai::runtime-provider-filter-function copilot)
+         1
+         0)
+     (if (plusp (length (cadr-ai:runtime-provider-models copilot)))
+         1
+         0)
+     5)))
+
+(defun run-provider-models-runtime ()
+  ;; Leftover sibling: install every built-in runtime-provider. Not stream.
+  (let ((runtime
+          (cadr-ai::make-built-in-models-runtime
+           :environment '(("OPENAI_API_KEY" . "sk-fixture")))))
+    (list
+     (if (cadr-ai::models-runtime-provider runtime :openai)
+         1
+         0)
+     (if (cadr-ai::models-runtime-provider runtime :anthropic)
+         1
+         0)
+     (if (cadr-ai::models-runtime-provider runtime :no-such)
+         0
+         1)
+     (if (equal
+          (cdr
+           (assoc "OPENAI_API_KEY"
+                  (cadr-ai::models-runtime-environment runtime)
+                  :test #'string=))
+          "sk-fixture")
+         1
+         0)
+     5)))
+
+(defun leftover-registry-make-protocol-provider
+    (protocol id &key api-key oauth-access-token)
+  (cadr-ai::make-protocol-provider
+   protocol
+   (cadr-ai::find-provider-definition id)
+   api-key
+   oauth-access-token
+   nil
+   nil))
+
+(defun leftover-registry-unsupported-protocol-p ()
+  (handler-case
+      (progn
+        (leftover-registry-make-protocol-provider
+         :no-such-protocol :openai :api-key "sk-fixture")
+        0)
+    (cadr-ai:configuration-error () 1)
+    (error () 0)))
+
+(defun run-provider-protocol-provider ()
+  ;; Leftover sibling: make-protocol-provider openai-responses. Not stream.
+  (let ((openai
+          (leftover-registry-make-protocol-provider
+           :openai-responses :openai :api-key "sk-fixture"))
+        (anthropic
+          (leftover-registry-make-protocol-provider
+           :anthropic-messages :anthropic :api-key "sk-anth")))
+    (list
+     (if (typep openai 'cadr-ai:openai-provider)
+         1
+         0)
+     (if (typep openai 'cadr-ai:openai-provider)
+         1
+         0)
+     (leftover-registry-unsupported-protocol-p)
+     (if (and openai
+              anthropic
+              (not (eq (class-of openai) (class-of anthropic))))
+         1
+         0)
+     5)))
+
+(defun run-provider-protocol-provider-anthropic ()
+  ;; Leftover sibling: anthropic-messages native oauth token. Not login I/O.
+  (let ((anthropic
+          (leftover-registry-make-protocol-provider
+           :anthropic-messages :anthropic
+           :api-key "sk-anth"
+           :oauth-access-token "tok"))
+        (openai
+          (leftover-registry-make-protocol-provider
+           :openai-responses :openai :api-key "sk-fixture")))
+    (list
+     (if (eq (cadr-ai::provider-id anthropic) :anthropic)
+         1
+         0)
+     (if (string= (cadr-ai::provider-oauth-access-token anthropic) "tok")
+         1
+         0)
+     (if (typep anthropic 'cadr-ai:anthropic-provider)
+         1
+         0)
+     (if (and openai
+              anthropic
+              (not (eq openai anthropic)))
+         1
+         0)
+     5)))
+
+(defun run-provider-instantiate-provider ()
+  ;; Leftover sibling: instantiate-provider openai + default model. Not stream.
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider :openai :api-key "sk-fixture")
+    (list
+     (if (eq (cadr-ai:model-provider model) :openai)
+         1
+         0)
+     (if (eq (cadr-ai:model-api model) :openai-responses)
+         1
+         0)
+     (if (plusp (length (cadr-ai:model-id model)))
+         1
+         0)
+     (if (typep provider 'cadr-ai:openai-provider)
+         1
+         0)
+     5)))
+
 (defun run-provider-oauth-login-function ()
   ;; Leftover sibling: strategy → login function or nil. Not login I/O.
   (let ((copilot
@@ -32071,7 +32236,13 @@
          (oauth-to-auth (run-provider-oauth-to-auth))
          (api-key-login-function (run-provider-api-key-login-function))
          (api-key-auth (run-provider-api-key-auth))
-         (model-filter-function (run-provider-model-filter-function)))
+         (model-filter-function (run-provider-model-filter-function))
+         (runtime-provider (run-provider-runtime-provider))
+         (runtime-provider-copilot (run-provider-runtime-provider-copilot))
+         (models-runtime (run-provider-models-runtime))
+         (protocol-provider (run-provider-protocol-provider))
+         (protocol-provider-anthropic (run-provider-protocol-provider-anthropic))
+         (instantiate-provider (run-provider-instantiate-provider)))
     (json-object
      "observed"
      (json-object
@@ -32138,7 +32309,37 @@
       "mff_openai" (nth 1 model-filter-function)
       "mff_keep" (nth 2 model-filter-function)
       "mff_empty" (nth 3 model-filter-function)
-      "mff_n" (nth 4 model-filter-function))
+      "mff_n" (nth 4 model-filter-function)
+      "rp_id" (nth 0 runtime-provider)
+      "rp_key" (nth 1 runtime-provider)
+      "rp_no_oauth" (nth 2 runtime-provider)
+      "rp_models" (nth 3 runtime-provider)
+      "rp_n" (nth 4 runtime-provider)
+      "rpc_oauth" (nth 0 runtime-provider-copilot)
+      "rpc_login" (nth 1 runtime-provider-copilot)
+      "rpc_filter" (nth 2 runtime-provider-copilot)
+      "rpc_models" (nth 3 runtime-provider-copilot)
+      "rpc_n" (nth 4 runtime-provider-copilot)
+      "mr_oa" (nth 0 models-runtime)
+      "mr_anth" (nth 1 models-runtime)
+      "mr_miss" (nth 2 models-runtime)
+      "mr_env" (nth 3 models-runtime)
+      "mr_n" (nth 4 models-runtime)
+      "pp_stream" (nth 0 protocol-provider)
+      "pp_simple" (nth 1 protocol-provider)
+      "pp_miss" (nth 2 protocol-provider)
+      "pp_diff" (nth 3 protocol-provider)
+      "pp_n" (nth 4 protocol-provider)
+      "ppa_id" (nth 0 protocol-provider-anthropic)
+      "ppa_oauth" (nth 1 protocol-provider-anthropic)
+      "ppa_type" (nth 2 protocol-provider-anthropic)
+      "ppa_diff" (nth 3 protocol-provider-anthropic)
+      "ppa_n" (nth 4 protocol-provider-anthropic)
+      "ip_id" (nth 0 instantiate-provider)
+      "ip_api" (nth 1 instantiate-provider)
+      "ip_model" (nth 2 instantiate-provider)
+      "ip_type" (nth 3 instantiate-provider)
+      "ip_n" (nth 4 instantiate-provider))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -32208,7 +32409,37 @@
      (collect "provider_registry_defs.model_filter_function"
               (lambda ()
                 (lambda ()
-                  (run-provider-model-filter-function)))))))
+                  (run-provider-model-filter-function))))
+     "runtime_provider"
+     (collect "provider_registry_defs.runtime_provider"
+              (lambda ()
+                (lambda ()
+                  (run-provider-runtime-provider))))
+     "runtime_provider_copilot"
+     (collect "provider_registry_defs.runtime_provider_copilot"
+              (lambda ()
+                (lambda ()
+                  (run-provider-runtime-provider-copilot))))
+     "models_runtime"
+     (collect "provider_registry_defs.models_runtime"
+              (lambda ()
+                (lambda ()
+                  (run-provider-models-runtime))))
+     "protocol_provider"
+     (collect "provider_registry_defs.protocol_provider"
+              (lambda ()
+                (lambda ()
+                  (run-provider-protocol-provider))))
+     "protocol_provider_anthropic"
+     (collect "provider_registry_defs.protocol_provider_anthropic"
+              (lambda ()
+                (lambda ()
+                  (run-provider-protocol-provider-anthropic))))
+     "instantiate_provider"
+     (collect "provider_registry_defs.instantiate_provider"
+              (lambda ()
+                (lambda ()
+                  (run-provider-instantiate-provider)))))))
 
 (defun skill-prompt-sdk-prompt-file ()
   (ensure-directories-exist *scratch-directory*)
@@ -34633,6 +34864,18 @@
       "src/cadr-ai/providers/runtime-projection.lisp built-in-api-key-auth"
       "provider_registry_defs.model_filter_function"
       "src/cadr-ai/providers/runtime-projection.lisp built-in-model-filter-function"
+      "provider_registry_defs.runtime_provider"
+      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-runtime-provider"
+      "provider_registry_defs.runtime_provider_copilot"
+      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-runtime-provider"
+      "provider_registry_defs.models_runtime"
+      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-models-runtime"
+      "provider_registry_defs.protocol_provider"
+      "src/cadr-ai/providers/registry.lisp make-protocol-provider"
+      "provider_registry_defs.protocol_provider_anthropic"
+      "src/cadr-ai/providers/registry.lisp make-protocol-provider"
+      "provider_registry_defs.instantiate_provider"
+      "src/cadr-ai/providers/registry.lisp instantiate-provider"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "skill_prompt_load.resolve_prompt"
