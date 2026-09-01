@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T10:56:43Z) on `Friend-MachineD`, git `a2fe765ab672`, ratio_gate=`enforced-only:skill_prompt_load.sdk_get_skills,skill_prompt_load.sdk_get_prompts,skill_prompt_load.sdk_get_themes`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T11:09:42Z) on `Friend-MachineD`, git `d6e0870f60a2`, ratio_gate=`enforced-only:settings_load.sdk_default_provider,settings_load.sdk_default_model,settings_load.sdk_retry_settings`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0c6eabba`, ratio_gate=`enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T10:56:43Z) on `Friend-MachineD`, git `a2fe765ab672`, ratio_gate=`enforced-only:skill_prompt_load.sdk_get_skills,skill_prompt_load.sdk_get_prompts,skill_prompt_load.sdk_get_themes`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -732,6 +732,9 @@ Previous: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0
 | `settings_load.provider_default_model` | 1.1 | 2.4 | 0.46× | 0.46× | 8.00× |
 | `settings_load.oauth_refresh_function` | 0.4 | 2.6 | 0.14× | 0.14× | 8.00× |
 | `settings_load.oauth_login_function` | 2.8 | 2.4 | 1.14× | 1.14× | 8.00× |
+| `settings_load.sdk_default_provider` | 35.0 | 15.0 | 2.34× | — | 8.00× |
+| `settings_load.sdk_default_model` | 36.3 | 7.2 | 5.02× | — | 8.00× |
+| `settings_load.sdk_retry_settings` | 19.3 | 10.6 | 1.82× | — | 8.00× |
 | `resource_loader.reload` | 1,252.4 | 580.1 | 2.16× | 2.16× | 1.50× |
 | `resource_loader.dedupe_by_name` | 165.3 | 221.9 | 0.74× | 0.74× | 8.00× |
 | `resource_loader.context_from_dir` | 112.9 | 26.4 | 4.28× | 4.28× | 8.00× |
@@ -911,9 +914,9 @@ Previous: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0
 | `skill_prompt_load.sdk_prompt_input` | — | — | — | — | — |
 | `skill_prompt_load.sdk_list_override` | — | — | — | — | — |
 | `skill_prompt_load.sdk_context_files` | — | — | — | — | — |
-| `skill_prompt_load.sdk_get_skills` | 0.2 | 0.1 | 1.59× | — | 8.00× |
-| `skill_prompt_load.sdk_get_prompts` | 0.2 | 0.1 | 1.37× | — | 8.00× |
-| `skill_prompt_load.sdk_get_themes` | 0.3 | 0.1 | 2.56× | — | 8.00× |
+| `skill_prompt_load.sdk_get_skills` | 0.2 | 0.1 | 1.59× | 1.59× | 8.00× |
+| `skill_prompt_load.sdk_get_prompts` | 0.2 | 0.1 | 1.37× | 1.37× | 8.00× |
+| `skill_prompt_load.sdk_get_themes` | 0.3 | 0.1 | 2.56× | 2.56× | 8.00× |
 | `cli_support.watch_retry_delay` | 0.2 | 0.1 | 1.34× | 1.34× | 8.00× |
 | `cli_support.close_watcher` | 0.2 | 0.2 | 1.05× | 1.05× | 8.00× |
 | `cli_support.watch_signature` | 23.8 | 6.8 | 3.48× | 3.48× | 8.00× |
@@ -2220,6 +2223,7 @@ Previous: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0
 | 2026-09-01T10:31:28Z | paired-paths | `473e3bb84933` | no | enforced-only:provider_registry_defs.runtime_provider,provider_registry_defs.runtime_provider_copilot,provider_registry_defs.models_runtime,provider_registry_defs.protocol_provider,provider_registry_defs.protocol_provider_anthropic,provider_registry_defs.instantiate_provider | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:47:21Z | paired-paths | `cc0d0c6eabba` | no | enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:56:43Z | paired-paths | `a2fe765ab672` | no | enforced-only:skill_prompt_load.sdk_get_skills,skill_prompt_load.sdk_get_prompts,skill_prompt_load.sdk_get_themes | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T11:09:42Z | paired-paths | `d6e0870f60a2` | no | enforced-only:settings_load.sdk_default_provider,settings_load.sdk_default_model,settings_load.sdk_retry_settings | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

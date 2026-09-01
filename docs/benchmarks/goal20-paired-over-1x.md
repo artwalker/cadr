@@ -554,6 +554,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.environment_value` | 0.299 | 0.274 | 1.090× | 8.00× | measure-only leftover 739; `environment-value` vs env lookup | invent pause；地板优化另刀 |
 | `settings_load.provider_settings` | 1.333 | 0.661 | 2.018× | 8.00× | measure-only leftover 741; `provider-settings` vs provider settings object | invent pause；地板优化另刀 |
 | `settings_load.oauth_login_function` | 2.562 | 2.423 | 1.057× | 8.00× | measure-only leftover 744; `oauth-login-function` vs oauth login function | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_provider` | 34.963 | 14.971 | 2.335× | 8.00× | leftover collect restore pair 763; `sdk-settings-default-provider` vs SettingsManager.getDefaultProvider | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_model` | 36.317 | 7.229 | 5.024× | 8.00× | leftover collect restore pair 764; `sdk-settings-default-model` vs getDefaultModel | invent pause；地板优化另刀 |
+| `settings_load.sdk_retry_settings` | 19.285 | 10.602 | 1.819× | 8.00× | leftover collect restore pair 765; `sdk-settings-retry-settings` vs getRetrySettings | invent pause；地板优化另刀 |
 | `provider_registry_defs.oauth_to_auth` | 0.428 | 0.267 | 1.601× | 8.00× | measure-only leftover 747; `built-in-oauth-to-auth` vs anthropic/kimi toAuth | invent pause；地板优化另刀 |
 | `provider_registry_defs.models_runtime` | 412.117 | 258.229 | 1.596× | 8.00× | leftover collect restore pair 753; `make-built-in-models-runtime` vs builtinProviders Map | invent pause；地板优化另刀 |
 | `provider_registry_defs.protocol_provider` | 1.756 | 1.358 | 1.293× | 8.00× | leftover collect restore pair 754; `make-protocol-provider` openai-responses vs openAIResponsesApi | invent pause；地板优化另刀 |
