@@ -5770,6 +5770,85 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 751 — `provider_registry_defs` (runtime_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_provider` | `make-built-in-runtime-provider` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` openai (`packages/ai/src/providers/all.ts`) |
+
+Leftover of the `provider_registry_defs` hole. Timed work is constructing the
+openai runtime-provider — not `stream-chat`. Observed `rp_id` / `rp_key` / `rp_no_oauth` / `rp_models` / `rp_n` are exact. Collect restore n=5 freeze **0.037×** (10.134 /
+276.451 µs) on host `Friend-MachineD`, gitHead `473e3bb84`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 752 — `provider_registry_defs` (runtime_provider_copilot)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_provider_copilot` | `make-built-in-runtime-provider` github-copilot (`src/cadr-ai/providers/runtime-projection.lisp`) | `githubCopilotProvider` (`packages/ai/src/providers/github-copilot.ts`) |
+
+Leftover sibling of Pair 751. Timed work is oauth/login/filter/models flags —
+not login I/O. Observed `rpc_oauth` / `rpc_login` / `rpc_filter` / `rpc_models` / `rpc_n` are exact. Collect restore n=5 freeze **0.546×** (8.428 /
+15.424 µs) on host `Friend-MachineD`, gitHead `473e3bb84`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 753 — `provider_registry_defs` (models_runtime)
+
+| metric | cadr | pi |
+|---|---|---|
+| `models_runtime` | `make-built-in-models-runtime` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` installed into a Map (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling of Pairs 751–752. Timed work is installing every built-in
+runtime-provider — not `stream-chat`. Observed `mr_oa` / `mr_anth` / `mr_miss` / `mr_env` / `mr_n` are exact. Collect restore n=5 freeze **1.596×** (412.117 /
+258.229 µs) on host `Friend-MachineD`, gitHead `473e3bb84`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 754 — `provider_registry_defs` (protocol_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `protocol_provider` | `make-protocol-provider` openai-responses (`src/cadr-ai/providers/registry.lisp`) | `openAIResponsesApi` (`packages/ai/src/api/openai-responses.lazy.ts`) |
+
+Leftover that closes the `registry.lisp` needs-pair hole. Timed work is
+protocol adapter construct — not `stream-chat`. Observed `pp_stream` / `pp_simple` / `pp_miss` / `pp_diff` / `pp_n` are exact. Collect restore n=5 freeze **1.293×** (1.756 /
+1.358 µs) on host `Friend-MachineD`, gitHead `473e3bb84`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 755 — `provider_registry_defs` (protocol_provider_anthropic)
+
+| metric | cadr | pi |
+|---|---|---|
+| `protocol_provider_anthropic` | `make-protocol-provider` anthropic-messages (`src/cadr-ai/providers/registry.lisp`) | `anthropicMessagesApi` (`packages/ai/src/api/anthropic-messages.lazy.ts`) |
+
+Leftover sibling of Pair 754. Timed work is native oauth token / type flags —
+not login I/O. Observed `ppa_id` / `ppa_oauth` / `ppa_type` / `ppa_diff` / `ppa_n` are exact. Collect restore n=5 freeze **0.113×** (0.685 /
+6.046 µs) on host `Friend-MachineD`, gitHead `473e3bb84`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+### Pair 756 — `provider_registry_defs` (instantiate_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `instantiate_provider` | `instantiate-provider` openai (`src/cadr-ai/providers/registry.lisp`) | `openaiProvider` + `getModels` (`packages/ai/src/providers/openai.ts`) |
+
+Leftover sibling of Pairs 754–755. Timed work is protocol adapter + default
+model metadata — not `stream-chat`. Observed `ip_id` / `ip_api` / `ip_model` / `ip_type` / `ip_n` are exact. Collect restore n=5 freeze **0.187×** (1.343 /
+7.186 µs) on host `Friend-MachineD`, gitHead `473e3bb84`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1× (over-1× table not updated). Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -10063,14 +10142,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 239 | 103,007 | 79.6% | `no worse than baseline` is falsifiable |
+| `paired` | 240 | 103,164 | 79.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 5 | 1,346 | 1.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 4 | 1,189 | 0.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.6% of lines (239 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.5% of lines.
+- **Falsifiable vs baseline:** 79.7% of lines (240 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -10170,7 +10249,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/openai-completions.lisp` | 883 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai.lisp` | 828 | `provider_openai_responses.stream_roundtrip` |
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | `provider_pi_messages.stream_roundtrip` |
-| `src/cadr-ai/providers/runtime-projection.lisp` | 297 | `provider_registry_defs.api_key_auth`, `provider_registry_defs.api_key_login_function`, `provider_registry_defs.api_key_strategy`, `provider_registry_defs.merge_environment`, `provider_registry_defs.model_filter_function`, `provider_registry_defs.oauth_login_function`, `provider_registry_defs.oauth_refresh_function`, `provider_registry_defs.oauth_to_auth`, `provider_registry_defs.provider_options`, `provider_registry_defs.runtime_models`, `provider_registry_defs.strip_runtime_options`, `provider_registry_defs.structured_api_key_login` |
+| `src/cadr-ai/providers/registry.lisp` | 157 | `provider_registry_defs.protocol_provider`, `provider_registry_defs.protocol_provider_anthropic`, `provider_registry_defs.instantiate_provider` |
+| `src/cadr-ai/providers/runtime-projection.lisp` | 297 | `provider_registry_defs.api_key_auth`, `provider_registry_defs.api_key_login_function`, `provider_registry_defs.api_key_strategy`, `provider_registry_defs.merge_environment`, `provider_registry_defs.model_filter_function`, `provider_registry_defs.oauth_login_function`, `provider_registry_defs.oauth_refresh_function`, `provider_registry_defs.oauth_to_auth`, `provider_registry_defs.provider_options`, `provider_registry_defs.runtime_models`, `provider_registry_defs.strip_runtime_options`, `provider_registry_defs.structured_api_key_login`, `provider_registry_defs.runtime_provider`, `provider_registry_defs.runtime_provider_copilot`, `provider_registry_defs.models_runtime` |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 609 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
@@ -10390,7 +10470,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_bootstrap_sessions` | 2 | 624 |
 | `skill_prompt_load` | 1 | 370 |
 | `settings_load` | 1 | 195 |
-| `provider_registry_defs` | 1 | 157 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths
