@@ -4211,6 +4211,25 @@ class TestPairedPathRecord(unittest.TestCase):
             any("parsed_provider" in item for item in summary)
         )
 
+    def test_check_parameters_skips_observed_only_metrics_names(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        cadr = fake_cadr(quick=False)
+        pi = fake_cadr(quick=False)
+        for report in (cadr, pi):
+            report["parameters"]["repetitions"] = {
+                key: 1 for key in RECORD.METRIC_KEYS
+            }
+            report["parameters"]["samples"] = 1
+            report["parameters"]["warmups"] = 0
+            report["parameters"]["journal_append_entry_count"] = 0
+            for group, named in report["metrics"].items():
+                for name, slot in named.items():
+                    slot["samples_us"] = [slot["median_us"]]
+                    slot["repetitions"] = 1
+        failures: list[str] = []
+        paired.check_parameters(cadr, pi, failures)
+        self.assertEqual(failures, [])
+
     def test_only_enforce_fails_when_named_slot_is_not_timed(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         cadr = fake_cadr(quick=False)

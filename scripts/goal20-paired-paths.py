@@ -5961,7 +5961,9 @@ def check_parameters(cadr: dict, pi: dict, failures: list[str]) -> None:
         samples = report["parameters"]["samples"]
         for group, names in METRICS.items():
             for name in names:
-                metric = report["metrics"][group][name]
+                metric = timed_metric_slot(report, group, name)
+                if metric is None:
+                    continue
                 check(
                     len(metric["samples_us"]) == samples,
                     f"{label} {group}.{name} does not carry {samples} samples",
