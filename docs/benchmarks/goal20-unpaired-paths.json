@@ -522,6 +522,7 @@
     "output_accumulator.snapshot",
     "package_manager.autoload_disabled",
     "package_manager.candidate_record",
+    "package_manager.checkbox",
     "package_manager.config_fit_line",
     "package_manager.config_glob_regex",
     "package_manager.delta_resource_state",
@@ -538,6 +539,7 @@
     "package_manager.item_source_base",
     "package_manager.next_project_state",
     "package_manager.normalize_pattern",
+    "package_manager.override_suffix",
     "package_manager.package_entry_filter",
     "package_manager.package_entry_has_filters",
     "package_manager.package_entry_index",
@@ -567,6 +569,7 @@
     "package_manager.resource_specification",
     "package_manager.scope_base",
     "package_manager.selected_entry",
+    "package_manager.selector_hint",
     "package_manager.selector_items",
     "package_manager.selector_move",
     "package_manager.selector_rebuild",
@@ -2494,7 +2497,10 @@
         "package_manager.package_setting_record",
         "package_manager.package_setting_records",
         "package_manager.selector_rebuild",
-        "package_manager.switch_scope"
+        "package_manager.switch_scope",
+        "package_manager.selector_hint",
+        "package_manager.override_suffix",
+        "package_manager.checkbox"
       ]
     },
     {
