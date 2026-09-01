@@ -624,6 +624,9 @@
     "package_manager.update_argv",
     "package_manager.update_env",
     "package_manager.git_object_id",
+    "package_manager.records_project_first",
+    "package_manager.candidate_record",
+    "package_manager.update_offline",
     "cli_print_rpc.dialog_request",
     "cli_print_rpc.dialog_result",
     "cli_print_rpc.dialog_expired",
@@ -2455,7 +2458,10 @@
       "metrics": [
         "package_manager.update_argv",
         "package_manager.update_env",
-        "package_manager.git_object_id"
+        "package_manager.git_object_id",
+        "package_manager.records_project_first",
+        "package_manager.candidate_record",
+        "package_manager.update_offline"
       ]
     },
     {

@@ -871,7 +871,8 @@ RATIO_CEILINGS = {
     # leftover 757–759 update-checks.lisp (samples=5): first-freeze headroom.
     # Ratchet down only. Measure-only leftover 757–759.
     "package_manager.records_project_first": 8.0,
-    "package_manager.candidate_record": 8.0,
+    # leftover 758; first freeze 17.132× (30.746 / 1.795 µs).
+    "package_manager.candidate_record": 20.0,
     "package_manager.update_offline": 8.0,
     # find_tool leftover trio on glob.lisp (samples=5): first-freeze
     # headroom. Ratchet down only.

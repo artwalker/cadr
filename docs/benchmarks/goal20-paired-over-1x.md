@@ -610,4 +610,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.read_cli_config` | 260.6 | 219.3 | 1.19× | 8.00× | measure-only leftover 760; `read-cli-config` vs JSON.parse settings object | invent pause；地板优化另刀 |
 | `settings_load.provider_config_secrets` | 61.3 | 1.9 | 33.09× | 50.00× | measure-only leftover 761; `provider-config-secrets` vs apiKey/oauth/env collect; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `settings_load.resolve_provider_config` | 208.7 | 202.5 | 1.03× | 8.00× | measure-only leftover 762; `resolve-provider-config` vs openaiProvider construct | invent pause；地板优化另刀 |
+| `package_manager.records_project_first` | 0.6 | 0.5 | 1.06× | 8.00× | measure-only leftover 757; `package-update-records-project-first` vs project-then-user collect | invent pause；地板优化另刀 |
+| `package_manager.candidate_record` | 7.8 | 2.5 | 3.05× | 20.00× | measure-only leftover 758; `package-update-candidate-record-p` vs git/unpinned/exists; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.update_offline` | 0.4 | 0.3 | 1.57× | 8.00× | measure-only leftover 759; `check-for-available-package-updates` offline vs isOfflineModeEnabled | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

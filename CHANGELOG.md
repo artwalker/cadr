@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD remesure + ledger book leftover 757–759
+  (`package_manager.records_project_first` **1.059×**,
+  `candidate_record` **3.048×**, `update_offline` **1.568×**). Scoped gate
+  PASS; history overlay booked; inventory `pairedMetrics` +3. G.17 stays missing.
 - Goal 20: Friend-MachineD remesure + ledger book leftover 760–762
   (`settings_load.read_cli_config` **1.188×**, `provider_config_secrets`
   **33.085×**, `resolve_provider_config` **1.031×**). Scoped gate PASS;
@@ -16,18 +20,26 @@ tag/Release step.
 - Goal 20 leftover: pair `package_manager.records_project_first`
   (`package-update-records-project-first` vs project-then-user collect).
   Observed `upf_proj` / `upf_user` / `upf_tail` / `upf_len` / `upf_n` exact.
-  Measure-only leftover (Pair 757). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **0.614×** (0.433 / 0.706 µs) on host `cursor`, ceiling 8.0;
+  remesure Friend-MachineD **1.059×** (0.576 / 0.544 µs). Measure-only
+  leftover (Pair 757). Over-1× booked on Friend-MachineD. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.candidate_record`
   (`package-update-candidate-record-p` vs git/unpinned/exists). Observed
-  `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` exact.
-  Measure-only leftover (Pair 758). Freeze pending. `nextPairNum` left
+  `upc_git` / `upc_pin` / `upc_npm` / `upc_miss` / `upc_n` exact. n=5
+  **17.132×** (30.746 / 1.795 µs) on host `cursor`, ceiling 20.0
+  first-freeze headroom; remesure Friend-MachineD **3.048×** (7.755 / 2.544 µs).
+  Measure-only leftover (Pair 758). Over-1× booked. `nextPairNum` left
   unchanged.
 - Goal 20 leftover: pair `package_manager.update_offline`
   (`check-for-available-package-updates` offline vs isOfflineModeEnabled).
   Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` /
-  `uoff_n` exact. Measure-only leftover (Pair 759). Freeze pending.
-  `nextPairNum` left unchanged.
+  `uoff_n` exact. n=5 **1.316×** (0.333 / 0.253 µs) on host `cursor`,
+  ceiling 8.0; remesure Friend-MachineD **1.568×** (0.416 / 0.266 µs).
+  Measure-only leftover (Pair 759). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_bootstrap_sessions.pb_ok` / `rt_ok` / `dp_ok` (pairs 1012–1014)

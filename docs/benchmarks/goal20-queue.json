@@ -7928,32 +7928,47 @@
   {
    "pair": 757,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/packages/update-checks.lisp",
    "measure": "measure-package-manager",
    "metric": "package_manager.records_project_first",
    "branch": "cursor/update-checks-records-offline-leftovers-757-759-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 757"
+   "note": "nextPairNum left at tip 328; leftover id 757",
+   "ratio": 0.614,
+   "cadrUs": 0.433,
+   "piUs": 0.706,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 758,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/packages/update-checks.lisp",
    "measure": "measure-package-manager",
    "metric": "package_manager.candidate_record",
    "branch": "cursor/update-checks-records-offline-leftovers-757-759-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 758"
+   "note": "nextPairNum left at tip 328; leftover id 758",
+   "ratio": 17.132,
+   "cadrUs": 30.746,
+   "piUs": 1.795,
+   "ceiling": 20.0,
+   "rc": 2
   },
   {
    "pair": 759,
    "lane": "cursor",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/packages/update-checks.lisp",
    "measure": "measure-package-manager",
    "metric": "package_manager.update_offline",
    "branch": "cursor/update-checks-records-offline-leftovers-757-759-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 759"
+   "note": "nextPairNum left at tip 328; leftover id 759",
+   "ratio": 1.316,
+   "cadrUs": 0.333,
+   "piUs": 0.253,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
