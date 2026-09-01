@@ -4261,7 +4261,21 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_bootstrap_sessions.dp_ok", paired.RATIO_CEILINGS)
         self.assertIn("dp_empty", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("dp_n", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
-
+        self.assertIn("cli_bootstrap_sessions.assistant_tool_call_only", RECORD.METRIC_KEYS)
+        self.assertIn("assistant_tool_call_only", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.assistant_tool_call_only", paired.RATIO_CEILINGS)
+        self.assertIn("atco_tool", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("atco_both", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.session_entry_user_text", RECORD.METRIC_KEYS)
+        self.assertIn("session_entry_user_text", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.session_entry_user_text", paired.RATIO_CEILINGS)
+        self.assertIn("seut_str", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("seut_blocks", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.session_compaction_status", RECORD.METRIC_KEYS)
+        self.assertIn("session_compaction_status", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.session_compaction_status", paired.RATIO_CEILINGS)
+        self.assertIn("scs_one", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("scs_two", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
 
     def test_cli_bootstrap_sessions_migration_leftovers_wired(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -4279,7 +4293,6 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn(full, paired.RATIO_CEILINGS)
             for o in obs:
                 self.assertIn(o, paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
-
 
     def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

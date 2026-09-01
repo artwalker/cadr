@@ -696,4 +696,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.llama_format_context` | 0.868 | 0.200 | 4.332× | 8.00× | measure-only leftover 805; `llama-format-context-size` vs leftover Math.round k; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_js_to_fixed` | 1.301 | 0.423 | 3.076× | 8.00× | measure-only leftover 806; `llama-js-to-fixed` vs leftover Number.toFixed; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_search_exact` | 0.945 | 0.231 | 4.086× | 8.00× | measure-only leftover 807; `llama-search-exact-query-p` vs leftover org/name regex; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.assistant_tool_call_only` | 1.423 | 0.671 | 2.121× | 8.00× | measure-only leftover 808; `assistant-tool-call-only-p` vs leftover hasTextContent invert; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_entry_user_text` | 1.431 | 0.651 | 2.198× | 8.00× | measure-only leftover 809; `session-entry-user-text` vs leftover contentText user entry; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_compaction_status` | 2.150 | 0.609 | 3.530× | 8.00× | measure-only leftover 810; `session-compaction-status` vs leftover compaction count string; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
