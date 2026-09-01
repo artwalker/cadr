@@ -864,6 +864,9 @@
     ("cli_interactive_controller.render_extension_custom_ui" . 50)
     ("cli_interactive_controller.extension_custom_ui_handle_event" . 50)
     ("cli_interactive_controller.render_tui_extension_overlay" . 50)
+    ("cli_interactive_controller.announcement_make" . 5)
+    ("cli_interactive_controller.announcement_url" . 5)
+    ("cli_interactive_controller.announcement_title" . 5)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -18656,6 +18659,55 @@
      :overlay-options (lambda () nil)))))
 
 
+(defun leftover-announcement-joined (component)
+  (format nil "~{~A~^~%~}" (cadr-tui:component-render component 80)))
+
+
+(defun leftover-earendil-announcement-observed-pairs (make url title)
+  (list
+   "eam_ok" (nth 0 make)
+   "eam_min" (nth 1 make)
+   "eam_n" (nth 2 make)
+   "eau_eq" (nth 0 url)
+   "eau_sold" (nth 1 url)
+   "eau_n" (nth 2 url)
+   "eat_eq" (nth 0 title)
+   "eat_pi" (nth 1 title)
+   "eat_n" (nth 2 title)))
+
+
+(defun run-cli-interactive-announcement-make ()
+  ;; Leftover 874: make-earendil-announcement-component vs
+  ;; EarendilAnnouncementComponent constructor.
+  (let* ((component (cadr-cli::make-earendil-announcement-component))
+         (n (length (cadr-tui:component-children component))))
+    (list
+     (if component 1 0)
+     (if (>= n 7) 1 0)
+     2)))
+
+
+(defun run-cli-interactive-announcement-url ()
+  ;; Leftover 875: blog URL is present in the rendered announcement.
+  (let* ((component (cadr-cli::make-earendil-announcement-component))
+         (text (leftover-announcement-joined component))
+         (url cadr-cli::+earendil-blog-url+))
+    (list
+     (if (search url text) 1 0)
+     (if (search "sold-out" url) 1 0)
+     2)))
+
+
+(defun run-cli-interactive-announcement-title ()
+  ;; Leftover 876: title string is present in the rendered announcement.
+  (let* ((component (cadr-cli::make-earendil-announcement-component))
+         (text (leftover-announcement-joined component)))
+    (list
+     (if (search "pi has joined Earendil" text) 1 0)
+     (if (search "Earendil" text) 1 0)
+     2)))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
@@ -18785,7 +18837,13 @@
         (leftover-extension-custom-ui-handle-event
           (run-cli-interactive-extension-custom-ui-handle-event))
         (leftover-render-tui-extension-overlay
-          (run-cli-interactive-render-tui-extension-overlay)))
+          (run-cli-interactive-render-tui-extension-overlay))
+        (leftover-announcement-make
+          (run-cli-interactive-announcement-make))
+        (leftover-announcement-url
+          (run-cli-interactive-announcement-url))
+        (leftover-announcement-title
+          (run-cli-interactive-announcement-title)))
     (json-object
      "observed"
      (apply #'json-object
@@ -18920,7 +18978,11 @@
              (leftover-extension-ui-custom-ui-overlay-observed-pairs
               leftover-render-extension-custom-ui
               leftover-extension-custom-ui-handle-event
-              leftover-render-tui-extension-overlay)))
+              leftover-render-tui-extension-overlay)
+             (leftover-earendil-announcement-observed-pairs
+              leftover-announcement-make
+              leftover-announcement-url
+              leftover-announcement-title)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -19280,7 +19342,22 @@
      (collect "cli_interactive_controller.render_tui_extension_overlay"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-tui-extension-overlay)))))))
+                  (run-cli-interactive-render-tui-extension-overlay))))
+     "announcement_make"
+     (collect "cli_interactive_controller.announcement_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-announcement-make))))
+     "announcement_url"
+     (collect "cli_interactive_controller.announcement_url"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-announcement-url))))
+     "announcement_title"
+     (collect "cli_interactive_controller.announcement_title"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-announcement-title)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -33930,6 +34007,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp extension-custom-ui-handle-event"
       "cli_interactive_controller.render_tui_extension_overlay"
       "src/cadr-cli/interactive/extension-ui.lisp render-tui-extension-overlay"
+      "cli_interactive_controller.announcement_make"
+      "src/cadr-cli/interactive/components/announcement.lisp make-earendil-announcement-component"
+      "cli_interactive_controller.announcement_url"
+      "src/cadr-cli/interactive/components/announcement.lisp +earendil-blog-url+"
+      "cli_interactive_controller.announcement_title"
+      "src/cadr-cli/interactive/components/announcement.lisp make-earendil-announcement-component title"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
