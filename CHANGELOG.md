@@ -10,6 +10,17 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `skill_prompt_load.sdk_get_skills` / `sdk_get_prompts` / `sdk_get_themes`
+  (pairs 919–921). n=5 freeze on host `Friend-MachineD`. Over-1×:
+  skills **1.587×**,
+  prompts **1.367×**,
+  themes **2.560×**.
+  Reclassified `src/cadr-cli/sdk/resource-service.lisp`. `needs-pair` 3→2.
+  G.17 stays missing. `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_bootstrap_sessions.data_directory` / `legacy_data_directory` /
   `manual_migration_command` / `managed_binary_names` /
   `migration_guide_url` / `extensions_doc_url` (pairs 838–843).

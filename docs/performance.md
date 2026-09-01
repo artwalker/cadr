@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0c6eabba`, ratio_gate=`enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T10:56:43Z) on `Friend-MachineD`, git `a2fe765ab672`, ratio_gate=`enforced-only:skill_prompt_load.sdk_get_skills,skill_prompt_load.sdk_get_prompts,skill_prompt_load.sdk_get_themes`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T10:31:28Z) on `Friend-MachineD`, git `473e3bb84933`, ratio_gate=`enforced-only:provider_registry_defs.runtime_provider,provider_registry_defs.runtime_provider_copilot,provider_registry_defs.models_runtime,provider_registry_defs.protocol_provider,provider_registry_defs.protocol_provider_anthropic,provider_registry_defs.instantiate_provider`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T10:47:21Z) on `Friend-MachineD`, git `cc0d0c6eabba`, ratio_gate=`enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -911,6 +911,9 @@ Previous: `paired-paths` (2026-09-01T10:31:28Z) on `Friend-MachineD`, git `473e3
 | `skill_prompt_load.sdk_prompt_input` | — | — | — | — | — |
 | `skill_prompt_load.sdk_list_override` | — | — | — | — | — |
 | `skill_prompt_load.sdk_context_files` | — | — | — | — | — |
+| `skill_prompt_load.sdk_get_skills` | 0.2 | 0.1 | 1.59× | — | 8.00× |
+| `skill_prompt_load.sdk_get_prompts` | 0.2 | 0.1 | 1.37× | — | 8.00× |
+| `skill_prompt_load.sdk_get_themes` | 0.3 | 0.1 | 2.56× | — | 8.00× |
 | `cli_support.watch_retry_delay` | 0.2 | 0.1 | 1.34× | 1.34× | 8.00× |
 | `cli_support.close_watcher` | 0.2 | 0.2 | 1.05× | 1.05× | 8.00× |
 | `cli_support.watch_signature` | 23.8 | 6.8 | 3.48× | 3.48× | 8.00× |
@@ -1448,12 +1451,12 @@ Previous: `paired-paths` (2026-09-01T10:31:28Z) on `Friend-MachineD`, git `473e3
 | `cli_bootstrap_sessions.cycle_wrap` | 0.7 | 0.9 | 0.75× | 0.75× | 8.00× |
 | `cli_bootstrap_sessions.scope_hint` | 36.1 | 48.1 | 0.75× | 0.75× | 8.00× |
 | `cli_bootstrap_sessions.file_tags` | 104.3 | 144.2 | 0.72× | 0.72× | 8.00× |
-| `cli_bootstrap_sessions.data_directory` | 8.8 | 0.9 | 9.93× | — | 40.00× |
-| `cli_bootstrap_sessions.legacy_data_directory` | 8.9 | 1.1 | 7.95× | — | 40.00× |
-| `cli_bootstrap_sessions.manual_migration_command` | 4.6 | 1.7 | 2.73× | — | 8.00× |
-| `cli_bootstrap_sessions.managed_binary_names` | 0.4 | 0.3 | 1.36× | — | 8.00× |
-| `cli_bootstrap_sessions.migration_guide_url` | 0.7 | 0.2 | 3.09× | — | 8.00× |
-| `cli_bootstrap_sessions.extensions_doc_url` | 0.5 | 0.2 | 2.69× | — | 8.00× |
+| `cli_bootstrap_sessions.data_directory` | 8.8 | 0.9 | 9.93× | 9.93× | 40.00× |
+| `cli_bootstrap_sessions.legacy_data_directory` | 8.9 | 1.1 | 7.95× | 7.95× | 40.00× |
+| `cli_bootstrap_sessions.manual_migration_command` | 4.6 | 1.7 | 2.73× | 2.73× | 8.00× |
+| `cli_bootstrap_sessions.managed_binary_names` | 0.4 | 0.3 | 1.36× | 1.36× | 8.00× |
+| `cli_bootstrap_sessions.migration_guide_url` | 0.7 | 0.2 | 3.09× | 3.09× | 8.00× |
+| `cli_bootstrap_sessions.extensions_doc_url` | 0.5 | 0.2 | 2.69× | 2.69× | 8.00× |
 | `ai_runtime_faux.blocks` | 0.1 | 0.2 | 0.92× | 0.92× | 8.00× |
 | `http_transport.parse_url` | 0.8 | 0.8 | 0.99× | 0.99× | 8.00× |
 | `core_rest.cancellation_wait` | 53.0 | 9.4 | 5.67× | 5.67× | 8.00× |
@@ -2216,6 +2219,7 @@ Previous: `paired-paths` (2026-09-01T10:31:28Z) on `Friend-MachineD`, git `473e3
 | 2026-09-01T10:18:37Z | paired-paths | `571ec063bd67` | no | enforced-only:ai_support.threads_absent,ai_support.threads_current,ai_support.threads_joined | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:31:28Z | paired-paths | `473e3bb84933` | no | enforced-only:provider_registry_defs.runtime_provider,provider_registry_defs.runtime_provider_copilot,provider_registry_defs.models_runtime,provider_registry_defs.protocol_provider,provider_registry_defs.protocol_provider_anthropic,provider_registry_defs.instantiate_provider | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T10:47:21Z | paired-paths | `cc0d0c6eabba` | no | enforced-only:cli_bootstrap_sessions.data_directory,cli_bootstrap_sessions.legacy_data_directory,cli_bootstrap_sessions.manual_migration_command,cli_bootstrap_sessions.managed_binary_names,cli_bootstrap_sessions.migration_guide_url,cli_bootstrap_sessions.extensions_doc_url | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T10:56:43Z | paired-paths | `a2fe765ab672` | no | enforced-only:skill_prompt_load.sdk_get_skills,skill_prompt_load.sdk_get_prompts,skill_prompt_load.sdk_get_themes | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

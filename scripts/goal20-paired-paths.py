@@ -964,6 +964,10 @@ RATIO_CEILINGS = {
     "skill_prompt_load.sdk_prompt_input": 8.0,
     "skill_prompt_load.sdk_list_override": 8.0,
     "skill_prompt_load.sdk_context_files": 8.0,
+    # Measure-only leftover 919-921; freeze pending.
+    "skill_prompt_load.sdk_get_skills": 8.0,
+    "skill_prompt_load.sdk_get_prompts": 8.0,
+    "skill_prompt_load.sdk_get_themes": 8.0,
     # cli_support leftover trio (samples=5): observed
     # watch_retry_delay 0.67x (0.07 / 0.10 us), close_watcher 0.65x
     # (0.07 / 0.11 us), watch_signature 5.38x (12.17 / 2.26 us).
@@ -5706,6 +5710,15 @@ OBSERVED_EXACT = {
         "cf_n",
         "cf_path",
         "cf_text",
+        "sk_n",
+        "sk_list",
+        "sk_ok",
+        "pr_n",
+        "pr_list",
+        "pr_ok",
+        "th_n",
+        "th_list",
+        "th_ok",
     ),
     "cli_bootstrap_sessions": (
         "count",
