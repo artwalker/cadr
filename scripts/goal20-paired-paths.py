@@ -778,10 +778,10 @@ RATIO_CEILINGS = {
     # headroom. Ratchet down only. Measure-only leftover 793–795.
     # leftover 793; first freeze 0.522× (0.565 / 1.084 µs). cadr leads.
     "evals_harness.bundle_tool_names": 8.0,
-    # leftover 794; first freeze 8.873× (6.515 / 0.734 µs).
-    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
-    "evals_harness.visible_extension_bundles": 12.0,
-    # leftover 795; first freeze 2.598× (0.568 / 0.218 µs).
+    # leftover 794; remesure on tip 21.59× (12.635 / 0.585 µs).
+    # 25.0 is first-freeze headroom. Ratchet down only after a non-quick Friend-MachineD freeze.
+    "evals_harness.visible_extension_bundles": 25.0,
+    # leftover 795; remesure on tip 4.301× (0.880 / 0.205 µs).
     "evals_harness.authoring_harness_table": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

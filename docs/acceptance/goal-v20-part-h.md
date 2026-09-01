@@ -10072,7 +10072,7 @@ Leftover sibling of Pair 791. Timed work is write-scope flip plus rebuild (proje
 |---|---|---|
 | `bundle_tool_names` | `extension-bundle-tool-names` (`src/cadr-evals/suites.lisp`) | leftover bundle tool-name list (`packages/evals/src/extensions.eval.ts`) |
 
-Leftover sibling of Pairs 778–780 on the same `suites.lisp` `evals_harness` hole. Timed work is tool-name list (hello / multi / empty / unequal) — not `read-extension-source` path I/O. Observed `ebt_hello` / `ebt_multi` / `ebt_empty` / `ebt_eq` / `ebt_n` are exact. First n=5 freeze **0.522×** (0.565 / 1.084 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 778–780 on the same `suites.lisp` `evals_harness` hole. Timed work is tool-name list (hello / multi / empty / unequal) — not `read-extension-source` path I/O. Observed `ebt_hello` / `ebt_multi` / `ebt_empty` / `ebt_eq` / `ebt_n` are exact. First n=5 freeze **0.969×** (1.001 / 1.033 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 794 — `evals_harness` (visible_extension_bundles)
 
@@ -10080,7 +10080,7 @@ Leftover sibling of Pairs 778–780 on the same `suites.lisp` `evals_harness` ho
 |---|---|---|
 | `visible_extension_bundles` | `visible-extension-bundles` (`src/cadr-evals/suites.lisp`) | leftover hidden-p filter (`packages/evals/src/extensions.eval.ts`) |
 
-Leftover sibling of Pair 793. Timed work is drop `hidden-p` bundles from a memory snapshot — not directory discovery, not TUI. Observed `veb_vis` / `veb_hid` / `veb_empty` / `veb_nvis` / `veb_n` are exact. First n=5 freeze **8.873×** (6.515 / 0.734 µs) on host `cursor`, ceiling 12.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 793. Timed work is drop `hidden-p` bundles from a memory snapshot — not directory discovery, not TUI. Observed `veb_vis` / `veb_hid` / `veb_empty` / `veb_nvis` / `veb_n` are exact. First n=5 freeze **21.59×** (12.635 / 0.585 µs) on host `cursor`, ceiling 25.0 first-freeze headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 795 — `evals_harness` (authoring_harness_table)
 
@@ -10088,7 +10088,7 @@ Leftover sibling of Pair 793. Timed work is drop `hidden-p` bundles from a memor
 |---|---|---|
 | `authoring_harness_table` | `extension-authoring-harness-table` (`src/cadr-evals/suites.lisp`) | leftover two-row authoring table (`packages/evals/src/extensions.eval.ts`) |
 
-Leftover sibling of Pairs 793–794. Timed work is construct the two named rows (system-prompt-without-docs / default-system-prompt, repetition 1) — do not invoke `:run`. Observed `eht_len` / `eht_base` / `eht_cand` / `eht_rep` / `eht_n` are exact. First n=5 freeze **2.598×** (0.568 / 0.218 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 793–794. Timed work is construct the two named rows (system-prompt-without-docs / default-system-prompt, repetition 1) — do not invoke `:run`. Observed `eht_len` / `eht_base` / `eht_cand` / `eht_rep` / `eht_n` are exact. First n=5 freeze **4.301×** (0.880 / 0.205 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

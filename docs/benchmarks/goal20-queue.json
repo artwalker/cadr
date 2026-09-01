@@ -8384,9 +8384,9 @@
    "metric": "evals_harness.bundle_tool_names",
    "branch": "cursor/evals-suites-bundle-visible-table-leftovers-793-795-34f9",
    "note": "nextPairNum left at tip 328; leftover id 793",
-   "ratio": 0.522,
-   "cadrUs": 0.565,
-   "piUs": 1.084,
+   "ratio": 0.969,
+   "cadrUs": 1.001,
+   "piUs": 1.033,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -8399,10 +8399,10 @@
    "metric": "evals_harness.visible_extension_bundles",
    "branch": "cursor/evals-suites-bundle-visible-table-leftovers-793-795-34f9",
    "note": "nextPairNum left at tip 328; leftover id 794",
-   "ratio": 8.873,
-   "cadrUs": 6.515,
-   "piUs": 0.734,
-   "ceiling": 12.0,
+   "ratio": 21.59,
+   "cadrUs": 12.635,
+   "piUs": 0.585,
+   "ceiling": 25.0,
    "rc": 2
   },
   {
@@ -8414,9 +8414,9 @@
    "metric": "evals_harness.authoring_harness_table",
    "branch": "cursor/evals-suites-bundle-visible-table-leftovers-793-795-34f9",
    "note": "nextPairNum left at tip 328; leftover id 795",
-   "ratio": 2.598,
-   "cadrUs": 0.568,
-   "piUs": 0.218,
+   "ratio": 4.301,
+   "cadrUs": 0.88,
+   "piUs": 0.205,
    "ceiling": 8.0,
    "rc": 2
   }

@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T18:19:24Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `d5484b0cc6ec`, ratio_gate=`enforced-only:package_manager.package_setting_records,package_manager.selector_rebuild,package_manager.switch_scope`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T18:39:43Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `d007f13bbc6b`, ratio_gate=`enforced-only:evals_harness.authoring_harness_table,evals_harness.bundle_tool_names,evals_harness.visible_extension_bundles`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T18:02:45Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `b754f228708c`, ratio_gate=`enforced-only:package_manager.package_setting_record,package_manager.project_package_entry,package_manager.project_package_state`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T18:19:24Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `d5484b0cc6ec`, ratio_gate=`enforced-only:package_manager.package_setting_records,package_manager.selector_rebuild,package_manager.switch_scope`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -914,6 +914,9 @@ Previous: `paired-paths` (2026-09-01T18:02:45Z) on `{'lisp': 'SBCL', 'lisp_versi
 | `evals_harness.matching_hello_call` | 5.6 | 2.1 | 2.60× | 2.60× | 8.00× |
 | `evals_harness.authoring_judge` | 16.7 | 7.2 | 2.33× | 2.33× | 8.00× |
 | `evals_harness.source_bundle` | 0.8 | 1.7 | 0.46× | 0.46× | 8.00× |
+| `evals_harness.bundle_tool_names` | 1.0 | 1.0 | 0.97× | — | 8.00× |
+| `evals_harness.visible_extension_bundles` | 12.6 | 0.6 | 21.59× | — | 25.00× |
+| `evals_harness.authoring_harness_table` | 0.9 | 0.2 | 4.30× | — | 8.00× |
 | `package_manager.update_argv` | 7.8 | 1.9 | 4.16× | 4.16× | 8.00× |
 | `package_manager.update_env` | 8.2 | 42.1 | 0.19× | 0.19× | 8.00× |
 | `package_manager.git_object_id` | 2.4 | 1.0 | 2.34× | 2.34× | 8.00× |
@@ -929,9 +932,9 @@ Previous: `paired-paths` (2026-09-01T18:02:45Z) on `{'lisp': 'SBCL', 'lisp_versi
 | `package_manager.project_package_entry` | 18.1 | 2.7 | 6.71× | 6.71× | 15.00× |
 | `package_manager.project_package_state` | 25.3 | 3.2 | 7.90× | 7.90× | 15.00× |
 | `package_manager.package_setting_record` | 10.4 | 0.9 | 11.91× | 11.91× | 40.00× |
-| `package_manager.package_setting_records` | 22.8 | 4.0 | 5.64× | — | 15.00× |
-| `package_manager.selector_rebuild` | 26.1 | 4.4 | 5.89× | — | 15.00× |
-| `package_manager.switch_scope` | 36.3 | 6.0 | 6.03× | — | 12.00× |
+| `package_manager.package_setting_records` | 22.8 | 4.0 | 5.64× | 5.64× | 15.00× |
+| `package_manager.selector_rebuild` | 26.1 | 4.4 | 5.89× | 5.89× | 15.00× |
+| `package_manager.switch_scope` | 36.3 | 6.0 | 6.03× | 6.03× | 12.00× |
 | `cli_bootstrap_sessions.legacy_product` | 0.2 | 0.1 | 1.18× | 1.18× | 8.00× |
 | `cli_bootstrap_sessions.shell_quote` | 0.5 | 0.6 | 0.71× | 0.71× | 8.00× |
 | `cli_bootstrap_sessions.affirmative` | 0.4 | 0.6 | 0.58× | 0.58× | 8.00× |
@@ -2272,6 +2275,7 @@ Previous: `paired-paths` (2026-09-01T18:02:45Z) on `{'lisp': 'SBCL', 'lisp_versi
 | 2026-09-01T17:46:44Z | paired-paths | `f4a73b936679` | no | enforced-only:package_manager.inherited_enabled,package_manager.package_entry_index,package_manager.resource_group_key | 0.96× | 1.06× | 1.09× | 0.06× |
 | 2026-09-01T18:02:45Z | paired-paths | `b754f228708c` | no | enforced-only:package_manager.package_setting_record,package_manager.project_package_entry,package_manager.project_package_state | 0.96× | 1.06× | 1.09× | 0.06× |
 | 2026-09-01T18:19:24Z | paired-paths | `d5484b0cc6ec` | no | enforced-only:package_manager.package_setting_records,package_manager.selector_rebuild,package_manager.switch_scope | 0.96× | 1.06× | 1.09× | 0.06× |
+| 2026-09-01T18:39:43Z | paired-paths | `d007f13bbc6b` | no | enforced-only:evals_harness.authoring_harness_table,evals_harness.bundle_tool_names,evals_harness.visible_extension_bundles | 0.96× | 1.06× | 1.09× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
