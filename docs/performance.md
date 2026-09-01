@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T09:01:00Z) on `Friend-MachineD`, git `1cc6098c91ed`, ratio_gate=`enforced-only:package_manager.update_argv,package_manager.update_env,package_manager.git_object_id,cli_print_rpc.dialog_request,cli_print_rpc.dialog_result,cli_print_rpc.dialog_expired,cli_support.watch_retry_delay,cli_support.close_watcher,cli_support.watch_signature`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T09:18:49Z) on `Friend-MachineD`, git `9ae80d2b0836`, ratio_gate=`enforced-only:oauth_pkce_device.anth_oauth_name,oauth_pkce_device.anth_oauth_sub,oauth_pkce_device.anth_oauth_instructions,oauth_pkce_device.kimi_host_default,oauth_pkce_device.kimi_host_code,oauth_pkce_device.kimi_host_trim`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T06:15:04Z) on `cursor`, git `2270fa2197f1`, ratio_gate=`enforced-only:oauth_pkce_device.account_id,oauth_pkce_device.base64url_decode,oauth_pkce_device.base64url_value,oauth_pkce_device.device_start,oauth_pkce_device.ensure_success,oauth_pkce_device.error_detail,oauth_pkce_device.interval_seconds,oauth_pkce_device.json_copy,oauth_pkce_device.notify_device,oauth_pkce_device.openrouter_exchange,oauth_pkce_device.openrouter_input,oauth_pkce_device.openrouter_refresh`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T09:01:00Z) on `Friend-MachineD`, git `1cc6098c91ed`, ratio_gate=`enforced-only:package_manager.update_argv,package_manager.update_env,package_manager.git_object_id,cli_print_rpc.dialog_request,cli_print_rpc.dialog_result,cli_print_rpc.dialog_expired,cli_support.watch_retry_delay,cli_support.close_watcher,cli_support.watch_signature`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -893,15 +893,15 @@ Previous: `paired-paths` (2026-09-01T06:15:04Z) on `cursor`, git `2270fa2197f1`,
 | `evals_harness.rep_make` | 0.4 | 0.4 | 1.06× | 1.06× | 8.00× |
 | `evals_harness.fin_num` | 0.1 | 0.2 | 0.58× | 0.58× | 8.00× |
 | `evals_harness.art_meta` | 1.1 | 1.0 | 1.06× | 1.06× | 8.00× |
-| `package_manager.update_argv` | 8.4 | 3.3 | 2.58× | — | 8.00× |
-| `package_manager.update_env` | 13.0 | 55.8 | 0.23× | — | 8.00× |
-| `package_manager.git_object_id` | 3.3 | 1.1 | 3.01× | — | 8.00× |
+| `package_manager.update_argv` | 8.4 | 3.3 | 2.58× | 2.58× | 8.00× |
+| `package_manager.update_env` | 13.0 | 55.8 | 0.23× | 0.23× | 8.00× |
+| `package_manager.git_object_id` | 3.3 | 1.1 | 3.01× | 3.01× | 8.00× |
 | `cli_bootstrap_sessions.legacy_product` | — | — | — | — | — |
 | `cli_bootstrap_sessions.shell_quote` | — | — | — | — | — |
 | `cli_bootstrap_sessions.affirmative` | — | — | — | — | — |
-| `cli_print_rpc.dialog_request` | 1.6 | 0.6 | 2.42× | — | 8.00× |
-| `cli_print_rpc.dialog_result` | 2.4 | 0.3 | 6.82× | — | 8.00× |
-| `cli_print_rpc.dialog_expired` | 0.2 | 0.4 | 0.49× | — | 8.00× |
+| `cli_print_rpc.dialog_request` | 1.6 | 0.6 | 2.42× | 2.42× | 8.00× |
+| `cli_print_rpc.dialog_result` | 2.4 | 0.3 | 6.82× | 6.82× | 8.00× |
+| `cli_print_rpc.dialog_expired` | 0.2 | 0.4 | 0.49× | 0.49× | 8.00× |
 | `settings_load.sdk_nonempty` | — | — | — | — | — |
 | `settings_load.sdk_boolean` | — | — | — | — | — |
 | `settings_load.sdk_tools` | — | — | — | — | — |
@@ -911,9 +911,9 @@ Previous: `paired-paths` (2026-09-01T06:15:04Z) on `cursor`, git `2270fa2197f1`,
 | `skill_prompt_load.sdk_prompt_input` | — | — | — | — | — |
 | `skill_prompt_load.sdk_list_override` | — | — | — | — | — |
 | `skill_prompt_load.sdk_context_files` | — | — | — | — | — |
-| `cli_support.watch_retry_delay` | 0.2 | 0.1 | 1.34× | — | 8.00× |
-| `cli_support.close_watcher` | 0.2 | 0.2 | 1.05× | — | 8.00× |
-| `cli_support.watch_signature` | 23.8 | 6.8 | 3.48× | — | 8.00× |
+| `cli_support.watch_retry_delay` | 0.2 | 0.1 | 1.34× | 1.34× | 8.00× |
+| `cli_support.close_watcher` | 0.2 | 0.2 | 1.05× | 1.05× | 8.00× |
+| `cli_support.watch_signature` | 23.8 | 6.8 | 3.48× | 3.48× | 8.00× |
 | `cli_bootstrap_sessions.model_cycle` | — | — | — | — | — |
 | `cli_bootstrap_sessions.model_scope_line` | — | — | — | — | — |
 | `cli_bootstrap_sessions.process_files` | — | — | — | — | — |
@@ -2171,6 +2171,7 @@ Previous: `paired-paths` (2026-09-01T06:15:04Z) on `cursor`, git `2270fa2197f1`,
 | 2026-09-01T04:51:28Z | paired-paths | `04b38a745484` | no | enforced-only:cli_extensions_install.unsafe_git,cli_extensions_install.git_path,cli_extensions_install.normalize_git,cli_extensions_install.package_fragment,cli_extensions_install.local_system_name,cli_extensions_install.inline_factory,cli_extensions_install.gated_approval,cli_extensions_install.split_args,cli_extensions_install.quant_label | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T06:15:04Z | paired-paths | `2270fa2197f1` | no | enforced-only:oauth_pkce_device.account_id,oauth_pkce_device.base64url_decode,oauth_pkce_device.base64url_value,oauth_pkce_device.device_start,oauth_pkce_device.ensure_success,oauth_pkce_device.error_detail,oauth_pkce_device.interval_seconds,oauth_pkce_device.json_copy,oauth_pkce_device.notify_device,oauth_pkce_device.openrouter_exchange,oauth_pkce_device.openrouter_input,oauth_pkce_device.openrouter_refresh | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T09:01:00Z | paired-paths | `1cc6098c91ed` | no | enforced-only:package_manager.update_argv,package_manager.update_env,package_manager.git_object_id,cli_print_rpc.dialog_request,cli_print_rpc.dialog_result,cli_print_rpc.dialog_expired,cli_support.watch_retry_delay,cli_support.close_watcher,cli_support.watch_signature | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T09:18:49Z | paired-paths | `9ae80d2b0836` | no | enforced-only:oauth_pkce_device.anth_oauth_name,oauth_pkce_device.anth_oauth_sub,oauth_pkce_device.anth_oauth_instructions,oauth_pkce_device.kimi_host_default,oauth_pkce_device.kimi_host_code,oauth_pkce_device.kimi_host_trim | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -317,6 +317,12 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.eval_layout` | 3.297 | 1.074 | 3.071× | 8.00× | measure-only pair 418; leftover eval workspace/agent/sessions layout vs path join | invent pause；地板优化另刀 |
 | `evals_harness.output_selector` | 0.189 | 0.188 | 1.007× | 8.00× | measure-only pair 420; leftover `:selector` vs `options.output`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `oauth_pkce_device.openrouter_exchange` | 7.533 | 6.469 | 1.164× | 8.00× | leftover collect restore pair 438; leftover `openrouter-exchange-code` vs `exchangeAuthorizationCode` (stubbed HTTP) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.anth_oauth_name` | 0.373 | 0.099 | 3.755× | 8.00× | leftover collect restore pair 880; anthropicOAuth.name | invent pause；地板优化另刀 |
+| `oauth_pkce_device.anth_oauth_sub` | 0.143 | 0.075 | 1.913× | 8.00× | leftover collect restore pair 881; anthropicOAuth.isSubscription | invent pause；地板优化另刀 |
+| `oauth_pkce_device.anth_oauth_instructions` | 0.729 | 0.103 | 7.100× | 8.00× | leftover collect restore pair 882; login notify instructions | invent pause；地板优化另刀 |
+| `oauth_pkce_device.kimi_host_default` | 0.348 | 0.152 | 2.293× | 8.00× | leftover collect restore pair 877; getOauthHost DEFAULT_OAUTH_HOST | invent pause；地板优化另刀 |
+| `oauth_pkce_device.kimi_host_code` | 0.440 | 0.159 | 2.773× | 8.00× | leftover collect restore pair 878; getOauthHost KIMI_CODE_OAUTH_HOST | invent pause；地板优化另刀 |
+| `oauth_pkce_device.kimi_host_trim` | 0.614 | 0.204 | 3.014× | 8.00× | leftover collect restore pair 879; getOauthHost trailing-slash trim | invent pause；地板优化另刀 |
 | `output_accumulator.needs_file` | 50.564 | 20.524 | 2.464× | 8.00× | measure-only pair 428; leftover `needs-file-p` vs `shouldUseTempFile` | invent pause；地板优化另刀 |
 | `evals_harness.artifact_metadata` | 1.025 | 0.868 | 1.182× | 8.00× | measure-only pair 432; leftover `reporter-artifact-metadata` vs `appendHarnessRunReport` metadata filter | invent pause；地板优化另刀 |
 | `evals_harness.extension_authoring_input` | 1.148 | 0.246 | 4.662× | 8.00× | measure-only pair 439; `extension-authoring-input` types/length leftover (sub-µs variance) | invent pause；地板优化另刀 |

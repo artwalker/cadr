@@ -5486,6 +5486,91 @@ keeping custom metadata — not persist, not `runs.jsonl`. Observed
 `lc_sleep` / help text; this metric did not fail). Over-1× booked.
 Same commit no optimize.
 
+
+### Pair 877 — `oauth_pkce_device` (kimi_host_default)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kimi_host_default` | `kimi-oauth-host` nil env (`src/cadr-ai/oauth/providers/kimi.lisp`) | `getOauthHost` DEFAULT_OAUTH_HOST (`packages/ai/src/auth/oauth/kimi-coding.ts`) |
+
+Leftover of the `oauth_pkce_device` hole on `kimi.lisp`. Timed work is the
+default host with no environment override. Observed `khd_eq` / `khd_https` /
+`khd_n` are exact. Collect restore n=5 freeze **2.293×** (0.348 /
+0.152 µs) on host `Friend-MachineD`, gitHead `9ae80d2b0`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 878 — `oauth_pkce_device` (kimi_host_code)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kimi_host_code` | `kimi-oauth-host` KIMI_CODE_OAUTH_HOST (`src/cadr-ai/oauth/providers/kimi.lisp`) | `getOauthHost` KIMI_CODE_OAUTH_HOST (`packages/ai/src/auth/oauth/kimi-coding.ts`) |
+
+Leftover sibling of Pair 877. Timed work is CODE host winning over
+KIMI_OAUTH_HOST. Observed `khc_eq` / `khc_win` / `khc_n` are exact. Collect
+restore n=5 freeze **2.773×** (0.440 /
+0.159 µs) on host `Friend-MachineD`, gitHead `9ae80d2b0`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 879 — `oauth_pkce_device` (kimi_host_trim)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kimi_host_trim` | `kimi-oauth-host` trailing-slash trim (`src/cadr-ai/oauth/providers/kimi.lisp`) | `getOauthHost` replace `/+$` (`packages/ai/src/auth/oauth/kimi-coding.ts`) |
+
+Leftover sibling of Pairs 877–878. Timed work is trailing-slash strip.
+Observed `kht_eq` / `kht_noslash` / `kht_n` are exact. Collect restore n=5
+freeze **3.014×** (0.614 /
+0.204 µs) on host `Friend-MachineD`, gitHead `9ae80d2b0`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 880 — `oauth_pkce_device` (anth_oauth_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `anth_oauth_name` | `oauth-provider-metadata-method-name` via `login-anthropic-runtime-oauth` (`src/cadr-ai/oauth/providers/anthropic.lisp`) | `anthropicOAuth.name` (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover of the `oauth_pkce_device` hole on `anthropic.lisp`. Timed work is
+the Anthropic OAuth display name. Observed `anm_eq` / `anm_claude` /
+`anm_n` are exact. Collect restore n=5 freeze **3.755×** (0.373 /
+0.099 µs) on host `Friend-MachineD`, gitHead `9ae80d2b0`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 881 — `oauth_pkce_device` (anth_oauth_sub)
+
+| metric | cadr | pi |
+|---|---|---|
+| `anth_oauth_sub` | `oauth-provider-metadata-is-subscription-p` via `login-anthropic-runtime-oauth` (`src/cadr-ai/oauth/providers/anthropic.lisp`) | `anthropicOAuth.isSubscription` (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover sibling of Pair 880. Timed work is the subscription flag.
+Observed `ans_sub` / `ans_t` / `ans_n` are exact. Collect restore n=5 freeze
+**1.913×** (0.143 /
+0.075 µs) on host `Friend-MachineD`, gitHead `9ae80d2b0`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 882 — `oauth_pkce_device` (anth_oauth_instructions)
+
+| metric | cadr | pi |
+|---|---|---|
+| `anth_oauth_instructions` | `oauth-provider-metadata-auth-url-instructions` via `login-anthropic-runtime-oauth` (`src/cadr-ai/oauth/providers/anthropic.lisp`) | login notify instructions (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover sibling of Pairs 880–881. Timed work is the browser-redirect paste
+copy. Observed `ani_eq` / `ani_paste` / `ani_n` are exact. Collect restore
+n=5 freeze **7.100×** (0.729 /
+0.103 µs) on host `Friend-MachineD`, gitHead `9ae80d2b0`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -9779,14 +9864,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 232 | 102,852 | 79.5% | `no worse than baseline` is falsifiable |
+| `paired` | 234 | 102,926 | 79.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 12 | 1,501 | 1.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 10 | 1,427 | 1.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.5% of lines (232 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.3% of lines.
+- **Falsifiable vs baseline:** 79.6% of lines (234 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -9868,7 +9953,9 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/oauth/callback.lisp` | 324 | `oauth_pkce_device.http_status_text`, `oauth_pkce_device.parse_authorization_input`, `oauth_pkce_device.parse_callback_request`, `oauth_pkce_device.parse_query`, `oauth_pkce_device.percent_decode`, `oauth_pkce_device.provider_key` |
 | `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
+| `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | `oauth_pkce_device.anth_oauth_name`, `oauth_pkce_device.anth_oauth_sub`, `oauth_pkce_device.anth_oauth_instructions` |
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth` |
+| `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | `oauth_pkce_device.kimi_host_default`, `oauth_pkce_device.kimi_host_code`, `oauth_pkce_device.kimi_host_trim` |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | `oauth_pkce_device.json_copy`, `oauth_pkce_device.interval_seconds`, `oauth_pkce_device.device_start` |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange` |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | `oauth_pkce_device.radius_gateway` |
@@ -10100,7 +10187,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 1 | 370 |
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
-| `oauth_pkce_device` | 2 | 74 |
 | `cli_selectors` | 1 | 41 |
 | `cli_support` | 3 | 34 |
 | `ai_support` | 1 | 6 |
