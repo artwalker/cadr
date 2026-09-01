@@ -607,7 +607,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.lmsxxxx_ok` | 2.681 | 2.105 | 1.274× | 8.00× | measure-only leftover 1405; `make-login-method-selector-state` vs leftover ExtensionSelector login-method constructor | invent pause；地板优化另刀 |
 | `cli_selectors.akixxxx_ok` | 2.164 | 1.061 | 2.039× | 8.00× | measure-only leftover 1406; `make-api-key-input-state` vs leftover showPrompt api key Input constructor | invent pause；地板优化另刀 |
 | `cli_selectors.ossxxxx_ok` | 7.239 | 5.400 | 1.340× | 8.00× | measure-only leftover 1407; `make-oauth-selector-state` vs leftover OauthSelectorComponent constructor | invent pause；地板优化另刀 |
-| `settings_load.read_cli_config` | 200.606 | 95.628 | 2.098× | 8.00× | measure-only leftover 760; `read-cli-config` vs JSON.parse settings object | invent pause；地板优化另刀 |
-| `settings_load.provider_config_secrets` | 59.914 | 1.371 | 43.688× | 50.00× | measure-only leftover 761; `provider-config-secrets` vs apiKey/oauth/env collect; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
-| `settings_load.resolve_provider_config` | 225.982 | 42.635 | 5.300× | 8.00× | measure-only leftover 762; `resolve-provider-config` vs openaiProvider construct | invent pause；地板优化另刀 |
+| `settings_load.read_cli_config` | 260.6 | 219.3 | 1.19× | 8.00× | measure-only leftover 760; `read-cli-config` vs JSON.parse settings object | invent pause；地板优化另刀 |
+| `settings_load.provider_config_secrets` | 61.3 | 1.9 | 33.09× | 50.00× | measure-only leftover 761; `provider-config-secrets` vs apiKey/oauth/env collect; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `settings_load.resolve_provider_config` | 208.7 | 202.5 | 1.03× | 8.00× | measure-only leftover 762; `resolve-provider-config` vs openaiProvider construct | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

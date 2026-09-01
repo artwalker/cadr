@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-01T11:23:26Z) on `Friend-MachineD`, git `ceb8a4cb3cb7`, ratio_gate=`enforced-only:cli_bootstrap_sessions.pb_ok,cli_bootstrap_sessions.rt_ok,cli_bootstrap_sessions.dp_ok`, quick=no, samples=5
+Current: `paired-paths` (2026-09-01T14:38:15Z) on `{'lisp': 'SBCL', 'lisp_version': '2.6.7', 'machine_instance': 'Friend-MachineD', 'machine_type': 'X86-64'}`, git `5903c073b857`, ratio_gate=`enforced-only:settings_load.provider_config_secrets,settings_load.read_cli_config,settings_load.resolve_provider_config`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-01T11:09:42Z) on `Friend-MachineD`, git `d6e0870f60a2`, ratio_gate=`enforced-only:settings_load.sdk_default_provider,settings_load.sdk_default_model,settings_load.sdk_retry_settings`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-01T11:23:26Z) on `Friend-MachineD`, git `ceb8a4cb3cb7`, ratio_gate=`enforced-only:cli_bootstrap_sessions.pb_ok,cli_bootstrap_sessions.rt_ok,cli_bootstrap_sessions.dp_ok`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -732,6 +732,9 @@ Previous: `paired-paths` (2026-09-01T11:09:42Z) on `Friend-MachineD`, git `d6e08
 | `settings_load.provider_default_model` | 1.1 | 2.4 | 0.46× | 0.46× | 8.00× |
 | `settings_load.oauth_refresh_function` | 0.4 | 2.6 | 0.14× | 0.14× | 8.00× |
 | `settings_load.oauth_login_function` | 2.8 | 2.4 | 1.14× | 1.14× | 8.00× |
+| `settings_load.read_cli_config` | 260.6 | 219.3 | 1.19× | — | 8.00× |
+| `settings_load.provider_config_secrets` | 61.3 | 1.9 | 33.09× | — | 50.00× |
+| `settings_load.resolve_provider_config` | 208.7 | 202.5 | 1.03× | — | 8.00× |
 | `settings_load.sdk_default_provider` | 35.0 | 15.0 | 2.34× | 2.34× | 8.00× |
 | `settings_load.sdk_default_model` | 36.3 | 7.2 | 5.02× | 5.02× | 8.00× |
 | `settings_load.sdk_retry_settings` | 19.3 | 10.6 | 1.82× | 1.82× | 8.00× |
@@ -935,9 +938,9 @@ Previous: `paired-paths` (2026-09-01T11:09:42Z) on `Friend-MachineD`, git `d6e08
 | `cli_bootstrap_sessions.parse_bash` | — | — | — | — | — |
 | `cli_bootstrap_sessions.response_text` | — | — | — | — | — |
 | `cli_bootstrap_sessions.dispatch_plain` | — | — | — | — | — |
-| `cli_bootstrap_sessions.pb_ok` | 0.8 | 1.0 | 0.80× | — | 8.00× |
-| `cli_bootstrap_sessions.rt_ok` | 1.5 | 0.6 | 2.50× | — | 8.00× |
-| `cli_bootstrap_sessions.dp_ok` | 0.7 | 1.1 | 0.62× | — | 8.00× |
+| `cli_bootstrap_sessions.pb_ok` | 0.8 | 1.0 | 0.80× | 0.80× | 8.00× |
+| `cli_bootstrap_sessions.rt_ok` | 1.5 | 0.6 | 2.50× | 2.50× | 8.00× |
+| `cli_bootstrap_sessions.dp_ok` | 0.7 | 1.1 | 0.62× | 0.62× | 8.00× |
 | `cli_print_rpc.handle_bad_json` | — | — | — | — | — |
 | `cli_print_rpc.handle_not_object` | — | — | — | — | — |
 | `cli_print_rpc.handle_ui_miss` | — | — | — | — | — |
@@ -2228,6 +2231,7 @@ Previous: `paired-paths` (2026-09-01T11:09:42Z) on `Friend-MachineD`, git `d6e08
 | 2026-09-01T10:56:43Z | paired-paths | `a2fe765ab672` | no | enforced-only:skill_prompt_load.sdk_get_skills,skill_prompt_load.sdk_get_prompts,skill_prompt_load.sdk_get_themes | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T11:09:42Z | paired-paths | `d6e0870f60a2` | no | enforced-only:settings_load.sdk_default_provider,settings_load.sdk_default_model,settings_load.sdk_retry_settings | 1.10× | 0.81× | 0.83× | 0.07× |
 | 2026-09-01T11:23:26Z | paired-paths | `ceb8a4cb3cb7` | no | enforced-only:cli_bootstrap_sessions.pb_ok,cli_bootstrap_sessions.rt_ok,cli_bootstrap_sessions.dp_ok | 1.10× | 0.81× | 0.83× | 0.07× |
+| 2026-09-01T14:38:15Z | paired-paths | `5903c073b857` | no | enforced-only:settings_load.provider_config_secrets,settings_load.read_cli_config,settings_load.resolve_provider_config | 1.10× | 0.81× | 0.83× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD remesure + ledger book leftover 760–762
+  (`settings_load.read_cli_config` **1.188×**, `provider_config_secrets`
+  **33.085×**, `resolve_provider_config` **1.031×**). Scoped gate PASS;
+  history overlay booked; inventory `pairedMetrics` +3. G.17 stays missing.
+
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_bootstrap_sessions.pb_ok` / `rt_ok` / `dp_ok` (pairs 1012–1014)
   on `src/cadr-cli/repl.lisp`. n=5 freeze on host `Friend-MachineD`.
