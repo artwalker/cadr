@@ -711,6 +711,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.find_session_by_id_or_prefix` | 1.627 | 0.862 | 1.888× | 8.00× | measure-only leftover 820; `find-session-by-id-or-prefix` vs leftover find by id or prefix; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_display_messages` | 3.262 | 0.940 | 3.471× | 8.00× | measure-only leftover 821; `session-display-messages` vs leftover display message projection; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_tree_selector_data` | 4.557 | 1.275 | 3.574× | 8.00× | measure-only leftover 822; `session-tree-selector-data` vs leftover tree row map; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.validate_cli_session_flags` | 1.971 | 0.620 | 3.178× | 8.00× | measure-only leftover 823; `validate-cli-session-flags` vs leftover fork/session-id flag conflicts | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.session_entry_tree_selector_data` | 2.485 | 1.015 | 2.449× | 8.00× | measure-only leftover 824; `session-entry-tree-selector-data` vs leftover one tree row | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.validate_cli_session_flags` | 2.825 | 0.526 | 5.366× | 8.00× | measure-only leftover 823; `validate-cli-session-flags` vs leftover fork/session-id flag conflicts; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_entry_tree_selector_data` | 4.460 | 0.970 | 4.596× | 8.00× | measure-only leftover 824; `session-entry-tree-selector-data` vs leftover one tree row; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_restored_model` | 4.808 | 3.084 | 1.559× | 8.00× | measure-only leftover 825; `session-restored-model` vs leftover restored model lookup; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

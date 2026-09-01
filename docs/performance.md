@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-01T22:51:16Z) on `Friend-MachineD`, git `1feb4001185b`, ratio_gate=`enforced-only:cli_bootstrap_sessions.find_session_by_id_or_prefix,cli_bootstrap_sessions.session_display_messages,cli_bootstrap_sessions.session_tree_selector_data`, quick=no, samples=5
+Current: `—` (2026-09-01T23:06:29Z) on `Friend-MachineD`, git `ccc9e7ade8f5`, ratio_gate=`enforced-only:cli_bootstrap_sessions.session_entry_tree_selector_data,cli_bootstrap_sessions.session_restored_model,cli_bootstrap_sessions.validate_cli_session_flags`, quick=no, samples=5
 
-Previous: `—` (2026-09-01T22:28:09Z) on `Friend-MachineD`, git `fb5d9d8beb75`, ratio_gate=`enforced-only:cli_bootstrap_sessions.session_compaction_display_state,cli_bootstrap_sessions.session_tree_tool_calls,cli_bootstrap_sessions.write_hotkeys_command`, quick=no, samples=5
+Previous: `—` (2026-09-01T22:51:16Z) on `Friend-MachineD`, git `1feb4001185b`, ratio_gate=`enforced-only:cli_bootstrap_sessions.find_session_by_id_or_prefix,cli_bootstrap_sessions.session_display_messages,cli_bootstrap_sessions.session_tree_selector_data`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1121,9 +1121,12 @@ Previous: `—` (2026-09-01T22:28:09Z) on `Friend-MachineD`, git `fb5d9d8beb75`,
 | `cli_bootstrap_sessions.session_tree_tool_calls` | — | — | 2.75× | 2.75× | 8.00× |
 | `cli_bootstrap_sessions.session_compaction_display_state` | — | — | 3.29× | 3.29× | 8.00× |
 | `cli_bootstrap_sessions.write_hotkeys_command` | — | — | 3.42× | 3.42× | 8.00× |
-| `cli_bootstrap_sessions.find_session_by_id_or_prefix` | — | — | 1.89× | — | 8.00× |
-| `cli_bootstrap_sessions.session_display_messages` | — | — | 3.47× | — | 8.00× |
-| `cli_bootstrap_sessions.session_tree_selector_data` | — | — | 3.57× | — | 8.00× |
+| `cli_bootstrap_sessions.find_session_by_id_or_prefix` | — | — | 1.89× | 1.89× | 8.00× |
+| `cli_bootstrap_sessions.session_display_messages` | — | — | 3.47× | 3.47× | 8.00× |
+| `cli_bootstrap_sessions.session_tree_selector_data` | — | — | 3.57× | 3.57× | 8.00× |
+| `cli_bootstrap_sessions.validate_cli_session_flags` | — | — | 5.37× | — | 8.00× |
+| `cli_bootstrap_sessions.session_entry_tree_selector_data` | — | — | 4.60× | — | 8.00× |
+| `cli_bootstrap_sessions.session_restored_model` | — | — | 1.56× | — | 8.00× |
 | `cli_selectors.model_selector_provider_badge` | 0.3 | 0.6 | 0.42× | 0.42× | 8.00× |
 | `cli_selectors.scoped_models_copy_enabled` | 1.5 | 0.7 | 2.28× | 2.28× | 8.00× |
 | `cli_selectors.move_list_item` | 1.5 | 1.4 | 1.07× | 1.07× | 8.00× |
@@ -2313,6 +2316,7 @@ Previous: `—` (2026-09-01T22:28:09Z) on `Friend-MachineD`, git `fb5d9d8beb75`,
 | 2026-09-01T21:51:48Z | — | `e3ba2a1e1409` | no | enforced-only:cli_bootstrap_sessions.session_command_stats,cli_bootstrap_sessions.session_tree_label_timestamps,cli_bootstrap_sessions.session_usage_breakdown | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T22:28:09Z | — | `fb5d9d8beb75` | no | enforced-only:cli_bootstrap_sessions.session_compaction_display_state,cli_bootstrap_sessions.session_tree_tool_calls,cli_bootstrap_sessions.write_hotkeys_command | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T22:51:16Z | — | `1feb4001185b` | no | enforced-only:cli_bootstrap_sessions.find_session_by_id_or_prefix,cli_bootstrap_sessions.session_display_messages,cli_bootstrap_sessions.session_tree_selector_data | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-01T23:06:29Z | — | `ccc9e7ade8f5` | no | enforced-only:cli_bootstrap_sessions.session_entry_tree_selector_data,cli_bootstrap_sessions.session_restored_model,cli_bootstrap_sessions.validate_cli_session_flags | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
