@@ -19,6 +19,14 @@ tag/Release step.
   `openrouter_exchange` **1.164×**. The other four slugs are under 1×.
   Reclassified four files. `needs-pair` 19→15. G.17 stays missing.
   `nextPairNum` left unchanged.
+||||||| parent of 23dfe4648 (Wire leftover collect for update-checks, rpc ui, and file-watcher.)
+  `package_manager.update_argv` / `update_env` / `git_object_id` on
+  `src/cadr-cli/packages/update-checks.lisp`, `cli_print_rpc.dialog_request` /
+  `dialog_result` / `dialog_expired` on `src/cadr-cli/modes/rpc/ui.lisp`, and
+  `cli_support.watch_retry_delay` / `close_watcher` / `watch_signature` on
+  `src/cadr-cli/support/file-watcher.lisp`. Run-fns, METRICS, and the pi
+  half already existed. Freeze and inventory reclassify follow. G.17 stays
+  missing. `nextPairNum` left unchanged.
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `cli_extensions_install` slugs on `src/cadr-cli/extensions/installer.lisp`,

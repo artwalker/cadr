@@ -589,6 +589,9 @@
     ("package_manager.delta_resource_state" . 50)
     ("package_manager.project_top_level_state" . 50)
     ("package_manager.derived_project_state" . 50)
+    ("package_manager.update_argv" . 50)
+    ("package_manager.update_env" . 50)
+    ("package_manager.git_object_id" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -711,6 +714,9 @@
     ("cli_print_rpc.bad_line" . 50)
     ("cli_print_rpc.array_line" . 50)
     ("cli_print_rpc.ui_absent" . 50)
+    ("cli_print_rpc.dialog_request" . 50)
+    ("cli_print_rpc.dialog_result" . 50)
+    ("cli_print_rpc.dialog_expired" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -762,6 +768,9 @@
     ("cli_support.no_models_help" . 50)
     ("cli_support.no_model_selected" . 50)
     ("cli_support.no_api_key" . 50)
+    ("cli_support.watch_retry_delay" . 50)
+    ("cli_support.close_watcher" . 50)
+    ("cli_support.watch_signature" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -6032,7 +6041,10 @@
            (project-top-level-state
              (run-package-manager-project-top-level-state))
            (derived-project-state
-             (run-package-manager-derived-project-state)))
+             (run-package-manager-derived-project-state))
+           (update-argv (run-package-manager-update-argv))
+           (update-env (run-package-manager-update-env))
+           (git-object-id (run-package-manager-git-object-id)))
       (json-object
        "observed"
        (json-object
@@ -6233,7 +6245,18 @@
         "dps_unload" (nth 1 derived-project-state)
         "dps_pkg" (nth 2 derived-project-state)
         "dps_miss" (nth 3 derived-project-state)
-        "dps_n" (nth 4 derived-project-state))
+        "dps_n" (nth 4 derived-project-state)
+        "ua_setsid" (nth 0 update-argv)
+        "ua_fork" (nth 1 update-argv)
+        "ua_tail" (nth 2 update-argv)
+        "ua_rest" (nth 3 update-argv)
+        "ue_first" (nth 0 update-env)
+        "ue_one" (nth 1 update-env)
+        "go_plain" (nth 0 git-object-id)
+        "go_nl" (nth 1 git-object-id)
+        "go_ls" (nth 2 git-object-id)
+        "go_upper" (nth 3 git-object-id)
+        "go_bad" (nth 4 git-object-id))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -6429,7 +6452,22 @@
        (collect "package_manager.derived_project_state"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-derived-project-state))))))))
+                    (run-package-manager-derived-project-state))))
+       "update_argv"
+       (collect "package_manager.update_argv"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-update-argv))))
+       "update_env"
+       (collect "package_manager.update_env"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-update-env))))
+       "git_object_id"
+       (collect "package_manager.git_object_id"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-git-object-id))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -14854,7 +14892,10 @@
            (leftover-rpc-handle-line-observed-pairs
             (run-cli-print-rpc-handle-bad-json)
             (run-cli-print-rpc-handle-not-object)
-            (run-cli-print-rpc-handle-ui-miss))))
+            (run-cli-print-rpc-handle-ui-miss)))
+         (dialog-request (run-cli-print-rpc-dialog-request))
+         (dialog-result (run-cli-print-rpc-dialog-result))
+         (dialog-expired (run-cli-print-rpc-dialog-expired))))
     (json-object
      "observed"
      (json-object
@@ -14914,7 +14955,21 @@
       "um_ok" (nth 9 leftover-handle)
       "um_id" (nth 10 leftover-handle)
       "um_nl" (nth 11 leftover-handle)
-      "um_unk" (nth 12 leftover-handle))
+      "um_unk" (nth 12 leftover-handle)
+      "dr_type" (nth 0 dialog-request)
+      "dr_method" (nth 1 dialog-request)
+      "dr_msg" (nth 2 dialog-request)
+      "dr_opt_n" (nth 3 dialog-request)
+      "dr_ph" (nth 4 dialog-request)
+      "dr_to" (nth 5 dialog-request)
+      "rs_nil" (nth 0 dialog-result)
+      "rs_can" (nth 1 dialog-result)
+      "rs_ok" (nth 2 dialog-result)
+      "rs_val" (nth 3 dialog-result)
+      "rs_num" (nth 4 dialog-result)
+      "ex_nil" (nth 0 dialog-expired)
+      "ex_zero" (nth 1 dialog-expired)
+      "ex_future" (nth 2 dialog-expired))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -14982,7 +15037,22 @@
      (collect "cli_print_rpc.ui_absent"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-handle-ui-miss)))))))
+                  (run-cli-print-rpc-handle-ui-miss))))
+     "dialog_request"
+     (collect "cli_print_rpc.dialog_request"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-request))))
+     "dialog_result"
+     (collect "cli_print_rpc.dialog_result"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-result))))
+     "dialog_expired"
+     (collect "cli_print_rpc.dialog_expired"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-expired)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -16704,7 +16774,15 @@
         (experimental (run-cli-support-experimental))
         (no-models (run-cli-support-no-models-help))
         (no-selected (run-cli-support-no-model-selected))
-        (no-key (run-cli-support-no-api-key)))
+        (no-key (run-cli-support-no-api-key))
+        (watch-present (stage-cli-support-watch-present))
+        (watch-retry (run-cli-support-watch-retry-delay))
+        (close-watcher (run-cli-support-close-watcher))
+        (watch-signature
+          (run-cli-support-watch-signature
+           (namestring
+            (merge-pathnames "cadr-goal20-watch-missing" *scratch-directory*))
+           (namestring watch-present))))
     (json-object
      "observed"
      (json-object
@@ -16780,7 +16858,16 @@
       "ns_nl" (nth 2 no-selected)
       "nk_oai" (nth 0 no-key)
       "nk_unk" (nth 1 no-key)
-      "nk_sel" (nth 2 no-key))
+      "nk_sel" (nth 2 no-key)
+      "rd_eq" (nth 0 watch-retry)
+      "rd_ms" (nth 1 watch-retry)
+      "rd_pos" (nth 2 watch-retry)
+      "cl_nil" (nth 0 close-watcher)
+      "cl_twice" (nth 1 close-watcher)
+      "cl_ok" (nth 2 close-watcher)
+      "sg_miss" (nth 0 watch-signature)
+      "sg_hit" (nth 1 watch-signature)
+      "sg_n" (nth 2 watch-signature))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -16850,7 +16937,28 @@
      (collect "cli_support.no_api_key"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-no-api-key)))))))
+                  (run-cli-support-no-api-key))))
+     "watch_retry_delay"
+     (collect "cli_support.watch_retry_delay"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-watch-retry-delay))))
+     "close_watcher"
+     (collect "cli_support.close_watcher"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-close-watcher))))
+     "watch_signature"
+     (collect "cli_support.watch_signature"
+              (lambda ()
+                (let ((present (stage-cli-support-watch-present)))
+                  (lambda ()
+                    (run-cli-support-watch-signature
+                     (namestring
+                      (merge-pathnames
+                       "cadr-goal20-watch-missing"
+                       *scratch-directory*))
+                     (namestring present)))))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -32923,6 +33031,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-project-top-level-state"
       "package_manager.derived_project_state"
       "src/cadr-cli/packages/config-selector.lisp config-selector-derived-project-state"
+      "package_manager.update_argv"
+      "src/cadr-cli/packages/update-checks.lisp package-update-check-process-argv"
+      "package_manager.update_env"
+      "src/cadr-cli/packages/update-checks.lisp package-update-check-environment"
+      "package_manager.git_object_id"
+      "src/cadr-cli/packages/update-checks.lisp package-update-git-object-id"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
@@ -33167,6 +33281,12 @@
       "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
       "cli_print_rpc.ui_absent"
       "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line"
+      "cli_print_rpc.dialog_request"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-request-object"
+      "cli_print_rpc.dialog_result"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-result"
+      "cli_print_rpc.dialog_expired"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-expired-p"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"
@@ -33269,6 +33389,12 @@
       "src/cadr-cli/support/model-help.lisp format-no-model-selected-message"
       "cli_support.no_api_key"
       "src/cadr-cli/support/model-help.lisp format-no-api-key-found-message"
+      "cli_support.watch_retry_delay"
+      "src/cadr-cli/support/file-watcher.lisp +fs-watch-retry-delay-milliseconds+"
+      "cli_support.close_watcher"
+      "src/cadr-cli/support/file-watcher.lisp close-watcher"
+      "cli_support.watch_signature"
+      "src/cadr-cli/support/file-watcher.lisp watched-path-signature"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"
