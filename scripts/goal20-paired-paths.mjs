@@ -350,6 +350,9 @@ const REPETITIONS = {
 	"cli_extensions_install.split_command": 50,
 	"cli_extensions_install.handle_plain": 50,
 	"cli_extensions_install.handle_unknown": 50,
+	"cli_extensions_install.string_prefix": 50,
+	"cli_extensions_install.split_path_segments": 50,
+	"cli_extensions_install.strip_git_query": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -14359,6 +14362,51 @@ function replicaStripGitQueryAndRef(path) {
 }
 
 
+function leftoverStringPrefixP(prefix, value) {
+	return value.startsWith(prefix) ? 1 : 0;
+}
+
+
+function leftoverSplitPathSegments(path) {
+	return path.split("/");
+}
+
+
+function runCliExtensionsStringPrefix() {
+	return {
+		sp_git: leftoverStringPrefixP("git@", "git@github.com:user/repo"),
+		sp_http: leftoverStringPrefixP("http://", "https://github.com/user/repo"),
+		sp_case: leftoverStringPrefixP("GIT:", "git:https://example"),
+		sp_empty: leftoverStringPrefixP("", "x"),
+		sp_n: 5,
+	};
+}
+
+
+function runCliExtensionsSplitPathSegments() {
+	const segments = leftoverSplitPathSegments;
+	return {
+		sps_dot: segments("foo/../bar").includes("..") ? 1 : 0,
+		sps_empty: segments("a//b").includes("") ? 1 : 0,
+		sps_nseg: segments("user/repo.git").length,
+		sps_blank: segments("").length,
+		sps_n: 5,
+	};
+}
+
+
+function runCliExtensionsStripGitQuery() {
+	const strip = replicaStripGitQueryAndRef;
+	return {
+		sgq_q: strip("user/repo.git?foo=1") === "user/repo.git" ? 1 : 0,
+		sgq_hash: strip("user/repo.git#ref") === "user/repo.git" ? 1 : 0,
+		sgq_plain: strip("user/repo.git") === "user/repo.git" ? 1 : 0,
+		sgq_both: strip("a?b#c") === "a" ? 1 : 0,
+		sgq_n: 5,
+	};
+}
+
+
 function replicaValidExtensionResourceNameP(name) {
 	if (typeof name !== "string" || name.length === 0) return false;
 	return [...name].every((character) => {
@@ -14770,6 +14818,9 @@ async function measureCliExtensionsInstall() {
 	const split = runCliExtensionsSplitCommand();
 	const plain = runCliExtensionsHandlePlain();
 	const unknown = runCliExtensionsHandleUnknown();
+	const stringPrefix = runCliExtensionsStringPrefix();
+	const splitPathSegments = runCliExtensionsSplitPathSegments();
+	const stripGitQuery = runCliExtensionsStripGitQuery();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -14828,6 +14879,15 @@ async function measureCliExtensionsInstall() {
 		quant_label: await collect("cli_extensions_install.quant_label", () => {
 			return () => runCliExtensionsQuantLabel();
 		}),
+		string_prefix: await collect("cli_extensions_install.string_prefix", () => {
+			return () => runCliExtensionsStringPrefix();
+		}),
+		split_path_segments: await collect("cli_extensions_install.split_path_segments", () => {
+			return () => runCliExtensionsSplitPathSegments();
+		}),
+		strip_git_query: await collect("cli_extensions_install.strip_git_query", () => {
+			return () => runCliExtensionsStripGitQuery();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -14875,6 +14935,9 @@ async function measureCliExtensionsInstall() {
 				["ql_name", "ql_rec", "ql_bytes", "ql_both"],
 				runCliExtensionsQuantLabel(),
 			),
+			...stringPrefix,
+			...splitPathSegments,
+			...stripGitQuery,
 		},
 	};
 }
@@ -37032,6 +37095,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/index.ts llama command argv split",
 			"cli_extensions_install.quant_label":
 				"packages/coding-agent/src/extensions/llama/index.ts downloadModel option text",
+			"cli_extensions_install.string_prefix":
+				"packages/coding-agent/src/utils/git.ts leftover startsWith (cadr string-prefix-p)",
+			"cli_extensions_install.split_path_segments":
+				"packages/coding-agent/src/utils/git.ts leftover split(\"/\") (cadr split-path-segments)",
+			"cli_extensions_install.strip_git_query":
+				"packages/coding-agent/src/utils/git.ts leftover strip query/hash (cadr strip-git-query-and-ref)",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

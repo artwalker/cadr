@@ -222,6 +222,9 @@
 ;;;; 799. package_manager config-selector-hint vs leftover keyHint wrap
 ;;;; 800. package_manager config-selector-override-suffix vs leftover getItemSuffix
 ;;;; 801. package_manager config-selector-checkbox vs leftover renderCheckbox
+;;;; 802. cli_extensions_install string-prefix-p vs leftover startsWith
+;;;; 803. cli_extensions_install split-path-segments vs leftover split("/")
+;;;; 804. cli_extensions_install strip-git-query-and-ref vs leftover strip query/hash
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -734,6 +737,9 @@
     ("cli_extensions_install.gated_approval" . 50)
     ("cli_extensions_install.split_args" . 50)
     ("cli_extensions_install.quant_label" . 50)
+    ("cli_extensions_install.string_prefix" . 50)
+    ("cli_extensions_install.split_path_segments" . 50)
+    ("cli_extensions_install.strip_git_query" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -13119,6 +13125,58 @@
      6)))
 
 
+(defun leftover-string-prefix-flag (prefix value)
+  (if (cadr-cli::string-prefix-p prefix value) 1 0))
+
+
+(defun run-cli-extensions-string-prefix ()
+  ;; Leftover on installer.lisp: startsWith. Not git spawn.
+  (list
+   (leftover-string-prefix-flag "git@" "git@github.com:user/repo")
+   (leftover-string-prefix-flag "http://" "https://github.com/user/repo")
+   (leftover-string-prefix-flag "GIT:" "git:https://example")
+   (leftover-string-prefix-flag "" "x")
+   5))
+
+
+(defun leftover-split-has (path needle)
+  (if (member needle
+              (cadr-cli::split-path-segments path)
+              :test #'string=)
+      1
+      0))
+
+
+(defun leftover-split-len (path)
+  (length (cadr-cli::split-path-segments path)))
+
+
+(defun run-cli-extensions-split-path-segments ()
+  ;; Leftover on installer.lisp: split("/"). Not git spawn.
+  (list
+   (leftover-split-has "foo/../bar" "..")
+   (leftover-split-has "a//b" "")
+   (leftover-split-len "user/repo.git")
+   (leftover-split-len "")
+   5))
+
+
+(defun leftover-strip-eq (path expected)
+  (if (string= (cadr-cli::strip-git-query-and-ref path) expected)
+      1
+      0))
+
+
+(defun run-cli-extensions-strip-git-query ()
+  ;; Leftover on installer.lisp: strip ?/#. Not git spawn.
+  (list
+   (leftover-strip-eq "user/repo.git?foo=1" "user/repo.git")
+   (leftover-strip-eq "user/repo.git#ref" "user/repo.git")
+   (leftover-strip-eq "user/repo.git" "user/repo.git")
+   (leftover-strip-eq "a?b#c" "a")
+   5))
+
+
 (defun git-source-path-text (source)
   (or (cadr-cli::git-source-path source) ""))
 
@@ -13355,7 +13413,10 @@
          (inline-factory (run-cli-extensions-inline-factory))
          (gated-approval (run-cli-extensions-gated-approval))
          (split-args (run-cli-extensions-split-args))
-         (quant-label (run-cli-extensions-quant-label)))
+         (quant-label (run-cli-extensions-quant-label))
+         (string-prefix (run-cli-extensions-string-prefix))
+         (split-path-segments (run-cli-extensions-split-path-segments))
+         (strip-git-query (run-cli-extensions-strip-git-query)))
     (json-object
      "observed"
      (json-object
@@ -13461,7 +13522,22 @@
       "ql_name" (nth 0 quant-label)
       "ql_rec" (nth 1 quant-label)
       "ql_bytes" (nth 2 quant-label)
-      "ql_both" (nth 3 quant-label))
+      "ql_both" (nth 3 quant-label)
+      "sp_git" (nth 0 string-prefix)
+      "sp_http" (nth 1 string-prefix)
+      "sp_case" (nth 2 string-prefix)
+      "sp_empty" (nth 3 string-prefix)
+      "sp_n" (nth 4 string-prefix)
+      "sps_dot" (nth 0 split-path-segments)
+      "sps_empty" (nth 1 split-path-segments)
+      "sps_nseg" (nth 2 split-path-segments)
+      "sps_blank" (nth 3 split-path-segments)
+      "sps_n" (nth 4 split-path-segments)
+      "sgq_q" (nth 0 strip-git-query)
+      "sgq_hash" (nth 1 strip-git-query)
+      "sgq_plain" (nth 2 strip-git-query)
+      "sgq_both" (nth 3 strip-git-query)
+      "sgq_n" (nth 4 strip-git-query))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -13557,7 +13633,22 @@
      (collect "cli_extensions_install.quant_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-quant-label)))))))
+                  (run-cli-extensions-quant-label))))
+     "string_prefix"
+     (collect "cli_extensions_install.string_prefix"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-string-prefix))))
+     "split_path_segments"
+     (collect "cli_extensions_install.split_path_segments"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-split-path-segments))))
+     "strip_git_query"
+     (collect "cli_extensions_install.strip_git_query"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-strip-git-query)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -36230,6 +36321,12 @@
       "src/cadr-cli/extensions/llama/extension.lisp split-llama-command-arguments"
       "cli_extensions_install.quant_label"
       "src/cadr-cli/extensions/llama/extension.lisp llama-quantization-option-label"
+      "cli_extensions_install.string_prefix"
+      "src/cadr-cli/extensions/installer.lisp string-prefix-p"
+      "cli_extensions_install.split_path_segments"
+      "src/cadr-cli/extensions/installer.lisp split-path-segments"
+      "cli_extensions_install.strip_git_query"
+      "src/cadr-cli/extensions/installer.lisp strip-git-query-and-ref"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

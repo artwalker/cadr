@@ -8509,6 +8509,51 @@
    "piUs": 3.484,
    "ceiling": 25.0,
    "rc": 2
+  },
+  {
+   "pair": 802,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.string_prefix",
+   "branch": "g20-freeze-802-804",
+   "note": "remeasure on tip Friend-MachineD; leftover id 802",
+   "ratio": 1.109,
+   "cadrUs": 0.236,
+   "piUs": 0.213,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 803,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.split_path_segments",
+   "branch": "g20-freeze-802-804",
+   "note": "remeasure on tip Friend-MachineD; leftover id 803",
+   "ratio": 2.742,
+   "cadrUs": 0.885,
+   "piUs": 0.323,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 804,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.strip_git_query",
+   "branch": "g20-freeze-802-804",
+   "note": "remeasure on tip Friend-MachineD; leftover id 804",
+   "ratio": 2.811,
+   "cadrUs": 0.697,
+   "piUs": 0.248,
+   "ceiling": 8.0,
+   "rc": 0
   }
  ],
  "mergeQueue": []
