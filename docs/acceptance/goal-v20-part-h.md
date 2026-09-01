@@ -5999,6 +5999,46 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 1012 — `cli_bootstrap_sessions` (pb_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pb_ok` | `parse-user-bash-input` (`src/cadr-cli/repl.lisp`) | leftover replica of `!` / `!!` bash extract |
+
+Leftover of the last `cli_bootstrap_sessions` needs-pair file. Does not remount
+`parse_bash`. Timed work is bang-prefix parse. Observed `pb_ls` / `pb_n` are exact. Collect restore n=5 freeze **0.804×** (0.820 /
+1.020 µs) on host `Friend-MachineD`, gitHead `ceb8a4cb3`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1×. Same commit no
+optimize.
+
+### Pair 1013 — `cli_bootstrap_sessions` (rt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rt_ok` | `response-text` (`src/cadr-cli/repl.lisp`) | leftover replica of textParts.join |
+
+Leftover sibling of Pair 1012. Does not remount `response_text`.
+Observed `rt_one` / `rt_empty` are exact. Collect restore n=5 freeze **2.499×** (1.475 /
+0.590 µs) on host `Friend-MachineD`, gitHead `ceb8a4cb3`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 1014 — `cli_bootstrap_sessions` (dp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dp_ok` | `dispatch-user-input` (`src/cadr-cli/repl.lisp`) | leftover replica of submit classify |
+
+Leftover sibling of Pairs 1012–1013. Does not remount `dispatch_plain`.
+Observed `dp_empty` / `dp_n` are exact. Collect restore n=5 freeze **0.618×** (0.654 /
+1.059 µs) on host `Friend-MachineD`, gitHead `ceb8a4cb3`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Under 1×. Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -10292,14 +10332,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 243 | 104,241 | 80.6% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 104,353 | 80.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 1 | 112 | 0.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.6% of lines (243 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 86.4% of lines.
+- **Falsifiable vs baseline:** 80.7% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 86.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -10484,6 +10524,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
 | `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id` |
+| `src/cadr-cli/repl.lisp` | 112 | `cli_bootstrap_sessions.pb_ok`, `cli_bootstrap_sessions.rt_ok`, `cli_bootstrap_sessions.dp_ok` |
 | `src/cadr-cli/resource-loader.lisp` | 376 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
@@ -10620,7 +10661,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_bootstrap_sessions` | 1 | 112 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

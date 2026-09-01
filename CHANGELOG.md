@@ -10,6 +10,15 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `cli_bootstrap_sessions.pb_ok` / `rt_ok` / `dp_ok` (pairs 1012–1014)
+  on `src/cadr-cli/repl.lisp`. n=5 freeze on host `Friend-MachineD`.
+  Over-1×: `rt_ok` **2.499×**.
+  Reclassified last needs-pair file. `needs-pair` 1→0. G.17 stays missing.
+  `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `settings_load.sdk_default_provider` / `sdk_default_model` /
   `sdk_retry_settings` (pairs 763–765). n=5 freeze on host
   `Friend-MachineD`. Over-1×: provider

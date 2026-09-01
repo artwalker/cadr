@@ -371,6 +371,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.managed_binary_names` | 0.430 | 0.315 | 1.362× | 8.00× | leftover collect restore pair 841; `+managed-binary-names+` vs fd/rg names | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.migration_guide_url` | 0.656 | 0.212 | 3.089× | 8.00× | leftover collect restore pair 842; `+migration-guide-url+` vs MIGRATION_GUIDE_URL | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.extensions_doc_url` | 0.549 | 0.204 | 2.691× | 8.00× | leftover collect restore pair 843; `+extensions-doc-url+` vs EXTENSIONS_DOC_URL | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.rt_ok` | 1.475 | 0.590 | 2.499× | 8.00× | leftover collect restore pair 1013; `response-text` vs textParts.join replica (does not remount response_text) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_entry` | 1.424 | 0.238 | 5.982× | 8.00× | measure-only pair 493; `make-tui-user-bash-entry` vs BashExecutionComponent constructor (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.append_output` | 0.776 | 0.290 | 2.670× | 8.00× | measure-only pair 494; `append-tui-user-bash-output` vs appendOutput concatenate (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.complete_entry` | 0.974 | 0.404 | 2.411× | 8.00× | measure-only pair 495; `complete-tui-user-bash-entry` vs setComplete (sub-µs variance) | invent pause；地板优化另刀 |
