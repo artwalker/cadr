@@ -47,6 +47,7 @@
     "cli_bootstrap_sessions.extensions_doc_url",
     "cli_bootstrap_sessions.file_tags",
     "cli_bootstrap_sessions.legacy_data_directory",
+    "cli_bootstrap_sessions.last_assistant_text",
     "cli_bootstrap_sessions.managed_binary_names",
     "cli_bootstrap_sessions.manual_migration_command",
     "cli_bootstrap_sessions.migration_guide_url",
@@ -56,7 +57,9 @@
     "cli_bootstrap_sessions.scope_hint",
     "cli_bootstrap_sessions.session_compaction_status",
     "cli_bootstrap_sessions.session_entry_user_text",
+    "cli_bootstrap_sessions.session_export_basename",
     "cli_bootstrap_sessions.session_path",
+    "cli_bootstrap_sessions.session_user_messages_for_forking",
     "cli_bootstrap_sessions.split_command",
     "cli_dispatch.argv_parse",
     "cli_dispatch.help_render",
@@ -1801,10 +1804,13 @@
       "class": "paired",
       "metrics": [
         "cli_bootstrap_sessions.assistant_tool_call_only",
+        "cli_bootstrap_sessions.last_assistant_text",
         "cli_bootstrap_sessions.path_argument",
         "cli_bootstrap_sessions.session_compaction_status",
         "cli_bootstrap_sessions.session_entry_user_text",
+        "cli_bootstrap_sessions.session_export_basename",
         "cli_bootstrap_sessions.session_path",
+        "cli_bootstrap_sessions.session_user_messages_for_forking",
         "cli_bootstrap_sessions.split_command"
       ]
     },
