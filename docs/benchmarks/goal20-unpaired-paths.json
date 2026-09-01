@@ -668,7 +668,10 @@
     "skill_prompt_load.sdk_get_themes",
     "settings_load.sdk_default_provider",
     "settings_load.sdk_default_model",
-    "settings_load.sdk_retry_settings"
+    "settings_load.sdk_retry_settings",
+    "cli_bootstrap_sessions.pb_ok",
+    "cli_bootstrap_sessions.rt_ok",
+    "cli_bootstrap_sessions.dp_ok"
   ],
   "unpairablePaths": [
     {
@@ -2451,8 +2454,12 @@
     },
     {
       "prefix": "src/cadr-cli/repl.lisp",
-      "class": "needs-pair",
-      "hole": "cli_bootstrap_sessions"
+      "class": "paired",
+      "metrics": [
+        "cli_bootstrap_sessions.pb_ok",
+        "cli_bootstrap_sessions.rt_ok",
+        "cli_bootstrap_sessions.dp_ok"
+      ]
     },
     {
       "prefix": "src/cadr-cli/sdk/agent-session.lisp",
