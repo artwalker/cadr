@@ -477,6 +477,29 @@ tag/Release step.
   (Pair 1404). Over-1× booked. Does not remount `render_trust_selector` /
   leftover 1048 `tr_rnd` / leftover 1125 `trn_ok` / leftover 1206 `trrs_ok` /
   leftover 1272 `trrsx_ok` / leftover 1338 `trrsxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.lmsxxxx_ok`
+  (`make-login-method-selector-state` vs leftover replica of ExtensionSelector
+  login-method constructor). Observed `mlms_default` / `mlms_three` exact. n=5 **1.274×**
+  (2.681 / 2.105 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1405). Over-1× booked. Does not remount `make_login_method_selector_state`
+  / leftover 1003 `mlms_ok` / leftover 1126 `lms_ok` / leftover 1207 `lmsx_ok`
+  / leftover 1273 `lmsxx_ok` / leftover 1339 `lmsxxx_ok`. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.akixxxx_ok`
+  (`make-api-key-input-state` vs leftover replica of showPrompt api key Input
+  constructor). Observed `makis_anth` / `makis_named` exact. n=5 **2.039×**
+  (2.164 / 1.061 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1406). Over-1× booked. Does not remount `make_api_key_input_state` /
+  leftover 1003 `makis_ok` / leftover 1127 `aki_ok` / leftover 1208 `akix_ok` /
+  leftover 1274 `akixx_ok` / leftover 1340 `akixxx_ok`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.ossxxxx_ok`
+  (`make-oauth-selector-state` vs leftover replica of OauthSelectorComponent
+  constructor). Observed `moss_default` / `moss_logout` exact. n=5 **1.340×**
+  (7.239 / 5.400 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 1407). Over-1× booked. Does not remount `make_oauth_selector_state` /
+  leftover 1003 `moss_ok` / leftover 1128 `oss_ok` / leftover 1209 `ossx_ok` /
+  leftover 1275 `ossxx_ok` / leftover 1341 `ossxxx_ok`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
