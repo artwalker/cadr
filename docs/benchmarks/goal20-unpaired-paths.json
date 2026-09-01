@@ -528,6 +528,7 @@
     "package_manager.find_item_index",
     "package_manager.git_object_id",
     "package_manager.group_less_p",
+    "package_manager.inherited_enabled",
     "package_manager.item_matches",
     "package_manager.item_ordinal",
     "package_manager.item_source_base",
@@ -535,6 +536,7 @@
     "package_manager.normalize_pattern",
     "package_manager.package_entry_filter",
     "package_manager.package_entry_has_filters",
+    "package_manager.package_entry_index",
     "package_manager.package_override_source",
     "package_manager.package_resource_pattern",
     "package_manager.package_source",
@@ -548,6 +550,7 @@
     "package_manager.resolve",
     "package_manager.resource_display_name",
     "package_manager.resource_file_p",
+    "package_manager.resource_group_key",
     "package_manager.resource_group_label",
     "package_manager.resource_item_key",
     "package_manager.resource_key",
@@ -2470,7 +2473,10 @@
         "package_manager.visible_range",
         "package_manager.resource_item_key",
         "package_manager.project_override_state",
-        "package_manager.next_project_state"
+        "package_manager.next_project_state",
+        "package_manager.inherited_enabled",
+        "package_manager.resource_group_key",
+        "package_manager.package_entry_index"
       ]
     },
     {
