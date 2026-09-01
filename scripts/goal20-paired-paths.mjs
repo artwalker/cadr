@@ -12634,7 +12634,27 @@ async function measureCliExtensionsInstall() {
 		handle_unknown: await collect("cli_extensions_install.handle_unknown", () => {
 			return () => runCliExtensionsHandleUnknown();
 		}),
-		observed: { ...url, ...token, ...catalog, ...discovery, ...split, ...plain, ...unknown },
+		llama_context_label: await collect("cli_extensions_install.llama_context_label", () => {
+			return () => runCliExtensionsLlamaContextLabel();
+		}),
+		llama_model_description: await collect("cli_extensions_install.llama_model_description", () => {
+			return () => runCliExtensionsLlamaModelDescription();
+		}),
+		llama_compact_count: await collect("cli_extensions_install.llama_compact_count", () => {
+			return () => runCliExtensionsLlamaCompactCount();
+		}),
+		observed: {
+			...url,
+			...token,
+			...catalog,
+			...discovery,
+			...split,
+			...plain,
+			...unknown,
+			...runCliExtensionsLlamaContextLabel(),
+			...runCliExtensionsLlamaModelDescription(),
+			...runCliExtensionsLlamaCompactCount(),
+		},
 	};
 }
 
@@ -33927,6 +33947,12 @@ const result = {
 				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand non-slash miss",
 			"cli_extensions_install.handle_unknown":
 				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand getCommand miss",
+			"cli_extensions_install.llama_context_label":
+				"packages/coding-agent/src/extensions/llama/ui.ts contextLabel",
+			"cli_extensions_install.llama_model_description":
+				"packages/coding-agent/src/extensions/llama/ui.ts modelDescription",
+			"cli_extensions_install.llama_compact_count":
+				"packages/coding-agent/src/extensions/llama/ui.ts compactCount",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

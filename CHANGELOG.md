@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 pair restore: lisp collect + `file_tags` for
+  `cli_extensions_install.llama_context_label` /
+  `llama_model_description` / `llama_compact_count` on
+  `src/cadr-cli/extensions/llama/ui.lisp`. Run-fns, METRICS, and the pi
+  half already existed. Freeze and inventory reclassify follow. G.17
+  stays missing. `nextPairNum` left unchanged.
+
 - Aligned with pi **v0.84.4** (`b79e4cc83` +0).
   cadr 0.2.0 · aligned with pi v0.84.4 (+0, b79e4cc83). Terminal capability
   overrides (`CADR_HYPERLINKS` / `CADR_IMAGE_PROTOCOL` /
