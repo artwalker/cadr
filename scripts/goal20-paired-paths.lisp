@@ -557,6 +557,9 @@
     ("settings_load.provider_default_model" . 50)
     ("settings_load.oauth_refresh_function" . 50)
     ("settings_load.oauth_login_function" . 50)
+    ("settings_load.sdk_default_provider" . 50)
+    ("settings_load.sdk_default_model" . 50)
+    ("settings_load.sdk_retry_settings" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4465,6 +4468,73 @@
          0))))
 
 
+(defun leftover-sdk-settings-fixture ()
+  (cadr-cli::make-memory-sdk-settings-manager
+   (cadr-ai::json-object
+    "defaultProvider" "openai"
+    "defaultModel" "gpt-4"
+    "retry"
+    (cadr-ai::json-object
+     "enabled" t
+     "maxRetries" 5
+     "baseDelayMs" 2000))))
+
+(defun run-settings-load-sdk-default-provider ()
+  ;; Leftover sibling: SDK defaultProvider. Not stream-chat.
+  (let ((manager (leftover-sdk-settings-fixture))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (string=
+          (cadr-cli::sdk-settings-default-provider manager)
+          "openai")
+         1
+         0)
+     (if (null (cadr-cli::sdk-settings-default-provider empty))
+         1
+         0)
+     (length
+      (or (cadr-cli::sdk-settings-default-provider manager) ""))
+     (if (stringp (cadr-cli::sdk-settings-default-provider manager))
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-default-model ()
+  ;; Leftover sibling: SDK defaultModel. Not stream-chat.
+  (let ((manager (leftover-sdk-settings-fixture))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (string=
+          (cadr-cli::sdk-settings-default-model manager)
+          "gpt-4")
+         1
+         0)
+     (if (null (cadr-cli::sdk-settings-default-model empty))
+         1
+         0)
+     (length
+      (or (cadr-cli::sdk-settings-default-model manager) ""))
+     (if (stringp (cadr-cli::sdk-settings-default-model manager))
+         1
+         0)
+     5)))
+
+(defun run-settings-load-sdk-retry-settings ()
+  ;; Leftover sibling: SDK retry plist. Not login I/O.
+  (let* ((hit (cadr-cli::sdk-settings-retry-settings
+               (leftover-sdk-settings-fixture)))
+         (empty (cadr-cli::sdk-settings-retry-settings
+                 (cadr-cli::make-memory-sdk-settings-manager))))
+    (list
+     (if (eq (getf hit :enabled-p) t) 1 0)
+     (if (= (getf hit :max-retries) 5) 1 0)
+     (if (= (getf hit :base-delay-ms) 2000) 1 0)
+     (if (and (eq (getf empty :enabled-p) t)
+              (= (getf empty :max-retries) 3))
+         1
+         0)
+     5)))
+
 (defun measure-settings-load ()
   (let ((config-paths-agent (stage-settings-load-config-paths)))
     (destructuring-bind (empty project store-path)
@@ -4492,7 +4562,13 @@
               (oauth-refresh-function
                 (run-settings-load-oauth-refresh-function))
               (oauth-login-function
-                (run-settings-load-oauth-login-function)))
+                (run-settings-load-oauth-login-function))
+              (sdk-default-provider
+                (run-settings-load-sdk-default-provider))
+              (sdk-default-model
+                (run-settings-load-sdk-default-model))
+              (sdk-retry-settings
+                (run-settings-load-sdk-retry-settings)))
         (json-object
          "observed"
          (json-object
@@ -4568,7 +4644,22 @@
           "olf_anth" (nth 1 oauth-login-function)
           "olf_miss" (nth 2 oauth-login-function)
           "olf_diff" (nth 3 oauth-login-function)
-          "olf_n" (nth 4 oauth-login-function))
+          "olf_n" (nth 4 oauth-login-function)
+          "sdp_hit" (nth 0 sdk-default-provider)
+          "sdp_miss" (nth 1 sdk-default-provider)
+          "sdp_len" (nth 2 sdk-default-provider)
+          "sdp_str" (nth 3 sdk-default-provider)
+          "sdp_n" (nth 4 sdk-default-provider)
+          "sdm_hit" (nth 0 sdk-default-model)
+          "sdm_miss" (nth 1 sdk-default-model)
+          "sdm_len" (nth 2 sdk-default-model)
+          "sdm_str" (nth 3 sdk-default-model)
+          "sdm_n" (nth 4 sdk-default-model)
+          "srs_en" (nth 0 sdk-retry-settings)
+          "srs_max" (nth 1 sdk-retry-settings)
+          "srs_base" (nth 2 sdk-retry-settings)
+          "srs_empty" (nth 3 sdk-retry-settings)
+          "srs_n" (nth 4 sdk-retry-settings))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -4641,7 +4732,22 @@
          (collect "settings_load.oauth_login_function"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-oauth-login-function))))))))))
+                      (run-settings-load-oauth-login-function))))
+         "sdk_default_provider"
+         (collect "settings_load.sdk_default_provider"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-default-provider))))
+         "sdk_default_model"
+         (collect "settings_load.sdk_default_model"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-default-model))))
+         "sdk_retry_settings"
+         (collect "settings_load.sdk_retry_settings"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-retry-settings))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -33892,6 +33998,12 @@
       "src/cadr-cli/config.lisp oauth-refresh-function"
       "settings_load.oauth_login_function"
       "src/cadr-cli/config.lisp oauth-login-function"
+      "settings_load.sdk_default_provider"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-provider"
+      "settings_load.sdk_default_model"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-model"
+      "settings_load.sdk_retry_settings"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-retry-settings"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"

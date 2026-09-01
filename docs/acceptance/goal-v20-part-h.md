@@ -5961,6 +5961,44 @@ ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
 optimize.
 
 
+### Pair 763 — `settings_load` (sdk_default_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_default_provider` | `sdk-settings-default-provider` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultProvider` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover of the `settings_load` hole on `settings-service.lisp`. Timed work is
+in-memory defaultProvider lookup. Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` are exact. Collect restore n=5 freeze **2.335×** (34.963 /
+14.971 µs) on host `Friend-MachineD`, gitHead `d6e0870f6`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 764 — `settings_load` (sdk_default_model)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_default_model` | `sdk-settings-default-model` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultModel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 763. Observed `sdm_hit` / `sdm_miss` / `sdm_len` / `sdm_str` / `sdm_n` are exact. Collect restore n=5 freeze **5.024×** (36.317 /
+7.229 µs) on host `Friend-MachineD`, gitHead `d6e0870f6`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+### Pair 765 — `settings_load` (sdk_retry_settings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_retry_settings` | `sdk-settings-retry-settings` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getRetrySettings` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 763–764. Observed `srs_en` / `srs_max` / `srs_base` / `srs_empty` / `srs_n` are exact. Collect restore n=5 freeze **1.819×** (19.285 /
+10.602 µs) on host `Friend-MachineD`, gitHead `d6e0870f6`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
+
+
 ### Pair 439 — `evals_harness` (extension_authoring_input)
 
 | metric | cadr | pi |
@@ -10254,14 +10292,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 242 | 104,046 | 80.4% | `no worse than baseline` is falsifiable |
+| `paired` | 243 | 104,241 | 80.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 2 | 307 | 0.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 1 | 112 | 0.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.4% of lines (242 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 86.3% of lines.
+- **Falsifiable vs baseline:** 80.6% of lines (243 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 86.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -10453,6 +10491,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/resource-service.lisp` | 370 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
+| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
@@ -10581,7 +10620,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `settings_load` | 1 | 195 |
 | `cli_bootstrap_sessions` | 1 | 112 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

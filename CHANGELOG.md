@@ -10,6 +10,18 @@ tag/Release step.
 ### Changed
 
 - Goal 20 pair restore: lisp collect + `file_tags` for leftover
+  `settings_load.sdk_default_provider` / `sdk_default_model` /
+  `sdk_retry_settings` (pairs 763–765). n=5 freeze on host
+  `Friend-MachineD`. Over-1×: provider
+  **2.335×**,
+  model **5.024×**,
+  retry **1.819×**.
+  Reclassified `src/cadr-cli/sdk/settings-service.lisp`. `needs-pair` 2→1.
+  G.17 stays missing. `nextPairNum` left unchanged.
+
+### Changed
+
+- Goal 20 pair restore: lisp collect + `file_tags` for leftover
   `skill_prompt_load.sdk_get_skills` / `sdk_get_prompts` / `sdk_get_themes`
   (pairs 919–921). n=5 freeze on host `Friend-MachineD`. Over-1×:
   skills **1.587×**,

@@ -665,7 +665,10 @@
     "cli_bootstrap_sessions.extensions_doc_url",
     "skill_prompt_load.sdk_get_skills",
     "skill_prompt_load.sdk_get_prompts",
-    "skill_prompt_load.sdk_get_themes"
+    "skill_prompt_load.sdk_get_themes",
+    "settings_load.sdk_default_provider",
+    "settings_load.sdk_default_model",
+    "settings_load.sdk_retry_settings"
   ],
   "unpairablePaths": [
     {
@@ -2500,8 +2503,12 @@
     },
     {
       "prefix": "src/cadr-cli/sdk/settings-service.lisp",
-      "class": "needs-pair",
-      "hole": "settings_load"
+      "class": "paired",
+      "metrics": [
+        "settings_load.sdk_default_provider",
+        "settings_load.sdk_default_model",
+        "settings_load.sdk_retry_settings"
+      ]
     },
     {
       "prefix": "src/cadr-cli/sdk/system-prompt.lisp",
