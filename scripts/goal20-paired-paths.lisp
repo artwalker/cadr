@@ -10253,6 +10253,12 @@
     "/auth/callback" "expected" "OpenAI" 400)
    4))
 
+(defparameter +oauth-account-id-payload+
+  "eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ")
+
+(defparameter +oauth-account-id-token+
+  "e30.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ.sig")
+
 (defun oauth-base64url-value-flag (character expected)
   (handler-case
       (if (eql (cadr-ai::base64url-value character) expected)
