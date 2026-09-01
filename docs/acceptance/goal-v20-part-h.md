@@ -4203,10 +4203,10 @@ leads. Same commit no optimize.
 Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/providers/openai-device.lisp`.
 Timed work is empty-object / `{error: boom}` / nil copy — not loopback HTTP, not
 `start-openai-codex-device-authorization`. Observed `jc_empty` / `jc_ok` /
-`jc_nil` / `jc_n` are exact. First n=5 freeze **2.191×** (0.936 / 0.427 µs)
-on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
-fail). Over-1× booked. Same commit no optimize.
+`jc_nil` / `jc_n` are exact. Collect restore n=5 freeze **2.173×** (0.938 /
+0.432 µs) on host `cursor`, gitHead `2270fa219`, ceiling 8.0. Overlay
+recorded; py full gate rc=2 from leftover `parsed_provider` METRICS
+pollution. Over-1× booked. Same commit no optimize.
 
 ### Pair 422 — `oauth_pkce_device` (interval_seconds)
 
@@ -4218,9 +4218,9 @@ Leftover sibling of Pair 421 `json_copy` on the same `openai-device.lisp`
 `oauth_pkce_device` hole. Timed work is numeric / trimmed-string / zero
 interval plus negative and `nope` errors — not the device POST. Observed
 `iv_num` / `iv_str` / `iv_zero` / `iv_neg` / `iv_bad` / `iv_n` are exact.
-First n=5 freeze **0.711×** (3.764 / 5.293 µs) on host `cursor`, ceiling 8.0.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). cadr leads. Same commit
+Collect restore n=5 freeze **0.819×** (3.779 / 4.616 µs) on host `cursor`,
+gitHead `2270fa219`, ceiling 8.0. cadr leads. Overlay recorded; py full
+gate rc=2 from leftover `parsed_provider` METRICS pollution. Same commit
 no optimize.
 
 ### Pair 423 — `oauth_pkce_device` (device_start)
@@ -4232,10 +4232,11 @@ no optimize.
 Leftover sibling of Pairs 421–422 on the same `openai-device.lisp`
 `oauth_pkce_device` hole. Timed work is stubbed-HTTP start (200 valid / 404 /
 500 body / missing `user_code`) — not poll, not runtime login select. Observed
-`ds_ok` / `ds_404` / `ds_fail` / `ds_bad` / `ds_n` are exact. First n=5 freeze
-**1.116×** (8.710 / 7.805 µs) on host `cursor`, ceiling 8.0. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
-help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+`ds_ok` / `ds_404` / `ds_fail` / `ds_bad` / `ds_n` are exact. Collect restore
+n=5 freeze **1.067×** (8.602 / 8.064 µs) on host `cursor`, gitHead
+`2270fa219`, ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
 
 ### Pair 343 — `write_tool` (ensure_parent)
 
@@ -4643,10 +4644,10 @@ Leftover sibling of the `oauth_pkce_device` hole on
 (`A` / `a` / `0` / `-` / `_`) — not token HTTP, not browser login. Do not
 exact characters outside `A-Za-z0-9-_` (Lisp `NIL` vs JS `indexOf` `-1`).
 Observed `bv_A` / `bv_a` / `bv_0` / `bv_dash` / `bv_us` / `bv_n` are exact.
-First n=5 freeze **2.692×** (0.736 / 0.273 µs) on host `cursor`, ceiling 8.0.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
-commit no optimize.
+Collect restore n=5 freeze **2.520×** (0.739 / 0.293 µs) on host `cursor`,
+gitHead `2270fa219`, ceiling 8.0. Overlay recorded; py full gate rc=2 from
+leftover `parsed_provider` METRICS pollution. Over-1× booked. Same commit
+no optimize.
 
 ### Pair 359 — `oauth_pkce_device` (base64url_decode)
 
@@ -4658,10 +4659,10 @@ Leftover sibling of Pair 358 `base64url_value` on the same
 `oauth_pkce_device` hole. Timed work is unpadded alphabet-only decode
 (`{}` / `foo` / account-id JWT payload) — not `+`/`/` padding, not `-`/`_`
 (pi `atob`, not base64url). Observed `bd_obj` / `bd_foo` / `bd_acct` /
-`bd_n` are exact. First n=5 freeze **6.544×** (2.969 / 0.454 µs) on host
-`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
-known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
-Over-1× booked. Same commit no optimize.
+`bd_n` are exact. Collect restore n=5 freeze **6.461×** (2.922 / 0.452 µs) on
+host `cursor`, gitHead `2270fa219`, ceiling 8.0. Overlay recorded; py full
+gate rc=2 from leftover `parsed_provider` METRICS pollution. Over-1× booked.
+Same commit no optimize.
 
 ### Pair 360 — `oauth_pkce_device` (account_id)
 
@@ -4674,10 +4675,11 @@ Timed work is JWT account-id extract (present / missing claim / not a JWT)
 — not token exchange, not `token-response-credential` expiry. Do not exact
 two-part tokens (pi `decodeJwt` requires three parts). Do not exact empty
 `chatgpt_account_id` (pi requires length > 0). Observed `aid_ok` /
-`aid_miss` / `aid_bad` / `aid_n` are exact. First n=5 freeze **5.986×**
-(6.112 / 1.021 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). Over-1× booked. Same commit no optimize.
+`aid_miss` / `aid_bad` / `aid_n` are exact. Collect restore n=5 freeze
+**5.167×** (6.065 / 1.174 µs) on host `cursor`, gitHead `2270fa219`,
+ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
 
 ### Pair 361 — `core_rest` (cancellation_make)
 
@@ -5003,10 +5005,10 @@ Timed work is JSON error-detail extraction (description-only / string `error`)
 — not HTTP, not `login-xai-oauth`. Do not exact both fields present (Lisp
 prefers description; pi joins `"error: description"`) or nested `error`
 objects / `message`. Observed `ed_desc` / `ed_error` / `ed_n` are exact.
-First n=5 freeze **2.301×** (0.838 / 0.364 µs) on host `cursor`, ceiling 8.0.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
-Over-1× booked. Pair numbers 328–378 belong to other lanes; this cut is
+Collect restore n=5 freeze **2.184×** (0.810 / 0.371 µs) on host `cursor`,
+gitHead `2270fa219`, ceiling 8.0. Overlay recorded; py full gate rc=2 from
+leftover `parsed_provider` METRICS pollution. Over-1× booked. Same commit
+no optimize. Pair numbers 328–378 belong to other lanes; this cut is
 379–381 only.
 
 ### Pair 380 — `oauth_pkce_device` (ensure_success)
@@ -5019,10 +5021,10 @@ Leftover sibling of Pair 379 `error_detail` on the same `oauth_pkce_device`
 hole. Timed work is 200/201 success vs HTTP 400 throw — not socket POST.
 Do not exact formatted messages (cadr interpolates provider+action; pi
 hard-codes `xAI OAuth`). Observed `es_ok` / `es_created` / `es_fail` /
-`es_n` are exact. First n=5 freeze **0.701×** (1.779 / 2.538 µs) on host
-`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
-known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
-cadr leads. Same commit no optimize.
+`es_n` are exact. Collect restore n=5 freeze **0.693×** (1.697 / 2.451 µs)
+on host `cursor`, gitHead `2270fa219`, ceiling 8.0. cadr leads. Overlay
+recorded; py full gate rc=2 from leftover `parsed_provider` METRICS
+pollution. Same commit no optimize.
 
 ### Pair 381 — `oauth_pkce_device` (notify_device)
 
@@ -5034,11 +5036,11 @@ Leftover sibling of Pair 379 `error_detail` and Pair 380 `ensure_success`
 on the same `oauth_pkce_device` hole. Timed work is device-code notify
 payload (complete URI preferred / plain URI / user-code) — not poll, not
 login. Do not exact interval slot names (`:interval` vs `intervalSeconds`).
-Observed `nd_complete` / `nd_plain` / `nd_code` / `nd_n` are exact. First
-n=5 freeze **2.586×** (0.960 / 0.371 µs) on host `cursor`, ceiling 8.0.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
-Over-1× booked.
+Observed `nd_complete` / `nd_plain` / `nd_code` / `nd_n` are exact. Collect
+restore n=5 freeze **2.643×** (0.889 / 0.336 µs) on host `cursor`, gitHead
+`2270fa219`, ceiling 8.0. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Over-1× booked. Same commit no
+optimize.
 
 ### Pair 385 — `core_rest` (cancellation_predicate)
 
@@ -5404,10 +5406,10 @@ Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/providers
 Timed work is callback URL / `code=` query / trimmed bare code — not loopback
 HTTP, not `login-openrouter-oauth`. Do not exact empty input (Lisp `NIL` vs
 pi `undefined`) or a URL with no query. Observed `ori_url` / `ori_qs` /
-`ori_plain` / `ori_n` are exact. First n=5 freeze **0.754×** (7.131 / 9.458 µs)
-on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
-only from known old holes `lc_n` / `lc_sleep` / help text; this metric
-did not fail). cadr leads. Same commit no optimize.
+`ori_plain` / `ori_n` are exact. Collect restore n=5 freeze **0.656×**
+(4.934 / 7.523 µs) on host `cursor`, gitHead `2270fa219`, ceiling 8.0.
+cadr leads. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Same commit no optimize.
 
 ### Pair 437 — `oauth_pkce_device` (openrouter_refresh)
 
@@ -5418,10 +5420,10 @@ did not fail). cadr leads. Same commit no optimize.
 Leftover sibling of Pair 436 `openrouter_input` on the same `openrouter.lisp`
 `oauth_pkce_device` hole. Timed work is identity refresh (same object, access
 kept, empty refresh) — not key exchange, not login. Observed `orr_same` /
-`orr_access` / `orr_empty` / `orr_n` are exact. First n=5 freeze **0.698×**
-(0.210 / 0.301 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). cadr leads. Same commit no optimize.
+`orr_access` / `orr_empty` / `orr_n` are exact. Collect restore n=5 freeze
+**0.727×** (0.166 / 0.229 µs) on host `cursor`, gitHead `2270fa219`,
+ceiling 8.0. cadr leads. Overlay recorded; py full gate rc=2 from leftover
+`parsed_provider` METRICS pollution. Same commit no optimize.
 
 ### Pair 438 — `oauth_pkce_device` (openrouter_exchange)
 
@@ -5433,10 +5435,10 @@ Leftover sibling of Pairs 436–437 on the same `openrouter.lisp`
 `oauth_pkce_device` hole. Timed work is stubbed-HTTP key exchange (200 with
 `key`, 400 with `error`, 200 missing `key`) — not the loopback listener, not
 runtime login. Observed `ox_ok` / `ox_fail` / `ox_bad` / `ox_n` are exact.
-First n=5 freeze **1.486×** (10.390 / 6.991 µs) on host `cursor`,
-ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
-holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1×
-booked. Same commit no optimize.
+Collect restore n=5 freeze **1.164×** (7.533 / 6.469 µs) on host `cursor`,
+gitHead `2270fa219`, ceiling 8.0. Overlay recorded; py full gate rc=2 from
+leftover `parsed_provider` METRICS pollution. Over-1× booked. Same commit
+no optimize.
 
 ### Pair 430 — `evals_harness` (make_reporter)
 
@@ -9774,14 +9776,14 @@ Denominator: **297 files / 129,374 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 222 | 100,045 | 77.3% | `no worse than baseline` is falsifiable |
+| `paired` | 229 | 102,202 | 79.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 22 | 4,308 | 3.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 15 | 2,151 | 1.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 77.3% of lines (222 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 83.2% of lines.
+- **Falsifiable vs baseline:** 79.0% of lines (229 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -9861,9 +9863,13 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 431 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/callback.lisp` | 324 | `oauth_pkce_device.http_status_text`, `oauth_pkce_device.parse_authorization_input`, `oauth_pkce_device.parse_callback_request`, `oauth_pkce_device.parse_query`, `oauth_pkce_device.percent_decode`, `oauth_pkce_device.provider_key` |
+| `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth` |
+| `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | `oauth_pkce_device.json_copy`, `oauth_pkce_device.interval_seconds`, `oauth_pkce_device.device_start` |
+| `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange` |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | `oauth_pkce_device.radius_gateway` |
+| `src/cadr-ai/oauth/providers/xai.lisp` | 184 | `oauth_pkce_device.error_detail`, `oauth_pkce_device.ensure_success`, `oauth_pkce_device.notify_device` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
@@ -9897,10 +9903,13 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/config.lisp` | 284 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets` |
 | `src/cadr-cli/extensions/commands.lisp` | 56 | `cli_extensions_install.handle_plain`, `cli_extensions_install.handle_unknown`, `cli_extensions_install.split_command` |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
+| `src/cadr-cli/extensions/installer.lisp` | 209 | `cli_extensions_install.unsafe_git`, `cli_extensions_install.git_path`, `cli_extensions_install.normalize_git` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 485 | `cli_extensions_install.llama_url` |
+| `src/cadr-cli/extensions/llama/extension.lisp` | 470 | `cli_extensions_install.gated_approval`, `cli_extensions_install.split_args`, `cli_extensions_install.quant_label` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 337 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 | `cli_extensions_install.llama_context_label`, `cli_extensions_install.llama_model_description`, `cli_extensions_install.llama_compact_count` |
+| `src/cadr-cli/extensions/loader.lisp` | 702 | `cli_extensions_install.package_fragment`, `cli_extensions_install.local_system_name`, `cli_extensions_install.inline_factory` |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_pixel`, `cli_selectors.armin_cell`, `cli_selectors.armin_grid_height` |
@@ -10081,8 +10090,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_extensions_install` | 3 | 1,381 |
-| `oauth_pkce_device` | 6 | 850 |
 | `cli_bootstrap_sessions` | 2 | 624 |
 | `skill_prompt_load` | 1 | 370 |
 | `package_manager` | 1 | 293 |
@@ -10090,6 +10097,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `settings_load` | 1 | 195 |
 | `provider_registry_defs` | 1 | 157 |
 | `cli_support` | 4 | 103 |
+| `oauth_pkce_device` | 2 | 74 |
 | `cli_selectors` | 1 | 41 |
 | `ai_support` | 1 | 6 |
 

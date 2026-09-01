@@ -37,6 +37,18 @@
   "oauth_pkce_device.cloudflare_url",
   "oauth_pkce_device.radius_gateway",
   "oauth_pkce_device.copilot_auth",
+  "oauth_pkce_device.base64url_value",
+  "oauth_pkce_device.base64url_decode",
+  "oauth_pkce_device.account_id",
+  "oauth_pkce_device.error_detail",
+  "oauth_pkce_device.ensure_success",
+  "oauth_pkce_device.notify_device",
+  "oauth_pkce_device.json_copy",
+  "oauth_pkce_device.interval_seconds",
+  "oauth_pkce_device.device_start",
+  "oauth_pkce_device.openrouter_input",
+  "oauth_pkce_device.openrouter_refresh",
+  "oauth_pkce_device.openrouter_exchange",
   "cli_extensions_install.llama_url",
   "cli_extensions_install.hf_token",
   "cli_extensions_install.llama_catalog",
@@ -1460,8 +1472,12 @@
   },
   {
    "prefix": "src/cadr-ai/oauth/openai-anthropic.lisp",
-   "class": "needs-pair",
-   "hole": "oauth_pkce_device"
+   "class": "paired",
+   "metrics": [
+    "oauth_pkce_device.base64url_value",
+    "oauth_pkce_device.base64url_decode",
+    "oauth_pkce_device.account_id"
+   ]
   },
   {
    "prefix": "src/cadr-ai/oauth/pkce.lisp",
@@ -1489,13 +1505,21 @@
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/openai-device.lisp",
-   "class": "needs-pair",
-   "hole": "oauth_pkce_device"
+   "class": "paired",
+   "metrics": [
+    "oauth_pkce_device.json_copy",
+    "oauth_pkce_device.interval_seconds",
+    "oauth_pkce_device.device_start"
+   ]
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/openrouter.lisp",
-   "class": "needs-pair",
-   "hole": "oauth_pkce_device"
+   "class": "paired",
+   "metrics": [
+    "oauth_pkce_device.openrouter_input",
+    "oauth_pkce_device.openrouter_refresh",
+    "oauth_pkce_device.openrouter_exchange"
+   ]
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/radius.lisp",
@@ -1506,8 +1530,12 @@
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/xai.lisp",
-   "class": "needs-pair",
-   "hole": "oauth_pkce_device"
+   "class": "paired",
+   "metrics": [
+    "oauth_pkce_device.error_detail",
+    "oauth_pkce_device.ensure_success",
+    "oauth_pkce_device.notify_device"
+   ]
   },
   {
    "prefix": "src/cadr-ai/package.lisp",

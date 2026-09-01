@@ -283,9 +283,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.parse_callback_request` | 12.588 | 3.403 | 3.699× | 8.00× | measure-only pair 336; `parse-oauth-callback-request` vs openai-codex loopback pathname/state/code | invent pause；地板优化另刀 |
 | `core_rest.cancellation_wait` | 53.40 | 8.840 | 6.041× | 8.00× | measure-only pair 337; leftover `wait-for-cancellation` vs Atomics.wait timeout + aborted AbortSignal | invent pause；地板优化另刀 |
 | `core_rest.redacted_types` | 2.375 | 0.528 | 4.494× | 8.00× | measure-only pair 338; leftover `redacted-object-types` vs sorted type-list copy; not redact-secrets | invent pause；地板优化另刀 |
-| `oauth_pkce_device.base64url_value` | 0.736 | 0.273 | 2.692× | 8.00× | measure-only pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs — variance floor applies | invent pause；地板优化另刀 |
-| `oauth_pkce_device.base64url_decode` | 2.969 | 0.454 | 6.544× | 8.00× | measure-only pair 359; `base64url-decode` vs `decodeJwt` `atob` | invent pause；地板优化另刀 |
-| `oauth_pkce_device.account_id` | 6.112 | 1.021 | 5.986× | 8.00× | measure-only pair 360; `openai-account-id-from-token` vs `getAccountId` | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_value` | 0.739 | 0.293 | 2.520× | 8.00× | leftover collect restore pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_decode` | 2.922 | 0.452 | 6.461× | 8.00× | leftover collect restore pair 359; `base64url-decode` vs `decodeJwt` `atob` | invent pause；地板优化另刀 |
+| `oauth_pkce_device.account_id` | 6.065 | 1.174 | 5.167× | 8.00× | leftover collect restore pair 360; `openai-account-id-from-token` vs `getAccountId` | invent pause；地板优化另刀 |
 | `evals_harness.release_extensions` | 6.187 | 0.293 | 21.13× | 8.00× | measure-only pair 370; `release-eval-extensions`; ratio > named ceiling — gate uses variance/µs floor | invent pause；地板优化另刀 |
 | `evals_harness.agent_tools` | 1.466 | 0.286 | 5.118× | 8.00× | measure-only pair 371; `eval-agent-tools` vs session tools list | invent pause；地板优化另刀 |
 | `evals_harness.extension_paths` | 2.963 | 0.464 | 6.381× | 8.00× | measure-only pair 372; `eval-extension-paths` vs `getExtensionPaths` | invent pause；地板优化另刀 |
@@ -299,8 +299,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_select_settings_loaders.loader_frames` | 0.200 | 0.190 | 1.051× | 8.00× | measure-only pair 397; `loader-frames` vs Loader DEFAULT_FRAMES copy (sub-µs — variance floor applies) | invent pause；地板优化另刀 |
 | `tui_select_settings_loaders.loader_interval` | 0.201 | 0.138 | 1.464× | 8.00× | measure-only pair 398; `loader-interval-seconds` vs Loader intervalMs (sub-µs — variance floor applies) | invent pause；地板优化另刀 |
 | `tui_select_settings_loaders.loader_step` | 0.339 | 0.219 | 1.543× | 8.00× | measure-only pair 399; `loader-component-step` vs Loader animation tick (sub-µs — variance floor applies) | invent pause；地板优化另刀 |
-| `oauth_pkce_device.error_detail` | 0.838 | 0.364 | 2.301× | 8.00× | measure-only pair 379; `oauth-response-error-detail` vs xai.ts requestFailure detail (sub-µs variance) | invent pause；地板优化另刀 |
-| `oauth_pkce_device.notify_device` | 0.960 | 0.371 | 2.586× | 8.00× | measure-only pair 381; `notify-device-authorization` vs xai.ts interaction.notify device_code (sub-µs variance) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.error_detail` | 0.810 | 0.371 | 2.184× | 8.00× | leftover collect restore pair 379; `oauth-response-error-detail` vs xai.ts requestFailure detail (sub-µs) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.notify_device` | 0.889 | 0.336 | 2.643× | 8.00× | leftover collect restore pair 381; `notify-device-authorization` vs xai.ts interaction.notify device_code (sub-µs) | invent pause；地板优化另刀 |
 | `core_rest.redacted_replace` | 1.464 | 0.433 | 3.383× | 8.00× | measure-only pair 387; `replace-all` vs String.split/join one needle | invent pause；地板优化另刀 |
 | `evals_harness.eval_result` | 0.762 | 0.440 | 1.734× | 8.00× | measure-only pair 376; leftover `make-eval-result` vs SimpleHarnessResult construction; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `evals_harness.root_observer` | 0.362 | 0.162 | 2.239× | 8.00× | measure-only pair 377; leftover `*eval-root-observer*` vs isolated eval root handoff; sub-µs — variance floor applies | invent pause；地板优化另刀 |
@@ -312,11 +312,11 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_select_settings_loaders.set_message` | 0.244 | 0.192 | 1.269× | 8.00× | measure-only pair 416; leftover `loader-component-set-message` vs `Loader.setMessage` (sub-µs variance) | invent pause；地板优化另刀 |
 | `evals_harness.status_name` | 0.352 | 0.204 | 1.726× | 8.00× | measure-only pair 412; leftover `reporter-status-name` vs status lowercasing (sub-µs variance) | invent pause；地板优化另刀 |
 | `evals_harness.case_observation` | 9.383 | 3.057 | 3.069× | 8.00× | measure-only pair 413; leftover `reporter-case-observation` vs collectHarnessObservations | invent pause；地板优化另刀 |
-| `oauth_pkce_device.json_copy` | 0.936 | 0.427 | 2.191× | 8.00× | measure-only pair 421; `oauth-response-json-copy` vs JSON.stringify error-body copy | invent pause；地板优化另刀 |
-| `oauth_pkce_device.device_start` | 8.710 | 7.805 | 1.116× | 8.00× | measure-only pair 423; stubbed `start-openai-codex-device-authorization` | invent pause；地板优化另刀 |
+| `oauth_pkce_device.json_copy` | 0.938 | 0.432 | 2.173× | 8.00× | leftover collect restore pair 421; `oauth-response-json-copy` vs JSON.stringify error-body copy | invent pause；地板优化另刀 |
+| `oauth_pkce_device.device_start` | 8.602 | 8.064 | 1.067× | 8.00× | leftover collect restore pair 423; stubbed `start-openai-codex-device-authorization` | invent pause；地板优化另刀 |
 | `evals_harness.eval_layout` | 3.297 | 1.074 | 3.071× | 8.00× | measure-only pair 418; leftover eval workspace/agent/sessions layout vs path join | invent pause；地板优化另刀 |
 | `evals_harness.output_selector` | 0.189 | 0.188 | 1.007× | 8.00× | measure-only pair 420; leftover `:selector` vs `options.output`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
-| `oauth_pkce_device.openrouter_exchange` | 10.390 | 6.991 | 1.486× | 8.00× | measure-only pair 438; leftover `openrouter-exchange-code` vs `exchangeAuthorizationCode` (stubbed HTTP) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.openrouter_exchange` | 7.533 | 6.469 | 1.164× | 8.00× | leftover collect restore pair 438; leftover `openrouter-exchange-code` vs `exchangeAuthorizationCode` (stubbed HTTP) | invent pause；地板优化另刀 |
 | `output_accumulator.needs_file` | 50.564 | 20.524 | 2.464× | 8.00× | measure-only pair 428; leftover `needs-file-p` vs `shouldUseTempFile` | invent pause；地板优化另刀 |
 | `evals_harness.artifact_metadata` | 1.025 | 0.868 | 1.182× | 8.00× | measure-only pair 432; leftover `reporter-artifact-metadata` vs `appendHarnessRunReport` metadata filter | invent pause；地板优化另刀 |
 | `evals_harness.extension_authoring_input` | 1.148 | 0.246 | 4.662× | 8.00× | measure-only pair 439; `extension-authoring-input` types/length leftover (sub-µs variance) | invent pause；地板优化另刀 |

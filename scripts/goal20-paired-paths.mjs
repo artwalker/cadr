@@ -11267,6 +11267,13 @@ function runOauthPkceDeviceParseCallbackRequest() {
 	};
 }
 
+const OAUTH_BASE64URL_ALPHABET =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const OAUTH_ACCOUNT_ID_PAYLOAD =
+	"eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ";
+const OAUTH_ACCOUNT_ID_TOKEN = `e30.${OAUTH_ACCOUNT_ID_PAYLOAD}.sig`;
+const JWT_CLAIM_PATH = "https://api.openai.com/auth";
+
 function base64urlValueFlag(character, expected) {
 	try {
 		return OAUTH_BASE64URL_ALPHABET.indexOf(character) === expected ? 1 : 0;
@@ -11800,6 +11807,18 @@ async function measureOauthPkceDevice() {
 	const providerKey = runOauthPkceDeviceProviderKey();
 	const statusText = runOauthPkceDeviceHttpStatusText();
 	const callbackRequest = runOauthPkceDeviceParseCallbackRequest();
+	const base64urlValue = runOauthPkceDeviceBase64urlValue();
+	const base64urlDecode = runOauthPkceDeviceBase64urlDecode();
+	const accountId = runOauthPkceDeviceAccountId();
+	const errorDetail = runOauthPkceDeviceErrorDetail();
+	const ensureSuccess = runOauthPkceDeviceEnsureSuccess();
+	const notifyDevice = runOauthPkceDeviceNotifyDevice();
+	const jsonCopy = runOauthPkceDeviceJsonCopy();
+	const intervalSeconds = runOauthPkceDeviceIntervalSeconds();
+	const deviceStart = runOauthPkceDeviceDeviceStart();
+	const openrouterInput = runOauthPkceDeviceOpenrouterInput();
+	const openrouterRefresh = await runOauthPkceDeviceOpenrouterRefresh();
+	const openrouterExchange = runOauthPkceDeviceOpenrouterExchange();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -11837,6 +11856,42 @@ async function measureOauthPkceDevice() {
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
 		}),
+		base64url_value: await collect("oauth_pkce_device.base64url_value", () => {
+			return () => runOauthPkceDeviceBase64urlValue();
+		}),
+		base64url_decode: await collect("oauth_pkce_device.base64url_decode", () => {
+			return () => runOauthPkceDeviceBase64urlDecode();
+		}),
+		account_id: await collect("oauth_pkce_device.account_id", () => {
+			return () => runOauthPkceDeviceAccountId();
+		}),
+		error_detail: await collect("oauth_pkce_device.error_detail", () => {
+			return () => runOauthPkceDeviceErrorDetail();
+		}),
+		ensure_success: await collect("oauth_pkce_device.ensure_success", () => {
+			return () => runOauthPkceDeviceEnsureSuccess();
+		}),
+		notify_device: await collect("oauth_pkce_device.notify_device", () => {
+			return () => runOauthPkceDeviceNotifyDevice();
+		}),
+		json_copy: await collect("oauth_pkce_device.json_copy", () => {
+			return () => runOauthPkceDeviceJsonCopy();
+		}),
+		interval_seconds: await collect("oauth_pkce_device.interval_seconds", () => {
+			return () => runOauthPkceDeviceIntervalSeconds();
+		}),
+		device_start: await collect("oauth_pkce_device.device_start", () => {
+			return () => runOauthPkceDeviceDeviceStart();
+		}),
+		openrouter_input: await collect("oauth_pkce_device.openrouter_input", () => {
+			return () => runOauthPkceDeviceOpenrouterInput();
+		}),
+		openrouter_refresh: await collect("oauth_pkce_device.openrouter_refresh", () => {
+			return () => runOauthPkceDeviceOpenrouterRefresh();
+		}),
+		openrouter_exchange: await collect("oauth_pkce_device.openrouter_exchange", () => {
+			return () => runOauthPkceDeviceOpenrouterExchange();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -11850,6 +11905,18 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...base64urlValue,
+			...base64urlDecode,
+			...accountId,
+			...errorDetail,
+			...ensureSuccess,
+			...notifyDevice,
+			...jsonCopy,
+			...intervalSeconds,
+			...deviceStart,
+			...openrouterInput,
+			...openrouterRefresh,
+			...openrouterExchange,
 		},
 	};
 }
@@ -34005,6 +34072,30 @@ const result = {
 				"node:http STATUS_CODES (cadr oauth-http-status-text)",
 			"oauth_pkce_device.parse_callback_request":
 				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
+			"oauth_pkce_device.base64url_value":
+				"packages/ai/src/auth/oauth/openai-codex.ts RFC4648 alphabet index (cadr base64url-value)",
+			"oauth_pkce_device.base64url_decode":
+				"packages/ai/src/auth/oauth/openai-codex.ts atob payload decode (cadr base64url-decode)",
+			"oauth_pkce_device.account_id":
+				"packages/ai/src/auth/oauth/openai-codex.ts getAccountId (cadr openai-account-id-from-token)",
+			"oauth_pkce_device.error_detail":
+				"packages/ai/src/oauth/xai.ts requestFailure string fields (cadr oauth-response-error-detail)",
+			"oauth_pkce_device.ensure_success":
+				"packages/ai/src/oauth/xai.ts HTTP 2xx vs throw (cadr ensure-oauth-response-success)",
+			"oauth_pkce_device.notify_device":
+				"packages/ai/src/oauth/xai.ts device-code notify event (cadr notify-device-authorization)",
+			"oauth_pkce_device.json_copy":
+				"packages/ai/src/oauth/openai-codex.ts JSON.stringify body copy (cadr oauth-response-json-copy)",
+			"oauth_pkce_device.interval_seconds":
+				"packages/ai/src/oauth/openai-codex.ts device interval parse (cadr openai-device-interval-seconds)",
+			"oauth_pkce_device.device_start":
+				"packages/ai/src/oauth/openai-codex.ts startOpenAICodexDeviceAuthFromResponse (cadr start-openai-codex-device-authorization)",
+			"oauth_pkce_device.openrouter_input":
+				"packages/ai/src/oauth/openrouter.ts authorization code parse (cadr parse-openrouter-authorization-input)",
+			"oauth_pkce_device.openrouter_refresh":
+				"packages/ai/src/oauth/openrouter.ts refresh identity (cadr refresh-openrouter-oauth-credential)",
+			"oauth_pkce_device.openrouter_exchange":
+				"packages/ai/src/oauth/openrouter.ts exchangeAuthorizationCodeFromResponse (cadr openrouter-exchange-code)",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":
