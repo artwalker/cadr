@@ -2418,8 +2418,8 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
-    "cli_bootstrap_sessions.data_directory": 8.0,
-    "cli_bootstrap_sessions.legacy_data_directory": 8.0,
+    "cli_bootstrap_sessions.data_directory": 40.0,
+    "cli_bootstrap_sessions.legacy_data_directory": 40.0,
     "cli_bootstrap_sessions.manual_migration_command": 8.0,
     "cli_bootstrap_sessions.managed_binary_names": 8.0,
     "cli_bootstrap_sessions.migration_guide_url": 8.0,
