@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T15:49:53Z) on `Friend-MachineD`, git `8bb093857134`, ratio_gate=`enforced-only:cli_print_rpc.bash_js,cli_print_rpc.img_ok,cli_print_rpc.prompt_ok`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T16:20:48Z) on `Friend-MachineD`, git `a400d2fe3c7b`, ratio_gate=`enforced-only:evals_harness.suite_id,evals_harness.type_ok,evals_harness.val_ext`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T15:38:58Z) on `Friend-MachineD`, git `7252064d5a76`, ratio_gate=`enforced-only:cli_print_rpc.asst_hit,cli_print_rpc.cmd_n,cli_print_rpc.queue_ok`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T15:49:53Z) on `Friend-MachineD`, git `8bb093857134`, ratio_gate=`enforced-only:cli_print_rpc.bash_js,cli_print_rpc.img_ok,cli_print_rpc.prompt_ok`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -944,6 +944,9 @@ Previous: `paired-paths` (2026-09-02T15:38:58Z) on `Friend-MachineD`, git `72520
 | `evals_harness.bundle_tool_names` | 0.9 | 1.6 | 0.55× | 0.55× | 8.00× |
 | `evals_harness.visible_extension_bundles` | 16.1 | 0.7 | 23.42× | 23.42× | 25.00× |
 | `evals_harness.authoring_harness_table` | 1.1 | 0.2 | 5.16× | 5.16× | 8.00× |
+| `evals_harness.val_ext` | 3.6 | 0.2 | 18.30× | — | 20.00× |
+| `evals_harness.suite_id` | 0.2 | 0.1 | 2.32× | — | 8.00× |
+| `evals_harness.type_ok` | 1.0 | 0.2 | 4.06× | — | 8.00× |
 | `package_manager.update_argv` | 17.8 | 4.3 | 4.17× | 4.17× | 8.00× |
 | `package_manager.update_env` | 11.1 | 88.1 | 0.13× | 0.13× | 8.00× |
 | `package_manager.git_object_id` | 2.9 | 1.1 | 2.54× | 2.54× | 8.00× |
@@ -1328,9 +1331,9 @@ Previous: `paired-paths` (2026-09-02T15:38:58Z) on `Friend-MachineD`, git `72520
 | `cli_print_rpc.rpc_images` | 3.4 | 3.6 | 0.96× | 0.96× | 8.00× |
 | `cli_print_rpc.rpc_prompt` | 1.8 | 1.2 | 1.53× | 1.53× | 8.00× |
 | `cli_print_rpc.bash_result` | 3.0 | 1.0 | 2.96× | 2.96× | 8.00× |
-| `cli_print_rpc.img_ok` | 3.0 | 3.6 | 0.84× | — | 8.00× |
-| `cli_print_rpc.prompt_ok` | 2.0 | 0.5 | 4.00× | — | 8.00× |
-| `cli_print_rpc.bash_js` | 3.1 | 0.7 | 4.54× | — | 8.00× |
+| `cli_print_rpc.img_ok` | 3.0 | 3.6 | 0.84× | 0.84× | 8.00× |
+| `cli_print_rpc.prompt_ok` | 2.0 | 0.5 | 4.00× | 4.00× | 8.00× |
+| `cli_print_rpc.bash_js` | 3.1 | 0.7 | 4.54× | 4.54× | 8.00× |
 | `cli_print_rpc.queue_parse` | 0.6 | 2.5 | 0.25× | 0.25× | 8.00× |
 | `cli_print_rpc.asst_text` | 0.6 | 0.3 | 1.83× | 1.83× | 8.00× |
 | `cli_print_rpc.cmd_list` | 2.2 | 0.2 | 8.68× | 8.68× | 8.00× |
@@ -2435,6 +2438,7 @@ Previous: `paired-paths` (2026-09-02T15:38:58Z) on `Friend-MachineD`, git `72520
 | 2026-09-02T15:26:14Z | paired-paths | `205344f1764f` | no | enforced-only:cli_print_rpc.line_arr,cli_print_rpc.line_bad,cli_print_rpc.line_ui | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T15:38:58Z | paired-paths | `7252064d5a76` | no | enforced-only:cli_print_rpc.asst_hit,cli_print_rpc.cmd_n,cli_print_rpc.queue_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T15:49:53Z | paired-paths | `8bb093857134` | no | enforced-only:cli_print_rpc.bash_js,cli_print_rpc.img_ok,cli_print_rpc.prompt_ok | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-02T16:20:48Z | paired-paths | `a400d2fe3c7b` | no | enforced-only:evals_harness.suite_id,evals_harness.type_ok,evals_harness.val_ext | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
