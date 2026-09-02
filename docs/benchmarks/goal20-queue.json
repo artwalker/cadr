@@ -9849,6 +9849,51 @@
    "piUs": 0.254,
    "ceiling": 12.0,
    "rc": 2
+  },
+  {
+   "pair": 976,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.img_ok",
+   "branch": "g20-freeze-976-978",
+   "note": "nextPairNum left at tip 328; leftover id 976",
+   "ratio": 0.84,
+   "cadrUs": 3.033,
+   "piUs": 3.61,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 977,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.prompt_ok",
+   "branch": "g20-freeze-976-978",
+   "note": "nextPairNum left at tip 328; leftover id 977",
+   "ratio": 3.997,
+   "cadrUs": 1.991,
+   "piUs": 0.498,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 978,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.bash_js",
+   "branch": "g20-freeze-976-978",
+   "note": "nextPairNum left at tip 328; leftover id 978",
+   "ratio": 4.536,
+   "cadrUs": 3.07,
+   "piUs": 0.677,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [

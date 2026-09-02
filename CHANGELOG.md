@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_print_rpc.img_ok` n=5 **0.840×** (3.033 / 3.610 µs) Friend-MachineD, ceiling 8.0. Pair 976. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.prompt_ok` n=5 **3.997×** (1.991 / 0.498 µs) Friend-MachineD, ceiling 8.0. Pair 977. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.bash_js` n=5 **4.536×** (3.070 / 0.677 µs) Friend-MachineD, ceiling 8.0. Pair 978. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_print_rpc.queue_ok` n=5 **0.159×** (0.435 / 2.740 µs) Friend-MachineD, ceiling 8.0. Pair 973. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_print_rpc.asst_hit` n=5 **1.889×** (0.520 / 0.275 µs) Friend-MachineD, ceiling 8.0. Pair 974. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_print_rpc.cmd_n` n=5 **8.772×** (2.232 / 0.254 µs) Friend-MachineD, ceiling 12.0 (raised from 8.0). Pair 975. Over-1×. `nextPairNum` unchanged.

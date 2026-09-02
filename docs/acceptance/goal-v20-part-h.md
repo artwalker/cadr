@@ -10119,7 +10119,7 @@ Leftover sibling of Pairs 973–974. Does not remount `cmd_list`. Timed work is 
 |---|---|---|
 | `img_ok` | `rpc-images-from-json` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | leftover replica of prompt command.images |
 
-Leftover sibling of leftover 463–465 on the same needs-pair file. Does not remount `rpc_images`. Timed work is nil/mime image parse. Observed `img_nil` / `img_mime` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 463–465 on the same needs-pair file. Does not remount `rpc_images`. Timed work is nil/mime image parse. Observed `img_nil` / `img_mime` are exact. First n=5 freeze **0.840×** (3.033 / 3.610 µs) on host `Friend-MachineD`, ceiling 8.0. cadr leads. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 977 — `cli_print_rpc` (prompt_ok)
 
@@ -10127,7 +10127,7 @@ Leftover sibling of leftover 463–465 on the same needs-pair file. Does not rem
 |---|---|---|
 | `prompt_ok` | `rpc-prompt-message` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | leftover replica of prompt message+images |
 
-Leftover sibling of Pair 976. Does not remount `rpc_prompt`. Timed work is string/parts prompt. Observed `rp_str` / `rp_parts` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 976. Does not remount `rpc_prompt`. Timed work is string/parts prompt. Observed `rp_str` / `rp_parts` are exact. First n=5 freeze **3.997×** (1.991 / 0.498 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 978 — `cli_print_rpc` (bash_js)
 
@@ -10135,7 +10135,7 @@ Leftover sibling of Pair 976. Does not remount `rpc_prompt`. Timed work is strin
 |---|---|---|
 | `bash_js` | `rpc-bash-result-json` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | leftover replica of bash result payload |
 
-Leftover sibling of Pairs 976–977. Does not remount `bash_result`. Timed work is output/null bash result. Observed `br_out` / `br_null` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 976–977. Does not remount `bash_result`. Timed work is output/null bash result. Observed `br_out` / `br_null` are exact. First n=5 freeze **4.536×** (3.070 / 0.677 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

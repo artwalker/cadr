@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T15:38:58Z) on `Friend-MachineD`, git `7252064d5a76`, ratio_gate=`enforced-only:cli_print_rpc.asst_hit,cli_print_rpc.cmd_n,cli_print_rpc.queue_ok`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T15:49:53Z) on `Friend-MachineD`, git `8bb093857134`, ratio_gate=`enforced-only:cli_print_rpc.bash_js,cli_print_rpc.img_ok,cli_print_rpc.prompt_ok`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T15:26:14Z) on `Friend-MachineD`, git `205344f1764f`, ratio_gate=`enforced-only:cli_print_rpc.line_arr,cli_print_rpc.line_bad,cli_print_rpc.line_ui`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T15:38:58Z) on `Friend-MachineD`, git `7252064d5a76`, ratio_gate=`enforced-only:cli_print_rpc.asst_hit,cli_print_rpc.cmd_n,cli_print_rpc.queue_ok`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1328,12 +1328,15 @@ Previous: `paired-paths` (2026-09-02T15:26:14Z) on `Friend-MachineD`, git `20534
 | `cli_print_rpc.rpc_images` | 3.4 | 3.6 | 0.96× | 0.96× | 8.00× |
 | `cli_print_rpc.rpc_prompt` | 1.8 | 1.2 | 1.53× | 1.53× | 8.00× |
 | `cli_print_rpc.bash_result` | 3.0 | 1.0 | 2.96× | 2.96× | 8.00× |
+| `cli_print_rpc.img_ok` | 3.0 | 3.6 | 0.84× | — | 8.00× |
+| `cli_print_rpc.prompt_ok` | 2.0 | 0.5 | 4.00× | — | 8.00× |
+| `cli_print_rpc.bash_js` | 3.1 | 0.7 | 4.54× | — | 8.00× |
 | `cli_print_rpc.queue_parse` | 0.6 | 2.5 | 0.25× | 0.25× | 8.00× |
 | `cli_print_rpc.asst_text` | 0.6 | 0.3 | 1.83× | 1.83× | 8.00× |
 | `cli_print_rpc.cmd_list` | 2.2 | 0.2 | 8.68× | 8.68× | 8.00× |
-| `cli_print_rpc.queue_ok` | 0.4 | 2.7 | 0.16× | — | 8.00× |
-| `cli_print_rpc.asst_hit` | 0.5 | 0.3 | 1.89× | — | 8.00× |
-| `cli_print_rpc.cmd_n` | 2.2 | 0.3 | 8.77× | — | 12.00× |
+| `cli_print_rpc.queue_ok` | 0.4 | 2.7 | 0.16× | 0.16× | 8.00× |
+| `cli_print_rpc.asst_hit` | 0.5 | 0.3 | 1.89× | 1.89× | 8.00× |
+| `cli_print_rpc.cmd_n` | 2.2 | 0.3 | 8.77× | 8.77× | 12.00× |
 | `cli_print_rpc.bad_line` | 8.0 | 4.8 | 1.68× | 1.68× | 8.00× |
 | `cli_print_rpc.array_line` | 8.6 | 4.4 | 1.96× | 1.96× | 8.00× |
 | `cli_print_rpc.ui_absent` | 7.7 | 2.2 | 3.54× | 3.54× | 8.00× |
@@ -2431,6 +2434,7 @@ Previous: `paired-paths` (2026-09-02T15:26:14Z) on `Friend-MachineD`, git `20534
 | 2026-09-02T15:02:13Z | paired-paths | `3c77e7e9b46a` | no | enforced-only:cli_bootstrap_sessions.cycle_ent,cli_bootstrap_sessions.file_cli,cli_bootstrap_sessions.scope_st | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T15:26:14Z | paired-paths | `205344f1764f` | no | enforced-only:cli_print_rpc.line_arr,cli_print_rpc.line_bad,cli_print_rpc.line_ui | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T15:38:58Z | paired-paths | `7252064d5a76` | no | enforced-only:cli_print_rpc.asst_hit,cli_print_rpc.cmd_n,cli_print_rpc.queue_ok | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-02T15:49:53Z | paired-paths | `8bb093857134` | no | enforced-only:cli_print_rpc.bash_js,cli_print_rpc.img_ok,cli_print_rpc.prompt_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
