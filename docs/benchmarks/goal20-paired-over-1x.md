@@ -780,6 +780,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.line_bad` | 7.254 | 6.107 | 1.188× | 8.00× | measure-only leftover 970; `rpc-handle-line` vs leftover JSON.parse catch | invent pause；地板优化另刀 |
 | `cli_print_rpc.line_arr` | 6.497 | 4.830 | 1.345× | 8.00× | measure-only leftover 971; `rpc-handle-line` vs leftover require JSON object | invent pause；地板优化另刀 |
 | `cli_print_rpc.line_ui` | 7.486 | 1.780 | 4.206× | 8.00× | measure-only leftover 972; `rpc-handle-line` vs leftover unknown extension_ui_response | invent pause；地板优化另刀 |
+| `cli_print_rpc.asst_hit` | 0.520 | 0.275 | 1.889× | 8.00× | measure-only leftover 974; `rpc-last-assistant-text` vs leftover last assistant | invent pause；地板优化另刀 |
+| `cli_print_rpc.cmd_n` | 2.232 | 0.254 | 8.772× | 12.00× | measure-only leftover 975; `rpc-command-list` vs leftover command list; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |

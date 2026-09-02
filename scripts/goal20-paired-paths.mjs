@@ -761,6 +761,9 @@ const REPETITIONS = {
 	"cli_print_rpc.queue_parse": 50,
 	"cli_print_rpc.asst_text": 50,
 	"cli_print_rpc.cmd_list": 50,
+	"cli_print_rpc.queue_ok": 50,
+	"cli_print_rpc.asst_hit": 50,
+	"cli_print_rpc.cmd_n": 50,
 	"cli_print_rpc.bad_line": 50,
 	"cli_print_rpc.array_line": 50,
 	"cli_print_rpc.line_bad": 50,
@@ -17897,6 +17900,15 @@ async function measureCliPrintRpc() {
 				return () => runCliPrintRpcLastAssistant();
 			}),
 			cmd_list: await collect("cli_print_rpc.cmd_list", () => {
+				return () => runCliPrintRpcCommandList();
+			}),
+			queue_ok: await collect("cli_print_rpc.queue_ok", () => {
+				return () => runCliPrintRpcQueueMode();
+			}),
+			asst_hit: await collect("cli_print_rpc.asst_hit", () => {
+				return () => runCliPrintRpcLastAssistant();
+			}),
+			cmd_n: await collect("cli_print_rpc.cmd_n", () => {
 				return () => runCliPrintRpcCommandList();
 			}),
 			bad_line: await collect("cli_print_rpc.bad_line", () => {
@@ -40614,6 +40626,12 @@ const result = {
 			"cli_print_rpc.asst_text":
 				"packages/coding-agent leftover replica of last assistant text (cadr rpc-last-assistant-text)",
 			"cli_print_rpc.cmd_list":
+				"packages/coding-agent leftover replica of rpc command list (cadr rpc-command-list)",
+			"cli_print_rpc.queue_ok":
+				"packages/coding-agent leftover replica of parseQueueMode (cadr parse-queue-mode)",
+			"cli_print_rpc.asst_hit":
+				"packages/coding-agent leftover replica of last assistant text (cadr rpc-last-assistant-text)",
+			"cli_print_rpc.cmd_n":
 				"packages/coding-agent leftover replica of rpc command list (cadr rpc-command-list)",
 			"cli_print_rpc.bad_line":
 				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine JSON.parse catch",

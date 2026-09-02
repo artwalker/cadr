@@ -9804,6 +9804,51 @@
    "piUs": 1.78,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 973,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/commands.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.queue_ok",
+   "branch": "g20-freeze-973-975",
+   "note": "nextPairNum left at tip 328; leftover id 973",
+   "ratio": 0.159,
+   "cadrUs": 0.435,
+   "piUs": 2.74,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 974,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/commands.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.asst_hit",
+   "branch": "g20-freeze-973-975",
+   "note": "nextPairNum left at tip 328; leftover id 974",
+   "ratio": 1.889,
+   "cadrUs": 0.52,
+   "piUs": 0.275,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 975,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/commands.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.cmd_n",
+   "branch": "g20-freeze-973-975",
+   "note": "nextPairNum left at tip 328; leftover id 975",
+   "ratio": 8.772,
+   "cadrUs": 2.232,
+   "piUs": 0.254,
+   "ceiling": 12.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
