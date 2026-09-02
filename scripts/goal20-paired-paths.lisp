@@ -1356,6 +1356,9 @@
     ("cli_bootstrap_sessions.cycle_wrap" . 50)
     ("cli_bootstrap_sessions.scope_hint" . 50)
     ("cli_bootstrap_sessions.file_tags" . 50)
+    ("cli_bootstrap_sessions.cycle_ent" . 50)
+    ("cli_bootstrap_sessions.scope_st" . 50)
+    ("cli_bootstrap_sessions.file_cli" . 50)
     ("cli_bootstrap_sessions.data_directory" . 50)
     ("cli_bootstrap_sessions.legacy_data_directory" . 50)
     ("cli_bootstrap_sessions.manual_migration_command" . 50)
@@ -38912,6 +38915,22 @@
                 (lambda ()
                   (run-cli-bootstrap-process-files
                    (first file-pair) (second file-pair)))))
+     "cycle_ent"
+     (collect "cli_bootstrap_sessions.cycle_ent"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-model-cycle))))
+     "scope_st"
+     (collect "cli_bootstrap_sessions.scope_st"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-model-scope))))
+     "file_cli"
+     (collect "cli_bootstrap_sessions.file_cli"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-process-files
+                   (first file-pair) (second file-pair)))))
      "data_directory"
      (collect "cli_bootstrap_sessions.data_directory"
               (lambda ()
@@ -39062,7 +39081,6 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-default-changelog-path)))))))
-
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
         (think (cadr-ai:faux-thinking "hmm")))
@@ -41102,6 +41120,12 @@
       "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line"
       "cli_bootstrap_sessions.file_tags"
       "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments"
+      "cli_bootstrap_sessions.cycle_ent"
+      "src/cadr-cli/bootstrap/commands.lisp model-cycle-target-entry leftover"
+      "cli_bootstrap_sessions.scope_st"
+      "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line leftover"
+      "cli_bootstrap_sessions.file_cli"
+      "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments leftover"
       "cli_bootstrap_sessions.data_directory"
       "src/cadr-cli/migration.lisp data-directory"
       "cli_bootstrap_sessions.legacy_data_directory"

@@ -10041,6 +10041,30 @@ Leftover sibling of Pair 964. Does not remount `sess_upd`. Timed work is result 
 
 Leftover sibling of Pairs 964–965. Does not remount `sess_draw`. Timed work is pending vs hide-result empty render. Observed `trr_pending_n` / `trr_empty` are exact. First n=5 freeze **0.622×** (2.499 / 4.017 µs) on host `Friend-MachineD`, ceiling 8.0. cadr leads. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 967 — `cli_bootstrap_sessions` (cycle_ent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cycle_ent` | `model-cycle-target-entry` (`src/cadr-cli/bootstrap/commands.lisp`) | leftover replica of `_cycleScopedModel` index wrap |
+
+Leftover sibling of leftover 940–942 on the same needs-pair file. Does not remount `cycle_wrap`. Timed work is forward/empty model cycle. Observed `mc_fwd` / `mc_empty` are exact. First n=5 freeze **0.697×** (0.806 / 1.156 µs) on host `Friend-MachineD`, ceiling 8.0. cadr leads. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 968 — `cli_bootstrap_sessions` (scope_st)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scope_st` | `model-scope-startup-line` (`src/cadr-cli/bootstrap/commands.lisp`) | leftover replica of init Model scope line |
+
+Leftover sibling of Pair 967. Does not remount `scope_hint`. Timed work is quiet/disabled scope lines. Observed `ms_quiet` / `ms_disabled` are exact. First n=5 freeze **0.470×** (34.441 / 73.206 µs) on host `Friend-MachineD`, ceiling 8.0. cadr leads. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 969 — `cli_bootstrap_sessions` (file_cli)
+
+| metric | cadr | pi |
+|---|---|---|
+| `file_cli` | `process-cli-file-arguments` (`src/cadr-cli/bootstrap/commands.lisp`) | leftover replica of processFileArguments |
+
+Leftover sibling of Pairs 967–968. Does not remount `file_tags`. Timed work is hello/image file tags. Observed `pf_hello` / `pf_img` are exact. First n=5 freeze **0.117×** (95.692 / 817.796 µs) on host `Friend-MachineD`, ceiling 8.0. cadr leads. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

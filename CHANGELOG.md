@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_bootstrap_sessions.cycle_ent` n=5 **0.697×** (0.806 / 1.156 µs) Friend-MachineD, ceiling 8.0. Pair 967. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.scope_st` n=5 **0.470×** (34.441 / 73.206 µs) Friend-MachineD, ceiling 8.0. Pair 968. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.file_cli` n=5 **0.117×** (95.692 / 817.796 µs) Friend-MachineD, ceiling 8.0. Pair 969. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.sess_new` n=5 **3.192×** (0.550 / 0.172 µs) Friend-MachineD, ceiling 8.0. Pair 964. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.sess_set` n=5 **2.746×** (0.537 / 0.196 µs) Friend-MachineD, ceiling 8.0. Pair 965. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.sess_out` n=5 **0.622×** (2.499 / 4.017 µs) Friend-MachineD, ceiling 8.0. Pair 966. `nextPairNum` unchanged.

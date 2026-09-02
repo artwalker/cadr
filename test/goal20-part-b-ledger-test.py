@@ -4603,6 +4603,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_bootstrap_sessions.file_tags", paired.RATIO_CEILINGS)
         self.assertIn("pf_hello", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("pf_img", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.cycle_ent", RECORD.METRIC_KEYS)
+        self.assertIn("cycle_ent", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.cycle_ent", paired.RATIO_CEILINGS)
+        self.assertIn("cli_bootstrap_sessions.scope_st", RECORD.METRIC_KEYS)
+        self.assertIn("scope_st", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.scope_st", paired.RATIO_CEILINGS)
+        self.assertIn("cli_bootstrap_sessions.file_cli", RECORD.METRIC_KEYS)
+        self.assertIn("file_cli", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.file_cli", paired.RATIO_CEILINGS)
         self.assertIn("cli_bootstrap_sessions.pb_ok", RECORD.METRIC_KEYS)
         self.assertIn("pb_ok", paired.METRICS["cli_bootstrap_sessions"])
         self.assertIn("cli_bootstrap_sessions.pb_ok", paired.RATIO_CEILINGS)
@@ -4740,8 +4749,6 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn(full, paired.RATIO_CEILINGS)
             for o in obs:
                 self.assertIn(o, paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
-
-
     def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("ai_runtime_faux.blocks", RECORD.METRIC_KEYS)

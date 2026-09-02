@@ -1107,6 +1107,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.cycle_wrap": 50,
 	"cli_bootstrap_sessions.scope_hint": 50,
 	"cli_bootstrap_sessions.file_tags": 50,
+	"cli_bootstrap_sessions.cycle_ent": 50,
+	"cli_bootstrap_sessions.scope_st": 50,
+	"cli_bootstrap_sessions.file_cli": 50,
 	"cli_bootstrap_sessions.data_directory": 50,
 	"cli_bootstrap_sessions.legacy_data_directory": 50,
 	"cli_bootstrap_sessions.manual_migration_command": 50,
@@ -39127,6 +39130,15 @@ async function measureCliBootstrapCodingTools() {
 		file_tags: await collect("cli_bootstrap_sessions.file_tags", () => {
 			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 		}),
+		cycle_ent: await collect("cli_bootstrap_sessions.cycle_ent", () => {
+			return () => runCliBootstrapModelCycle();
+		}),
+		scope_st: await collect("cli_bootstrap_sessions.scope_st", () => {
+			return () => runCliBootstrapModelScope();
+		}),
+		file_cli: await collect("cli_bootstrap_sessions.file_cli", () => {
+			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
+		}),
 		data_directory: await collect("cli_bootstrap_sessions.data_directory", () => {
 			return () => runCliBootstrapDataDirectory();
 		}),
@@ -41526,6 +41538,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
 			"cli_bootstrap_sessions.file_tags":
 				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
+			"cli_bootstrap_sessions.cycle_ent":
+				"packages/coding-agent leftover replica of _cycleScopedModel index wrap (cadr model-cycle-target-entry)",
+			"cli_bootstrap_sessions.scope_st":
+				"packages/coding-agent leftover replica of init Model scope line (cadr model-scope-startup-line)",
+			"cli_bootstrap_sessions.file_cli":
+				"packages/coding-agent leftover replica of processFileArguments (cadr process-cli-file-arguments)",
 			"cli_bootstrap_sessions.pb_ok":
 				"packages/coding-agent leftover replica of ! / !! bash extract (cadr parse-user-bash-input)",
 			"cli_bootstrap_sessions.rt_ok":
