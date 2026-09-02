@@ -10329,6 +10329,30 @@ Leftover sibling of Pair 1000. Does not remount `make_trust_selector_state`. Tim
 
 Leftover sibling of Pairs 1000–1001. Does not remount `render_trust_selector`. Timed work is default/single trust selector render. Observed `rtrs_default` / `rtrs_single` are exact. First n=5 freeze **7.030×** (1370.312 / 194.933 µs) on host `Friend-MachineD`, ceiling 15.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1003 — `cli_selectors` (mlms_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mlms_ok` | `make-login-method-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelector login-method constructor |
+
+Leftover sibling of leftover auth login/api/oauth ctor remounts. Does not remount `make_login_method_selector_state`. Timed work is default/three login-method construct. Observed `mlms_default` / `mlms_three` are exact. First n=5 freeze **1.900×** (3.649 / 1.921 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1004 — `cli_selectors` (makis_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `makis_ok` | `make-api-key-input-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key Input constructor |
+
+Leftover sibling of Pair 1003. Does not remount `make_api_key_input_state`. Timed work is anth/named api-key input construct. Observed `makis_anth` / `makis_named` are exact. First n=5 freeze **3.828×** (3.372 / 0.881 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1005 — `cli_selectors` (moss_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `moss_ok` | `make-oauth-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of OauthSelectorComponent constructor |
+
+Leftover sibling of Pairs 1003–1004. Does not remount `make_oauth_selector_state`. Timed work is default/logout oauth selector construct. Observed `moss_default` / `moss_logout` are exact. First n=5 freeze **1.630×** (9.651 / 5.922 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

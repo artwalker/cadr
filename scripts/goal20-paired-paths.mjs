@@ -622,6 +622,9 @@ const REPETITIONS = {
 	"cli_selectors.lmsxxxx_ok": 50,
 	"cli_selectors.akixxxx_ok": 50,
 	"cli_selectors.ossxxxx_ok": 50,
+	"cli_selectors.mlms_ok": 50,
+	"cli_selectors.makis_ok": 50,
+	"cli_selectors.moss_ok": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
@@ -36274,6 +36277,24 @@ async function measureCliSelectorsSessionSearch() {
 		ossxxxx_ok: await collect("cli_selectors.ossxxxx_ok", () => {
 			return () => runCliSelectorsMakeOauthSelectorState();
 		}),
+		mlms_ok: await collect(
+			"cli_selectors.mlms_ok",
+			() => {
+				return () => runCliSelectorsMakeLoginMethodSelectorState();
+			},
+		),
+		makis_ok: await collect(
+			"cli_selectors.makis_ok",
+			() => {
+				return () => runCliSelectorsMakeApiKeyInputState();
+			},
+		),
+		moss_ok: await collect(
+			"cli_selectors.moss_ok",
+			() => {
+				return () => runCliSelectorsMakeOauthSelectorState();
+			},
+		),
 		login_dialog_show_waiting: await collect(
 			"cli_selectors.login_dialog_show_waiting",
 			() => {
@@ -41510,6 +41531,12 @@ const result = {
 				"packages/coding-agent leftover replica of showPrompt api key Input constructor",
 			"cli_selectors.ossxxxx_ok":
 				"packages/coding-agent leftover replica of OauthSelectorComponent constructor leftover 1407",
+			"cli_selectors.mlms_ok":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
+			"cli_selectors.makis_ok":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts showPrompt api key Input constructor",
+			"cli_selectors.moss_ok":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
 			"cli_selectors.login_dialog_show_waiting":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
 			"cli_selectors.login_dialog_show_progress":
