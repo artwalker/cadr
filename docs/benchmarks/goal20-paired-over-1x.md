@@ -748,3 +748,6 @@ Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
 | settings_load.sdk_effective_thinking_level | 3.700 | 14.454 | 3.907 | 8.0 | Friend-MachineD | leftover 858 loop-tick-47 |
+| cli_interactive_controller.terminal_title_sequence | 1.519 | 2.713 | 1.785 | 8.0 | Friend-MachineD | leftover 859 loop-tick-48 |
+| cli_interactive_controller.make_notification_stream | 8.280 | 1.429 | 0.173 | 8.0 | Friend-MachineD | leftover 860 loop-tick-48 |
+| cli_interactive_controller.notification_stream_flush | 4.675 | 1.154 | 0.247 | 8.0 | Friend-MachineD | leftover 861 loop-tick-48 |
