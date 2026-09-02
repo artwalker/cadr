@@ -9049,6 +9049,51 @@
    "piUs": 5.676,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 844,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/loader.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.http_timeout_p",
+   "branch": "cursor/ext-loader-timeout-source-quiet-leftovers-844-846-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 844",
+   "ratio": 4.480,
+   "cadrUs": 1.356,
+   "piUs": 0.303,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 845,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/loader.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.same_source",
+   "branch": "cursor/ext-loader-timeout-source-quiet-leftovers-844-846-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 845",
+   "ratio": 4.802,
+   "cadrUs": 0.759,
+   "piUs": 0.158,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 846,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/extensions/loader.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.quiet_manager",
+   "branch": "cursor/ext-loader-timeout-source-quiet-leftovers-844-846-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 846",
+   "ratio": 6.863,
+   "cadrUs": 1.176,
+   "piUs": 0.171,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

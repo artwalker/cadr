@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T01:13:29Z) on `Friend-MachineD`, git `47ed29d5dec8`, ratio_gate=`enforced-only:cli_selectors.armin_copy_grid,cli_selectors.armin_make_grid,cli_selectors.armin_row_string`, quick=no, samples=5
+Current: `—` (2026-09-02T01:37:05Z) on `Friend-MachineD`, git `2bd35e144ef6`, ratio_gate=`enforced-only:cli_extensions_install.http_timeout_p,cli_extensions_install.quiet_manager,cli_extensions_install.same_source`, quick=no, samples=5
 
-Previous: `—` (2026-09-02T00:55:17Z) on `Friend-MachineD`, git `9f5d9cd92195`, ratio_gate=`enforced-only:oauth_pkce_device.hex_value,oauth_pkce_device.present_auth_url,oauth_pkce_device.write_http_response`, quick=no, samples=5
+Previous: `—` (2026-09-02T01:13:29Z) on `Friend-MachineD`, git `47ed29d5dec8`, ratio_gate=`enforced-only:cli_selectors.armin_copy_grid,cli_selectors.armin_make_grid,cli_selectors.armin_row_string`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1110,6 +1110,9 @@ Previous: `—` (2026-09-02T00:55:17Z) on `Friend-MachineD`, git `9f5d9cd92195`,
 | `cli_extensions_install.llama_search_status` | — | — | 4.85× | 4.85× | 8.00× |
 | `cli_extensions_install.llama_search_filter` | — | — | 0.60× | 0.60× | 8.00× |
 | `cli_extensions_install.llama_view_width` | — | — | 114.09× | 114.09× | 180.00× |
+| `cli_extensions_install.http_timeout_p` | — | — | 4.48× | — | 8.00× |
+| `cli_extensions_install.same_source` | — | — | 4.80× | — | 8.00× |
+| `cli_extensions_install.quiet_manager` | — | — | 6.86× | — | 8.00× |
 | `cli_selectors.daxnuts_parse_image` | 50.3 | 90.2 | 0.56× | 0.56× | 8.00× |
 | `cli_selectors.daxnuts_image_line` | 36.3 | 16.4 | 2.22× | 2.22× | 8.00× |
 | `cli_selectors.daxnuts_center_line` | 0.9 | 0.9 | 0.97× | 0.97× | 8.00× |
@@ -1485,9 +1488,9 @@ Previous: `—` (2026-09-02T00:55:17Z) on `Friend-MachineD`, git `9f5d9cd92195`,
 | `cli_selectors.armin_pixel` | 0.3 | 0.2 | 1.82× | 1.82× | 8.00× |
 | `cli_selectors.armin_cell` | 0.5 | 0.5 | 0.84× | 0.84× | 8.00× |
 | `cli_selectors.armin_grid_height` | 0.2 | 0.1 | 1.77× | 1.77× | 8.00× |
-| `cli_selectors.armin_make_grid` | — | — | 1.68× | — | 8.00× |
-| `cli_selectors.armin_copy_grid` | — | — | 6.47× | — | 8.00× |
-| `cli_selectors.armin_row_string` | — | — | 4.29× | — | 8.00× |
+| `cli_selectors.armin_make_grid` | — | — | 1.68× | 1.68× | 8.00× |
+| `cli_selectors.armin_copy_grid` | — | — | 6.47× | 6.47× | 8.00× |
+| `cli_selectors.armin_row_string` | — | — | 4.29× | 4.29× | 8.00× |
 | `websocket_stream.stream_roundtrip` | 44,846.0 | 141.1 | 317.88× | 317.88× | 800.00× |
 | `cli_sdk.version_newer` | 4.1 | 12.1 | 0.34× | 0.34× | 8.00× |
 | `cli_sdk.cache_miss` | 2.4 | 4.3 | 0.57× | 0.57× | 8.00× |
@@ -2333,6 +2336,7 @@ Previous: `—` (2026-09-02T00:55:17Z) on `Friend-MachineD`, git `9f5d9cd92195`,
 | 2026-09-02T00:13:49Z | — | `f56db7a7a62b` | no | enforced-only:cli_print_rpc.close_pending,cli_print_rpc.dialog_deadline,cli_print_rpc.dialog_default | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T00:55:17Z | — | `9f5d9cd92195` | no | enforced-only:oauth_pkce_device.hex_value,oauth_pkce_device.present_auth_url,oauth_pkce_device.write_http_response | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T01:13:29Z | — | `47ed29d5dec8` | no | enforced-only:cli_selectors.armin_copy_grid,cli_selectors.armin_make_grid,cli_selectors.armin_row_string | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T01:37:05Z | — | `2bd35e144ef6` | no | enforced-only:cli_extensions_install.http_timeout_p,cli_extensions_install.quiet_manager,cli_extensions_install.same_source | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

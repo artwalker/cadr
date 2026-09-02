@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.http_timeout_p`
+  (`extension-http-timeout-condition-p` vs leftover timeout error names).
+  Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil` exact.
+  n=5 **4.480×** (1.356 / 0.303 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 844). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.same_source`
+  (`same-extension-source-p` vs leftover bundle.path === source.path).
+  Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n` exact.
+  n=5 **4.802×** (0.759 / 0.158 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 845). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.quiet_manager`
+  (`call-with-quiet-extension-manager` vs leftover silenced notify stream).
+  Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n` exact.
+  n=5 **6.863×** (1.176 / 0.171 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 846). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.armin_make_grid`
   (`make-armin-grid` vs leftover buildFinalGrid/createEmptyGrid). Observed
   `amg_spaces` / `amg_ink` / `amg_h` / `amg_w` / `amg_empty0` exact.
