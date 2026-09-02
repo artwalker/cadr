@@ -13297,6 +13297,9 @@ function leftoverHexValueFlag(character, expected) {
 		return leftoverHexValue(character) === expected ? 1 : 0;
 	} catch {
 		return 0;
+	}
+}
+
 function runOauthPkceDeviceHexValue() {
 	return {
 		hv_A: leftoverHexValueFlag("A", 10),
@@ -13306,6 +13309,8 @@ function runOauthPkceDeviceHexValue() {
 		hv_9: leftoverHexValueFlag("9", 9),
 		hv_n: 5,
 	};
+}
+
 function leftoverWriteOAuthHttpResponse(status, body) {
 	const statusText = {
 		200: "OK",
@@ -13323,9 +13328,13 @@ function leftoverWriteOAuthHttpResponse(status, body) {
 		},
 		end(value) {
 			ended = value ?? "";
+		},
+	};
 	res.writeHead(status, { "Content-Type": "text/html; charset=utf-8" });
 	res.end(body);
 	return { statusCode, statusText, contentType, ended };
+}
+
 function leftoverWriteHttpFlags(status, body) {
 	const written = leftoverWriteOAuthHttpResponse(status, body);
 	return [
@@ -13333,19 +13342,29 @@ function leftoverWriteHttpFlags(status, body) {
 		written.contentType.includes("text/html") ? 1 : 0,
 		written.ended.includes(body) ? 1 : 0,
 	];
+}
+
 function runOauthPkceDeviceWriteHttpResponse() {
 	const ok = leftoverWriteHttpFlags(200, "<p>ok</p>");
 	const bad = leftoverWriteHttpFlags(400, "<p>bad</p>");
+	return {
 		woh_ok: ok[0],
 		woh_ct: ok[1],
 		woh_body: ok[2],
 		woh_400: bad[0],
 		woh_n: 4,
+	};
+}
+
 function leftoverPresentOAuthAuthUrl(url, chunks, authUrlFunction) {
 	if (authUrlFunction) {
 		authUrlFunction(url);
 		return url;
+	}
 	chunks.push(`\nOpen this URL in your browser:\n${url}\n`);
+	return url;
+}
+
 function runOauthPkceDevicePresentAuthUrl() {
 	const url = "https://example.com/auth";
 	const printed = [];
@@ -13356,6 +13375,7 @@ function runOauthPkceDevicePresentAuthUrl() {
 	const callbackReturned = leftoverPresentOAuthAuthUrl(url, callbackChunks, (value) => {
 		if (value === url) called += 1;
 	});
+	return {
 		pau_fmt: text.includes("Open this URL in your browser") ? 1 : 0,
 		pau_url: text.includes(url) ? 1 : 0,
 		pau_ret: returned === url ? 1 : 0,
@@ -13364,6 +13384,8 @@ function runOauthPkceDevicePresentAuthUrl() {
 				? 1
 				: 0,
 		pau_n: 4,
+	};
+}
 
 function base64urlValueFlag(character, expected) {
 	try {

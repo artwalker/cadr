@@ -12128,20 +12128,29 @@
   (let ((out (make-string-output-stream)))
     (cadr-ai::write-oauth-http-response out status body)
     (let ((text (get-output-stream-string out)))
+      (list
        (if (and (search (princ-to-string status) text)
                 (search (cadr-ai::oauth-http-status-text status) text))
+           1
+           0)
        (if (search "text/html; charset=utf-8" text)
+           1
+           0)
        (if (search body text)
+           1
            0)))))
+
 (defun run-oauth-pkce-device-write-http-response ()
   ;; String-stream HTTP write only. Do not listen, do not sockets.
   (let ((ok (oauth-write-http-flags 200 "<p>ok</p>"))
         (bad (oauth-write-http-flags 400 "<p>bad</p>")))
+    (list
      (first ok)
      (second ok)
      (third ok)
      (first bad)
      4)))
+
 (defun run-oauth-pkce-device-present-auth-url ()
   (let* ((url "https://example.com/auth")
          (printed (make-string-output-stream))
@@ -12157,12 +12166,22 @@
             (lambda (value)
               (when (string= value url)
                 (incf called))))))
+    (list
      (if (search "Open this URL in your browser" text)
+         1
+         0)
      (if (search url text)
+         1
+         0)
      (if (string= returned url)
+         1
+         0)
      (if (and (= called 1)
               (string= callback-returned url)
               (zerop (length (get-output-stream-string callback-out))))
+         1
+         0)
+     4)))
 
 (defun oauth-base64url-value-flag (character expected)
   (handler-case
