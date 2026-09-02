@@ -451,6 +451,9 @@ const REPETITIONS = {
 	"evals_harness.val_ext": 50,
 	"evals_harness.suite_id": 50,
 	"evals_harness.type_ok": 50,
+	"evals_harness.msg_txt": 50,
+	"evals_harness.tools_n": 50,
+	"evals_harness.paths_n": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -13287,6 +13290,15 @@ async function measureEvalsHarness() {
 		}),
 		type_ok: await collect("evals_harness.type_ok", () => {
 			return () => runEvalsHarnessEvalResultP();
+		}),
+		msg_txt: await collect("evals_harness.msg_txt", () => {
+			return () => runEvalsHarnessContentText();
+		}),
+		tools_n: await collect("evals_harness.tools_n", () => {
+			return () => runEvalsHarnessAgentTools();
+		}),
+		paths_n: await collect("evals_harness.paths_n", () => {
+			return () => runEvalsHarnessExtensionPaths();
 		}),
 		observed,
 	};
@@ -40605,6 +40617,12 @@ const result = {
 				"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)",
 			"evals_harness.type_ok":
 				"packages/evals leftover object-shape predicate (cadr typep eval-result)",
+			"evals_harness.msg_txt":
+				"packages/evals leftover replica of content-text join (cadr message-content-text)",
+			"evals_harness.tools_n":
+				"packages/evals leftover replica of agent tool list (cadr eval-agent-tools)",
+			"evals_harness.paths_n":
+				"packages/evals leftover replica of visible extension paths (cadr eval-extension-paths)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

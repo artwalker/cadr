@@ -10161,6 +10161,30 @@ Leftover sibling of Pair 979. Does not remount `suite_dispatch`. Timed work is s
 
 Leftover sibling of Pairs 979–980. Does not remount `eval_result_p`. Timed work is make-eval-result yes, json-object miss, string miss, nil miss. Observed `er_yes` / `er_nil` are exact. First n=5 freeze **4.059×** (1.005 / 0.248 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 982 — `evals_harness` (msg_txt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `msg_txt` | `message-content-text` (`src/cadr-evals/harness.lisp`) | leftover replica of content-text join |
+
+Leftover sibling of leftover 928–930 on the same needs-pair file. Does not remount `msg_content`. Timed work is plain string, text-parts join, empty, blank. Observed `ct_plain` / `ct_join` are exact. First n=5 freeze **2.635×** (1.599 / 0.607 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 983 — `evals_harness` (tools_n)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tools_n` | `eval-agent-tools` (`src/cadr-evals/harness.lisp`) | leftover replica of agent.tools list |
+
+Leftover sibling of Pair 982. Does not remount `eval_tools`. Timed work is empty tools, filled count, read name, bash name. Observed `at_empty` / `at_read` are exact. First n=5 freeze **10.111×** (2.373 / 0.235 µs) on host `Friend-MachineD`, ceiling 12.0 (raised from 8.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 984 — `evals_harness` (paths_n)
+
+| metric | cadr | pi |
+|---|---|---|
+| `paths_n` | `eval-extension-paths` (`src/cadr-evals/harness.lisp`) | leftover replica of visible extension-host paths |
+
+Leftover sibling of Pairs 982–983. Does not remount `eval_paths`. Timed work is no-host empty, one visible path, hidden skipped. Observed `ep_none` / `ep_path` are exact. First n=5 freeze **13.850×** (4.853 / 0.350 µs) on host `Friend-MachineD`, ceiling 16.0 (raised from 12.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

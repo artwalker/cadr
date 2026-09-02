@@ -787,6 +787,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.val_ext` | 3.633 | 0.199 | 18.295× | 20.00× | measure-only leftover 979; `validate-extension-result` leftover; first-freeze ceiling 20.0 | invent pause；地板优化另刀 |
 | `evals_harness.suite_id` | 0.244 | 0.105 | 2.323× | 8.00× | measure-only leftover 980; suite cond leftover replica | invent pause；地板优化另刀 |
 | `evals_harness.type_ok` | 1.005 | 0.248 | 4.059× | 8.00× | measure-only leftover 981; eval-result typep leftover | invent pause；地板优化另刀 |
+| `evals_harness.msg_txt` | 1.599 | 0.607 | 2.635× | 8.00× | measure-only leftover 982; `message-content-text` leftover | invent pause；地板优化另刀 |
+| `evals_harness.tools_n` | 2.373 | 0.235 | 10.111× | 12.00× | measure-only leftover 983; `eval-agent-tools` leftover; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
+| `evals_harness.paths_n` | 4.853 | 0.350 | 13.850× | 16.00× | measure-only leftover 984; `eval-extension-paths` leftover; first-freeze ceiling 16.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
