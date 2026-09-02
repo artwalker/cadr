@@ -9000,8 +9000,8 @@
    "branch": "cursor/oauth-callback-hex-write-present-leftovers-832-834-34f9",
    "note": "nextPairNum left at tip 328; leftover id 834",
    "ratio": 4.268,
-   "cadrUs": 1.580,
-   "piUs": 0.370,
+   "cadrUs": 1.58,
+   "piUs": 0.37,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -9059,7 +9059,7 @@
    "metric": "cli_extensions_install.http_timeout_p",
    "branch": "cursor/ext-loader-timeout-source-quiet-leftovers-844-846-34f9",
    "note": "nextPairNum left at tip 328; leftover id 844",
-   "ratio": 4.480,
+   "ratio": 4.48,
    "cadrUs": 1.356,
    "piUs": 0.303,
    "ceiling": 8.0,
@@ -9104,7 +9104,7 @@
    "metric": "cli_extensions_install.manager_notify",
    "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
    "note": "nextPairNum left at tip 328; leftover id 847",
-   "ratio": 2.930,
+   "ratio": 2.93,
    "cadrUs": 3.618,
    "piUs": 1.235,
    "ceiling": 8.0,
@@ -9136,7 +9136,7 @@
    "note": "nextPairNum left at tip 328; leftover id 849",
    "ratio": 5.208,
    "cadrUs": 1.196,
-   "piUs": 0.230,
+   "piUs": 0.23,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -9151,7 +9151,7 @@
    "note": "nextPairNum left at tip 328; leftover id 850",
    "ratio": 3.296,
    "cadrUs": 0.427,
-   "piUs": 0.130,
+   "piUs": 0.13,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -9164,7 +9164,7 @@
    "metric": "cli_extensions_install.catalog_notify",
    "branch": "cursor/llama-ext-loaded-catalog-progress-leftovers-850-852-34f9",
    "note": "nextPairNum left at tip 328; leftover id 851",
-   "ratio": 14.250,
+   "ratio": 14.25,
    "cadrUs": 9.316,
    "piUs": 0.654,
    "ceiling": 60.0,
@@ -9259,13 +9259,12 @@
    "metric": "settings_load.sdk_effective_thinking_level",
    "branch": "cursor/sdk-settings-make-memory-thinking-leftovers-856-858-34f9",
    "note": "nextPairNum left at tip 328; leftover id 858",
-   "ratio": 2.660,
-   "cadrUs": 10.850,
+   "ratio": 2.66,
+   "cadrUs": 10.85,
    "piUs": 4.079,
    "ceiling": 8.0,
    "rc": 2
   },
-
   {
    "pair": 859,
    "lane": "cursor",
@@ -9290,7 +9289,7 @@
    "metric": "cli_interactive_controller.make_notification_stream",
    "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
    "note": "nextPairNum left at tip 328; leftover id 860",
-   "ratio": 8.280,
+   "ratio": 8.28,
    "cadrUs": 1.429,
    "piUs": 0.173,
    "ceiling": 8.0,
@@ -9320,7 +9319,7 @@
    "metric": "cli_selectors.armin_copy_cell",
    "branch": "cursor/armin-copy-cell-row-rotate-leftovers-862-864-34f9",
    "note": "nextPairNum left at tip 328; leftover id 862",
-   "ratio": 5.290,
+   "ratio": 5.29,
    "cadrUs": 25.759,
    "piUs": 4.869,
    "ceiling": 8.0,
@@ -9337,7 +9336,7 @@
    "note": "nextPairNum left at tip 328; leftover id 863",
    "ratio": 4.716,
    "cadrUs": 23.953,
-   "piUs": 5.080,
+   "piUs": 5.08,
    "ceiling": 8.0,
    "rc": 0
   },
@@ -9352,7 +9351,7 @@
    "note": "nextPairNum left at tip 328; leftover id 864",
    "ratio": 3.429,
    "cadrUs": 21.362,
-   "piUs": 6.230,
+   "piUs": 6.23,
    "ceiling": 8.0,
    "rc": 0
   },
@@ -9447,5 +9446,52 @@
    "rc": 0
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [],
+ "freezeQueue": [
+  {
+   "pair": 892,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_poll_complete",
+   "branch": "g20-freeze-892-894",
+   "note": "nextPairNum left at tip 328; leftover id 892",
+   "ratio": 15.756,
+   "cadrUs": 2.586,
+   "piUs": 0.164,
+   "ceiling": 15.0,
+   "rc": 2
+  },
+  {
+   "pair": 893,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_poll_fail",
+   "branch": "g20-freeze-892-894",
+   "note": "nextPairNum left at tip 328; leftover id 893",
+   "ratio": 1.705,
+   "cadrUs": 2.962,
+   "piUs": 1.737,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 894,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_poll_slow",
+   "branch": "g20-freeze-892-894",
+   "note": "nextPairNum left at tip 328; leftover id 894",
+   "ratio": 1.824,
+   "cadrUs": 3.588,
+   "piUs": 1.967,
+   "ceiling": 8.0,
+   "rc": 2
+  }
+ ]
 }
