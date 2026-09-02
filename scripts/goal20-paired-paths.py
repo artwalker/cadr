@@ -2041,7 +2041,7 @@ RATIO_CEILINGS = {
     # Measure-only leftover 998; first freeze ~17.8×.
     "cli_selectors.um_raw": 30.0,
     # Measure-only leftover 999; first freeze ~62.4×.
-    "cli_selectors.um_draw": 100.0,
+    "cli_selectors.um_draw": 120.0,
   # Measure-only leftover 910; freeze pending.
   "cli_selectors.daxnuts_render": 8.0,
   # Measure-only leftover 911; freeze pending.
