@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `evals_harness.msg_txt` n=5 **2.635×** (1.599 / 0.607 µs) Friend-MachineD, ceiling 8.0. Pair 982. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `evals_harness.tools_n` n=5 **10.111×** (2.373 / 0.235 µs) Friend-MachineD, ceiling 12.0 (raised from 8.0). Pair 983. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `evals_harness.paths_n` n=5 **13.850×** (4.853 / 0.350 µs) Friend-MachineD, ceiling 16.0 (raised from 12.0). Pair 984. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `evals_harness.val_ext` n=5 **18.295×** (3.633 / 0.199 µs) Friend-MachineD, ceiling 20.0 (raised from 12.0). Pair 979. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `evals_harness.suite_id` n=5 **2.323×** (0.244 / 0.105 µs) Friend-MachineD, ceiling 8.0. Pair 980. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `evals_harness.type_ok` n=5 **4.059×** (1.005 / 0.248 µs) Friend-MachineD, ceiling 8.0. Pair 981. Over-1×. `nextPairNum` unchanged.
