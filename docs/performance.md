@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`, ratio_gate=`enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory`, quick=no, samples=5
+Current: `—` (2026-09-02T07:14:23Z) on `Friend-MachineD`, git `fdf80f85c2d9`, ratio_gate=`enforced-only:cli_interactive_controller.make_notification_stream,cli_interactive_controller.notification_stream_flush,cli_interactive_controller.terminal_title_sequence`, quick=no, samples=5
 
-Previous: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`, ratio_gate=`enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style`, quick=no, samples=5
+Previous: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`, ratio_gate=`enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -750,9 +750,9 @@ Previous: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`,
 | `settings_load.sdk_settings_reload` | 30.8 | 6.3 | 4.89× | 4.89× | 8.00× |
 | `settings_load.sdk_settings_flush` | 30.4 | 5.5 | 5.55× | 5.55× | 8.00× |
 | `settings_load.sdk_compaction_enabled` | 19.7 | 5.5 | 3.59× | 3.59× | 8.00× |
-| `settings_load.sdk_make_manager` | — | — | 1.41× | — | 8.00× |
-| `settings_load.sdk_make_memory` | — | — | 5.58× | — | 8.00× |
-| `settings_load.sdk_effective_thinking_level` | — | — | 3.70× | — | 8.00× |
+| `settings_load.sdk_make_manager` | — | — | 1.41× | 1.41× | 8.00× |
+| `settings_load.sdk_make_memory` | — | — | 5.58× | 5.58× | 8.00× |
+| `settings_load.sdk_effective_thinking_level` | — | — | 3.70× | 3.70× | 8.00× |
 | `resource_loader.reload` | 501.0 | 916.2 | 0.55× | 0.55× | 1.50× |
 | `resource_loader.dedupe_by_name` | 178.8 | 405.6 | 0.44× | 0.44× | 8.00× |
 | `resource_loader.context_from_dir` | 108.3 | 39.2 | 2.76× | 2.76× | 8.00× |
@@ -1079,9 +1079,9 @@ Previous: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`,
 | `cli_interactive_controller.announcement_make` | 11.2 | 374.2 | 0.03× | 0.03× | 8.00× |
 | `cli_interactive_controller.announcement_url` | 72.8 | 739.3 | 0.10× | 0.10× | 8.00× |
 | `cli_interactive_controller.announcement_title` | 97.8 | 335.0 | 0.29× | 0.29× | 8.00× |
-| `cli_interactive_controller.announcement_make` | 11.2 | 374.2 | 0.03× | 0.03× | 8.00× |
-| `cli_interactive_controller.announcement_url` | 72.8 | 739.3 | 0.10× | 0.10× | 8.00× |
-| `cli_interactive_controller.announcement_title` | 97.8 | 335.0 | 0.29× | 0.29× | 8.00× |
+| `cli_interactive_controller.terminal_title_sequence` | — | — | 1.52× | — | 8.00× |
+| `cli_interactive_controller.make_notification_stream` | — | — | 8.28× | — | 8.00× |
+| `cli_interactive_controller.notification_stream_flush` | — | — | 4.67× | — | 8.00× |
 | `cli_selectors.user_message_make` | 1.0 | 1.9 | 0.53× | 0.53× | 8.00× |
 | `cli_selectors.user_message_move` | 1.0 | 2.0 | 0.53× | 0.53× | 8.00× |
 | `cli_selectors.user_message_selection` | 1.0 | 1.9 | 0.55× | 0.55× | 8.00× |
@@ -2353,6 +2353,7 @@ Previous: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`,
 | 2026-09-02T02:05:24Z | — | `d0fb143a4d5d` | no | enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T04:59:41Z | — | `b75bf39b1b2c` | no | enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T06:56:56Z | — | `63ff989fa051` | no | enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T07:14:23Z | — | `fdf80f85c2d9` | no | enforced-only:cli_interactive_controller.make_notification_stream,cli_interactive_controller.notification_stream_flush,cli_interactive_controller.terminal_title_sequence | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

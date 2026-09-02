@@ -9258,7 +9258,58 @@
    "measure": "measure-settings-load",
    "metric": "settings_load.sdk_effective_thinking_level",
    "branch": "cursor/sdk-settings-make-memory-thinking-leftovers-856-858-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 858"
+   "note": "nextPairNum left at tip 328; leftover id 858",
+   "ratio": 2.660,
+   "cadrUs": 10.850,
+   "piUs": 4.079,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+
+  {
+   "pair": 859,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.terminal_title_sequence",
+   "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 859",
+   "ratio": 1.519,
+   "cadrUs": 2.713,
+   "piUs": 1.785,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 860,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.make_notification_stream",
+   "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 860",
+   "ratio": 8.280,
+   "cadrUs": 1.429,
+   "piUs": 0.173,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 861,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.notification_stream_flush",
+   "branch": "cursor/controller-title-notify-stream-leftovers-859-861-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 861",
+   "ratio": 4.675,
+   "cadrUs": 1.154,
+   "piUs": 0.247,
+   "ceiling": 8.0,
+   "rc": 0
   }
  ],
  "mergeQueue": []
