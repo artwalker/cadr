@@ -758,6 +758,9 @@
     ("cli_extensions_install.http_timeout_p" . 50)
     ("cli_extensions_install.same_source" . 50)
     ("cli_extensions_install.quiet_manager" . 50)
+    ("cli_extensions_install.manager_notify" . 50)
+    ("cli_extensions_install.startup_issues" . 50)
+    ("cli_extensions_install.output_boundary" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -13346,6 +13349,88 @@
        3))))
 
 
+(defun leftover-notify-has (text needle)
+  (if (and text (search needle text)) 1 0))
+
+
+(defun run-cli-extensions-manager-notify ()
+  ;; Leftover on loader.lisp: notify prefix + redact. Not reload.
+  (let* ((stream (make-string-output-stream))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :cwd "/tmp/g20-ext-notify"
+            :no-discovery-p t
+            :output stream
+            :secret-function (lambda () (list "sekrit")))))
+    (cadr-cli::extension-manager-notify manager "hello" :info)
+    (let ((info (get-output-stream-string stream)))
+      (cadr-cli::extension-manager-notify manager "boom" :error)
+      (let ((err (get-output-stream-string stream)))
+        (cadr-cli::extension-manager-notify
+         manager "leaked sekrit token" :warning)
+        (let ((red (get-output-stream-string stream)))
+          (list
+           (leftover-notify-has info "extension[info]> hello")
+           (leftover-notify-has err "extension[error]> boom")
+           (if (and (not (search "sekrit" red))
+                    (plusp (leftover-notify-has red "extension[warning]>")))
+               1
+               0)
+           (if (and (plusp (length info))
+                    (char= (char info (1- (length info))) #\Newline))
+               1
+               0)
+           4))))))
+
+
+(defun run-cli-extensions-startup-issues ()
+  ;; Leftover on loader.lisp: reportDiagnostics prefixes. Not TUI color.
+  (let* ((stream (make-string-output-stream))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :cwd "/tmp/g20-ext-startup"
+            :no-discovery-p t
+            :output (make-broadcast-stream)
+            :secret-function (constantly nil)
+            :startup-issues
+            (list
+             (list :type :error :message "boom")
+             (list :type :warning :message "careful")
+             (list :type :error
+                   :path "/tmp/ext"
+                   :message "Failed to load extension")))))
+    (multiple-value-bind (any-error-p load-failure-p)
+        (cadr-cli::report-startup-extension-issues manager stream)
+      (let ((text (get-output-stream-string stream)))
+        (list
+         (if any-error-p 1 0)
+         (leftover-notify-has text "Warning: ")
+         (if load-failure-p 1 0)
+         (leftover-notify-has text "Error: ")
+         4)))))
+
+
+(defun run-cli-extensions-output-boundary ()
+  ;; Leftover on loader.lisp: stdout/stderr onto manager. Not asdf load.
+  (let* ((stream (make-string-output-stream))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :cwd "/tmp/g20-ext-bound"
+            :no-discovery-p t
+            :output stream
+            :secret-function (constantly nil))))
+    (cadr-cli::call-with-extension-output-boundary
+     manager
+     (lambda ()
+       (format t "out~%")
+       (format *error-output* "err~%")))
+    (let ((text (get-output-stream-string stream)))
+      (list
+       (leftover-notify-has text "out")
+       (leftover-notify-has text "err")
+       2))))
+
+
 (defun leftover-string-prefix-flag (prefix value)
   (if (cadr-cli::string-prefix-p prefix value) 1 0))
 
@@ -13763,7 +13848,10 @@
          (view-width (run-cli-extensions-llama-view-width))
          (http-timeout (run-cli-extensions-http-timeout-p))
          (same-source (run-cli-extensions-same-source))
-         (quiet-manager (run-cli-extensions-quiet-manager)))
+         (quiet-manager (run-cli-extensions-quiet-manager))
+         (manager-notify (run-cli-extensions-manager-notify))
+         (startup-issues (run-cli-extensions-startup-issues))
+         (output-boundary (run-cli-extensions-output-boundary)))
     (json-object
      "observed"
      (json-object
@@ -13928,7 +14016,20 @@
       "qm_silent" (nth 0 quiet-manager)
       "qm_restored" (nth 1 quiet-manager)
       "qm_after" (nth 2 quiet-manager)
-      "qm_n" (nth 3 quiet-manager))
+      "qm_n" (nth 3 quiet-manager)
+      "enm_info" (nth 0 manager-notify)
+      "enm_error" (nth 1 manager-notify)
+      "enm_redact" (nth 2 manager-notify)
+      "enm_nl" (nth 3 manager-notify)
+      "enm_n" (nth 4 manager-notify)
+      "rsi_err" (nth 0 startup-issues)
+      "rsi_warn" (nth 1 startup-issues)
+      "rsi_load" (nth 2 startup-issues)
+      "rsi_prefix" (nth 3 startup-issues)
+      "rsi_n" (nth 4 startup-issues)
+      "eob_out" (nth 0 output-boundary)
+      "eob_err" (nth 1 output-boundary)
+      "eob_n" (nth 2 output-boundary))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -14084,7 +14185,22 @@
      (collect "cli_extensions_install.quiet_manager"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-quiet-manager)))))))
+                  (run-cli-extensions-quiet-manager))))
+     "manager_notify"
+     (collect "cli_extensions_install.manager_notify"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-manager-notify))))
+     "startup_issues"
+     (collect "cli_extensions_install.startup_issues"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-startup-issues))))
+     "output_boundary"
+     (collect "cli_extensions_install.output_boundary"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-output-boundary)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -37770,6 +37886,12 @@
       "src/cadr-cli/extensions/loader.lisp same-extension-source-p"
       "cli_extensions_install.quiet_manager"
       "src/cadr-cli/extensions/loader.lisp call-with-quiet-extension-manager"
+      "cli_extensions_install.manager_notify"
+      "src/cadr-cli/extensions/loader.lisp extension-manager-notify"
+      "cli_extensions_install.startup_issues"
+      "src/cadr-cli/extensions/loader.lisp report-startup-extension-issues"
+      "cli_extensions_install.output_boundary"
+      "src/cadr-cli/extensions/loader.lisp call-with-extension-output-boundary"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

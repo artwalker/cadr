@@ -365,6 +365,9 @@ const REPETITIONS = {
 	"cli_extensions_install.http_timeout_p": 50,
 	"cli_extensions_install.same_source": 50,
 	"cli_extensions_install.quiet_manager": 50,
+	"cli_extensions_install.manager_notify": 50,
+	"cli_extensions_install.startup_issues": 50,
+	"cli_extensions_install.output_boundary": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -14541,6 +14544,50 @@ function leftoverCallWithQuietManager(manager, fn) {
 }
 
 
+function leftoverRedactSecrets(text, secrets) {
+	let result = String(text);
+	for (const secret of secrets || []) {
+		if (secret) result = result.split(secret).join("[REDACTED]");
+	}
+	return result;
+}
+
+
+function leftoverExtensionManagerNotify(manager, message, level) {
+	const secrets = manager.secretFunction ? manager.secretFunction() : [];
+	manager.output.text += `extension[${String(level).toLowerCase()}]> ${leftoverRedactSecrets(message, secrets)}\n`;
+}
+
+
+function leftoverReportStartupExtensionIssues(manager) {
+	let anyError = 0;
+	let loadFailure = 0;
+	let text = "";
+	for (const issue of manager.startupIssues || []) {
+		let message = leftoverRedactSecrets(issue.message, []);
+		if (issue.path && message.includes("Failed to load extension")) {
+			message = `Failed to load extension "${issue.path}": ${message}`;
+		}
+		let prefix = "";
+		if (issue.type === "error") prefix = "Error: ";
+		else if (issue.type === "warning") prefix = "Warning: ";
+		text += `${prefix}${message}\n`;
+		if (issue.type === "error") {
+			anyError = 1;
+			if (message.includes("Failed to load extension")) loadFailure = 1;
+		}
+	}
+	return { text, anyError, loadFailure };
+}
+
+
+function leftoverCallWithExtensionOutputBoundary(manager, fn) {
+	fn((chunk) => {
+		manager.output.text += chunk;
+	});
+}
+
+
 function leftoverStringPrefixP(prefix, value) {
 	return value.startsWith(prefix) ? 1 : 0;
 }
@@ -15090,6 +15137,64 @@ function runCliExtensionsQuietManager() {
 }
 
 
+function runCliExtensionsManagerNotify() {
+	const stream = { text: "" };
+	const manager = {
+		output: stream,
+		secretFunction: () => ["sekrit"],
+	};
+	leftoverExtensionManagerNotify(manager, "hello", "info");
+	const info = stream.text;
+	stream.text = "";
+	leftoverExtensionManagerNotify(manager, "boom", "error");
+	const err = stream.text;
+	stream.text = "";
+	leftoverExtensionManagerNotify(manager, "leaked sekrit token", "warning");
+	const red = stream.text;
+	return {
+		enm_info: info.includes("extension[info]> hello") ? 1 : 0,
+		enm_error: err.includes("extension[error]> boom") ? 1 : 0,
+		enm_redact: !red.includes("sekrit") && red.includes("extension[warning]>") ? 1 : 0,
+		enm_nl: info.endsWith("\n") ? 1 : 0,
+		enm_n: 4,
+	};
+}
+
+
+function runCliExtensionsStartupIssues() {
+	const manager = {
+		startupIssues: [
+			{ type: "error", message: "boom" },
+			{ type: "warning", message: "careful" },
+			{ type: "error", path: "/tmp/ext", message: "Failed to load extension" },
+		],
+	};
+	const result = leftoverReportStartupExtensionIssues(manager);
+	return {
+		rsi_err: result.anyError,
+		rsi_warn: result.text.includes("Warning: ") ? 1 : 0,
+		rsi_load: result.loadFailure,
+		rsi_prefix: result.text.includes("Error: ") ? 1 : 0,
+		rsi_n: 4,
+	};
+}
+
+
+function runCliExtensionsOutputBoundary() {
+	const stream = { text: "" };
+	const manager = { output: stream };
+	leftoverCallWithExtensionOutputBoundary(manager, (write) => {
+		write("out\n");
+		write("err\n");
+	});
+	return {
+		eob_out: stream.text.includes("out") ? 1 : 0,
+		eob_err: stream.text.includes("err") ? 1 : 0,
+		eob_n: 2,
+	};
+}
+
+
 function llamaContextLabelOrEmpty(model) {
 	return llamaUiContextLabel(model) ?? "";
 }
@@ -15181,6 +15286,9 @@ async function measureCliExtensionsInstall() {
 	const httpTimeout = runCliExtensionsHttpTimeoutP();
 	const sameSource = runCliExtensionsSameSource();
 	const quietManager = runCliExtensionsQuietManager();
+	const managerNotify = runCliExtensionsManagerNotify();
+	const startupIssues = runCliExtensionsStartupIssues();
+	const outputBoundary = runCliExtensionsOutputBoundary();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -15275,6 +15383,15 @@ async function measureCliExtensionsInstall() {
 		quiet_manager: await collect("cli_extensions_install.quiet_manager", () => {
 			return () => runCliExtensionsQuietManager();
 		}),
+		manager_notify: await collect("cli_extensions_install.manager_notify", () => {
+			return () => runCliExtensionsManagerNotify();
+		}),
+		startup_issues: await collect("cli_extensions_install.startup_issues", () => {
+			return () => runCliExtensionsStartupIssues();
+		}),
+		output_boundary: await collect("cli_extensions_install.output_boundary", () => {
+			return () => runCliExtensionsOutputBoundary();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -15334,6 +15451,9 @@ async function measureCliExtensionsInstall() {
 			...httpTimeout,
 			...sameSource,
 			...quietManager,
+			...managerNotify,
+			...startupIssues,
+			...outputBoundary,
 		},
 	};
 }
@@ -38430,6 +38550,12 @@ const result = {
 				"packages/coding-agent/src/core/extensions/loader.ts leftover bundle.path === source.path (cadr same-extension-source-p)",
 			"cli_extensions_install.quiet_manager":
 				"packages/coding-agent/src/core/extensions/loader.ts leftover silenced notify stream (cadr call-with-quiet-extension-manager)",
+			"cli_extensions_install.manager_notify":
+				"packages/coding-agent/src/core/extensions/loader.ts leftover notify format (cadr extension-manager-notify)",
+			"cli_extensions_install.startup_issues":
+				"packages/coding-agent/src/core/extensions/loader.ts leftover reportDiagnostics (cadr report-startup-extension-issues)",
+			"cli_extensions_install.output_boundary":
+				"packages/coding-agent/src/core/extensions/loader.ts leftover stdout/stderr bind (cadr call-with-extension-output-boundary)",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":
