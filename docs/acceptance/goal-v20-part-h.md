@@ -10185,6 +10185,30 @@ Leftover sibling of Pair 982. Does not remount `eval_tools`. Timed work is empty
 
 Leftover sibling of Pairs 982–983. Does not remount `eval_paths`. Timed work is no-host empty, one visible path, hidden skipped. Observed `ep_none` / `ep_path` are exact. First n=5 freeze **13.850×** (4.853 / 0.350 µs) on host `Friend-MachineD`, ceiling 16.0 (raised from 12.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 985 — `evals_harness` (rep_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rep_ok` | `make-eval-harness-reporter` (`src/cadr-evals/reporter.lisp`) | leftover replica of constructor artifactDirectory |
+
+Leftover sibling of leftover 952–954 on the same needs-pair file. Does not remount `rep_make`. Timed work is explicit dir, trimmed env, missing env. Observed `mr_explicit` / `mr_n` are exact. First n=5 freeze **1.805×** (0.570 / 0.316 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 986 — `evals_harness` (fin_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fin_ok` | `reporter-finite-number` (`src/cadr-evals/reporter.lisp`) | leftover replica of finite number keep |
+
+Leftover sibling of Pair 985. Does not remount `fin_num`. Timed work is int, float, nil, inf, string. Observed `fn_int` / `fn_n` are exact. First n=5 freeze **1.873×** (0.267 / 0.142 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 987 — `evals_harness` (meta_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `meta_ok` | `reporter-artifact-metadata` (`src/cadr-evals/reporter.lisp`) | leftover replica of artifact metadata filter |
+
+Leftover sibling of Pairs 985–986. Does not remount `art_meta`. Timed work is keep/runid/snap filter. Observed `am_keep` / `am_n` are exact. First n=5 freeze **2.042×** (1.651 / 0.809 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

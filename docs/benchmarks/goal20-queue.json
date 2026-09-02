@@ -9984,6 +9984,51 @@
    "piUs": 0.35,
    "ceiling": 16.0,
    "rc": 2
+  },
+  {
+   "pair": 985,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.rep_ok",
+   "branch": "g20-freeze-985-987",
+   "note": "nextPairNum left at tip 328; leftover id 985",
+   "ratio": 1.805,
+   "cadrUs": 0.57,
+   "piUs": 0.316,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 986,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.fin_ok",
+   "branch": "g20-freeze-985-987",
+   "note": "nextPairNum left at tip 328; leftover id 986",
+   "ratio": 1.873,
+   "cadrUs": 0.267,
+   "piUs": 0.142,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 987,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.meta_ok",
+   "branch": "g20-freeze-985-987",
+   "note": "nextPairNum left at tip 328; leftover id 987",
+   "ratio": 2.042,
+   "cadrUs": 1.651,
+   "piUs": 0.809,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
