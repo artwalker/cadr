@@ -10569,6 +10569,51 @@
    "piUs": 1.064,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1027,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.ld_wait",
+   "branch": "g20-freeze-1027-1029",
+   "note": "nextPairNum left at tip 328; leftover id 1027",
+   "ratio": 3.389,
+   "cadrUs": 6.342,
+   "piUs": 1.871,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1028,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.ld_prog",
+   "branch": "g20-freeze-1027-1029",
+   "note": "nextPairNum left at tip 328; leftover id 1028",
+   "ratio": 2.586,
+   "cadrUs": 3.541,
+   "piUs": 1.369,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1029,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.ld_man",
+   "branch": "g20-freeze-1027-1029",
+   "note": "nextPairNum left at tip 328; leftover id 1029",
+   "ratio": 2.65,
+   "cadrUs": 6.21,
+   "piUs": 2.343,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
