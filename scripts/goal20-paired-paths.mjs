@@ -643,6 +643,9 @@ const REPETITIONS = {
 	"cli_selectors.umevxxx_ok": 50,
 	"cli_selectors.umrwxxx_ok": 50,
 	"cli_selectors.umrsxxx_ok": 50,
+	"cli_selectors.um_evt": 50,
+	"cli_selectors.um_raw": 50,
+	"cli_selectors.um_draw": 50,
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
@@ -36358,6 +36361,24 @@ async function measureCliSelectorsSessionSearch() {
 		umrsxxx_ok: await collect("cli_selectors.umrsxxx_ok", () => {
 			return () => runCliSelectorsRenderUserMessageSelector();
 		}),
+		um_evt: await collect(
+			"cli_selectors.um_evt",
+			() => {
+				return () => runCliSelectorsUserMessageHandleEvent();
+			},
+		),
+		um_raw: await collect(
+			"cli_selectors.um_raw",
+			() => {
+				return () => runCliSelectorsUserMessageHandleRaw();
+			},
+		),
+		um_draw: await collect(
+			"cli_selectors.um_draw",
+			() => {
+				return () => runCliSelectorsRenderUserMessageSelector();
+			},
+		),
 		make_models_selector_keybindings: await collect(
 			"cli_selectors.make_models_selector_keybindings",
 			() => {
@@ -41510,6 +41531,12 @@ const result = {
 				"packages/coding-agent leftover replica of UserMessageList.handleInput (raw key dispatch)",
 			"cli_selectors.umrsxxx_ok":
 				"packages/coding-agent leftover replica of UserMessageSelectorComponent layout",
+			"cli_selectors.um_evt":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (structured events)",
+			"cli_selectors.um_raw":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
+			"cli_selectors.um_draw":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
 			"cli_selectors.make_models_selector_keybindings":
 				"packages/coding-agent/src/core/keybindings.ts KEYBINDINGS app.models.* KeybindingsManager constructor",
 			"cli_selectors.make_scoped_models_selector_state":
