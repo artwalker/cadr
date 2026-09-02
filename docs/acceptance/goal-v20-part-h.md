@@ -10449,6 +10449,30 @@ Leftover sibling of Pair 1018. Does not remount `countdown_tick`. Timed work is 
 
 Leftover sibling of Pairs 1018–1019. Does not remount `countdown_render`. Timed work is countdown render. Observed `cdr_*` are exact. First n=5 freeze **4.599×** (1.539 / 0.335 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1021 — `cli_selectors` (dax_rgb)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dax_rgb` | `daxnuts-rgb-at` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of daxnuts-rgb-at |
+
+Leftover sibling of daxnuts rgb/make/tick on daxnuts.lisp. Does not remount `daxnuts_rgb_at`. Timed work is rgb-at. Observed `dra_*` are exact. First n=5 freeze **3.149×** (1.131 / 0.359 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1022 — `cli_selectors` (dax_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dax_make` | `make-daxnuts-component` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of make-daxnuts-component |
+
+Leftover sibling of Pair 1021. Does not remount `make_daxnuts_component`. Timed work is make component. Observed `dmc_*` are exact. First n=5 freeze **6.531×** (0.999 / 0.153 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1023 — `cli_selectors` (dax_tick)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dax_tick` | `daxnuts-component-tick` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of daxnuts-component-tick |
+
+Leftover sibling of Pairs 1021–1022. Does not remount `daxnuts_component_tick`. Timed work is component tick. Observed `dct_*` are exact. First n=5 freeze **8.845×** (5.142 / 0.581 µs) on host `Friend-MachineD`, ceiling 12.0 (raised from 8.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
