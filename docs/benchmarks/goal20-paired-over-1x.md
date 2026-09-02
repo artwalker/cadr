@@ -339,6 +339,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.no_models_help` | 244.9 | 8.92 | 27.45× | 50.00× | measure-only pair 460; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_support.no_model_selected` | 245.4 | 8.87 | 27.67× | 50.00× | measure-only pair 461; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_support.no_api_key` | 480.3 | 17.48 | 27.48× | 50.00× | measure-only pair 462; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
+| `cli_support.provider_login_help` | 477.0 | 10.48 | 45.52× | 50.00× | measure-only pair 907; leftover CLI wrapper; same ASDF docs-dir as 460–462 | invent pause；地板/去 ASDF 另刀 |
+| `cli_support.docs_directory` | 227.9 | 6.83 | 33.35× | 50.00× | measure-only pair 908; leftover CLI docs path; same ASDF docs-dir as 460–462 | invent pause；地板/去 ASDF 另刀 |
 | `cli_print_rpc.rpc_prompt` | 1.323 | 0.584 | 2.266× | 8.00× | measure-only leftover 464; `rpc-prompt-message` vs RPC prompt message+images (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.bash_result` | 2.165 | 0.743 | 2.913× | 8.00× | measure-only leftover 465; `rpc-bash-result-json` vs RPC bash result payload (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.dialog_request` | 1.570 | 0.648 | 2.423× | 8.00× | leftover collect restore pair 466; `rpc-dialog-request-object` vs createDialogPromise request | invent pause；地板优化另刀 |

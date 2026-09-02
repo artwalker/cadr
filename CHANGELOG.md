@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_support.provider_login_help` n=5 **45.516×** (476.985 / 10.480 µs) Friend-MachineD, ceiling 50.0. Pair 907. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_support.docs_directory` n=5 **33.348×** (227.853 / 6.833 µs) Friend-MachineD, ceiling 50.0. Pair 908. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_support.default_thinking_level` n=5 **0.546×** (0.240 / 0.440 µs) Friend-MachineD, ceiling 8.0. Pair 909. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.countdown_dispose` n=5 **1.773×** (0.318 / 0.179 µs) Friend-MachineD, ceiling 8.0. Pair 904. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.countdown_unstarted` n=5 **1.653×** (0.249 / 0.150 µs) Friend-MachineD, ceiling 8.0. Pair 905. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.countdown_start_guard` n=5 **1.458×** (0.292 / 0.200 µs) Friend-MachineD, ceiling 8.0. Pair 906. Over-1×. `nextPairNum` unchanged.

@@ -9848,14 +9848,28 @@ Leftover sibling of leftover 556–558 / 904. Timed work is construct without st
 | `countdown_start_guard` | `countdown-timer-start` when thread is already bound (`src/cadr-cli/interactive/components/countdown.lisp`) | keep existing intervalId (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
 Leftover sibling of leftover 556–558 / 904–905. Timed work is the existing-thread skip — no `sb-thread:make-thread`, no setInterval. Observed `csg_keep` / `csg_stop` / `csg_fresh` / `csg_n` are exact. First n=5 freeze **1.458×** (0.292 / 0.200 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 907 — `cli_support` (provider_login_help)
+
+| metric | cadr | pi |
+|---|---|---|
 | `provider_login_help` | `get-provider-login-help` (`src/cadr-cli/support/model-help.lisp`) | `getProviderLoginHelp` (`packages/coding-agent/src/core/auth-guidance.ts`) |
-Leftover sibling of leftover 460–462 on the same `model-help.lisp` hole. Timed work is the login-help wrapper itself — not format-no-models / no-model-selected / no-api-key. Observed `plh_pref` / `plh_login` / `plh_prov` / `plh_mod` / `plh_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+Leftover sibling of leftover 460–462 on the same `model-help.lisp` hole. Timed work is the login-help wrapper itself — not format-no-models / no-model-selected / no-api-key. Observed `plh_pref` / `plh_login` / `plh_prov` / `plh_mod` / `plh_n` are exact. First n=5 freeze **45.516×** (476.985 / 10.480 µs) on host `Friend-MachineD`, ceiling 50.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 908 — `cli_support` (docs_directory)
+
+| metric | cadr | pi |
+|---|---|---|
 | `docs_directory` | `docs-directory` (`src/cadr-cli/support/model-help.lisp`) | `getDocsPath` (`packages/coding-agent/src/config.ts`) |
-Leftover sibling of leftover 460–462 / 907. Timed work is the docs-directory wrapper — not the three format-* messages. Observed `dd_docs` / `dd_len` / `dd_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+Leftover sibling of leftover 460–462 / 907. Timed work is the docs-directory wrapper — not the three format-* messages. Observed `dd_docs` / `dd_len` / `dd_n` are exact. First n=5 freeze **33.348×** (227.853 / 6.833 µs) on host `Friend-MachineD`, ceiling 50.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 909 — `cli_support` (default_thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
 | `default_thinking_level` | `+default-thinking-level+` (`src/cadr-cli/support/model-help.lisp`) | `DEFAULT_THINKING_LEVEL` (`packages/coding-agent/src/core/defaults.ts`) |
-Leftover sibling of leftover 460–462 / 907–908. Timed work is the default thinking keyword/string classify — not settings-manager get/set. Observed `dtl_med` / `dtl_high` / `dtl_name` / `dtl_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+Leftover sibling of leftover 460–462 / 907–908. Timed work is the default thinking keyword/string classify — not settings-manager get/set. Observed `dtl_med` / `dtl_high` / `dtl_name` / `dtl_n` are exact. First n=5 freeze **0.546×** (0.240 / 0.440 µs) on host `Friend-MachineD`, ceiling 8.0. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -10599,7 +10613,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/file-watcher.lisp` | 69 | `cli_support.watch_retry_delay`, `cli_support.close_watcher`, `cli_support.watch_signature` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/html.lisp` | 63 | `cli_support.experimental` |
-| `src/cadr-cli/support/model-help.lisp` | 20 | `cli_support.no_api_key`, `cli_support.no_model_selected`, `cli_support.no_models_help` |
+| `src/cadr-cli/support/model-help.lisp` | 20 | `cli_support.default_thinking_level`, `cli_support.docs_directory`, `cli_support.no_api_key`, `cli_support.no_model_selected`, `cli_support.no_models_help`, `cli_support.provider_login_help` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 151 | `cli_support.shell_config`, `cli_support.sanitize_output` |

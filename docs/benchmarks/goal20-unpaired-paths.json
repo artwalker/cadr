@@ -2811,9 +2811,12 @@
       "prefix": "src/cadr-cli/support/model-help.lisp",
       "class": "paired",
       "metrics": [
+        "cli_support.default_thinking_level",
+        "cli_support.docs_directory",
         "cli_support.no_api_key",
         "cli_support.no_model_selected",
-        "cli_support.no_models_help"
+        "cli_support.no_models_help",
+        "cli_support.provider_login_help"
       ]
     },
     {

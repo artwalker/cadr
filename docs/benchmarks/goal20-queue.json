@@ -9672,6 +9672,51 @@
    "piUs": 0.2,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 907,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/model-help.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.provider_login_help",
+   "branch": "g20-freeze-907-909",
+   "note": "nextPairNum left at tip 328; leftover id 907",
+   "ratio": 45.516,
+   "cadrUs": 476.985,
+   "piUs": 10.48,
+   "ceiling": 50.0,
+   "rc": 2
+  },
+  {
+   "pair": 908,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/model-help.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.docs_directory",
+   "branch": "g20-freeze-907-909",
+   "note": "nextPairNum left at tip 328; leftover id 908",
+   "ratio": 33.348,
+   "cadrUs": 227.853,
+   "piUs": 6.833,
+   "ceiling": 50.0,
+   "rc": 2
+  },
+  {
+   "pair": 909,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/model-help.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.default_thinking_level",
+   "branch": "g20-freeze-907-909",
+   "note": "nextPairNum left at tip 328; leftover id 909",
+   "ratio": 0.546,
+   "cadrUs": 0.24,
+   "piUs": 0.44,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ]
 }
