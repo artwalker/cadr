@@ -744,6 +744,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.progress_notify` | 11.417 | 0.577 | 19.792× | 60.00× | measure-only leftover 852; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_info_style` | 2.643 | 0.367 | 7.201× | 8.00× | measure-only leftover 854; `session-info-style` vs leftover heading/label/other style; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.default_changelog_path` | 218.058 | 0.184 | 1182.272× | 1200.00× | measure-only leftover 855; `default-changelog-path` vs leftover CHANGELOG env/leaf; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_selectors.armin_copy_cell` | 25.759 | 4.869 | 5.290× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
+| `cli_selectors.armin_copy_row` | 23.953 | 5.08 | 4.716× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
+| `cli_selectors.armin_rotate_row` | 21.362 | 6.23 | 3.429× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |

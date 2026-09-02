@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T07:14:23Z) on `Friend-MachineD`, git `fdf80f85c2d9`, ratio_gate=`enforced-only:cli_interactive_controller.make_notification_stream,cli_interactive_controller.notification_stream_flush,cli_interactive_controller.terminal_title_sequence`, quick=no, samples=5
+Current: `—` (2026-09-02T07:41:40Z) on `Friend-MachineD`, git `e554df2f8529`, ratio_gate=`enforced-only:cli_selectors.armin_copy_cell,cli_selectors.armin_copy_row,cli_selectors.armin_rotate_row`, quick=no, samples=5
 
-Previous: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`, ratio_gate=`enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory`, quick=no, samples=5
+Previous: `—` (2026-09-02T07:39:39Z) on `Friend-MachineD`, git `b7748fa9d538`, ratio_gate=`enforced-only:cli_selectors.armin_copy_cell,cli_selectors.armin_copy_row,cli_selectors.armin_rotate_row`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1079,9 +1079,9 @@ Previous: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`,
 | `cli_interactive_controller.announcement_make` | 11.2 | 374.2 | 0.03× | 0.03× | 8.00× |
 | `cli_interactive_controller.announcement_url` | 72.8 | 739.3 | 0.10× | 0.10× | 8.00× |
 | `cli_interactive_controller.announcement_title` | 97.8 | 335.0 | 0.29× | 0.29× | 8.00× |
-| `cli_interactive_controller.terminal_title_sequence` | — | — | 1.52× | — | 8.00× |
-| `cli_interactive_controller.make_notification_stream` | — | — | 8.28× | — | 8.00× |
-| `cli_interactive_controller.notification_stream_flush` | — | — | 4.67× | — | 8.00× |
+| `cli_interactive_controller.terminal_title_sequence` | — | — | 1.52× | 1.52× | 8.00× |
+| `cli_interactive_controller.make_notification_stream` | — | — | 8.28× | 8.28× | 8.00× |
+| `cli_interactive_controller.notification_stream_flush` | — | — | 4.67× | 4.67× | 8.00× |
 | `cli_selectors.user_message_make` | 1.0 | 1.9 | 0.53× | 0.53× | 8.00× |
 | `cli_selectors.user_message_move` | 1.0 | 2.0 | 0.53× | 0.53× | 8.00× |
 | `cli_selectors.user_message_selection` | 1.0 | 1.9 | 0.55× | 0.55× | 8.00× |
@@ -1509,6 +1509,9 @@ Previous: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`,
 | `cli_selectors.armin_make_grid` | — | — | 1.68× | 1.68× | 8.00× |
 | `cli_selectors.armin_copy_grid` | — | — | 6.47× | 6.47× | 8.00× |
 | `cli_selectors.armin_row_string` | — | — | 4.29× | 4.29× | 8.00× |
+| `cli_selectors.armin_copy_cell` | — | — | 5.33× | 5.29× | 8.00× |
+| `cli_selectors.armin_copy_row` | — | — | 4.88× | 4.72× | 8.00× |
+| `cli_selectors.armin_rotate_row` | — | — | 4.39× | 3.43× | 8.00× |
 | `websocket_stream.stream_roundtrip` | 44,846.0 | 141.1 | 317.88× | 317.88× | 800.00× |
 | `cli_sdk.version_newer` | 4.1 | 12.1 | 0.34× | 0.34× | 8.00× |
 | `cli_sdk.cache_miss` | 2.4 | 4.3 | 0.57× | 0.57× | 8.00× |
@@ -2354,6 +2357,8 @@ Previous: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`,
 | 2026-09-02T04:59:41Z | — | `b75bf39b1b2c` | no | enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T06:56:56Z | — | `63ff989fa051` | no | enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T07:14:23Z | — | `fdf80f85c2d9` | no | enforced-only:cli_interactive_controller.make_notification_stream,cli_interactive_controller.notification_stream_flush,cli_interactive_controller.terminal_title_sequence | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T07:39:39Z | — | `b7748fa9d538` | no | enforced-only:cli_selectors.armin_copy_cell,cli_selectors.armin_copy_row,cli_selectors.armin_rotate_row | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T07:41:40Z | — | `e554df2f8529` | no | enforced-only:cli_selectors.armin_copy_cell,cli_selectors.armin_copy_row,cli_selectors.armin_rotate_row | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

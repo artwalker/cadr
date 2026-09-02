@@ -8,6 +8,29 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.armin_copy_cell` n=5 **5.327×** (23.076 / 4.332 µs) Friend-MachineD, ceiling 8.0. Pair 862. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_copy_row` n=5 **4.882×** (24.126 / 4.942 µs) Friend-MachineD, ceiling 8.0. Pair 863. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_rotate_row` n=5 **4.392×** (25.808 / 5.876 µs) Friend-MachineD, ceiling 8.0. Pair 864. Over-1×. `nextPairNum` unchanged.
+
+
+- Goal 20 leftover: pair `cli_selectors.armin_copy_cell`
+  (`armin-copy-cell` vs leftover typewriter cell assign).
+  Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` exact.
+  n=5 **5.290×** (25.759 / 4.869 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 862). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_copy_row`
+  (`armin-copy-row` vs leftover scanline row copy).
+  Observed `acr_eq` / `acr_indep` / `acr_w` / `acr_h` / `acr_n` exact.
+  n=5 **4.716×** (23.953 / 5.080 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 863). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_rotate_row`
+  (`armin-rotate-row` vs leftover glitch slice/concat rotate).
+  Observed `arr_len` / `arr_zero` / `arr_shift` / `arr_mod` / `arr_n` exact.
+  n=5 **3.429×** (21.362 / 6.230 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 864). Over-1× booked.
+  `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_interactive_controller.terminal_title_sequence`
   (`tui-terminal-title-sequence` vs leftover OSC 0 title wrap).

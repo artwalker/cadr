@@ -225,10 +225,13 @@
     "cli_selectors.api_key_input_state_handle_event",
     "cli_selectors.api_key_input_ui_state",
     "cli_selectors.armin_cell",
+    "cli_selectors.armin_copy_cell",
     "cli_selectors.armin_copy_grid",
+    "cli_selectors.armin_copy_row",
     "cli_selectors.armin_grid_height",
     "cli_selectors.armin_make_grid",
     "cli_selectors.armin_pixel",
+    "cli_selectors.armin_rotate_row",
     "cli_selectors.armin_row_string",
     "cli_selectors.countdown_render",
     "cli_selectors.countdown_seconds",
@@ -2026,10 +2029,13 @@
       "class": "paired",
       "metrics": [
         "cli_selectors.armin_cell",
+        "cli_selectors.armin_copy_cell",
         "cli_selectors.armin_copy_grid",
+        "cli_selectors.armin_copy_row",
         "cli_selectors.armin_grid_height",
         "cli_selectors.armin_make_grid",
         "cli_selectors.armin_pixel",
+        "cli_selectors.armin_rotate_row",
         "cli_selectors.armin_row_string"
       ]
     },

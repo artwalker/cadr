@@ -1248,6 +1248,9 @@
     ("cli_selectors.armin_make_grid" . 50)
     ("cli_selectors.armin_copy_grid" . 50)
     ("cli_selectors.armin_row_string" . 50)
+    ("cli_selectors.armin_rotate_row" . 50)
+    ("cli_selectors.armin_copy_row" . 50)
+    ("cli_selectors.armin_copy_cell" . 50)
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
@@ -29808,6 +29811,75 @@
      5)))
 
 
+(defun leftover-armin-component-fixture ()
+  ;; No start-p / no thread. Copy-cell needs current+final grids only.
+  (make-instance 'cadr-cli::armin-component
+                 :ui nil
+                 :effect :typewriter))
+
+(defun run-cli-selectors-armin-copy-cell ()
+  ;; Typewriter leftover: currentGrid[row][x] = finalGrid[row][x]. Not tick.
+  (let* ((component (leftover-armin-component-fixture))
+         (ok (cadr-cli::armin-copy-cell component 0))
+         (final (cadr-cli::armin-component-final-grid component))
+         (current (cadr-cli::armin-component-current-grid component))
+         (match (char= (aref current 0 0) (aref final 0 0)))
+         (oob (cadr-cli::armin-copy-cell component 558))
+         (mid (cadr-cli::armin-copy-cell component 31)))
+    (list
+     (if ok 1 0)
+     (if match 1 0)
+     (if oob 0 1)
+     (if mid 1 0)
+     5)))
+
+(defun run-cli-selectors-armin-copy-row ()
+  ;; Scanline leftover: copy one display row. Mutate dest; source stays.
+  (let* ((source (cadr-cli::make-armin-grid t))
+         (dest (cadr-cli::make-armin-grid nil))
+         (saved (aref source 2 0)))
+    (cadr-cli::armin-copy-row dest source 2)
+    (setf (aref dest 2 0) #\X)
+    (list
+     (if (char= (aref dest 2 1) (aref source 2 1)) 1 0)
+     (if (char= (aref source 2 0) saved) 1 0)
+     cadr-cli::+armin-width+
+     (array-dimension source 0)
+     5)))
+
+(defun run-cli-selectors-armin-rotate-row ()
+  ;; Glitch leftover: left-rotate one row. Non-negative offsets only.
+  (let* ((source (cadr-cli::make-armin-grid t))
+         (zero (cadr-cli::armin-rotate-row source 2 0))
+         (one (cadr-cli::armin-rotate-row source 2 1))
+         (full (cadr-cli::armin-rotate-row source 2 31)))
+    (list
+     (length zero)
+     (if (char= (aref zero 0) (aref source 2 0)) 1 0)
+     (if (and (char= (aref one 0) (aref source 2 1))
+              (char= (aref one 30) (aref source 2 0)))
+         1 0)
+     (if (char= (aref full 0) (aref zero 0)) 1 0)
+     5)))
+
+(defun armin-copy-leftover-observed-pairs (copy-cell copy-row rotate-row)
+  (list
+   "acc_ok" (nth 0 copy-cell)
+   "acc_match" (nth 1 copy-cell)
+   "acc_oob" (nth 2 copy-cell)
+   "acc_mid" (nth 3 copy-cell)
+   "acc_n" (nth 4 copy-cell)
+   "acr_eq" (nth 0 copy-row)
+   "acr_indep" (nth 1 copy-row)
+   "acr_w" (nth 2 copy-row)
+   "acr_h" (nth 3 copy-row)
+   "acr_n" (nth 4 copy-row)
+   "arr_len" (nth 0 rotate-row)
+   "arr_zero" (nth 1 rotate-row)
+   "arr_shift" (nth 2 rotate-row)
+   "arr_mod" (nth 3 rotate-row)
+   "arr_n" (nth 4 rotate-row)))
+
 (defun run-cli-selectors-armin-row-string ()
   ;; row.join("") without theme/clip. Empty row 0 and final ink cells.
   (let* ((empty (cadr-cli::make-armin-grid nil))
@@ -32153,6 +32225,12 @@
           (run-cli-selectors-armin-copy-grid))
         (leftover-armin-row-string
           (run-cli-selectors-armin-row-string))
+        (leftover-armin-copy-cell
+          (run-cli-selectors-armin-copy-cell))
+        (leftover-armin-copy-row
+          (run-cli-selectors-armin-copy-row))
+        (leftover-armin-rotate-row
+          (run-cli-selectors-armin-rotate-row))
         (leftover-login-dlg-make
           (run-cli-selectors-login-dialog-make))
         (leftover-login-dlg-auth
@@ -32966,6 +33044,10 @@
               leftover-armin-make-grid
               leftover-armin-copy-grid
               leftover-armin-row-string)
+             (armin-copy-leftover-observed-pairs
+              leftover-armin-copy-cell
+              leftover-armin-copy-row
+              leftover-armin-rotate-row)
              (leftover-login-dialog-make-auth-device-observed-pairs
               leftover-login-dlg-make
               leftover-login-dlg-auth
@@ -34247,6 +34329,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-armin-row-string))))
+     "armin_copy_cell"
+     (collect "cli_selectors.armin_copy_cell"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-copy-cell))))
+     "armin_copy_row"
+     (collect "cli_selectors.armin_copy_row"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-copy-row))))
+     "armin_rotate_row"
+     (collect "cli_selectors.armin_rotate_row"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-rotate-row))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
@@ -39319,6 +39416,12 @@
       "src/cadr-cli/interactive/components/armin.lisp copy-armin-grid"
       "cli_selectors.armin_row_string"
       "src/cadr-cli/interactive/components/armin.lisp armin-grid-row-string"
+      "cli_selectors.armin_copy_cell"
+      "src/cadr-cli/interactive/components/armin.lisp armin-copy-cell"
+      "cli_selectors.armin_copy_row"
+      "src/cadr-cli/interactive/components/armin.lisp armin-copy-row"
+      "cli_selectors.armin_rotate_row"
+      "src/cadr-cli/interactive/components/armin.lisp armin-rotate-row"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"
