@@ -108,7 +108,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 261,
@@ -154,7 +154,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 266,
@@ -174,7 +174,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 268,
@@ -184,7 +184,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 269,
@@ -194,7 +194,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+   "note": "empty slot leftover from before Goal 21; metric was null — not started"
   },
   {
    "pair": 270,
@@ -9622,6 +9622,51 @@
    "ratio": 0.234,
    "cadrUs": 1.891,
    "piUs": 8.088,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 961,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/transcript.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.wrap_ln",
+   "branch": "g20-freeze-961-963",
+   "note": "nextPairNum left at tip 328; leftover id 961",
+   "ratio": 2.376,
+   "cadrUs": 1.174,
+   "piUs": 0.494,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 962,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/transcript.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.pad_sp",
+   "branch": "g20-freeze-961-963",
+   "note": "nextPairNum left at tip 328; leftover id 962",
+   "ratio": 3.724,
+   "cadrUs": 0.61,
+   "piUs": 0.164,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 963,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/transcript.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.cache_ok",
+   "branch": "g20-freeze-961-963",
+   "note": "nextPairNum left at tip 328; leftover id 963",
+   "ratio": 4.732,
+   "cadrUs": 2.179,
+   "piUs": 0.46,
    "ceiling": 8.0,
    "rc": 2
   }

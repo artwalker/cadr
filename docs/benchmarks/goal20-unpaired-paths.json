@@ -2422,7 +2422,9 @@
         "cli_interactive_controller.assistant_has_tools",
         "cli_interactive_controller.assistant_price_known",
         "cli_interactive_controller.assistant_stop_error",
+        "cli_interactive_controller.cache_ok",
         "cli_interactive_controller.cache_p",
+        "cli_interactive_controller.pad_sp",
         "cli_interactive_controller.pad_str",
         "cli_interactive_controller.render_assistant_blocks",
         "cli_interactive_controller.render_assistant_lines",
@@ -2442,6 +2444,7 @@
         "cli_interactive_controller.transform_tui_markdown",
         "cli_interactive_controller.update_notification_border",
         "cli_interactive_controller.update_notification_text",
+        "cli_interactive_controller.wrap_ln",
         "cli_interactive_controller.wrap_osc"
       ]
     },

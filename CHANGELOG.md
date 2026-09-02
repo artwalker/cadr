@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_interactive_controller.wrap_ln` n=5 **2.376×** (1.174 / 0.494 µs) Friend-MachineD, ceiling 8.0. Pair 961. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.pad_sp` n=5 **3.724×** (0.610 / 0.164 µs) Friend-MachineD, ceiling 8.0. Pair 962. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.cache_ok` n=5 **4.732×** (2.179 / 0.460 µs) Friend-MachineD, ceiling 8.0. Pair 963. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.theme_kind` n=5 **0.610×** (0.246 / 0.404 µs) Friend-MachineD, ceiling 8.0. Pair 958. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.theme_ok` n=5 **0.978×** (19.361 / 19.800 µs) Friend-MachineD, ceiling 8.0. Pair 959. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.theme_get` n=5 **0.234×** (1.891 / 8.088 µs) Friend-MachineD, ceiling 8.0. Pair 960. `nextPairNum` unchanged.
