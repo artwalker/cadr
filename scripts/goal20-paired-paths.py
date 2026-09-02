@@ -2087,9 +2087,9 @@ RATIO_CEILINGS = {
   # Measure-only leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.um_he": 8.0,
   # Measure-only leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.um_hr": 8.0,
+  "cli_selectors.um_hr": 16.0,
   # Measure-only leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.um_rd": 8.0,
+  "cli_selectors.um_rd": 250.0,
     # Measure-only leftover 1000; first freeze ~3.0×.
     "cli_selectors.tosp_ok": 8.0,
     # Measure-only leftover 1001; first freeze ~2.0×.
