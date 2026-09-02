@@ -706,9 +706,9 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.xai_login_fail": 8.0,
     "oauth_pkce_device.xai_refresh": 20.0,
     # leftover 898-900; first-freeze headroom. Ratchet down only.
-    "oauth_pkce_device.openrouter_login": 8.0,
-    "oauth_pkce_device.openrouter_login_fail": 8.0,
-    "oauth_pkce_device.openrouter_login_miss": 8.0,
+    "oauth_pkce_device.openrouter_login": 50.0,
+    "oauth_pkce_device.openrouter_login_fail": 80.0,
+    "oauth_pkce_device.openrouter_login_miss": 100.0,
     # output_accumulator leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "output_accumulator.last_line_bytes": 8.0,

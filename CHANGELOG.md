@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `oauth_pkce_device.openrouter_login` n=5 **35.027×** (168.272 / 4.804 µs) Friend-MachineD, ceiling 50.0. Pair 898. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.openrouter_login_fail` n=5 **53.681×** (202.181 / 3.766 µs) Friend-MachineD, ceiling 80.0. Pair 899. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.openrouter_login_miss` n=5 **98.722×** (183.818 / 1.862 µs) Friend-MachineD, ceiling 100.0. Pair 900. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.xai_login` n=5 **13.116×** (15.536 / 1.185 µs) Friend-MachineD, ceiling 20.0. Pair 895. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.xai_login_fail` n=5 **3.870×** (8.266 / 2.136 µs) Friend-MachineD, ceiling 8.0. Pair 896. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.xai_refresh` n=5 **22.614×** (5.365 / 0.237 µs) Friend-MachineD, ceiling 20.0. Pair 897. Over-1×. `nextPairNum` unchanged.

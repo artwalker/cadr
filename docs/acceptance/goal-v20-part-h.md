@@ -10713,6 +10713,30 @@ Leftover sibling of Pair 895. Timed work is stub device HTTP 400 throwing — no
 
 Leftover sibling of Pairs 895–896. Timed work is stub token HTTP 200 refresh — exact access/refresh, not expires. Observed `xrf_acc` / `xrf_ref` / `xrf_n` are exact. First n=5 freeze **22.614×** (5.365 / 0.237 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 898 — `oauth_pkce_device` (openrouter_login)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_login` | `login-openrouter-oauth` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `parseAuthorizationInput` + `exchangeAuthorizationCode` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftover 436–438 queued openrouter_input / openrouter_refresh / openrouter_exchange). Timed work is stub HTTP login after a pasted code — not parse-openrouter-authorization-input fixtures, not PKCE, not callback port. Observed `olg_acc` / `olg_ref` / `olg_n` are exact. First n=5 freeze **35.027×** (168.272 / 4.804 µs) on host `Friend-MachineD`, ceiling 50.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 899 — `oauth_pkce_device` (openrouter_login_fail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_login_fail` | `login-openrouter-oauth` key exchange fail (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `exchangeAuthorizationCode` HTTP fail (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of Pair 898. Timed work is stub HTTP 400 throwing — not exact message text. Observed `olf_throw` / `olf_n` are exact. First n=5 freeze **53.681×** (202.181 / 3.766 µs) on host `Friend-MachineD`, ceiling 80.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 900 — `oauth_pkce_device` (openrouter_login_miss)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_login_miss` | `login-openrouter-oauth` missing code (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `Missing authorization code` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of Pairs 898–899. Timed work is empty pasted input throwing — not NIL vs undefined. Observed `olm_throw` / `olm_n` are exact. First n=5 freeze **98.722×** (183.818 / 1.862 µs) on host `Friend-MachineD`, ceiling 100.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -11329,16 +11353,16 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image`, `image_runtime.openrouter_usage`, `image_runtime.parse_openrouter_images`, `image_runtime.error_result` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 431 | `ai_crypto_model_data.manifest` |
-| `src/cadr-ai/oauth/callback.lisp` | 324 | `oauth_pkce_device.http_status_text`, `oauth_pkce_device.parse_authorization_input`, `oauth_pkce_device.parse_callback_request`, `oauth_pkce_device.parse_query`, `oauth_pkce_device.percent_decode`, `oauth_pkce_device.provider_key` |
-| `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id` |
+| `src/cadr-ai/oauth/callback.lisp` | 324 | `oauth_pkce_device.hex_value`, `oauth_pkce_device.http_status_text`, `oauth_pkce_device.parse_authorization_input`, `oauth_pkce_device.parse_callback_request`, `oauth_pkce_device.parse_query`, `oauth_pkce_device.percent_decode`, `oauth_pkce_device.present_auth_url`, `oauth_pkce_device.provider_key`, `oauth_pkce_device.write_http_response` |
+| `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id`, `oauth_pkce_device.token_fields`, `oauth_pkce_device.openai_exchange`, `oauth_pkce_device.anthropic_exchange` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
 | `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | `oauth_pkce_device.anth_oauth_name`, `oauth_pkce_device.anth_oauth_sub`, `oauth_pkce_device.anth_oauth_instructions` |
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth` |
 | `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | `oauth_pkce_device.kimi_host_default`, `oauth_pkce_device.kimi_host_code`, `oauth_pkce_device.kimi_host_trim` |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | `oauth_pkce_device.json_copy`, `oauth_pkce_device.interval_seconds`, `oauth_pkce_device.device_start` |
-| `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange` |
+| `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange`, `oauth_pkce_device.openrouter_login`, `oauth_pkce_device.openrouter_login_fail`, `oauth_pkce_device.openrouter_login_miss` |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | `oauth_pkce_device.radius_gateway` |
-| `src/cadr-ai/oauth/providers/xai.lisp` | 184 | `oauth_pkce_device.error_detail`, `oauth_pkce_device.ensure_success`, `oauth_pkce_device.notify_device` |
+| `src/cadr-ai/oauth/providers/xai.lisp` | 184 | `oauth_pkce_device.error_detail`, `oauth_pkce_device.ensure_success`, `oauth_pkce_device.notify_device`, `oauth_pkce_device.xai_login`, `oauth_pkce_device.xai_login_fail`, `oauth_pkce_device.xai_refresh` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
@@ -11368,7 +11392,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/bootstrap/auth.lisp` | 172 | `cli_bootstrap_sessions.bootstrap_auth` |
 | `src/cadr-cli/bootstrap/commands.lisp` | 2,655 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
-| `src/cadr-cli/bootstrap/sessions.lisp` | 1,968 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command` |
+| `src/cadr-cli/bootstrap/sessions.lisp` | 1,968 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 957 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 91 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/config.lisp` | 284 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
@@ -11376,21 +11400,21 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
 | `src/cadr-cli/extensions/installer.lisp` | 209 | `cli_extensions_install.unsafe_git`, `cli_extensions_install.git_path`, `cli_extensions_install.normalize_git`, `cli_extensions_install.string_prefix`, `cli_extensions_install.split_path_segments`, `cli_extensions_install.strip_git_query` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 485 | `cli_extensions_install.llama_url` |
-| `src/cadr-cli/extensions/llama/extension.lisp` | 470 | `cli_extensions_install.gated_approval`, `cli_extensions_install.split_args`, `cli_extensions_install.quant_label` |
+| `src/cadr-cli/extensions/llama/extension.lisp` | 470 | `cli_extensions_install.catalog_notify`, `cli_extensions_install.gated_approval`, `cli_extensions_install.loaded_model`, `cli_extensions_install.progress_notify`, `cli_extensions_install.quant_label`, `cli_extensions_install.split_args` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 337 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 | `cli_extensions_install.llama_context_label`, `cli_extensions_install.llama_model_description`, `cli_extensions_install.llama_compact_count`, `cli_extensions_install.llama_format_context`, `cli_extensions_install.llama_js_to_fixed`, `cli_extensions_install.llama_search_exact`, `cli_extensions_install.llama_search_status`, `cli_extensions_install.llama_search_filter`, `cli_extensions_install.llama_view_width` |
-| `src/cadr-cli/extensions/loader.lisp` | 702 | `cli_extensions_install.package_fragment`, `cli_extensions_install.local_system_name`, `cli_extensions_install.inline_factory` |
+| `src/cadr-cli/extensions/loader.lisp` | 702 | `cli_extensions_install.http_timeout_p`, `cli_extensions_install.inline_factory`, `cli_extensions_install.local_system_name`, `cli_extensions_install.manager_notify`, `cli_extensions_install.output_boundary`, `cli_extensions_install.package_fragment`, `cli_extensions_install.quiet_manager`, `cli_extensions_install.same_source`, `cli_extensions_install.startup_issues` |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | `cli_interactive_controller.announcement_make`, `cli_interactive_controller.announcement_url`, `cli_interactive_controller.announcement_title` |
-| `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_pixel`, `cli_selectors.armin_cell`, `cli_selectors.armin_grid_height` |
+| `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_cell`, `cli_selectors.armin_copy_cell`, `cli_selectors.armin_copy_grid`, `cli_selectors.armin_copy_row`, `cli_selectors.armin_grid_height`, `cli_selectors.armin_make_grid`, `cli_selectors.armin_pixel`, `cli_selectors.armin_rotate_row`, `cli_selectors.armin_row_string` |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_seconds`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_render` |
 | `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 155 | `cli_selectors.key_text` |
-| `src/cadr-cli/interactive/controller.lisp` | 2,999 | `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.tui_command_error` |
+| `src/cadr-cli/interactive/controller.lisp` | 2,999 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-cli/interactive/extension-ui.lisp` | 756 | `cli_interactive_controller.extension_custom_ui_handle_event`, `cli_interactive_controller.extension_dialog_chrome`, `cli_interactive_controller.extension_render_value_lines`, `cli_interactive_controller.framed_select_state_handle_event`, `cli_interactive_controller.framed_select_state_handle_raw_input`, `cli_interactive_controller.make_extension_editor_dialog`, `cli_interactive_controller.make_extension_input_dialog`, `cli_interactive_controller.make_framed_select_state`, `cli_interactive_controller.make_runtime_auth_input_state`, `cli_interactive_controller.note_component_render_channel`, `cli_interactive_controller.render_extension_custom_entry`, `cli_interactive_controller.render_extension_custom_ui`, `cli_interactive_controller.render_framed_select_state`, `cli_interactive_controller.render_runtime_auth_input`, `cli_interactive_controller.render_tui_extension_overlay`, `cli_interactive_controller.runtime_auth_input_handle_event`, `cli_interactive_controller.tui_component_protocol`, `cli_interactive_controller.tui_extension_theme_runtime` |
+| `src/cadr-cli/interactive/extension-ui.lisp` | 756 | `cli_interactive_controller.extension_custom_ui_handle_event`, `cli_interactive_controller.extension_dialog_chrome`, `cli_interactive_controller.extension_host_turn`, `cli_interactive_controller.extension_render_value_lines`, `cli_interactive_controller.framed_select_state_handle_event`, `cli_interactive_controller.framed_select_state_handle_raw_input`, `cli_interactive_controller.make_extension_editor_dialog`, `cli_interactive_controller.make_extension_input_dialog`, `cli_interactive_controller.make_framed_select_state`, `cli_interactive_controller.make_runtime_auth_input_state`, `cli_interactive_controller.note_component_render_channel`, `cli_interactive_controller.render_extension_custom_entry`, `cli_interactive_controller.render_extension_custom_ui`, `cli_interactive_controller.render_framed_select_state`, `cli_interactive_controller.render_runtime_auth_input`, `cli_interactive_controller.render_tui_extension_overlay`, `cli_interactive_controller.runtime_auth_input_handle_event`, `cli_interactive_controller.tui_component_protocol`, `cli_interactive_controller.tui_extension_theme_runtime`, `cli_interactive_controller.tui_input_thread`, `cli_interactive_controller.wrap_extension_host_turn` |
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 234 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
@@ -11443,7 +11467,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/resource-service.lisp` | 370 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
-| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled` |
+| `src/cadr-cli/sdk/settings-service.lisp` | 195 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled`, `settings_load.sdk_make_manager`, `settings_load.sdk_make_memory`, `settings_load.sdk_effective_thinking_level` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |

@@ -9537,6 +9537,51 @@
    "piUs": 0.237,
    "ceiling": 20.0,
    "rc": 2
+  },
+  {
+   "pair": 898,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_login",
+   "branch": "g20-freeze-898-900",
+   "note": "nextPairNum left at tip 328; leftover id 898",
+   "ratio": 35.027,
+   "cadrUs": 168.272,
+   "piUs": 4.804,
+   "ceiling": 50.0,
+   "rc": 2
+  },
+  {
+   "pair": 899,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_login_fail",
+   "branch": "g20-freeze-898-900",
+   "note": "nextPairNum left at tip 328; leftover id 899",
+   "ratio": 53.681,
+   "cadrUs": 202.181,
+   "piUs": 3.766,
+   "ceiling": 80.0,
+   "rc": 2
+  },
+  {
+   "pair": 900,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_login_miss",
+   "branch": "g20-freeze-898-900",
+   "note": "nextPairNum left at tip 328; leftover id 900",
+   "ratio": 98.722,
+   "cadrUs": 183.818,
+   "piUs": 1.862,
+   "ceiling": 100.0,
+   "rc": 2
   }
  ]
 }
