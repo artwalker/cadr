@@ -1006,6 +1006,9 @@
     ("cli_interactive_controller.bash_go" . 50)
     ("cli_interactive_controller.bash_end" . 50)
     ("cli_interactive_controller.bash_off" . 50)
+    ("cli_interactive_controller.br_ok" . 50)
+    ("cli_interactive_controller.bf_ok" . 50)
+    ("cli_interactive_controller.bh_ok" . 50)
     ("cli_interactive_controller.bash_append_running" . 50)
     ("cli_interactive_controller.bash_complete_string" . 50)
     ("cli_interactive_controller.bash_stop_entry" . 50)
@@ -23537,6 +23540,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-bash-stop-entry))))
+     "br_ok"
+     (collect "cli_interactive_controller.br_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-append-running))))
+     "bf_ok"
+     (collect "cli_interactive_controller.bf_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-complete-string))))
+     "bh_ok"
+     (collect "cli_interactive_controller.bh_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-stop-entry))))
      "bash_append_running"
      (collect "cli_interactive_controller.bash_append_running"
               (lambda ()
@@ -40672,6 +40690,12 @@
       "cli_interactive_controller.bash_end"
       "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string leftover"
       "cli_interactive_controller.bash_off"
+      "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry leftover"
+      "cli_interactive_controller.br_ok"
+      "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running leftover"
+      "cli_interactive_controller.bf_ok"
+      "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string leftover"
+      "cli_interactive_controller.bh_ok"
       "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry leftover"
       "cli_interactive_controller.bash_append_running"
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
