@@ -1261,6 +1261,9 @@
     ("cli_selectors.thinking_selector_selected_level" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
+    ("cli_selectors.th_sel" . 50)
+    ("cli_selectors.th_desc" . 50)
+    ("cli_selectors.th_draw" . 50)
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
@@ -35665,6 +35668,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-thinking-selector))))
+     "th_sel"
+     (collect "cli_selectors.th_sel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-selected-level))))
+     "th_desc"
+     (collect "cli_selectors.th_desc"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-description-line))))
+     "th_draw"
+     (collect "cli_selectors.th_draw"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-thinking-selector))))
      "trust_option_saved_p"
      (collect "cli_selectors.trust_option_saved_p"
               (lambda ()
@@ -41050,6 +41068,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line"
       "cli_selectors.render_thinking_selector"
       "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector"
+      "cli_selectors.th_sel"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level leftover"
+      "cli_selectors.th_desc"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line leftover"
+      "cli_selectors.th_draw"
+      "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector leftover"
       "cli_selectors.trust_option_saved_p"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p"
       "cli_selectors.make_trust_selector_state"
