@@ -79,6 +79,9 @@
 ;;;; 877. oauth_pkce_device kimi-oauth-host default vs getOauthHost DEFAULT_OAUTH_HOST
 ;;;; 878. leftover: kimi-oauth-host KIMI_CODE_OAUTH_HOST vs getOauthHost
 ;;;; 879. leftover: kimi-oauth-host trailing-slash trim vs getOauthHost replace /+$
+;;;; 922. bash_tool bash-output-path vs pi-bash temp log path (randomBytes+tmpdir)
+;;;; 923. bash_tool make-bash-tool vs createBashTool
+;;;; 924. bash_tool record-user-bash-result nil-agent vs leftover no-op return
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;      leftover: resolve-system-prompt / node-read-error-message /
 ;;;;      resolve-system-prompt-with-appends
@@ -546,6 +549,9 @@
     ("bash_tool.process_deadline" . 50)
     ("bash_tool.user_bash_result" . 50)
     ("bash_tool.normalized_extension" . 50)
+    ("bash_tool.output_path" . 50)
+    ("bash_tool.make_tool" . 50)
+    ("bash_tool.record_nil" . 50)
     ("output_accumulator.append" . 50)
     ("output_accumulator.snapshot" . 50)
     ("output_accumulator.finish" . 50)
@@ -9861,6 +9867,57 @@
           (string= (getf details :full-output-path) "/tmp/f"))
          5)))))
 
+(defun run-bash-output-path ()
+  ;; Do not exact cadr-bash vs pi-bash product prefix or the random hex.
+  (let* ((p (namestring (cadr-cli::bash-output-path)))
+         (name (file-namestring p))
+         (dot (search ".log" name :from-end t))
+         (hyphen (position #\- name :from-end t))
+         (hex
+           (and hyphen dot (> dot (1+ hyphen))
+                (subseq name (1+ hyphen) dot)))
+         (tmp
+           (namestring
+            (uiop:ensure-directory-pathname
+             (uiop:temporary-directory)))))
+    (list
+     (bash-tool-truth
+      (and (>= (length name) 4)
+           (string= name ".log"
+                    :start1 (- (length name) 4))))
+     (bash-tool-truth
+      (and hex (= (length hex) 16)
+           (every (lambda (c) (digit-char-p c 16)) hex)))
+     (bash-tool-truth (eql (search tmp p) 0))
+     1)))
+
+(defun run-bash-make-tool ()
+  ;; Do not exact description product copy (cadr vs pi wording).
+  (let ((tool (cadr-cli::make-bash-tool "/tmp")))
+    (list
+     (bash-tool-truth
+      (string= (cadr-ai:tool-name tool) "bash"))
+     (bash-tool-truth
+      (plusp (length (cadr-ai:tool-description tool))))
+     (bash-tool-truth
+      (functionp (cadr-ai:tool-executor tool)))
+     1)))
+
+(defun run-bash-record-nil ()
+  (let* ((result
+           (cadr-cli::make-user-bash-result
+            :command "echo"
+            :output "hi"
+            :exit-code 0))
+         (out (cadr-cli::record-user-bash-result nil result)))
+    (list
+     (bash-tool-truth (eq out result))
+     (bash-tool-truth
+      (string= (cadr-cli::user-bash-result-command out) "echo"))
+     (bash-tool-truth
+      (string= (cadr-cli::user-bash-result-output out) "hi"))
+     1)))
+
 (defun measure-bash-tool ()
   (destructuring-bind (sef-exact sef-nl sef-no-nl sef-plain sef-empty sef-n)
       (run-bash-strip-exit-footer)
@@ -9879,6 +9936,9 @@
               (destructuring-bind
                   (neb-text neb-nl neb-code neb-can neb-path neb-n)
                   (run-bash-normalized-extension)
+                (let ((output-path (run-bash-output-path))
+                      (make-tool (run-bash-make-tool))
+                      (record-nil (run-bash-record-nil)))
                 (declare (ignore pd-n))
                 (json-object
                  "observed"
@@ -9926,7 +9986,19 @@
                   "neb_code" neb-code
                   "neb_can" neb-can
                   "neb_path" neb-path
-                  "neb_n" neb-n)
+                  "neb_n" neb-n
+                  "bop_log" (nth 0 output-path)
+                  "bop_hex" (nth 1 output-path)
+                  "bop_tmp" (nth 2 output-path)
+                  "bop_n" (nth 3 output-path)
+                  "mt_name" (nth 0 make-tool)
+                  "mt_desc" (nth 1 make-tool)
+                  "mt_exec" (nth 2 make-tool)
+                  "mt_n" (nth 3 make-tool)
+                  "rn_eq" (nth 0 record-nil)
+                  "rn_cmd" (nth 1 record-nil)
+                  "rn_out" (nth 2 record-nil)
+                  "rn_n" (nth 3 record-nil))
                  "strip_exit_footer"
                  (collect "bash_tool.strip_exit_footer"
                           (lambda ()
@@ -9971,7 +10043,22 @@
                  (collect "bash_tool.normalized_extension"
                           (lambda ()
                             (lambda ()
-                              (run-bash-normalized-extension)))))))))))))
+                              (run-bash-normalized-extension))))
+                 "output_path"
+                 (collect "bash_tool.output_path"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-output-path))))
+                 "make_tool"
+                 (collect "bash_tool.make_tool"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-make-tool))))
+                 "record_nil"
+                 (collect "bash_tool.record_nil"
+                          (lambda ()
+                            (lambda ()
+                              (run-bash-record-nil))))))))))))))
 
 (defun find-tool-truth (value)
   (if value 1 0))
@@ -39366,6 +39453,12 @@
       "src/cadr-cli/tools/bash.lisp make-user-bash-result-from-execution"
       "bash_tool.normalized_extension"
       "src/cadr-cli/tools/bash.lisp normalized-extension-bash-result"
+      "bash_tool.output_path"
+      "src/cadr-cli/tools/bash.lisp bash-output-path"
+      "bash_tool.make_tool"
+      "src/cadr-cli/tools/bash.lisp make-bash-tool"
+      "bash_tool.record_nil"
+      "src/cadr-cli/tools/bash.lisp record-user-bash-result nil agent"
       "output_accumulator.append"
       "src/cadr-cli/output-accumulator.lisp output-accumulator-append"
       "output_accumulator.snapshot"

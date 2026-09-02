@@ -771,6 +771,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.openrouter_login_fail` | 202.181 | 3.766 | 53.681× | 80.00× | measure-only leftover 898-900; remeasure Friend-MachineD | openrouter login trio |
 | `oauth_pkce_device.github_oauth_url` | 1.387 | 0.417 | 3.329× | 8.00× | measure-only leftover 914; `github-oauth-url` vs leftoverGithubOAuthUrl / getUrls | invent pause；地板优化另刀 |
 | `cli_support.watch_start_close` | 178.516 | 7.568 | 23.588× | 40.00× | measure-only leftover 917; `watch-with-error-handler` + `close-watcher` vs watchWithErrorHandler + closeWatcher | invent pause；地板优化另刀 |
+| `bash_tool.output_path` | 117.640 | 11.032 | 10.664× | 24.00× | measure-only leftover 922; `bash-output-path` vs ensureTempFile temp log path | invent pause；地板优化另刀 |
+| `bash_tool.make_tool` | 3.108 | 1.519 | 2.046× | 8.00× | measure-only leftover 923; `make-bash-tool` vs createBashTool | invent pause；地板优化另刀 |
+| `bash_tool.record_nil` | 0.384 | 0.112 | 3.436× | 8.00× | measure-only leftover 924; `record-user-bash-result` nil agent vs leftover no-op | invent pause；地板优化另刀 |
 | `oauth_pkce_device.openrouter_login_miss` | 183.818 | 1.862 | 98.722× | 100.00× | measure-only leftover 898-900; remeasure Friend-MachineD | openrouter login trio |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
