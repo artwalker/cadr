@@ -760,7 +760,10 @@
     "websocket_stream.stream_roundtrip",
     "write_tool.ensure_parent",
     "write_tool.make_tool",
-    "write_tool.write_utf8"
+    "write_tool.write_utf8",
+    "settings_load.sdk_make_manager",
+    "settings_load.sdk_make_memory",
+    "settings_load.sdk_effective_thinking_level"
   ],
   "unpairablePaths": [
     {
@@ -2687,8 +2690,12 @@
         "settings_load.sdk_settings_remove",
         "settings_load.sdk_settings_reload",
         "settings_load.sdk_settings_flush",
-        "settings_load.sdk_compaction_enabled"
-      ]
+        "settings_load.sdk_compaction_enabled",
+        "settings_load.sdk_make_manager",
+        "settings_load.sdk_make_memory",
+        "settings_load.sdk_effective_thinking_level"
+      ],
+      "paired": []
     },
     {
       "prefix": "src/cadr-cli/sdk/system-prompt.lisp",
