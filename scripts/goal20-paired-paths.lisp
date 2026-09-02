@@ -21905,13 +21905,13 @@
           (run-cli-interactive-extension-custom-ui-handle-event))
         (leftover-render-tui-extension-overlay
           (run-cli-interactive-render-tui-extension-overlay))
-(leftover-announcement-make
+        (leftover-announcement-make
           (run-cli-interactive-announcement-make))
         (leftover-announcement-url
           (run-cli-interactive-announcement-url))
         (leftover-announcement-title
-          (run-cli-interactive-announcement-title)))
-(leftover-terminal-title-sequence
+          (run-cli-interactive-announcement-title))
+        (leftover-terminal-title-sequence
           (run-cli-interactive-terminal-title-sequence))
         (leftover-make-notification-stream
           (run-cli-interactive-make-notification-stream))
@@ -22052,11 +22052,11 @@
               leftover-render-extension-custom-ui
               leftover-extension-custom-ui-handle-event
               leftover-render-tui-extension-overlay)
-(leftover-earendil-announcement-observed-pairs
+             (leftover-earendil-announcement-observed-pairs
               leftover-announcement-make
               leftover-announcement-url
-              leftover-announcement-title)))
-(leftover-controller-title-notify-observed-pairs
+              leftover-announcement-title)
+             (leftover-controller-title-notify-observed-pairs
               leftover-terminal-title-sequence
               leftover-make-notification-stream
               leftover-notification-stream-flush)))
@@ -22420,24 +22420,35 @@
               (lambda ()
                 (lambda ()
                   (run-cli-interactive-render-tui-extension-overlay))))
-"announcement_make"
+     "announcement_make"
      (collect "cli_interactive_controller.announcement_make"
               (lambda ()
+                (lambda ()
                   (run-cli-interactive-announcement-make))))
      "announcement_url"
      (collect "cli_interactive_controller.announcement_url"
+              (lambda ()
+                (lambda ()
                   (run-cli-interactive-announcement-url))))
      "announcement_title"
      (collect "cli_interactive_controller.announcement_title"
-                  (run-cli-interactive-announcement-title)))))))
-"terminal_title_sequence"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-announcement-title))))
+     "terminal_title_sequence"
      (collect "cli_interactive_controller.terminal_title_sequence"
+              (lambda ()
+                (lambda ()
                   (run-cli-interactive-terminal-title-sequence))))
      "make_notification_stream"
      (collect "cli_interactive_controller.make_notification_stream"
+              (lambda ()
+                (lambda ()
                   (run-cli-interactive-make-notification-stream))))
      "notification_stream_flush"
      (collect "cli_interactive_controller.notification_stream_flush"
+              (lambda ()
+                (lambda ()
                   (run-cli-interactive-notification-stream-flush)))))))
 
 (defun bash-entry-fields (entry)

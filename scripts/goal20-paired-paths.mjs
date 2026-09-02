@@ -23323,7 +23323,7 @@ async function measureCliInteractiveDecodeEntity() {
 				return () => runCliInteractiveRenderTuiExtensionOverlay();
 			},
 		),
-announcement_make: await collect(
+		announcement_make: await collect(
 			"cli_interactive_controller.announcement_make",
 			() => {
 				return () => runCliInteractiveAnnouncementMake();
@@ -23331,18 +23331,31 @@ announcement_make: await collect(
 		),
 		announcement_url: await collect(
 			"cli_interactive_controller.announcement_url",
+			() => {
 				return () => runCliInteractiveAnnouncementUrl();
+			},
+		),
 		announcement_title: await collect(
 			"cli_interactive_controller.announcement_title",
+			() => {
 				return () => runCliInteractiveAnnouncementTitle();
-terminal_title_sequence: await collect(
+			},
+		),
+		terminal_title_sequence: await collect(
 			"cli_interactive_controller.terminal_title_sequence",
+			() => {
 				return () => runCliInteractiveTerminalTitleSequence();
+			},
+		),
 		make_notification_stream: await collect(
 			"cli_interactive_controller.make_notification_stream",
+			() => {
 				return () => runCliInteractiveMakeNotificationStream();
+			},
+		),
 		notification_stream_flush: await collect(
 			"cli_interactive_controller.notification_stream_flush",
+			() => {
 				return () => runCliInteractiveNotificationStreamFlush();
 			},
 		),
@@ -39348,13 +39361,13 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom ui handleEvent",
 			"cli_interactive_controller.render_tui_extension_overlay":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts extension overlay composite",
-"cli_interactive_controller.announcement_make":
+			"cli_interactive_controller.announcement_make":
 				"packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts EarendilAnnouncementComponent",
 			"cli_interactive_controller.announcement_url":
 				"packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts BLOG_URL",
 			"cli_interactive_controller.announcement_title":
 				"packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts title string",
-"cli_interactive_controller.terminal_title_sequence":
+			"cli_interactive_controller.terminal_title_sequence":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts OSC 0 title sequence (cadr tui-terminal-title-sequence)",
 			"cli_interactive_controller.make_notification_stream":
 				"packages/coding-agent/src/modes/interactive leftover notification buffer construct (cadr make-notification-output-stream)",
