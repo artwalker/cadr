@@ -649,6 +649,9 @@ const REPETITIONS = {
 	"cli_selectors.ldprxxx_ok": 50,
 	"cli_selectors.ldixxx_ok": 50,
 	"cli_selectors.lddtxxx_ok": 50,
+	"cli_selectors.ld_prmt": 50,
+	"cli_selectors.ld_info": 50,
+	"cli_selectors.ld_det": 50,
 	"cli_selectors.login_dialog_complete_input": 50,
 	"cli_selectors.login_dialog_handle_event": 50,
 	"cli_selectors.render_login_dialog": 50,
@@ -36415,6 +36418,15 @@ async function measureCliSelectorsSessionSearch() {
 		lddtxxx_ok: await collect("cli_selectors.lddtxxx_ok", () => {
 			return () => runCliSelectorsLoginDialogShowDetails();
 		}),
+		ld_prmt: await collect("cli_selectors.ld_prmt", () => {
+			return () => runCliSelectorsLoginDialogShowPrompt();
+		}),
+		ld_info: await collect("cli_selectors.ld_info", () => {
+			return () => runCliSelectorsLoginDialogShowInfo();
+		}),
+		ld_det: await collect("cli_selectors.ld_det", () => {
+			return () => runCliSelectorsLoginDialogShowDetails();
+		}),
 		login_dialog_complete_input: await collect(
 			"cli_selectors.login_dialog_complete_input",
 			() => {
@@ -41675,6 +41687,12 @@ const result = {
 				"packages/coding-agent leftover replica of LoginDialogComponent.showInfo",
 			"cli_selectors.lddtxxx_ok":
 				"packages/coding-agent leftover replica of LoginDialogComponent.showDetails",
+			"cli_selectors.ld_prmt":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showPrompt leftover",
+			"cli_selectors.ld_info":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showInfo leftover",
+			"cli_selectors.ld_det":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showDetails leftover",
 			"cli_selectors.login_dialog_complete_input":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.replaceInputWithSubmittedText",
 			"cli_selectors.login_dialog_handle_event":
