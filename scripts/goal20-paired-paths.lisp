@@ -847,6 +847,9 @@
     ("evals_harness.msg_txt" . 50)
     ("evals_harness.tools_n" . 50)
     ("evals_harness.paths_n" . 50)
+    ("evals_harness.rep_ok" . 50)
+    ("evals_harness.fin_ok" . 50)
+    ("evals_harness.meta_ok" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -17862,7 +17865,22 @@
      (collect "evals_harness.paths_n"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-extension-paths)))))))
+                  (run-evals-harness-extension-paths))))
+     "rep_ok"
+     (collect "evals_harness.rep_ok"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-reporter))))
+     "fin_ok"
+     (collect "evals_harness.fin_ok"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-finite-number))))
+     "meta_ok"
+     (collect "evals_harness.meta_ok"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-metadata)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -40208,6 +40226,12 @@
       "src/cadr-evals/harness.lisp eval-agent-tools leftover"
       "evals_harness.paths_n"
       "src/cadr-evals/harness.lisp eval-extension-paths leftover"
+      "evals_harness.rep_ok"
+      "src/cadr-evals/reporter.lisp make-eval-harness-reporter leftover"
+      "evals_harness.fin_ok"
+      "src/cadr-evals/reporter.lisp reporter-finite-number leftover"
+      "evals_harness.meta_ok"
+      "src/cadr-evals/reporter.lisp reporter-artifact-metadata leftover"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

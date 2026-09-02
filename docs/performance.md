@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T16:51:53Z) on `Friend-MachineD`, git `3c2f36766cd8`, ratio_gate=`enforced-only:evals_harness.msg_txt,evals_harness.paths_n,evals_harness.tools_n`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T17:23:18Z) on `Friend-MachineD`, git `fe5bbdd03b89`, ratio_gate=`enforced-only:evals_harness.fin_ok,evals_harness.meta_ok,evals_harness.rep_ok`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T16:20:48Z) on `Friend-MachineD`, git `a400d2fe3c7b`, ratio_gate=`enforced-only:evals_harness.suite_id,evals_harness.type_ok,evals_harness.val_ext`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T16:51:53Z) on `Friend-MachineD`, git `3c2f36766cd8`, ratio_gate=`enforced-only:evals_harness.msg_txt,evals_harness.paths_n,evals_harness.tools_n`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -947,9 +947,12 @@ Previous: `paired-paths` (2026-09-02T16:20:48Z) on `Friend-MachineD`, git `a400d
 | `evals_harness.val_ext` | 3.6 | 0.2 | 18.30× | 18.30× | 20.00× |
 | `evals_harness.suite_id` | 0.2 | 0.1 | 2.32× | 2.32× | 8.00× |
 | `evals_harness.type_ok` | 1.0 | 0.2 | 4.06× | 4.06× | 8.00× |
-| `evals_harness.msg_txt` | 1.6 | 0.6 | 2.63× | — | 8.00× |
-| `evals_harness.tools_n` | 2.4 | 0.2 | 10.11× | — | 12.00× |
-| `evals_harness.paths_n` | 4.9 | 0.4 | 13.85× | — | 16.00× |
+| `evals_harness.msg_txt` | 1.6 | 0.6 | 2.63× | 2.63× | 8.00× |
+| `evals_harness.tools_n` | 2.4 | 0.2 | 10.11× | 10.11× | 12.00× |
+| `evals_harness.paths_n` | 4.9 | 0.4 | 13.85× | 13.85× | 16.00× |
+| `evals_harness.rep_ok` | 0.6 | 0.3 | 1.80× | — | 8.00× |
+| `evals_harness.fin_ok` | 0.3 | 0.1 | 1.87× | — | 8.00× |
+| `evals_harness.meta_ok` | 1.7 | 0.8 | 2.04× | — | 8.00× |
 | `package_manager.update_argv` | 17.8 | 4.3 | 4.17× | 4.17× | 8.00× |
 | `package_manager.update_env` | 11.1 | 88.1 | 0.13× | 0.13× | 8.00× |
 | `package_manager.git_object_id` | 2.9 | 1.1 | 2.54× | 2.54× | 8.00× |
@@ -2443,6 +2446,7 @@ Previous: `paired-paths` (2026-09-02T16:20:48Z) on `Friend-MachineD`, git `a400d
 | 2026-09-02T15:49:53Z | paired-paths | `8bb093857134` | no | enforced-only:cli_print_rpc.bash_js,cli_print_rpc.img_ok,cli_print_rpc.prompt_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T16:20:48Z | paired-paths | `a400d2fe3c7b` | no | enforced-only:evals_harness.suite_id,evals_harness.type_ok,evals_harness.val_ext | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T16:51:53Z | paired-paths | `3c2f36766cd8` | no | enforced-only:evals_harness.msg_txt,evals_harness.paths_n,evals_harness.tools_n | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-02T17:23:18Z | paired-paths | `fe5bbdd03b89` | no | enforced-only:evals_harness.fin_ok,evals_harness.meta_ok,evals_harness.rep_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
