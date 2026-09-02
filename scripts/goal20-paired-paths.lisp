@@ -34316,21 +34316,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-armin-row-string))))
-"armin_copy_cell"
+     "armin_copy_cell"
      (collect "cli_selectors.armin_copy_cell"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-armin-copy-cell))))
-"armin_copy_row"
+     "armin_copy_row"
      (collect "cli_selectors.armin_copy_row"
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-armin-copy-row))))
-"armin_rotate_row"
+     "armin_rotate_row"
      (collect "cli_selectors.armin_rotate_row"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-armin-rotate-row)))))))
+                  (run-cli-selectors-armin-rotate-row))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
