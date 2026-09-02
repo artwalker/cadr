@@ -29817,7 +29817,6 @@
                  :ui nil
                  :effect :typewriter))
 
-
 (defun run-cli-selectors-armin-copy-cell ()
   ;; Typewriter leftover: currentGrid[row][x] = finalGrid[row][x]. Not tick.
   (let* ((component (leftover-armin-component-fixture))
@@ -29863,21 +29862,6 @@
      (if (char= (aref full 0) (aref zero 0)) 1 0)
      5)))
 
-(defun run-cli-selectors-armin-row-string ()
-  ;; row.join("") without theme/clip. Empty row 0 and final ink cells.
-  (let* ((empty (cadr-cli::make-armin-grid nil))
-         (final (cadr-cli::make-armin-grid t))
-         (empty-row (cadr-cli::armin-grid-row-string empty 0))
-         (final-row-0 (cadr-cli::armin-grid-row-string final 0))
-         (final-row-2 (cadr-cli::armin-grid-row-string final 2)))
-    (list
-     (length empty-row)
-     (subseq empty-row 0 1)
-     (subseq final-row-0 8 9)
-     (subseq final-row-2 11 12)
-     5)))
-
-
 (defun armin-copy-leftover-observed-pairs (copy-cell copy-row rotate-row)
   (list
    "acc_ok" (nth 0 copy-cell)
@@ -29895,6 +29879,20 @@
    "arr_shift" (nth 2 rotate-row)
    "arr_mod" (nth 3 rotate-row)
    "arr_n" (nth 4 rotate-row)))
+
+(defun run-cli-selectors-armin-row-string ()
+  ;; row.join("") without theme/clip. Empty row 0 and final ink cells.
+  (let* ((empty (cadr-cli::make-armin-grid nil))
+         (final (cadr-cli::make-armin-grid t))
+         (empty-row (cadr-cli::armin-grid-row-string empty 0))
+         (final-row-0 (cadr-cli::armin-grid-row-string final 0))
+         (final-row-2 (cadr-cli::armin-grid-row-string final 2)))
+    (list
+     (length empty-row)
+     (subseq empty-row 0 1)
+     (subseq final-row-0 8 9)
+     (subseq final-row-2 11 12)
+     5)))
 
 
 (defun armin-grid-leftover-observed-pairs (make-grid copy-grid row-string)
@@ -33046,14 +33044,14 @@
               leftover-armin-make-grid
               leftover-armin-copy-grid
               leftover-armin-row-string)
-             (leftover-login-dialog-make-auth-device-observed-pairs
-              leftover-login-dlg-make
-              leftover-login-dlg-auth
-              leftover-login-dlg-dev)
              (armin-copy-leftover-observed-pairs
               leftover-armin-copy-cell
               leftover-armin-copy-row
               leftover-armin-rotate-row)
+             (leftover-login-dialog-make-auth-device-observed-pairs
+              leftover-login-dlg-make
+              leftover-login-dlg-auth
+              leftover-login-dlg-dev)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
