@@ -137,6 +137,7 @@
     "cli_interactive_controller.decode_entity",
     "cli_interactive_controller.extension_custom_ui_handle_event",
     "cli_interactive_controller.extension_dialog_chrome",
+    "cli_interactive_controller.extension_host_turn",
     "cli_interactive_controller.extension_render_value_lines",
     "cli_interactive_controller.framed_select_state_handle_event",
     "cli_interactive_controller.framed_select_state_handle_raw_input",
@@ -187,9 +188,11 @@
     "cli_interactive_controller.tui_command_error",
     "cli_interactive_controller.tui_component_protocol",
     "cli_interactive_controller.tui_extension_theme_runtime",
+    "cli_interactive_controller.tui_input_thread",
     "cli_interactive_controller.update_notification_border",
     "cli_interactive_controller.update_notification_text",
     "cli_interactive_controller.wayland",
+    "cli_interactive_controller.wrap_extension_host_turn",
     "cli_interactive_controller.wrap_osc",
     "cli_models_rest.auth_command",
     "cli_models_rest.login_selection",
@@ -2082,6 +2085,7 @@
       "metrics": [
         "cli_interactive_controller.extension_custom_ui_handle_event",
         "cli_interactive_controller.extension_dialog_chrome",
+        "cli_interactive_controller.extension_host_turn",
         "cli_interactive_controller.extension_render_value_lines",
         "cli_interactive_controller.framed_select_state_handle_event",
         "cli_interactive_controller.framed_select_state_handle_raw_input",
@@ -2097,7 +2101,9 @@
         "cli_interactive_controller.render_tui_extension_overlay",
         "cli_interactive_controller.runtime_auth_input_handle_event",
         "cli_interactive_controller.tui_component_protocol",
-        "cli_interactive_controller.tui_extension_theme_runtime"
+        "cli_interactive_controller.tui_extension_theme_runtime",
+        "cli_interactive_controller.tui_input_thread",
+        "cli_interactive_controller.wrap_extension_host_turn"
       ]
     },
     {

@@ -10624,7 +10624,7 @@ Leftover sibling of Pairs 862–863. Timed work is left-rotate of one row; offse
 |---|---|---|
 | `tui_input_thread` | `tui-input-thread-p` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover TUI input-thread sentinel |
 
-Leftover sibling of Pairs 670–687 on the same `extension-ui.lisp` hole. Timed work is the input-thread predicate (nil / self / other) — not TUI render, not spawn. Observed `tit_nil` / `tit_self` / `tit_other` / `tit_both` / `tit_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 670–687 on the same `extension-ui.lisp` hole. Timed work is the input-thread predicate (nil / self / other) — not TUI render, not spawn. Observed `tit_nil` / `tit_self` / `tit_other` / `tit_both` / `tit_n` are exact. First n=5 freeze **0.979×** (0.168 / 0.171 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 866 — `cli_interactive_controller` (extension_host_turn)
 
@@ -10632,7 +10632,7 @@ Leftover sibling of Pairs 670–687 on the same `extension-ui.lisp` hole. Timed 
 |---|---|---|
 | `extension_host_turn` | `call-extension-host-turn-without-blocking-tui` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover inline vs deferred startTurn |
 
-Leftover sibling of Pair 865. Timed work is inline thunk vs start-turn dispatch — not a live LLM turn, not `make-thread`. Observed `eht_inline` / `eht_start` / `eht_defer` / `eht_ok` / `eht_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 865. Timed work is inline thunk vs start-turn dispatch — not a live LLM turn, not `make-thread`. Observed `eht_inline` / `eht_start` / `eht_defer` / `eht_ok` / `eht_n` are exact. First n=5 freeze **1.495×** (0.323 / 0.216 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 867 — `cli_interactive_controller` (wrap_extension_host_turn)
 
@@ -10640,7 +10640,7 @@ Leftover sibling of Pair 865. Timed work is inline thunk vs start-turn dispatch 
 |---|---|---|
 | `wrap_extension_host_turn` | `wrap-extension-host-tui-turn-dispatch` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover sendCustomMessage wrap/restore (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of Pairs 865–866. Timed work is wrap send/user plus restorer off the TUI thread — not a live turn. Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 865–866. Timed work is wrap send/user plus restorer off the TUI thread — not a live turn. Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` are exact. First n=5 freeze **2.313×** (1.297 / 0.561 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

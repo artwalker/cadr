@@ -747,6 +747,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.armin_copy_cell` | 25.759 | 4.869 | 5.290× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
 | `cli_selectors.armin_copy_row` | 23.953 | 5.08 | 4.716× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
 | `cli_selectors.armin_rotate_row` | 21.362 | 6.23 | 3.429× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
+| `cli_interactive_controller.extension_host_turn` | 0.323 | 0.216 | 1.495× | 8.00× | measure-only leftover 865-867; remeasure Friend-MachineD | extension-ui tui-thread/wrap |
+| `cli_interactive_controller.wrap_extension_host_turn` | 1.297 | 0.561 | 2.313× | 8.00× | measure-only leftover 865-867; remeasure Friend-MachineD | extension-ui tui-thread/wrap |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
