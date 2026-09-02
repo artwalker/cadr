@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-01T23:21:51Z) on `Friend-MachineD`, git `0e6e31027cdd`, ratio_gate=`enforced-only:cli_extensions_install.llama_search_filter,cli_extensions_install.llama_search_status,cli_extensions_install.llama_view_width`, quick=no, samples=5
+Current: `—` (2026-09-02T00:13:49Z) on `Friend-MachineD`, git `f56db7a7a62b`, ratio_gate=`enforced-only:cli_print_rpc.close_pending,cli_print_rpc.dialog_deadline,cli_print_rpc.dialog_default`, quick=no, samples=5
 
-Previous: `—` (2026-09-01T23:06:29Z) on `Friend-MachineD`, git `ccc9e7ade8f5`, ratio_gate=`enforced-only:cli_bootstrap_sessions.session_entry_tree_selector_data,cli_bootstrap_sessions.session_restored_model,cli_bootstrap_sessions.validate_cli_session_flags`, quick=no, samples=5
+Previous: `—` (2026-09-01T23:21:51Z) on `Friend-MachineD`, git `0e6e31027cdd`, ratio_gate=`enforced-only:cli_extensions_install.llama_search_filter,cli_extensions_install.llama_search_status,cli_extensions_install.llama_view_width`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -953,6 +953,9 @@ Previous: `—` (2026-09-01T23:06:29Z) on `Friend-MachineD`, git `ccc9e7ade8f5`,
 | `cli_print_rpc.queue_mode` | 0.3 | 2.7 | 0.12× | 0.12× | 8.00× |
 | `cli_print_rpc.last_assistant` | 0.3 | 0.4 | 0.71× | 0.71× | 8.00× |
 | `cli_print_rpc.command_list` | 1.5 | 0.4 | 4.15× | 4.15× | 8.00× |
+| `cli_print_rpc.dialog_default` | — | — | 0.70× | — | 8.00× |
+| `cli_print_rpc.dialog_deadline` | — | — | 0.70× | — | 8.00× |
+| `cli_print_rpc.close_pending` | — | — | 3.21× | — | 8.00× |
 | `skill_prompt_load.sdk_prompt_input` | 15.2 | 3.5 | 4.32× | 4.32× | 8.00× |
 | `skill_prompt_load.sdk_list_override` | 0.2 | 0.5 | 0.36× | 0.36× | 8.00× |
 | `skill_prompt_load.sdk_context_files` | 7.6 | 2.6 | 2.88× | 2.88× | 8.00× |
@@ -1101,9 +1104,9 @@ Previous: `—` (2026-09-01T23:06:29Z) on `Friend-MachineD`, git `ccc9e7ade8f5`,
 | `cli_extensions_install.llama_format_context` | 0.9 | 0.2 | 4.33× | 4.33× | 8.00× |
 | `cli_extensions_install.llama_js_to_fixed` | 1.3 | 0.4 | 3.08× | 3.08× | 8.00× |
 | `cli_extensions_install.llama_search_exact` | 0.9 | 0.2 | 4.09× | 4.09× | 8.00× |
-| `cli_extensions_install.llama_search_status` | — | — | 4.85× | — | 8.00× |
-| `cli_extensions_install.llama_search_filter` | — | — | 0.60× | — | 8.00× |
-| `cli_extensions_install.llama_view_width` | — | — | 114.09× | — | 180.00× |
+| `cli_extensions_install.llama_search_status` | — | — | 4.85× | 4.85× | 8.00× |
+| `cli_extensions_install.llama_search_filter` | — | — | 0.60× | 0.60× | 8.00× |
+| `cli_extensions_install.llama_view_width` | — | — | 114.09× | 114.09× | 180.00× |
 | `cli_selectors.daxnuts_parse_image` | 50.3 | 90.2 | 0.56× | 0.56× | 8.00× |
 | `cli_selectors.daxnuts_image_line` | 36.3 | 16.4 | 2.22× | 2.22× | 8.00× |
 | `cli_selectors.daxnuts_center_line` | 0.9 | 0.9 | 0.97× | 0.97× | 8.00× |
@@ -2321,6 +2324,7 @@ Previous: `—` (2026-09-01T23:06:29Z) on `Friend-MachineD`, git `ccc9e7ade8f5`,
 | 2026-09-01T22:51:16Z | — | `1feb4001185b` | no | enforced-only:cli_bootstrap_sessions.find_session_by_id_or_prefix,cli_bootstrap_sessions.session_display_messages,cli_bootstrap_sessions.session_tree_selector_data | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T23:06:29Z | — | `ccc9e7ade8f5` | no | enforced-only:cli_bootstrap_sessions.session_entry_tree_selector_data,cli_bootstrap_sessions.session_restored_model,cli_bootstrap_sessions.validate_cli_session_flags | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T23:21:51Z | — | `0e6e31027cdd` | no | enforced-only:cli_extensions_install.llama_search_filter,cli_extensions_install.llama_search_status,cli_extensions_install.llama_view_width | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T00:13:49Z | — | `f56db7a7a62b` | no | enforced-only:cli_print_rpc.close_pending,cli_print_rpc.dialog_deadline,cli_print_rpc.dialog_default | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
