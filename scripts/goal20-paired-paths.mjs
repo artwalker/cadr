@@ -906,6 +906,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.bash_go": 50,
 	"cli_interactive_controller.bash_end": 50,
 	"cli_interactive_controller.bash_off": 50,
+	"cli_interactive_controller.br_ok": 50,
+	"cli_interactive_controller.bf_ok": 50,
+	"cli_interactive_controller.bh_ok": 50,
 	"cli_interactive_controller.bash_append_running": 50,
 	"cli_interactive_controller.bash_complete_string": 50,
 	"cli_interactive_controller.bash_stop_entry": 50,
@@ -24343,6 +24346,15 @@ async function measureCliInteractiveDecodeEntity() {
 		bash_off: await collect("cli_interactive_controller.bash_off", () => {
 			return () => runCliInteractiveBashStopEntry();
 		}),
+		br_ok: await collect("cli_interactive_controller.br_ok", () => {
+			return () => runCliInteractiveBashAppendRunning();
+		}),
+		bf_ok: await collect("cli_interactive_controller.bf_ok", () => {
+			return () => runCliInteractiveBashCompleteString();
+		}),
+		bh_ok: await collect("cli_interactive_controller.bh_ok", () => {
+			return () => runCliInteractiveBashStopEntry();
+		}),
 		bash_append_running: await collect(
 			"cli_interactive_controller.bash_append_running",
 			() => {
@@ -41049,6 +41061,12 @@ const result = {
 				"packages/coding-agent leftover replica of setComplete exit 0 string (cadr complete-tui-user-bash-string)",
 			"cli_interactive_controller.bash_off":
 				"packages/coding-agent leftover replica of loader.stop without setComplete (cadr stop-tui-user-bash-entry)",
+			"cli_interactive_controller.br_ok":
+				"packages/coding-agent leftover replica of BashExecutionComponent addChild running",
+			"cli_interactive_controller.bf_ok":
+				"packages/coding-agent leftover replica of setComplete exit 0 string",
+			"cli_interactive_controller.bh_ok":
+				"packages/coding-agent leftover replica of loader.stop without setComplete",
 			"cli_interactive_controller.bash_append_running":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts BashExecutionComponent addChild running",
 			"cli_interactive_controller.bash_complete_string":

@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_interactive_controller.br_ok` n=5 **3.907×** (1.316 / 0.337 µs) Friend-MachineD, ceiling 8.0. Pair 1009. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bf_ok` n=5 **5.260×** (1.405 / 0.267 µs) Friend-MachineD, ceiling 8.0. Pair 1010. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bh_ok` n=5 **7.203×** (1.345 / 0.187 µs) Friend-MachineD, ceiling 8.0. Pair 1011. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.sc_ok` n=5 **0.926×** (0.835 / 0.902 µs) Friend-MachineD, ceiling 8.0. Pair 1006. Under-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.hp_ok` n=5 **1.012×** (0.604 / 0.597 µs) Friend-MachineD, ceiling 8.0. Pair 1007. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.hu_ok` n=5 **0.710×** (0.779 / 1.097 µs) Friend-MachineD, ceiling 8.0. Pair 1008. Under-1×. `nextPairNum` unchanged.
