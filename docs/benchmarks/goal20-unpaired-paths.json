@@ -527,6 +527,7 @@
     "oauth_pkce_device.device_start",
     "oauth_pkce_device.ensure_success",
     "oauth_pkce_device.error_detail",
+    "oauth_pkce_device.hex_value",
     "oauth_pkce_device.http_status_text",
     "oauth_pkce_device.interval_seconds",
     "oauth_pkce_device.json_copy",
@@ -542,8 +543,10 @@
     "oauth_pkce_device.parse_query",
     "oauth_pkce_device.percent_decode",
     "oauth_pkce_device.poll",
+    "oauth_pkce_device.present_auth_url",
     "oauth_pkce_device.provider_key",
     "oauth_pkce_device.radius_gateway",
+    "oauth_pkce_device.write_http_response",
     "output_accumulator.append",
     "output_accumulator.close_temp_file",
     "output_accumulator.finish",
@@ -1585,12 +1588,15 @@
       "prefix": "src/cadr-ai/oauth/callback.lisp",
       "class": "paired",
       "metrics": [
+        "oauth_pkce_device.hex_value",
         "oauth_pkce_device.http_status_text",
         "oauth_pkce_device.parse_authorization_input",
         "oauth_pkce_device.parse_callback_request",
         "oauth_pkce_device.parse_query",
         "oauth_pkce_device.percent_decode",
-        "oauth_pkce_device.provider_key"
+        "oauth_pkce_device.present_auth_url",
+        "oauth_pkce_device.provider_key",
+        "oauth_pkce_device.write_http_response"
       ]
     },
     {
