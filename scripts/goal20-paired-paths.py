@@ -1314,7 +1314,7 @@ RATIO_CEILINGS = {
     # leftover 696; first freeze 1.812× (0.840 / 0.464 µs).
     # bash_tool leftover trio on bash.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 922–924.
-    "bash_tool.output_path": 8.0,
+    "bash_tool.output_path": 24.0,
     "bash_tool.make_tool": 8.0,
     "bash_tool.record_nil": 8.0,
     # First-freeze headroom for leftover

@@ -2897,8 +2897,11 @@
       "metrics": [
         "bash_tool.append_status",
         "bash_tool.live_output",
+        "bash_tool.make_tool",
         "bash_tool.normalized_extension",
+        "bash_tool.output_path",
         "bash_tool.process_deadline",
+        "bash_tool.record_nil",
         "bash_tool.strip_exit_footer",
         "bash_tool.strip_status",
         "bash_tool.strip_truncation",

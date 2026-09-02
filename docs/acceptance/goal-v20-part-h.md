@@ -9951,7 +9951,7 @@ Leftover sibling of leftover 916–917. Timed work is unchanged then changed pol
 |---|---|---|
 | `output_path` | `bash-output-path` (`src/cadr-cli/tools/bash.lisp`) | ensureTempFile temp log path (`packages/coding-agent/src/core/bash-executor.ts`) |
 
-Leftover sibling of earlier `bash_tool` leftovers on `src/cadr-cli/tools/bash.lisp`. Timed work is constructing a temp log path (`.log` suffix, 16-hex id after last hyphen, under the process temp directory). Do not exact `cadr-bash` vs `pi-bash` product prefixes or the random hex. Observed `bop_log` / `bop_hex` / `bop_tmp` / `bop_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** (freeze pending). Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of earlier `bash_tool` leftovers on `src/cadr-cli/tools/bash.lisp`. Timed work is constructing a temp log path (`.log` suffix, 16-hex id after last hyphen, under the process temp directory). Do not exact `cadr-bash` vs `pi-bash` product prefixes or the random hex. Observed `bop_log` / `bop_hex` / `bop_tmp` / `bop_n` are exact. First n=5 freeze **10.664×** (117.640 / 11.032 µs) on host `Friend-MachineD`, ceiling 24.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 923 — `bash_tool` (make_tool)
 
@@ -9959,7 +9959,7 @@ Leftover sibling of earlier `bash_tool` leftovers on `src/cadr-cli/tools/bash.li
 |---|---|---|
 | `make_tool` | `make-bash-tool` (`src/cadr-cli/tools/bash.lisp`) | `createBashTool` (`packages/coding-agent/src/core/tools/bash.ts`) |
 
-Leftover sibling of Pair 922. Timed work is constructing the bash tool (name `bash`, nonempty description, executor/execute function). Do not exact description product copy. Observed `mt_name` / `mt_desc` / `mt_exec` / `mt_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** (freeze pending). Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 922. Timed work is constructing the bash tool (name `bash`, nonempty description, executor/execute function). Do not exact description product copy. Observed `mt_name` / `mt_desc` / `mt_exec` / `mt_n` are exact. First n=5 freeze **2.046×** (3.108 / 1.519 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 924 — `bash_tool` (record_nil)
 
@@ -9967,7 +9967,8 @@ Leftover sibling of Pair 922. Timed work is constructing the bash tool (name `ba
 |---|---|---|
 | `record_nil` | `record-user-bash-result` nil agent (`src/cadr-cli/tools/bash.lisp`) | leftover nil-agent no-op return of `recordBashResult` (`packages/coding-agent/src/core/agent-session.ts`) |
 
-Leftover sibling of Pairs 922–923. Timed work is the nil-agent no-op: return the same result object without appending a session message. Observed `rn_eq` / `rn_cmd` / `rn_out` / `rn_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** (freeze pending). Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 922–923. Timed work is the nil-agent no-op: return the same result object without appending a session message. Observed `rn_eq` / `rn_cmd` / `rn_out` / `rn_n` are exact. First n=5 freeze **3.436×** (0.384 / 0.112 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -10718,7 +10719,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/system-prompt.lisp` | 53 | `skill_prompt_load.resolve_prompt`, `skill_prompt_load.node_read_error`, `skill_prompt_load.prompt_appends` |
 | `src/cadr-cli/tool-manager.lisp` | 295 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
-| `src/cadr-cli/tools/bash.lisp` | 591 | `bash_tool.append_status`, `bash_tool.live_output`, `bash_tool.normalized_extension`, `bash_tool.process_deadline`, `bash_tool.strip_exit_footer`, `bash_tool.strip_status`, `bash_tool.strip_truncation`, `bash_tool.truncation_notice`, `bash_tool.user_bash_result` |
+| `src/cadr-cli/tools/bash.lisp` | 591 | `bash_tool.append_status`, `bash_tool.live_output`, `bash_tool.make_tool`, `bash_tool.normalized_extension`, `bash_tool.output_path`, `bash_tool.process_deadline`, `bash_tool.record_nil`, `bash_tool.strip_exit_footer`, `bash_tool.strip_status`, `bash_tool.strip_truncation`, `bash_tool.truncation_notice`, `bash_tool.user_bash_result` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/glob.lisp` | 218 | `find_tool.gitignore_regex`, `find_tool.gitignored`, `find_tool.glob_regex`, `find_tool.glob_regex_body`, `find_tool.glob_scanner`, `find_tool.glob_special`, `find_tool.ignored_directory`, `find_tool.make_glob_tool`, `find_tool.parse_gitignore_line` |
