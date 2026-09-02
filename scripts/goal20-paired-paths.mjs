@@ -594,6 +594,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_keybindings": 50,
 	"cli_selectors.make_thinking_selector_state": 50,
 	"cli_selectors.mtsxxx_ok": 50,
+	"cli_selectors.th_lbl": 50,
+	"cli_selectors.th_qry": 50,
+	"cli_selectors.th_kb": 50,
 	"cli_selectors.thinking_selector_apply_filter": 50,
 	"cli_selectors.thinking_selector_clamp_selected": 50,
 	"cli_selectors.thinking_selector_select_current": 50,
@@ -36163,6 +36166,15 @@ async function measureCliSelectorsSessionSearch() {
 		mtsxxx_ok: await collect("cli_selectors.mtsxxx_ok", () => {
 			return () => runCliSelectorsMakeThinkingSelectorState();
 		}),
+		th_lbl: await collect("cli_selectors.th_lbl", () => {
+			return () => runCliSelectorsThinkingLevelLabel();
+		}),
+		th_qry: await collect("cli_selectors.th_qry", () => {
+			return () => runCliSelectorsThinkingSelectorSetQuery();
+		}),
+		th_kb: await collect("cli_selectors.th_kb", () => {
+			return () => runCliSelectorsThinkingSelectorKeybindings();
+		}),
 		thinking_selector_apply_filter: await collect(
 			"cli_selectors.thinking_selector_apply_filter",
 			() => {
@@ -41541,6 +41553,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts constructor filter + select current",
 			"cli_selectors.mtsxxx_ok":
 				"packages/coding-agent leftover replica of thinking-selector constructor filter + select current",
+			"cli_selectors.th_lbl":
+				"packages/coding-agent leftover replica of thinking-level-label",
+			"cli_selectors.th_qry":
+				"packages/coding-agent leftover replica of thinking-selector-set-query",
+			"cli_selectors.th_kb":
+				"packages/coding-agent leftover replica of thinking-selector-keybindings",
 			"cli_selectors.thinking_selector_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts applyFilter",
 			"cli_selectors.thinking_selector_clamp_selected":
