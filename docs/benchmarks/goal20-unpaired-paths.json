@@ -2065,9 +2065,12 @@
       "prefix": "src/cadr-cli/interactive/components/countdown.lisp",
       "class": "paired",
       "metrics": [
+        "cli_selectors.countdown_dispose",
+        "cli_selectors.countdown_render",
         "cli_selectors.countdown_seconds",
+        "cli_selectors.countdown_start_guard",
         "cli_selectors.countdown_tick",
-        "cli_selectors.countdown_render"
+        "cli_selectors.countdown_unstarted"
       ]
     },
     {
