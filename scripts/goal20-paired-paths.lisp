@@ -1389,9 +1389,6 @@
     ("cli_bootstrap_sessions.cli_platform" . 50)
     ("cli_bootstrap_sessions.session_info_style" . 50)
     ("cli_bootstrap_sessions.default_changelog_path" . 50)
-    ("cli_bootstrap_sessions.cycle_ent" . 50)
-    ("cli_bootstrap_sessions.scope_st" . 50)
-    ("cli_bootstrap_sessions.file_cli" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -39084,17 +39081,6 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-default-changelog-path)))))))
-     "cycle_ent"
-     (collect "cli_bootstrap_sessions.cycle_ent"
-                  (run-cli-bootstrap-model-cycle))))
-     "scope_st"
-     (collect "cli_bootstrap_sessions.scope_st"
-                  (run-cli-bootstrap-model-scope))))
-     "file_cli"
-     (collect "cli_bootstrap_sessions.file_cli"
-                  (run-cli-bootstrap-process-files
-                   (first file-pair) (second file-pair))))))))
-
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
         (think (cadr-ai:faux-thinking "hmm")))
@@ -41200,12 +41186,6 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-info-style"
       "cli_bootstrap_sessions.default_changelog_path"
       "src/cadr-cli/bootstrap/sessions.lisp default-changelog-path"
-      "cli_bootstrap_sessions.cycle_ent"
-      "src/cadr-cli/bootstrap/commands.lisp model-cycle-target-entry leftover"
-      "cli_bootstrap_sessions.scope_st"
-      "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line leftover"
-      "cli_bootstrap_sessions.file_cli"
-      "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments leftover"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

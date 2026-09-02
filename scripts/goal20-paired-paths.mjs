@@ -1119,9 +1119,6 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.pb_ok": 50,
 	"cli_bootstrap_sessions.rt_ok": 50,
 	"cli_bootstrap_sessions.dp_ok": 50,
-	"cli_bootstrap_sessions.cycle_ent": 50,
-	"cli_bootstrap_sessions.scope_st": 50,
-	"cli_bootstrap_sessions.file_cli": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -39240,12 +39237,6 @@ async function measureCliBootstrapCodingTools() {
 		}),
 		default_changelog_path: await collect("cli_bootstrap_sessions.default_changelog_path", () => {
 			return () => runCliBootstrapDefaultChangelogPath();
-		cycle_ent: await collect("cli_bootstrap_sessions.cycle_ent", () => {
-			return () => runCliBootstrapModelCycle();
-		scope_st: await collect("cli_bootstrap_sessions.scope_st", () => {
-			return () => runCliBootstrapModelScope();
-		file_cli: await collect("cli_bootstrap_sessions.file_cli", () => {
-			return () => runCliBootstrapProcessFiles(filePair.hello, filePair.empty);
 		}),
 		observed: {
 			...codingObserved,
@@ -41613,12 +41604,6 @@ const result = {
 				"packages/coding-agent leftover heading/label/other style (cadr session-info-style)",
 			"cli_bootstrap_sessions.default_changelog_path":
 				"packages/coding-agent leftover CHANGELOG path env/leaf (cadr default-changelog-path)",
-			"cli_bootstrap_sessions.cycle_ent":
-				"packages/coding-agent leftover replica of _cycleScopedModel index wrap (cadr model-cycle-target-entry)",
-			"cli_bootstrap_sessions.scope_st":
-				"packages/coding-agent leftover replica of init Model scope line (cadr model-scope-startup-line)",
-			"cli_bootstrap_sessions.file_cli":
-				"packages/coding-agent leftover replica of processFileArguments (cadr process-cli-file-arguments)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
