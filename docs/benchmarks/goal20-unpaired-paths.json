@@ -539,6 +539,7 @@
     "oauth_pkce.challenge_urls",
     "oauth_pkce_device.account_id",
     "oauth_pkce_device.anth_oauth_instructions",
+    "oauth_pkce_device.anthropic_exchange",
     "oauth_pkce_device.anth_oauth_name",
     "oauth_pkce_device.anth_oauth_sub",
     "oauth_pkce_device.auth_json",
@@ -561,6 +562,7 @@
     "oauth_pkce_device.openrouter_exchange",
     "oauth_pkce_device.openrouter_input",
     "oauth_pkce_device.openrouter_refresh",
+    "oauth_pkce_device.openai_exchange",
     "oauth_pkce_device.parse_authorization_input",
     "oauth_pkce_device.parse_callback_request",
     "oauth_pkce_device.parse_query",
@@ -568,6 +570,7 @@
     "oauth_pkce_device.poll",
     "oauth_pkce_device.present_auth_url",
     "oauth_pkce_device.provider_key",
+    "oauth_pkce_device.token_fields",
     "oauth_pkce_device.radius_gateway",
     "oauth_pkce_device.write_http_response",
     "output_accumulator.append",
@@ -1631,7 +1634,10 @@
       "metrics": [
         "oauth_pkce_device.base64url_value",
         "oauth_pkce_device.base64url_decode",
-        "oauth_pkce_device.account_id"
+        "oauth_pkce_device.account_id",
+        "oauth_pkce_device.token_fields",
+        "oauth_pkce_device.openai_exchange",
+        "oauth_pkce_device.anthropic_exchange"
       ]
     },
     {

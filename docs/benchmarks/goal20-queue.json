@@ -9400,6 +9400,51 @@
    "piUs": 0.561,
    "ceiling": 8.0,
    "rc": 0
+  },
+  {
+   "pair": 889,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/openai-anthropic.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.token_fields",
+   "branch": "g20-freeze-889-891",
+   "note": "nextPairNum left at tip 328; leftover id 889",
+   "ratio": 0.746,
+   "cadrUs": 3.187,
+   "piUs": 4.272,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 890,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/openai-anthropic.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openai_exchange",
+   "branch": "g20-freeze-889-891",
+   "note": "nextPairNum left at tip 328; leftover id 890",
+   "ratio": 5.625,
+   "cadrUs": 29.574,
+   "piUs": 5.257,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 891,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/openai-anthropic.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.anthropic_exchange",
+   "branch": "g20-freeze-889-891",
+   "note": "nextPairNum left at tip 328; leftover id 891",
+   "ratio": 1.697,
+   "cadrUs": 12.807,
+   "piUs": 7.545,
+   "ceiling": 8.0,
+   "rc": 0
   }
  ],
  "mergeQueue": []
