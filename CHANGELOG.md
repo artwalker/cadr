@@ -10,6 +10,27 @@ tag/Release step.
 ### Changed
 
 - Goal 20 leftover: pair `settings_load.sdk_make_manager`
+  (`make-sdk-settings-manager` vs leftover nil-path SettingsManager construct). Observed
+  `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` exact.
+  n=5 **1.411×** (3.670 / 2.600 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 856). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS pollution; scoped gate PASS.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_make_memory`
+  (`make-memory-sdk-settings-manager` vs `SettingsManager.inMemory`). Observed
+  `smm_prov` / `smm_model` / `smm_empty` / `smm_type` / `smm_n` exact.
+  n=5 **5.581×** (26.876 / 4.816 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 857). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_effective_thinking_level`
+  (`sdk-settings-effective-thinking-level` vs leftover thinking precedence). Observed
+  `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` exact.
+  n=5 **3.700×** (14.454 / 3.907 µs) on host `Friend-MachineD`, ceiling 8.0.
+  Measure-only leftover (Pair 858). Over-1× booked.
+  `nextPairNum` left unchanged.
+
+
+- Goal 20 leftover: pair `settings_load.sdk_make_manager`
   (`make-sdk-settings-manager` vs leftover inMemory empty construct).
   Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` exact.
   Measure-only leftover (Pair 856). First freeze pending.

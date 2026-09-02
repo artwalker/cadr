@@ -745,3 +745,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.session_info_style` | 2.643 | 0.367 | 7.201× | 8.00× | measure-only leftover 854; `session-info-style` vs leftover heading/label/other style; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.default_changelog_path` | 218.058 | 0.184 | 1182.272× | 1200.00× | measure-only leftover 855; `default-changelog-path` vs leftover CHANGELOG env/leaf; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
+| settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
+| settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
+| settings_load.sdk_effective_thinking_level | 3.700 | 14.454 | 3.907 | 8.0 | Friend-MachineD | leftover 858 loop-tick-47 |

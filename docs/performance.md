@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`, ratio_gate=`enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style`, quick=no, samples=5
+Current: `—` (2026-09-02T06:56:56Z) on `Friend-MachineD`, git `63ff989fa051`, ratio_gate=`enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory`, quick=no, samples=5
 
-Previous: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`, ratio_gate=`enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify`, quick=no, samples=5
+Previous: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`, ratio_gate=`enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -750,6 +750,9 @@ Previous: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`,
 | `settings_load.sdk_settings_reload` | 30.8 | 6.3 | 4.89× | 4.89× | 8.00× |
 | `settings_load.sdk_settings_flush` | 30.4 | 5.5 | 5.55× | 5.55× | 8.00× |
 | `settings_load.sdk_compaction_enabled` | 19.7 | 5.5 | 3.59× | 3.59× | 8.00× |
+| `settings_load.sdk_make_manager` | — | — | 1.41× | — | 8.00× |
+| `settings_load.sdk_make_memory` | — | — | 5.58× | — | 8.00× |
+| `settings_load.sdk_effective_thinking_level` | — | — | 3.70× | — | 8.00× |
 | `resource_loader.reload` | 501.0 | 916.2 | 0.55× | 0.55× | 1.50× |
 | `resource_loader.dedupe_by_name` | 178.8 | 405.6 | 0.44× | 0.44× | 8.00× |
 | `resource_loader.context_from_dir` | 108.3 | 39.2 | 2.76× | 2.76× | 8.00× |
@@ -1151,9 +1154,9 @@ Previous: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`,
 | `cli_bootstrap_sessions.managed_binary_names` | 0.4 | 0.2 | 2.22× | 2.22× | 8.00× |
 | `cli_bootstrap_sessions.migration_guide_url` | 0.5 | 0.2 | 2.67× | 2.67× | 8.00× |
 | `cli_bootstrap_sessions.extensions_doc_url` | 0.5 | 0.2 | 2.84× | 2.84× | 8.00× |
-| `cli_bootstrap_sessions.cli_platform` | — | — | 1.05× | — | 8.00× |
-| `cli_bootstrap_sessions.session_info_style` | — | — | 7.20× | — | 8.00× |
-| `cli_bootstrap_sessions.default_changelog_path` | — | — | 1182.27× | — | 1200.00× |
+| `cli_bootstrap_sessions.cli_platform` | — | — | 1.05× | 1.05× | 8.00× |
+| `cli_bootstrap_sessions.session_info_style` | — | — | 7.20× | 7.20× | 8.00× |
+| `cli_bootstrap_sessions.default_changelog_path` | — | — | 1182.27× | 1182.27× | 1200.00× |
 | `cli_selectors.model_selector_provider_badge` | 0.3 | 0.6 | 0.42× | 0.42× | 8.00× |
 | `cli_selectors.scoped_models_copy_enabled` | 1.5 | 0.7 | 2.28× | 2.28× | 8.00× |
 | `cli_selectors.move_list_item` | 1.5 | 1.4 | 1.07× | 1.07× | 8.00× |
@@ -1553,12 +1556,6 @@ Previous: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`,
 | `cli_bootstrap_sessions.cycle_wrap` | 1.2 | 0.9 | 1.35× | 1.35× | 8.00× |
 | `cli_bootstrap_sessions.scope_hint` | 42.0 | 29.8 | 1.41× | 1.41× | 8.00× |
 | `cli_bootstrap_sessions.file_tags` | 96.0 | 946.8 | 0.10× | 0.10× | 8.00× |
-| `cli_bootstrap_sessions.data_directory` | 5.8 | 1.0 | 5.80× | 5.80× | 40.00× |
-| `cli_bootstrap_sessions.legacy_data_directory` | 6.5 | 1.0 | 6.33× | 6.33× | 40.00× |
-| `cli_bootstrap_sessions.manual_migration_command` | 5.2 | 1.3 | 4.09× | 4.09× | 8.00× |
-| `cli_bootstrap_sessions.managed_binary_names` | 0.4 | 0.2 | 2.22× | 2.22× | 8.00× |
-| `cli_bootstrap_sessions.migration_guide_url` | 0.5 | 0.2 | 2.67× | 2.67× | 8.00× |
-| `cli_bootstrap_sessions.extensions_doc_url` | 0.5 | 0.2 | 2.84× | 2.84× | 8.00× |
 | `ai_runtime_faux.blocks` | 0.3 | 0.2 | 1.82× | 1.82× | 8.00× |
 | `http_transport.parse_url` | 1.1 | 0.9 | 1.20× | 1.20× | 8.00× |
 | `core_rest.cancellation_wait` | 84.1 | 8.4 | 10.02× | 10.02× | 8.00× |
@@ -2355,6 +2352,7 @@ Previous: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`,
 | 2026-09-02T01:51:29Z | — | `afbac72aff40` | no | enforced-only:cli_extensions_install.manager_notify,cli_extensions_install.output_boundary,cli_extensions_install.startup_issues | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T02:05:24Z | — | `d0fb143a4d5d` | no | enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T04:59:41Z | — | `b75bf39b1b2c` | no | enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T06:56:56Z | — | `63ff989fa051` | no | enforced-only:settings_load.sdk_effective_thinking_level,settings_load.sdk_make_manager,settings_load.sdk_make_memory | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
