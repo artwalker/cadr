@@ -1327,6 +1327,9 @@
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
+    ("cli_selectors.dax_rgb" . 50)
+    ("cli_selectors.dax_make" . 50)
+    ("cli_selectors.dax_tick" . 50)
     ("cli_selectors.countdown_seconds" . 50)
     ("cli_selectors.countdown_tick" . 50)
     ("cli_selectors.countdown_render" . 50)
@@ -36020,6 +36023,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+     "dax_rgb"
+     (collect "cli_selectors.dax_rgb"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "dax_make"
+     (collect "cli_selectors.dax_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "dax_tick"
+     (collect "cli_selectors.dax_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick))))
      "countdown_seconds"
      (collect "cli_selectors.countdown_seconds"
               (lambda ()
@@ -41367,6 +41385,12 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
       "cli_selectors.daxnuts_component_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
+      "cli_selectors.dax_rgb"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at leftover"
+      "cli_selectors.dax_make"
+      "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover"
+      "cli_selectors.dax_tick"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover"
       "cli_selectors.countdown_seconds"
       "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds"
       "cli_selectors.countdown_tick"
