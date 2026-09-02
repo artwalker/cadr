@@ -86,10 +86,12 @@
     "cli_extensions_install.http_timeout_p",
     "cli_extensions_install.inline_factory",
     "cli_extensions_install.llama_catalog",
+    "cli_extensions_install.catalog_notify",
     "cli_extensions_install.llama_compact_count",
     "cli_extensions_install.llama_context_label",
     "cli_extensions_install.llama_format_context",
     "cli_extensions_install.llama_js_to_fixed",
+    "cli_extensions_install.loaded_model",
     "cli_extensions_install.llama_model_description",
     "cli_extensions_install.llama_search_exact",
     "cli_extensions_install.llama_search_filter",
@@ -101,6 +103,7 @@
     "cli_extensions_install.normalize_git",
     "cli_extensions_install.output_boundary",
     "cli_extensions_install.package_fragment",
+    "cli_extensions_install.progress_notify",
     "cli_extensions_install.quant_label",
     "cli_extensions_install.quiet_manager",
     "cli_extensions_install.same_source",
@@ -1931,9 +1934,12 @@
       "prefix": "src/cadr-cli/extensions/llama/extension.lisp",
       "class": "paired",
       "metrics": [
+        "cli_extensions_install.catalog_notify",
         "cli_extensions_install.gated_approval",
-        "cli_extensions_install.split_args",
-        "cli_extensions_install.quant_label"
+        "cli_extensions_install.loaded_model",
+        "cli_extensions_install.progress_notify",
+        "cli_extensions_install.quant_label",
+        "cli_extensions_install.split_args"
       ]
     },
     {
