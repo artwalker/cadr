@@ -1254,6 +1254,9 @@
     ("cli_selectors.thinking_selector_keybindings" . 50)
     ("cli_selectors.make_thinking_selector_state" . 50)
     ("cli_selectors.mtsxxx_ok" . 50)
+    ("cli_selectors.th_lbl" . 50)
+    ("cli_selectors.th_qry" . 50)
+    ("cli_selectors.th_kb" . 50)
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
@@ -35658,6 +35661,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-thinking-selector-state))))
+     "th_lbl"
+     (collect "cli_selectors.th_lbl"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-label))))
+     "th_qry"
+     (collect "cli_selectors.th_qry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-set-query))))
+     "th_kb"
+     (collect "cli_selectors.th_kb"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-keybindings))))
      "thinking_selector_apply_filter"
      (collect "cli_selectors.thinking_selector_apply_filter"
               (lambda ()
@@ -41199,6 +41217,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
       "cli_selectors.mtsxxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state leftover"
+      "cli_selectors.th_lbl"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label leftover"
+      "cli_selectors.th_qry"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query leftover"
+      "cli_selectors.th_kb"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings leftover"
       "cli_selectors.thinking_selector_apply_filter"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter"
       "cli_selectors.thinking_selector_clamp_selected"

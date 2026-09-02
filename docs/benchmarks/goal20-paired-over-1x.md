@@ -824,6 +824,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.dax_rgb` | 1.131 | 0.359 | 3.149× | 8.00× | measure-only leftover 1021; daxnuts-rgb-at leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_make` | 0.999 | 0.153 | 6.531× | 8.00× | measure-only leftover 1022; make-daxnuts-component leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_tick` | 5.142 | 0.581 | 8.845× | 12.00× | measure-only leftover 1023; daxnuts-component-tick leftover; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
+| `cli_selectors.th_lbl` | 0.386 | 0.197 | 1.960× | 8.00× | measure-only leftover 1024; thinking-level-label leftover | invent pause；地板优化另刀 |
+| `cli_selectors.th_kb` | 4.463 | 1.064 | 4.194× | 8.00× | measure-only leftover 1026; thinking-selector-keybindings leftover | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |

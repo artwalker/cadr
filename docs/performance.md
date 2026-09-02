@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T19:35:52Z) on `Friend-MachineD`, git `b0926bf87922`, ratio_gate=`enforced-only:cli_selectors.dax_make,cli_selectors.dax_rgb,cli_selectors.dax_tick`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T19:47:37Z) on `Friend-MachineD`, git `f3768bb8895f`, ratio_gate=`enforced-only:cli_selectors.th_kb,cli_selectors.th_lbl,cli_selectors.th_qry`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T19:24:28Z) on `Friend-MachineD`, git `1a4a149cdc2f`, ratio_gate=`enforced-only:cli_selectors.cd_rnd,cli_selectors.cd_sec,cli_selectors.cd_tick`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T19:35:52Z) on `Friend-MachineD`, git `b0926bf87922`, ratio_gate=`enforced-only:cli_selectors.dax_make,cli_selectors.dax_rgb,cli_selectors.dax_tick`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1259,6 +1259,9 @@ Previous: `paired-paths` (2026-09-02T19:24:28Z) on `Friend-MachineD`, git `1a4a1
 | `cli_selectors.thinking_selector_keybindings` | 2.7 | 0.4 | 6.18× | 6.18× | 8.00× |
 | `cli_selectors.make_thinking_selector_state` | 1.9 | 2.9 | 0.64× | 0.64× | 8.00× |
 | `cli_selectors.mtsxxx_ok` | 1.9 | 2.0 | 0.95× | 0.95× | 8.00× |
+| `cli_selectors.th_lbl` | 0.4 | 0.2 | 1.96× | — | 8.00× |
+| `cli_selectors.th_qry` | 12.9 | 15.3 | 0.84× | — | 8.00× |
+| `cli_selectors.th_kb` | 4.5 | 1.1 | 4.19× | — | 8.00× |
 | `cli_selectors.thinking_selector_apply_filter` | 14.4 | 11.3 | 1.28× | 1.28× | 8.00× |
 | `cli_selectors.thinking_selector_clamp_selected` | 0.9 | 0.9 | 1.05× | 1.05× | 8.00× |
 | `cli_selectors.thinking_selector_select_current` | 1.4 | 0.9 | 1.60× | 1.60× | 8.00× |
@@ -1332,9 +1335,9 @@ Previous: `paired-paths` (2026-09-02T19:24:28Z) on `Friend-MachineD`, git `1a4a1
 | `cli_selectors.daxnuts_rgb_at` | 1.4 | 0.5 | 2.52× | 2.52× | 8.00× |
 | `cli_selectors.make_daxnuts_component` | 1.4 | 0.2 | 6.59× | 6.59× | 8.00× |
 | `cli_selectors.daxnuts_component_tick` | 4.5 | 2.7 | 1.68× | 1.68× | 8.00× |
-| `cli_selectors.dax_rgb` | 1.1 | 0.4 | 3.15× | — | 8.00× |
-| `cli_selectors.dax_make` | 1.0 | 0.2 | 6.53× | — | 8.00× |
-| `cli_selectors.dax_tick` | 5.1 | 0.6 | 8.84× | — | 12.00× |
+| `cli_selectors.dax_rgb` | 1.1 | 0.4 | 3.15× | 3.15× | 8.00× |
+| `cli_selectors.dax_make` | 1.0 | 0.2 | 6.53× | 6.53× | 8.00× |
+| `cli_selectors.dax_tick` | 5.1 | 0.6 | 8.84× | 8.84× | 12.00× |
 | `cli_selectors.dlg_make` | 0.4 | 0.2 | 2.27× | 2.27× | 8.00× |
 | `cli_selectors.dlg_auth` | 2.8 | 0.8 | 3.56× | 3.56× | 8.00× |
 | `cli_selectors.dlg_dev` | 5.5 | 1.3 | 4.16× | 4.16× | 8.00× |
@@ -2491,6 +2494,7 @@ Previous: `paired-paths` (2026-09-02T19:24:28Z) on `Friend-MachineD`, git `1a4a1
 | 2026-09-02T19:12:08Z | paired-paths | `3ca9f30bba26` | no | enforced-only:powershell_tool.mt_ok,powershell_tool.pc_ok,powershell_tool.up_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T19:24:28Z | paired-paths | `1a4a149cdc2f` | no | enforced-only:cli_selectors.cd_rnd,cli_selectors.cd_sec,cli_selectors.cd_tick | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T19:35:52Z | paired-paths | `b0926bf87922` | no | enforced-only:cli_selectors.dax_make,cli_selectors.dax_rgb,cli_selectors.dax_tick | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-02T19:47:37Z | paired-paths | `f3768bb8895f` | no | enforced-only:cli_selectors.th_kb,cli_selectors.th_lbl,cli_selectors.th_qry | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
