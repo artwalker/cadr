@@ -754,6 +754,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.device_poll_complete` | 2.586 | 0.164 | 15.756× | 15.00× | measure-only leftover 892-894; remeasure Friend-MachineD | openai-device poll trio |
 | `oauth_pkce_device.device_poll_fail` | 2.962 | 1.737 | 1.705× | 8.00× | measure-only leftover 892-894; remeasure Friend-MachineD | openai-device poll trio |
 | `oauth_pkce_device.device_poll_slow` | 3.588 | 1.967 | 1.824× | 8.00× | measure-only leftover 892-894; remeasure Friend-MachineD | openai-device poll trio |
+| `oauth_pkce_device.xai_login` | 15.536 | 1.185 | 13.116× | 20.00× | measure-only leftover 895-897; remeasure Friend-MachineD | xai login/refresh trio |
+| `oauth_pkce_device.xai_login_fail` | 8.266 | 2.136 | 3.870× | 8.00× | measure-only leftover 895-897; remeasure Friend-MachineD | xai login/refresh trio |
+| `oauth_pkce_device.xai_refresh` | 5.365 | 0.237 | 22.614× | 20.00× | measure-only leftover 895-897; remeasure Friend-MachineD | xai login/refresh trio |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |

@@ -478,6 +478,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.device_poll_complete": 50,
 	"oauth_pkce_device.device_poll_fail": 50,
 	"oauth_pkce_device.device_poll_slow": 50,
+	"oauth_pkce_device.xai_login": 50,
+	"oauth_pkce_device.xai_login_fail": 50,
+	"oauth_pkce_device.xai_refresh": 50,
 	"evals_harness.make_reporter": 50,
 	"evals_harness.finite_number": 50,
 	"evals_harness.artifact_metadata": 50,
@@ -14324,6 +14327,130 @@ function runOauthPkceDevicePollSlow() {
 }
 
 
+function xaiRequiredString(body, field) {
+	const value = body[field];
+	if (typeof value !== "string" || value.length === 0) {
+		throw new Error(`Invalid xAI OAuth response field: ${field}`);
+	}
+	return value;
+}
+
+
+function xaiPositiveNumber(body, field) {
+	const value = body[field];
+	if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+		throw new Error(`Invalid xAI OAuth response field: ${field}`);
+	}
+	return value;
+}
+
+
+function xaiValidateVerificationUri(raw) {
+	const url = new URL(raw);
+	if (url.protocol !== "https:") {
+		throw new Error("Untrusted verification URI in xAI OAuth response");
+	}
+	return url.href;
+}
+
+
+function parseXaiDeviceCode(body) {
+	const interval = body.interval;
+	const intervalSeconds =
+		typeof interval === "number" && Number.isFinite(interval) && interval > 0
+			? interval
+			: undefined;
+	return {
+		deviceCode: xaiRequiredString(body, "device_code"),
+		userCode: xaiRequiredString(body, "user_code"),
+		verificationUri: xaiValidateVerificationUri(
+			xaiRequiredString(body, "verification_uri"),
+		),
+		intervalSeconds,
+		expiresInSeconds: xaiPositiveNumber(body, "expires_in"),
+	};
+}
+
+
+function xaiCredentialsFromTokenResponse(body, previousRefreshToken) {
+	const access = xaiRequiredString(body, "access_token");
+	const refresh =
+		body.refresh_token === undefined && previousRefreshToken
+			? previousRefreshToken
+			: xaiRequiredString(body, "refresh_token");
+	const expiresInSeconds =
+		body.expires_in === undefined ? 3600 : xaiPositiveNumber(body, "expires_in");
+	return {
+		type: "oauth",
+		access,
+		refresh,
+		expires: Date.now() + expiresInSeconds * 1000 - 5 * 60 * 1000,
+	};
+}
+
+
+function runOauthPkceDeviceXaiLogin() {
+	try {
+		parseXaiDeviceCode({
+			device_code: "dc1",
+			user_code: "uc1",
+			verification_uri: "https://x.ai/device",
+			expires_in: 1800,
+			interval: 5,
+		});
+		const credential = xaiCredentialsFromTokenResponse({
+			access_token: "at-xai",
+			refresh_token: "rt-xai",
+			expires_in: 3600,
+		});
+		return {
+			xli_acc: credential.access === "at-xai" ? 1 : 0,
+			xli_ref: credential.refresh === "rt-xai" ? 1 : 0,
+			xli_n: 2,
+		};
+	} catch {
+		return { xli_acc: 0, xli_ref: 0, xli_n: 2 };
+	}
+}
+
+
+function runOauthPkceDeviceXaiLoginFail() {
+	const response = { ok: false, status: 400, body: { error: "denied" } };
+	let xlfThrow = 0;
+	try {
+		if (!response.ok) {
+			throw new Error(
+				`xAI OAuth device authorization failed (HTTP ${response.status})`,
+			);
+		}
+	} catch {
+		xlfThrow = 1;
+	}
+	return { xlf_throw: xlfThrow, xlf_n: 1 };
+}
+
+
+function runOauthPkceDeviceXaiRefresh() {
+	try {
+		const credential = xaiCredentialsFromTokenResponse(
+			{
+				access_token: "at-new",
+				refresh_token: "rt-new",
+				expires_in: 3600,
+			},
+			"rt-old",
+		);
+		return {
+			xrf_acc: credential.access === "at-new" ? 1 : 0,
+			xrf_ref: credential.refresh === "rt-new" ? 1 : 0,
+			xrf_n: 2,
+		};
+	} catch {
+		return { xrf_acc: 0, xrf_ref: 0, xrf_n: 2 };
+	}
+}
+
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -14355,6 +14482,9 @@ async function measureOauthPkceDevice() {
 	const devicePollComplete = runOauthPkceDevicePollComplete();
 	const devicePollFail = runOauthPkceDevicePollFail();
 	const devicePollSlow = runOauthPkceDevicePollSlow();
+	const xaiLogin = runOauthPkceDeviceXaiLogin();
+	const xaiLoginFail = runOauthPkceDeviceXaiLoginFail();
+	const xaiRefresh = runOauthPkceDeviceXaiRefresh();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -14473,6 +14603,15 @@ async function measureOauthPkceDevice() {
 		device_poll_slow: await collect("oauth_pkce_device.device_poll_slow", () => {
 			return () => runOauthPkceDevicePollSlow();
 		}),
+		xai_login: await collect("oauth_pkce_device.xai_login", () => {
+			return () => runOauthPkceDeviceXaiLogin();
+		}),
+		xai_login_fail: await collect("oauth_pkce_device.xai_login_fail", () => {
+			return () => runOauthPkceDeviceXaiLoginFail();
+		}),
+		xai_refresh: await collect("oauth_pkce_device.xai_refresh", () => {
+			return () => runOauthPkceDeviceXaiRefresh();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -14513,6 +14652,9 @@ async function measureOauthPkceDevice() {
 			...hexValue,
 			...writeHttp,
 			...presentUrl,
+			...xaiLogin,
+			...xaiLoginFail,
+			...xaiRefresh,
 		},
 	};
 }
@@ -39393,6 +39535,12 @@ const result = {
 				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost KIMI_CODE_OAUTH_HOST",
 			"oauth_pkce_device.kimi_host_trim":
 				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost trailing-slash trim",
+			"oauth_pkce_device.xai_login":
+				"packages/ai/src/auth/oauth/xai.ts parseDeviceCode + credentialsFromTokenResponse (cadr login-xai-oauth)",
+			"oauth_pkce_device.xai_login_fail":
+				"packages/ai/src/auth/oauth/xai.ts requestDeviceCode HTTP fail (cadr login-xai-oauth)",
+			"oauth_pkce_device.xai_refresh":
+				"packages/ai/src/auth/oauth/xai.ts refreshXaiToken / credentialsFromTokenResponse (cadr refresh-xai-oauth-credential)",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

@@ -9492,6 +9492,51 @@
    "piUs": 1.967,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 895,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/xai.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.xai_login",
+   "branch": "g20-freeze-895-897",
+   "note": "nextPairNum left at tip 328; leftover id 895",
+   "ratio": 13.116,
+   "cadrUs": 15.536,
+   "piUs": 1.185,
+   "ceiling": 20.0,
+   "rc": 2
+  },
+  {
+   "pair": 896,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/xai.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.xai_login_fail",
+   "branch": "g20-freeze-895-897",
+   "note": "nextPairNum left at tip 328; leftover id 896",
+   "ratio": 3.87,
+   "cadrUs": 8.266,
+   "piUs": 2.136,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 897,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/providers/xai.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.xai_refresh",
+   "branch": "g20-freeze-895-897",
+   "note": "nextPairNum left at tip 328; leftover id 897",
+   "ratio": 22.614,
+   "cadrUs": 5.365,
+   "piUs": 0.237,
+   "ceiling": 20.0,
+   "rc": 2
   }
  ]
 }

@@ -738,7 +738,11 @@
     ("oauth_pkce_device.anthropic_exchange" . 50)
     ("oauth_pkce_device.device_poll_complete" . 50)
     ("oauth_pkce_device.device_poll_fail" . 50)
-    ("oauth_pkce_device.device_poll_slow" . 50)    ("cli_extensions_install.llama_url" . 50)
+    ("oauth_pkce_device.device_poll_slow" . 50)
+    ("oauth_pkce_device.xai_login" . 50)
+    ("oauth_pkce_device.xai_login_fail" . 50)
+    ("oauth_pkce_device.xai_refresh" . 50)
+    ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
@@ -13005,6 +13009,110 @@
 (defun run-oauth-pkce-device-poll-slow ()
   (list (openai-device-poll-slow-timeout-flag) 1))
 
+(defparameter *oauth-xai-login-interaction*
+  (cadr-ai:make-runtime-auth-interaction
+   :notify-function (lambda (event) (declare (ignore event)))))
+
+(defparameter *oauth-xai-device-object*
+  (cadr-ai::json-object
+   "device_code" "dc1"
+   "user_code" "uc1"
+   "verification_uri" "https://x.ai/device"
+   "expires_in" 1800
+   "interval" 5))
+
+(defparameter *oauth-xai-token-object*
+  (cadr-ai::json-object
+   "access_token" "at-xai"
+   "refresh_token" "rt-xai"
+   "expires_in" 3600))
+
+
+(defun with-oauth-xai-flow (request-fn thunk)
+  (let ((cadr-ai::*oauth-flow-request-function* request-fn)
+        (cadr-ai::*oauth-flow-sleep-function*
+          (lambda (seconds)
+            (declare (ignore seconds))
+            0)))
+    (funcall thunk)))
+
+
+(defun oauth-xai-login-request
+    (url &key method headers content connect-timeout read-timeout)
+  (declare (ignore method headers content connect-timeout read-timeout))
+  (if (search "/device/code" url)
+      (values *oauth-xai-device-object* 200 nil)
+      (values *oauth-xai-token-object* 200 nil)))
+
+
+(defun run-oauth-pkce-device-xai-login ()
+  ;; Stub device+token HTTP. Exact access/refresh only — not expires
+  ;; (cadr 300000 ms skew vs pi REFRESH_SKEW_MS) and not referrer slug.
+  (handler-case
+      (let ((credential
+              (with-oauth-xai-flow
+               #'oauth-xai-login-request
+               (lambda ()
+                 (cadr-ai::login-xai-oauth *oauth-xai-login-interaction*)))))
+        (list
+         (if (string= (cadr-ai:oauth-credential-access credential) "at-xai")
+             1
+             0)
+         (if (string= (cadr-ai:oauth-credential-refresh credential) "rt-xai")
+             1
+             0)
+         2))
+    (error () (list 0 0 2))))
+
+
+(defun run-oauth-pkce-device-xai-login-fail ()
+  ;; Device HTTP 400 -> ensure-oauth-response-success. Do not exact
+  ;; the thrown message text.
+  (handler-case
+      (progn
+        (with-oauth-xai-flow
+         (lambda (url &key method headers content connect-timeout read-timeout)
+           (declare (ignore url method headers content
+                            connect-timeout read-timeout))
+           (values (cadr-ai::json-object "error" "denied") 400 nil))
+         (lambda ()
+           (cadr-ai::login-xai-oauth *oauth-xai-login-interaction*)))
+        (list 0 1))
+    (cadr-ai:authentication-error () (list 1 1))
+    (error () (list 0 1))))
+
+
+(defun run-oauth-pkce-device-xai-refresh ()
+  ;; Stub token HTTP 200. Exact access/refresh only — not expires.
+  (handler-case
+      (let ((credential
+              (with-oauth-xai-flow
+               (lambda (url &key method headers content
+                        connect-timeout read-timeout)
+                 (declare (ignore url method headers content
+                                  connect-timeout read-timeout))
+                 (values
+                  (cadr-ai::json-object
+                   "access_token" "at-new"
+                   "refresh_token" "rt-new"
+                   "expires_in" 3600)
+                  200 nil))
+               (lambda ()
+                 (cadr-ai::refresh-xai-oauth-credential
+                  (cadr-ai:make-oauth-credential
+                   :provider :xai
+                   :access "at-old"
+                   :refresh "rt-old"))))))
+        (list
+         (if (string= (cadr-ai:oauth-credential-access credential) "at-new")
+             1
+             0)
+         (if (string= (cadr-ai:oauth-credential-refresh credential) "rt-new")
+             1
+             0)
+         2))
+    (error () (list 0 0 2))))
+
 
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
@@ -13045,7 +13153,10 @@
         (present-url (run-oauth-pkce-device-present-auth-url))
         (device-poll-complete (run-oauth-pkce-device-poll-complete))
         (device-poll-fail (run-oauth-pkce-device-poll-fail))
-        (device-poll-slow (run-oauth-pkce-device-poll-slow)))
+        (device-poll-slow (run-oauth-pkce-device-poll-slow))
+        (xai-login (run-oauth-pkce-device-xai-login))
+        (xai-login-fail (run-oauth-pkce-device-xai-login-fail))
+        (xai-refresh (run-oauth-pkce-device-xai-refresh)))
     (json-object
      "observed"
      (json-object
@@ -13207,7 +13318,15 @@
       "dpf_throw" (nth 0 device-poll-fail)
       "dpf_n" (nth 1 device-poll-fail)
       "dps_msg" (nth 0 device-poll-slow)
-      "dps_n" (nth 1 device-poll-slow))
+      "dps_n" (nth 1 device-poll-slow)
+      "xli_acc" (nth 0 xai-login)
+      "xli_ref" (nth 1 xai-login)
+      "xli_n" (nth 2 xai-login)
+      "xlf_throw" (nth 0 xai-login-fail)
+      "xlf_n" (nth 1 xai-login-fail)
+      "xrf_acc" (nth 0 xai-refresh)
+      "xrf_ref" (nth 1 xai-refresh)
+      "xrf_n" (nth 2 xai-refresh))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -13402,7 +13521,22 @@
      (collect "oauth_pkce_device.device_poll_slow"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-poll-slow)))))))
+                  (run-oauth-pkce-device-poll-slow))))
+     "xai_login"
+     (collect "oauth_pkce_device.xai_login"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-xai-login))))
+     "xai_login_fail"
+     (collect "oauth_pkce_device.xai_login_fail"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-xai-login-fail))))
+     "xai_refresh"
+     (collect "oauth_pkce_device.xai_refresh"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-xai-refresh)))))))
 (defun llama-url-flag (value expected)
   (handler-case
       (if (string=
@@ -38846,7 +38980,14 @@
       "oauth_pkce_device.device_poll_fail"
       "src/cadr-ai/oauth/providers/openai-device.lisp poll-openai-codex-device-authorization failed"
       "oauth_pkce_device.device_poll_slow"
-      "src/cadr-ai/oauth/providers/openai-device.lisp poll-openai-codex-device-authorization slow_down timeout"      "cli_extensions_install.llama_url"
+      "src/cadr-ai/oauth/providers/openai-device.lisp poll-openai-codex-device-authorization slow_down timeout"
+      "oauth_pkce_device.xai_login"
+      "src/cadr-ai/oauth/providers/xai.lisp login-xai-oauth"
+      "oauth_pkce_device.xai_login_fail"
+      "src/cadr-ai/oauth/providers/xai.lisp login-xai-oauth device HTTP fail"
+      "oauth_pkce_device.xai_refresh"
+      "src/cadr-ai/oauth/providers/xai.lisp refresh-xai-oauth-credential"
+      "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
       "src/cadr-cli/extensions/llama/huggingface.lisp find-hugging-face-token"

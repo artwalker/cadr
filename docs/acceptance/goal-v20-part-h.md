@@ -10689,6 +10689,29 @@ Leftover sibling of Pair 865. Timed work is inline thunk vs start-turn dispatch 
 | `wrap_extension_host_turn` | `wrap-extension-host-tui-turn-dispatch` (`src/cadr-cli/interactive/extension-ui.lisp`) | leftover sendCustomMessage wrap/restore (`packages/coding-agent/src/core/agent-session.ts`) |
 
 Leftover sibling of Pairs 865–866. Timed work is wrap send/user plus restorer off the TUI thread — not a live turn. Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` are exact. First n=5 freeze **2.313×** (1.297 / 0.561 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
+### Pair 895 — `oauth_pkce_device` (xai_login)
+
+| metric | cadr | pi |
+|---|---|---|
+| `xai_login` | `login-xai-oauth` (`src/cadr-ai/oauth/providers/xai.lisp`) | `parseDeviceCode` + `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/xai.lisp` (leftover 379–381 measured error_detail / ensure_success / notify_device). Timed work is stub device+token HTTP login — not error_detail, not expires, not referrer slug. Observed `xli_acc` / `xli_ref` / `xli_n` are exact. First n=5 freeze **13.116×** (15.536 / 1.185 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 896 — `oauth_pkce_device` (xai_login_fail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `xai_login_fail` | `login-xai-oauth` device HTTP fail (`src/cadr-ai/oauth/providers/xai.lisp`) | `requestDeviceCode` HTTP fail (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of Pair 895. Timed work is stub device HTTP 400 throwing — not exact message text. Observed `xlf_throw` / `xlf_n` are exact. First n=5 freeze **3.870×** (8.266 / 2.136 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 897 — `oauth_pkce_device` (xai_refresh)
+
+| metric | cadr | pi |
+|---|---|---|
+| `xai_refresh` | `refresh-xai-oauth-credential` (`src/cadr-ai/oauth/providers/xai.lisp`) | `refreshXaiToken` / `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of Pairs 895–896. Timed work is stub token HTTP 200 refresh — exact access/refresh, not expires. Observed `xrf_acc` / `xrf_ref` / `xrf_n` are exact. First n=5 freeze **22.614×** (5.365 / 0.237 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
