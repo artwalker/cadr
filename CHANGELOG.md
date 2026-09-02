@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_print_rpc.dialog_default`
+  (`rpc-dialog-default` vs leftover createDialogPromise defaultValue). Observed
+  `rdd_sel` / `rdd_conf` / `rdd_in` / `rdd_ed` / `rdd_n` exact.
+  n=5 **0.524×** (0.072 / 0.137 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 829). Under 1× — not booked on over-1×.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.dialog_deadline`
+  (`rpc-dialog-deadline` vs leftover opts.timeout deadline). Observed
+  `rdl_nil` / `rdl_fut` / `rdl_num` / `rdl_one` / `rdl_n` exact.
+  n=5 **0.593×** (0.108 / 0.181 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 830). Under 1× — not booked on over-1×.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_print_rpc.close_pending`
+  (`rpc-close-pending-dialogs` vs leftover pending map clear). Observed
+  `rcp_close` / `rcp_n` / `rcp_empty` / `rcp_empty_n` / `rcp_keys` exact.
+  n=5 **2.795×** (1.526 / 0.546 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 831). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.llama_search_status`
   (`llama-search-status-text` vs leftover HuggingFaceSearch status). Observed
   `lss_type` / `lss_search` / `lss_empty` / `lss_found` / `lss_n` exact.

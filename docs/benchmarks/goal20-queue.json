@@ -8914,6 +8914,51 @@
    "piUs": 0.244,
    "ceiling": 180.0,
    "rc": 0
+  },
+  {
+   "pair": 829,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_default",
+   "branch": "g20-freeze-829-831",
+   "note": "nextPairNum left at tip 328; leftover id 829",
+   "ratio": 0.699,
+   "cadrUs": 0.173,
+   "piUs": 0.248,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 830,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_deadline",
+   "branch": "g20-freeze-829-831",
+   "note": "nextPairNum left at tip 328; leftover id 830",
+   "ratio": 0.702,
+   "cadrUs": 0.23,
+   "piUs": 0.328,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 831,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.close_pending",
+   "branch": "g20-freeze-829-831",
+   "note": "nextPairNum left at tip 328; leftover id 831",
+   "ratio": 3.213,
+   "cadrUs": 2.293,
+   "piUs": 0.714,
+   "ceiling": 8.0,
+   "rc": 0
   }
  ],
  "mergeQueue": []
