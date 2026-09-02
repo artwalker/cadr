@@ -21078,15 +21078,14 @@
         (threads-joined (run-cli-support-threads-joined))
         (login-help (run-cli-support-provider-login-help))
         (docs-dir (run-cli-support-docs-directory))
-        (think-level (run-cli-support-default-thinking-level)))
-
+        (think-level (run-cli-support-default-thinking-level))
         (present (cli-support-watch-present-file))
         (poll-file (cli-support-watch-poll-file)))
     (let ((watch-error (run-cli-support-watch-error))
           (watch-start-close
             (run-cli-support-watch-start-close present))
           (poll-once (run-cli-support-poll-once poll-file)))
-    (json-object
+      (json-object
      "observed"
      (json-object
       "csi_osc" (first ansi)
@@ -21214,8 +21213,7 @@
       "dtl_med" (nth 0 think-level)
       "dtl_high" (nth 1 think-level)
       "dtl_name" (nth 2 think-level)
-      "dtl_n" (nth 3 think-level))
-
+      "dtl_n" (nth 3 think-level)
       "we_nil" (first watch-error)
       "we_err" (second watch-error)
       "we_pos" (third watch-error)
@@ -21378,8 +21376,7 @@
      (collect "cli_support.default_thinking_level"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-default-thinking-level)))))))
-
+                  (run-cli-support-default-thinking-level))))
      "watch_error"
      (collect "cli_support.watch_error"
               (lambda ()
@@ -21394,9 +21391,7 @@
      (collect "cli_support.poll_once"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-poll-once
-                   (cli-support-watch-poll-file))))))))
-
+                  (run-cli-support-poll-once poll-file))))))))
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
 

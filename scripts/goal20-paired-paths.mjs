@@ -1506,7 +1506,6 @@ const attributionModule = await import(
 );
 const shellModule = await import(moduleUrl("packages/coding-agent/src/utils/shell.ts"));
 const gitModule = await import(moduleUrl("packages/coding-agent/src/utils/git.ts"));
-const fsWatchModule = await import(moduleUrl("packages/coding-agent/src/utils/fs-watch.ts"));
 const userAgentModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/pi-user-agent.ts")
 );
@@ -20007,7 +20006,7 @@ async function measureCliSupportStripAnsi() {
 		}),
 		default_thinking_level: await collect("cli_support.default_thinking_level", () => {
 			return () => runCliSupportDefaultThinkingLevel();
-
+		}),
 		watch_error: await collect("cli_support.watch_error", () => {
 			return () => runCliSupportWatchError();
 		}),
