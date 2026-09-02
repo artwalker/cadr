@@ -782,6 +782,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.line_ui` | 7.486 | 1.780 | 4.206× | 8.00× | measure-only leftover 972; `rpc-handle-line` vs leftover unknown extension_ui_response | invent pause；地板优化另刀 |
 | `cli_print_rpc.asst_hit` | 0.520 | 0.275 | 1.889× | 8.00× | measure-only leftover 974; `rpc-last-assistant-text` vs leftover last assistant | invent pause；地板优化另刀 |
 | `cli_print_rpc.cmd_n` | 2.232 | 0.254 | 8.772× | 12.00× | measure-only leftover 975; `rpc-command-list` vs leftover command list; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
+| `cli_print_rpc.prompt_ok` | 1.991 | 0.498 | 3.997× | 8.00× | measure-only leftover 977; `rpc-prompt-message` vs leftover prompt message+images | invent pause；地板优化另刀 |
+| `cli_print_rpc.bash_js` | 3.070 | 0.677 | 4.536× | 8.00× | measure-only leftover 978; `rpc-bash-result-json` vs leftover bash result payload | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
