@@ -516,6 +516,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.glob_regex_body` | 0.580 | 0.417 | 1.393× | 8.00× | measure-only leftover 689; `glob-regex-body` vs glob regex body | invent pause；地板优化另刀 |
 | `find_tool.parse_gitignore_line` | 7.267 | 1.308 | 5.556× | 8.00× | measure-only leftover 690; `parse-gitignore-line` vs gitignore line parse | invent pause；地板优化另刀 |
 | `find_tool.ignored_directory` | 16.582 | 1.923 | 8.621× | 16.00× | measure-only leftover 691; `ignored-directory-p` vs ignored directory names; first-freeze headroom 16.0 | invent pause；地板优化另刀 |
+| `find_tool.directory_gitignore_rules` | 598.841 | 366.283 | 1.635× | 8.00× | measure-only leftover 901-903; remeasure Friend-MachineD | glob walk trio |
+| `find_tool.collect_tree_files` | 754.579 | 573.769 | 1.315× | 8.00× | measure-only leftover 901-903; remeasure Friend-MachineD | glob walk trio |
+| `find_tool.glob_files` | 1370.273 | 702.302 | 1.951× | 8.00× | measure-only leftover 901-903; remeasure Friend-MachineD | glob walk trio |
 | `find_tool.gitignored` | 37.755 | 3.671 | 10.286× | 20.00× | measure-only leftover 692; `gitignored-p` vs gitignore rule apply; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `find_tool.make_glob_tool` | 193.915 | 0.276 | 701.525× | 1200.00× | measure-only leftover 693; `make-glob-tool` vs glob tool constructor; first-freeze headroom 1200.0 | invent pause；地板优化另刀 |
 | `bash_tool.user_bash_result` | 2.616 | 1.264 | 2.070× | 8.00× | measure-only leftover 695; `make-user-bash-result-from-execution` vs user bash result from execution | invent pause；地板优化另刀 |
