@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `evals_harness.val_ext` n=5 **18.295×** (3.633 / 0.199 µs) Friend-MachineD, ceiling 20.0 (raised from 12.0). Pair 979. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `evals_harness.suite_id` n=5 **2.323×** (0.244 / 0.105 µs) Friend-MachineD, ceiling 8.0. Pair 980. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `evals_harness.type_ok` n=5 **4.059×** (1.005 / 0.248 µs) Friend-MachineD, ceiling 8.0. Pair 981. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_print_rpc.img_ok` n=5 **0.840×** (3.033 / 3.610 µs) Friend-MachineD, ceiling 8.0. Pair 976. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_print_rpc.prompt_ok` n=5 **3.997×** (1.991 / 0.498 µs) Friend-MachineD, ceiling 8.0. Pair 977. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_print_rpc.bash_js` n=5 **4.536×** (3.070 / 0.677 µs) Friend-MachineD, ceiling 8.0. Pair 978. Over-1×. `nextPairNum` unchanged.
