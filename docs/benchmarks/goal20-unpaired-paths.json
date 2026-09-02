@@ -1703,7 +1703,10 @@
       "metrics": [
         "oauth_pkce_device.error_detail",
         "oauth_pkce_device.ensure_success",
-        "oauth_pkce_device.notify_device"
+        "oauth_pkce_device.notify_device",
+        "oauth_pkce_device.xai_login",
+        "oauth_pkce_device.xai_login_fail",
+        "oauth_pkce_device.xai_refresh"
       ]
     },
     {
