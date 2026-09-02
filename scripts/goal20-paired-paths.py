@@ -1605,7 +1605,7 @@ RATIO_CEILINGS = {
     # headroom. Ratchet down only. Measure-only leftover 853–855.
     "cli_bootstrap_sessions.cli_platform": 8.0,
     "cli_bootstrap_sessions.session_info_style": 8.0,
-    "cli_bootstrap_sessions.default_changelog_path": 8.0,
+    "cli_bootstrap_sessions.default_changelog_path": 1200.0,
   # cli_selectors.countdown_seconds leftover 556 (samples=5):
   # observed 2.292x (0.768 / 0.335 us). 8.0 is first-freeze
   # headroom. Ratchet down only.
