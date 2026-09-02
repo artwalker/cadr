@@ -1247130,6 +1247130,43 @@
       "cli_interactive_controller.theme_ok=0.978x/8.00x",
       "cli_interactive_controller.theme_get=0.234x/8.00x"
     ]
+  },
+  {
+    "recordedAt": "2026-09-02T14:08:14Z",
+    "label": "paired-paths",
+    "gitHead": "31c9d9e45e9bf8f9ffc57ae47713e82c14863c03",
+    "machine": "Friend-MachineD",
+    "quick": false,
+    "sameMachine": true,
+    "ratioGate": "enforced-only:cli_interactive_controller.cache_ok,cli_interactive_controller.pad_sp,cli_interactive_controller.wrap_ln",
+    "samples": 5,
+    "metrics": {
+      "cli_interactive_controller.wrap_ln": {
+        "cadrMedianUs": 1.17404,
+        "baselineMedianUs": 0.49412,
+        "ratio": 2.376,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.pad_sp": {
+        "cadrMedianUs": 0.61036,
+        "baselineMedianUs": 0.1639,
+        "ratio": 3.724,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.cache_ok": {
+        "cadrMedianUs": 2.17894,
+        "baselineMedianUs": 0.46046,
+        "ratio": 4.732,
+        "ceiling": 8.0
+      }
+    },
+    "notes": [
+      "leftover 961-963 transcript wrap_ln/pad_sp/cache_ok n=5 Friend-MachineD",
+      "py gate rc=2 from parsed_provider; scoped overlay PASS",
+      "cli_interactive_controller.wrap_ln=2.376x/8.00x",
+      "cli_interactive_controller.pad_sp=3.724x/8.00x",
+      "cli_interactive_controller.cache_ok=4.732x/8.00x"
+    ]
   }
   ]
 }

@@ -9999,7 +9999,7 @@ Leftover sibling of Pairs 958–959. Does not remount `theme_res`. Timed work is
 |---|---|---|
 | `wrap_ln` | `wrap-transcript-lines` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of UserMessageComponent.render OSC 133 wrap |
 
-Leftover sibling of leftover 949–951 on the same needs-pair file. Does not remount `wrap_osc`. Timed work is nil / one-line / two-line OSC wrap. Observed `wt_nil` / `wt_two_last` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 949–951 on the same needs-pair file. Does not remount `wrap_osc`. Timed work is nil / one-line / two-line OSC wrap. Observed `wt_nil` / `wt_two_last` are exact. First n=5 freeze **2.376×** (1.174 / 0.494 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 962 — `cli_interactive_controller` (pad_sp)
 
@@ -10007,7 +10007,7 @@ Leftover sibling of leftover 949–951 on the same needs-pair file. Does not rem
 |---|---|---|
 | `pad_sp` | `output-padding-string` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of output padding spaces |
 
-Leftover sibling of Pair 961. Does not remount `pad_str`. Timed work is zero / one / other / space padding. Observed `op_0` / `op_space` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 961. Does not remount `pad_str`. Timed work is zero / one / other / space padding. Observed `op_0` / `op_space` are exact. First n=5 freeze **3.724×** (0.610 / 0.164 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 963 — `cli_interactive_controller` (cache_ok)
 
@@ -10015,7 +10015,7 @@ Leftover sibling of Pair 961. Does not remount `pad_str`. Timed work is zero / o
 |---|---|---|
 | `cache_ok` | `tui-entry-render-cacheable-p` (`src/cadr-cli/interactive/transcript.lisp`) | leftover replica of TUI entry render cacheable |
 
-Leftover sibling of Pairs 961–962. Does not remount `cache_p`. Timed work is assistant / stream / tool nil / done / running / custom. Observed `rc_assist` / `rc_custom` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 961–962. Does not remount `cache_p`. Timed work is assistant / stream / tool nil / done / running / custom. Observed `rc_assist` / `rc_custom` are exact. First n=5 freeze **4.732×** (2.179 / 0.460 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
