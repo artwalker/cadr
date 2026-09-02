@@ -818,6 +818,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `powershell_tool.up_ok` | 0.739 | 0.137 | 5.415× | 8.00× | measure-only leftover 1015; +powershell-utf8-output-prefix+ leftover | invent pause；地板优化另刀 |
 | `powershell_tool.pc_ok` | 0.873 | 0.273 | 3.197× | 8.00× | measure-only leftover 1016; UTF-8 prefix + command concatenate leftover | invent pause；地板优化另刀 |
 | `powershell_tool.mt_ok` | 2.723 | 1.349 | 2.019× | 8.00× | measure-only leftover 1017; make-powershell-tool leftover | invent pause；地板优化另刀 |
+| `cli_selectors.cd_sec` | 1.152 | 0.204 | 5.648× | 8.00× | measure-only leftover 1018; countdown-seconds leftover | invent pause；地板优化另刀 |
+| `cli_selectors.cd_tick` | 1.066 | 0.165 | 6.479× | 8.00× | measure-only leftover 1019; countdown-tick leftover | invent pause；地板优化另刀 |
+| `cli_selectors.cd_rnd` | 1.539 | 0.335 | 4.599× | 8.00× | measure-only leftover 1020; countdown-render leftover | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
