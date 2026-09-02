@@ -185,7 +185,10 @@
     "cli_print_rpc.bad_line",
     "cli_print_rpc.bash_result",
     "cli_print_rpc.clamp_thinking",
+    "cli_print_rpc.close_pending",
     "cli_print_rpc.cmd_list",
+    "cli_print_rpc.dialog_deadline",
+    "cli_print_rpc.dialog_default",
     "cli_print_rpc.dialog_expired",
     "cli_print_rpc.dialog_request",
     "cli_print_rpc.dialog_result",
@@ -2472,7 +2475,10 @@
       "metrics": [
         "cli_print_rpc.dialog_request",
         "cli_print_rpc.dialog_result",
-        "cli_print_rpc.dialog_expired"
+        "cli_print_rpc.dialog_expired",
+        "cli_print_rpc.dialog_default",
+        "cli_print_rpc.dialog_deadline",
+        "cli_print_rpc.close_pending"
       ]
     },
     {
