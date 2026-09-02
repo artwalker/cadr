@@ -10480,7 +10480,7 @@ Leftover sibling of Pairs 847–848. Timed work is writes landing on the manager
 |---|---|---|
 | `loaded_model` | `llama-loaded-model-p` (`src/cadr-cli/extensions/llama/extension.lisp`) | leftover loaded/sleeping predicate (`packages/coding-agent/src/extensions/llama`) |
 
-Leftover sibling of Pairs 505–507 on the same `llama/extension.lisp` hole. Timed work is the loaded/sleeping status predicate — not HTTP, not login. Observed `llm_loaded` / `llm_sleep` / `llm_unloaded` / `llm_n` are exact. First n=5 freeze **1.511×** (0.211 / 0.140 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 505–507 on the same `llama/extension.lisp` hole. Timed work is the loaded/sleeping status predicate — not HTTP, not login. Observed `llm_loaded` / `llm_sleep` / `llm_unloaded` / `llm_n` are exact. First n=5 freeze **1.511×** (0.211 / 0.140 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **3.296×** (0.427 / 0.130 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 851 — `cli_extensions_install` (catalog_notify)
 
@@ -10488,7 +10488,7 @@ Leftover sibling of Pairs 505–507 on the same `llama/extension.lisp` hole. Tim
 |---|---|---|
 | `catalog_notify` | `notify-llama-catalog` (`src/cadr-cli/extensions/llama/extension.lisp`) | leftover catalog notify lines (`packages/coding-agent/src/extensions/llama`) |
 
-Leftover sibling of Pair 850. Timed work is empty/catalog notify text — not auth. Observed `lnc_empty` / `lnc_loaded` / `lnc_sleep` / `lnc_n` are exact. First n=5 freeze **40.150×** (28.921 / 0.720 µs) on host `cursor`, ceiling 60.0 (first-freeze bump). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 850. Timed work is empty/catalog notify text — not auth. Observed `lnc_empty` / `lnc_loaded` / `lnc_sleep` / `lnc_n` are exact. First n=5 freeze **40.150×** (28.921 / 0.720 µs) on host `cursor`, ceiling 60.0 (first-freeze bump). Remeasure on tip **14.250×** (9.316 / 0.654 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 852 — `cli_extensions_install` (progress_notify)
 
@@ -10496,7 +10496,7 @@ Leftover sibling of Pair 850. Timed work is empty/catalog notify text — not au
 |---|---|---|
 | `progress_notify` | `llama-progress-notifier` (`src/cadr-cli/extensions/llama/extension.lisp`) | leftover progress notify text (`packages/coding-agent/src/extensions/llama`) |
 
-Leftover sibling of Pairs 850–851. Timed work is progress message flags (`%` / detail) — not download. Observed `lpn_plain` / `lpn_pct` / `lpn_detail` / `lpn_n` are exact. First n=5 freeze **47.472×** (29.267 / 0.616 µs) on host `cursor`, ceiling 60.0 (first-freeze bump). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 850–851. Timed work is progress message flags (`%` / detail) — not download. Observed `lpn_plain` / `lpn_pct` / `lpn_detail` / `lpn_n` are exact. First n=5 freeze **47.472×** (29.267 / 0.616 µs) on host `cursor`, ceiling 60.0 (first-freeze bump). Remeasure on tip **19.792×** (11.417 / 0.577 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
