@@ -9669,6 +9669,51 @@
    "piUs": 0.46,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 964,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.sess_new",
+   "branch": "g20-freeze-964-966",
+   "note": "nextPairNum left at tip 328; leftover id 964",
+   "ratio": 3.192,
+   "cadrUs": 0.55,
+   "piUs": 0.172,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 965,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.sess_set",
+   "branch": "g20-freeze-964-966",
+   "note": "nextPairNum left at tip 328; leftover id 965",
+   "ratio": 2.746,
+   "cadrUs": 0.537,
+   "piUs": 0.196,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 966,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.sess_out",
+   "branch": "g20-freeze-964-966",
+   "note": "nextPairNum left at tip 328; leftover id 966",
+   "ratio": 0.622,
+   "cadrUs": 2.499,
+   "piUs": 4.017,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [

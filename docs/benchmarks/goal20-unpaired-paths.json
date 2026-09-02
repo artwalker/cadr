@@ -174,6 +174,9 @@
     "cli_interactive_controller.seed_tui_message",
     "cli_interactive_controller.sess_draw",
     "cli_interactive_controller.sess_make",
+    "cli_interactive_controller.sess_new",
+    "cli_interactive_controller.sess_out",
+    "cli_interactive_controller.sess_set",
     "cli_interactive_controller.sess_upd",
     "cli_interactive_controller.should_use_tui",
     "cli_interactive_controller.syntax_highlight",
@@ -2409,6 +2412,9 @@
       "metrics": [
         "cli_interactive_controller.sess_draw",
         "cli_interactive_controller.sess_make",
+        "cli_interactive_controller.sess_new",
+        "cli_interactive_controller.sess_out",
+        "cli_interactive_controller.sess_set",
         "cli_interactive_controller.sess_upd"
       ]
     },

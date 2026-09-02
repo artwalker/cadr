@@ -583,6 +583,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.ui_absent` | 6.543 | 1.557 | 4.202× | 8.00× | measure-only leftover 939; `rpc-handle-line` unknown extension_ui_response (does not remount handle_ui_miss) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.sess_make` | 0.244 | 0.216 | 1.130× | 8.00× | measure-only leftover 943; `make-tool-render-session` vs leftover ToolExecutionComponent construct | invent pause；地板优化另刀 |
 | `cli_interactive_controller.sess_upd` | 0.257 | 0.227 | 1.132× | 8.00× | measure-only leftover 944; `update-tool-render-session` vs leftover result/pending | invent pause；地板优化另刀 |
+| `cli_interactive_controller.sess_new` | 0.550 | 0.172 | 3.192× | 8.00× | measure-only leftover 964; `make-tool-render-session` vs leftover ToolExecutionComponent construct (does not remount sess_make) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.sess_set` | 0.537 | 0.196 | 2.746× | 8.00× | measure-only leftover 965; `update-tool-render-session` vs leftover result/pending (does not remount sess_upd) | invent pause；地板优化另刀 |
 | `cli_selectors.dlg_make` | 0.189 | 0.128 | 1.471× | 8.00× | measure-only leftover 946; `make-login-dialog-state` vs leftover LoginDialogComponent construct | invent pause；地板优化另刀 |
 | `cli_selectors.dlg_auth` | 2.003 | 1.186 | 1.689× | 8.00× | measure-only leftover 947; `login-dialog-show-auth` vs leftover showAuth | invent pause；地板优化另刀 |
 | `cli_selectors.dlg_dev` | 4.085 | 1.179 | 3.465× | 8.00× | measure-only leftover 948; `login-dialog-show-device-code` vs leftover showDeviceCode | invent pause；地板优化另刀 |
