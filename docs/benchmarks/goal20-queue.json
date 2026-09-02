@@ -108,7 +108,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 261,
@@ -154,7 +154,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 266,
@@ -174,7 +174,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 268,
@@ -184,7 +184,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 269,
@@ -194,7 +194,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 270,
@@ -9757,6 +9757,51 @@
    "ratio": 0.117,
    "cadrUs": 95.692,
    "piUs": 817.796,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 970,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/mode.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.line_bad",
+   "branch": "g20-freeze-970-972",
+   "note": "nextPairNum left at tip 328; leftover id 970",
+   "ratio": 1.188,
+   "cadrUs": 7.254,
+   "piUs": 6.107,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 971,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/mode.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.line_arr",
+   "branch": "g20-freeze-970-972",
+   "note": "nextPairNum left at tip 328; leftover id 971",
+   "ratio": 1.345,
+   "cadrUs": 6.497,
+   "piUs": 4.83,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 972,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/mode.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.line_ui",
+   "branch": "g20-freeze-970-972",
+   "note": "nextPairNum left at tip 328; leftover id 972",
+   "ratio": 4.206,
+   "cadrUs": 7.486,
+   "piUs": 1.78,
    "ceiling": 8.0,
    "rc": 2
   }

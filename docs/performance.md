@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T15:02:13Z) on `Friend-MachineD`, git `3c77e7e9b46a`, ratio_gate=`enforced-only:cli_bootstrap_sessions.cycle_ent,cli_bootstrap_sessions.file_cli,cli_bootstrap_sessions.scope_st`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T15:26:14Z) on `Friend-MachineD`, git `205344f1764f`, ratio_gate=`enforced-only:cli_print_rpc.line_arr,cli_print_rpc.line_bad,cli_print_rpc.line_ui`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T14:41:23Z) on `Friend-MachineD`, git `afcb08ac0178`, ratio_gate=`enforced-only:cli_interactive_controller.sess_new,cli_interactive_controller.sess_out,cli_interactive_controller.sess_set`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T15:02:13Z) on `Friend-MachineD`, git `3c77e7e9b46a`, ratio_gate=`enforced-only:cli_bootstrap_sessions.cycle_ent,cli_bootstrap_sessions.file_cli,cli_bootstrap_sessions.scope_st`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1334,6 +1334,9 @@ Previous: `paired-paths` (2026-09-02T14:41:23Z) on `Friend-MachineD`, git `afcb0
 | `cli_print_rpc.bad_line` | 8.0 | 4.8 | 1.68× | 1.68× | 8.00× |
 | `cli_print_rpc.array_line` | 8.6 | 4.4 | 1.96× | 1.96× | 8.00× |
 | `cli_print_rpc.ui_absent` | 7.7 | 2.2 | 3.54× | 3.54× | 8.00× |
+| `cli_print_rpc.line_ui` | 7.5 | 1.8 | 4.21× | — | 8.00× |
+| `cli_print_rpc.line_arr` | 6.5 | 4.8 | 1.35× | — | 8.00× |
+| `cli_print_rpc.line_bad` | 7.3 | 6.1 | 1.19× | — | 8.00× |
 | `tui_latex.render` | 64.4 | 25.2 | 2.56× | 2.56× | 3.00× |
 | `tui_latex.normalize_output` | 6.9 | 3.9 | 1.76× | 1.76× | 20.00× |
 | `tui_mermaid.render` | 68.5 | 226.0 | 0.30× | 0.30× | 8.00× |
@@ -1604,9 +1607,9 @@ Previous: `paired-paths` (2026-09-02T14:41:23Z) on `Friend-MachineD`, git `afcb0
 | `cli_bootstrap_sessions.cycle_wrap` | 0.9 | 1.1 | 0.78× | 0.78× | 8.00× |
 | `cli_bootstrap_sessions.scope_hint` | 45.7 | 92.1 | 0.50× | 0.50× | 8.00× |
 | `cli_bootstrap_sessions.file_tags` | 108.6 | 1,034.4 | 0.10× | 0.10× | 8.00× |
-| `cli_bootstrap_sessions.cycle_ent` | 0.8 | 1.2 | 0.70× | — | 8.00× |
-| `cli_bootstrap_sessions.scope_st` | 34.4 | 73.2 | 0.47× | — | 8.00× |
-| `cli_bootstrap_sessions.file_cli` | 95.7 | 817.8 | 0.12× | — | 8.00× |
+| `cli_bootstrap_sessions.cycle_ent` | 0.8 | 1.2 | 0.70× | 0.70× | 8.00× |
+| `cli_bootstrap_sessions.scope_st` | 34.4 | 73.2 | 0.47× | 0.47× | 8.00× |
+| `cli_bootstrap_sessions.file_cli` | 95.7 | 817.8 | 0.12× | 0.12× | 8.00× |
 | `ai_runtime_faux.blocks` | 0.3 | 0.2 | 1.80× | 1.80× | 8.00× |
 | `http_transport.parse_url` | 1.2 | 1.1 | 1.10× | 1.10× | 8.00× |
 | `core_rest.cancellation_wait` | 80.0 | 10.3 | 7.77× | 7.77× | 8.00× |
@@ -2423,6 +2426,7 @@ Previous: `paired-paths` (2026-09-02T14:41:23Z) on `Friend-MachineD`, git `afcb0
 | 2026-09-02T14:08:14Z | paired-paths | `31c9d9e45e9b` | no | enforced-only:cli_interactive_controller.cache_ok,cli_interactive_controller.pad_sp,cli_interactive_controller.wrap_ln | — | — | — | — |
 | 2026-09-02T14:41:23Z | paired-paths | `afcb08ac0178` | no | enforced-only:cli_interactive_controller.sess_new,cli_interactive_controller.sess_out,cli_interactive_controller.sess_set | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T15:02:13Z | paired-paths | `3c77e7e9b46a` | no | enforced-only:cli_bootstrap_sessions.cycle_ent,cli_bootstrap_sessions.file_cli,cli_bootstrap_sessions.scope_st | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-02T15:26:14Z | paired-paths | `205344f1764f` | no | enforced-only:cli_print_rpc.line_arr,cli_print_rpc.line_bad,cli_print_rpc.line_ui | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

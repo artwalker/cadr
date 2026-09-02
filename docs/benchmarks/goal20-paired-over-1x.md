@@ -777,6 +777,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `bash_tool.make_tool` | 3.108 | 1.519 | 2.046× | 8.00× | measure-only leftover 923; `make-bash-tool` vs createBashTool | invent pause；地板优化另刀 |
 | `bash_tool.record_nil` | 0.384 | 0.112 | 3.436× | 8.00× | measure-only leftover 924; `record-user-bash-result` nil agent vs leftover no-op | invent pause；地板优化另刀 |
 | `oauth_pkce_device.openrouter_login_miss` | 183.818 | 1.862 | 98.722× | 100.00× | measure-only leftover 898-900; remeasure Friend-MachineD | openrouter login trio |
+| `cli_print_rpc.line_bad` | 7.254 | 6.107 | 1.188× | 8.00× | measure-only leftover 970; `rpc-handle-line` vs leftover JSON.parse catch | invent pause；地板优化另刀 |
+| `cli_print_rpc.line_arr` | 6.497 | 4.830 | 1.345× | 8.00× | measure-only leftover 971; `rpc-handle-line` vs leftover require JSON object | invent pause；地板优化另刀 |
+| `cli_print_rpc.line_ui` | 7.486 | 1.780 | 4.206× | 8.00× | measure-only leftover 972; `rpc-handle-line` vs leftover unknown extension_ui_response | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
