@@ -597,6 +597,9 @@
     ("powershell_tool.utf8_prefix" . 50)
     ("powershell_tool.prefix_command" . 50)
     ("powershell_tool.make_tool" . 50)
+    ("powershell_tool.up_ok" . 50)
+    ("powershell_tool.pc_ok" . 50)
+    ("powershell_tool.mt_ok" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -11332,6 +11335,21 @@
                       (run-powershell-prefix-command))))
          "make_tool"
          (collect "powershell_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-make-tool))))
+         "up_ok"
+         (collect "powershell_tool.up_ok"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-utf8-prefix))))
+         "pc_ok"
+         (collect "powershell_tool.pc_ok"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-prefix-command))))
+         "mt_ok"
+         (collect "powershell_tool.mt_ok"
                   (lambda ()
                     (lambda ()
                       (run-powershell-make-tool)))))))))
@@ -39877,6 +39895,12 @@
       "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate"
       "powershell_tool.make_tool"
       "src/cadr-cli/tools/powershell.lisp make-powershell-tool"
+      "powershell_tool.up_ok"
+      "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+ leftover"
+      "powershell_tool.pc_ok"
+      "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate leftover"
+      "powershell_tool.mt_ok"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool leftover"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"

@@ -231,6 +231,9 @@ const REPETITIONS = {
 	"powershell_tool.utf8_prefix": 50,
 	"powershell_tool.prefix_command": 50,
 	"powershell_tool.make_tool": 50,
+	"powershell_tool.up_ok": 50,
+	"powershell_tool.pc_ok": 50,
+	"powershell_tool.mt_ok": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -6138,6 +6141,15 @@ async function measurePowershellTool() {
 			return () => runPowershellPrefixCommand();
 		}),
 		make_tool: await collect("powershell_tool.make_tool", () => {
+			return () => runPowershellMakeTool();
+		}),
+		up_ok: await collect("powershell_tool.up_ok", () => {
+			return () => runPowershellUtf8Prefix();
+		}),
+		pc_ok: await collect("powershell_tool.pc_ok", () => {
+			return () => runPowershellPrefixCommand();
+		}),
+		mt_ok: await collect("powershell_tool.mt_ok", () => {
 			return () => runPowershellMakeTool();
 		}),
 		observed: {
@@ -40287,6 +40299,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/powershell.ts createLocalPowerShellOperations prefix+command",
 			"powershell_tool.make_tool":
 				"packages/coding-agent/src/core/tools/powershell.ts createPowerShellToolDefinition",
+			"powershell_tool.up_ok":
+				"packages/coding-agent leftover replica of UTF8_OUTPUT_PREFIX",
+			"powershell_tool.pc_ok":
+				"packages/coding-agent leftover replica of prefix+command",
+			"powershell_tool.mt_ok":
+				"packages/coding-agent leftover replica of createPowerShellToolDefinition",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
