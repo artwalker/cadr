@@ -10473,6 +10473,30 @@ Leftover sibling of Pair 1021. Does not remount `make_daxnuts_component`. Timed 
 
 Leftover sibling of Pairs 1021–1022. Does not remount `daxnuts_component_tick`. Timed work is component tick. Observed `dct_*` are exact. First n=5 freeze **8.845×** (5.142 / 0.581 µs) on host `Friend-MachineD`, ceiling 12.0 (raised from 8.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1024 — `cli_selectors` (th_lbl)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_lbl` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-level-label |
+
+Leftover sibling of thinking label/query/kb on thinking.lisp. Does not remount `thinking_level_label`. Timed work is level label. Observed `tll_*` are exact. First n=5 freeze **1.960×** (0.386 / 0.197 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1025 — `cli_selectors` (th_qry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_qry` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of set-query |
+
+Leftover sibling of Pair 1024. Does not remount `thinking_selector_set_query`. Timed work is set query. Observed `tsq_*` are exact. First n=5 freeze **0.841×** (12.894 / 15.333 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1× (cadr leads); not listed in over-1× table. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1026 — `cli_selectors` (th_kb)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_kb` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of keybindings |
+
+Leftover sibling of Pairs 1024–1025. Does not remount `thinking_selector_keybindings`. Timed work is keybindings. Observed `tskb_*` are exact. First n=5 freeze **4.194×** (4.463 / 1.064 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
