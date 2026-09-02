@@ -31568,6 +31568,18 @@
           (run-cli-selectors-make-daxnuts-component))
         (leftover-daxnuts-tick
           (run-cli-selectors-daxnuts-component-tick))
+        (leftover-armin-pixel
+          (run-cli-selectors-armin-pixel))
+        (leftover-armin-cell
+          (run-cli-selectors-armin-cell))
+        (leftover-armin-grid-height
+          (run-cli-selectors-armin-grid-height))
+        (leftover-armin-make-grid
+          (run-cli-selectors-armin-make-grid))
+        (leftover-armin-copy-grid
+          (run-cli-selectors-armin-copy-grid))
+        (leftover-armin-row-string
+          (run-cli-selectors-armin-row-string))
         (leftover-login-dlg-make
           (run-cli-selectors-login-dialog-make))
         (leftover-login-dlg-auth
@@ -32373,6 +32385,14 @@
               leftover-daxnuts-rgb-at
               leftover-make-daxnuts
               leftover-daxnuts-tick)
+             (armin-observed-pairs
+              leftover-armin-pixel
+              leftover-armin-cell
+              leftover-armin-grid-height)
+             (armin-grid-leftover-observed-pairs
+              leftover-armin-make-grid
+              leftover-armin-copy-grid
+              leftover-armin-row-string)
              (leftover-login-dialog-make-auth-device-observed-pairs
               leftover-login-dlg-make
               leftover-login-dlg-auth
@@ -33669,7 +33689,6 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-dialog-device)))))))
-                  (run-cli-selectors-daxnuts-component-tick)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
