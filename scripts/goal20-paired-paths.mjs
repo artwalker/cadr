@@ -368,6 +368,9 @@ const REPETITIONS = {
 	"cli_extensions_install.split_command": 50,
 	"cli_extensions_install.handle_plain": 50,
 	"cli_extensions_install.handle_unknown": 50,
+	"cli_extensions_install.sc_ok": 50,
+	"cli_extensions_install.hp_ok": 50,
+	"cli_extensions_install.hu_ok": 50,
 	"cli_extensions_install.string_prefix": 50,
 	"cli_extensions_install.split_path_segments": 50,
 	"cli_extensions_install.strip_git_query": 50,
@@ -16408,6 +16411,15 @@ async function measureCliExtensionsInstall() {
 			return () => runCliExtensionsHandlePlain();
 		}),
 		handle_unknown: await collect("cli_extensions_install.handle_unknown", () => {
+			return () => runCliExtensionsHandleUnknown();
+		}),
+		sc_ok: await collect("cli_extensions_install.sc_ok", () => {
+			return () => runCliExtensionsSplitCommand();
+		}),
+		hp_ok: await collect("cli_extensions_install.hp_ok", () => {
+			return () => runCliExtensionsHandlePlain();
+		}),
+		hu_ok: await collect("cli_extensions_install.hu_ok", () => {
 			return () => runCliExtensionsHandleUnknown();
 		}),
 		llama_context_label: await collect("cli_extensions_install.llama_context_label", () => {
@@ -40574,6 +40586,12 @@ const result = {
 				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand non-slash miss",
 			"cli_extensions_install.handle_unknown":
 				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand getCommand miss",
+			"cli_extensions_install.sc_ok":
+				"packages/coding-agent leftover replica of spaceIndex command/args split",
+			"cli_extensions_install.hp_ok":
+				"packages/coding-agent leftover replica of non-slash return",
+			"cli_extensions_install.hu_ok":
+				"packages/coding-agent leftover replica of getCommand miss",
 			"cli_extensions_install.llama_context_label":
 				"packages/coding-agent/src/extensions/llama/ui.ts contextLabel",
 			"cli_extensions_install.llama_model_description":
