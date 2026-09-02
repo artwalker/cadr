@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `find_tool.directory_gitignore_rules` n=5 **1.635×** (598.841 / 366.283 µs) Friend-MachineD, ceiling 8.0. Pair 901. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `find_tool.collect_tree_files` n=5 **1.315×** (754.579 / 573.769 µs) Friend-MachineD, ceiling 8.0. Pair 902. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `find_tool.glob_files` n=5 **1.951×** (1370.273 / 702.302 µs) Friend-MachineD, ceiling 8.0. Pair 903. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.openrouter_login` n=5 **35.027×** (168.272 / 4.804 µs) Friend-MachineD, ceiling 50.0. Pair 898. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.openrouter_login_fail` n=5 **53.681×** (202.181 / 3.766 µs) Friend-MachineD, ceiling 80.0. Pair 899. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.openrouter_login_miss` n=5 **98.722×** (183.818 / 1.862 µs) Friend-MachineD, ceiling 100.0. Pair 900. Over-1×. `nextPairNum` unchanged.

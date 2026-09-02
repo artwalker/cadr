@@ -9582,6 +9582,51 @@
    "piUs": 1.862,
    "ceiling": 100.0,
    "rc": 2
+  },
+  {
+   "pair": 901,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.directory_gitignore_rules",
+   "branch": "g20-freeze-901-903",
+   "note": "nextPairNum left at tip 328; leftover id 901",
+   "ratio": 1.635,
+   "cadrUs": 598.841,
+   "piUs": 366.283,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 902,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.collect_tree_files",
+   "branch": "g20-freeze-901-903",
+   "note": "nextPairNum left at tip 328; leftover id 902",
+   "ratio": 1.315,
+   "cadrUs": 754.579,
+   "piUs": 573.769,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 903,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_files",
+   "branch": "g20-freeze-901-903",
+   "note": "nextPairNum left at tip 328; leftover id 903",
+   "ratio": 1.951,
+   "cadrUs": 1370.273,
+   "piUs": 702.302,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ]
 }

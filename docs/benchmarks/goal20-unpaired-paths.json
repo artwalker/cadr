@@ -2925,7 +2925,10 @@
         "find_tool.glob_special",
         "find_tool.ignored_directory",
         "find_tool.make_glob_tool",
-        "find_tool.parse_gitignore_line"
+        "find_tool.parse_gitignore_line",
+        "find_tool.directory_gitignore_rules",
+        "find_tool.collect_tree_files",
+        "find_tool.glob_files"
       ]
     },
     {
