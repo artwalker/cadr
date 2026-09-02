@@ -10065,6 +10065,30 @@ Leftover sibling of Pair 967. Does not remount `scope_hint`. Timed work is quiet
 
 Leftover sibling of Pairs 967–968. Does not remount `file_tags`. Timed work is hello/image file tags. Observed `pf_hello` / `pf_img` are exact. First n=5 freeze **0.117×** (95.692 / 817.796 µs) on host `Friend-MachineD`, ceiling 8.0. cadr leads. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 970 — `cli_print_rpc` (line_bad)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_bad` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine JSON.parse catch |
+
+Leftover sibling of leftover 937–939 on the same needs-pair file. Does not remount `bad_line`. Timed work is invalid JSON line. Observed `bj_cmd` / `bj_nl` are exact. First n=5 freeze **1.188×** (7.254 / 6.107 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 971 — `cli_print_rpc` (line_arr)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_arr` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine require JSON object |
+
+Leftover sibling of Pair 970. Does not remount `array_line`. Timed work is a JSON array line. Observed `no_cmd` / `no_nl` are exact. First n=5 freeze **1.345×** (6.497 / 4.830 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 972 — `cli_print_rpc` (line_ui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_ui` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | leftover replica of handleInputLine unknown extension_ui_response |
+
+Leftover sibling of Pairs 970–971. Does not remount `ui_absent`. Timed work is an unknown pending UI id. Observed `um_cmd` / `um_unk` are exact. First n=5 freeze **4.206×** (7.486 / 1.780 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
