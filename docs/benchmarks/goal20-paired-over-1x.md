@@ -836,6 +836,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.um_he` | 1.736 | 0.582 | 2.984× | 8.00× | measure-only leftover 1036; user-message-handle-event leftover | invent pause；地板优化另刀 |
 | `cli_selectors.um_hr` | 95.867 | 7.576 | 12.654× | 16.00× | measure-only leftover 1037; user-message-handle-raw leftover | invent pause；地板优化另刀 |
 | `cli_selectors.um_rd` | 276.946 | 1.227 | 225.713× | 250.00× | measure-only leftover 1038; render-user-message-selector leftover | invent pause；地板优化另刀 |
+| `cli_selectors.sm_st` | 107.261 | 4.351 | 24.651× | 40.00× | measure-only leftover 1040; make-scoped-models-selector-state leftover | invent pause；地板优化另刀 |
+| `cli_selectors.rm_sel` | 184.907 | 6.566 | 28.160× | 50.00× | measure-only leftover 1041; render-model-selector leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_info` | 10.904 | 3.575 | 3.050× | 8.00× | measure-only leftover 1031; login-dialog-show-info leftover | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
