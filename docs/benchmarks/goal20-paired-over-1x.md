@@ -474,6 +474,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.daxnuts_rgb_at` | 0.910 | 0.497 | 1.831× | 8.00× | measure-only leftover 634; `daxnuts-rgb-at` vs parseImage pixel lookup | invent pause；地板优化另刀 |
 | `cli_selectors.make_daxnuts_component` | 0.688 | 0.198 | 3.472× | 8.00× | measure-only leftover 635; `make-daxnuts-component` vs DaxnutsComponent constructor (no startAnimation) | invent pause；地板优化另刀 |
 | `cli_selectors.daxnuts_component_tick` | 3.787 | 3.384 | 1.119× | 8.00× | measure-only leftover 636; `daxnuts-component-tick` vs DaxnutsComponent interval body | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_render` | 594.5 | 146.6 | 4.055× | 8.00× | measure-only pair 910; `cadr-tui:component-render` vs leftoverDaxnutsRenderOnce | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_invalidate` | 21.78 | 3.568 | 6.106× | 8.00× | measure-only pair 911; `cadr-tui:component-invalidate` vs leftoverDaxnutsInvalidateOnce | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_dispose` | 0.851 | 0.241 | 3.537× | 8.00× | measure-only pair 912; `cadr-tui:component-dispose` vs leftoverDaxnutsDisposeUnstarted | invent pause；地板优化另刀 |
 | `cli_interactive_controller.apply_tui_theme_summary` | 52.489 | 16.348 | 3.211× | 8.00× | measure-only leftover 638; `apply-tui-theme-summary` vs setTheme | invent pause；地板优化另刀 |
 | `cli_interactive_controller.load_tui_theme_file` | 233.265 | 97.883 | 2.383× | 8.00× | measure-only leftover 639; `load-tui-theme-file` vs loadThemeFromPath | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_append_running` | 0.735 | 0.357 | 2.059× | 8.00× | measure-only leftover 640; `append-tui-user-bash-running` vs BashExecutionComponent addChild running | invent pause；地板优化另刀 |
@@ -657,7 +660,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.string_prefix` | 0.236 | 0.213 | 1.109× | 8.00× | measure-only leftover 802; `string-prefix-p` vs leftover startsWith; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.split_path_segments` | 0.885 | 0.323 | 2.742× | 8.00× | measure-only leftover 803; `split-path-segments` vs leftover split("/"); first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.strip_git_query` | 0.697 | 0.248 | 2.811× | 8.00× | measure-only leftover 804; `strip-git-query-and-ref` vs leftover strip query/hash; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
-||||||| parent of c080a1476 (docs(cadr-cli): record leftover 805–807 llama-ui freeze)
 | `provider_registry_defs.models_runtime` | 309.041 | 203.473 | 1.519× | 8.00× | measure-only leftover 753; `make-built-in-models-runtime` vs builtinProviders Map | invent pause；地板优化另刀 |
 | `package_manager.candidate_record` | 30.746 | 1.795 | 17.132× | 20.00× | measure-only leftover 758; `package-update-candidate-record-p` vs git/unpinned/exists | invent pause；地板优化另刀 |
 | `package_manager.update_offline` | 0.333 | 0.253 | 1.316× | 8.00× | measure-only leftover 759; `check-for-available-package-updates` offline vs isOfflineModeEnabled | invent pause；地板优化另刀 |
