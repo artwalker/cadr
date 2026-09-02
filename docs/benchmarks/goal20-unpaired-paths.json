@@ -112,6 +112,7 @@
     "cli_extensions_install.same_source",
     "cli_extensions_install.split_args",
     "cli_extensions_install.split_command",
+    "cli_extensions_install.startup_issues",
     "cli_extensions_install.split_path_segments",
     "cli_extensions_install.string_prefix",
     "cli_extensions_install.strip_git_query",
@@ -561,6 +562,9 @@
     "oauth_pkce_device.notify_device",
     "oauth_pkce_device.openrouter_exchange",
     "oauth_pkce_device.openrouter_input",
+    "oauth_pkce_device.openrouter_login",
+    "oauth_pkce_device.openrouter_login_fail",
+    "oauth_pkce_device.openrouter_login_miss",
     "oauth_pkce_device.openrouter_refresh",
     "oauth_pkce_device.openai_exchange",
     "oauth_pkce_device.parse_authorization_input",
@@ -573,6 +577,9 @@
     "oauth_pkce_device.token_fields",
     "oauth_pkce_device.radius_gateway",
     "oauth_pkce_device.write_http_response",
+    "oauth_pkce_device.xai_login",
+    "oauth_pkce_device.xai_login_fail",
+    "oauth_pkce_device.xai_refresh",
     "output_accumulator.append",
     "output_accumulator.close_temp_file",
     "output_accumulator.finish",
@@ -1687,7 +1694,10 @@
       "metrics": [
         "oauth_pkce_device.openrouter_input",
         "oauth_pkce_device.openrouter_refresh",
-        "oauth_pkce_device.openrouter_exchange"
+        "oauth_pkce_device.openrouter_exchange",
+        "oauth_pkce_device.openrouter_login",
+        "oauth_pkce_device.openrouter_login_fail",
+        "oauth_pkce_device.openrouter_login_miss"
       ]
     },
     {
