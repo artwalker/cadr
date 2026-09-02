@@ -1247093,6 +1247093,43 @@
         "bash_tool.make_tool=2.046x/8.00x",
         "bash_tool.record_nil=3.436x/8.00x"
       ]
-    }
+    },
+  {
+    "recordedAt": "2026-09-02T13:49:31Z",
+    "label": "paired-paths",
+    "gitHead": "59fe0667d087093a487aeca0274ff86757bddd94",
+    "machine": "Friend-MachineD",
+    "quick": false,
+    "sameMachine": true,
+    "ratioGate": "enforced-only:cli_interactive_controller.theme_get,cli_interactive_controller.theme_kind,cli_interactive_controller.theme_ok",
+    "samples": 5,
+    "metrics": {
+      "cli_interactive_controller.theme_kind": {
+        "cadrMedianUs": 0.24634,
+        "baselineMedianUs": 0.40406,
+        "ratio": 0.61,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_ok": {
+        "cadrMedianUs": 19.36078,
+        "baselineMedianUs": 19.8,
+        "ratio": 0.978,
+        "ceiling": 8.0
+      },
+      "cli_interactive_controller.theme_get": {
+        "cadrMedianUs": 1.8907,
+        "baselineMedianUs": 8.0876,
+        "ratio": 0.234,
+        "ceiling": 8.0
+      }
+    },
+    "notes": [
+      "leftover 958-960 themes theme_kind/theme_ok/theme_get n=5 Friend-MachineD",
+      "py gate rc=2 from parsed_provider; scoped overlay PASS",
+      "cli_interactive_controller.theme_kind=0.610x/8.00x",
+      "cli_interactive_controller.theme_ok=0.978x/8.00x",
+      "cli_interactive_controller.theme_get=0.234x/8.00x"
+    ]
+  }
   ]
 }

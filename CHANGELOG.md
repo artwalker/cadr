@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_interactive_controller.theme_kind` n=5 **0.610×** (0.246 / 0.404 µs) Friend-MachineD, ceiling 8.0. Pair 958. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_ok` n=5 **0.978×** (19.361 / 19.800 µs) Friend-MachineD, ceiling 8.0. Pair 959. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.theme_get` n=5 **0.234×** (1.891 / 8.088 µs) Friend-MachineD, ceiling 8.0. Pair 960. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `bash_tool.output_path` n=5 **10.664×** (117.640 / 11.032 µs) Friend-MachineD, ceiling 24.0. Pair 922. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `bash_tool.make_tool` n=5 **2.046×** (3.108 / 1.519 µs) Friend-MachineD, ceiling 8.0. Pair 923. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `bash_tool.record_nil` n=5 **3.436×** (0.384 / 0.112 µs) Friend-MachineD, ceiling 8.0. Pair 924. Over-1×. `nextPairNum` unchanged.

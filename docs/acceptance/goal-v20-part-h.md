@@ -9975,7 +9975,7 @@ Leftover sibling of Pairs 922–923. Timed work is the nil-agent no-op: return t
 |---|---|---|
 | `theme_kind` | `valid-tui-theme-primitive-p` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of isThemeColorValue |
 
-Leftover sibling of leftover 931–933 on the same needs-pair file. Does not remount `theme_prim`. Timed work is string/int/255/256/neg/nil primitive flags. Observed `tp_str` / `tp_nil` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 931–933 on the same needs-pair file. Does not remount `theme_prim`. Timed work is string/int/255/256/neg/nil primitive flags. Observed `tp_str` / `tp_nil` are exact. First n=5 freeze **0.610×** (0.246 / 0.404 µs) on host `Friend-MachineD`, ceiling 8.0. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 959 — `cli_interactive_controller` (theme_ok)
 
@@ -9983,7 +9983,7 @@ Leftover sibling of leftover 931–933 on the same needs-pair file. Does not rem
 |---|---|---|
 | `theme_ok` | `validate-tui-theme-object` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of theme object validate |
 
-Leftover sibling of Pair 958. Does not remount `theme_val`. Timed work is ok / slash-name / unknown-key objects. Observed `tv_ok` / `tv_slash` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 958. Does not remount `theme_val`. Timed work is ok / slash-name / unknown-key objects. Observed `tv_ok` / `tv_slash` are exact. First n=5 freeze **0.978×** (19.361 / 19.800 µs) on host `Friend-MachineD`, ceiling 8.0. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 960 — `cli_interactive_controller` (theme_get)
 
@@ -9991,7 +9991,7 @@ Leftover sibling of Pair 958. Does not remount `theme_val`. Timed work is ok / s
 |---|---|---|
 | `theme_get` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | leftover replica of resolveThemeColor |
 
-Leftover sibling of Pairs 958–959. Does not remount `theme_res`. Timed work is int/empty/hex/var/cycle/missing resolve. Observed `tr_int` / `tr_hex` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 958–959. Does not remount `theme_res`. Timed work is int/empty/hex/var/cycle/missing resolve. Observed `tr_int` / `tr_hex` are exact. First n=5 freeze **0.234×** (1.891 / 8.088 µs) on host `Friend-MachineD`, ceiling 8.0. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

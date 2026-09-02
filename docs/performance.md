@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T12:55:00Z) on `Friend-MachineD`, git `9bb66ed920ae`, ratio_gate=`enforced-only:bash_tool.make_tool,bash_tool.output_path,bash_tool.record_nil`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T13:49:31Z) on `Friend-MachineD`, git `59fe0667d087`, ratio_gate=`enforced-only:cli_interactive_controller.theme_get,cli_interactive_controller.theme_kind,cli_interactive_controller.theme_ok`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T12:30:00Z) on `Friend-MachineD`, git `dfb4de2fa39c`, ratio_gate=`enforced-only:cli_support.poll_once,cli_support.watch_error,cli_support.watch_start_close`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T12:55:00Z) on `Friend-MachineD`, git `9bb66ed920ae`, ratio_gate=`enforced-only:bash_tool.make_tool,bash_tool.output_path,bash_tool.record_nil`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -676,9 +676,9 @@ Previous: `paired-paths` (2026-09-02T12:30:00Z) on `Friend-MachineD`, git `dfb4d
 | `bash_tool.process_deadline` | — | — | — | — | — |
 | `bash_tool.user_bash_result` | — | — | — | — | — |
 | `bash_tool.normalized_extension` | — | — | — | — | — |
-| `bash_tool.output_path` | 117.6 | 11.0 | 10.66× | — | 24.00× |
-| `bash_tool.make_tool` | 3.1 | 1.5 | 2.05× | — | 8.00× |
-| `bash_tool.record_nil` | 0.4 | 0.1 | 3.44× | — | 8.00× |
+| `bash_tool.output_path` | — | — | — | 10.66× | — |
+| `bash_tool.make_tool` | — | — | — | 2.05× | — |
+| `bash_tool.record_nil` | — | — | — | 3.44× | — |
 | `output_accumulator.append` | — | — | — | — | — |
 | `output_accumulator.snapshot` | — | — | — | — | — |
 | `output_accumulator.finish` | — | — | — | — | — |
@@ -1001,9 +1001,9 @@ Previous: `paired-paths` (2026-09-02T12:30:00Z) on `Friend-MachineD`, git `dfb4d
 | `cli_support.threads_absent` | — | — | — | — | — |
 | `cli_support.threads_current` | — | — | — | — | — |
 | `cli_support.threads_joined` | — | — | — | — | — |
-| `cli_support.watch_error` | — | — | — | 0.32× | — |
-| `cli_support.watch_start_close` | — | — | — | 23.59× | — |
-| `cli_support.poll_once` | — | — | — | 0.30× | — |
+| `cli_support.watch_error` | — | — | — | — | — |
+| `cli_support.watch_start_close` | — | — | — | — | — |
+| `cli_support.poll_once` | — | — | — | — | — |
 | `cli_bootstrap_sessions.model_cycle` | — | — | — | — | — |
 | `cli_bootstrap_sessions.model_scope_line` | — | — | — | — | — |
 | `cli_bootstrap_sessions.process_files` | — | — | — | — | — |
@@ -1043,6 +1043,9 @@ Previous: `paired-paths` (2026-09-02T12:30:00Z) on `Friend-MachineD`, git `dfb4d
 | `cli_interactive_controller.theme_prim` | — | — | — | — | — |
 | `cli_interactive_controller.theme_val` | — | — | — | — | — |
 | `cli_interactive_controller.theme_res` | — | — | — | — | — |
+| `cli_interactive_controller.theme_kind` | 0.2 | 0.4 | 0.61× | — | 8.00× |
+| `cli_interactive_controller.theme_ok` | 19.4 | 19.8 | 0.98× | — | 8.00× |
+| `cli_interactive_controller.theme_get` | 1.9 | 8.1 | 0.23× | — | 8.00× |
 | `cli_interactive_controller.sess_make` | — | — | — | — | — |
 | `cli_interactive_controller.sess_upd` | — | — | — | — | — |
 | `cli_interactive_controller.sess_draw` | — | — | — | — | — |
@@ -2407,6 +2410,7 @@ Previous: `paired-paths` (2026-09-02T12:30:00Z) on `Friend-MachineD`, git `dfb4d
 | 2026-09-02T12:00:00Z | paired-paths | `06652a6d73cc` | no | enforced-only:oauth_pkce_device.github_domain,oauth_pkce_device.github_oauth_url,oauth_pkce_device.github_request_headers | — | — | — | — |
 | 2026-09-02T12:30:00Z | paired-paths | `dfb4de2fa39c` | no | enforced-only:cli_support.poll_once,cli_support.watch_error,cli_support.watch_start_close | — | — | — | — |
 | 2026-09-02T12:55:00Z | paired-paths | `9bb66ed920ae` | no | enforced-only:bash_tool.make_tool,bash_tool.output_path,bash_tool.record_nil | — | — | — | — |
+| 2026-09-02T13:49:31Z | paired-paths | `59fe0667d087` | no | enforced-only:cli_interactive_controller.theme_get,cli_interactive_controller.theme_kind,cli_interactive_controller.theme_ok | — | — | — | — |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
