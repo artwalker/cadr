@@ -10569,6 +10569,30 @@ Leftover sibling of Pair 1033. Does not remount `login_dialog_handle_event`. Tim
 
 Leftover sibling of Pairs 1033–1034. Does not remount `render_login_dialog`. Timed work is render. Observed `ldrd_*` are exact. First n=5 freeze **59.042×** (98.051 / 1.661 µs) on host `Friend-MachineD`, ceiling 70.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1036 — `cli_selectors` (um_he)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_he` | `user-message-handle-event` (`src/cadr-cli/interactive/selectors/user-message.lisp`) | leftover replica of UserMessageList.handleInput structured |
+
+Leftover sibling of user-message handle/render on user-message selector. Does not remount `user_message_handle_event`. Timed work is structured handle. Observed `umhe_*` are exact. First n=5 freeze **2.984×** (1.736 / 0.582 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1037 — `cli_selectors` (um_hr)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_hr` | `user-message-handle-raw` (`src/cadr-cli/interactive/selectors/user-message.lisp`) | leftover replica of UserMessageList.handleInput raw |
+
+Leftover sibling of Pair 1036. Does not remount `user_message_handle_raw`. Timed work is raw handle. Observed `umhr_*` are exact. First n=5 freeze **12.654×** (95.867 / 7.576 µs) on host `Friend-MachineD`, ceiling 16.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1038 — `cli_selectors` (um_rd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_rd` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/user-message.lisp`) | leftover replica of UserMessageSelectorComponent layout |
+
+Leftover sibling of Pairs 1036–1037. Does not remount `render_user_message_selector`. Timed work is render. Observed `umrd_*` are exact. First n=5 freeze **225.713×** (276.946 / 1.227 µs) on host `Friend-MachineD`, ceiling 250.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
