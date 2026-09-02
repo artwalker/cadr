@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T17:34:05Z) on `Friend-MachineD`, git `6c25871145e4`, ratio_gate=`enforced-only:cli_interactive_controller.bash_end,cli_interactive_controller.bash_go,cli_interactive_controller.bash_off`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T17:45:54Z) on `Friend-MachineD`, git `405e8e5149e6`, ratio_gate=`enforced-only:cli_selectors.dlg_code,cli_selectors.dlg_key,cli_selectors.dlg_new`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T17:23:18Z) on `Friend-MachineD`, git `fe5bbdd03b89`, ratio_gate=`enforced-only:evals_harness.fin_ok,evals_harness.meta_ok,evals_harness.rep_ok`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T17:34:05Z) on `Friend-MachineD`, git `6c25871145e4`, ratio_gate=`enforced-only:cli_interactive_controller.bash_end,cli_interactive_controller.bash_go,cli_interactive_controller.bash_off`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1070,9 +1070,9 @@ Previous: `paired-paths` (2026-09-02T17:23:18Z) on `Friend-MachineD`, git `fe5bb
 | `cli_interactive_controller.bash_run` | 1.2 | 0.3 | 4.03× | 4.03× | 8.00× |
 | `cli_interactive_controller.bash_fin` | 1.3 | 0.3 | 5.39× | 5.39× | 8.00× |
 | `cli_interactive_controller.bash_halt` | 1.0 | 0.2 | 5.22× | 5.22× | 8.00× |
-| `cli_interactive_controller.bash_go` | 1.2 | 0.3 | 4.16× | — | 8.00× |
-| `cli_interactive_controller.bash_end` | 1.5 | 0.2 | 6.55× | — | 8.00× |
-| `cli_interactive_controller.bash_off` | 1.3 | 0.2 | 8.01× | — | 12.00× |
+| `cli_interactive_controller.bash_go` | 1.2 | 0.3 | 4.16× | 4.16× | 8.00× |
+| `cli_interactive_controller.bash_end` | 1.5 | 0.2 | 6.55× | 6.55× | 8.00× |
+| `cli_interactive_controller.bash_off` | 1.3 | 0.2 | 8.01× | 8.01× | 12.00× |
 | `cli_interactive_controller.bash_append_running` | 1.9 | 0.3 | 5.61× | 5.61× | 8.00× |
 | `cli_interactive_controller.bash_complete_string` | 1.8 | 0.3 | 6.98× | 6.98× | 8.00× |
 | `cli_interactive_controller.bash_stop_entry` | 1.2 | 0.2 | 6.38× | 6.38× | 8.00× |
@@ -1317,6 +1317,9 @@ Previous: `paired-paths` (2026-09-02T17:23:18Z) on `Friend-MachineD`, git `fe5bb
 | `cli_selectors.daxnuts_render` | 594.5 | 146.6 | 4.06× | 4.06× | 8.00× |
 | `cli_selectors.daxnuts_invalidate` | 21.8 | 3.6 | 6.11× | 6.11× | 8.00× |
 | `cli_selectors.daxnuts_dispose` | 0.9 | 0.2 | 3.54× | 3.54× | 8.00× |
+| `cli_selectors.dlg_new` | 0.5 | 0.1 | 5.05× | — | 8.00× |
+| `cli_selectors.dlg_key` | 2.9 | 0.5 | 5.60× | — | 8.00× |
+| `cli_selectors.dlg_code` | 5.7 | 0.9 | 5.98× | — | 8.00× |
 | `ai_crypto_model_data.manifest` | 82.3 | 8.6 | 9.60× | 9.60× | 20.00× |
 | `ai_crypto.hmac` | 182.0 | 7.2 | 25.17× | 25.17× | 30.00× |
 | `cli_models_rest.pattern_match` | 31.8 | 18.2 | 1.74× | 1.74× | 3.00× |
@@ -2451,6 +2454,7 @@ Previous: `paired-paths` (2026-09-02T17:23:18Z) on `Friend-MachineD`, git `fe5bb
 | 2026-09-02T16:51:53Z | paired-paths | `3c2f36766cd8` | no | enforced-only:evals_harness.msg_txt,evals_harness.paths_n,evals_harness.tools_n | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T17:23:18Z | paired-paths | `fe5bbdd03b89` | no | enforced-only:evals_harness.fin_ok,evals_harness.meta_ok,evals_harness.rep_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-02T17:34:05Z | paired-paths | `6c25871145e4` | no | enforced-only:cli_interactive_controller.bash_end,cli_interactive_controller.bash_go,cli_interactive_controller.bash_off | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-02T17:45:54Z | paired-paths | `405e8e5149e6` | no | enforced-only:cli_selectors.dlg_code,cli_selectors.dlg_key,cli_selectors.dlg_new | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

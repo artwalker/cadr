@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.dlg_new` n=5 **5.046×** (0.514 / 0.102 µs) Friend-MachineD, ceiling 8.0. Pair 991. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.dlg_key` n=5 **5.599×** (2.945 / 0.526 µs) Friend-MachineD, ceiling 8.0. Pair 992. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.dlg_code` n=5 **5.985×** (5.677 / 0.949 µs) Friend-MachineD, ceiling 8.0. Pair 993. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.bash_go` n=5 **4.156×** (1.218 / 0.293 µs) Friend-MachineD, ceiling 8.0. Pair 988. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.bash_end` n=5 **6.552×** (1.460 / 0.223 µs) Friend-MachineD, ceiling 8.0. Pair 989. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.bash_off` n=5 **8.012×** (1.346 / 0.168 µs) Friend-MachineD, ceiling 12.0 (raised from 8.0). Pair 990. Over-1×. `nextPairNum` unchanged.
