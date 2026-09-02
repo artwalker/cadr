@@ -404,6 +404,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.countdown_seconds` | 0.768 | 0.335 | 2.292× | 8.00× | measure-only leftover 556; `make-countdown-timer` remaining seconds vs `Math.ceil` (sub-µs) | invent pause；地板优化另刀 |
 | `cli_selectors.countdown_tick` | 0.700 | 0.233 | 3.006× | 8.00× | measure-only leftover 557; `countdown-timer-tick` vs interval body (sub-µs) | invent pause；地板优化另刀 |
 | `cli_selectors.countdown_render` | 0.892 | 0.463 | 1.928× | 8.00× | measure-only leftover 558; `countdown-request-render` vs `tui?.requestRender` (sub-µs) | invent pause；地板优化另刀 |
+| `cli_selectors.countdown_dispose` | 0.318 | 0.179 | 1.773× | 8.00× | measure-only leftover 904-906; remeasure Friend-MachineD | countdown dispose trio |
+| `cli_selectors.countdown_unstarted` | 0.249 | 0.150 | 1.653× | 8.00× | measure-only leftover 904-906; remeasure Friend-MachineD | countdown dispose trio |
+| `cli_selectors.countdown_start_guard` | 0.292 | 0.200 | 1.458× | 8.00× | measure-only leftover 904-906; remeasure Friend-MachineD | countdown dispose trio |
 | `cli_selectors.scoped_models_copy_enabled` | 1.074 | 0.548 | 1.960× | 8.00× | measure-only leftover 560; `scoped-models-copy-enabled` vs enabled-id copy (sub-µs/low-µs) | invent pause；地板优化另刀 |
 | `cli_selectors.move_list_item` | 1.317 | 0.971 | 1.357× | 8.00× | measure-only leftover 561; `move-list-item` vs `move()` index swap (low-µs) | invent pause；地板优化另刀 |
 | `cli_selectors.session_scoped_models` | 11.473 | 4.477 | 2.563× | 8.00× | measure-only leftover 562; `session-scoped-models` vs session-scoped filter | invent pause；地板优化另刀 |

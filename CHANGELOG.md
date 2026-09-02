@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.countdown_dispose` n=5 **1.773×** (0.318 / 0.179 µs) Friend-MachineD, ceiling 8.0. Pair 904. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.countdown_unstarted` n=5 **1.653×** (0.249 / 0.150 µs) Friend-MachineD, ceiling 8.0. Pair 905. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.countdown_start_guard` n=5 **1.458×** (0.292 / 0.200 µs) Friend-MachineD, ceiling 8.0. Pair 906. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `find_tool.directory_gitignore_rules` n=5 **1.635×** (598.841 / 366.283 µs) Friend-MachineD, ceiling 8.0. Pair 901. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `find_tool.collect_tree_files` n=5 **1.315×** (754.579 / 573.769 µs) Friend-MachineD, ceiling 8.0. Pair 902. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `find_tool.glob_files` n=5 **1.951×** (1370.273 / 702.302 µs) Friend-MachineD, ceiling 8.0. Pair 903. Over-1×. `nextPairNum` unchanged.
