@@ -10432,7 +10432,7 @@ Leftover sibling of Pairs 835–836. Timed work is row join without theme/clip �
 |---|---|---|
 | `http_timeout_p` | `extension-http-timeout-condition-p` (`src/cadr-cli/extensions/loader.lisp`) | leftover timeout error names (`packages/coding-agent/src/core/extensions/loader.ts`) |
 
-Leftover sibling of Pair 502–504 on the same `loader.lisp` hole. Timed work is the timeout-condition predicate — not HTTP, not reload. Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil` are exact. First n=5 freeze **2.787×** (0.832 / 0.298 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 502–504 on the same `loader.lisp` hole. Timed work is the timeout-condition predicate — not HTTP, not reload. Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil` are exact. First n=5 freeze **2.787×** (0.832 / 0.298 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.480×** (1.356 / 0.303 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 845 — `cli_extensions_install` (same_source)
 
@@ -10440,7 +10440,7 @@ Leftover sibling of Pair 502–504 on the same `loader.lisp` hole. Timed work is
 |---|---|---|
 | `same_source` | `same-extension-source-p` (`src/cadr-cli/extensions/loader.lisp`) | leftover `bundle.path === source.path` (`packages/coding-agent/src/core/extensions/loader.ts`) |
 
-Leftover sibling of Pair 844. Timed work is path equality — not `reload-cli-extensions`. Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n` are exact. First n=5 freeze **2.631×** (0.421 / 0.160 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 844. Timed work is path equality — not `reload-cli-extensions`. Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n` are exact. First n=5 freeze **2.631×** (0.421 / 0.160 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.802×** (0.759 / 0.158 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 846 — `cli_extensions_install` (quiet_manager)
 
@@ -10448,7 +10448,7 @@ Leftover sibling of Pair 844. Timed work is path equality — not `reload-cli-ex
 |---|---|---|
 | `quiet_manager` | `call-with-quiet-extension-manager` (`src/cadr-cli/extensions/loader.lisp`) | leftover silenced notify stream (`packages/coding-agent/src/core/extensions/loader.ts`) |
 
-Leftover sibling of Pairs 844–845. Timed work is swapping the manager output stream — not discovery. Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n` are exact. First n=5 freeze **2.740×** (0.680 / 0.248 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 844–845. Timed work is swapping the manager output stream — not discovery. Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n` are exact. First n=5 freeze **2.740×** (0.680 / 0.248 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **6.863×** (1.176 / 0.171 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
