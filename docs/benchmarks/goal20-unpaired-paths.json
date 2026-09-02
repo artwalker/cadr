@@ -83,6 +83,7 @@
     "cli_extensions_install.handle_plain",
     "cli_extensions_install.handle_unknown",
     "cli_extensions_install.hf_token",
+    "cli_extensions_install.http_timeout_p",
     "cli_extensions_install.inline_factory",
     "cli_extensions_install.llama_catalog",
     "cli_extensions_install.llama_compact_count",
@@ -99,6 +100,8 @@
     "cli_extensions_install.normalize_git",
     "cli_extensions_install.package_fragment",
     "cli_extensions_install.quant_label",
+    "cli_extensions_install.quiet_manager",
+    "cli_extensions_install.same_source",
     "cli_extensions_install.split_args",
     "cli_extensions_install.split_command",
     "cli_extensions_install.split_path_segments",
@@ -1964,9 +1967,12 @@
       "prefix": "src/cadr-cli/extensions/loader.lisp",
       "class": "paired",
       "metrics": [
-        "cli_extensions_install.package_fragment",
+        "cli_extensions_install.http_timeout_p",
+        "cli_extensions_install.inline_factory",
         "cli_extensions_install.local_system_name",
-        "cli_extensions_install.inline_factory"
+        "cli_extensions_install.package_fragment",
+        "cli_extensions_install.quiet_manager",
+        "cli_extensions_install.same_source"
       ]
     },
     {
