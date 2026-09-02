@@ -29811,6 +29811,13 @@
      5)))
 
 
+(defun leftover-armin-component-fixture ()
+  ;; No start-p / no thread. Copy-cell needs current+final grids only.
+  (make-instance 'cadr-cli::armin-component
+                 :ui nil
+                 :effect :typewriter))
+
+
 (defun run-cli-selectors-armin-copy-cell ()
   ;; Typewriter leftover: currentGrid[row][x] = finalGrid[row][x]. Not tick.
   (let* ((component (leftover-armin-component-fixture))
@@ -29871,6 +29878,25 @@
      5)))
 
 
+(defun armin-copy-leftover-observed-pairs (copy-cell copy-row rotate-row)
+  (list
+   "acc_ok" (nth 0 copy-cell)
+   "acc_match" (nth 1 copy-cell)
+   "acc_oob" (nth 2 copy-cell)
+   "acc_mid" (nth 3 copy-cell)
+   "acc_n" (nth 4 copy-cell)
+   "acr_eq" (nth 0 copy-row)
+   "acr_indep" (nth 1 copy-row)
+   "acr_w" (nth 2 copy-row)
+   "acr_h" (nth 3 copy-row)
+   "acr_n" (nth 4 copy-row)
+   "arr_len" (nth 0 rotate-row)
+   "arr_zero" (nth 1 rotate-row)
+   "arr_shift" (nth 2 rotate-row)
+   "arr_mod" (nth 3 rotate-row)
+   "arr_n" (nth 4 rotate-row)))
+
+
 (defun armin-grid-leftover-observed-pairs (make-grid copy-grid row-string)
   (list
    "amg_spaces" (nth 0 make-grid)
@@ -29884,21 +29910,6 @@
    "acg_w" (nth 3 copy-grid)
    "acg_n" (nth 4 copy-grid)
    "ars_len" (nth 0 row-string)
-      "acc_ok" (nth 0 copy-cell)
-      "acc_match" (nth 1 copy-cell)
-      "acc_oob" (nth 2 copy-cell)
-      "acc_mid" (nth 3 copy-cell)
-      "acc_n" (nth 4 copy-cell)
-      "acr_eq" (nth 0 copy-row)
-      "acr_indep" (nth 1 copy-row)
-      "acr_w" (nth 2 copy-row)
-      "acr_h" (nth 3 copy-row)
-      "acr_n" (nth 4 copy-row)
-      "arr_len" (nth 0 rotate-row)
-      "arr_zero" (nth 1 rotate-row)
-      "arr_shift" (nth 2 rotate-row)
-      "arr_mod" (nth 3 rotate-row)
-      "arr_n" (nth 4 rotate-row)
    "ars_empty0" (nth 1 row-string)
    "ars_ink" (nth 2 row-string)
    "ars_full" (nth 3 row-string)
@@ -33039,6 +33050,10 @@
               leftover-login-dlg-make
               leftover-login-dlg-auth
               leftover-login-dlg-dev)
+             (armin-copy-leftover-observed-pairs
+              leftover-armin-copy-cell
+              leftover-armin-copy-row
+              leftover-armin-rotate-row)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -39403,6 +39418,12 @@
       "src/cadr-cli/interactive/components/armin.lisp copy-armin-grid"
       "cli_selectors.armin_row_string"
       "src/cadr-cli/interactive/components/armin.lisp armin-grid-row-string"
+      "cli_selectors.armin_copy_cell"
+      "src/cadr-cli/interactive/components/armin.lisp armin-copy-cell"
+      "cli_selectors.armin_copy_row"
+      "src/cadr-cli/interactive/components/armin.lisp armin-copy-row"
+      "cli_selectors.armin_rotate_row"
+      "src/cadr-cli/interactive/components/armin.lisp armin-rotate-row"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"
