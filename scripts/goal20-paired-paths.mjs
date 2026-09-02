@@ -763,7 +763,14 @@ const REPETITIONS = {
 	"cli_print_rpc.cmd_list": 50,
 	"cli_print_rpc.bad_line": 50,
 	"cli_print_rpc.array_line": 50,
-	"cli_print_rpc.ui_absent": 50,
+	"cli_print_rpc.line_bad": 50,
+	"cli_print_rpc.line_arr": 50,
+	"cli_print_rpc.line_ui": 50,
+	"tui_latex.render": 20,
+"cli_print_rpc.ui_absent": 50,
+	"cli_print_rpc.line_bad": 50,
+	"cli_print_rpc.line_arr": 50,
+	"cli_print_rpc.line_ui": 50,
 	"cli_print_rpc.dialog_request": 50,
 	"cli_print_rpc.dialog_result": 50,
 	"cli_print_rpc.dialog_expired": 50,
@@ -17899,6 +17906,15 @@ async function measureCliPrintRpc() {
 				return () => runCliPrintRpcHandleNotObject();
 			}),
 			ui_absent: await collect("cli_print_rpc.ui_absent", () => {
+				return () => runCliPrintRpcHandleUiMiss();
+			}),
+			line_bad: await collect("cli_print_rpc.line_bad", () => {
+				return () => runCliPrintRpcHandleBadJson();
+			}),
+			line_arr: await collect("cli_print_rpc.line_arr", () => {
+				return () => runCliPrintRpcHandleNotObject();
+			}),
+			line_ui: await collect("cli_print_rpc.line_ui", () => {
 				return () => runCliPrintRpcHandleUiMiss();
 			}),
 			dialog_request: await collect("cli_print_rpc.dialog_request", () => {
