@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`, ratio_gate=`enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify`, quick=no, samples=5
+Current: `—` (2026-09-02T04:59:41Z) on `Friend-MachineD`, git `b75bf39b1b2c`, ratio_gate=`enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style`, quick=no, samples=5
 
-Previous: `—` (2026-09-02T01:51:29Z) on `Friend-MachineD`, git `afbac72aff40`, ratio_gate=`enforced-only:cli_extensions_install.manager_notify,cli_extensions_install.output_boundary,cli_extensions_install.startup_issues`, quick=no, samples=5
+Previous: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`, ratio_gate=`enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1116,9 +1116,9 @@ Previous: `—` (2026-09-02T01:51:29Z) on `Friend-MachineD`, git `afbac72aff40`,
 | `cli_extensions_install.manager_notify` | — | — | 2.93× | 2.93× | 8.00× |
 | `cli_extensions_install.startup_issues` | — | — | 4.82× | 4.82× | 8.00× |
 | `cli_extensions_install.output_boundary` | — | — | 5.21× | 5.21× | 8.00× |
-| `cli_extensions_install.loaded_model` | — | — | 3.30× | — | 8.00× |
-| `cli_extensions_install.catalog_notify` | — | — | 14.25× | — | 60.00× |
-| `cli_extensions_install.progress_notify` | — | — | 19.79× | — | 60.00× |
+| `cli_extensions_install.loaded_model` | — | — | 3.30× | 3.30× | 8.00× |
+| `cli_extensions_install.catalog_notify` | — | — | 14.25× | 14.25× | 60.00× |
+| `cli_extensions_install.progress_notify` | — | — | 19.79× | 19.79× | 60.00× |
 | `cli_selectors.daxnuts_parse_image` | 50.3 | 90.2 | 0.56× | 0.56× | 8.00× |
 | `cli_selectors.daxnuts_image_line` | 36.3 | 16.4 | 2.22× | 2.22× | 8.00× |
 | `cli_selectors.daxnuts_center_line` | 0.9 | 0.9 | 0.97× | 0.97× | 8.00× |
@@ -1145,6 +1145,15 @@ Previous: `—` (2026-09-02T01:51:29Z) on `Friend-MachineD`, git `afbac72aff40`,
 | `cli_bootstrap_sessions.validate_cli_session_flags` | — | — | 5.37× | 5.37× | 8.00× |
 | `cli_bootstrap_sessions.session_entry_tree_selector_data` | — | — | 4.60× | 4.60× | 8.00× |
 | `cli_bootstrap_sessions.session_restored_model` | — | — | 1.56× | 1.56× | 8.00× |
+| `cli_bootstrap_sessions.data_directory` | 5.8 | 1.0 | 5.80× | 5.80× | 40.00× |
+| `cli_bootstrap_sessions.legacy_data_directory` | 6.5 | 1.0 | 6.33× | 6.33× | 40.00× |
+| `cli_bootstrap_sessions.manual_migration_command` | 5.2 | 1.3 | 4.09× | 4.09× | 8.00× |
+| `cli_bootstrap_sessions.managed_binary_names` | 0.4 | 0.2 | 2.22× | 2.22× | 8.00× |
+| `cli_bootstrap_sessions.migration_guide_url` | 0.5 | 0.2 | 2.67× | 2.67× | 8.00× |
+| `cli_bootstrap_sessions.extensions_doc_url` | 0.5 | 0.2 | 2.84× | 2.84× | 8.00× |
+| `cli_bootstrap_sessions.cli_platform` | — | — | 1.05× | — | 8.00× |
+| `cli_bootstrap_sessions.session_info_style` | — | — | 7.20× | — | 8.00× |
+| `cli_bootstrap_sessions.default_changelog_path` | — | — | 1182.27× | — | 1200.00× |
 | `cli_selectors.model_selector_provider_badge` | 0.3 | 0.6 | 0.42× | 0.42× | 8.00× |
 | `cli_selectors.scoped_models_copy_enabled` | 1.5 | 0.7 | 2.28× | 2.28× | 8.00× |
 | `cli_selectors.move_list_item` | 1.5 | 1.4 | 1.07× | 1.07× | 8.00× |
@@ -2345,6 +2354,7 @@ Previous: `—` (2026-09-02T01:51:29Z) on `Friend-MachineD`, git `afbac72aff40`,
 | 2026-09-02T01:37:05Z | — | `2bd35e144ef6` | no | enforced-only:cli_extensions_install.http_timeout_p,cli_extensions_install.quiet_manager,cli_extensions_install.same_source | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T01:51:29Z | — | `afbac72aff40` | no | enforced-only:cli_extensions_install.manager_notify,cli_extensions_install.output_boundary,cli_extensions_install.startup_issues | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T02:05:24Z | — | `d0fb143a4d5d` | no | enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T04:59:41Z | — | `b75bf39b1b2c` | no | enforced-only:cli_bootstrap_sessions.cli_platform,cli_bootstrap_sessions.default_changelog_path,cli_bootstrap_sessions.session_info_style | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

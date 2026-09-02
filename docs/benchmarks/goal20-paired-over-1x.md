@@ -742,4 +742,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.loaded_model` | 0.427 | 0.130 | 3.296× | 8.00× | measure-only leftover 850; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.catalog_notify` | 9.316 | 0.654 | 14.250× | 60.00× | measure-only leftover 851; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.progress_notify` | 11.417 | 0.577 | 19.792× | 60.00× | measure-only leftover 852; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_info_style` | 2.643 | 0.367 | 7.201× | 8.00× | measure-only leftover 854; `session-info-style` vs leftover heading/label/other style; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.default_changelog_path` | 218.058 | 0.184 | 1182.272× | 1200.00× | measure-only leftover 855; `default-changelog-path` vs leftover CHANGELOG env/leaf; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

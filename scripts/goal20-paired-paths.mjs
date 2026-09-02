@@ -657,6 +657,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.validate_cli_session_flags": 50,
 	"cli_bootstrap_sessions.session_entry_tree_selector_data": 50,
 	"cli_bootstrap_sessions.session_restored_model": 50,
+	"cli_bootstrap_sessions.cli_platform": 50,
+	"cli_bootstrap_sessions.session_info_style": 50,
+	"cli_bootstrap_sessions.default_changelog_path": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -37319,6 +37322,73 @@ function runCliBootstrapSessionRestoredModel() {
 	};
 }
 
+function leftoverCliPlatform() {
+	if (process.platform === "darwin") {
+		return "darwin";
+	}
+	if (process.platform === "win32") {
+		return "windows";
+	}
+	return "linux";
+}
+
+
+function leftoverSessionInfoStyle(text, kind, ansi) {
+	if (kind === "heading") {
+		return ansi ? `\x1b[1m${text}\x1b[22m` : text;
+	}
+	if (kind === "label") {
+		return ansi ? leftoverThemeForeground(text) : text;
+	}
+	return text;
+}
+
+
+function leftoverDefaultChangelogPath(envValue) {
+	if (envValue && envValue.length) {
+		return envValue;
+	}
+	return "CHANGELOG.md";
+}
+
+
+function runCliBootstrapCliPlatform() {
+	const plat = leftoverCliPlatform();
+	return {
+		cpl_linux: plat === "linux" ? 1 : 0,
+		cpl_win: plat === "windows" ? 1 : 0,
+		cpl_darwin: plat === "darwin" ? 1 : 0,
+	};
+}
+
+
+function runCliBootstrapSessionInfoStyle() {
+	const headOff = leftoverSessionInfoStyle("Session Info", "heading", false);
+	const headOn = leftoverSessionInfoStyle("Session Info", "heading", true);
+	const labOff = leftoverSessionInfoStyle("Name:", "label", false);
+	const labOn = leftoverSessionInfoStyle("Name:", "label", true);
+	const other = leftoverSessionInfoStyle("raw", "other", false);
+	return {
+		sis_head_plain: headOff === "Session Info" ? 1 : 0,
+		sis_head_bold: headOn.includes("Session Info") && headOn.includes("\x1b[1m") ? 1 : 0,
+		sis_lab_plain: labOff === "Name:" ? 1 : 0,
+		sis_lab_dim: labOn.includes("Name:") && labOn.includes("\x1b[39m") ? 1 : 0,
+		sis_other: other === "raw" ? 1 : 0,
+	};
+}
+
+
+function runCliBootstrapDefaultChangelogPath() {
+	const forced = leftoverDefaultChangelogPath("/tmp/g20-changelog.md");
+	const fallback = leftoverDefaultChangelogPath("");
+	return {
+		dcp_forced: forced.includes("g20-changelog") ? 1 : 0,
+		dcp_fallback: fallback.includes("CHANGELOG.md") ? 1 : 0,
+		dcp_clean: fallback.includes("g20-changelog") ? 1 : 0,
+	};
+}
+
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -37356,6 +37426,9 @@ async function measureCliBootstrapCodingTools() {
 	const validateFlagsObserved = runCliBootstrapValidateCliSessionFlags();
 	const entrySelectorObserved = runCliBootstrapSessionEntryTreeSelectorData();
 	const restoredModelObserved = runCliBootstrapSessionRestoredModel();
+	const cliPlatformObserved = runCliBootstrapCliPlatform();
+	const sessionInfoStyleObserved = runCliBootstrapSessionInfoStyle();
+	const defaultChangelogPathObserved = runCliBootstrapDefaultChangelogPath();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -37471,6 +37544,15 @@ async function measureCliBootstrapCodingTools() {
 		session_restored_model: await collect("cli_bootstrap_sessions.session_restored_model", () => {
 			return () => runCliBootstrapSessionRestoredModel();
 		}),
+		cli_platform: await collect("cli_bootstrap_sessions.cli_platform", () => {
+			return () => runCliBootstrapCliPlatform();
+		}),
+		session_info_style: await collect("cli_bootstrap_sessions.session_info_style", () => {
+			return () => runCliBootstrapSessionInfoStyle();
+		}),
+		default_changelog_path: await collect("cli_bootstrap_sessions.default_changelog_path", () => {
+			return () => runCliBootstrapDefaultChangelogPath();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -37507,6 +37589,9 @@ async function measureCliBootstrapCodingTools() {
 			...validateFlagsObserved,
 			...entrySelectorObserved,
 			...restoredModelObserved,
+			...cliPlatformObserved,
+			...sessionInfoStyleObserved,
+			...defaultChangelogPathObserved,
 		},
 	};
 }
@@ -39719,6 +39804,24 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover one tree row (cadr session-entry-tree-selector-data)",
 			"cli_bootstrap_sessions.session_restored_model":
 				"packages/coding-agent/src/core/agent-session.ts leftover restored model lookup (cadr session-restored-model)",
+			"cli_bootstrap_sessions.data_directory":
+				"packages/coding-agent/src/config.ts leftover join(home, CONFIG_DIR_NAME) (cadr data-directory)",
+			"cli_bootstrap_sessions.legacy_data_directory":
+				"packages/coding-agent/src/migrations.ts leftover join(home, '.' + legacy product) (cadr legacy-data-directory)",
+			"cli_bootstrap_sessions.manual_migration_command":
+				"packages/coding-agent/src/migrations.ts leftover mv -- quoted paths (cadr manual-migration-command)",
+			"cli_bootstrap_sessions.managed_binary_names":
+				"packages/coding-agent/src/migrations.ts leftover fd/rg (+ .exe) names (cadr +managed-binary-names+)",
+			"cli_bootstrap_sessions.migration_guide_url":
+				"packages/coding-agent/src/migrations.ts leftover MIGRATION_GUIDE_URL (cadr +migration-guide-url+)",
+			"cli_bootstrap_sessions.extensions_doc_url":
+				"packages/coding-agent/src/migrations.ts leftover EXTENSIONS_DOC_URL (cadr +extensions-doc-url+)",
+			"cli_bootstrap_sessions.cli_platform":
+				"packages/coding-agent leftover process.platform darwin/win32/linux (cadr cli-platform)",
+			"cli_bootstrap_sessions.session_info_style":
+				"packages/coding-agent leftover heading/label/other style (cadr session-info-style)",
+			"cli_bootstrap_sessions.default_changelog_path":
+				"packages/coding-agent leftover CHANGELOG path env/leaf (cadr default-changelog-path)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

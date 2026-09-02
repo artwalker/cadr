@@ -40,9 +40,11 @@
     "bash_tool.user_bash_result",
     "cli_bootstrap_sessions.assistant_tool_call_only",
     "cli_bootstrap_sessions.bootstrap_auth",
+    "cli_bootstrap_sessions.cli_platform",
     "cli_bootstrap_sessions.coding_tools",
     "cli_bootstrap_sessions.cycle_wrap",
     "cli_bootstrap_sessions.data_directory",
+    "cli_bootstrap_sessions.default_changelog_path",
     "cli_bootstrap_sessions.dp_ok",
     "cli_bootstrap_sessions.extensions_doc_url",
     "cli_bootstrap_sessions.file_tags",
@@ -63,6 +65,7 @@
     "cli_bootstrap_sessions.session_entry_tree_selector_data",
     "cli_bootstrap_sessions.session_entry_user_text",
     "cli_bootstrap_sessions.session_export_basename",
+    "cli_bootstrap_sessions.session_info_style",
     "cli_bootstrap_sessions.session_path",
     "cli_bootstrap_sessions.session_restored_model",
     "cli_bootstrap_sessions.session_tree_label_timestamps",
@@ -1858,7 +1861,10 @@
         "cli_bootstrap_sessions.validate_cli_session_flags",
         "cli_bootstrap_sessions.session_entry_tree_selector_data",
         "cli_bootstrap_sessions.session_restored_model",
-        "cli_bootstrap_sessions.split_command"
+        "cli_bootstrap_sessions.split_command",
+        "cli_bootstrap_sessions.cli_platform",
+        "cli_bootstrap_sessions.session_info_style",
+        "cli_bootstrap_sessions.default_changelog_path"
       ]
     },
     {

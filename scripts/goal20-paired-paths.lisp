@@ -1322,6 +1322,9 @@
     ("cli_bootstrap_sessions.validate_cli_session_flags" . 50)
     ("cli_bootstrap_sessions.session_entry_tree_selector_data" . 50)
     ("cli_bootstrap_sessions.session_restored_model" . 50)
+    ("cli_bootstrap_sessions.cli_platform" . 50)
+    ("cli_bootstrap_sessions.session_info_style" . 50)
+    ("cli_bootstrap_sessions.default_changelog_path" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -36701,6 +36704,78 @@
      (leftover-restored-model-id filled wrong-registry (list wrong)))))
 
 
+(defun leftover-style-eq (text expected)
+  (if (and (stringp text) (string= text expected)) 1 0))
+
+
+(defun leftover-style-flag (text fragment)
+  (if (and (stringp text) (search fragment text)) 1 0))
+
+
+(defun run-cli-bootstrap-cli-platform ()
+  ;; Leftover on sessions.lisp: darwin/win32/linux keyword. Not clipboard.
+  (let ((plat (cadr-cli::cli-platform)))
+    (list
+     (if (eq plat :linux) 1 0)
+     (if (eq plat :windows) 1 0)
+     (if (eq plat :darwin) 1 0))))
+
+
+(defun run-cli-bootstrap-session-info-style ()
+  ;; Leftover on sessions.lisp: heading/label/other style flags. Not TUI render.
+  (let ((head-off
+          (cadr-cli::session-info-style "Session Info" :heading nil))
+        (head-on
+          (cadr-cli::session-info-style "Session Info" :heading t))
+        (lab-off
+          (cadr-cli::session-info-style "Name:" :label nil))
+        (lab-on
+          (cadr-cli::session-info-style "Name:" :label t))
+        (other
+          (cadr-cli::session-info-style "raw" :other nil)))
+    (list
+     (leftover-style-eq head-off "Session Info")
+     (if (and
+          (plusp (leftover-style-flag head-on "Session Info"))
+          (plusp
+           (leftover-style-flag
+            head-on (format nil "~C[1m" #\Escape))))
+         1 0)
+     (leftover-style-eq lab-off "Name:")
+     (if (and
+          (plusp (leftover-style-flag lab-on "Name:"))
+          (plusp
+           (leftover-style-flag
+            lab-on (format nil "~C[39m" #\Escape))))
+         1 0)
+     (leftover-style-eq other "raw"))))
+
+
+(defun leftover-changelog-path-namestring ()
+  (namestring
+   (or (cadr-cli::default-changelog-path) #p"")))
+
+
+(defun run-cli-bootstrap-default-changelog-path ()
+  ;; Leftover on sessions.lisp: CADR_CHANGELOG_PATH / CHANGELOG.md leaf.
+  ;; Not asdf load, not disk walk.
+  (let ((previous (uiop:getenv "CADR_CHANGELOG_PATH")))
+    (unwind-protect
+         (progn
+           (sb-posix:setenv
+            "CADR_CHANGELOG_PATH" "/tmp/g20-changelog.md" 1)
+           (let ((forced (leftover-changelog-path-namestring)))
+             (sb-posix:unsetenv "CADR_CHANGELOG_PATH")
+             (let ((fallback (leftover-changelog-path-namestring)))
+               (list
+                (leftover-style-flag forced "g20-changelog")
+                (leftover-style-flag fallback "CHANGELOG.md")
+                (leftover-style-flag fallback "g20-changelog")))))
+      (if previous
+          (sb-posix:setenv "CADR_CHANGELOG_PATH" previous 1)
+          (sb-posix:unsetenv "CADR_CHANGELOG_PATH")))))
+
+
 (defun run-cli-bootstrap-write-hotkeys-command ()
   ;; Leftover on sessions.lisp: Keyboard Shortcuts + definitions.
   ;; Not hotkeys-command-markdown (keybinding display can drift).
@@ -36770,7 +36845,11 @@
          (tree-selector (run-cli-bootstrap-session-tree-selector-data))
          (validate-flags (run-cli-bootstrap-validate-cli-session-flags))
          (entry-selector (run-cli-bootstrap-session-entry-tree-selector-data))
-         (restored-model (run-cli-bootstrap-session-restored-model)))
+         (restored-model (run-cli-bootstrap-session-restored-model))
+         (cli-platform (run-cli-bootstrap-cli-platform))
+         (session-info-style (run-cli-bootstrap-session-info-style))
+         (default-changelog-path
+          (run-cli-bootstrap-default-changelog-path)))
     (json-object
      "observed"
      (json-object
@@ -36949,7 +37028,18 @@
       "srm_hit" (nth 1 restored-model)
       "srm_noreg" (nth 2 restored-model)
       "srm_noavail" (nth 3 restored-model)
-      "srm_wrong" (nth 4 restored-model))
+      "srm_wrong" (nth 4 restored-model)
+      "cpl_linux" (nth 0 cli-platform)
+      "cpl_win" (nth 1 cli-platform)
+      "cpl_darwin" (nth 2 cli-platform)
+      "sis_head_plain" (nth 0 session-info-style)
+      "sis_head_bold" (nth 1 session-info-style)
+      "sis_lab_plain" (nth 2 session-info-style)
+      "sis_lab_dim" (nth 3 session-info-style)
+      "sis_other" (nth 4 session-info-style)
+      "dcp_forced" (nth 0 default-changelog-path)
+      "dcp_fallback" (nth 1 default-changelog-path)
+      "dcp_clean" (nth 2 default-changelog-path))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -37125,7 +37215,22 @@
      (collect "cli_bootstrap_sessions.session_restored_model"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-session-restored-model)))))))
+                  (run-cli-bootstrap-session-restored-model))))
+     "cli_platform"
+     (collect "cli_bootstrap_sessions.cli_platform"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-cli-platform))))
+     "session_info_style"
+     (collect "cli_bootstrap_sessions.session_info_style"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-info-style))))
+     "default_changelog_path"
+     (collect "cli_bootstrap_sessions.default_changelog_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-default-changelog-path)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -39117,6 +39222,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-entry-tree-selector-data"
       "cli_bootstrap_sessions.session_restored_model"
       "src/cadr-cli/bootstrap/sessions.lisp session-restored-model"
+      "cli_bootstrap_sessions.cli_platform"
+      "src/cadr-cli/bootstrap/sessions.lisp cli-platform"
+      "cli_bootstrap_sessions.session_info_style"
+      "src/cadr-cli/bootstrap/sessions.lisp session-info-style"
+      "cli_bootstrap_sessions.default_changelog_path"
+      "src/cadr-cli/bootstrap/sessions.lisp default-changelog-path"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
