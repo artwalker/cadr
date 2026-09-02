@@ -10209,6 +10209,30 @@ Leftover sibling of Pair 985. Does not remount `fin_num`. Timed work is int, flo
 
 Leftover sibling of Pairs 985–986. Does not remount `art_meta`. Timed work is keep/runid/snap filter. Observed `am_keep` / `am_n` are exact. First n=5 freeze **2.042×** (1.651 / 0.809 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 988 — `cli_interactive_controller` (bash_go)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_go` | `append-tui-user-bash-running` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of BashExecutionComponent addChild running |
+
+Leftover sibling of leftover 640–642 and 955–957 on the same needs-pair file. Does not remount `bash_run`. Timed work is addChild running. Observed `bar_n` / `bar_run2` are exact. First n=5 freeze **4.156×** (1.218 / 0.293 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 989 — `cli_interactive_controller` (bash_end)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_end` | `complete-tui-user-bash-string` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of setComplete exit 0 string |
+
+Leftover sibling of Pair 988. Does not remount `bash_fin`. Timed work is hello complete and empty complete. Observed `cs_text` / `cs_empty` are exact. First n=5 freeze **6.552×** (1.460 / 0.223 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 990 — `cli_interactive_controller` (bash_off)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_off` | `stop-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | leftover replica of loader.stop without setComplete |
+
+Leftover sibling of Pairs 988–989. Does not remount `bash_halt`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **8.012×** (1.346 / 0.168 µs) on host `Friend-MachineD`, ceiling 12.0 (raised from 8.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

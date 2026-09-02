@@ -10029,6 +10029,51 @@
    "piUs": 0.809,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 988,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.bash_go",
+   "branch": "g20-freeze-988-990",
+   "note": "nextPairNum left at tip 328; leftover id 988",
+   "ratio": 4.156,
+   "cadrUs": 1.218,
+   "piUs": 0.293,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 989,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.bash_end",
+   "branch": "g20-freeze-988-990",
+   "note": "nextPairNum left at tip 328; leftover id 989",
+   "ratio": 6.552,
+   "cadrUs": 1.46,
+   "piUs": 0.223,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 990,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.bash_off",
+   "branch": "g20-freeze-988-990",
+   "note": "nextPairNum left at tip 328; leftover id 990",
+   "ratio": 8.012,
+   "cadrUs": 1.346,
+   "piUs": 0.168,
+   "ceiling": 12.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
