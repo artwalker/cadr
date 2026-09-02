@@ -764,6 +764,9 @@
     ("cli_extensions_install.split_command" . 50)
     ("cli_extensions_install.handle_plain" . 50)
     ("cli_extensions_install.handle_unknown" . 50)
+    ("cli_extensions_install.sc_ok" . 50)
+    ("cli_extensions_install.hp_ok" . 50)
+    ("cli_extensions_install.hu_ok" . 50)
     ("cli_extensions_install.llama_context_label" . 50)
     ("cli_extensions_install.llama_model_description" . 50)
     ("cli_extensions_install.llama_compact_count" . 50)
@@ -15262,6 +15265,22 @@
                   (run-cli-extensions-handle-plain))))
      "handle_unknown"
      (collect "cli_extensions_install.handle_unknown"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-handle-unknown
+                   manager))))
+     "sc_ok"
+     (collect "cli_extensions_install.sc_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-split-command))))
+     "hp_ok"
+     (collect "cli_extensions_install.hp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-handle-plain))))
+     "hu_ok"
+     (collect "cli_extensions_install.hu_ok"
               (lambda ()
                 (lambda ()
                   (run-cli-extensions-handle-unknown
@@ -40167,6 +40186,12 @@
       "cli_extensions_install.handle_plain"
       "src/cadr-cli/extensions/commands.lisp handle-extension-command"
       "cli_extensions_install.handle_unknown"
+      "src/cadr-cli/extensions/commands.lisp handle-extension-command unknown slash"
+      "cli_extensions_install.sc_ok"
+      "src/cadr-cli/extensions/commands.lisp split-extension-command"
+      "cli_extensions_install.hp_ok"
+      "src/cadr-cli/extensions/commands.lisp handle-extension-command"
+      "cli_extensions_install.hu_ok"
       "src/cadr-cli/extensions/commands.lisp handle-extension-command unknown slash"
       "cli_extensions_install.llama_context_label"
       "src/cadr-cli/extensions/llama/ui.lisp llama-context-label"

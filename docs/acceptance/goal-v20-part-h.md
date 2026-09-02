@@ -10353,6 +10353,30 @@ Leftover sibling of Pair 1003. Does not remount `make_api_key_input_state`. Time
 
 Leftover sibling of Pairs 1003–1004. Does not remount `make_oauth_selector_state`. Timed work is default/logout oauth selector construct. Observed `moss_default` / `moss_logout` are exact. First n=5 freeze **1.630×** (9.651 / 5.922 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1006 — `cli_extensions_install` (sc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sc_ok` | `split-extension-command` (`src/cadr-cli/extensions/commands.lisp`) | leftover replica of spaceIndex command/args split |
+
+Leftover sibling of leftover 487–489 on commands.lisp. Does not remount `split_command`. Timed work is plain/reload command split. Observed `sc_plain` / `sc_reload` are exact. First n=5 freeze **0.926×** (0.835 / 0.902 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1× (cadr leads); not listed in over-1× table. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1007 — `cli_extensions_install` (hp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hp_ok` | `handle-extension-command plain` (`src/cadr-cli/extensions/commands.lisp`) | leftover replica of non-slash return |
+
+Leftover sibling of Pair 1006. Does not remount `handle_plain`. Timed work is hello/blank non-slash handle. Observed `hp_hello` / `hp_blank` are exact. First n=5 freeze **1.012×** (0.604 / 0.597 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1008 — `cli_extensions_install` (hu_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hu_ok` | `handle-extension-command unknown slash` (`src/cadr-cli/extensions/commands.lisp`) | leftover replica of getCommand miss |
+
+Leftover sibling of Pairs 1006–1007. Does not remount `handle_unknown`. Timed work is nope/miss unknown slash handle. Observed `hu_nope` / `hu_miss` are exact. First n=5 freeze **0.710×** (0.779 / 1.097 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1× (cadr leads); not listed in over-1× table. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
