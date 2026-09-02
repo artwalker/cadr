@@ -9355,6 +9355,51 @@
    "piUs": 6.230,
    "ceiling": 8.0,
    "rc": 0
+  },
+  {
+   "pair": 865,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.tui_input_thread",
+   "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 865",
+   "ratio": 0.979,
+   "cadrUs": 0.168,
+   "piUs": 0.171,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 866,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.extension_host_turn",
+   "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 866",
+   "ratio": 1.495,
+   "cadrUs": 0.323,
+   "piUs": 0.216,
+   "ceiling": 8.0,
+   "rc": 0
+  },
+  {
+   "pair": 867,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-controller",
+   "metric": "cli_interactive_controller.wrap_extension_host_turn",
+   "branch": "cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 867",
+   "ratio": 2.313,
+   "cadrUs": 1.297,
+   "piUs": 0.561,
+   "ceiling": 8.0,
+   "rc": 0
   }
  ],
  "mergeQueue": []
