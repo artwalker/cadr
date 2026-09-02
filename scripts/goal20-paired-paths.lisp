@@ -761,6 +761,9 @@
     ("cli_extensions_install.manager_notify" . 50)
     ("cli_extensions_install.startup_issues" . 50)
     ("cli_extensions_install.output_boundary" . 50)
+    ("cli_extensions_install.loaded_model" . 50)
+    ("cli_extensions_install.catalog_notify" . 50)
+    ("cli_extensions_install.progress_notify" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -13431,6 +13434,88 @@
        2))))
 
 
+(defun leftover-llama-notes-context ()
+  (let ((notes (make-array 0 :adjustable t :fill-pointer 0)))
+    (values
+     (cadr-agent::%make-extension-context
+      :host
+      (cadr-agent::%make-extension-host
+       :cwd (uiop:ensure-directory-pathname "/tmp/g20-llama-ext/")
+       :notify-function
+       (lambda (message level)
+         (declare (ignore level))
+         (vector-push-extend (princ-to-string message) notes)
+         nil))
+      :kind :command
+      :active-p t)
+     notes)))
+
+
+(defun leftover-llama-loaded-flag (status)
+  (if (cadr-cli::llama-loaded-model-p
+       (cadr-cli::make-llama-model-info :id "m" :status status))
+      1
+      0))
+
+
+(defun run-cli-extensions-loaded-model ()
+  ;; Leftover on llama/extension.lisp: loaded/sleeping predicate. Not HTTP.
+  (list
+   (leftover-llama-loaded-flag :loaded)
+   (leftover-llama-loaded-flag :sleeping)
+   (leftover-llama-loaded-flag :unloaded)
+   3))
+
+
+(defun leftover-notes-has (notes needle)
+  (if (find needle notes :test #'search)
+      1
+      0))
+
+
+(defun run-cli-extensions-catalog-notify ()
+  ;; Leftover on llama/extension.lisp: catalog notify lines. Not login.
+  (multiple-value-bind (context notes)
+      (leftover-llama-notes-context)
+    (cadr-cli::notify-llama-catalog context nil)
+    (let ((empty (leftover-notes-has notes "No llama.cpp models found")))
+      (setf (fill-pointer notes) 0)
+      (cadr-cli::notify-llama-catalog
+       context
+       (list
+        (cadr-cli::make-llama-model-info :id "m1" :status :loaded)
+        (cadr-cli::make-llama-model-info :id "m2" :status :sleeping)))
+      (list
+       empty
+       (leftover-notes-has notes "loaded  m1")
+       (leftover-notes-has notes "sleeping  m2")
+       3))))
+
+
+(defun run-cli-extensions-progress-notify ()
+  ;; Leftover on llama/extension.lisp: progress notify text. Not download.
+  (multiple-value-bind (context notes)
+      (leftover-llama-notes-context)
+    (let ((notifier (cadr-cli::llama-progress-notifier context)))
+      (funcall notifier (list :message "downloading"))
+      (let ((plain
+              (if (and (= (length notes) 1)
+                       (string= (aref notes 0) "downloading"))
+                  1
+                  0)))
+        (setf (fill-pointer notes) 0)
+        (funcall notifier (list :message "downloading" :ratio 1/2))
+        (let ((pct (leftover-notes-has notes "%")))
+          (setf (fill-pointer notes) 0)
+          (funcall notifier
+                   (list :message "downloading" :detail "file.bin"))
+          (list
+           plain
+           pct
+           (leftover-notes-has notes "file.bin")
+           3))))))
+
+
 (defun leftover-string-prefix-flag (prefix value)
   (if (cadr-cli::string-prefix-p prefix value) 1 0))
 
@@ -13851,7 +13936,10 @@
          (quiet-manager (run-cli-extensions-quiet-manager))
          (manager-notify (run-cli-extensions-manager-notify))
          (startup-issues (run-cli-extensions-startup-issues))
-         (output-boundary (run-cli-extensions-output-boundary)))
+         (output-boundary (run-cli-extensions-output-boundary))
+         (loaded-model (run-cli-extensions-loaded-model))
+         (catalog-notify (run-cli-extensions-catalog-notify))
+         (progress-notify (run-cli-extensions-progress-notify)))
     (json-object
      "observed"
      (json-object
@@ -14029,7 +14117,19 @@
       "rsi_n" (nth 4 startup-issues)
       "eob_out" (nth 0 output-boundary)
       "eob_err" (nth 1 output-boundary)
-      "eob_n" (nth 2 output-boundary))
+      "eob_n" (nth 2 output-boundary)
+      "llm_loaded" (nth 0 loaded-model)
+      "llm_sleep" (nth 1 loaded-model)
+      "llm_unloaded" (nth 2 loaded-model)
+      "llm_n" (nth 3 loaded-model)
+      "lnc_empty" (nth 0 catalog-notify)
+      "lnc_loaded" (nth 1 catalog-notify)
+      "lnc_sleep" (nth 2 catalog-notify)
+      "lnc_n" (nth 3 catalog-notify)
+      "lpn_plain" (nth 0 progress-notify)
+      "lpn_pct" (nth 1 progress-notify)
+      "lpn_detail" (nth 2 progress-notify)
+      "lpn_n" (nth 3 progress-notify))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -14200,7 +14300,22 @@
      (collect "cli_extensions_install.output_boundary"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-output-boundary)))))))
+                  (run-cli-extensions-output-boundary))))
+     "loaded_model"
+     (collect "cli_extensions_install.loaded_model"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-loaded-model))))
+     "catalog_notify"
+     (collect "cli_extensions_install.catalog_notify"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-catalog-notify))))
+     "progress_notify"
+     (collect "cli_extensions_install.progress_notify"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-progress-notify)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -37892,6 +38007,12 @@
       "src/cadr-cli/extensions/loader.lisp report-startup-extension-issues"
       "cli_extensions_install.output_boundary"
       "src/cadr-cli/extensions/loader.lisp call-with-extension-output-boundary"
+      "cli_extensions_install.loaded_model"
+      "src/cadr-cli/extensions/llama/extension.lisp llama-loaded-model-p"
+      "cli_extensions_install.catalog_notify"
+      "src/cadr-cli/extensions/llama/extension.lisp notify-llama-catalog"
+      "cli_extensions_install.progress_notify"
+      "src/cadr-cli/extensions/llama/extension.lisp llama-progress-notifier"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T01:51:29Z) on `Friend-MachineD`, git `afbac72aff40`, ratio_gate=`enforced-only:cli_extensions_install.manager_notify,cli_extensions_install.output_boundary,cli_extensions_install.startup_issues`, quick=no, samples=5
+Current: `—` (2026-09-02T02:05:24Z) on `Friend-MachineD`, git `d0fb143a4d5d`, ratio_gate=`enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify`, quick=no, samples=5
 
-Previous: `—` (2026-09-02T01:37:05Z) on `Friend-MachineD`, git `2bd35e144ef6`, ratio_gate=`enforced-only:cli_extensions_install.http_timeout_p,cli_extensions_install.quiet_manager,cli_extensions_install.same_source`, quick=no, samples=5
+Previous: `—` (2026-09-02T01:51:29Z) on `Friend-MachineD`, git `afbac72aff40`, ratio_gate=`enforced-only:cli_extensions_install.manager_notify,cli_extensions_install.output_boundary,cli_extensions_install.startup_issues`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1113,9 +1113,12 @@ Previous: `—` (2026-09-02T01:37:05Z) on `Friend-MachineD`, git `2bd35e144ef6`,
 | `cli_extensions_install.http_timeout_p` | — | — | 4.48× | 4.48× | 8.00× |
 | `cli_extensions_install.same_source` | — | — | 4.80× | 4.80× | 8.00× |
 | `cli_extensions_install.quiet_manager` | — | — | 6.86× | 6.86× | 8.00× |
-| `cli_extensions_install.manager_notify` | — | — | 2.93× | — | 8.00× |
-| `cli_extensions_install.startup_issues` | — | — | 4.82× | — | 8.00× |
-| `cli_extensions_install.output_boundary` | — | — | 5.21× | — | 8.00× |
+| `cli_extensions_install.manager_notify` | — | — | 2.93× | 2.93× | 8.00× |
+| `cli_extensions_install.startup_issues` | — | — | 4.82× | 4.82× | 8.00× |
+| `cli_extensions_install.output_boundary` | — | — | 5.21× | 5.21× | 8.00× |
+| `cli_extensions_install.loaded_model` | — | — | 3.30× | — | 8.00× |
+| `cli_extensions_install.catalog_notify` | — | — | 14.25× | — | 60.00× |
+| `cli_extensions_install.progress_notify` | — | — | 19.79× | — | 60.00× |
 | `cli_selectors.daxnuts_parse_image` | 50.3 | 90.2 | 0.56× | 0.56× | 8.00× |
 | `cli_selectors.daxnuts_image_line` | 36.3 | 16.4 | 2.22× | 2.22× | 8.00× |
 | `cli_selectors.daxnuts_center_line` | 0.9 | 0.9 | 0.97× | 0.97× | 8.00× |
@@ -2341,6 +2344,7 @@ Previous: `—` (2026-09-02T01:37:05Z) on `Friend-MachineD`, git `2bd35e144ef6`,
 | 2026-09-02T01:13:29Z | — | `47ed29d5dec8` | no | enforced-only:cli_selectors.armin_copy_grid,cli_selectors.armin_make_grid,cli_selectors.armin_row_string | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T01:37:05Z | — | `2bd35e144ef6` | no | enforced-only:cli_extensions_install.http_timeout_p,cli_extensions_install.quiet_manager,cli_extensions_install.same_source | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T01:51:29Z | — | `afbac72aff40` | no | enforced-only:cli_extensions_install.manager_notify,cli_extensions_install.output_boundary,cli_extensions_install.startup_issues | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T02:05:24Z | — | `d0fb143a4d5d` | no | enforced-only:cli_extensions_install.catalog_notify,cli_extensions_install.loaded_model,cli_extensions_install.progress_notify | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

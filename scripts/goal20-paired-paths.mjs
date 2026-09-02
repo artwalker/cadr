@@ -368,6 +368,9 @@ const REPETITIONS = {
 	"cli_extensions_install.manager_notify": 50,
 	"cli_extensions_install.startup_issues": 50,
 	"cli_extensions_install.output_boundary": 50,
+	"cli_extensions_install.loaded_model": 50,
+	"cli_extensions_install.catalog_notify": 50,
+	"cli_extensions_install.progress_notify": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -15195,6 +15198,86 @@ function runCliExtensionsOutputBoundary() {
 }
 
 
+function leftoverLlamaLoadedModelP(status) {
+	return status === "loaded" || status === "sleeping" ? 1 : 0;
+}
+
+
+function leftoverNotifyLlamaCatalog(notify, catalog) {
+	if (catalog) {
+		for (const model of catalog) {
+			notify(`${String(model.status).toLowerCase()}  ${model.id}`);
+		}
+	} else {
+		notify("No llama.cpp models found");
+	}
+	return catalog;
+}
+
+
+function leftoverLlamaProgressNotifier(notify) {
+	return (progress) => {
+		let text = String(progress.message);
+		if (progress.ratio != null) {
+			text += ` (${Math.round(progress.ratio * 100)}%)`;
+		}
+		if (progress.detail) {
+			text += ` — ${progress.detail}`;
+		}
+		notify(text);
+	};
+}
+
+
+function runCliExtensionsLoadedModel() {
+	return {
+		llm_loaded: leftoverLlamaLoadedModelP("loaded"),
+		llm_sleep: leftoverLlamaLoadedModelP("sleeping"),
+		llm_unloaded: leftoverLlamaLoadedModelP("unloaded"),
+		llm_n: 3,
+	};
+}
+
+
+function runCliExtensionsCatalogNotify() {
+	const emptyNotes = [];
+	leftoverNotifyLlamaCatalog((msg) => emptyNotes.push(msg), null);
+	const catalogNotes = [];
+	leftoverNotifyLlamaCatalog((msg) => catalogNotes.push(msg), [
+		{ id: "m1", status: "loaded" },
+		{ id: "m2", status: "sleeping" },
+	]);
+	return {
+		lnc_empty: emptyNotes.some((msg) => msg.includes("No llama.cpp models found")) ? 1 : 0,
+		lnc_loaded: catalogNotes.some((msg) => msg.includes("loaded  m1")) ? 1 : 0,
+		lnc_sleep: catalogNotes.some((msg) => msg.includes("sleeping  m2")) ? 1 : 0,
+		lnc_n: 3,
+	};
+}
+
+
+function runCliExtensionsProgressNotify() {
+	const plainNotes = [];
+	leftoverLlamaProgressNotifier((msg) => plainNotes.push(msg))({ message: "downloading" });
+	const pctNotes = [];
+	leftoverLlamaProgressNotifier((msg) => pctNotes.push(msg))({
+		message: "downloading",
+		ratio: 0.5,
+	});
+	const detailNotes = [];
+	leftoverLlamaProgressNotifier((msg) => detailNotes.push(msg))({
+		message: "downloading",
+		detail: "file.bin",
+	});
+	return {
+		lpn_plain: plainNotes.length === 1 && plainNotes[0] === "downloading" ? 1 : 0,
+		lpn_pct: pctNotes.some((msg) => msg.includes("%")) ? 1 : 0,
+		lpn_detail: detailNotes.some((msg) => msg.includes("file.bin")) ? 1 : 0,
+		lpn_n: 3,
+	};
+}
+
+
 function llamaContextLabelOrEmpty(model) {
 	return llamaUiContextLabel(model) ?? "";
 }
@@ -15289,6 +15372,9 @@ async function measureCliExtensionsInstall() {
 	const managerNotify = runCliExtensionsManagerNotify();
 	const startupIssues = runCliExtensionsStartupIssues();
 	const outputBoundary = runCliExtensionsOutputBoundary();
+	const loadedModel = runCliExtensionsLoadedModel();
+	const catalogNotify = runCliExtensionsCatalogNotify();
+	const progressNotify = runCliExtensionsProgressNotify();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -15392,6 +15478,15 @@ async function measureCliExtensionsInstall() {
 		output_boundary: await collect("cli_extensions_install.output_boundary", () => {
 			return () => runCliExtensionsOutputBoundary();
 		}),
+		loaded_model: await collect("cli_extensions_install.loaded_model", () => {
+			return () => runCliExtensionsLoadedModel();
+		}),
+		catalog_notify: await collect("cli_extensions_install.catalog_notify", () => {
+			return () => runCliExtensionsCatalogNotify();
+		}),
+		progress_notify: await collect("cli_extensions_install.progress_notify", () => {
+			return () => runCliExtensionsProgressNotify();
+		}),
 		observed: {
 			...url,
 			...token,
@@ -15454,6 +15549,9 @@ async function measureCliExtensionsInstall() {
 			...managerNotify,
 			...startupIssues,
 			...outputBoundary,
+			...loadedModel,
+			...catalogNotify,
+			...progressNotify,
 		},
 	};
 }
@@ -38556,6 +38654,12 @@ const result = {
 				"packages/coding-agent/src/core/extensions/loader.ts leftover reportDiagnostics (cadr report-startup-extension-issues)",
 			"cli_extensions_install.output_boundary":
 				"packages/coding-agent/src/core/extensions/loader.ts leftover stdout/stderr bind (cadr call-with-extension-output-boundary)",
+			"cli_extensions_install.loaded_model":
+				"packages/coding-agent/src/extensions/llama leftover loaded/sleeping predicate (cadr llama-loaded-model-p)",
+			"cli_extensions_install.catalog_notify":
+				"packages/coding-agent/src/extensions/llama leftover catalog notify lines (cadr notify-llama-catalog)",
+			"cli_extensions_install.progress_notify":
+				"packages/coding-agent/src/extensions/llama leftover progress notify text (cadr llama-progress-notifier)",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":
