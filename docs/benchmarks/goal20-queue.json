@@ -9104,9 +9104,9 @@
    "metric": "cli_extensions_install.manager_notify",
    "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
    "note": "nextPairNum left at tip 328; leftover id 847",
-   "ratio": 2.503,
-   "cadrUs": 3.324,
-   "piUs": 1.328,
+   "ratio": 2.930,
+   "cadrUs": 3.618,
+   "piUs": 1.235,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -9119,9 +9119,9 @@
    "metric": "cli_extensions_install.startup_issues",
    "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
    "note": "nextPairNum left at tip 328; leftover id 848",
-   "ratio": 2.567,
-   "cadrUs": 2.919,
-   "piUs": 1.137,
+   "ratio": 4.819,
+   "cadrUs": 3.989,
+   "piUs": 0.828,
    "ceiling": 8.0,
    "rc": 2
   },
@@ -9134,9 +9134,9 @@
    "metric": "cli_extensions_install.output_boundary",
    "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
    "note": "nextPairNum left at tip 328; leftover id 849",
-   "ratio": 2.759,
-   "cadrUs": 0.740,
-   "piUs": 0.268,
+   "ratio": 5.208,
+   "cadrUs": 1.196,
+   "piUs": 0.230,
    "ceiling": 8.0,
    "rc": 2
   }

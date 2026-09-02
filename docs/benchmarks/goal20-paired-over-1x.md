@@ -725,7 +725,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.http_timeout_p` | 1.356 | 0.303 | 4.480× | 8.00× | measure-only leftover 844; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.same_source` | 0.759 | 0.158 | 4.802× | 8.00× | measure-only leftover 845; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.quiet_manager` | 1.176 | 0.171 | 6.863× | 8.00× | measure-only leftover 846; remeasure Friend-MachineD | invent pause；地板优化另刀 |
-| `cli_extensions_install.manager_notify` | 3.324 | 1.328 | 2.503× | 8.00× | measure-only leftover 847; `extension-manager-notify` vs leftover notify format | invent pause；地板优化另刀 |
-| `cli_extensions_install.startup_issues` | 2.919 | 1.137 | 2.567× | 8.00× | measure-only leftover 848; `report-startup-extension-issues` vs leftover reportDiagnostics | invent pause；地板优化另刀 |
-| `cli_extensions_install.output_boundary` | 0.740 | 0.268 | 2.759× | 8.00× | measure-only leftover 849; `call-with-extension-output-boundary` vs leftover stdout/stderr bind | invent pause；地板优化另刀 |
+| `cli_extensions_install.manager_notify` | 3.618 | 1.235 | 2.930× | 8.00× | measure-only leftover 847; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_extensions_install.startup_issues` | 3.989 | 0.828 | 4.819× | 8.00× | measure-only leftover 848; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_extensions_install.output_boundary` | 1.196 | 0.230 | 5.208× | 8.00× | measure-only leftover 849; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
