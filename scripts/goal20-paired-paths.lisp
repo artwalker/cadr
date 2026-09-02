@@ -1330,6 +1330,9 @@
     ("cli_selectors.countdown_seconds" . 50)
     ("cli_selectors.countdown_tick" . 50)
     ("cli_selectors.countdown_render" . 50)
+    ("cli_selectors.cd_sec" . 50)
+    ("cli_selectors.cd_tick" . 50)
+    ("cli_selectors.cd_rnd" . 50)
     ("cli_selectors.armin_pixel" . 50)
     ("cli_selectors.armin_cell" . 50)
     ("cli_selectors.armin_grid_height" . 50)
@@ -36032,6 +36035,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-countdown-render))))
+     "cd_sec"
+     (collect "cli_selectors.cd_sec"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "cd_tick"
+     (collect "cli_selectors.cd_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "cd_rnd"
+     (collect "cli_selectors.cd_rnd"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render))))
      "armin_pixel"
      (collect "cli_selectors.armin_pixel"
               (lambda ()
@@ -41355,6 +41373,12 @@
       "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick"
       "cli_selectors.countdown_render"
       "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render"
+      "cli_selectors.cd_sec"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-seconds leftover"
+      "cli_selectors.cd_tick"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-tick leftover"
+      "cli_selectors.cd_rnd"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-render leftover"
       "cli_selectors.armin_pixel"
       "src/cadr-cli/interactive/components/armin.lisp armin-pixel-p"
       "cli_selectors.armin_cell"

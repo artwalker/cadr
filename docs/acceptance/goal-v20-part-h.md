@@ -10425,6 +10425,30 @@ Leftover sibling of Pair 1015. Does not remount `prefix_command`. Timed work is 
 
 Leftover sibling of Pairs 1015–1016. Does not remount `make_tool`. Timed work is name/desc make-tool. Observed `pmt_name` / `pmt_desc` are exact. First n=5 freeze **2.019×** (2.723 / 1.349 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1018 — `cli_selectors` (cd_sec)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cd_sec` | `countdown-seconds` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown-seconds |
+
+Leftover sibling of countdown seconds/tick/render on countdown.lisp. Does not remount `countdown_seconds`. Timed work is countdown seconds. Observed `cds_*` are exact. First n=5 freeze **5.648×** (1.152 / 0.204 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1019 — `cli_selectors` (cd_tick)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cd_tick` | `countdown-tick` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown-tick |
+
+Leftover sibling of Pair 1018. Does not remount `countdown_tick`. Timed work is countdown tick. Observed `cdt_*` are exact. First n=5 freeze **6.479×** (1.066 / 0.165 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1020 — `cli_selectors` (cd_rnd)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cd_rnd` | `countdown-render` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown-render |
+
+Leftover sibling of Pairs 1018–1019. Does not remount `countdown_render`. Timed work is countdown render. Observed `cdr_*` are exact. First n=5 freeze **4.599×** (1.539 / 0.335 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

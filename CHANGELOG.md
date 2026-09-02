@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.cd_sec` n=5 **5.648×** (1.152 / 0.204 µs) Friend-MachineD, ceiling 8.0. Pair 1018. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.cd_tick` n=5 **6.479×** (1.066 / 0.165 µs) Friend-MachineD, ceiling 8.0. Pair 1019. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.cd_rnd` n=5 **4.599×** (1.539 / 0.335 µs) Friend-MachineD, ceiling 8.0. Pair 1020. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `powershell_tool.up_ok` n=5 **5.415×** (0.739 / 0.137 µs) Friend-MachineD, ceiling 8.0. Pair 1015. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `powershell_tool.pc_ok` n=5 **3.197×** (0.873 / 0.273 µs) Friend-MachineD, ceiling 8.0. Pair 1016. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `powershell_tool.mt_ok` n=5 **2.019×** (2.723 / 1.349 µs) Friend-MachineD, ceiling 8.0. Pair 1017. Over-1×. `nextPairNum` unchanged.
