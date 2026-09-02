@@ -1758,6 +1758,10 @@ RATIO_CEILINGS = {
   # observed 1.928x (0.892 / 0.463 us). 8.0 is first-freeze
   # headroom. Ratchet down only.
   "cli_selectors.countdown_render": 8.0,
+    # Measure-only leftover 1018–1020.
+    "cli_selectors.cd_sec": 8.0,
+    "cli_selectors.cd_tick": 8.0,
+    "cli_selectors.cd_rnd": 8.0,
   # cli_support.provider_login_help leftover 907 (samples=5):
   # First n=5 freeze RATIO_PLACEHOLDER on host Friend-MachineD, ceiling 50.0.
   # Ratchet down only.
