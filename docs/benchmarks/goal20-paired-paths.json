@@ -1247019,6 +1247019,43 @@
       "oauth_pkce_device.github_oauth_url=3.329x/8.00x",
       "oauth_pkce_device.github_request_headers=0.851x/8.00x"
     ]
+  },
+  {
+    "recordedAt": "2026-09-02T12:30:00Z",
+    "label": "paired-paths",
+    "gitHead": "dfb4de2fa39c243c4e8f1616c50397156003453d",
+    "machine": "Friend-MachineD",
+    "quick": false,
+    "sameMachine": true,
+    "ratioGate": "enforced-only:cli_support.poll_once,cli_support.watch_error,cli_support.watch_start_close",
+    "samples": 5,
+    "metrics": {
+      "cli_support.watch_error": {
+        "cadrMedianUs": 4.83214,
+        "baselineMedianUs": 14.918,
+        "ratio": 0.324,
+        "ceiling": 8.0
+      },
+      "cli_support.watch_start_close": {
+        "cadrMedianUs": 178.51582,
+        "baselineMedianUs": 7.56808,
+        "ratio": 23.588,
+        "ceiling": 40.0
+      },
+      "cli_support.poll_once": {
+        "cadrMedianUs": 59.74394,
+        "baselineMedianUs": 199.07062,
+        "ratio": 0.3,
+        "ceiling": 8.0
+      }
+    },
+    "notes": [
+      "leftover 916-918 file-watcher error/start-close/poll-once n=5 Friend-MachineD",
+      "py gate rc=2 from parsed_provider; scoped overlay PASS",
+      "cli_support.watch_error=0.324x/8.00x",
+      "cli_support.watch_start_close=23.588x/40.00x",
+      "cli_support.poll_once=0.300x/8.00x"
+    ]
   }
   ]
 }

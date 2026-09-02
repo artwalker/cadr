@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_support.watch_error` n=5 **0.324×** (4.832 / 14.918 µs) Friend-MachineD, ceiling 8.0. Pair 916. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_support.watch_start_close` n=5 **23.588×** (178.516 / 7.568 µs) Friend-MachineD, ceiling 40.0. Pair 917. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_support.poll_once` n=5 **0.300×** (59.744 / 199.071 µs) Friend-MachineD, ceiling 8.0. Pair 918. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.github_domain` n=5 **1.141×** (1.715 / 1.503 µs) Friend-MachineD, ceiling 8.0. Pair 913. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.github_oauth_url` n=5 **3.329×** (1.387 / 0.417 µs) Friend-MachineD, ceiling 8.0. Pair 914. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.github_request_headers` n=5 **0.851×** (0.668 / 0.785 µs) Friend-MachineD, ceiling 8.0. Pair 915. `nextPairNum` unchanged.

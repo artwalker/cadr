@@ -2799,7 +2799,10 @@
       "metrics": [
         "cli_support.watch_retry_delay",
         "cli_support.close_watcher",
-        "cli_support.watch_signature"
+        "cli_support.watch_signature",
+        "cli_support.watch_error",
+        "cli_support.watch_start_close",
+        "cli_support.poll_once"
       ]
     },
     {
