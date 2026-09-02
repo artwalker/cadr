@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_interactive_controller.sess_new` n=5 **3.192×** (0.550 / 0.172 µs) Friend-MachineD, ceiling 8.0. Pair 964. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_set` n=5 **2.746×** (0.537 / 0.196 µs) Friend-MachineD, ceiling 8.0. Pair 965. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.sess_out` n=5 **0.622×** (2.499 / 4.017 µs) Friend-MachineD, ceiling 8.0. Pair 966. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.wrap_ln` n=5 **2.376×** (1.174 / 0.494 µs) Friend-MachineD, ceiling 8.0. Pair 961. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.pad_sp` n=5 **3.724×** (0.610 / 0.164 µs) Friend-MachineD, ceiling 8.0. Pair 962. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.cache_ok` n=5 **4.732×** (2.179 / 0.460 µs) Friend-MachineD, ceiling 8.0. Pair 963. Over-1×. `nextPairNum` unchanged.

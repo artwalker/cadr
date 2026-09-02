@@ -852,6 +852,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.sess_make": 50,
 	"cli_interactive_controller.sess_upd": 50,
 	"cli_interactive_controller.sess_draw": 50,
+	"cli_interactive_controller.sess_new": 50,
+	"cli_interactive_controller.sess_set": 50,
+	"cli_interactive_controller.sess_out": 50,
 	"cli_interactive_controller.wrap_osc": 50,
 	"cli_interactive_controller.pad_str": 50,
 	"cli_interactive_controller.cache_p": 50,
@@ -24187,6 +24190,15 @@ async function measureCliInteractiveDecodeEntity() {
 		sess_draw: await collect("cli_interactive_controller.sess_draw", () => {
 			return () => runCliInteractiveToolSessionRender();
 		}),
+		sess_new: await collect("cli_interactive_controller.sess_new", () => {
+			return () => runCliInteractiveToolSessionMake();
+		}),
+		sess_set: await collect("cli_interactive_controller.sess_set", () => {
+			return () => runCliInteractiveToolSessionUpdate();
+		}),
+		sess_out: await collect("cli_interactive_controller.sess_out", () => {
+			return () => runCliInteractiveToolSessionRender();
+		}),
 		wrap_osc: await collect("cli_interactive_controller.wrap_osc", () => {
 			return () => runCliInteractiveWrapTranscript();
 		}),
@@ -40773,6 +40785,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts result/pending",
 			"cli_interactive_controller.sess_draw":
 				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts renderCall/renderResult fallback",
+			"cli_interactive_controller.sess_new":
+				"packages/coding-agent leftover replica of ToolExecutionComponent construct (cadr make-tool-render-session)",
+			"cli_interactive_controller.sess_set":
+				"packages/coding-agent leftover replica of result/pending (cadr update-tool-render-session)",
+			"cli_interactive_controller.sess_out":
+				"packages/coding-agent leftover replica of renderCall/renderResult fallback (cadr render-tool-session)",
 			"cli_interactive_controller.wrap_osc":
 				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent.render OSC 133 wrap",
 			"cli_interactive_controller.pad_str":
