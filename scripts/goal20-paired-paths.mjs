@@ -658,6 +658,9 @@ const REPETITIONS = {
 	"cli_selectors.ldcixxx_ok": 50,
 	"cli_selectors.ldhexxx_ok": 50,
 	"cli_selectors.ldrdxxx_ok": 50,
+	"cli_selectors.ld_cmp": 50,
+	"cli_selectors.ld_evt": 50,
+	"cli_selectors.ld_rnd": 50,
 	"cli_selectors.user_message_handle_event": 50,
 	"cli_selectors.user_message_handle_raw": 50,
 	"cli_selectors.render_user_message_selector": 50,
@@ -36454,6 +36457,15 @@ async function measureCliSelectorsSessionSearch() {
 		ldrdxxx_ok: await collect("cli_selectors.ldrdxxx_ok", () => {
 			return () => runCliSelectorsRenderLoginDialog();
 		}),
+				ld_cmp: await collect("cli_selectors.ld_cmp", () => {
+			return () => runCliSelectorsLoginDialogCompleteInput();
+		}),
+		ld_evt: await collect("cli_selectors.ld_evt", () => {
+			return () => runCliSelectorsLoginDialogHandleEvent();
+		}),
+		ld_rnd: await collect("cli_selectors.ld_rnd", () => {
+			return () => runCliSelectorsRenderLoginDialog();
+		}),
 		user_message_handle_event: await collect(
 			"cli_selectors.user_message_handle_event",
 			() => {
@@ -41705,6 +41717,12 @@ const result = {
 				"packages/coding-agent leftover replica of LoginDialogComponent.handleInput",
 			"cli_selectors.ldrdxxx_ok":
 				"packages/coding-agent leftover replica of LoginDialogComponent layout",
+			"cli_selectors.ld_cmp":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.replaceInputWithSubmittedText leftover",
+			"cli_selectors.ld_evt":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.handleInput leftover",
+			"cli_selectors.ld_rnd":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.render leftover",
 			"cli_selectors.user_message_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (structured events)",
 			"cli_selectors.user_message_handle_raw":

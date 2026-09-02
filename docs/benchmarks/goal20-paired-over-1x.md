@@ -830,6 +830,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ld_prog` | 3.541 | 1.369 | 2.586× | 8.00× | measure-only leftover 1028; login-dialog-show-progress leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_man` | 6.210 | 2.343 | 2.650× | 8.00× | measure-only leftover 1029; login-dialog-show-manual-input leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_prmt` | 10.038 | 3.250 | 3.088× | 8.00× | measure-only leftover 1030; login-dialog-show-prompt leftover | invent pause；地板优化另刀 |
+| `cli_selectors.ld_cmp` | 6.716 | 2.977 | 2.256× | 8.00× | measure-only leftover 1033; login-dialog-complete-input leftover | invent pause；地板优化另刀 |
+| `cli_selectors.ld_evt` | 7.339 | 2.254 | 3.257× | 8.00× | measure-only leftover 1034; login-dialog-handle-event leftover | invent pause；地板优化另刀 |
+| `cli_selectors.ld_rnd` | 98.051 | 1.661 | 59.042× | 70.00× | measure-only leftover 1035; render-login-dialog leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_info` | 10.904 | 3.575 | 3.050× | 8.00× | measure-only leftover 1031; login-dialog-show-info leftover | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
