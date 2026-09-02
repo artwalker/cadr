@@ -1279,6 +1279,9 @@
     ("cli_selectors.lmsxxxx_ok" . 50)
     ("cli_selectors.akixxxx_ok" . 50)
     ("cli_selectors.ossxxxx_ok" . 50)
+    ("cli_selectors.mlms_ok" . 50)
+    ("cli_selectors.makis_ok" . 50)
+    ("cli_selectors.moss_ok" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -35764,6 +35767,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
+     "mlms_ok"
+     (collect "cli_selectors.mlms_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "makis_ok"
+     (collect "cli_selectors.makis_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "moss_ok"
+     (collect "cli_selectors.moss_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
      "login_dialog_show_waiting"
      (collect "cli_selectors.login_dialog_show_waiting"
               (lambda ()
@@ -41140,6 +41158,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover"
       "cli_selectors.ossxxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover 1407"
+      "cli_selectors.mlms_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
+      "cli_selectors.makis_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
+      "cli_selectors.moss_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
       "cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
       "cli_selectors.login_dialog_show_progress"
