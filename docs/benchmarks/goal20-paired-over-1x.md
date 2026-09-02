@@ -717,4 +717,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.session_entry_tree_selector_data` | 4.460 | 0.970 | 4.596× | 8.00× | measure-only leftover 824; `session-entry-tree-selector-data` vs leftover one tree row; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_restored_model` | 4.808 | 3.084 | 1.559× | 8.00× | measure-only leftover 825; `session-restored-model` vs leftover restored model lookup; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_print_rpc.close_pending` | 2.293 | 0.714 | 3.213× | 8.00× | measure-only leftover 831; `rpc-close-pending-dialogs` vs leftover pending map clear; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `oauth_pkce_device.write_http_response` | 6.758 | 0.620 | 10.896× | 12.00× | measure-only leftover 833; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `oauth_pkce_device.present_auth_url` | 2.080 | 0.354 | 5.875× | 8.00× | measure-only leftover 834; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

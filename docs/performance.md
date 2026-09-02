@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `—` (2026-09-02T00:13:49Z) on `Friend-MachineD`, git `f56db7a7a62b`, ratio_gate=`enforced-only:cli_print_rpc.close_pending,cli_print_rpc.dialog_deadline,cli_print_rpc.dialog_default`, quick=no, samples=5
+Current: `—` (2026-09-02T00:55:17Z) on `Friend-MachineD`, git `9f5d9cd92195`, ratio_gate=`enforced-only:oauth_pkce_device.hex_value,oauth_pkce_device.present_auth_url,oauth_pkce_device.write_http_response`, quick=no, samples=5
 
-Previous: `—` (2026-09-01T23:21:51Z) on `Friend-MachineD`, git `0e6e31027cdd`, ratio_gate=`enforced-only:cli_extensions_install.llama_search_filter,cli_extensions_install.llama_search_status,cli_extensions_install.llama_view_width`, quick=no, samples=5
+Previous: `—` (2026-09-02T00:13:49Z) on `Friend-MachineD`, git `f56db7a7a62b`, ratio_gate=`enforced-only:cli_print_rpc.close_pending,cli_print_rpc.dialog_deadline,cli_print_rpc.dialog_default`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -815,6 +815,9 @@ Previous: `—` (2026-09-01T23:21:51Z) on `Friend-MachineD`, git `0e6e31027cdd`,
 | `oauth_pkce_device.provider_key` | 0.2 | 0.3 | 0.92× | 0.92× | 8.00× |
 | `oauth_pkce_device.http_status_text` | 0.2 | 0.2 | 0.96× | 0.96× | 8.00× |
 | `oauth_pkce_device.parse_callback_request` | 15.8 | 3.5 | 4.48× | 4.48× | 8.00× |
+| `oauth_pkce_device.hex_value` | — | — | 0.69× | — | 8.00× |
+| `oauth_pkce_device.write_http_response` | — | — | 10.90× | — | 12.00× |
+| `oauth_pkce_device.present_auth_url` | — | — | 5.88× | — | 8.00× |
 | `cli_extensions_install.llama_url` | 4.5 | 18.2 | 0.25× | 0.25× | 8.00× |
 | `cli_extensions_install.hf_token` | 267.9 | 1,045.4 | 0.26× | 0.26× | 8.00× |
 | `cli_extensions_install.llama_catalog` | 5.6 | 14.0 | 0.40× | 0.40× | 8.00× |
@@ -953,9 +956,9 @@ Previous: `—` (2026-09-01T23:21:51Z) on `Friend-MachineD`, git `0e6e31027cdd`,
 | `cli_print_rpc.queue_mode` | 0.3 | 2.7 | 0.12× | 0.12× | 8.00× |
 | `cli_print_rpc.last_assistant` | 0.3 | 0.4 | 0.71× | 0.71× | 8.00× |
 | `cli_print_rpc.command_list` | 1.5 | 0.4 | 4.15× | 4.15× | 8.00× |
-| `cli_print_rpc.dialog_default` | — | — | 0.70× | — | 8.00× |
-| `cli_print_rpc.dialog_deadline` | — | — | 0.70× | — | 8.00× |
-| `cli_print_rpc.close_pending` | — | — | 3.21× | — | 8.00× |
+| `cli_print_rpc.dialog_default` | — | — | 0.70× | 0.70× | 8.00× |
+| `cli_print_rpc.dialog_deadline` | — | — | 0.70× | 0.70× | 8.00× |
+| `cli_print_rpc.close_pending` | — | — | 3.21× | 3.21× | 8.00× |
 | `skill_prompt_load.sdk_prompt_input` | 15.2 | 3.5 | 4.32× | 4.32× | 8.00× |
 | `skill_prompt_load.sdk_list_override` | 0.2 | 0.5 | 0.36× | 0.36× | 8.00× |
 | `skill_prompt_load.sdk_context_files` | 7.6 | 2.6 | 2.88× | 2.88× | 8.00× |
@@ -2325,6 +2328,7 @@ Previous: `—` (2026-09-01T23:21:51Z) on `Friend-MachineD`, git `0e6e31027cdd`,
 | 2026-09-01T23:06:29Z | — | `ccc9e7ade8f5` | no | enforced-only:cli_bootstrap_sessions.session_entry_tree_selector_data,cli_bootstrap_sessions.session_restored_model,cli_bootstrap_sessions.validate_cli_session_flags | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-01T23:21:51Z | — | `0e6e31027cdd` | no | enforced-only:cli_extensions_install.llama_search_filter,cli_extensions_install.llama_search_status,cli_extensions_install.llama_view_width | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T00:13:49Z | — | `f56db7a7a62b` | no | enforced-only:cli_print_rpc.close_pending,cli_print_rpc.dialog_deadline,cli_print_rpc.dialog_default | 0.86× | 0.87× | 0.97× | 0.07× |
+| 2026-09-02T00:55:17Z | — | `9f5d9cd92195` | no | enforced-only:oauth_pkce_device.hex_value,oauth_pkce_device.present_auth_url,oauth_pkce_device.write_http_response | 0.86× | 0.87× | 0.97× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

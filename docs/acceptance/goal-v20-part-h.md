@@ -10378,6 +10378,30 @@ Leftover sibling of Pair 829. Timed work is timeout-ms → deadline — not cond
 
 Leftover sibling of Pairs 829–830. Timed work is closing-p + pending map clear — not listen, not HTTP. Observed `rcp_close` / `rcp_n` / `rcp_empty` / `rcp_empty_n` / `rcp_keys` are exact. First n=5 freeze **2.795×** (1.526 / 0.546 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **3.213×** (2.293 / 0.714 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 832 — `oauth_pkce_device` (hex_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hex_value` | `hex-value` (`src/cadr-ai/oauth/callback.lisp`) | leftover `parseInt` hex digit (`packages/ai/src/auth/oauth`) |
+
+Leftover sibling of leftover percent_decode / parse_query / parse_callback_request on the same `callback.lisp` `oauth_pkce_device` hole. Timed work is a valid hex digit — not percent-decode, not listen. Observed `hv_A` / `hv_a` / `hv_0` / `hv_F` / `hv_9` / `hv_n` are exact. First n=5 freeze **0.371×** (0.142 / 0.384 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **0.692×** (0.272 / 0.392 µs) on host `Friend-MachineD`. Under 1× — not booked on over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 833 — `oauth_pkce_device` (write_http_response)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_http_response` | `write-oauth-http-response` (`src/cadr-ai/oauth/callback.lisp`) | leftover `writeHead`+`end` (`packages/ai/src/auth/oauth/anthropic.ts`) |
+
+Leftover sibling of Pair 832. Timed work is string-stream HTTP write — not sockets, not listen. Observed `woh_ok` / `woh_ct` / `woh_body` / `woh_400` / `woh_n` are exact. First n=5 freeze **8.881×** (5.964 / 0.672 µs) on host `cursor`, ceiling 12.0 (Lisp `format` HTTP framing vs leftover writeHead mock). Remeasure on tip **10.896×** (6.758 / 0.620 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 834 — `oauth_pkce_device` (present_auth_url)
+
+| metric | cadr | pi |
+|---|---|---|
+| `present_auth_url` | `present-oauth-auth-url` (`src/cadr-ai/oauth/callback.lisp`) | leftover `auth_url` notify (`packages/ai/src/cli.ts`) |
+
+Leftover sibling of Pairs 832–833. Timed work is URL print or callback — not browser open, not wait. Observed `pau_fmt` / `pau_url` / `pau_ret` / `pau_cb` / `pau_n` are exact. First n=5 freeze **4.268×** (1.580 / 0.370 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **5.875×** (2.080 / 0.354 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

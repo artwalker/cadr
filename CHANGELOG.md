@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.hex_value`
+  (`hex-value` vs leftover parseInt hex digit). Observed
+  `hv_A` / `hv_a` / `hv_0` / `hv_F` / `hv_9` / `hv_n` exact.
+  n=5 **0.371×** (0.142 / 0.384 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 832). Under 1× — not booked on over-1×.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.write_http_response`
+  (`write-oauth-http-response` vs leftover writeHead+end). Observed
+  `woh_ok` / `woh_ct` / `woh_body` / `woh_400` / `woh_n` exact.
+  n=5 **8.881×** (5.964 / 0.672 µs) on host `cursor`, ceiling 12.0
+  (Lisp `format` HTTP framing vs leftover writeHead mock). Measure-only
+  leftover (Pair 833). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.present_auth_url`
+  (`present-oauth-auth-url` vs leftover auth_url notify). Observed
+  `pau_fmt` / `pau_url` / `pau_ret` / `pau_cb` / `pau_n` exact.
+  n=5 **4.268×** (1.580 / 0.370 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 834). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_print_rpc.dialog_default`
   (`rpc-dialog-default` vs leftover createDialogPromise defaultValue). Observed
   `rdd_sel` / `rdd_conf` / `rdd_in` / `rdd_ed` / `rdd_n` exact.
