@@ -1270,6 +1270,9 @@
     ("cli_selectors.trsvxxx_ok" . 50)
     ("cli_selectors.trmkxxx_ok" . 50)
     ("cli_selectors.trrsxxx_ok" . 50)
+    ("cli_selectors.tosp_ok" . 50)
+    ("cli_selectors.mtss_ok" . 50)
+    ("cli_selectors.rtrs_ok" . 50)
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
@@ -35716,6 +35719,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-trust-selector))))
+     "tosp_ok"
+     (collect "cli_selectors.tosp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-option-saved-p))))
+     "mtss_ok"
+     (collect "cli_selectors.mtss_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-trust-selector-state))))
+     "rtrs_ok"
+     (collect "cli_selectors.rtrs_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-trust-selector))))
      "make_login_method_selector_state"
      (collect "cli_selectors.make_login_method_selector_state"
               (lambda ()
@@ -41104,6 +41122,12 @@
       "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state leftover"
       "cli_selectors.trrsxxx_ok"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector leftover"
+      "cli_selectors.tosp_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p"
+      "cli_selectors.mtss_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
+      "cli_selectors.rtrs_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.make_login_method_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
       "cli_selectors.make_api_key_input_state"

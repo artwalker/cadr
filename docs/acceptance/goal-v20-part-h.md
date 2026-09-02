@@ -10305,6 +10305,30 @@ Leftover sibling of Pair 997. Does not remount `user_message_handle_raw`. Timed 
 
 Leftover sibling of Pairs 997–998. Does not remount `render_user_message_selector`. Timed work is three/hit user-message selector render. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **105.189×** (312.691 / 2.973 µs) on host `Friend-MachineD`, ceiling 120.0 (raised from 100.0 for first Friend-MachineD freeze). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1000 — `cli_selectors` (tosp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tosp_ok` | `trust-option-saved-p` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of isSavedOption |
+
+Leftover sibling of leftover trust saved/ctor/layout remounts on trust.lisp. Does not remount `trust_option_saved_p`. Timed work is nil/distrust saved-option checks. Observed `tosp_nil` / `tosp_distrust` are exact. First n=5 freeze **1.914×** (51.075 / 26.680 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1001 — `cli_selectors` (mtss_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mtss_ok` | `make-trust-selector-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent constructor |
+
+Leftover sibling of Pair 1000. Does not remount `make_trust_selector_state`. Timed work is child/single trust selector construct. Observed `mtss_child` / `mtss_single` are exact. First n=5 freeze **1.937×** (164.943 / 85.159 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1002 — `cli_selectors` (rtrs_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rtrs_ok` | `render-trust-selector` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent layout |
+
+Leftover sibling of Pairs 1000–1001. Does not remount `render_trust_selector`. Timed work is default/single trust selector render. Observed `rtrs_default` / `rtrs_single` are exact. First n=5 freeze **7.030×** (1370.312 / 194.933 µs) on host `Friend-MachineD`, ceiling 15.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
