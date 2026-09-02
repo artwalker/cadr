@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_interactive_controller.bash_go` n=5 **4.156×** (1.218 / 0.293 µs) Friend-MachineD, ceiling 8.0. Pair 988. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bash_end` n=5 **6.552×** (1.460 / 0.223 µs) Friend-MachineD, ceiling 8.0. Pair 989. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.bash_off` n=5 **8.012×** (1.346 / 0.168 µs) Friend-MachineD, ceiling 12.0 (raised from 8.0). Pair 990. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `evals_harness.rep_ok` n=5 **1.805×** (0.570 / 0.316 µs) Friend-MachineD, ceiling 8.0. Pair 985. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `evals_harness.fin_ok` n=5 **1.873×** (0.267 / 0.142 µs) Friend-MachineD, ceiling 8.0. Pair 986. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `evals_harness.meta_ok` n=5 **2.042×** (1.651 / 0.809 µs) Friend-MachineD, ceiling 8.0. Pair 987. Over-1×. `nextPairNum` unchanged.
