@@ -8,6 +8,12 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `oauth_pkce_device.github_domain` n=5 **1.141×** (1.715 / 1.503 µs) Friend-MachineD, ceiling 8.0. Pair 913. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_oauth_url` n=5 **3.329×** (1.387 / 0.417 µs) Friend-MachineD, ceiling 8.0. Pair 914. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_request_headers` n=5 **0.851×** (0.668 / 0.785 µs) Friend-MachineD, ceiling 8.0. Pair 915. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_domain` n=5 **1.141×** (1.715 / 1.503 µs) Friend-MachineD, ceiling 8.0. Pair 913. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_oauth_url` n=5 **3.329×** (1.387 / 0.417 µs) Friend-MachineD, ceiling 8.0. Pair 914. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.github_request_headers` n=5 **0.851×** (0.668 / 0.785 µs) Friend-MachineD, ceiling 8.0. Pair 915. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.daxnuts_render` n=5 **4.055×** (594.457 / 146.590 µs) Friend-MachineD, ceiling 8.0. Pair 910. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.daxnuts_invalidate` n=5 **6.106×** (21.783 / 3.568 µs) Friend-MachineD, ceiling 8.0. Pair 911. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.daxnuts_dispose` n=5 **3.537×** (0.851 / 0.241 µs) Friend-MachineD, ceiling 8.0. Pair 912. Over-1×. `nextPairNum` unchanged.

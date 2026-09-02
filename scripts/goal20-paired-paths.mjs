@@ -349,6 +349,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.provider_key": 50,
 	"oauth_pkce_device.http_status_text": 50,
 	"oauth_pkce_device.parse_callback_request": 50,
+	"oauth_pkce_device.github_domain": 50,
+	"oauth_pkce_device.github_oauth_url": 50,
+	"oauth_pkce_device.github_request_headers": 50,
 	"oauth_pkce_device.openrouter_login": 50,
 	"oauth_pkce_device.openrouter_login_fail": 50,
 	"oauth_pkce_device.openrouter_login_miss": 50,
@@ -13677,6 +13680,120 @@ function runOauthPkceDevicePresentAuthUrl() {
 	};
 }
 
+function leftoverNormalizeGitHubDomain(input) {
+	const trimmed = input.trim();
+	if (!trimmed) return null;
+	try {
+		const url = trimmed.includes("://")
+			? new URL(trimmed)
+			: new URL(`https://${trimmed}`);
+		return url.hostname;
+	} catch {
+		return null;
+	}
+}
+
+function leftoverGithubDomainFlag(input, expected) {
+	const got = leftoverNormalizeGitHubDomain(input);
+	if (expected === null) return got ? 0 : 1;
+	return got === expected ? 1 : 0;
+}
+
+
+function runOauthPkceDeviceGithubDomain() {
+	return {
+		ghd_blank: leftoverGithubDomainFlag("", null),
+		ghd_plain: leftoverGithubDomainFlag("github.com", "github.com"),
+		ghd_https: leftoverGithubDomainFlag(
+			"https://company.ghe.com/path",
+			"company.ghe.com",
+		),
+		ghd_trim: leftoverGithubDomainFlag("  github.com  ", "github.com"),
+		ghd_n: 1,
+	};
+}
+
+
+function leftoverGithubOAuthUrl(domain, suffix) {
+	return `https://${domain}${suffix}`;
+}
+
+
+function leftoverGithubOAuthUrlFlag(domain, suffix, expected) {
+	return leftoverGithubOAuthUrl(domain, suffix) === expected ? 1 : 0;
+}
+
+
+function runOauthPkceDeviceGithubOauthUrl() {
+	const https = leftoverGithubOAuthUrl("github.com", "/login/device/code");
+	return {
+		gou_dev: leftoverGithubOAuthUrlFlag(
+			"github.com",
+			"/login/device/code",
+			"https://github.com/login/device/code",
+		),
+		gou_tok: leftoverGithubOAuthUrlFlag(
+			"github.com",
+			"/login/oauth/access_token",
+			"https://github.com/login/oauth/access_token",
+		),
+		gou_ent: leftoverGithubOAuthUrlFlag(
+			"company.ghe.com",
+			"/login/device/code",
+			"https://company.ghe.com/login/device/code",
+		),
+		gou_https: https.startsWith("https://") ? 1 : 0,
+		gou_n: 1,
+	};
+}
+
+
+function leftoverGithubCopilotRequestHeaders(access, extra) {
+	const copilot = {
+		"User-Agent": "GitHubCopilotChat/0.35.0",
+		"Editor-Version": "vscode/1.107.0",
+		"Editor-Plugin-Version": "copilot-chat/0.35.0",
+		"Copilot-Integration-Id": "vscode-chat",
+	};
+	const headers = [
+		...extra,
+		["Authorization", `Bearer ${access}`],
+		...Object.entries(copilot),
+	];
+	return headers;
+}
+
+
+function leftoverGithubHeader(headers, name) {
+	const hit = headers.find((pair) => pair[0] === name);
+	return hit ? hit[1] : null;
+}
+
+
+function runOauthPkceDeviceGithubRequestHeaders() {
+	const headers = leftoverGithubCopilotRequestHeaders("tok", [
+		["Accept", "application/json"],
+	]);
+	return {
+		gch_n: String(headers.length),
+		gch_auth:
+			leftoverGithubHeader(headers, "Authorization") === "Bearer tok"
+				? "1"
+				: "0",
+		gch_ua:
+			leftoverGithubHeader(headers, "User-Agent") ===
+			"GitHubCopilotChat/0.35.0"
+				? "1"
+				: "0",
+		gch_acc:
+			leftoverGithubHeader(headers, "Accept") === "application/json"
+				? "1"
+				: "0",
+		gch_ok: "1",
+	};
+}
+
+
 function base64urlValueFlag(character, expected) {
 	try {
 		return OAUTH_BASE64URL_ALPHABET.indexOf(character) === expected ? 1 : 0;
@@ -14684,6 +14801,9 @@ async function measureOauthPkceDevice() {
 	const providerKey = runOauthPkceDeviceProviderKey();
 	const statusText = runOauthPkceDeviceHttpStatusText();
 	const callbackRequest = runOauthPkceDeviceParseCallbackRequest();
+	const githubDomain = runOauthPkceDeviceGithubDomain();
+	const githubOauthUrl = runOauthPkceDeviceGithubOauthUrl();
+	const githubRequestHeaders = runOauthPkceDeviceGithubRequestHeaders();
 	const openrouterLogin = runOauthPkceDeviceOpenrouterLogin();
 	const openrouterLoginFail = runOauthPkceDeviceOpenrouterLoginFail();
 	const openrouterLoginMiss = runOauthPkceDeviceOpenrouterLoginMiss();
@@ -14745,6 +14865,18 @@ async function measureOauthPkceDevice() {
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
 		}),
+		github_domain: await collect("oauth_pkce_device.github_domain", () => {
+			return () => runOauthPkceDeviceGithubDomain();
+		}),
+		github_oauth_url: await collect("oauth_pkce_device.github_oauth_url", () => {
+			return () => runOauthPkceDeviceGithubOauthUrl();
+		}),
+		github_request_headers: await collect(
+			"oauth_pkce_device.github_request_headers",
+			() => {
+				return () => runOauthPkceDeviceGithubRequestHeaders();
+			},
+		),
 		openrouter_login: await collect("oauth_pkce_device.openrouter_login", () => {
 			return () => runOauthPkceDeviceOpenrouterLogin();
 		}),
@@ -14857,6 +14989,9 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...githubDomain,
+			...githubOauthUrl,
+			...githubRequestHeaders,
 			...openrouterLogin,
 			...openrouterLoginFail,
 			...openrouterLoginMiss,
