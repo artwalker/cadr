@@ -10521,6 +10521,30 @@ Leftover sibling of Pair 1027. Does not remount `login_dialog_show_progress`. Ti
 
 Leftover sibling of Pairs 1027–1028. Does not remount `login_dialog_show_manual_input`. Timed work is show manual input. Observed `ldmi_*` are exact. First n=5 freeze **2.650×** (6.210 / 2.343 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1030 — `cli_selectors` (ld_prmt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ld_prmt` | `login-dialog-show-prompt` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showPrompt |
+
+Leftover sibling of login-dialog prompt/info/details on login-dialog.lisp. Does not remount `login_dialog_show_prompt`. Timed work is show prompt. Observed `ldpr_*` are exact. First n=5 freeze **3.088×** (10.038 / 3.250 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1031 — `cli_selectors` (ld_info)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ld_info` | `login-dialog-show-info` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showInfo |
+
+Leftover sibling of Pair 1030. Does not remount `login_dialog_show_info`. Timed work is show info. Observed `ldi_*` are exact. First n=5 freeze **3.050×** (10.904 / 3.575 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1032 — `cli_selectors` (ld_det)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ld_det` | `login-dialog-show-details` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showDetails |
+
+Leftover sibling of Pairs 1030–1031. Does not remount `login_dialog_show_details`. Timed work is show details. Observed `lddt_*` are exact. First n=5 freeze **0.822×** (3.050 / 3.708 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1× (cadr leads); not listed in over-1× table. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
