@@ -667,6 +667,9 @@ const REPETITIONS = {
 	"cli_selectors.daxnuts_rgb_at": 50,
 	"cli_selectors.make_daxnuts_component": 50,
 	"cli_selectors.daxnuts_component_tick": 50,
+	"cli_selectors.dax_rgb": 50,
+	"cli_selectors.dax_make": 50,
+	"cli_selectors.dax_tick": 50,
 	"cli_selectors.dlg_make": 50,
 	"cli_selectors.dlg_auth": 50,
 	"cli_selectors.dlg_dev": 50,
@@ -36502,6 +36505,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsDaxnutsComponentTick();
 			},
 		),
+		dax_rgb: await collect("cli_selectors.dax_rgb", () => {
+			return () => runCliSelectorsDaxnutsRgbAt();
+		}),
+		dax_make: await collect("cli_selectors.dax_make", () => {
+			return () => runCliSelectorsMakeDaxnutsComponent();
+		}),
+		dax_tick: await collect("cli_selectors.dax_tick", () => {
+			return () => runCliSelectorsDaxnutsComponentTick();
+		}),
 		countdown_seconds: await collect("cli_selectors.countdown_seconds", () => {
 			return () => runCliSelectorsCountdownSeconds();
 		}),
@@ -41675,6 +41687,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent constructor (no startAnimation)",
 			"cli_selectors.daxnuts_component_tick":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent interval body",
+			"cli_selectors.dax_rgb":
+				"packages/coding-agent leftover replica of daxnuts-rgb-at",
+			"cli_selectors.dax_make":
+				"packages/coding-agent leftover replica of make-daxnuts-component",
+			"cli_selectors.dax_tick":
+				"packages/coding-agent leftover replica of daxnuts-component-tick",
 			"cli_selectors.countdown_seconds":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts Math.ceil(timeoutMs/1000)",
 			"cli_selectors.countdown_tick":
