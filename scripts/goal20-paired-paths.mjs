@@ -655,6 +655,9 @@ const REPETITIONS = {
 	"cli_selectors.daxnuts_render": 50,
 	"cli_selectors.daxnuts_invalidate": 50,
 	"cli_selectors.daxnuts_dispose": 50,
+	"cli_selectors.dlg_new": 50,
+	"cli_selectors.dlg_key": 50,
+	"cli_selectors.dlg_code": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -36439,6 +36442,15 @@ async function measureCliSelectorsSessionSearch() {
 					leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
 				);
 		}),
+		dlg_new: await collect("cli_selectors.dlg_new", () => {
+			return () => runCliSelectorsLoginDialogMake();
+		}),
+		dlg_key: await collect("cli_selectors.dlg_key", () => {
+			return () => runCliSelectorsLoginDialogAuth();
+		}),
+		dlg_code: await collect("cli_selectors.dlg_code", () => {
+			return () => runCliSelectorsLoginDialogDevice();
+		}),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
 			return () => runCliSelectorsArminPixel();
 		}),
@@ -41522,6 +41534,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent invalidate (cachedWidth/cachedKey clear)",
 			"cli_selectors.daxnuts_dispose":
 				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent dispose unstarted (stopped, interval stays null)",
+			"cli_selectors.dlg_new":
+				"packages/coding-agent leftover replica of LoginDialogComponent constructor (cadr make-login-dialog-state)",
+			"cli_selectors.dlg_key":
+				"packages/coding-agent leftover replica of showAuth (cadr login-dialog-show-auth)",
+			"cli_selectors.dlg_code":
+				"packages/coding-agent leftover replica of showDeviceCode (cadr login-dialog-show-device-code)",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

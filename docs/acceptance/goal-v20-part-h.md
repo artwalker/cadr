@@ -10233,6 +10233,30 @@ Leftover sibling of Pair 988. Does not remount `bash_fin`. Timed work is hello c
 
 Leftover sibling of Pairs 988–989. Does not remount `bash_halt`. Timed work is stop after partial output. Observed `st_run` / `st_exit` are exact. First n=5 freeze **8.012×** (1.346 / 0.168 µs) on host `Friend-MachineD`, ceiling 12.0 (raised from 8.0). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 991 — `cli_selectors` (dlg_new)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_new` | `make-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent constructor |
+
+Leftover sibling of leftover 529–531, 619–627, and 946–948 on the same needs-pair file. Does not remount `dlg_make`. Timed work is empty/named/long provider construct. Observed `ldm_empty_n` / `ldm_named` are exact. First n=5 freeze **5.046×** (0.514 / 0.102 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 992 — `cli_selectors` (dlg_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_key` | `login-dialog-show-auth` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of showAuth |
+
+Leftover sibling of Pair 991. Does not remount `dlg_auth`. Timed work is plain/instr/empty/replace auth sections. Observed `lda_plain` / `lda_n` are exact. First n=5 freeze **5.599×** (2.945 / 0.526 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 993 — `cli_selectors` (dlg_code)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dlg_code` | `login-dialog-show-device-code` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of showDeviceCode |
+
+Leftover sibling of Pairs 991–992. Does not remount `dlg_dev`. Timed work is code/empty/replace device sections. Observed `ldd_code` / `ldd_hint` are exact. First n=5 freeze **5.985×** (5.677 / 0.949 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
