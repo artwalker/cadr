@@ -751,6 +751,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.wrap_extension_host_turn` | 1.297 | 0.561 | 2.313× | 8.00× | measure-only leftover 865-867; remeasure Friend-MachineD | extension-ui tui-thread/wrap |
 | `oauth_pkce_device.openai_exchange` | 29.574 | 5.257 | 5.625× | 8.00× | measure-only leftover 889-891; remeasure Friend-MachineD | openai-anthropic token/exchange trio |
 | `oauth_pkce_device.anthropic_exchange` | 12.807 | 7.545 | 1.697× | 8.00× | measure-only leftover 889-891; remeasure Friend-MachineD | openai-anthropic token/exchange trio |
+| `oauth_pkce_device.device_poll_complete` | 2.586 | 0.164 | 15.756× | 15.00× | measure-only leftover 892-894; remeasure Friend-MachineD | openai-device poll trio |
+| `oauth_pkce_device.device_poll_fail` | 2.962 | 1.737 | 1.705× | 8.00× | measure-only leftover 892-894; remeasure Friend-MachineD | openai-device poll trio |
+| `oauth_pkce_device.device_poll_slow` | 3.588 | 1.967 | 1.824× | 8.00× | measure-only leftover 892-894; remeasure Friend-MachineD | openai-device poll trio |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |

@@ -9307,6 +9307,30 @@ Leftover sibling of Pair 889. Timed work is stub HTTP 200 token JSON, HTTP 400, 
 
 Leftover sibling of Pairs 889–890. Timed work is stub HTTP 200 token JSON, HTTP 400, and invalid JSON — not callback server, not expires skew. Observed `aex_ok` / `aex_http` / `aex_badjson` / `aex_n` are exact. First n=5 freeze **1.697×** (12.807 / 7.545 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 892 — `oauth_pkce_device` (device_poll_complete)
+
+| metric | cadr | pi |
+|---|---|---|
+| `device_poll_complete` | `poll-openai-codex-device-authorization` (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` complete (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openai-device.lisp` (leftover 421–423 measured json_copy / interval_seconds / device_start). Timed work is stub HTTP 200 with authorization_code and code_verifier — not device_start, not browser login. Observed `dpc_code` / `dpc_ver` / `dpc_n` are exact. First n=5 freeze **15.756×** (2.586 / 0.164 µs) on host `Friend-MachineD`, ceiling 15.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 893 — `oauth_pkce_device` (device_poll_fail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `device_poll_fail` | `poll-openai-codex-device-authorization` failed (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` failed (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pair 892. Timed work is stub HTTP 200 missing fields throwing — not exact failed-message JSON stringify. Observed `dpf_throw` / `dpf_n` are exact. First n=5 freeze **1.705×** (2.962 / 1.737 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 894 — `oauth_pkce_device` (device_poll_slow)
+
+| metric | cadr | pi |
+|---|---|---|
+| `device_poll_slow` | `poll-openai-codex-device-authorization` slow_down timeout (`src/cadr-ai/oauth/providers/openai-device.lisp`) | `pollOpenAICodexDeviceAuth` slow_down + `SLOW_DOWN_TIMEOUT_MESSAGE` (`packages/ai/src/auth/oauth/openai-codex.ts` + `device-code.ts`) |
+
+Leftover sibling of Pairs 892–893. Timed work is stub HTTP error `slow_down` then timeout message — not interval_seconds, not live sleep. Observed `dps_msg` / `dps_n` are exact. First n=5 freeze **1.824×** (3.588 / 1.967 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 925 — `evals_harness` (validate_extension)
 
 | metric | cadr | pi |

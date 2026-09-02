@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-02T08:17:48Z) on `Friend-MachineD`, git `d5d5f954d4af`, ratio_gate=`enforced-only:oauth_pkce_device.anthropic_exchange,oauth_pkce_device.openai_exchange,oauth_pkce_device.token_fields`, quick=no, samples=5
+Current: `paired-paths` (2026-09-02T08:55:55Z) on `Friend-MachineD`, git `1a4ae6592c65`, ratio_gate=`enforced-only:oauth_pkce_device.device_poll_complete,oauth_pkce_device.device_poll_fail,oauth_pkce_device.device_poll_slow`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-02T07:57:15Z) on `Friend-MachineD`, git `68b118e2c1e9`, ratio_gate=`enforced-only:cli_interactive_controller.extension_host_turn,cli_interactive_controller.tui_input_thread,cli_interactive_controller.wrap_extension_host_turn`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-02T08:17:48Z) on `Friend-MachineD`, git `d5d5f954d4af`, ratio_gate=`enforced-only:oauth_pkce_device.anthropic_exchange,oauth_pkce_device.openai_exchange,oauth_pkce_device.token_fields`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -893,9 +893,12 @@ Previous: `paired-paths` (2026-09-02T07:57:15Z) on `Friend-MachineD`, git `68b11
 | `oauth_pkce_device.openrouter_input` | 6.0 | 9.3 | 0.65× | 0.65× | 8.00× |
 | `oauth_pkce_device.openrouter_refresh` | 0.4 | 1.1 | 0.33× | 0.33× | 8.00× |
 | `oauth_pkce_device.openrouter_exchange` | 11.2 | 7.0 | 1.61× | 1.61× | 8.00× |
-| `oauth_pkce_device.token_fields` | 3.2 | 4.3 | 0.75× | — | 8.00× |
-| `oauth_pkce_device.openai_exchange` | 29.6 | 5.3 | 5.62× | — | 8.00× |
-| `oauth_pkce_device.anthropic_exchange` | 12.8 | 7.5 | 1.70× | — | 8.00× |
+| `oauth_pkce_device.token_fields` | 3.2 | 4.3 | 0.75× | 0.75× | 8.00× |
+| `oauth_pkce_device.openai_exchange` | 29.6 | 5.3 | 5.62× | 5.62× | 8.00× |
+| `oauth_pkce_device.anthropic_exchange` | 12.8 | 7.5 | 1.70× | 1.70× | 8.00× |
+| `oauth_pkce_device.device_poll_complete` | 2.6 | 0.2 | 15.76× | — | 15.00× |
+| `oauth_pkce_device.device_poll_fail` | 3.0 | 1.7 | 1.70× | — | 8.00× |
+| `oauth_pkce_device.device_poll_slow` | 3.6 | 2.0 | 1.82× | — | 8.00× |
 | `evals_harness.make_reporter` | 0.3 | 0.4 | 0.92× | 0.92× | 8.00× |
 | `evals_harness.finite_number` | 0.1 | 0.2 | 0.53× | 0.53× | 8.00× |
 | `evals_harness.artifact_metadata` | 1.0 | 0.9 | 1.18× | 1.18× | 8.00× |
@@ -2367,6 +2370,7 @@ Previous: `paired-paths` (2026-09-02T07:57:15Z) on `Friend-MachineD`, git `68b11
 | 2026-09-02T07:41:40Z | — | `e554df2f8529` | no | enforced-only:cli_selectors.armin_copy_cell,cli_selectors.armin_copy_row,cli_selectors.armin_rotate_row | 0.86× | 0.87× | 0.97× | 0.07× |
 | 2026-09-02T07:57:15Z | paired-paths | `68b118e2c1e9` | no | enforced-only:cli_interactive_controller.extension_host_turn,cli_interactive_controller.tui_input_thread,cli_interactive_controller.wrap_extension_host_turn | 1.37× | 1.30× | 1.23× | 0.08× |
 | 2026-09-02T08:17:48Z | paired-paths | `d5d5f954d4af` | no | enforced-only:oauth_pkce_device.anthropic_exchange,oauth_pkce_device.openai_exchange,oauth_pkce_device.token_fields | 1.37× | 1.30× | 1.23× | 0.08× |
+| 2026-09-02T08:55:55Z | paired-paths | `1a4ae6592c65` | no | enforced-only:oauth_pkce_device.device_poll_complete,oauth_pkce_device.device_poll_fail,oauth_pkce_device.device_poll_slow | 1.37× | 1.30× | 1.23× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

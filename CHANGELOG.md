@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `oauth_pkce_device.device_poll_complete` n=5 **15.756×** (2.586 / 0.164 µs) Friend-MachineD, ceiling 15.0. Pair 892. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.device_poll_fail` n=5 **1.705×** (2.962 / 1.737 µs) Friend-MachineD, ceiling 8.0. Pair 893. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.device_poll_slow` n=5 **1.824×** (3.588 / 1.967 µs) Friend-MachineD, ceiling 8.0. Pair 894. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.token_fields` n=5 **0.746×** (3.187 / 4.272 µs) Friend-MachineD, ceiling 8.0. Pair 889. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.openai_exchange` n=5 **5.625×** (29.574 / 5.257 µs) Friend-MachineD, ceiling 8.0. Pair 890. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `oauth_pkce_device.anthropic_exchange` n=5 **1.697×** (12.807 / 7.545 µs) Friend-MachineD, ceiling 8.0. Pair 891. Over-1×. `nextPairNum` unchanged.
