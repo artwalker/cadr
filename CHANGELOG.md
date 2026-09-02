@@ -8,6 +8,10 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.armin_copy_cell` n=5 **5.327×** (23.076 / 4.332 µs) Friend-MachineD, ceiling 8.0. Pair 862. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_copy_row` n=5 **4.882×** (24.126 / 4.942 µs) Friend-MachineD, ceiling 8.0. Pair 863. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_rotate_row` n=5 **4.392×** (25.808 / 5.876 µs) Friend-MachineD, ceiling 8.0. Pair 864. Over-1×. `nextPairNum` unchanged.
+
 
 - Goal 20 leftover: pair `cli_selectors.armin_copy_cell`
   (`armin-copy-cell` vs leftover typewriter cell assign).
