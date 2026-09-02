@@ -10401,6 +10401,30 @@ Leftover sibling of Pair 1009. Does not remount `bash_fin`. Timed work is text/e
 
 Leftover sibling of Pairs 1009–1010. Does not remount `bash_halt`. Timed work is run/exit stop entry. Observed `st_run` / `st_exit` are exact. First n=5 freeze **7.203×** (1.345 / 0.187 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1015 — `powershell_tool` (up_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `up_ok` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling of leftover 301–303 on powershell.lisp. Does not remount `utf8_prefix`. Timed work is utf8 prefix length/bytes. Observed `psu_len` / `psu_utf8` are exact. First n=5 freeze **5.415×** (0.739 / 0.137 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1016 — `powershell_tool` (pc_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pc_ok` | `UTF-8 prefix + command concatenate` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of prefix+command |
+
+Leftover sibling of Pair 1015. Does not remount `prefix_command`. Timed work is empty/date prefix+command. Observed `psc_empty` / `psc_date` are exact. First n=5 freeze **3.197×** (0.873 / 0.273 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1017 — `powershell_tool` (mt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mt_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling of Pairs 1015–1016. Does not remount `make_tool`. Timed work is name/desc make-tool. Observed `pmt_name` / `pmt_desc` are exact. First n=5 freeze **2.019×** (2.723 / 1.349 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
