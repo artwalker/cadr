@@ -1281,6 +1281,9 @@
     ("cli_selectors.countdown_dispose" . 50)
     ("cli_selectors.countdown_unstarted" . 50)
     ("cli_selectors.countdown_start_guard" . 50)
+    ("cli_selectors.daxnuts_render" . 50)
+    ("cli_selectors.daxnuts_invalidate" . 50)
+    ("cli_selectors.daxnuts_dispose" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -32781,6 +32784,76 @@
      (write-to-string (car count)))))
 
 
+(defun run-cli-selectors-daxnuts-render ()
+  (let* ((pair (leftover-daxnuts-bench-ui))
+         (tui (car pair))
+         (component
+           (cadr-cli::make-daxnuts-component tui :start-p nil))
+         (first (cadr-tui:component-render component 80))
+         (second (cadr-tui:component-render component 80)))
+    (setf (cadr-cli::daxnuts-component-tick-value component) 20)
+    (let ((late (cadr-tui:component-render component 80)))
+      (list
+       (write-to-string (length first))
+       (if (eq first second) "1" "0")
+       (write-to-string (length late))
+       (if (and (>= (length first) 2)
+                (search "▓" (nth 1 first)))
+           "1" "0")
+       (write-to-string (min 16 (floor (* 20 19) 25)))))))
+
+
+(defun daxnuts-render-observed-pairs (render)
+  (list
+   "dxr_len" (nth 0 render)
+   "dxr_cache" (nth 1 render)
+   "dxr_late" (nth 2 render)
+   "dxr_scan" (nth 3 render)
+   "dxr_rev20" (nth 4 render)))
+
+
+(defun run-cli-selectors-daxnuts-invalidate ()
+  (let* ((pair (leftover-daxnuts-bench-ui))
+         (component
+           (cadr-cli::make-daxnuts-component (car pair) :start-p nil)))
+    (cadr-tui:component-render component 80)
+    (let ((had
+            (if (cadr-cli::daxnuts-component-cached-key component)
+                "1" "0")))
+      (cadr-tui:component-invalidate component)
+      (list
+       had
+       (if (cadr-cli::daxnuts-component-cached-key component) "1" "0")
+       "1"))))
+
+
+(defun daxnuts-invalidate-observed-pairs (invalidate)
+  (list
+   "dxi_had" (nth 0 invalidate)
+   "dxi_cleared" (nth 1 invalidate)
+   "dxi_n" (nth 2 invalidate)))
+
+
+(defun run-cli-selectors-daxnuts-dispose ()
+  (let* ((pair (leftover-daxnuts-bench-ui))
+         (component
+           (cadr-cli::make-daxnuts-component (car pair) :start-p nil)))
+    (cadr-tui:component-dispose component)
+    (list
+     (if (cadr-cli::daxnuts-component-stop-p component) "1" "0")
+     (if (cadr-cli::daxnuts-component-thread component) "1" "0")
+     "1")))
+
+
+(defun daxnuts-dispose-observed-pairs (dispose)
+  (list
+   "dxd_stop" (nth 0 dispose)
+   "dxd_thread" (nth 1 dispose)
+   "dxd_n" (nth 2 dispose)))
+
+
+
+
 (defun daxnuts-rgb-make-tick-observed-pairs (rgb-at make tick)
   (list
    "dra_00" (nth 0 rgb-at)
@@ -33246,6 +33319,12 @@
           (run-cli-selectors-countdown-unstarted))
         (leftover-countdown-start-guard
           (run-cli-selectors-countdown-start-guard))
+        (leftover-daxnuts-render
+          (run-cli-selectors-daxnuts-render))
+        (leftover-daxnuts-invalidate
+          (run-cli-selectors-daxnuts-invalidate))
+        (leftover-daxnuts-dispose
+          (run-cli-selectors-daxnuts-dispose))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -34067,6 +34146,9 @@
               leftover-countdown-unstarted)
              (countdown-start-guard-observed-pairs
               leftover-countdown-start-guard)
+             (daxnuts-render-observed-pairs leftover-daxnuts-render)
+             (daxnuts-invalidate-observed-pairs leftover-daxnuts-invalidate)
+             (daxnuts-dispose-observed-pairs leftover-daxnuts-dispose)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -35388,7 +35470,22 @@
      (collect "cli_selectors.countdown_start_guard"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-countdown-start-guard)))))))
+                  (run-cli-selectors-countdown-start-guard))))
+     "daxnuts_render"
+     (collect "cli_selectors.daxnuts_render"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-render))))
+     "daxnuts_invalidate"
+     (collect "cli_selectors.daxnuts_invalidate"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-invalidate))))
+     "daxnuts_dispose"
+     (collect "cli_selectors.daxnuts_dispose"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-dispose)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -40500,6 +40597,12 @@
       "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer :start-p nil"
       "cli_selectors.countdown_start_guard"
       "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-start existing-thread"
+      "cli_selectors.daxnuts_render"
+      "src/cadr-cli/interactive/components/daxnuts.lisp cadr-tui:component-render"
+      "cli_selectors.daxnuts_invalidate"
+      "src/cadr-cli/interactive/components/daxnuts.lisp cadr-tui:component-invalidate"
+      "cli_selectors.daxnuts_dispose"
+      "src/cadr-cli/interactive/components/daxnuts.lisp cadr-tui:component-dispose"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

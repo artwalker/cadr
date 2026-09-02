@@ -9871,6 +9871,30 @@ Leftover sibling of leftover 460–462 / 907. Timed work is the docs-directory w
 
 Leftover sibling of leftover 460–462 / 907–908. Timed work is the default thinking keyword/string classify — not settings-manager get/set. Observed `dtl_med` / `dtl_high` / `dtl_name` / `dtl_n` are exact. First n=5 freeze **0.546×** (0.240 / 0.440 µs) on host `Friend-MachineD`, ceiling 8.0. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 910 — `cli_selectors` (daxnuts_render)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_render` | `cadr-tui:component-render` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsRenderOnce cadr append structure (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of leftover 547–549 / 634–636 on the same `daxnuts.lisp` hole. Timed work is unstarted `component-render` at width 80 twice (cache `eq`) then tick=20 late render — not parse/image-line/center, not rgb_at / make / tick, not startAnimation. Observed `dxr_len` / `dxr_cache` / `dxr_late` / `dxr_scan` / `dxr_rev20` are exact. First n=5 freeze **4.055×** (594.457 / 146.590 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 911 — `cli_selectors` (daxnuts_invalidate)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_invalidate` | `cadr-tui:component-invalidate` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsInvalidateOnce cachedKey clear (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of leftover 910. Timed work is render then invalidate (cached-key was set then nil). Observed `dxi_had` / `dxi_cleared` / `dxi_n` are exact (`dxi_cleared` is still-cached after invalidate = 0). First n=5 freeze **6.106×** (21.783 / 3.568 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 912 — `cli_selectors` (daxnuts_dispose)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_dispose` | `cadr-tui:component-dispose` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftoverDaxnutsDisposeUnstarted stopped / interval stays null (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of leftover 910–911. Timed work is dispose on an unstarted timer (thread/interval nil) — not `daxnuts-component-run` sleep, not start. Observed `dxd_stop` / `dxd_thread` / `dxd_n` are exact. First n=5 freeze **3.537×** (0.851 / 0.241 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -10544,7 +10568,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | `cli_interactive_controller.announcement_make`, `cli_interactive_controller.announcement_url`, `cli_interactive_controller.announcement_title` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 282 | `cli_selectors.armin_cell`, `cli_selectors.armin_copy_cell`, `cli_selectors.armin_copy_grid`, `cli_selectors.armin_copy_row`, `cli_selectors.armin_grid_height`, `cli_selectors.armin_make_grid`, `cli_selectors.armin_pixel`, `cli_selectors.armin_rotate_row`, `cli_selectors.armin_row_string` |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_seconds`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_render` |
-| `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
+| `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_dispose`, `cli_selectors.daxnuts_invalidate`, `cli_selectors.daxnuts_render`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 155 | `cli_selectors.key_text` |
 | `src/cadr-cli/interactive/controller.lisp` | 2,999 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

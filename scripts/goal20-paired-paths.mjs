@@ -637,6 +637,9 @@ const REPETITIONS = {
 	"cli_selectors.dlg_make": 50,
 	"cli_selectors.dlg_auth": 50,
 	"cli_selectors.dlg_dev": 50,
+	"cli_selectors.daxnuts_render": 50,
+	"cli_selectors.daxnuts_invalidate": 50,
+	"cli_selectors.daxnuts_dispose": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -30255,6 +30258,8 @@ function leftoverMakeDaxnutsComponentState(ui) {
 		maxTicks: 25,
 		interval: null,
 		cachedWidth: 0,
+		cachedKey: null,
+		cachedLines: null,
 		stopped: false,
 	};
 }
@@ -30309,6 +30314,93 @@ function runCliSelectorsDaxnutsComponentTick() {
 		dct_stop: maxed.stopped ? "1" : "0",
 		dct_after: String(after.tick),
 		dct_renders: String(ui.renders),
+	};
+}
+
+
+function leftoverDaxnutsRenderLines(state, width) {
+	const tick = state.tick;
+	if (
+		state.cachedKey &&
+		state.cachedKey[0] === width &&
+		state.cachedKey[1] === tick &&
+		state.cachedLines
+	) {
+		return state.cachedLines;
+	}
+	const revealed = Math.min(16, Math.floor((tick * 19) / 25));
+	const pixels = daxnutsPixelsCached();
+	const lines = [""];
+	for (let row = 0; row < 16; row += 1) {
+		let body;
+		if (row < revealed) {
+			body = daxnutsImageLine(row, pixels);
+		} else if (row === revealed) {
+			body = "▓".repeat(32);
+		} else {
+			body = " ".repeat(32);
+		}
+		lines.push(daxnutsCenter(body, width));
+	}
+	if (tick > 15) {
+		lines.push(
+			"",
+			daxnutsCenter("Free Kimi K2.5 via OpenCode", width),
+			daxnutsCenter('"Powered by daxnuts"', width),
+			daxnutsCenter("— @thdxr", width),
+		);
+	} else {
+		lines.push("", "", "", "");
+	}
+	if (tick > 17) {
+		lines.push(
+			daxnutsCenter("Try OpenCode", width),
+			daxnutsCenter("https://mistral.ai/news/mistral-vibe-2-0", width),
+			"",
+		);
+	} else {
+		lines.push("", "", "");
+	}
+	state.cachedKey = [width, tick];
+	state.cachedLines = lines;
+	return lines;
+}
+
+
+function leftoverDaxnutsRenderOnce(state) {
+	const first = leftoverDaxnutsRenderLines(state, 80);
+	const second = leftoverDaxnutsRenderLines(state, 80);
+	state.tick = 20;
+	const late = leftoverDaxnutsRenderLines(state, 80);
+	return {
+		dxr_len: String(first.length),
+		dxr_cache: first === second ? "1" : "0",
+		dxr_late: String(late.length),
+		dxr_scan:
+			first.length >= 2 && first[1].includes("▓") ? "1" : "0",
+		dxr_rev20: String(Math.min(16, Math.floor((20 * 19) / 25))),
+	};
+}
+
+
+function leftoverDaxnutsInvalidateOnce(state) {
+	leftoverDaxnutsRenderLines(state, 80);
+	const had = state.cachedKey ? "1" : "0";
+	state.cachedKey = null;
+	return {
+		dxi_had: had,
+		dxi_cleared: state.cachedKey ? "1" : "0",
+		dxi_n: "1",
+	};
+}
+
+
+function leftoverDaxnutsDisposeUnstarted(state) {
+	state.stopped = true;
+	return {
+		dxd_stop: state.stopped ? "1" : "0",
+		dxd_thread: state.interval ? "1" : "0",
+		dxd_n: "1",
 	};
 }
 
@@ -34415,6 +34507,15 @@ async function measureCliSelectorsSessionSearch() {
 	const countdownDisposeResults = runCliSelectorsCountdownDispose();
 	const countdownUnstartedResults = runCliSelectorsCountdownUnstarted();
 	const countdownStartGuardResults = runCliSelectorsCountdownStartGuard();
+	const daxnutsRenderResults = leftoverDaxnutsRenderOnce(
+		leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
+	);
+	const daxnutsInvalidateResults = leftoverDaxnutsInvalidateOnce(
+		leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
+	);
+	const daxnutsDisposeResults = leftoverDaxnutsDisposeUnstarted(
+		leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
+	);
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -34818,6 +34919,9 @@ async function measureCliSelectorsSessionSearch() {
 		...countdownDisposeResults,
 		...countdownUnstartedResults,
 		...countdownStartGuardResults,
+		...daxnutsRenderResults,
+		...daxnutsInvalidateResults,
+		...daxnutsDisposeResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -35889,6 +35993,27 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsCountdownStartGuard();
 			},
 		),
+		daxnuts_render: await collect("cli_selectors.daxnuts_render", () => {
+			return () =>
+				leftoverDaxnutsRenderOnce(
+					leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
+				);
+		}),
+		daxnuts_invalidate: await collect(
+			"cli_selectors.daxnuts_invalidate",
+			() => {
+				return () =>
+					leftoverDaxnutsInvalidateOnce(
+						leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
+					);
+			},
+		),
+		daxnuts_dispose: await collect("cli_selectors.daxnuts_dispose", () => {
+			return () =>
+				leftoverDaxnutsDisposeUnstarted(
+					leftoverMakeDaxnutsComponentState(leftoverDaxnutsBenchUi()),
+				);
+		}),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
 			return () => runCliSelectorsArminPixel();
 		}),
@@ -40890,6 +41015,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts remainingSeconds ceil without setInterval",
 			"cli_selectors.countdown_start_guard":
 				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts keep existing intervalId",
+			"cli_selectors.daxnuts_render":
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent render (cadr append structure, no constructor setInterval)",
+			"cli_selectors.daxnuts_invalidate":
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent invalidate (cachedWidth/cachedKey clear)",
+			"cli_selectors.daxnuts_dispose":
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent dispose unstarted (stopped, interval stays null)",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

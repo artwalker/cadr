@@ -9717,6 +9717,51 @@
    "piUs": 0.44,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 910,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.daxnuts_render",
+   "branch": "g20-freeze-910-912",
+   "note": "nextPairNum left at tip 328; leftover id 910",
+   "ratio": 4.055,
+   "cadrUs": 594.457,
+   "piUs": 146.59,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 911,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.daxnuts_invalidate",
+   "branch": "g20-freeze-910-912",
+   "note": "nextPairNum left at tip 328; leftover id 911",
+   "ratio": 6.106,
+   "cadrUs": 21.783,
+   "piUs": 3.568,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 912,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.daxnuts_dispose",
+   "branch": "g20-freeze-910-912",
+   "note": "nextPairNum left at tip 328; leftover id 912",
+   "ratio": 3.537,
+   "cadrUs": 0.851,
+   "piUs": 0.241,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ]
 }

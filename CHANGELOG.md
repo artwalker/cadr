@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.daxnuts_render` n=5 **4.055×** (594.457 / 146.590 µs) Friend-MachineD, ceiling 8.0. Pair 910. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.daxnuts_invalidate` n=5 **6.106×** (21.783 / 3.568 µs) Friend-MachineD, ceiling 8.0. Pair 911. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.daxnuts_dispose` n=5 **3.537×** (0.851 / 0.241 µs) Friend-MachineD, ceiling 8.0. Pair 912. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_support.provider_login_help` n=5 **45.516×** (476.985 / 10.480 µs) Friend-MachineD, ceiling 50.0. Pair 907. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_support.docs_directory` n=5 **33.348×** (227.853 / 6.833 µs) Friend-MachineD, ceiling 50.0. Pair 908. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_support.default_thinking_level` n=5 **0.546×** (0.240 / 0.440 µs) Friend-MachineD, ceiling 8.0. Pair 909. `nextPairNum` unchanged.
