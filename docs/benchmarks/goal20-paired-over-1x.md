@@ -812,6 +812,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.makis_ok` | 3.372 | 0.881 | 3.828× | 8.00× | measure-only leftover 1004; make-api-key-input-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.moss_ok` | 9.651 | 5.922 | 1.630× | 8.00× | measure-only leftover 1005; make-oauth-selector-state leftover | invent pause；地板优化另刀 |
 | `cli_extensions_install.hp_ok` | 0.604 | 0.597 | 1.012× | 8.00× | measure-only leftover 1007; handle-extension-command plain leftover | invent pause；地板优化另刀 |
+| `cli_interactive_controller.br_ok` | 1.316 | 0.337 | 3.907× | 8.00× | measure-only leftover 1009; append-tui-user-bash-running leftover | invent pause；地板优化另刀 |
+| `cli_interactive_controller.bf_ok` | 1.405 | 0.267 | 5.260× | 8.00× | measure-only leftover 1010; complete-tui-user-bash-string leftover | invent pause；地板优化另刀 |
+| `cli_interactive_controller.bh_ok` | 1.345 | 0.187 | 7.203× | 8.00× | measure-only leftover 1011; stop-tui-user-bash-entry leftover | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |
 | settings_load.sdk_make_memory | 5.581 | 26.876 | 4.816 | 8.0 | Friend-MachineD | leftover 857 loop-tick-47 |
