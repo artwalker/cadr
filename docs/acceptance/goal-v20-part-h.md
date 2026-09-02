@@ -10281,6 +10281,30 @@ Leftover sibling of Pair 994. Does not remount `thinking_level_description_line`
 
 Leftover sibling of Pairs 994–995. Does not remount `render_thinking_selector`. Timed work is default/wide thinking selector render. Observed `tsrd_default` / `tsrd_wide` are exact. First n=5 freeze **59.389×** (278.008 / 4.681 µs) on host `Friend-MachineD`, ceiling 60.0 (first-freeze headroom for high render ratio). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 997 — `cli_selectors` (um_evt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_evt` | `user-message-selector-handle-event` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (structured events) |
+
+Leftover sibling of leftover user-message handle/render pairs on fork.lisp. Does not remount `user_message_handle_event`. Timed work is down/empty structured events. Observed `umhe_down` / `umhe_empty` are exact. First n=5 freeze **1.518×** (2.504 / 1.649 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 998 — `cli_selectors` (um_raw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_raw` | `user-message-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageList.handleInput (raw key dispatch) |
+
+Leftover sibling of Pair 997. Does not remount `user_message_handle_raw`. Timed work is down/nop raw key dispatch. Observed `umhr_down` / `umhr_nop` are exact. First n=5 freeze **14.238×** (100.493 / 7.058 µs) on host `Friend-MachineD`, ceiling 30.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 999 — `cli_selectors` (um_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `um_draw` | `render-user-message-selector` (`src/cadr-cli/interactive/selectors/fork.lisp`) | leftover replica of UserMessageSelectorComponent layout |
+
+Leftover sibling of Pairs 997–998. Does not remount `render_user_message_selector`. Timed work is three/hit user-message selector render. Observed `umrd_three` / `umrd_hit` are exact. First n=5 freeze **105.189×** (312.691 / 2.973 µs) on host `Friend-MachineD`, ceiling 120.0 (raised from 100.0 for first Friend-MachineD freeze). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
