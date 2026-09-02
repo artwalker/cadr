@@ -10257,6 +10257,30 @@ Leftover sibling of Pair 991. Does not remount `dlg_auth`. Timed work is plain/i
 
 Leftover sibling of Pairs 991–992. Does not remount `dlg_dev`. Timed work is code/empty/replace device sections. Observed `ldd_code` / `ldd_hint` are exact. First n=5 freeze **5.985×** (5.677 / 0.949 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 994 — `cli_selectors` (th_sel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_sel` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinkingSelectorSelectedLevel |
+
+Leftover sibling of leftover 532–534 and 601–612 on the same needs-pair file. Does not remount `thinking_selector_selected_level`. Timed work is first/oob selected level. Observed `tssl_first` / `tssl_oob` are exact. First n=5 freeze **1.783×** (0.809 / 0.454 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 995 — `cli_selectors` (th_desc)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_desc` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinkingLevelDescriptionLine |
+
+Leftover sibling of Pair 994. Does not remount `thinking_level_description_line`. Timed work is off/default/bogus description lines. Observed `tsdl_off_def` / `tsdl_bogus` are exact. First n=5 freeze **5.486×** (0.729 / 0.133 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 996 — `cli_selectors` (th_draw)
+
+| metric | cadr | pi |
+|---|---|---|
+| `th_draw` | `render-thinking-selector` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of renderThinkingSelector |
+
+Leftover sibling of Pairs 994–995. Does not remount `render_thinking_selector`. Timed work is default/wide thinking selector render. Observed `tsrd_default` / `tsrd_wide` are exact. First n=5 freeze **59.389×** (278.008 / 4.681 µs) on host `Friend-MachineD`, ceiling 60.0 (first-freeze headroom for high render ratio). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
