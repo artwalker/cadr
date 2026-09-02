@@ -769,6 +769,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.xai_refresh` | 5.365 | 0.237 | 22.614× | 20.00× | measure-only leftover 895-897; remeasure Friend-MachineD | xai login/refresh trio |
 | `oauth_pkce_device.openrouter_login` | 168.272 | 4.804 | 35.027× | 50.00× | measure-only leftover 898-900; remeasure Friend-MachineD | openrouter login trio |
 | `oauth_pkce_device.openrouter_login_fail` | 202.181 | 3.766 | 53.681× | 80.00× | measure-only leftover 898-900; remeasure Friend-MachineD | openrouter login trio |
+| `oauth_pkce_device.github_oauth_url` | 1.387 | 0.417 | 3.329× | 8.00× | measure-only leftover 914; `github-oauth-url` vs leftoverGithubOAuthUrl / getUrls | invent pause；地板优化另刀 |
 | `oauth_pkce_device.openrouter_login_miss` | 183.818 | 1.862 | 98.722× | 100.00× | measure-only leftover 898-900; remeasure Friend-MachineD | openrouter login trio |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |

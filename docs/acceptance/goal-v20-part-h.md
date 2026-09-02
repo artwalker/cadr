@@ -9895,14 +9895,31 @@ Leftover sibling of leftover 910. Timed work is render then invalidate (cached-k
 
 Leftover sibling of leftover 910–911. Timed work is dispose on an unstarted timer (thread/interval nil) — not `daxnuts-component-run` sleep, not start. Observed `dxd_stop` / `dxd_thread` / `dxd_n` are exact. First n=5 freeze **3.537×** (0.851 / 0.241 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 913 — `oauth_pkce_device` (github_domain)
+
+| metric | cadr | pi |
+|---|---|---|
 | `github_domain` | `normalize-github-domain` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverNormalizeGitHubDomain / normalizeDomain (`packages/ai/src/auth/oauth/github-copilot.ts`) |
-Leftover sibling of leftover copilot_url / copilot_auth on the same github-copilot hole. Timed work is domain normalize (blank / plain / https host / trim) — not base-url, not toAuth, not device login. Observed `ghd_blank` / `ghd_plain` / `ghd_https` / `ghd_trim` / `ghd_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+Leftover sibling of leftover copilot_url / copilot_auth on the same github-copilot hole. Timed work is domain normalize (blank / plain / https host / trim) — not base-url, not toAuth, not device login. Observed `ghd_blank` / `ghd_plain` / `ghd_https` / `ghd_trim` / `ghd_n` are exact. First n=5 freeze **1.141×** (1.715 / 1.503 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1×. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+
 ### Pair 914 — `oauth_pkce_device` (github_oauth_url)
+
+| metric | cadr | pi |
+|---|---|---|
 | `github_oauth_url` | `github-oauth-url` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverGithubOAuthUrl / getUrls (`packages/ai/src/auth/oauth/github-copilot.ts`) |
-Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for device-code / access-token / enterprise host — not copilot_internal token URL. Observed `gou_dev` / `gou_tok` / `gou_ent` / `gou_https` / `gou_n` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+Leftover sibling of leftover 913. Timed work is `https://domain+suffix` for device-code / access-token / enterprise host — not copilot_internal token URL. Observed `gou_dev` / `gou_tok` / `gou_ent` / `gou_https` / `gou_n` are exact. First n=5 freeze **3.329×** (1.387 / 0.417 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+
 ### Pair 915 — `oauth_pkce_device` (github_request_headers)
+
+| metric | cadr | pi |
+|---|---|---|
 | `github_request_headers` | `github-copilot-request-headers` (`src/cadr-ai/oauth/providers/github-copilot.lisp`) | leftoverGithubCopilotRequestHeaders / COPILOT_HEADERS + Authorization (`packages/ai/src/auth/oauth/github-copilot.ts`) |
-Leftover sibling of leftover 913–914. Timed work is extra Accept + Bearer + COPILOT_HEADERS — not oauth-flow-request. Observed `gch_n` / `gch_auth` / `gch_ua` / `gch_acc` / `gch_ok` are exact. First n=5 freeze pending. Gate `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+Leftover sibling of leftover 913–914. Timed work is extra Accept + Bearer + COPILOT_HEADERS — not oauth-flow-request. Observed `gch_n` / `gch_auth` / `gch_ua` / `gch_acc` / `gch_ok` are exact. First n=5 freeze **0.851×** (0.668 / 0.785 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1×. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -10524,7 +10541,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id`, `oauth_pkce_device.token_fields`, `oauth_pkce_device.openai_exchange`, `oauth_pkce_device.anthropic_exchange` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
 | `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | `oauth_pkce_device.anth_oauth_name`, `oauth_pkce_device.anth_oauth_sub`, `oauth_pkce_device.anth_oauth_instructions` |
-| `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth` |
+| `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth`, `oauth_pkce_device.github_domain`, `oauth_pkce_device.github_oauth_url`, `oauth_pkce_device.github_request_headers` |
 | `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | `oauth_pkce_device.kimi_host_default`, `oauth_pkce_device.kimi_host_code`, `oauth_pkce_device.kimi_host_trim` |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | `oauth_pkce_device.json_copy`, `oauth_pkce_device.interval_seconds`, `oauth_pkce_device.device_start` |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange`, `oauth_pkce_device.openrouter_login`, `oauth_pkce_device.openrouter_login_fail`, `oauth_pkce_device.openrouter_login_miss` |

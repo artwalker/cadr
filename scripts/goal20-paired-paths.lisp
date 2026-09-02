@@ -13568,6 +13568,7 @@
       "gch_auth" (nth 1 github-request-headers)
       "gch_ua" (nth 2 github-request-headers)
       "gch_acc" (nth 3 github-request-headers)
+      "gch_ok" (nth 4 github-request-headers)
       "olg_acc" (nth 0 openrouter-login)
       "olg_ref" (nth 1 openrouter-login)
       "olg_n" (nth 2 openrouter-login)

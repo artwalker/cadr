@@ -1246982,6 +1246982,43 @@
       "cli_selectors.daxnuts_invalidate=6.106x/8.00x",
       "cli_selectors.daxnuts_dispose=3.537x/8.00x"
     ]
+  },
+  {
+    "recordedAt": "2026-09-02T12:00:00Z",
+    "label": "paired-paths",
+    "gitHead": "06652a6d73ccc83050a6df8cd17be11d6c4baba2",
+    "machine": "Friend-MachineD",
+    "quick": false,
+    "sameMachine": true,
+    "ratioGate": "enforced-only:oauth_pkce_device.github_domain,oauth_pkce_device.github_oauth_url,oauth_pkce_device.github_request_headers",
+    "samples": 5,
+    "metrics": {
+      "oauth_pkce_device.github_domain": {
+        "cadrMedianUs": 1.71516,
+        "baselineMedianUs": 1.503207712532866,
+        "ratio": 1.141,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.github_oauth_url": {
+        "cadrMedianUs": 1.3874799999999998,
+        "baselineMedianUs": 0.4167858215680384,
+        "ratio": 3.329,
+        "ceiling": 8.0
+      },
+      "oauth_pkce_device.github_request_headers": {
+        "cadrMedianUs": 0.6678400000000001,
+        "baselineMedianUs": 0.7847708578143362,
+        "ratio": 0.851,
+        "ceiling": 8.0
+      }
+    },
+    "notes": [
+      "leftover 913-915 github-copilot domain/url/headers n=5 Friend-MachineD",
+      "py gate rc=2 from parsed_provider; scoped overlay PASS",
+      "oauth_pkce_device.github_domain=1.141x/8.00x",
+      "oauth_pkce_device.github_oauth_url=3.329x/8.00x",
+      "oauth_pkce_device.github_request_headers=0.851x/8.00x"
+    ]
   }
   ]
 }
