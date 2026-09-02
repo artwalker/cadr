@@ -1230,6 +1230,9 @@
     ("cli_selectors.armin_pixel" . 50)
     ("cli_selectors.armin_cell" . 50)
     ("cli_selectors.armin_grid_height" . 50)
+    ("cli_selectors.armin_make_grid" . 50)
+    ("cli_selectors.armin_copy_grid" . 50)
+    ("cli_selectors.armin_row_string" . 50)
     ("cli_selectors.dlg_make" . 50)
     ("cli_selectors.dlg_auth" . 50)
     ("cli_selectors.dlg_dev" . 50)
@@ -29188,6 +29191,84 @@
    "ag_h" (nth 0 height)))
 
 
+(defun armin-grid-space-count (grid)
+  (let ((count 0))
+    (dotimes (row (array-dimension grid 0))
+      (dotimes (column (array-dimension grid 1))
+        (when (char= (aref grid row column) #\Space)
+          (incf count))))
+    count))
+
+
+(defun armin-grid-ink-count (grid)
+  (let ((count 0))
+    (dotimes (row (array-dimension grid 0))
+      (dotimes (column (array-dimension grid 1))
+        (unless (char= (aref grid row column) #\Space)
+          (incf count))))
+    count))
+
+
+(defun run-cli-selectors-armin-make-grid ()
+  ;; Empty + final grids only. Do not tick, do not TUI render.
+  (let ((empty (cadr-cli::make-armin-grid nil))
+        (final (cadr-cli::make-armin-grid t)))
+    (list
+     (armin-grid-space-count empty)
+     (armin-grid-ink-count final)
+     (array-dimension empty 0)
+     (array-dimension empty 1)
+     (if (char= (aref empty 0 0) #\Space) 1 0))))
+
+
+(defun run-cli-selectors-armin-copy-grid ()
+  ;; Independent 2d copy. Mutate the copy; original stays.
+  (let* ((original (cadr-cli::make-armin-grid t))
+         (copy (cadr-cli::copy-armin-grid original))
+         (saved (aref original 0 0)))
+    (setf (aref copy 0 0) #\X)
+    (list
+     (if (char= (aref original 0 0) saved) 1 0)
+     (if (char= (aref copy 0 0) #\X) 1 0)
+     (array-dimension copy 0)
+     (array-dimension copy 1)
+     5)))
+
+
+(defun run-cli-selectors-armin-row-string ()
+  ;; row.join("") without theme/clip. Empty row 0 and final ink cells.
+  (let* ((empty (cadr-cli::make-armin-grid nil))
+         (final (cadr-cli::make-armin-grid t))
+         (empty-row (cadr-cli::armin-grid-row-string empty 0))
+         (final-row-0 (cadr-cli::armin-grid-row-string final 0))
+         (final-row-2 (cadr-cli::armin-grid-row-string final 2)))
+    (list
+     (length empty-row)
+     (subseq empty-row 0 1)
+     (subseq final-row-0 8 9)
+     (subseq final-row-2 11 12)
+     5)))
+
+
+(defun armin-grid-leftover-observed-pairs (make-grid copy-grid row-string)
+  (list
+   "amg_spaces" (nth 0 make-grid)
+   "amg_ink" (nth 1 make-grid)
+   "amg_h" (nth 2 make-grid)
+   "amg_w" (nth 3 make-grid)
+   "amg_empty0" (nth 4 make-grid)
+   "acg_orig" (nth 0 copy-grid)
+   "acg_copy" (nth 1 copy-grid)
+   "acg_h" (nth 2 copy-grid)
+   "acg_w" (nth 3 copy-grid)
+   "acg_n" (nth 4 copy-grid)
+   "ars_len" (nth 0 row-string)
+   "ars_empty0" (nth 1 row-string)
+   "ars_ink" (nth 2 row-string)
+   "ars_full" (nth 3 row-string)
+   "ars_n" (nth 4 row-string)))
+
+
 (defun models-leftover-observed-pairs (badge copy moved)
   (list
    "mspb_openai" (nth 0 badge)
@@ -31487,6 +31568,18 @@
           (run-cli-selectors-make-daxnuts-component))
         (leftover-daxnuts-tick
           (run-cli-selectors-daxnuts-component-tick))
+        (leftover-armin-pixel
+          (run-cli-selectors-armin-pixel))
+        (leftover-armin-cell
+          (run-cli-selectors-armin-cell))
+        (leftover-armin-grid-height
+          (run-cli-selectors-armin-grid-height))
+        (leftover-armin-make-grid
+          (run-cli-selectors-armin-make-grid))
+        (leftover-armin-copy-grid
+          (run-cli-selectors-armin-copy-grid))
+        (leftover-armin-row-string
+          (run-cli-selectors-armin-row-string))
         (leftover-login-dlg-make
           (run-cli-selectors-login-dialog-make))
         (leftover-login-dlg-auth
@@ -32292,6 +32385,14 @@
               leftover-daxnuts-rgb-at
               leftover-make-daxnuts
               leftover-daxnuts-tick)
+             (armin-observed-pairs
+              leftover-armin-pixel
+              leftover-armin-cell
+              leftover-armin-grid-height)
+             (armin-grid-leftover-observed-pairs
+              leftover-armin-make-grid
+              leftover-armin-copy-grid
+              leftover-armin-row-string)
              (leftover-login-dialog-make-auth-device-observed-pairs
               leftover-login-dlg-make
               leftover-login-dlg-auth
@@ -33558,6 +33659,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-armin-grid-height))))
+     "armin_make_grid"
+     (collect "cli_selectors.armin_make_grid"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-make-grid))))
+     "armin_copy_grid"
+     (collect "cli_selectors.armin_copy_grid"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-copy-grid))))
+     "armin_row_string"
+     (collect "cli_selectors.armin_row_string"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-row-string))))
      "dlg_make"
      (collect "cli_selectors.dlg_make"
               (lambda ()
@@ -38492,6 +38608,12 @@
       "src/cadr-cli/interactive/components/armin.lisp armin-cell"
       "cli_selectors.armin_grid_height"
       "src/cadr-cli/interactive/components/armin.lisp armin-grid-height"
+      "cli_selectors.armin_make_grid"
+      "src/cadr-cli/interactive/components/armin.lisp make-armin-grid"
+      "cli_selectors.armin_copy_grid"
+      "src/cadr-cli/interactive/components/armin.lisp copy-armin-grid"
+      "cli_selectors.armin_row_string"
+      "src/cadr-cli/interactive/components/armin.lisp armin-grid-row-string"
       "cli_selectors.dlg_make"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
       "cli_selectors.dlg_auth"

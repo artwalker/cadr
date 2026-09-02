@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.armin_make_grid`
+  (`make-armin-grid` vs leftover buildFinalGrid/createEmptyGrid). Observed
+  `amg_spaces` / `amg_ink` / `amg_h` / `amg_w` / `amg_empty0` exact.
+  n=5 **4.041×** (27.332 / 6.763 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 835). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_copy_grid`
+  (`copy-armin-grid` vs leftover 2d row copy). Observed
+  `acg_orig` / `acg_copy` / `acg_h` / `acg_w` / `acg_n` exact.
+  n=5 **6.066×** (24.123 / 3.977 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 836). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.armin_row_string`
+  (`armin-grid-row-string` vs leftover row.join). Observed
+  `ars_len` / `ars_empty0` / `ars_ink` / `ars_full` / `ars_n` exact.
+  n=5 **4.095×** (23.245 / 5.676 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 837). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `oauth_pkce_device.hex_value`
   (`hex-value` vs leftover parseInt hex digit). Observed
   `hv_A` / `hv_a` / `hv_0` / `hv_F` / `hv_9` / `hv_n` exact.

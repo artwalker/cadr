@@ -993,6 +993,9 @@ const REPETITIONS = {
 	"cli_selectors.armin_pixel": 50,
 	"cli_selectors.armin_cell": 50,
 	"cli_selectors.armin_grid_height": 50,
+	"cli_selectors.armin_make_grid": 50,
+	"cli_selectors.armin_copy_grid": 50,
+	"cli_selectors.armin_row_string": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -28574,6 +28577,101 @@ function runCliSelectorsArminGridHeight() {
 	};
 }
 
+function replicaCreateEmptyArminGrid() {
+	const height = replicaArminGridHeight();
+	const grid = [];
+	for (let row = 0; row < height; row++) {
+		grid.push(Array(ARMIN_WIDTH).fill(" "));
+	}
+	return grid;
+}
+
+function replicaBuildFinalArminGrid() {
+	const height = replicaArminGridHeight();
+	const grid = [];
+	for (let row = 0; row < height; row++) {
+		const line = [];
+		for (let x = 0; x < ARMIN_WIDTH; x++) {
+			line.push(replicaArminCell(x, row));
+		}
+		grid.push(line);
+	}
+	return grid;
+}
+
+function replicaCopyArminGrid(grid) {
+	return grid.map((row) => row.slice());
+}
+
+function replicaArminGridRowString(grid, row) {
+	return grid[row].join("");
+}
+
+function arminGridSpaceCount(grid) {
+	let count = 0;
+	for (const row of grid) {
+		for (const cell of row) {
+			if (cell === " ") {
+				count += 1;
+			}
+		}
+	}
+	return count;
+}
+
+function arminGridInkCount(grid) {
+	let count = 0;
+	for (const row of grid) {
+		for (const cell of row) {
+			if (cell !== " ") {
+				count += 1;
+			}
+		}
+	}
+	return count;
+}
+
+function runCliSelectorsArminMakeGrid() {
+	const empty = replicaCreateEmptyArminGrid();
+	const finalGrid = replicaBuildFinalArminGrid();
+	return {
+		amg_spaces: arminGridSpaceCount(empty),
+		amg_ink: arminGridInkCount(finalGrid),
+		amg_h: empty.length,
+		amg_w: empty[0].length,
+		amg_empty0: empty[0][0] === " " ? 1 : 0,
+	};
+}
+
+function runCliSelectorsArminCopyGrid() {
+	const original = replicaBuildFinalArminGrid();
+	const copy = replicaCopyArminGrid(original);
+	const saved = original[0][0];
+	copy[0][0] = "X";
+	return {
+		acg_orig: original[0][0] === saved ? 1 : 0,
+		acg_copy: copy[0][0] === "X" ? 1 : 0,
+		acg_h: copy.length,
+		acg_w: copy[0].length,
+		acg_n: 5,
+	};
+}
+
+function runCliSelectorsArminRowString() {
+	const empty = replicaCreateEmptyArminGrid();
+	const finalGrid = replicaBuildFinalArminGrid();
+	const emptyRow = replicaArminGridRowString(empty, 0);
+	const finalRow0 = replicaArminGridRowString(finalGrid, 0);
+	const finalRow2 = replicaArminGridRowString(finalGrid, 2);
+	return {
+		ars_len: emptyRow.length,
+		ars_empty0: emptyRow.slice(0, 1),
+		ars_ink: finalRow0.slice(8, 9),
+		ars_full: finalRow2.slice(11, 12),
+		ars_n: 5,
+	};
+}
+
 let cachedDaxnutsHex;
 let cachedDaxnutsPixels;
 
@@ -32834,6 +32932,9 @@ async function measureCliSelectorsSessionSearch() {
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
+	const arminMakeGridResults = runCliSelectorsArminMakeGrid();
+	const arminCopyGridResults = runCliSelectorsArminCopyGrid();
+	const arminRowStringResults = runCliSelectorsArminRowString();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -33228,6 +33329,9 @@ async function measureCliSelectorsSessionSearch() {
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
+		...arminMakeGridResults,
+		...arminCopyGridResults,
+		...arminRowStringResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -34283,6 +34387,15 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		armin_grid_height: await collect("cli_selectors.armin_grid_height", () => {
 			return () => runCliSelectorsArminGridHeight();
+		}),
+		armin_make_grid: await collect("cli_selectors.armin_make_grid", () => {
+			return () => runCliSelectorsArminMakeGrid();
+		}),
+		armin_copy_grid: await collect("cli_selectors.armin_copy_grid", () => {
+			return () => runCliSelectorsArminCopyGrid();
+		}),
+		armin_row_string: await collect("cli_selectors.armin_row_string", () => {
+			return () => runCliSelectorsArminRowString();
 		}),
 		observed,
 	};
@@ -39116,6 +39229,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent half-block cell",
 			"cli_selectors.armin_grid_height":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent grid rows",
+			"cli_selectors.armin_make_grid":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover buildFinalGrid/createEmptyGrid (cadr make-armin-grid)",
+			"cli_selectors.armin_copy_grid":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover finalGrid.map(row => [...row]) (cadr copy-armin-grid)",
+			"cli_selectors.armin_row_string":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts leftover row.join(\"\") (cadr armin-grid-row-string)",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

@@ -9004,6 +9004,51 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 835,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/armin.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.armin_make_grid",
+   "branch": "cursor/armin-make-copy-row-leftovers-835-837-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 835",
+   "ratio": 4.041,
+   "cadrUs": 27.332,
+   "piUs": 6.763,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 836,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/armin.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.armin_copy_grid",
+   "branch": "cursor/armin-make-copy-row-leftovers-835-837-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 836",
+   "ratio": 6.066,
+   "cadrUs": 24.123,
+   "piUs": 3.977,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 837,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/armin.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.armin_row_string",
+   "branch": "cursor/armin-make-copy-row-leftovers-835-837-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 837",
+   "ratio": 4.095,
+   "cadrUs": 23.245,
+   "piUs": 5.676,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
