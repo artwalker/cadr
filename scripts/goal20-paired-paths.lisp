@@ -13318,8 +13318,8 @@
       "dpf_throw" (nth 0 device-poll-fail)
       "dpf_n" (nth 1 device-poll-fail)
       "dps_msg" (nth 0 device-poll-slow)
-      "dps_n" (nth 1 device-poll-slow))
-"xli_acc" (nth 0 xai-login)
+      "dps_n" (nth 1 device-poll-slow)
+      "xli_acc" (nth 0 xai-login)
       "xli_ref" (nth 1 xai-login)
       "xli_n" (nth 2 xai-login)
       "xlf_throw" (nth 0 xai-login-fail)
@@ -13521,7 +13521,8 @@
      (collect "oauth_pkce_device.device_poll_slow"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-poll-slow))"xai_login"
+                  (run-oauth-pkce-device-poll-slow))))
+     "xai_login"
      (collect "oauth_pkce_device.xai_login"
               (lambda ()
                 (lambda ()

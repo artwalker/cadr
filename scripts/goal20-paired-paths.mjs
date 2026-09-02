@@ -349,9 +349,6 @@ const REPETITIONS = {
 	"oauth_pkce_device.hex_value": 50,
 	"oauth_pkce_device.write_http_response": 50,
 	"oauth_pkce_device.present_auth_url": 50,
-"oauth_pkce_device.xai_login": 50,
-	"oauth_pkce_device.xai_login_fail": 50,
-	"oauth_pkce_device.xai_refresh": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -481,6 +478,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.device_poll_complete": 50,
 	"oauth_pkce_device.device_poll_fail": 50,
 	"oauth_pkce_device.device_poll_slow": 50,
+	"oauth_pkce_device.xai_login": 50,
+	"oauth_pkce_device.xai_login_fail": 50,
+	"oauth_pkce_device.xai_refresh": 50,
 	"evals_harness.make_reporter": 50,
 	"evals_harness.finite_number": 50,
 	"evals_harness.artifact_metadata": 50,
@@ -14324,6 +14324,9 @@ function runOauthPkceDevicePollSlow() {
 		dps_msg: dpsMsg,
 		dps_n: 1,
 	};
+}
+
+
 function xaiRequiredString(body, field) {
 	const value = body[field];
 	if (typeof value !== "string" || value.length === 0) {
@@ -14479,7 +14482,7 @@ async function measureOauthPkceDevice() {
 	const devicePollComplete = runOauthPkceDevicePollComplete();
 	const devicePollFail = runOauthPkceDevicePollFail();
 	const devicePollSlow = runOauthPkceDevicePollSlow();
-const xaiLogin = runOauthPkceDeviceXaiLogin();
+	const xaiLogin = runOauthPkceDeviceXaiLogin();
 	const xaiLoginFail = runOauthPkceDeviceXaiLoginFail();
 	const xaiRefresh = runOauthPkceDeviceXaiRefresh();
 	return {
@@ -14599,7 +14602,8 @@ const xaiLogin = runOauthPkceDeviceXaiLogin();
 		}),
 		device_poll_slow: await collect("oauth_pkce_device.device_poll_slow", () => {
 			return () => runOauthPkceDevicePollSlow();
-xai_login: await collect("oauth_pkce_device.xai_login", () => {
+		}),
+		xai_login: await collect("oauth_pkce_device.xai_login", () => {
 			return () => runOauthPkceDeviceXaiLogin();
 		}),
 		xai_login_fail: await collect("oauth_pkce_device.xai_login_fail", () => {
@@ -14648,7 +14652,7 @@ xai_login: await collect("oauth_pkce_device.xai_login", () => {
 			...hexValue,
 			...writeHttp,
 			...presentUrl,
-...xaiLogin,
+			...xaiLogin,
 			...xaiLoginFail,
 			...xaiRefresh,
 		},
@@ -39531,7 +39535,7 @@ const result = {
 				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost KIMI_CODE_OAUTH_HOST",
 			"oauth_pkce_device.kimi_host_trim":
 				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost trailing-slash trim",
-"oauth_pkce_device.xai_login":
+			"oauth_pkce_device.xai_login":
 				"packages/ai/src/auth/oauth/xai.ts parseDeviceCode + credentialsFromTokenResponse (cadr login-xai-oauth)",
 			"oauth_pkce_device.xai_login_fail":
 				"packages/ai/src/auth/oauth/xai.ts requestDeviceCode HTTP fail (cadr login-xai-oauth)",
