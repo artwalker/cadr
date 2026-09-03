@@ -673,6 +673,9 @@ const REPETITIONS = {
 	"cli_selectors.slx_ok": 50,
 	"cli_selectors.dscx_ok": 50,
 	"cli_selectors.rthx_ok": 50,
+	"cli_selectors.slxx_ok": 50,
+	"cli_selectors.dscxx_ok": 50,
+	"cli_selectors.rthxx_ok": 50,
 	"cli_selectors.trust_option_saved_p": 50,
 	"cli_selectors.make_trust_selector_state": 50,
 	"cli_selectors.render_trust_selector": 50,
@@ -36880,6 +36883,15 @@ async function measureCliSelectorsSessionSearch() {
 		rthx_ok: await collect("cli_selectors.rthx_ok", () => {
 			return () => runCliSelectorsRenderThinkingSelector();
 		}),
+		slxx_ok: await collect("cli_selectors.slxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorSelectedLevel();
+		}),
+		dscxx_ok: await collect("cli_selectors.dscxx_ok", () => {
+			return () => runCliSelectorsThinkingLevelDescriptionLine();
+		}),
+		rthxx_ok: await collect("cli_selectors.rthxx_ok", () => {
+			return () => runCliSelectorsRenderThinkingSelector();
+		}),
 		trust_option_saved_p: await collect(
 			"cli_selectors.trust_option_saved_p",
 			() => {
@@ -42958,6 +42970,12 @@ const result = {
 			"cli_selectors.dscx_ok":
 				"packages/coding-agent/... thinking-level-description-line leftover remount",
 			"cli_selectors.rthx_ok":
+				"packages/coding-agent/... render-thinking-selector leftover remount",
+			"cli_selectors.slxx_ok":
+				"packages/coding-agent/... thinking-selector-selected-level leftover remount",
+			"cli_selectors.dscxx_ok":
+				"packages/coding-agent/... thinking-level-description-line leftover remount",
+			"cli_selectors.rthxx_ok":
 				"packages/coding-agent/... render-thinking-selector leftover remount",
 			"cli_selectors.trust_option_saved_p":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts isSavedOption",
