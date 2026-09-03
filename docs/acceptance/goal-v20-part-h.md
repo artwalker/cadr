@@ -11025,6 +11025,30 @@ Leftover sibling unused-slug remount. Does not remount `countdown_tick`. Timed w
 
 Leftover sibling unused-slug remount. Does not remount `countdown_render`. Timed work is the remounted path. Observed `cdr_*` are exact. First n=5 freeze **3.484×** (1.467 / 0.421 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1090 — `cli_selectors` (ps_up)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ps_up` | `powershell-utf8-output-prefix` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling unused-slug remount. Does not remount `utf8_prefix`. Timed work is the remounted path. Observed `psu_*` are exact. First n=5 freeze **6.778×** (0.846 / 0.125 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1091 — `cli_selectors` (ps_pc)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ps_pc` | `prefix+command` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of prefix+command |
+
+Leftover sibling unused-slug remount. Does not remount `prefix_command`. Timed work is the remounted path. Observed `psc_*` are exact. First n=5 freeze **4.067×** (1.246 / 0.306 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1092 — `cli_selectors` (ps_mt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ps_mt` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling unused-slug remount. Does not remount `make_tool`. Timed work is the remounted path. Observed `pmt_*` are exact. First n=5 freeze **1.930×** (4.116 / 2.133 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
