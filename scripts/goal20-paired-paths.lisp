@@ -455,6 +455,12 @@
 ;;;;      (does not remount make_daxnuts_component)
 ;;;; 1095. cli_selectors dn_tick vs leftover replica of daxnuts-component-tick
 ;;;;      (does not remount daxnuts_component_tick)
+;;;; 1096. cli_bootstrap_sessions psb_ok vs leftover replica of parse-user-bash-input
+;;;;      (does not remount parse_bash)
+;;;; 1097. cli_bootstrap_sessions rst_ok vs leftover replica of response-text
+;;;;      (does not remount response_text)
+;;;; 1098. cli_bootstrap_sessions dsp_ok vs leftover replica of dispatch-user-input
+;;;;      (does not remount dispatch_plain)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1638,6 +1644,9 @@
     ("cli_bootstrap_sessions.pb_ok" . 50)
     ("cli_bootstrap_sessions.rt_ok" . 50)
     ("cli_bootstrap_sessions.dp_ok" . 50)
+    ("cli_bootstrap_sessions.psb_ok" . 50)
+    ("cli_bootstrap_sessions.rst_ok" . 50)
+    ("cli_bootstrap_sessions.dsp_ok" . 50)
     ("cli_bootstrap_sessions.assistant_tool_call_only" . 50)
     ("cli_bootstrap_sessions.session_entry_user_text" . 50)
     ("cli_bootstrap_sessions.session_compaction_status" . 50)
@@ -39880,6 +39889,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-bootstrap-dispatch-plain))))
+          "psb_ok"
+     (collect "cli_bootstrap_sessions.psb_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-parse-bash))))
+     "rst_ok"
+     (collect "cli_bootstrap_sessions.rst_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-response-text))))
+     "dsp_ok"
+     (collect "cli_bootstrap_sessions.dsp_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-dispatch-plain))))
      "assistant_tool_call_only"
      (collect "cli_bootstrap_sessions.assistant_tool_call_only"
               (lambda ()
@@ -42301,7 +42325,13 @@
       "src/cadr-cli/repl.lisp response-text leftover"
       "cli_bootstrap_sessions.dp_ok"
       "src/cadr-cli/repl.lisp dispatch-user-input leftover"
-      "cli_bootstrap_sessions.assistant_tool_call_only"
+      "cli_bootstrap_sessions.psb_ok"
+      "src/cadr-cli/repl.lisp parse-user-bash-input leftover remount"
+"cli_bootstrap_sessions.rst_ok"
+      "src/cadr-cli/repl.lisp response-text leftover remount"
+"cli_bootstrap_sessions.dsp_ok"
+      "src/cadr-cli/repl.lisp dispatch-user-input leftover remount"
+"cli_bootstrap_sessions.assistant_tool_call_only"
       "src/cadr-cli/bootstrap/sessions.lisp assistant-tool-call-only-p"
       "cli_bootstrap_sessions.session_entry_user_text"
       "src/cadr-cli/bootstrap/sessions.lisp session-entry-user-text"

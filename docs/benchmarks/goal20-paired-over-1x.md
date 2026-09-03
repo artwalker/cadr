@@ -855,6 +855,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tr_pto` | 72.698 | 43.738 | 1.662× | 8.00× | measure-only leftover 1048; tr_pto leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_tss` | 251.711 | 43.252 | 5.820× | 8.00× | measure-only leftover 1049; tr_tss leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_tdd` | 176.212 | 56.817 | 3.101× | 8.00× | measure-only leftover 1050; tr_tdd leftover remount | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.psb_ok` | 1.042 | 0.851 | 1.225× | 8.00× | measure-only leftover 1096; psb_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.rst_ok` | 1.737 | 0.700 | 2.482× | 8.00× | measure-only leftover 1097; rst_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_mv` | 286.724 | 113.395 | 2.529× | 8.00× | measure-only leftover 1051; tr_mv leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_he` | 301.199 | 125.263 | 2.405× | 8.00× | measure-only leftover 1052; tr_he leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_ui` | 335.271 | 160.186 | 2.093× | 8.00× | measure-only leftover 1053; tr_ui leftover remount | invent pause；地板优化另刀 |
