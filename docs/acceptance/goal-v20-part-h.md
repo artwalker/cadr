@@ -11217,6 +11217,30 @@ Leftover sibling unused-slug remount. Does not remount `user_message_handle_raw`
 
 Leftover sibling unused-slug remount. Does not remount `render_user_message_selector`. Timed work is the remounted path. Observed `umrd_*` are exact. First n=5 freeze **115.242×** (254.663 / 2.210 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1114 — `cli_selectors` (kb_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kb_ok` | `make-models-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of KEYBINDINGS app.models.* constructor |
+
+Leftover sibling unused-slug remount. Does not remount `make_models_selector_keybindings`. Timed work is the remounted path. Observed `mmskb_*` are exact. First n=5 freeze **1.012×** (30.920 / 30.541 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1115 — `cli_selectors` (sms_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sms_ok` | `make-scoped-models-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ScopedModelsSelectorComponent constructor |
+
+Leftover sibling unused-slug remount. Does not remount `make_scoped_models_selector_state`. Timed work is the remounted path. Observed `msmksc_*` are exact. First n=5 freeze **28.561×** (109.309 / 3.827 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1116 — `cli_selectors` (rms_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rms_ok` | `render-model-selector` (`src/cadr-cli/interactive/selectors/models.lisp`) | leftover replica of ModelSelectorComponent layout |
+
+Leftover sibling unused-slug remount. Does not remount `render_model_selector`. Timed work is the remounted path. Observed `rms_*` are exact. First n=5 freeze **28.581×** (187.216 / 6.550 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
