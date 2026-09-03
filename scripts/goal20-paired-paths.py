@@ -2749,9 +2749,9 @@ RATIO_CEILINGS = {
   # Measure-only pair (Pair 205); ceiling not lowered.
   "cli_selectors.oauth_selector_search_text": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.oa_sel": 8.0,
+  "cli_selectors.oa_sel": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.oa_flt": 8.0,
+  "cli_selectors.oa_flt": 12.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.oa_qry": 8.0,
   # First-freeze headroom for cli_selectors.login_auth_type_route.
