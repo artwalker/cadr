@@ -401,6 +401,12 @@
 ;;;;      (does not remount make_login_method_selector_state)
 ;;;; 1068. cli_selectors oa_ais vs leftover replica of make-api-key-input-state
 ;;;;      (does not remount make_api_key_input_state)
+;;;; 1069. cli_selectors th_he vs leftover replica of thinking-selector-handle-event
+;;;;      (does not remount thinking_selector_handle_event)
+;;;; 1070. cli_selectors th_mts vs leftover replica of make-thinking-selector-state
+;;;;      (does not remount make_thinking_selector_state)
+;;;; 1071. cli_selectors th_lst vs leftover replica of thinking-level-search-text
+;;;;      (does not remount thinking_level_search_text)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1364,6 +1370,9 @@
     ("cli_selectors.thinking_selector_key_p" . 50)
     ("cli_selectors.thinking_selector_keybindings" . 50)
     ("cli_selectors.make_thinking_selector_state" . 50)
+    ("cli_selectors.th_he" . 50)
+    ("cli_selectors.th_mts" . 50)
+    ("cli_selectors.th_lst" . 50)
     ("cli_selectors.mtsxxx_ok" . 50)
     ("cli_selectors.th_lbl" . 50)
     ("cli_selectors.th_qry" . 50)
@@ -35896,6 +35905,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-thinking-selector-state))))
+     "th_he"
+     (collect "cli_selectors.th_he"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-event))))
+     "th_mts"
+     (collect "cli_selectors.th_mts"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-thinking-selector-state))))
+     "th_lst"
+     (collect "cli_selectors.th_lst"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-search-text))))
      "mtsxxx_ok"
      (collect "cli_selectors.mtsxxx_ok"
               (lambda ()
@@ -41617,6 +41641,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings"
       "cli_selectors.make_thinking_selector_state"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
+      "cli_selectors.th_he"
+      "src/cadr-cli/interactive/selectors/thinking.lisp handle-event leftover remount"
+      "cli_selectors.th_mts"
+      "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state leftover remount"
+      "cli_selectors.th_lst"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text leftover remount"
       "cli_selectors.mtsxxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state leftover"
       "cli_selectors.th_lbl"
