@@ -641,6 +641,9 @@ const REPETITIONS = {
 	"cli_selectors.hri_ok": 50,
 	"cli_selectors.hev_ok": 50,
 	"cli_selectors.hen_ok": 50,
+	"cli_selectors.thmv_ok": 50,
+	"cli_selectors.thhr_ok": 50,
+	"cli_selectors.thhe_ok": 50,
 	"cli_selectors.mts_ok": 50,
 	"cli_selectors.lst_ok": 50,
 	"cli_selectors.thinking_selector_selected_level": 50,
@@ -36661,6 +36664,15 @@ async function measureCliSelectorsSessionSearch() {
 		hen_ok: await collect("cli_selectors.hen_ok", () => {
 			return () => runCliSelectorsThinkingSelectorHandleEvent();
 		}),
+		thmv_ok: await collect("cli_selectors.thmv_ok", () => {
+			return () => runCliSelectorsThinkingSelectorMove();
+		}),
+		thhr_ok: await collect("cli_selectors.thhr_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleRawInput();
+		}),
+		thhe_ok: await collect("cli_selectors.thhe_ok", () => {
+			return () => runCliSelectorsThinkingSelectorHandleEvent();
+		}),
 		mts_ok: await collect("cli_selectors.mts_ok", () => {
 			return () => runCliSelectorsMakeThinkingSelectorState();
 		}),
@@ -42495,6 +42507,12 @@ const result = {
 			"cli_selectors.hev_ok":
 				"packages/coding-agent/... thinking-selector-handle-event leftover remount",
 			"cli_selectors.hen_ok":
+				"packages/coding-agent/... thinking-selector-handle-event leftover remount",
+			"cli_selectors.thmv_ok":
+				"packages/coding-agent/... thinking-selector-move leftover remount",
+			"cli_selectors.thhr_ok":
+				"packages/coding-agent/... thinking-selector-handle-raw-input leftover remount",
+			"cli_selectors.thhe_ok":
 				"packages/coding-agent/... thinking-selector-handle-event leftover remount",
 			"cli_selectors.mts_ok":
 				"packages/coding-agent/... make-thinking-selector-state leftover remount",
