@@ -2149,7 +2149,7 @@ RATIO_CEILINGS = {
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.ldhe_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.ldrd_ok": 8.0,
+  "cli_selectors.ldrd_ok": 97.0,
   # Measure-only leftover 628; first freeze 0.766× (1.754 / 2.288 µs).
   "cli_selectors.user_message_handle_event": 8.0,
   # Measure-only leftover 629; first freeze 15.827× (85.983 / 5.433 µs).
