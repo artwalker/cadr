@@ -503,6 +503,12 @@
 ;;;;      (does not remount thinking_selector_clamp_selected)
 ;;;; 1119. cli_selectors sc_ok vs leftover replica of thinking-selector-select-current
 ;;;;      (does not remount thinking_selector_select_current)
+;;;; 1120. cli_selectors mv_ok vs leftover replica of thinking-selector-move
+;;;;      (does not remount thinking_selector_move)
+;;;; 1121. cli_selectors hri_ok vs leftover replica of thinking-selector-handle-raw-input
+;;;;      (does not remount thinking_selector_handle_raw_input)
+;;;; 1122. cli_selectors hev_ok vs leftover replica of thinking-selector-handle-event
+;;;;      (does not remount thinking_selector_handle_event)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1516,6 +1522,9 @@
     ("cli_selectors.thmvxxx_ok" . 50)
     ("cli_selectors.thhrxxx_ok" . 50)
     ("cli_selectors.thhexxx_ok" . 50)
+    ("cli_selectors.mv_ok" . 50)
+    ("cli_selectors.hri_ok" . 50)
+    ("cli_selectors.hev_ok" . 50)
     ("cli_selectors.thinking_selector_selected_level" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
@@ -36299,6 +36308,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-handle-event))))
+          "mv_ok"
+     (collect "cli_selectors.mv_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-move))))
+     "hri_ok"
+     (collect "cli_selectors.hri_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-raw-input))))
+     "hev_ok"
+     (collect "cli_selectors.hev_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-event))))
      "thinking_selector_selected_level"
      (collect "cli_selectors.thinking_selector_selected_level"
               (lambda ()
@@ -42125,7 +42149,13 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input leftover"
       "cli_selectors.thhexxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event leftover 1401"
-      "cli_selectors.thinking_selector_selected_level"
+      "cli_selectors.mv_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move leftover remount"
+"cli_selectors.hri_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input leftover remount"
+"cli_selectors.hev_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event leftover remount"
+"cli_selectors.thinking_selector_selected_level"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
       "cli_selectors.thinking_level_description_line"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line"
