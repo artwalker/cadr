@@ -633,6 +633,9 @@ const REPETITIONS = {
 	"cli_selectors.rtrs_ok": 50,
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
+	"cli_selectors.oa_akhe": 50,
+	"cli_selectors.oa_mls": 50,
+	"cli_selectors.oa_ais": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
 	"cli_selectors.lmsxxxx_ok": 50,
 	"cli_selectors.akixxxx_ok": 50,
@@ -36439,6 +36442,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeApiKeyInputState();
 			},
 		),
+				oa_akhe: await collect("cli_selectors.oa_akhe", () => {
+			return () => runCliSelectorsApiKeyInputStateHandleEvent();
+		}),
+		oa_mls: await collect("cli_selectors.oa_mls", () => {
+			return () => runCliSelectorsMakeLoginMethodSelectorState();
+		}),
+		oa_ais: await collect("cli_selectors.oa_ais", () => {
+			return () => runCliSelectorsMakeApiKeyInputState();
+		}),
 		make_oauth_selector_state: await collect(
 			"cli_selectors.make_oauth_selector_state",
 			() => {
@@ -41841,6 +41853,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
 			"cli_selectors.make_api_key_input_state":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
+			"cli_selectors.oa_akhe":
+				"packages/coding-agent/... apiKeyInput handleEvent leftover remount",
+			"cli_selectors.oa_mls":
+				"packages/coding-agent/... makeLoginMethodSelectorState leftover remount",
+			"cli_selectors.oa_ais":
+				"packages/coding-agent/... makeApiKeyInputState leftover remount",
 			"cli_selectors.make_oauth_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
 			"cli_selectors.lmsxxxx_ok":
