@@ -856,6 +856,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.sel_ok` | 254.663 | 2.210 | 115.242× | 8.00× | measure-only leftover 1113; sel_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.sm_st` | 107.261 | 4.351 | 24.651× | 40.00× | measure-only leftover 1040; make-scoped-models-selector-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.rm_sel` | 184.907 | 6.566 | 28.160× | 50.00× | measure-only leftover 1041; render-model-selector leftover | invent pause；地板优化另刀 |
+| `cli_selectors.kb_ok` | 30.920 | 30.541 | 1.012× | 8.00× | measure-only leftover 1114; kb_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.sms_ok` | 109.309 | 3.827 | 28.561× | 8.00× | measure-only leftover 1115; sms_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.rms_ok` | 187.216 | 6.550 | 28.581× | 8.00× | measure-only leftover 1116; rms_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.lat_ok` | 3.668 | 1.731 | 2.118× | 8.00× | measure-only leftover 1141; lat_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.lpo_ok` | 12.585 | 3.685 | 3.415× | 8.00× | measure-only leftover 1142; lpo_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.lgo_ok` | 10.328 | 3.658 | 2.824× | 8.00× | measure-only leftover 1143; lgo_ok leftover remount | invent pause；地板优化另刀 |
