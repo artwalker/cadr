@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-09-03T21:30:44Z) on `Friend-MachineD`, git `ff8616ae2c18`, ratio_gate=`enforced-only:cli_bootstrap_sessions.dpkx_ok,cli_bootstrap_sessions.pbkx_ok,cli_bootstrap_sessions.rtkx_ok`, quick=no, samples=5
+Current: `paired-paths` (2026-09-03T21:40:29Z) on `Friend-MachineD`, git `447249a7dc8c`, ratio_gate=`enforced-only:cli_selectors.tllx_ok,cli_selectors.tskbx_ok,cli_selectors.tsqx_ok`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-09-03T21:20:53Z) on `Friend-MachineD`, git `459c02029d45`, ratio_gate=`enforced-only:cli_selectors.dctx_ok,cli_selectors.dmcx_ok,cli_selectors.drax_ok`, quick=no, samples=5
+Previous: `paired-paths` (2026-09-03T21:30:44Z) on `Friend-MachineD`, git `ff8616ae2c18`, ratio_gate=`enforced-only:cli_bootstrap_sessions.dpkx_ok,cli_bootstrap_sessions.pbkx_ok,cli_bootstrap_sessions.rtkx_ok`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -1043,9 +1043,9 @@ Previous: `paired-paths` (2026-09-03T21:20:53Z) on `Friend-MachineD`, git `459c0
 | `cli_bootstrap_sessions.pbk_ok` | 1.1 | 1.2 | 0.97× | 0.97× | 8.00× |
 | `cli_bootstrap_sessions.rtk_ok` | 1.8 | 0.7 | 2.46× | 2.46× | 8.00× |
 | `cli_bootstrap_sessions.dpk_ok` | 0.9 | 0.8 | 1.18× | 1.18× | 8.00× |
-| `cli_bootstrap_sessions.pbkx_ok` | 0.7 | 0.6 | 1.28× | — | 8.00× |
-| `cli_bootstrap_sessions.rtkx_ok` | 1.3 | 0.5 | 2.46× | — | 8.00× |
-| `cli_bootstrap_sessions.dpkx_ok` | 0.7 | 0.6 | 1.10× | — | 8.00× |
+| `cli_bootstrap_sessions.pbkx_ok` | 0.7 | 0.6 | 1.28× | 1.28× | 8.00× |
+| `cli_bootstrap_sessions.rtkx_ok` | 1.3 | 0.5 | 2.46× | 2.46× | 8.00× |
+| `cli_bootstrap_sessions.dpkx_ok` | 0.7 | 0.6 | 1.10× | 1.10× | 8.00× |
 | `cli_print_rpc.handle_bad_json` | 5.4 | 4.9 | 1.09× | 1.09× | 8.00× |
 | `cli_print_rpc.handle_not_object` | 5.2 | 4.9 | 1.07× | 1.07× | 8.00× |
 | `cli_print_rpc.handle_ui_miss` | 6.2 | 1.5 | 4.07× | 4.07× | 8.00× |
@@ -1289,6 +1289,9 @@ Previous: `paired-paths` (2026-09-03T21:20:53Z) on `Friend-MachineD`, git `459c0
 | `cli_selectors.tll_ok` | 0.5 | 0.1 | 4.12× | 4.12× | 8.00× |
 | `cli_selectors.tsq_ok` | 14.4 | 7.9 | 1.81× | 1.81× | 8.00× |
 | `cli_selectors.tskb_ok` | 3.1 | 0.3 | 9.47× | 9.47× | 8.00× |
+| `cli_selectors.tllx_ok` | 0.5 | 0.1 | 3.51× | — | 8.00× |
+| `cli_selectors.tsqx_ok` | 11.6 | 7.3 | 1.59× | — | 8.00× |
+| `cli_selectors.tskbx_ok` | 2.9 | 0.2 | 16.30× | — | 8.00× |
 | `cli_selectors.thinking_selector_apply_filter` | 14.4 | 11.3 | 1.28× | 1.28× | 8.00× |
 | `cli_selectors.thinking_selector_clamp_selected` | 0.9 | 0.9 | 1.05× | 1.05× | 8.00× |
 | `cli_selectors.thinking_selector_select_current` | 1.4 | 0.9 | 1.60× | 1.60× | 8.00× |
@@ -2787,6 +2790,7 @@ Previous: `paired-paths` (2026-09-03T21:20:53Z) on `Friend-MachineD`, git `459c0
 | 2026-09-03T21:11:05Z | paired-paths | `dfef30591209` | no | enforced-only:powershell_tool.mtbx_ok,powershell_tool.pfxx_ok,powershell_tool.utfx_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-03T21:20:53Z | paired-paths | `459c02029d45` | no | enforced-only:cli_selectors.dctx_ok,cli_selectors.dmcx_ok,cli_selectors.drax_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 | 2026-09-03T21:30:44Z | paired-paths | `ff8616ae2c18` | no | enforced-only:cli_bootstrap_sessions.dpkx_ok,cli_bootstrap_sessions.pbkx_ok,cli_bootstrap_sessions.rtkx_ok | 0.79× | 1.03× | 0.83× | 0.06× |
+| 2026-09-03T21:40:29Z | paired-paths | `447249a7dc8c` | no | enforced-only:cli_selectors.tllx_ok,cli_selectors.tskbx_ok,cli_selectors.tsqx_ok | 0.79× | 1.03× | 0.83× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
