@@ -811,6 +811,9 @@ const REPETITIONS = {
 	"cli_selectors.dra_ok": 50,
 	"cli_selectors.dmc_ok": 50,
 	"cli_selectors.dct_ok": 50,
+	"cli_selectors.drax_ok": 50,
+	"cli_selectors.dmcx_ok": 50,
+	"cli_selectors.dctx_ok": 50,
 	"cli_selectors.dlg_make": 50,
 	"cli_selectors.dlg_auth": 50,
 	"cli_selectors.dlg_dev": 50,
@@ -37432,6 +37435,15 @@ async function measureCliSelectorsSessionSearch() {
 		dct_ok: await collect("cli_selectors.dct_ok", () => {
 			return () => runCliSelectorsDaxnutsComponentTick();
 		}),
+		drax_ok: await collect("cli_selectors.drax_ok", () => {
+			return () => runCliSelectorsDaxnutsRgbAt();
+		}),
+		dmcx_ok: await collect("cli_selectors.dmcx_ok", () => {
+			return () => runCliSelectorsMakeDaxnutsComponent();
+		}),
+		dctx_ok: await collect("cli_selectors.dctx_ok", () => {
+			return () => runCliSelectorsDaxnutsComponentTick();
+		}),
 		countdown_seconds: await collect("cli_selectors.countdown_seconds", () => {
 			return () => runCliSelectorsCountdownSeconds();
 		}),
@@ -43054,6 +43066,12 @@ const result = {
 			"cli_selectors.dmc_ok":
 				"packages/coding-agent/... make-daxnuts-component leftover remount",
 			"cli_selectors.dct_ok":
+				"packages/coding-agent/... daxnuts-component-tick leftover remount",
+			"cli_selectors.drax_ok":
+				"packages/coding-agent/... daxnuts-rgb-at leftover remount",
+			"cli_selectors.dmcx_ok":
+				"packages/coding-agent/... make-daxnuts-component leftover remount",
+			"cli_selectors.dctx_ok":
 				"packages/coding-agent/... daxnuts-component-tick leftover remount",
 			"cli_selectors.countdown_seconds":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts Math.ceil(timeoutMs/1000)",
