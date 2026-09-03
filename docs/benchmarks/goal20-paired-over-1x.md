@@ -981,6 +981,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thaf_ok` | 13.343 | 9.437 | 1.414× | 8.00× | measure-only leftover 1198; thaf_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.thcl_ok` | 0.987 | 0.182 | 5.437× | 8.00× | measure-only leftover 1199; thcl_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.thsc_ok` | 1.341 | 0.369 | 3.634× | 8.00× | measure-only leftover 1200; thsc_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.thafx_ok` | 14.773 | 10.024 | 1.474× | 8.00× | measure-only leftover 1264; thafx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.thclx_ok` | 0.986 | 0.193 | 5.108× | 8.00× | measure-only leftover 1265; thclx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.thscx_ok` | 1.321 | 0.385 | 3.435× | 8.00× | measure-only leftover 1266; thscx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.prmt_ok` | 8.683 | 1.811 | 4.795× | 8.00× | measure-only leftover 1105; prmt_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.info_ok` | 13.436 | 5.714 | 2.351× | 8.00× | measure-only leftover 1106; info_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.psb_ok` | 1.042 | 0.851 | 1.225× | 8.00× | measure-only leftover 1096; psb_ok leftover remount | invent pause；地板优化另刀 |
