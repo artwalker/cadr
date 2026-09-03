@@ -842,6 +842,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.cd_sec` | 1.152 | 0.204 | 5.648× | 8.00× | measure-only leftover 1018; countdown-seconds leftover | invent pause；地板优化另刀 |
 | `cli_selectors.cd_tick` | 1.066 | 0.165 | 6.479× | 8.00× | measure-only leftover 1019; countdown-tick leftover | invent pause；地板优化另刀 |
 | `cli_selectors.cd_rnd` | 1.539 | 0.335 | 4.599× | 8.00× | measure-only leftover 1020; countdown-render leftover | invent pause；地板优化另刀 |
+| `cli_selectors.cds_ok` | 1.080 | 0.129 | 8.372× | 8.00× | measure-only leftover 1168; cds_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.cdt_ok` | 1.021 | 0.196 | 5.213× | 8.00× | measure-only leftover 1169; cdt_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.cdr_ok` | 1.337 | 0.231 | 5.790× | 8.00× | measure-only leftover 1170; cdr_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.dax_rgb` | 1.131 | 0.359 | 3.149× | 8.00× | measure-only leftover 1021; daxnuts-rgb-at leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_make` | 0.999 | 0.153 | 6.531× | 8.00× | measure-only leftover 1022; make-daxnuts-component leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_tick` | 5.142 | 0.581 | 8.845× | 12.00× | measure-only leftover 1023; daxnuts-component-tick leftover; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
