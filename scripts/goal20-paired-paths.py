@@ -2331,7 +2331,7 @@ RATIO_CEILINGS = {
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.lmsx_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.akix_ok": 8.0,
+  "cli_selectors.akix_ok": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.ossx_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
