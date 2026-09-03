@@ -1254,6 +1254,9 @@ const REPETITIONS = {
 	"cli_selectors.tsmx_ok": 50,
 	"cli_selectors.tsex_ok": 50,
 	"cli_selectors.tuix_ok": 50,
+	"cli_selectors.tsmxx_ok": 50,
+	"cli_selectors.tsexx_ok": 50,
+	"cli_selectors.tuixx_ok": 50,
 	"cli_selectors.oauth_option_status_label": 50,
 	"cli_selectors.oauth_option_status_rendered": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
@@ -36000,6 +36003,15 @@ async function measureCliSelectorsSessionSearch() {
 		tuix_ok: await collect("cli_selectors.tuix_ok", () => {
 			return () => runCliSelectorsTrustSelectorUiState();
 		}),
+		tsmxx_ok: await collect("cli_selectors.tsmxx_ok", () => {
+			return () => runCliSelectorsTrustSelectorMove();
+		}),
+		tsexx_ok: await collect("cli_selectors.tsexx_ok", () => {
+			return () => runCliSelectorsTrustSelectorHandleEvent();
+		}),
+		tuixx_ok: await collect("cli_selectors.tuixx_ok", () => {
+			return () => runCliSelectorsTrustSelectorUiState();
+		}),
 		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
 			return () => runCliSelectorsOauthOptionStatusLabel();
 		}),
@@ -42520,6 +42532,12 @@ const result = {
 			"cli_selectors.tsex_ok":
 				"packages/coding-agent/... trust-selector-handle-event leftover remount",
 			"cli_selectors.tuix_ok":
+				"packages/coding-agent/... trust-selector-ui-state leftover remount",
+			"cli_selectors.tsmxx_ok":
+				"packages/coding-agent/... trust-selector-move leftover remount",
+			"cli_selectors.tsexx_ok":
+				"packages/coding-agent/... trust-selector-handle-event leftover remount",
+			"cli_selectors.tuixx_ok":
 				"packages/coding-agent/... trust-selector-ui-state leftover remount",
 			"cli_selectors.oauth_option_status_label":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
