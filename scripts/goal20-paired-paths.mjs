@@ -867,6 +867,9 @@ const REPETITIONS = {
 	"cli_selectors.cds_ok": 50,
 	"cli_selectors.cdt_ok": 50,
 	"cli_selectors.cdr_ok": 50,
+	"cli_selectors.cdsx_ok": 50,
+	"cli_selectors.cdtx_ok": 50,
+	"cli_selectors.cdrx_ok": 50,
 	"cli_selectors.countdown_dispose": 50,
 	"cli_selectors.countdown_unstarted": 50,
 	"cli_selectors.countdown_start_guard": 50,
@@ -37444,6 +37447,15 @@ async function measureCliSelectorsSessionSearch() {
 		cdr_ok: await collect("cli_selectors.cdr_ok", () => {
 			return () => runCliSelectorsCountdownRender();
 		}),
+		cdsx_ok: await collect("cli_selectors.cdsx_ok", () => {
+			return () => runCliSelectorsCountdownSeconds();
+		}),
+		cdtx_ok: await collect("cli_selectors.cdtx_ok", () => {
+			return () => runCliSelectorsCountdownTick();
+		}),
+		cdrx_ok: await collect("cli_selectors.cdrx_ok", () => {
+			return () => runCliSelectorsCountdownRender();
+		}),
 		dlg_make: await collect("cli_selectors.dlg_make", () => {
 			return () => runCliSelectorsLoginDialogMake();
 		}),
@@ -43042,6 +43054,12 @@ const result = {
 			"cli_selectors.cdt_ok":
 				"packages/coding-agent/... countdown-timer-tick leftover remount",
 			"cli_selectors.cdr_ok":
+				"packages/coding-agent/... countdown-request-render leftover remount",
+			"cli_selectors.cdsx_ok":
+				"packages/coding-agent/... Math.ceil(timeoutMs/1000) leftover remount",
+			"cli_selectors.cdtx_ok":
+				"packages/coding-agent/... countdown-timer-tick leftover remount",
+			"cli_selectors.cdrx_ok":
 				"packages/coding-agent/... countdown-request-render leftover remount",
 			"cli_selectors.dlg_make":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent constructor",
