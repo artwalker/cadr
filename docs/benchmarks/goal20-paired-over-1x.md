@@ -903,6 +903,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tr_pto` | 72.698 | 43.738 | 1.662× | 8.00× | measure-only leftover 1048; tr_pto leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_tss` | 251.711 | 43.252 | 5.820× | 8.00× | measure-only leftover 1049; tr_tss leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tr_tdd` | 176.212 | 56.817 | 3.101× | 8.00× | measure-only leftover 1050; tr_tdd leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.ldpr_ok` | 10.961 | 2.365 | 4.634× | 8.00× | measure-only leftover 1186; ldpr_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.ldi_ok` | 11.704 | 3.396 | 3.446× | 8.00× | measure-only leftover 1187; ldi_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.lddt_ok` | 4.310 | 2.792 | 1.544× | 8.00× | measure-only leftover 1188; lddt_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.rtk_ok` | 1.777 | 0.723 | 2.458× | 8.00× | measure-only leftover 1178; rtk_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.dpk_ok` | 0.898 | 0.758 | 1.185× | 8.00× | measure-only leftover 1179; dpk_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.mv_ok` | 1.300 | 0.133 | 9.747× | 8.00× | measure-only leftover 1120; mv_ok leftover remount | invent pause；地板优化另刀 |
