@@ -1116,6 +1116,9 @@ const REPETITIONS = {
 	"cli_selectors.lat_ok": 50,
 	"cli_selectors.lpo_ok": 50,
 	"cli_selectors.lgo_ok": 50,
+	"cli_selectors.oa_rt": 50,
+	"cli_selectors.oa_lin": 50,
+	"cli_selectors.oa_out": 50,
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
 	"cli_selectors.api_key_input_state_handle_event": 50,
@@ -35814,6 +35817,15 @@ async function measureCliSelectorsSessionSearch() {
 		lgo_ok: await collect("cli_selectors.lgo_ok", () => {
 			return () => runCliSelectorsLogoutProviderOptions();
 		}),
+				oa_rt: await collect("cli_selectors.oa_rt", () => {
+			return () => runCliSelectorsLoginAuthTypeRoute();
+		}),
+		oa_lin: await collect("cli_selectors.oa_lin", () => {
+			return () => runCliSelectorsLoginProviderOptions();
+		}),
+		oa_out: await collect("cli_selectors.oa_out", () => {
+			return () => runCliSelectorsLogoutProviderOptions();
+		}),
 		login_method_selector_handle_event: await collect(
 			"cli_selectors.login_method_selector_handle_event",
 			() => {
@@ -41578,6 +41590,12 @@ const result = {
 			"cli_selectors.lpo_ok":
 				"packages/coding-agent/... getLoginProviderOptions leftover remount",
 			"cli_selectors.lgo_ok":
+				"packages/coding-agent/... getLogoutProviderOptions leftover remount",
+			"cli_selectors.oa_rt":
+				"packages/coding-agent/... showLoginAuthTypeSelector leftover remount",
+			"cli_selectors.oa_lin":
+				"packages/coding-agent/... getLoginProviderOptions leftover remount",
+			"cli_selectors.oa_out":
 				"packages/coding-agent/... getLogoutProviderOptions leftover remount",
 			"cli_selectors.login_method_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts handleInput event dispatch (login method selector)",
