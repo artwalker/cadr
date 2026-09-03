@@ -839,6 +839,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.mos_ok` | 13.535 | 11.644 | 1.162× | 8.00× | measure-only leftover 1154; mos_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.lmsx_ok` | 4.009 | 1.308 | 3.066× | 8.00× | measure-only leftover 1207; lmsx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.akix_ok` | 3.520 | 0.328 | 10.725× | 8.00× | measure-only leftover 1208; akix_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.akhex_ok` | 6.046 | 2.914 | 2.075× | 8.00× | measure-only leftover 1228; akhex_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.mlsx_ok` | 3.176 | 0.876 | 3.626× | 8.00× | measure-only leftover 1229; mlsx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.aisx_ok` | 2.480 | 0.317 | 7.834× | 8.00× | measure-only leftover 1230; aisx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ossx_ok` | 8.436 | 4.203 | 2.007× | 8.00× | measure-only leftover 1209; ossx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.sst_ok` | 2.557 | 0.399 | 6.411× | 8.00× | measure-only leftover 1155; sst_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.oasx_ok` | 76.164 | 3.819 | 19.944× | 8.00× | measure-only leftover 1219; oasx_ok leftover remount | invent pause；地板优化另刀 |
