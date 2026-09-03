@@ -341,6 +341,12 @@
 ;;;;      (does not remount make_scoped_models_selector_state)
 ;;;; 1041. cli_selectors rm_sel vs leftover replica of ModelSelectorComponent layout
 ;;;;      (does not remount render_model_selector)
+;;;; 1141. cli_selectors lat_ok vs leftover replica of showLoginAuthTypeSelector routing
+;;;;      (does not remount login_auth_type_route)
+;;;; 1142. cli_selectors lpo_ok vs leftover replica of getLoginProviderOptions
+;;;;      (does not remount login_provider_options)
+;;;; 1143. cli_selectors lgo_ok vs leftover replica of getLogoutProviderOptions
+;;;;      (does not remount logout_provider_options)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1204,6 +1210,9 @@
     ("cli_selectors.lpoxxx_ok" . 50)
     ("cli_selectors.logout_provider_options" . 50)
     ("cli_selectors.lgoxxx_ok" . 50)
+    ("cli_selectors.lat_ok" . 50)
+    ("cli_selectors.lpo_ok" . 50)
+    ("cli_selectors.lgo_ok" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
@@ -35308,6 +35317,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-logout-provider-options))))
+     "lat_ok"
+     (collect "cli_selectors.lat_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-auth-type-route))))
+     "lpo_ok"
+     (collect "cli_selectors.lpo_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-provider-options))))
+     "lgo_ok"
+     (collect "cli_selectors.lgo_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-logout-provider-options))))
      "login_method_selector_handle_event"
      (collect "cli_selectors.login_method_selector_handle_event"
               (lambda ()
@@ -41179,6 +41203,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
       "cli_selectors.lgoxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options leftover"
+      "cli_selectors.lat_ok"
+      "src/cadr-cli/interactive/selectors/login.lisp login-auth-type-route leftover remount"
+      "cli_selectors.lpo_ok"
+      "src/cadr-cli/interactive/selectors/login.lisp login-provider-options leftover remount"
+      "cli_selectors.lgo_ok"
+      "src/cadr-cli/interactive/selectors/login.lisp logout-provider-options leftover remount"
       "cli_selectors.login_method_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
       "cli_selectors.oauth_selector_move"
