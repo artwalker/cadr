@@ -719,6 +719,12 @@
 ;;;;      (does not remount make_login_method_selector_state)
 ;;;; 1230. cli_selectors aisx_ok vs leftover replica of make-api-key-input-state
 ;;;;      (does not remount make_api_key_input_state)
+;;;; 1231. cli_selectors henx_ok vs leftover replica of thinking-selector-handle-event
+;;;;      (does not remount thinking_selector_handle_event)
+;;;; 1232. cli_selectors mtsx_ok vs leftover replica of make-thinking-selector-state
+;;;;      (does not remount make_thinking_selector_state)
+;;;; 1233. cli_selectors lstx_ok vs leftover replica of thinking-level-search-text
+;;;;      (does not remount thinking_level_search_text)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1777,6 +1783,9 @@
     ("cli_selectors.thhe_ok" . 50)
     ("cli_selectors.mts_ok" . 50)
     ("cli_selectors.lst_ok" . 50)
+    ("cli_selectors.henx_ok" . 50)
+    ("cli_selectors.mtsx_ok" . 50)
+    ("cli_selectors.lstx_ok" . 50)
     ("cli_selectors.thinking_selector_selected_level" . 50)
     ("cli_selectors.thinking_level_description_line" . 50)
     ("cli_selectors.render_thinking_selector" . 50)
@@ -36849,6 +36858,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-level-search-text))))
+     "henx_ok"
+     (collect "cli_selectors.henx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-event))))
+     "mtsx_ok"
+     (collect "cli_selectors.mtsx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-thinking-selector-state))))
+     "lstx_ok"
+     (collect "cli_selectors.lstx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-search-text))))
      "thinking_selector_selected_level"
      (collect "cli_selectors.thinking_selector_selected_level"
               (lambda ()
@@ -43079,6 +43103,12 @@
 "cli_selectors.mts_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state leftover remount"
 "cli_selectors.lst_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text leftover remount"
+"cli_selectors.henx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event leftover remount"
+"cli_selectors.mtsx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state leftover remount"
+"cli_selectors.lstx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text leftover remount"
 "cli_selectors.thinking_selector_selected_level"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level"
