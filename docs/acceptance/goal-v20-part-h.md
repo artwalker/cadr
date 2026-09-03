@@ -9813,7 +9813,7 @@ Leftover sibling of Pair 865. Timed work is inline thunk vs start-turn dispatch 
 Leftover sibling of Pairs 865–866. Timed work is wrap send/user plus restorer off the TUI thread — not a live turn. Observed `wet_send` / `wet_user` / `wet_restore` / `wet_trig` / `wet_n` are exact. First n=5 freeze **2.313×** (1.297 / 0.561 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 895 — `oauth_pkce_device` (xai_login)
 | `xai_login` | `login-xai-oauth` (`src/cadr-ai/oauth/providers/xai.lisp`) | `parseDeviceCode` + `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
-Leftover trio on unclaimed `src/cadr-ai/oauth/providers/xai.lisp` (leftover 379–381 measured error_detail / ensure_success / notify_device). Timed work is stub device+token HTTP login — not error_detail, not expires, not referrer slug. Observed `xli_acc` / `xli_ref` / `xli_n` are exact. First n=5 freeze **13.116×** (15.536 / 1.185 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/xai.lisp` (leftover 379–381 measured error_detail / ensure_success / notify_device). Timed work is stub device+token HTTP login — not error_detail, not expires, not referrer slug. Observed `xli_acc` / `xli_ref` / `xli_n` are exact. First n=5 freeze **13.116×** (15.536 / 1.185 µs) on host `Friend-MachineD`, ceiling 20.0 (raised 8→20). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 896 — `oauth_pkce_device` (xai_login_fail)
 | `xai_login_fail` | `login-xai-oauth` device HTTP fail (`src/cadr-ai/oauth/providers/xai.lisp`) | `requestDeviceCode` HTTP fail (`packages/ai/src/auth/oauth/xai.ts`) |
 Leftover sibling of Pair 895. Timed work is stub device HTTP 400 throwing — not exact message text. Observed `xlf_throw` / `xlf_n` are exact. First n=5 freeze **3.870×** (8.266 / 2.136 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
@@ -10760,6 +10760,30 @@ Leftover sibling unused-slug remount. Does not remount `credential_entry_auth_ty
 | `oa_env` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauthEnvironmentSource |
 
 Leftover sibling unused-slug remount. Does not remount `oauth_environment_source_p`. Timed work is the remounted path. Observed `oesp_*` are exact. First n=5 freeze **1.548×** (1.061 / 0.686 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1057 — `cli_selectors` (oa_sel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_sel` | `oauth-selector-selection` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauthSelectorSelection |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_selector_selection`. Timed work is the remounted path. Observed `oss_*` are exact. First n=5 freeze **13.640×** (75.871 / 5.562 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1058 — `cli_selectors` (oa_flt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_flt` | `oauth-selector-apply-filter` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauthSelectorApplyFilter |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_selector_apply_filter`. Timed work is the remounted path. Observed `osaf_*` are exact. First n=5 freeze **8.536×** (78.512 / 9.198 µs) on host `Friend-MachineD`, ceiling 12.0 (raised 8→12). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1059 — `cli_selectors` (oa_qry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_qry` | `oauth-selector-search-text` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauthSelectorSearchText |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_selector_search_text`. Timed work is the remounted path. Observed `osst_*` are exact. First n=5 freeze **4.565×** (1.461 / 0.320 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
