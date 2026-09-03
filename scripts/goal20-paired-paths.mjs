@@ -676,6 +676,9 @@ const REPETITIONS = {
 	"cli_selectors.lms_ok": 50,
 	"cli_selectors.aki_ok": 50,
 	"cli_selectors.akhe_ok": 50,
+	"cli_selectors.lmsu_ok": 50,
+	"cli_selectors.aui_ok": 50,
+	"cli_selectors.ahe_ok": 50,
 	"cli_selectors.mls_ok": 50,
 	"cli_selectors.ais_ok": 50,
 	"cli_selectors.oss_ok": 50,
@@ -36793,6 +36796,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsApiKeyInputStateHandleEvent();
 			},
 		),
+		lmsu_ok: await collect(
+			"cli_selectors.lmsu_ok",
+			() => {
+				return () => runCliSelectorsLoginMethodSelectorUiState();
+			},
+		),
+		aui_ok: await collect(
+			"cli_selectors.aui_ok",
+			() => {
+				return () => runCliSelectorsApiKeyInputUiState();
+			},
+		),
+		ahe_ok: await collect(
+			"cli_selectors.ahe_ok",
+			() => {
+				return () => runCliSelectorsApiKeyInputStateHandleEvent();
+			},
+		),
 		mls_ok: await collect(
 			"cli_selectors.mls_ok",
 			() => {
@@ -42412,6 +42433,12 @@ const result = {
 			"cli_selectors.aki_ok":
 				"packages/coding-agent/... make-api-key-input-state leftover remount",
 			"cli_selectors.akhe_ok":
+				"packages/coding-agent/... api-key-input-state-handle-event leftover remount",
+			"cli_selectors.lmsu_ok":
+				"packages/coding-agent/... login-method-selector-ui-state leftover remount",
+			"cli_selectors.aui_ok":
+				"packages/coding-agent/... api-key-input-ui-state leftover remount",
+			"cli_selectors.ahe_ok":
 				"packages/coding-agent/... api-key-input-state-handle-event leftover remount",
 			"cli_selectors.mls_ok":
 				"packages/coding-agent/... make-login-method-selector-state leftover remount",
