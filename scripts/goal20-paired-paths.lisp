@@ -599,6 +599,12 @@
 ;;;;      (does not remount countdown_tick)
 ;;;; 1170. cli_selectors cdr_ok vs leftover replica of countdown-request-render
 ;;;;      (does not remount countdown_render)
+;;;; 1171. powershell_tool utf_ok vs leftover replica of +powershell-utf8-output-prefix+
+;;;;      (does not remount utf8_prefix)
+;;;; 1172. powershell_tool pfx_ok vs leftover replica of make-powershell-tool
+;;;;      (does not remount prefix_command)
+;;;; 1173. powershell_tool mtb_ok vs leftover replica of make-powershell-tool
+;;;;      (does not remount make_tool)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -891,6 +897,9 @@
     ("powershell_tool.ps_up" . 50)
     ("powershell_tool.ps_pc" . 50)
     ("powershell_tool.ps_mt" . 50)
+    ("powershell_tool.utf_ok" . 50)
+    ("powershell_tool.pfx_ok" . 50)
+    ("powershell_tool.mtb_ok" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -11808,7 +11817,23 @@
          (collect "powershell_tool.ps_mt"
                   (lambda ()
                     (lambda ()
+                      (run-powershell-make-tool))))
+         "utf_ok"
+         (collect "powershell_tool.utf_ok"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-utf8-prefix))))
+         "pfx_ok"
+         (collect "powershell_tool.pfx_ok"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-prefix-command))))
+         "mtb_ok"
+         (collect "powershell_tool.mtb_ok"
+                  (lambda ()
+                    (lambda ()
                       (run-powershell-make-tool)))))))))
+
 
 ;;; ---------------------------------------------------------------------
 
@@ -41113,7 +41138,13 @@
       "src/cadr-cli/tools/powershell.lisp prefix+command leftover remount"
 "powershell_tool.ps_mt"
       "src/cadr-cli/tools/powershell.lisp make-powershell-tool leftover remount"
-      "settings_load.project_trust"
+      "powershell_tool.utf_ok"
+      "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+ leftover remount"
+"powershell_tool.pfx_ok"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool leftover remount"
+"powershell_tool.mtb_ok"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool leftover remount"
+"settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
       "src/cadr-cli/settings/config-values.lisp resolve-config-value"

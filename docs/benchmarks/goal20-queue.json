@@ -12729,6 +12729,51 @@
    "piUs": 0.231,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1171,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "powershell_tool.utf_ok",
+   "branch": "g20-freeze-1171-1173",
+   "note": "nextPairNum left at tip 328; leftover id 1171",
+   "ratio": 5.636,
+   "cadrUs": 0.705,
+   "piUs": 0.125,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1172,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "powershell_tool.pfx_ok",
+   "branch": "g20-freeze-1171-1173",
+   "note": "nextPairNum left at tip 328; leftover id 1172",
+   "ratio": 6.387,
+   "cadrUs": 1.656,
+   "piUs": 0.259,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1173,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "powershell_tool.mtb_ok",
+   "branch": "g20-freeze-1171-1173",
+   "note": "nextPairNum left at tip 328; leftover id 1173",
+   "ratio": 1.627,
+   "cadrUs": 3.052,
+   "piUs": 1.876,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [

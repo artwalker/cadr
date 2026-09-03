@@ -11649,6 +11649,30 @@ Leftover sibling unused-slug remount. Does not remount `countdown_tick`. Timed w
 
 Leftover sibling unused-slug remount. Does not remount `countdown_render`. Timed work is the remounted path. Observed `cdr_*` are exact. First n=5 freeze **5.790×** (1.337 / 0.231 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1171 — `powershell_tool` (utf_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `utf_ok` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling unused-slug remount. Does not remount `utf8_prefix`. Timed work is the remounted path. Observed `psu_*` are exact. First n=5 freeze **5.636×** (0.705 / 0.125 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1172 — `powershell_tool` (pfx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pfx_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of prefix+command wrap |
+
+Leftover sibling unused-slug remount. Does not remount `prefix_command`. Timed work is the remounted path. Observed `psc_*` are exact. First n=5 freeze **6.387×** (1.656 / 0.259 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1173 — `powershell_tool` (mtb_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mtb_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling unused-slug remount. Does not remount `make_tool`. Timed work is the remounted path. Observed `pmt_*` are exact. First n=5 freeze **1.627×** (3.052 / 1.876 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

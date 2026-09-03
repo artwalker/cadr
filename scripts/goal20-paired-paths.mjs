@@ -237,6 +237,9 @@ const REPETITIONS = {
 	"powershell_tool.ps_up": 50,
 	"powershell_tool.ps_pc": 50,
 	"powershell_tool.ps_mt": 50,
+	"powershell_tool.utf_ok": 50,
+	"powershell_tool.pfx_ok": 50,
+	"powershell_tool.mtb_ok": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -6312,6 +6315,15 @@ async function measurePowershellTool() {
 			return () => runPowershellPrefixCommand();
 		}),
 		ps_mt: await collect("powershell_tool.ps_mt", () => {
+			return () => runPowershellMakeTool();
+		}),
+		utf_ok: await collect("powershell_tool.utf_ok", () => {
+			return () => runPowershellUtf8Prefix();
+		}),
+		pfx_ok: await collect("powershell_tool.pfx_ok", () => {
+			return () => runPowershellPrefixCommand();
+		}),
+		mtb_ok: await collect("powershell_tool.mtb_ok", () => {
 			return () => runPowershellMakeTool();
 		}),
 		observed: {
@@ -40967,6 +40979,12 @@ const result = {
 			"powershell_tool.ps_pc":
 				"packages/coding-agent/... prefix+command leftover remount",
 			"powershell_tool.ps_mt":
+				"packages/coding-agent/... make-powershell-tool leftover remount",
+			"powershell_tool.utf_ok":
+				"packages/coding-agent/... +powershell-utf8-output-prefix+ leftover remount",
+			"powershell_tool.pfx_ok":
+				"packages/coding-agent/... make-powershell-tool leftover remount",
+			"powershell_tool.mtb_ok":
 				"packages/coding-agent/... make-powershell-tool leftover remount",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
