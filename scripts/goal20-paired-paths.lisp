@@ -521,6 +521,12 @@
 ;;;;      (does not remount make_api_key_input_state)
 ;;;; 1128. cli_selectors oss_ok vs leftover replica of make-oauth-selector-state
 ;;;;      (does not remount make_oauth_selector_state)
+;;;; 1129. cli_selectors tsm_ok vs leftover replica of trust-selector-move
+;;;;      (does not remount trust_selector_move)
+;;;; 1130. cli_selectors tse_ok vs leftover replica of trust-selector-handle-event
+;;;;      (does not remount trust_selector_handle_event)
+;;;; 1131. cli_selectors tui_ok vs leftover replica of trust-selector-ui-state
+;;;;      (does not remount trust_selector_ui_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1378,6 +1384,9 @@
     ("cli_selectors.tr_mv" . 50)
     ("cli_selectors.tr_he" . 50)
     ("cli_selectors.tr_ui" . 50)
+    ("cli_selectors.tsm_ok" . 50)
+    ("cli_selectors.tse_ok" . 50)
+    ("cli_selectors.tui_ok" . 50)
     ("cli_selectors.oauth_option_status_label" . 50)
     ("cli_selectors.oauth_option_status_rendered" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
@@ -35548,6 +35557,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-trust-selector-ui-state))))
+          "tsm_ok"
+     (collect "cli_selectors.tsm_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-move))))
+     "tse_ok"
+     (collect "cli_selectors.tse_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-handle-event))))
+     "tui_ok"
+     (collect "cli_selectors.tui_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-ui-state))))
      "oauth_option_status_label"
      (collect "cli_selectors.oauth_option_status_label"
               (lambda ()
@@ -41887,7 +41911,13 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-event leftover remount"
       "cli_selectors.tr_ui"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-ui-state leftover remount"
-      "cli_selectors.oauth_option_status_label"
+      "cli_selectors.tsm_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-move leftover remount"
+"cli_selectors.tse_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-event leftover remount"
+"cli_selectors.tui_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-ui-state leftover remount"
+"cli_selectors.oauth_option_status_label"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label"
       "cli_selectors.oauth_option_status_rendered"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-rendered"
