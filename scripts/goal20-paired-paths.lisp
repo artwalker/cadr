@@ -803,6 +803,12 @@
 ;;;;      (does not remount make_trust_selector_state)
 ;;;; 1272. cli_selectors trrsx_ok vs leftover replica of render-trust-selector
 ;;;;      (does not remount render_trust_selector)
+;;;; 1273. cli_selectors lmsxx_ok vs leftover replica of make-login-method-selector-state
+;;;;      (does not remount make_login_method_selector_state)
+;;;; 1274. cli_selectors akixx_ok vs leftover replica of make-api-key-input-state
+;;;;      (does not remount make_api_key_input_state)
+;;;; 1275. cli_selectors ossxx_ok vs leftover replica of make-oauth-selector-state
+;;;;      (does not remount make_oauth_selector_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1944,6 +1950,9 @@
     ("cli_selectors.mlsx_ok" . 50)
     ("cli_selectors.aisx_ok" . 50)
     ("cli_selectors.ossx_ok" . 50)
+    ("cli_selectors.lmsxx_ok" . 50)
+    ("cli_selectors.akixx_ok" . 50)
+    ("cli_selectors.ossxx_ok" . 50)
     ("cli_selectors.sst_ok" . 50)
     ("cli_selectors.oasx_ok" . 50)
     ("cli_selectors.fltx_ok" . 50)
@@ -37391,6 +37400,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
+     "lmsxx_ok"
+     (collect "cli_selectors.lmsxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "akixx_ok"
+     (collect "cli_selectors.akixx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "ossxx_ok"
+     (collect "cli_selectors.ossxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
      "sst_ok"
      (collect "cli_selectors.sst_ok"
               (lambda ()
@@ -43582,6 +43606,12 @@
 "cli_selectors.aisx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover remount"
 "cli_selectors.ossx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover remount"
+"cli_selectors.lmsxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover remount"
+"cli_selectors.akixx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover remount"
+"cli_selectors.ossxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover remount"
 "cli_selectors.sst_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text leftover remount"
