@@ -661,6 +661,9 @@ const REPETITIONS = {
 	"cli_selectors.oa_ohe": 50,
 	"cli_selectors.oa_mos": 50,
 	"cli_selectors.oa_sst": 50,
+	"cli_selectors.oas_ok": 50,
+	"cli_selectors.flt_ok": 50,
+	"cli_selectors.qry_ok": 50,
 	"cli_selectors.lmsxxxx_ok": 50,
 	"cli_selectors.akixxxx_ok": 50,
 	"cli_selectors.ossxxxx_ok": 50,
@@ -36670,6 +36673,15 @@ async function measureCliSelectorsSessionSearch() {
 		oa_sst: await collect("cli_selectors.oa_sst", () => {
 			return () => runCliSelectorsOauthSelectorSearchText();
 		}),
+		oas_ok: await collect("cli_selectors.oas_ok", () => {
+			return () => runCliSelectorsOauthSelectorSelection();
+		}),
+		flt_ok: await collect("cli_selectors.flt_ok", () => {
+			return () => runCliSelectorsOauthSelectorApplyFilter();
+		}),
+		qry_ok: await collect("cli_selectors.qry_ok", () => {
+			return () => runCliSelectorsOauthSelectorSearchText();
+		}),
 		lmsxxxx_ok: await collect("cli_selectors.lmsxxxx_ok", () => {
 			return () => runCliSelectorsMakeLoginMethodSelectorState();
 		}),
@@ -42245,6 +42257,12 @@ const result = {
 				"packages/coding-agent/... makeOauthSelectorState leftover remount",
 			"cli_selectors.oa_sst":
 				"packages/coding-agent/... oauth searchText leftover remount",
+			"cli_selectors.oas_ok":
+				"packages/coding-agent/... oauth-selector-selection leftover remount",
+			"cli_selectors.flt_ok":
+				"packages/coding-agent/... oauth-selector-apply-filter leftover remount",
+			"cli_selectors.qry_ok":
+				"packages/coding-agent/... oauth-selector-search-text leftover remount",
 			"cli_selectors.lmsxxxx_ok":
 				"packages/coding-agent leftover replica of ExtensionSelector login-method constructor",
 			"cli_selectors.akixxxx_ok":
