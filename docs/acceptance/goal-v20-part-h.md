@@ -11697,6 +11697,30 @@ Leftover sibling unused-slug remount. Does not remount `make_daxnuts_component`.
 
 Leftover sibling unused-slug remount. Does not remount `daxnuts_component_tick`. Timed work is the remounted path. Observed `dct_*` are exact. First n=5 freeze **20.277×** (4.958 / 0.244 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1177 — `cli_bootstrap_sessions` (pbk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pbk_ok` | `parse-user-bash-input` (`src/cadr-cli/repl.lisp`) | leftover replica of ! / !! bash extract |
+
+Leftover sibling unused-slug remount. Does not remount `parse_bash`. Timed work is the remounted path. Observed `pb_*` are exact. First n=5 freeze **0.967×** (1.119 / 1.157 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1× (cadr leads); not listed in over-1× table. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1178 — `cli_bootstrap_sessions` (rtk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rtk_ok` | `response-text` (`src/cadr-cli/repl.lisp`) | leftover replica of textParts.join |
+
+Leftover sibling unused-slug remount. Does not remount `response_text`. Timed work is the remounted path. Observed `rt_*` are exact. First n=5 freeze **2.458×** (1.777 / 0.723 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1179 — `cli_bootstrap_sessions` (dpk_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dpk_ok` | `dispatch-user-input` (`src/cadr-cli/repl.lisp`) | leftover replica of submit classify |
+
+Leftover sibling unused-slug remount. Does not remount `dispatch_plain`. Timed work is the remounted path. Observed `dp_*` are exact. First n=5 freeze **1.185×** (0.898 / 0.758 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
