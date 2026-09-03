@@ -647,6 +647,12 @@
 ;;;;      (does not remount user_message_handle_raw)
 ;;;; 1194. cli_selectors umrs_ok vs leftover replica of render-user-message-selector
 ;;;;      (does not remount render_user_message_selector)
+;;;; 1195. cli_selectors mkb_ok vs leftover replica of make-models-selector-keybindings
+;;;;      (does not remount make_models_selector_keybindings)
+;;;; 1196. cli_selectors msms_ok vs leftover replica of make-scoped-models-selector-state
+;;;;      (does not remount make_scoped_models_selector_state)
+;;;; 1197. cli_selectors mrms_ok vs leftover replica of render-model-selector
+;;;;      (does not remount render_model_selector)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1816,6 +1822,9 @@
     ("cli_selectors.kb_ok" . 50)
     ("cli_selectors.sms_ok" . 50)
     ("cli_selectors.rms_ok" . 50)
+    ("cli_selectors.mkb_ok" . 50)
+    ("cli_selectors.msms_ok" . 50)
+    ("cli_selectors.mrms_ok" . 50)
     ("cli_selectors.daxnuts_rgb_at" . 50)
     ("cli_selectors.make_daxnuts_component" . 50)
     ("cli_selectors.daxnuts_component_tick" . 50)
@@ -37296,6 +37305,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-model-selector))))
+     "mkb_ok"
+     (collect "cli_selectors.mkb_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-models-selector-keybindings))))
+     "msms_ok"
+     (collect "cli_selectors.msms_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-scoped-models-selector-state))))
+     "mrms_ok"
+     (collect "cli_selectors.mrms_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-model-selector))))
      "daxnuts_rgb_at"
      (collect "cli_selectors.daxnuts_rgb_at"
               (lambda ()
@@ -43053,6 +43077,12 @@
 "cli_selectors.sms_ok"
       "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state leftover remount"
 "cli_selectors.rms_ok"
+      "src/cadr-cli/interactive/selectors/models.lisp render-model-selector leftover remount"
+"cli_selectors.mkb_ok"
+      "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings leftover remount"
+"cli_selectors.msms_ok"
+      "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state leftover remount"
+"cli_selectors.mrms_ok"
       "src/cadr-cli/interactive/selectors/models.lisp render-model-selector leftover remount"
 "cli_selectors.daxnuts_rgb_at"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at"
