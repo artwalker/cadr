@@ -653,6 +653,12 @@
 ;;;;      (does not remount make_scoped_models_selector_state)
 ;;;; 1197. cli_selectors mrms_ok vs leftover replica of render-model-selector
 ;;;;      (does not remount render_model_selector)
+;;;; 1198. cli_selectors thaf_ok vs leftover replica of thinking-selector-apply-filter
+;;;;      (does not remount thinking_selector_apply_filter)
+;;;; 1199. cli_selectors thcl_ok vs leftover replica of thinking-selector-clamp-selected
+;;;;      (does not remount thinking_selector_clamp_selected)
+;;;; 1200. cli_selectors thsc_ok vs leftover replica of thinking-selector-select-current
+;;;;      (does not remount thinking_selector_select_current)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1680,6 +1686,9 @@
     ("cli_selectors.af_ok" . 50)
     ("cli_selectors.cl_ok" . 50)
     ("cli_selectors.sc_ok" . 50)
+    ("cli_selectors.thaf_ok" . 50)
+    ("cli_selectors.thcl_ok" . 50)
+    ("cli_selectors.thsc_ok" . 50)
     ("cli_selectors.thinking_selector_move" . 50)
     ("cli_selectors.th_mv" . 50)
     ("cli_selectors.th_lv" . 50)
@@ -36595,6 +36604,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-select-current))))
+     "thaf_ok"
+     (collect "cli_selectors.thaf_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-apply-filter))))
+     "thcl_ok"
+     (collect "cli_selectors.thcl_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-clamp-selected))))
+     "thsc_ok"
+     (collect "cli_selectors.thsc_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-select-current))))
      "thinking_selector_move"
      (collect "cli_selectors.thinking_selector_move"
               (lambda ()
@@ -42753,6 +42777,12 @@
 "cli_selectors.cl_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected leftover remount"
 "cli_selectors.sc_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current leftover remount"
+"cli_selectors.thaf_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter leftover remount"
+"cli_selectors.thcl_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected leftover remount"
+"cli_selectors.thsc_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current leftover remount"
 "cli_selectors.thinking_selector_move"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move"

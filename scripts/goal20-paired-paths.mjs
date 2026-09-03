@@ -624,6 +624,9 @@ const REPETITIONS = {
 	"cli_selectors.af_ok": 50,
 	"cli_selectors.cl_ok": 50,
 	"cli_selectors.sc_ok": 50,
+	"cli_selectors.thaf_ok": 50,
+	"cli_selectors.thcl_ok": 50,
+	"cli_selectors.thsc_ok": 50,
 	"cli_selectors.thinking_selector_move": 50,
 	"cli_selectors.th_mv": 50,
 	"cli_selectors.th_lv": 50,
@@ -36598,6 +36601,15 @@ async function measureCliSelectorsSessionSearch() {
 		sc_ok: await collect("cli_selectors.sc_ok", () => {
 			return () => runCliSelectorsThinkingSelectorSelectCurrent();
 		}),
+		thaf_ok: await collect("cli_selectors.thaf_ok", () => {
+			return () => runCliSelectorsThinkingSelectorApplyFilter();
+		}),
+		thcl_ok: await collect("cli_selectors.thcl_ok", () => {
+			return () => runCliSelectorsThinkingSelectorClampSelected();
+		}),
+		thsc_ok: await collect("cli_selectors.thsc_ok", () => {
+			return () => runCliSelectorsThinkingSelectorSelectCurrent();
+		}),
 		thinking_selector_move: await collect(
 			"cli_selectors.thinking_selector_move",
 			() => {
@@ -42449,6 +42461,12 @@ const result = {
 			"cli_selectors.cl_ok":
 				"packages/coding-agent/... thinking-selector-clamp-selected leftover remount",
 			"cli_selectors.sc_ok":
+				"packages/coding-agent/... thinking-selector-select-current leftover remount",
+			"cli_selectors.thaf_ok":
+				"packages/coding-agent/... thinking-selector-apply-filter leftover remount",
+			"cli_selectors.thcl_ok":
+				"packages/coding-agent/... thinking-selector-clamp-selected leftover remount",
+			"cli_selectors.thsc_ok":
 				"packages/coding-agent/... thinking-selector-select-current leftover remount",
 			"cli_selectors.thinking_selector_move":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts wrap selected index",
