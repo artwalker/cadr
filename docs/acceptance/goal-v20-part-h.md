@@ -12081,6 +12081,30 @@ Leftover sibling unused-slug remount. Does not remount `login_provider_options`.
 
 Leftover sibling unused-slug remount. Does not remount `logout_provider_options`. Timed work is the remounted path. Observed `lgo_*` are exact. First n=5 freeze **4.279×** (8.527 / 1.993 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1225 — `cli_selectors` (lmhx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lmhx_ok` | `login-method-selector-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of login method selector handleInput |
+
+Leftover sibling unused-slug remount. Does not remount `login_method_selector_handle_event`. Timed work is the remounted path. Observed `lmhe_*` are exact. First n=5 freeze **5.528×** (3.231 / 0.585 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1226 — `cli_selectors` (luix_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `luix_ok` | `login-method-selector-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of ExtensionSelectorComponent UI state |
+
+Leftover sibling unused-slug remount. Does not remount `login_method_selector_ui_state`. Timed work is the remounted path. Observed `lmsui_*` are exact. First n=5 freeze **4.673×** (388.529 / 83.137 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1227 — `cli_selectors` (akux_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `akux_ok` | `api-key-input-ui-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showPrompt api key UI state |
+
+Leftover sibling unused-slug remount. Does not remount `api_key_input_ui_state`. Timed work is the remounted path. Observed `akiui_*` are exact. First n=5 freeze **2.384×** (191.040 / 80.139 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
