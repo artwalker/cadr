@@ -815,6 +815,12 @@
 ;;;;      (does not remount trust_selector_handle_event)
 ;;;; 1278. cli_selectors tuixx_ok vs leftover replica of trust-selector-ui-state
 ;;;;      (does not remount trust_selector_ui_state)
+;;;; 1279. cli_selectors slxx_ok vs leftover replica of thinking-selector-selected-level
+;;;;      (does not remount thinking_selector_selected_level)
+;;;; 1280. cli_selectors dscxx_ok vs leftover replica of thinking-level-description-line
+;;;;      (does not remount thinking_level_description_line)
+;;;; 1281. cli_selectors rthxx_ok vs leftover replica of render-thinking-selector
+;;;;      (does not remount render_thinking_selector)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1903,6 +1909,9 @@
     ("cli_selectors.slx_ok" . 50)
     ("cli_selectors.dscx_ok" . 50)
     ("cli_selectors.rthx_ok" . 50)
+    ("cli_selectors.slxx_ok" . 50)
+    ("cli_selectors.dscxx_ok" . 50)
+    ("cli_selectors.rthxx_ok" . 50)
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
@@ -37144,6 +37153,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-thinking-selector))))
+     "slxx_ok"
+     (collect "cli_selectors.slxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-selected-level))))
+     "dscxx_ok"
+     (collect "cli_selectors.dscxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-description-line))))
+     "rthxx_ok"
+     (collect "cli_selectors.rthxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-thinking-selector))))
      "trust_option_saved_p"
      (collect "cli_selectors.trust_option_saved_p"
               (lambda ()
@@ -43524,6 +43548,12 @@
 "cli_selectors.dscx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line leftover remount"
 "cli_selectors.rthx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector leftover remount"
+"cli_selectors.slxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-selected-level leftover remount"
+"cli_selectors.dscxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-description-line leftover remount"
+"cli_selectors.rthxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp render-thinking-selector leftover remount"
 "cli_selectors.trust_option_saved_p"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p"
