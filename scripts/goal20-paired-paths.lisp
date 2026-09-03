@@ -389,6 +389,12 @@
 ;;;;      (does not remount login_provider_options / lpo_ok)
 ;;;; 1062. cli_selectors oa_out vs leftover replica of logout-provider-options
 ;;;;      (does not remount logout_provider_options / lgo_ok)
+;;;; 1063. cli_selectors oa_lmh vs leftover replica of login-method-selector-handle-event
+;;;;      (does not remount login_method_selector_handle_event)
+;;;; 1064. cli_selectors oa_lui vs leftover replica of login-method-selector-ui-state
+;;;;      (does not remount login_method_selector_ui_state)
+;;;; 1065. cli_selectors oa_aki vs leftover replica of api-key-input-ui-state
+;;;;      (does not remount api_key_input_ui_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1275,6 +1281,9 @@
     ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
     ("cli_selectors.api_key_input_ui_state" . 50)
+    ("cli_selectors.oa_lmh" . 50)
+    ("cli_selectors.oa_lui" . 50)
+    ("cli_selectors.oa_aki" . 50)
     ("cli_selectors.oauth_selector_ui_state" . 50)
     ("cli_selectors.model_selector_search_text" . 50)
     ("cli_selectors.qualified_model_id" . 50)
@@ -35495,6 +35504,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-api-key-input-ui-state))))
+          "oa_lmh"
+     (collect "cli_selectors.oa_lmh"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event))))
+     "oa_lui"
+     (collect "cli_selectors.oa_lui"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-ui-state))))
+     "oa_aki"
+     (collect "cli_selectors.oa_aki"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-ui-state))))
      "oauth_selector_ui_state"
      (collect "cli_selectors.oauth_selector_ui_state"
               (lambda ()
@@ -41417,7 +41441,13 @@
       "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
       "cli_selectors.api_key_input_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state"
-      "cli_selectors.oauth_selector_ui_state"
+      "cli_selectors.oa_lmh"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event leftover remount"
+"cli_selectors.oa_lui"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-ui-state leftover remount"
+"cli_selectors.oa_aki"
+      "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-ui-state leftover remount"
+"cli_selectors.oauth_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-oauth-selector"
       "cli_selectors.model_selector_search_text"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-search-text"

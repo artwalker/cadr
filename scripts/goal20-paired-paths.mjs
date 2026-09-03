@@ -1124,6 +1124,9 @@ const REPETITIONS = {
 	"cli_selectors.api_key_input_state_handle_event": 50,
 	"cli_selectors.login_method_selector_ui_state": 50,
 	"cli_selectors.api_key_input_ui_state": 50,
+	"cli_selectors.oa_lmh": 50,
+	"cli_selectors.oa_lui": 50,
+	"cli_selectors.oa_aki": 50,
 	"cli_selectors.oauth_selector_ui_state": 50,
 	"cli_selectors.model_selector_search_text": 50,
 	"cli_selectors.qualified_model_id": 50,
@@ -35850,6 +35853,15 @@ async function measureCliSelectorsSessionSearch() {
 		api_key_input_ui_state: await collect("cli_selectors.api_key_input_ui_state", () => {
 			return () => runCliSelectorsApiKeyInputUiState();
 		}),
+				oa_lmh: await collect("cli_selectors.oa_lmh", () => {
+			return () => runCliSelectorsLoginMethodSelectorHandleEvent();
+		}),
+		oa_lui: await collect("cli_selectors.oa_lui", () => {
+			return () => runCliSelectorsLoginMethodSelectorUiState();
+		}),
+		oa_aki: await collect("cli_selectors.oa_aki", () => {
+			return () => runCliSelectorsApiKeyInputUiState();
+		}),
 		oauth_selector_ui_state: await collect("cli_selectors.oauth_selector_ui_state", () => {
 			return () => runCliSelectorsOauthSelectorUiState();
 		}),
@@ -41607,6 +41619,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state",
 			"cli_selectors.api_key_input_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key UI state",
+			"cli_selectors.oa_lmh":
+				"packages/coding-agent/... login-method-selector-handle-event leftover remount",
+			"cli_selectors.oa_lui":
+				"packages/coding-agent/... login-method-selector-ui-state leftover remount",
+			"cli_selectors.oa_aki":
+				"packages/coding-agent/... api-key-input-ui-state leftover remount",
 			"cli_selectors.oauth_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent UI state",
 			"cli_selectors.model_selector_search_text":
