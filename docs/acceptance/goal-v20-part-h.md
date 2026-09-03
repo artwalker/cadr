@@ -12417,6 +12417,30 @@ Leftover sibling unused-slug remount. Does not remount `thinking_selector_clamp_
 
 Leftover sibling unused-slug remount. Does not remount `thinking_selector_select_current`. Timed work is the remounted path. Observed `tssc_*` are exact. First n=5 freeze **3.435×** (1.321 / 0.385 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1267 — `cli_selectors` (thmvx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thmvx_ok` | `thinking-selector-move` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector wrap selected |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_move`. Timed work is the remounted path. Observed `tsmv_*` are exact. First n=5 freeze **7.009×** (0.947 / 0.135 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1268 — `cli_selectors` (thhrx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thhrx_ok` | `thinking-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector handleInput keybindings |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_handle_raw_input`. Timed work is the remounted path. Observed `tshri_*` are exact. First n=5 freeze **30.826×** (166.608 / 5.405 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1269 — `cli_selectors` (thhex_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thhex_ok` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector typed input event dispatch |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_handle_event`. Timed work is the remounted path. Observed `tshe_*` are exact. First n=5 freeze **1.596×** (4.024 / 2.522 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
