@@ -449,6 +449,12 @@
 ;;;;      (does not remount prefix_command)
 ;;;; 1092. powershell_tool ps_mt vs leftover replica
 ;;;;      (does not remount make_tool)
+;;;; 1093. cli_selectors dn_rgb vs leftover replica of daxnuts-rgb-at
+;;;;      (does not remount daxnuts_rgb_at)
+;;;; 1094. cli_selectors dn_make vs leftover replica of daxnuts-component-tick
+;;;;      (does not remount make_daxnuts_component)
+;;;; 1095. cli_selectors dn_tick vs leftover replica of daxnuts-component-tick
+;;;;      (does not remount daxnuts_component_tick)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1540,6 +1546,9 @@
     ("cli_selectors.dax_rgb" . 50)
     ("cli_selectors.dax_make" . 50)
     ("cli_selectors.dax_tick" . 50)
+    ("cli_selectors.dn_rgb" . 50)
+    ("cli_selectors.dn_make" . 50)
+    ("cli_selectors.dn_tick" . 50)
     ("cli_selectors.countdown_seconds" . 50)
     ("cli_selectors.countdown_tick" . 50)
     ("cli_selectors.countdown_render" . 50)
@@ -36608,6 +36617,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+          "dn_rgb"
+     (collect "cli_selectors.dn_rgb"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "dn_make"
+     (collect "cli_selectors.dn_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "dn_tick"
+     (collect "cli_selectors.dn_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick))))
      "countdown_seconds"
      (collect "cli_selectors.countdown_seconds"
               (lambda ()
@@ -42105,7 +42129,13 @@
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover"
       "cli_selectors.dax_tick"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover"
-      "cli_selectors.countdown_seconds"
+      "cli_selectors.dn_rgb"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at leftover remount"
+"cli_selectors.dn_make"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover remount"
+"cli_selectors.dn_tick"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover remount"
+"cli_selectors.countdown_seconds"
       "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds"
       "cli_selectors.countdown_tick"
       "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick"
