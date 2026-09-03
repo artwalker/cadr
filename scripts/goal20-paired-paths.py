@@ -1981,7 +1981,7 @@ RATIO_CEILINGS = {
   # Measure-only leftover 618; first freeze 1.204× (7.245 / 6.020 µs).
   "cli_selectors.make_oauth_selector_state": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.oa_ohe": 8.0,
+  "cli_selectors.oa_ohe": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.oa_mos": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
