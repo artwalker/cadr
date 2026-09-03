@@ -3613,6 +3613,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("oa_out", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.oa_out", paired.RATIO_CEILINGS)
         self.assertIn("lgo_empty", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.rwi_ok", RECORD.METRIC_KEYS)
+        self.assertIn("rwi_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.rwi_ok", paired.RATIO_CEILINGS)
+        self.assertIn("oshri_down", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.esp_ok", RECORD.METRIC_KEYS)
+        self.assertIn("esp_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.esp_ok", paired.RATIO_CEILINGS)
+        self.assertIn("oesp_nil", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.lgt_ok", RECORD.METRIC_KEYS)
+        self.assertIn("lgt_ok", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.lgt_ok", paired.RATIO_CEILINGS)
+        self.assertIn("lgo_empty", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("cli_selectors.login_method_selector_handle_event", RECORD.METRIC_KEYS)
         self.assertIn(
             "login_method_selector_handle_event", paired.METRICS["cli_selectors"]
