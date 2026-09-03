@@ -947,6 +947,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tsm_ok` | 337.926 | 134.774 | 2.507× | 8.00× | measure-only leftover 1129; tsm_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tse_ok` | 370.246 | 157.217 | 2.355× | 8.00× | measure-only leftover 1130; tse_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.tui_ok` | 405.519 | 192.023 | 2.112× | 8.00× | measure-only leftover 1131; tui_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.tsmx_ok` | 286.270 | 104.310 | 2.744× | 8.00× | measure-only leftover 1210; tsmx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.tsex_ok` | 285.730 | 114.245 | 2.501× | 8.00× | measure-only leftover 1211; tsex_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.tuix_ok` | 336.435 | 128.478 | 2.619× | 8.00× | measure-only leftover 1212; tuix_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.oa_lbl` | 1.961 | 1.359 | 1.443× | 8.00× | measure-only leftover 1054; oa_lbl leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.oa_typ` | 0.575 | 0.458 | 1.254× | 8.00× | measure-only leftover 1055; oa_typ leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.oa_env` | 1.061 | 0.686 | 1.548× | 8.00× | measure-only leftover 1056; oa_env leftover remount | invent pause；地板优化另刀 |
