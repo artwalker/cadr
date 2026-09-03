@@ -855,6 +855,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.oa_lbl` | 1.961 | 1.359 | 1.443× | 8.00× | measure-only leftover 1054; oa_lbl leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.oa_typ` | 0.575 | 0.458 | 1.254× | 8.00× | measure-only leftover 1055; oa_typ leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.oa_env` | 1.061 | 0.686 | 1.548× | 8.00× | measure-only leftover 1056; oa_env leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.oa_sel` | 75.871 | 5.562 | 13.640× | 20.00× | measure-only leftover 1057; oa_sel leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.oa_flt` | 78.512 | 9.198 | 8.536× | 12.00× | measure-only leftover 1058; oa_flt leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.oa_qry` | 1.461 | 0.320 | 4.565× | 8.00× | measure-only leftover 1059; oa_qry leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ld_info` | 10.904 | 3.575 | 3.050× | 8.00× | measure-only leftover 1031; login-dialog-show-info leftover | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | settings_load.sdk_make_manager | 1.411 | 3.670 | 2.600 | 8.0 | Friend-MachineD | leftover 856 loop-tick-47 |

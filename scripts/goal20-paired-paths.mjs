@@ -1104,6 +1104,9 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"cli_selectors.oauth_selector_search_text": 50,
+	"cli_selectors.oa_sel": 50,
+	"cli_selectors.oa_flt": 50,
+	"cli_selectors.oa_qry": 50,
 	"cli_selectors.login_auth_type_route": 50,
 	"cli_selectors.latxxx_ok": 50,
 	"cli_selectors.login_provider_options": 50,
@@ -35775,6 +35778,15 @@ async function measureCliSelectorsSessionSearch() {
 		oauth_selector_search_text: await collect("cli_selectors.oauth_selector_search_text", () => {
 			return () => runCliSelectorsOauthSelectorSearchText();
 		}),
+				oa_sel: await collect("cli_selectors.oa_sel", () => {
+			return () => runCliSelectorsOauthSelectorSelection();
+		}),
+		oa_flt: await collect("cli_selectors.oa_flt", () => {
+			return () => runCliSelectorsOauthSelectorApplyFilter();
+		}),
+		oa_qry: await collect("cli_selectors.oa_qry", () => {
+			return () => runCliSelectorsOauthSelectorSearchText();
+		}),
 		login_auth_type_route: await collect("cli_selectors.login_auth_type_route", () => {
 			return () => runCliSelectorsLoginAuthTypeRoute();
 		}),
@@ -41543,6 +41555,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput raw key dispatch",
 			"cli_selectors.oauth_selector_search_text":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
+			"cli_selectors.oa_sel":
+				"packages/coding-agent/... oauthSelectorSelection leftover remount",
+			"cli_selectors.oa_flt":
+				"packages/coding-agent/... oauthSelectorApplyFilter leftover remount",
+			"cli_selectors.oa_qry":
+				"packages/coding-agent/... oauthSelectorSearchText leftover remount",
 			"cli_selectors.login_auth_type_route":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
 			"cli_selectors.latxxx_ok":
