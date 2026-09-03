@@ -1089,6 +1089,9 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_handle_event": 50,
 	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"cli_selectors.trust_selector_ui_state": 50,
+	"cli_selectors.tr_mv": 50,
+	"cli_selectors.tr_he": 50,
+	"cli_selectors.tr_ui": 50,
 	"cli_selectors.oauth_option_status_label": 50,
 	"cli_selectors.oauth_option_status_rendered": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
@@ -35724,6 +35727,15 @@ async function measureCliSelectorsSessionSearch() {
 		trust_selector_ui_state: await collect("cli_selectors.trust_selector_ui_state", () => {
 			return () => runCliSelectorsTrustSelectorUiState();
 		}),
+		tr_mv: await collect("cli_selectors.tr_mv", () => {
+			return () => runCliSelectorsTrustSelectorMove();
+		}),
+		tr_he: await collect("cli_selectors.tr_he", () => {
+			return () => runCliSelectorsTrustSelectorHandleEvent();
+		}),
+		tr_ui: await collect("cli_selectors.tr_ui", () => {
+			return () => runCliSelectorsTrustSelectorUiState();
+		}),
 		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
 			return () => runCliSelectorsOauthOptionStatusLabel();
 		}),
@@ -41489,6 +41501,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-raw-input dispatch",
 			"cli_selectors.trust_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
+			"cli_selectors.tr_mv":
+				"packages/coding-agent/... trust move leftover remount",
+			"cli_selectors.tr_he":
+				"packages/coding-agent/... trust handleEvent leftover remount",
+			"cli_selectors.tr_ui":
+				"packages/coding-agent/... trust uiState leftover remount",
 			"cli_selectors.oauth_option_status_label":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
 			"cli_selectors.oauth_option_status_rendered":
