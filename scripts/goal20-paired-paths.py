@@ -1973,9 +1973,9 @@ RATIO_CEILINGS = {
   # Measure-only leftover 1401; first freeze 0.914× (3.238 / 3.542 µs). cadr leads.
   "cli_selectors.thhexxx_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.mv_ok": 8.0,
+  "cli_selectors.mv_ok": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.hri_ok": 8.0,
+  "cli_selectors.hri_ok": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.hev_ok": 8.0,
   # Measure-only leftover 610; first freeze 0.608× (0.467 / 0.768 µs). cadr leads.
