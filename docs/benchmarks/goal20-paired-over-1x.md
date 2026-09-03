@@ -929,6 +929,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.umev_ok` | 2.048 | 0.590 | 3.469× | 8.00× | measure-only leftover 1192; umev_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.umrw_ok` | 103.853 | 3.280 | 31.664× | 8.00× | measure-only leftover 1193; umrw_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.umrs_ok` | 290.148 | 1.102 | 263.196× | 8.00× | measure-only leftover 1194; umrs_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.umevx_ok` | 1.791 | 0.607 | 2.950× | 8.00× | measure-only leftover 1258; umevx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.umrwx_ok` | 108.530 | 3.330 | 32.591× | 8.00× | measure-only leftover 1259; umrwx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.umrsx_ok` | 263.484 | 1.222 | 215.567× | 8.00× | measure-only leftover 1260; umrsx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.sm_st` | 107.261 | 4.351 | 24.651× | 40.00× | measure-only leftover 1040; make-scoped-models-selector-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.rm_sel` | 184.907 | 6.566 | 28.160× | 50.00× | measure-only leftover 1041; render-model-selector leftover | invent pause；地板优化另刀 |
 | `cli_selectors.kb_ok` | 30.920 | 30.541 | 1.012× | 8.00× | measure-only leftover 1114; kb_ok leftover remount | invent pause；地板优化另刀 |
