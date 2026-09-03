@@ -1113,6 +1113,9 @@ const REPETITIONS = {
 	"cli_selectors.oa_lat": 50,
 	"cli_selectors.oa_lpo": 50,
 	"cli_selectors.oa_lhe": 50,
+	"cli_selectors.oa_lms": 50,
+	"cli_selectors.oa_aku": 50,
+	"cli_selectors.oa_ahe": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
 	"cli_selectors.oa_lbl": 50,
 	"cli_selectors.oa_typ": 50,
@@ -35802,6 +35805,15 @@ async function measureCliSelectorsSessionSearch() {
 		oa_lhe: await collect("cli_selectors.oa_lhe", () => {
 			return () => runCliSelectorsLoginMethodSelectorHandleEvent();
 		}),
+				oa_lms: await collect("cli_selectors.oa_lms", () => {
+			return () => runCliSelectorsLoginMethodSelectorUiState();
+		}),
+		oa_aku: await collect("cli_selectors.oa_aku", () => {
+			return () => runCliSelectorsApiKeyInputUiState();
+		}),
+		oa_ahe: await collect("cli_selectors.oa_ahe", () => {
+			return () => runCliSelectorsApiKeyInputStateHandleEvent();
+		}),
 		oauth_environment_source_p: await collect("cli_selectors.oauth_environment_source_p", () => {
 			return () => runCliSelectorsOauthEnvironmentSourceP();
 		}),
@@ -41651,6 +41663,12 @@ const result = {
 				"packages/coding-agent/... login-provider-options leftover remount",
 			"cli_selectors.oa_lhe":
 				"packages/coding-agent/... login-method-selector-handle-event leftover remount",
+			"cli_selectors.oa_lms":
+				"packages/coding-agent/... login-method-selector-ui-state leftover remount",
+			"cli_selectors.oa_aku":
+				"packages/coding-agent/... api-key-input-ui-state leftover remount",
+			"cli_selectors.oa_ahe":
+				"packages/coding-agent/... api-key-input-state-handle-event leftover remount",
 			"cli_selectors.oauth_environment_source_p":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
 			"cli_selectors.oa_lbl":
