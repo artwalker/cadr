@@ -11337,6 +11337,30 @@ Leftover sibling unused-slug remount. Does not remount `make_api_key_input_state
 
 Leftover sibling unused-slug remount. Does not remount `make_oauth_selector_state`. Timed work is the remounted path. Observed `moss_*` are exact. First n=5 freeze **1.579×** (8.838 / 5.596 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1129 — `cli_selectors` (tsm_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsm_ok` | `trust-selector-move` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of wrap selection index |
+
+Leftover sibling unused-slug remount. Does not remount `trust_selector_move`. Timed work is the remounted path. Observed `tsm_*` are exact. First n=5 freeze **2.507×** (337.926 / 134.774 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1130 — `cli_selectors` (tse_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tse_ok` | `trust-selector-handle-event` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust-selector handle-event dispatch |
+
+Leftover sibling unused-slug remount. Does not remount `trust_selector_handle_event`. Timed work is the remounted path. Observed `tshe_*` are exact. First n=5 freeze **2.355×** (370.246 / 157.217 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1131 — `cli_selectors` (tui_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tui_ok` | `trust-selector-ui-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of TrustSelectorComponent UI state |
+
+Leftover sibling unused-slug remount. Does not remount `trust_selector_ui_state`. Timed work is the remounted path. Observed `rts_*` are exact. First n=5 freeze **2.112×** (405.519 / 192.023 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
