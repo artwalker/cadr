@@ -831,6 +831,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.oss_ok` | 8.838 | 5.596 | 1.579× | 8.00× | measure-only leftover 1128; oss_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ohe_ok` | 182.806 | 15.748 | 11.608× | 8.00× | measure-only leftover 1153; ohe_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.mos_ok` | 13.535 | 11.644 | 1.162× | 8.00× | measure-only leftover 1154; mos_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.lmsx_ok` | 4.009 | 1.308 | 3.066× | 8.00× | measure-only leftover 1207; lmsx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.akix_ok` | 3.520 | 0.328 | 10.725× | 8.00× | measure-only leftover 1208; akix_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.ossx_ok` | 8.436 | 4.203 | 2.007× | 8.00× | measure-only leftover 1209; ossx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.sst_ok` | 2.557 | 0.399 | 6.411× | 8.00× | measure-only leftover 1155; sst_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_extensions_install.hp_ok` | 0.604 | 0.597 | 1.012× | 8.00× | measure-only leftover 1007; handle-extension-command plain leftover | invent pause；地板优化另刀 |
 | `cli_interactive_controller.br_ok` | 1.316 | 0.337 | 3.907× | 8.00× | measure-only leftover 1009; append-tui-user-bash-running leftover | invent pause；地板优化另刀 |
