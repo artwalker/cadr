@@ -11985,6 +11985,30 @@ Leftover sibling unused-slug remount. Does not remount `trust_selector_handle_ev
 
 Leftover sibling unused-slug remount. Does not remount `trust_selector_ui_state`. Timed work is the remounted path. Observed `rts_*` are exact. First n=5 freeze **2.619×** (336.435 / 128.478 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1213 — `cli_selectors` (slx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `slx_ok` | `thinking-selector-selected-level` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking-selector selected SelectList item |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_selected_level`. Timed work is the remounted path. Observed `tssl_*` are exact. First n=5 freeze **4.190×** (0.851 / 0.203 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1214 — `cli_selectors` (dscx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dscx_ok` | `thinking-level-description-line` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of LEVEL_DESCRIPTIONS default suffix |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_level_description_line`. Timed work is the remounted path. Observed `tsdl_*` are exact. First n=5 freeze **4.188×** (0.499 / 0.119 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1215 — `cli_selectors` (rthx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rthx_ok` | `render-thinking-selector` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of ThinkingSelectorComponent layout |
+
+Leftover sibling unused-slug remount. Does not remount `render_thinking_selector`. Timed work is the remounted path. Observed `tsrd_*` are exact. First n=5 freeze **59.875×** (258.321 / 4.314 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
