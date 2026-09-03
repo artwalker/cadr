@@ -679,6 +679,9 @@ const REPETITIONS = {
 	"cli_selectors.mls_ok": 50,
 	"cli_selectors.ais_ok": 50,
 	"cli_selectors.oss_ok": 50,
+	"cli_selectors.ohe_ok": 50,
+	"cli_selectors.mos_ok": 50,
+	"cli_selectors.sst_ok": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
@@ -36772,6 +36775,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeOauthSelectorState();
 			},
 		),
+		ohe_ok: await collect(
+			"cli_selectors.ohe_ok",
+			() => {
+				return () => runCliSelectorsOauthSelectorHandleEvent();
+			},
+		),
+		mos_ok: await collect(
+			"cli_selectors.mos_ok",
+			() => {
+				return () => runCliSelectorsMakeOauthSelectorState();
+			},
+		),
+		sst_ok: await collect(
+			"cli_selectors.sst_ok",
+			() => {
+				return () => runCliSelectorsOauthSelectorSearchText();
+			},
+		),
 		login_dialog_show_waiting: await collect(
 			"cli_selectors.login_dialog_show_waiting",
 			() => {
@@ -42344,6 +42365,12 @@ const result = {
 				"packages/coding-agent/... make-api-key-input-state leftover remount",
 			"cli_selectors.oss_ok":
 				"packages/coding-agent/... make-oauth-selector-state leftover remount",
+			"cli_selectors.ohe_ok":
+				"packages/coding-agent/... oauth-selector-handle-event leftover remount",
+			"cli_selectors.mos_ok":
+				"packages/coding-agent/... make-oauth-selector-state leftover remount",
+			"cli_selectors.sst_ok":
+				"packages/coding-agent/... oauth-selector-search-text leftover remount",
 			"cli_selectors.login_dialog_show_waiting":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
 			"cli_selectors.login_dialog_show_progress":
