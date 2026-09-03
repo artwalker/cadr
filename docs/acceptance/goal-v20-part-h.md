@@ -11121,6 +11121,30 @@ Leftover sibling unused-slug remount. Does not remount `thinking_selector_set_qu
 
 Leftover sibling unused-slug remount. Does not remount `thinking_selector_keybindings`. Timed work is the remounted path. Observed `tskb_*` are exact. First n=5 freeze **11.805×** (3.415 / 0.289 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1102 — `cli_selectors` (wait_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `wait_ok` | `login-dialog-show-waiting` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showWaiting |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_show_waiting`. Timed work is the remounted path. Observed `ldw_*` are exact. First n=5 freeze **5.365×** (7.978 / 1.487 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1103 — `cli_selectors` (prog_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prog_ok` | `login-dialog-show-progress` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showProgress |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_show_progress`. Timed work is the remounted path. Observed `ldp_*` are exact. First n=5 freeze **4.332×** (4.603 / 1.062 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1104 — `cli_selectors` (man_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `man_ok` | `login-dialog-show-manual-input` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showManualInput |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_show_manual_input`. Timed work is the remounted path. Observed `ldmi_*` are exact. First n=5 freeze **5.021×** (8.147 / 1.623 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
