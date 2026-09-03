@@ -509,6 +509,12 @@
 ;;;;      (does not remount thinking_selector_handle_raw_input)
 ;;;; 1122. cli_selectors hev_ok vs leftover replica of thinking-selector-handle-event
 ;;;;      (does not remount thinking_selector_handle_event)
+;;;; 1123. cli_selectors sv_ok vs leftover replica of trust-option-saved-p
+;;;;      (does not remount trust_option_saved_p)
+;;;; 1124. cli_selectors mk_ok vs leftover replica of make-trust-selector-state
+;;;;      (does not remount make_trust_selector_state)
+;;;; 1125. cli_selectors trn_ok vs leftover replica of render-trust-selector
+;;;;      (does not remount render_trust_selector)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1540,6 +1546,9 @@
     ("cli_selectors.tosp_ok" . 50)
     ("cli_selectors.mtss_ok" . 50)
     ("cli_selectors.rtrs_ok" . 50)
+    ("cli_selectors.sv_ok" . 50)
+    ("cli_selectors.mk_ok" . 50)
+    ("cli_selectors.trn_ok" . 50)
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.oa_akhe" . 50)
@@ -36398,6 +36407,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-trust-selector))))
+          "sv_ok"
+     (collect "cli_selectors.sv_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-option-saved-p))))
+     "mk_ok"
+     (collect "cli_selectors.mk_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-trust-selector-state))))
+     "trn_ok"
+     (collect "cli_selectors.trn_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-trust-selector))))
      "make_login_method_selector_state"
      (collect "cli_selectors.make_login_method_selector_state"
               (lambda ()
@@ -42185,7 +42209,13 @@
       "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
       "cli_selectors.rtrs_ok"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
-      "cli_selectors.make_login_method_selector_state"
+      "cli_selectors.sv_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-option-saved-p leftover remount"
+"cli_selectors.mk_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state leftover remount"
+"cli_selectors.trn_ok"
+      "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector leftover remount"
+"cli_selectors.make_login_method_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
       "cli_selectors.make_api_key_input_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
