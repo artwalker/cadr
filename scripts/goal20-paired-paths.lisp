@@ -377,6 +377,12 @@
 ;;;;      (does not remount credential_entry_auth_type)
 ;;;; 1056. cli_selectors oa_env vs leftover replica of oauth-environment-source-p
 ;;;;      (does not remount oauth_environment_source_p)
+;;;; 1057. cli_selectors oa_sel vs leftover replica of oauth-selector-selection
+;;;;      (does not remount oauth_selector_selection)
+;;;; 1058. cli_selectors oa_flt vs leftover replica of oauth-selector-apply-filter
+;;;;      (does not remount oauth_selector_apply_filter)
+;;;; 1059. cli_selectors oa_qry vs leftover replica of oauth-selector-search-text
+;;;;      (does not remount oauth_selector_search_text)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1243,6 +1249,9 @@
     ("cli_selectors.oauth_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
+    ("cli_selectors.oa_sel" . 50)
+    ("cli_selectors.oa_flt" . 50)
+    ("cli_selectors.oa_qry" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
     ("cli_selectors.latxxx_ok" . 50)
     ("cli_selectors.login_provider_options" . 50)
@@ -35377,6 +35386,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-search-text))))
+     "oa_sel"
+     (collect "cli_selectors.oa_sel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-selection))))
+     "oa_flt"
+     (collect "cli_selectors.oa_flt"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-apply-filter))))
+     "oa_qry"
+     (collect "cli_selectors.oa_qry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-search-text))))
      "login_auth_type_route"
      (collect "cli_selectors.login_auth_type_route"
               (lambda ()
@@ -41329,6 +41353,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
       "cli_selectors.oauth_selector_search_text"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
+      "cli_selectors.oa_sel"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection leftover remount"
+      "cli_selectors.oa_flt"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter leftover remount"
+      "cli_selectors.oa_qry"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text leftover remount"
       "cli_selectors.login_auth_type_route"
       "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
       "cli_selectors.latxxx_ok"
