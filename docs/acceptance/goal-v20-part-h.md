@@ -12057,6 +12057,30 @@ Leftover sibling unused-slug remount. Does not remount `oauth_selector_apply_fil
 
 Leftover sibling unused-slug remount. Does not remount `oauth_selector_search_text`. Timed work is the remounted path. Observed `osst_*` are exact. First n=5 freeze **5.681×** (1.447 / 0.255 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1222 — `cli_selectors` (latx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `latx_ok` | `login-auth-type-route` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of showLoginAuthTypeSelector routing |
+
+Leftover sibling unused-slug remount. Does not remount `login_auth_type_route`. Timed work is the remounted path. Observed `latr_*` are exact. First n=5 freeze **8.535×** (3.123 / 0.366 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1223 — `cli_selectors` (lpox_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lpox_ok` | `login-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLoginProviderOptions |
+
+Leftover sibling unused-slug remount. Does not remount `login_provider_options`. Timed work is the remounted path. Observed `lpo_*` are exact. First n=5 freeze **3.737×** (9.745 / 2.608 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1224 — `cli_selectors` (lgox_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lgox_ok` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
+
+Leftover sibling unused-slug remount. Does not remount `logout_provider_options`. Timed work is the remounted path. Observed `lgo_*` are exact. First n=5 freeze **4.279×** (8.527 / 1.993 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
