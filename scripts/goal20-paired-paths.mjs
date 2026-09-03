@@ -706,6 +706,9 @@ const REPETITIONS = {
 	"cli_selectors.akix_ok": 50,
 	"cli_selectors.ossx_ok": 50,
 	"cli_selectors.sst_ok": 50,
+	"cli_selectors.oasx_ok": 50,
+	"cli_selectors.fltx_ok": 50,
+	"cli_selectors.qryx_ok": 50,
 	"cli_selectors.login_dialog_show_waiting": 50,
 	"cli_selectors.login_dialog_show_progress": 50,
 	"cli_selectors.login_dialog_show_manual_input": 50,
@@ -37000,6 +37003,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsOauthSelectorSearchText();
 			},
 		),
+		oasx_ok: await collect(
+			"cli_selectors.oasx_ok",
+			() => {
+				return () => runCliSelectorsOauthSelectorSelection();
+			},
+		),
+		fltx_ok: await collect(
+			"cli_selectors.fltx_ok",
+			() => {
+				return () => runCliSelectorsOauthSelectorApplyFilter();
+			},
+		),
+		qryx_ok: await collect(
+			"cli_selectors.qryx_ok",
+			() => {
+				return () => runCliSelectorsOauthSelectorSearchText();
+			},
+		),
 		login_dialog_show_waiting: await collect(
 			"cli_selectors.login_dialog_show_waiting",
 			() => {
@@ -42727,6 +42748,12 @@ const result = {
 			"cli_selectors.ossx_ok":
 				"packages/coding-agent/... make-oauth-selector-state leftover remount",
 			"cli_selectors.sst_ok":
+				"packages/coding-agent/... oauth-selector-search-text leftover remount",
+			"cli_selectors.oasx_ok":
+				"packages/coding-agent/... oauth-selector-selection leftover remount",
+			"cli_selectors.fltx_ok":
+				"packages/coding-agent/... oauth-selector-apply-filter leftover remount",
+			"cli_selectors.qryx_ok":
 				"packages/coding-agent/... oauth-selector-search-text leftover remount",
 			"cli_selectors.login_dialog_show_waiting":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
