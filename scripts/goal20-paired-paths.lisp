@@ -347,6 +347,12 @@
 ;;;;      (does not remount login_provider_options)
 ;;;; 1143. cli_selectors lgo_ok vs leftover replica of getLogoutProviderOptions
 ;;;;      (does not remount logout_provider_options)
+;;;; 1042. cli_selectors th_af vs leftover replica of thinking-selector-apply-filter
+;;;;      (does not remount thinking_selector_apply_filter)
+;;;; 1043. cli_selectors th_cl vs leftover replica of thinking-selector-clamp-selected
+;;;;      (does not remount thinking_selector_clamp_selected)
+;;;; 1044. cli_selectors th_sc vs leftover replica of thinking-selector-select-current
+;;;;      (does not remount thinking_selector_select_current)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1299,6 +1305,9 @@
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
+    ("cli_selectors.th_af" . 50)
+    ("cli_selectors.th_cl" . 50)
+    ("cli_selectors.th_sc" . 50)
     ("cli_selectors.thafxxx_ok" . 50)
     ("cli_selectors.thclxxx_ok" . 50)
     ("cli_selectors.thscxxx_ok" . 50)
@@ -35760,6 +35769,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-select-current))))
+     "th_af"
+     (collect "cli_selectors.th_af"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-apply-filter))))
+     "th_cl"
+     (collect "cli_selectors.th_cl"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-clamp-selected))))
+     "th_sc"
+     (collect "cli_selectors.th_sc"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-select-current))))
      "thafxxx_ok"
      (collect "cli_selectors.thafxxx_ok"
               (lambda ()
@@ -41379,6 +41403,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected"
       "cli_selectors.thinking_selector_select_current"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current"
+      "cli_selectors.th_af"
+      "src/cadr-cli/interactive/selectors/thinking.lisp apply-filter leftover remount"
+      "cli_selectors.th_cl"
+      "src/cadr-cli/interactive/selectors/thinking.lisp clamp-selected leftover remount"
+      "cli_selectors.th_sc"
+      "src/cadr-cli/interactive/selectors/thinking.lisp select-current leftover remount"
       "cli_selectors.thafxxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter leftover"
       "cli_selectors.thclxxx_ok"
