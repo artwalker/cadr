@@ -1116,6 +1116,9 @@ const REPETITIONS = {
 	"cli_selectors.oa_lms": 50,
 	"cli_selectors.oa_aku": 50,
 	"cli_selectors.oa_ahe": 50,
+	"cli_selectors.sec_ok": 50,
+	"cli_selectors.tick_ok": 50,
+	"cli_selectors.rnd_ok": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
 	"cli_selectors.oa_lbl": 50,
 	"cli_selectors.oa_typ": 50,
@@ -35814,6 +35817,15 @@ async function measureCliSelectorsSessionSearch() {
 		oa_ahe: await collect("cli_selectors.oa_ahe", () => {
 			return () => runCliSelectorsApiKeyInputStateHandleEvent();
 		}),
+				sec_ok: await collect("cli_selectors.sec_ok", () => {
+			return () => runCliSelectorsCountdownSeconds();
+		}),
+		tick_ok: await collect("cli_selectors.tick_ok", () => {
+			return () => runCliSelectorsCountdownTick();
+		}),
+		rnd_ok: await collect("cli_selectors.rnd_ok", () => {
+			return () => runCliSelectorsCountdownRender();
+		}),
 		oauth_environment_source_p: await collect("cli_selectors.oauth_environment_source_p", () => {
 			return () => runCliSelectorsOauthEnvironmentSourceP();
 		}),
@@ -41669,6 +41681,12 @@ const result = {
 				"packages/coding-agent/... api-key-input-ui-state leftover remount",
 			"cli_selectors.oa_ahe":
 				"packages/coding-agent/... api-key-input-state-handle-event leftover remount",
+			"cli_selectors.sec_ok":
+				"packages/coding-agent/... Math.ceil(timeoutMs/1000) leftover remount",
+			"cli_selectors.tick_ok":
+				"packages/coding-agent/... countdown-timer-tick leftover remount",
+			"cli_selectors.rnd_ok":
+				"packages/coding-agent/... countdown-request-render leftover remount",
 			"cli_selectors.oauth_environment_source_p":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
 			"cli_selectors.oa_lbl":
