@@ -11049,6 +11049,30 @@ Leftover sibling unused-slug remount. Does not remount `prefix_command`. Timed w
 
 Leftover sibling unused-slug remount. Does not remount `make_tool`. Timed work is the remounted path. Observed `pmt_*` are exact. First n=5 freeze **1.930×** (4.116 / 2.133 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1093 — `cli_selectors` (dn_rgb)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dn_rgb` | `daxnuts-rgb-at` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of parseImage pixel lookup |
+
+Leftover sibling unused-slug remount. Does not remount `daxnuts_rgb_at`. Timed work is the remounted path. Observed `dra_*` are exact. First n=5 freeze **3.909×** (1.580 / 0.404 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1094 — `cli_selectors` (dn_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dn_make` | `daxnuts-component-tick` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of DaxnutsComponent constructor |
+
+Leftover sibling unused-slug remount. Does not remount `make_daxnuts_component`. Timed work is the remounted path. Observed `dmc_*` are exact. First n=5 freeze **4.636×** (1.395 / 0.301 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1095 — `cli_selectors` (dn_tick)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dn_tick` | `daxnuts-component-tick` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of DaxnutsComponent interval |
+
+Leftover sibling unused-slug remount. Does not remount `daxnuts_component_tick`. Timed work is the remounted path. Observed `dct_*` are exact. First n=5 freeze **15.673×** (5.390 / 0.344 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
