@@ -1326,6 +1326,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.psb_ok": 50,
 	"cli_bootstrap_sessions.rst_ok": 50,
 	"cli_bootstrap_sessions.dsp_ok": 50,
+	"cli_bootstrap_sessions.pbk_ok": 50,
+	"cli_bootstrap_sessions.rtk_ok": 50,
+	"cli_bootstrap_sessions.dpk_ok": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -40057,6 +40060,15 @@ async function measureCliBootstrapCodingTools() {
 		dsp_ok: await collect("cli_bootstrap_sessions.dsp_ok", () => {
 			return () => runCliBootstrapDispatchPlain();
 		}),
+		pbk_ok: await collect("cli_bootstrap_sessions.pbk_ok", () => {
+			return () => runCliBootstrapParseBash();
+		}),
+		rtk_ok: await collect("cli_bootstrap_sessions.rtk_ok", () => {
+			return () => runCliBootstrapResponseText();
+		}),
+		dpk_ok: await collect("cli_bootstrap_sessions.dpk_ok", () => {
+			return () => runCliBootstrapDispatchPlain();
+		}),
 		assistant_tool_call_only: await collect("cli_bootstrap_sessions.assistant_tool_call_only", () => {
 			return () => runCliBootstrapAssistantToolCallOnly();
 		}),
@@ -42842,6 +42854,12 @@ const result = {
 			"cli_bootstrap_sessions.rst_ok":
 				"packages/coding-agent/... response-text leftover remount",
 			"cli_bootstrap_sessions.dsp_ok":
+				"packages/coding-agent/... dispatch-user-input leftover remount",
+			"cli_bootstrap_sessions.pbk_ok":
+				"packages/coding-agent/... parse-user-bash-input leftover remount",
+			"cli_bootstrap_sessions.rtk_ok":
+				"packages/coding-agent/... response-text leftover remount",
+			"cli_bootstrap_sessions.dpk_ok":
 				"packages/coding-agent/... dispatch-user-input leftover remount",
 			"cli_bootstrap_sessions.assistant_tool_call_only":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover hasTextContent invert (cadr assistant-tool-call-only-p)",
