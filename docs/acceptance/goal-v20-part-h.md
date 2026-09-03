@@ -11721,6 +11721,30 @@ Leftover sibling unused-slug remount. Does not remount `response_text`. Timed wo
 
 Leftover sibling unused-slug remount. Does not remount `dispatch_plain`. Timed work is the remounted path. Observed `dp_*` are exact. First n=5 freeze **1.185×** (0.898 / 0.758 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1180 — `cli_selectors` (tll_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tll_ok` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking level label |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_level_label`. Timed work is the remounted path. Observed `tll_*` are exact. First n=5 freeze **4.123×** (0.523 / 0.127 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1181 — `cli_selectors` (tsq_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsq_ok` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of applyFilter from search |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_set_query`. Timed work is the remounted path. Observed `tsq_*` are exact. First n=5 freeze **1.813×** (14.395 / 7.939 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1182 — `cli_selectors` (tskb_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tskb_ok` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of getKeybindings |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_keybindings`. Timed work is the remounted path. Observed `tskb_*` are exact. First n=5 freeze **9.466×** (3.062 / 0.323 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
