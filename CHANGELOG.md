@@ -8,6 +8,9 @@ tag/Release step.
 ## [Unreleased]
 
 ### Changed
+- Goal 20 leftover: pair `cli_selectors.sec_ok` n=5 **3.567×** (1.199 / 0.336 µs) Friend-MachineD, ceiling 8.0. Pair 1087. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.tick_ok` n=5 **3.994×** (1.269 / 0.318 µs) Friend-MachineD, ceiling 8.0. Pair 1088. Over-1×. `nextPairNum` unchanged.
+- Goal 20 leftover: pair `cli_selectors.rnd_ok` n=5 **3.484×** (1.467 / 0.421 µs) Friend-MachineD, ceiling 8.0. Pair 1089. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.oa_lms` n=5 **4.808×** (498.558 / 103.684 µs) Friend-MachineD, ceiling 8.0. Pair 1084. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.oa_aku` n=5 **2.151×** (230.325 / 107.085 µs) Friend-MachineD, ceiling 8.0. Pair 1085. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.oa_ahe` n=5 **1.642×** (7.956 / 4.847 µs) Friend-MachineD, ceiling 8.0. Pair 1086. Over-1×. `nextPairNum` unchanged.
