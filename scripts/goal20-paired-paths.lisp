@@ -515,6 +515,12 @@
 ;;;;      (does not remount make_trust_selector_state)
 ;;;; 1125. cli_selectors trn_ok vs leftover replica of render-trust-selector
 ;;;;      (does not remount render_trust_selector)
+;;;; 1126. cli_selectors lms_ok vs leftover replica of make-login-method-selector-state
+;;;;      (does not remount make_login_method_selector_state)
+;;;; 1127. cli_selectors aki_ok vs leftover replica of make-api-key-input-state
+;;;;      (does not remount make_api_key_input_state)
+;;;; 1128. cli_selectors oss_ok vs leftover replica of make-oauth-selector-state
+;;;;      (does not remount make_oauth_selector_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1564,6 +1570,9 @@
     ("cli_selectors.mlms_ok" . 50)
     ("cli_selectors.makis_ok" . 50)
     ("cli_selectors.moss_ok" . 50)
+    ("cli_selectors.lms_ok" . 50)
+    ("cli_selectors.aki_ok" . 50)
+    ("cli_selectors.oss_ok" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -36497,6 +36506,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-oauth-selector-state))))
+          "lms_ok"
+     (collect "cli_selectors.lms_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "aki_ok"
+     (collect "cli_selectors.aki_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "oss_ok"
+     (collect "cli_selectors.oss_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state))))
      "login_dialog_show_waiting"
      (collect "cli_selectors.login_dialog_show_waiting"
               (lambda ()
@@ -42245,7 +42269,13 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
       "cli_selectors.moss_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
-      "cli_selectors.login_dialog_show_waiting"
+      "cli_selectors.lms_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover remount"
+"cli_selectors.aki_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover remount"
+"cli_selectors.oss_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover remount"
+"cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
       "cli_selectors.login_dialog_show_progress"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-progress"
