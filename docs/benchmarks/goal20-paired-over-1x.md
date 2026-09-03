@@ -827,6 +827,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.dax_rgb` | 1.131 | 0.359 | 3.149× | 8.00× | measure-only leftover 1021; daxnuts-rgb-at leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_make` | 0.999 | 0.153 | 6.531× | 8.00× | measure-only leftover 1022; make-daxnuts-component leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_tick` | 5.142 | 0.581 | 8.845× | 12.00× | measure-only leftover 1023; daxnuts-component-tick leftover; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
+| `cli_selectors.dn_rgb` | 1.580 | 0.404 | 3.909× | 8.00× | measure-only leftover 1093; dn_rgb leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.dn_make` | 1.395 | 0.301 | 4.636× | 8.00× | measure-only leftover 1094; dn_make leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.dn_tick` | 5.390 | 0.344 | 15.673× | 8.00× | measure-only leftover 1095; dn_tick leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.th_lbl` | 0.386 | 0.197 | 1.960× | 8.00× | measure-only leftover 1024; thinking-level-label leftover | invent pause；地板优化另刀 |
 | `cli_selectors.th_kb` | 4.463 | 1.064 | 4.194× | 8.00× | measure-only leftover 1026; thinking-selector-keybindings leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_wait` | 6.342 | 1.871 | 3.389× | 8.00× | measure-only leftover 1027; login-dialog-show-waiting leftover | invent pause；地板优化另刀 |
