@@ -569,6 +569,12 @@
 ;;;;      (does not remount make_oauth_selector_state)
 ;;;; 1155. cli_selectors sst_ok vs leftover replica of oauth-selector-search-text
 ;;;;      (does not remount oauth_selector_search_text)
+;;;; 1156. cli_selectors osr_ok vs leftover replica of oauth-option-status-rendered
+;;;;      (does not remount oauth_option_status_rendered)
+;;;; 1157. cli_selectors osl_ok vs leftover replica of oauth-option-status-label
+;;;;      (does not remount oauth_option_status_label)
+;;;; 1158. cli_selectors cet_ok vs leftover replica of credential-entry-auth-type
+;;;;      (does not remount credential_entry_auth_type)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1453,6 +1459,9 @@
     ("cli_selectors.oa_env" . 50)
     ("cli_selectors.lbl_ok" . 50)
     ("cli_selectors.typ_ok" . 50)
+    ("cli_selectors.osr_ok" . 50)
+    ("cli_selectors.osl_ok" . 50)
+    ("cli_selectors.cet_ok" . 50)
     ("cli_selectors.env_ok" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
@@ -35755,6 +35764,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-credential-entry-auth-type))))
+          "osr_ok"
+     (collect "cli_selectors.osr_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-option-status-rendered))))
+     "osl_ok"
+     (collect "cli_selectors.osl_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-option-status-label))))
+     "cet_ok"
+     (collect "cli_selectors.cet_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-credential-entry-auth-type))))
      "env_ok"
      (collect "cli_selectors.env_ok"
               (lambda ()
@@ -42132,6 +42156,12 @@
       "cli_selectors.lbl_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label leftover remount"
 "cli_selectors.typ_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type leftover remount"
+"cli_selectors.osr_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-rendered leftover remount"
+"cli_selectors.osl_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label leftover remount"
+"cli_selectors.cet_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type leftover remount"
 "cli_selectors.env_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p leftover remount"
