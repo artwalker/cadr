@@ -425,6 +425,12 @@
 ;;;;      (does not remount oauth_environment_source_p)
 ;;;; 1080. cli_selectors oa_lgo vs leftover replica of logout-provider-options
 ;;;;      (does not remount logout_provider_options)
+;;;; 1081. cli_selectors oa_lat vs leftover replica of login-auth-type-route
+;;;;      (does not remount login_auth_type_route)
+;;;; 1082. cli_selectors oa_lpo vs leftover replica of login-provider-options
+;;;;      (does not remount login_provider_options)
+;;;; 1083. cli_selectors oa_lhe vs leftover replica of login-method-selector-handle-event
+;;;;      (does not remount login_method_selector_handle_event)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1288,6 +1294,9 @@
     ("cli_selectors.oa_hri" . 50)
     ("cli_selectors.oa_esp" . 50)
     ("cli_selectors.oa_lgo" . 50)
+    ("cli_selectors.oa_lat" . 50)
+    ("cli_selectors.oa_lpo" . 50)
+    ("cli_selectors.oa_lhe" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oa_lbl" . 50)
     ("cli_selectors.oa_typ" . 50)
@@ -35434,6 +35443,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-logout-provider-options))))
+          "oa_lat"
+     (collect "cli_selectors.oa_lat"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-auth-type-route))))
+     "oa_lpo"
+     (collect "cli_selectors.oa_lpo"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-provider-options))))
+     "oa_lhe"
+     (collect "cli_selectors.oa_lhe"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event))))
      "oauth_environment_source_p"
      (collect "cli_selectors.oauth_environment_source_p"
               (lambda ()
@@ -41515,6 +41539,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p leftover remount"
 "cli_selectors.oa_lgo"
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options leftover remount"
+"cli_selectors.oa_lat"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route leftover remount"
+"cli_selectors.oa_lpo"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options leftover remount"
+"cli_selectors.oa_lhe"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event leftover remount"
 "cli_selectors.oauth_environment_source_p"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
       "cli_selectors.oa_lbl"
