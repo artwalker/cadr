@@ -359,6 +359,12 @@
 ;;;;      (does not remount thinking_selector_selected_level)
 ;;;; 1047. cli_selectors th_ds vs leftover replica of thinking-level-description-line
 ;;;;      (does not remount thinking_level_description_line)
+;;;; 1048. cli_selectors tr_pto vs leftover replica of project-trust-options
+;;;;      (does not remount project_trust_options)
+;;;; 1049. cli_selectors tr_tss vs leftover replica of trust-selector-selection
+;;;;      (does not remount trust_selector_selection)
+;;;; 1050. cli_selectors tr_tdd vs leftover replica of trust-decision-description
+;;;;      (does not remount trust_decision_description)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1203,6 +1209,9 @@
     ("cli_selectors.project_trust_options" . 50)
     ("cli_selectors.trust_selector_selection" . 50)
     ("cli_selectors.trust_decision_description" . 50)
+    ("cli_selectors.tr_pto" . 50)
+    ("cli_selectors.tr_tss" . 50)
+    ("cli_selectors.tr_tdd" . 50)
     ("cli_selectors.trust_selector_move" . 50)
     ("cli_selectors.trust_selector_handle_event" . 50)
     ("cli_selectors.trust_selector_handle_raw_input" . 50)
@@ -35240,6 +35249,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-trust-decision-description))))
+     "tr_pto"
+     (collect "cli_selectors.tr_pto"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-project-trust-options))))
+     "tr_tss"
+     (collect "cli_selectors.tr_tss"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-selection))))
+     "tr_tdd"
+     (collect "cli_selectors.tr_tdd"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-decision-description))))
      "trust_selector_move"
      (collect "cli_selectors.trust_selector_move"
               (lambda ()
@@ -41213,6 +41237,12 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-selection"
       "cli_selectors.trust_decision_description"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-decision-description"
+      "cli_selectors.tr_pto"
+      "src/cadr-cli/interactive/selectors/trust.lisp project-trust-options leftover remount"
+      "cli_selectors.tr_tss"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-selection leftover remount"
+      "cli_selectors.tr_tdd"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-decision-description leftover remount"
       "cli_selectors.trust_selector_move"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-move"
       "cli_selectors.trust_selector_handle_event"
