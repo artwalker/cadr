@@ -395,6 +395,12 @@
 ;;;;      (does not remount login_method_selector_ui_state)
 ;;;; 1065. cli_selectors oa_aki vs leftover replica of api-key-input-ui-state
 ;;;;      (does not remount api_key_input_ui_state)
+;;;; 1066. cli_selectors oa_akhe vs leftover replica of api-key-input-state-handle-event
+;;;;      (does not remount api_key_input_state_handle_event)
+;;;; 1067. cli_selectors oa_mls vs leftover replica of make-login-method-selector-state
+;;;;      (does not remount make_login_method_selector_state)
+;;;; 1068. cli_selectors oa_ais vs leftover replica of make-api-key-input-state
+;;;;      (does not remount make_api_key_input_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1398,6 +1404,9 @@
     ("cli_selectors.rtrs_ok" . 50)
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
+    ("cli_selectors.oa_akhe" . 50)
+    ("cli_selectors.oa_mls" . 50)
+    ("cli_selectors.oa_ais" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
     ("cli_selectors.lmsxxxx_ok" . 50)
     ("cli_selectors.akixxxx_ok" . 50)
@@ -36087,6 +36096,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-api-key-input-state))))
+     "oa_akhe"
+     (collect "cli_selectors.oa_akhe"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-state-handle-event))))
+     "oa_mls"
+     (collect "cli_selectors.oa_mls"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "oa_ais"
+     (collect "cli_selectors.oa_ais"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
      "make_oauth_selector_state"
      (collect "cli_selectors.make_oauth_selector_state"
               (lambda ()
@@ -41673,6 +41697,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
       "cli_selectors.make_api_key_input_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
+      "cli_selectors.oa_akhe"
+      "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event leftover remount"
+      "cli_selectors.oa_mls"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover remount"
+      "cli_selectors.oa_ais"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover remount"
       "cli_selectors.make_oauth_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
       "cli_selectors.lmsxxxx_ok"
