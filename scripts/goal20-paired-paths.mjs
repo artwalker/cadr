@@ -593,6 +593,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_key_p": 50,
 	"cli_selectors.thinking_selector_keybindings": 50,
 	"cli_selectors.make_thinking_selector_state": 50,
+	"cli_selectors.th_he": 50,
+	"cli_selectors.th_mts": 50,
+	"cli_selectors.th_lst": 50,
 	"cli_selectors.mtsxxx_ok": 50,
 	"cli_selectors.th_lbl": 50,
 	"cli_selectors.th_qry": 50,
@@ -36271,6 +36274,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeThinkingSelectorState();
 			},
 		),
+				th_he: await collect("cli_selectors.th_he", () => {
+			return () => runCliSelectorsThinkingSelectorHandleEvent();
+		}),
+		th_mts: await collect("cli_selectors.th_mts", () => {
+			return () => runCliSelectorsMakeThinkingSelectorState();
+		}),
+		th_lst: await collect("cli_selectors.th_lst", () => {
+			return () => runCliSelectorsThinkingLevelSearchText();
+		}),
 		mtsxxx_ok: await collect("cli_selectors.mtsxxx_ok", () => {
 			return () => runCliSelectorsMakeThinkingSelectorState();
 		}),
@@ -41773,6 +41785,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts getKeybindings slot-or-default",
 			"cli_selectors.make_thinking_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts constructor filter + select current",
+			"cli_selectors.th_he":
+				"packages/coding-agent/... thinking handleEvent leftover remount",
+			"cli_selectors.th_mts":
+				"packages/coding-agent/... makeThinkingSelectorState leftover remount",
+			"cli_selectors.th_lst":
+				"packages/coding-agent/... thinkingLevelSearchText leftover remount",
 			"cli_selectors.mtsxxx_ok":
 				"packages/coding-agent leftover replica of thinking-selector constructor filter + select current",
 			"cli_selectors.th_lbl":
