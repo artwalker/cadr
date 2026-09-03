@@ -485,6 +485,12 @@
 ;;;;      (does not remount login_dialog_handle_event)
 ;;;; 1110. cli_selectors rnd2_ok vs leftover replica of render-login-dialog-state
 ;;;;      (does not remount render_login_dialog)
+;;;; 1111. cli_selectors he_ok vs leftover replica of user-message-selector-handle-event
+;;;;      (does not remount user_message_handle_event)
+;;;; 1112. cli_selectors raw_ok vs leftover replica of user-message-selector-handle-raw-input
+;;;;      (does not remount user_message_handle_raw)
+;;;; 1113. cli_selectors sel_ok vs leftover replica of render-user-message-selector
+;;;;      (does not remount render_user_message_selector)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1573,6 +1579,9 @@
     ("cli_selectors.um_he" . 50)
     ("cli_selectors.um_hr" . 50)
     ("cli_selectors.um_rd" . 50)
+    ("cli_selectors.he_ok" . 50)
+    ("cli_selectors.raw_ok" . 50)
+    ("cli_selectors.sel_ok" . 50)
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
@@ -36647,6 +36656,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-user-message-selector))))
+          "he_ok"
+     (collect "cli_selectors.he_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-event))))
+     "raw_ok"
+     (collect "cli_selectors.raw_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-raw))))
+     "sel_ok"
+     (collect "cli_selectors.sel_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-user-message-selector))))
      "make_models_selector_keybindings"
      (collect "cli_selectors.make_models_selector_keybindings"
               (lambda ()
@@ -42243,7 +42267,13 @@
       "src/cadr-cli/interactive/selectors/user-message.lisp user-message-handle-raw leftover"
       "cli_selectors.um_rd"
       "src/cadr-cli/interactive/selectors/user-message.lisp render-user-message-selector leftover"
-      "cli_selectors.make_models_selector_keybindings"
+      "cli_selectors.he_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-event leftover remount"
+"cli_selectors.raw_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input leftover remount"
+"cli_selectors.sel_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector leftover remount"
+"cli_selectors.make_models_selector_keybindings"
       "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings"
       "cli_selectors.make_scoped_models_selector_state"
       "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state"
