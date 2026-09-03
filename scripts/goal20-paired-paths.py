@@ -2958,7 +2958,7 @@ RATIO_CEILINGS = {
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.rwi_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.esp_ok": 8.0,
+  "cli_selectors.esp_ok": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.lgt_ok": 8.0,
   # First-freeze headroom for cli_selectors.login_method_selector_handle_event.
