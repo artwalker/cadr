@@ -12009,6 +12009,30 @@ Leftover sibling unused-slug remount. Does not remount `thinking_level_descripti
 
 Leftover sibling unused-slug remount. Does not remount `render_thinking_selector`. Timed work is the remounted path. Observed `tsrd_*` are exact. First n=5 freeze **59.875×** (258.321 / 4.314 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1216 — `cli_selectors` (lblx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lblx_ok` | `oauth-option-status-label` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of formatStatusIndicator plain label |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_option_status_label`. Timed work is the remounted path. Observed `oosl_*` are exact. First n=5 freeze **3.777×** (1.841 / 0.487 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1217 — `cli_selectors` (typx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `typx_ok` | `credential-entry-auth-type` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of credential-entry authType |
+
+Leftover sibling unused-slug remount. Does not remount `credential_entry_auth_type`. Timed work is the remounted path. Observed `ceat_*` are exact. First n=5 freeze **3.992×** (0.571 / 0.143 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1218 — `cli_selectors` (envx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `envx_ok` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of env source regex |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_environment_source_p`. Timed work is the remounted path. Observed `oesp_*` are exact. First n=5 freeze **5.375×** (1.084 / 0.202 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

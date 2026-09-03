@@ -1253,6 +1253,9 @@ const REPETITIONS = {
 	"cli_selectors.oa_out": 50,
 	"cli_selectors.rwi_ok": 50,
 	"cli_selectors.esp_ok": 50,
+	"cli_selectors.lblx_ok": 50,
+	"cli_selectors.typx_ok": 50,
+	"cli_selectors.envx_ok": 50,
 	"cli_selectors.lgt_ok": 50,
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
@@ -36081,6 +36084,15 @@ async function measureCliSelectorsSessionSearch() {
 		esp_ok: await collect("cli_selectors.esp_ok", () => {
 			return () => runCliSelectorsOauthEnvironmentSourceP();
 		}),
+		lblx_ok: await collect("cli_selectors.lblx_ok", () => {
+			return () => runCliSelectorsOauthOptionStatusLabel();
+		}),
+		typx_ok: await collect("cli_selectors.typx_ok", () => {
+			return () => runCliSelectorsCredentialEntryAuthType();
+		}),
+		envx_ok: await collect("cli_selectors.envx_ok", () => {
+			return () => runCliSelectorsOauthEnvironmentSourceP();
+		}),
 		lgt_ok: await collect("cli_selectors.lgt_ok", () => {
 			return () => runCliSelectorsLogoutProviderOptions();
 		}),
@@ -42329,6 +42341,12 @@ const result = {
 			"cli_selectors.rwi_ok":
 				"packages/coding-agent/... oauth-selector-handle-raw-input leftover remount",
 			"cli_selectors.esp_ok":
+				"packages/coding-agent/... oauth-environment-source-p leftover remount",
+			"cli_selectors.lblx_ok":
+				"packages/coding-agent/... oauth-option-status-label leftover remount",
+			"cli_selectors.typx_ok":
+				"packages/coding-agent/... credential-entry-auth-type leftover remount",
+			"cli_selectors.envx_ok":
 				"packages/coding-agent/... oauth-environment-source-p leftover remount",
 			"cli_selectors.lgt_ok":
 				"packages/coding-agent/... logout-provider-options leftover remount",
