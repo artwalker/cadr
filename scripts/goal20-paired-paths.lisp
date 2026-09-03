@@ -473,6 +473,12 @@
 ;;;;      (does not remount login_dialog_show_progress)
 ;;;; 1104. cli_selectors man_ok vs leftover replica of login-dialog-show-manual-input
 ;;;;      (does not remount login_dialog_show_manual_input)
+;;;; 1105. cli_selectors prmt_ok vs leftover replica of login-dialog-show-prompt
+;;;;      (does not remount login_dialog_show_prompt)
+;;;; 1106. cli_selectors info_ok vs leftover replica of login-dialog-show-info
+;;;;      (does not remount login_dialog_show_info)
+;;;; 1107. cli_selectors det_ok vs leftover replica of login-dialog-show-details
+;;;;      (does not remount login_dialog_show_details)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1534,6 +1540,9 @@
     ("cli_selectors.ld_prmt" . 50)
     ("cli_selectors.ld_info" . 50)
     ("cli_selectors.ld_det" . 50)
+    ("cli_selectors.prmt_ok" . 50)
+    ("cli_selectors.info_ok" . 50)
+    ("cli_selectors.det_ok" . 50)
     ("cli_selectors.login_dialog_complete_input" . 50)
     ("cli_selectors.login_dialog_handle_event" . 50)
     ("cli_selectors.render_login_dialog" . 50)
@@ -36494,6 +36503,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-login-dialog-show-details))))
+          "prmt_ok"
+     (collect "cli_selectors.prmt_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-prompt))))
+     "info_ok"
+     (collect "cli_selectors.info_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-info))))
+     "det_ok"
+     (collect "cli_selectors.det_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-details))))
      "login_dialog_complete_input"
      (collect "cli_selectors.login_dialog_complete_input"
               (lambda ()
@@ -42101,7 +42125,13 @@
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-info leftover"
       "cli_selectors.ld_det"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-details leftover"
-      "cli_selectors.login_dialog_complete_input"
+      "cli_selectors.prmt_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-prompt leftover remount"
+"cli_selectors.info_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-info leftover remount"
+"cli_selectors.det_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-details leftover remount"
+"cli_selectors.login_dialog_complete_input"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-complete-input"
       "cli_selectors.login_dialog_handle_event"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event"
