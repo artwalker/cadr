@@ -739,6 +739,9 @@ const REPETITIONS = {
 	"cli_selectors.ldw_ok": 50,
 	"cli_selectors.ldp_ok": 50,
 	"cli_selectors.ldmi_ok": 50,
+	"cli_selectors.ldwx_ok": 50,
+	"cli_selectors.ldpx_ok": 50,
+	"cli_selectors.ldmix_ok": 50,
 	"cli_selectors.login_dialog_show_prompt": 50,
 	"cli_selectors.login_dialog_show_info": 50,
 	"cli_selectors.login_dialog_show_details": 50,
@@ -37174,6 +37177,15 @@ async function measureCliSelectorsSessionSearch() {
 		ldmi_ok: await collect("cli_selectors.ldmi_ok", () => {
 			return () => runCliSelectorsLoginDialogShowManualInput();
 		}),
+		ldwx_ok: await collect("cli_selectors.ldwx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowWaiting();
+		}),
+		ldpx_ok: await collect("cli_selectors.ldpx_ok", () => {
+			return () => runCliSelectorsLoginDialogShowProgress();
+		}),
+		ldmix_ok: await collect("cli_selectors.ldmix_ok", () => {
+			return () => runCliSelectorsLoginDialogShowManualInput();
+		}),
 		login_dialog_show_prompt: await collect(
 			"cli_selectors.login_dialog_show_prompt",
 			() => {
@@ -42946,6 +42958,12 @@ const result = {
 			"cli_selectors.ldp_ok":
 				"packages/coding-agent/... login-dialog-show-progress leftover remount",
 			"cli_selectors.ldmi_ok":
+				"packages/coding-agent/... login-dialog-show-manual-input leftover remount",
+			"cli_selectors.ldwx_ok":
+				"packages/coding-agent/... login-dialog-show-waiting leftover remount",
+			"cli_selectors.ldpx_ok":
+				"packages/coding-agent/... login-dialog-show-progress leftover remount",
+			"cli_selectors.ldmix_ok":
 				"packages/coding-agent/... login-dialog-show-manual-input leftover remount",
 			"cli_selectors.login_dialog_show_prompt":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showPrompt",
