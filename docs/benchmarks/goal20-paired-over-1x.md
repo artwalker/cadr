@@ -820,6 +820,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.trsv_ok` | 52.581 | 24.296 | 2.164× | 8.00× | measure-only leftover 1204; trsv_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.trmk_ok` | 136.316 | 82.531 | 1.652× | 8.00× | measure-only leftover 1205; trmk_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.trrs_ok` | 1114.238 | 177.291 | 6.285× | 8.00× | measure-only leftover 1206; trrs_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trsvx_ok` | 54.839 | 28.920 | 1.896× | 8.00× | measure-only leftover 1270; trsvx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trmkx_ok` | 154.616 | 87.346 | 1.770× | 8.00× | measure-only leftover 1271; trmkx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trrsx_ok` | 1224.489 | 196.750 | 6.224× | 8.00× | measure-only leftover 1272; trrsx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.mlms_ok` | 3.649 | 1.921 | 1.900× | 8.00× | measure-only leftover 1003; make-login-method-selector-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.makis_ok` | 3.372 | 0.881 | 3.828× | 8.00× | measure-only leftover 1004; make-api-key-input-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.moss_ok` | 9.651 | 5.922 | 1.630× | 8.00× | measure-only leftover 1005; make-oauth-selector-state leftover | invent pause；地板优化另刀 |
