@@ -733,6 +733,9 @@ const REPETITIONS = {
 	"cli_selectors.cmp_ok": 50,
 	"cli_selectors.evt_ok": 50,
 	"cli_selectors.rnd2_ok": 50,
+	"cli_selectors.ldci_ok": 50,
+	"cli_selectors.ldhe_ok": 50,
+	"cli_selectors.ldrd_ok": 50,
 	"cli_selectors.user_message_handle_event": 50,
 	"cli_selectors.user_message_handle_raw": 50,
 	"cli_selectors.render_user_message_selector": 50,
@@ -37042,6 +37045,15 @@ async function measureCliSelectorsSessionSearch() {
 		rnd2_ok: await collect("cli_selectors.rnd2_ok", () => {
 			return () => runCliSelectorsRenderLoginDialog();
 		}),
+		ldci_ok: await collect("cli_selectors.ldci_ok", () => {
+			return () => runCliSelectorsLoginDialogCompleteInput();
+		}),
+		ldhe_ok: await collect("cli_selectors.ldhe_ok", () => {
+			return () => runCliSelectorsLoginDialogHandleEvent();
+		}),
+		ldrd_ok: await collect("cli_selectors.ldrd_ok", () => {
+			return () => runCliSelectorsRenderLoginDialog();
+		}),
 		user_message_handle_event: await collect(
 			"cli_selectors.user_message_handle_event",
 			() => {
@@ -42631,6 +42643,12 @@ const result = {
 			"cli_selectors.evt_ok":
 				"packages/coding-agent/... login-dialog-state-handle-event leftover remount",
 			"cli_selectors.rnd2_ok":
+				"packages/coding-agent/... render-login-dialog-state leftover remount",
+			"cli_selectors.ldci_ok":
+				"packages/coding-agent/... login-dialog-complete-input leftover remount",
+			"cli_selectors.ldhe_ok":
+				"packages/coding-agent/... login-dialog-state-handle-event leftover remount",
+			"cli_selectors.ldrd_ok":
 				"packages/coding-agent/... render-login-dialog-state leftover remount",
 			"cli_selectors.user_message_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (structured events)",
