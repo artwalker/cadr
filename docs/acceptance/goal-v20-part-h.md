@@ -11169,6 +11169,30 @@ Leftover sibling unused-slug remount. Does not remount `login_dialog_show_info`.
 
 Leftover sibling unused-slug remount. Does not remount `login_dialog_show_details`. Timed work is the remounted path. Observed `lddt_*` are exact. First n=5 freeze **0.971×** (3.776 / 3.888 µs) on host `Friend-MachineD`, ceiling 8.0. Under-1× (cadr leads); not listed in over-1× table. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1108 — `cli_selectors` (cmp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cmp_ok` | `login-dialog-complete-input` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.replaceInputWithSubmittedText |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_complete_input`. Timed work is the remounted path. Observed `ldci_*` are exact. First n=5 freeze **5.672×** (7.304 / 1.288 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1109 — `cli_selectors` (evt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `evt_ok` | `login-dialog-state-handle-event` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.handleInput |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_handle_event`. Timed work is the remounted path. Observed `ldhe_*` are exact. First n=5 freeze **3.956×** (8.149 / 2.060 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1110 — `cli_selectors` (rnd2_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rnd2_ok` | `render-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent layout |
+
+Leftover sibling unused-slug remount. Does not remount `render_login_dialog`. Timed work is the remounted path. Observed `ldrd_*` are exact. First n=5 freeze **48.784×** (104.030 / 2.132 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
