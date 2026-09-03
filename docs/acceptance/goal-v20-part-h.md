@@ -11553,6 +11553,30 @@ Leftover sibling unused-slug remount. Does not remount `oauth_option_status_labe
 
 Leftover sibling unused-slug remount. Does not remount `credential_entry_auth_type`. Timed work is the remounted path. Observed `ceat_*` are exact. First n=5 freeze **3.753×** (0.609 / 0.162 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1159 — `cli_selectors` (rwi_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rwi_ok` | `oauth-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauth-selector handleInput raw key dispatch |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_selector_handle_raw_input`. Timed work is the remounted path. Observed `oshri_*` are exact. First n=5 freeze **5.721×** (1039.776 / 181.734 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1160 — `cli_selectors` (esp_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `esp_ok` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of formatStatusIndicator env source regex |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_environment_source_p`. Timed work is the remounted path. Observed `oesp_*` are exact. First n=5 freeze **8.619×** (1.847 / 0.214 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1161 — `cli_selectors` (lgt_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lgt_ok` | `logout-provider-options` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of getLogoutProviderOptions |
+
+Leftover sibling unused-slug remount. Does not remount `logout_provider_options`. Timed work is the remounted path. Observed `lgo_*` are exact. First n=5 freeze **4.440×** (10.011 / 2.255 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
