@@ -11019,6 +11019,51 @@
    "piUs": 160.186,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1054,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.oa_lbl",
+   "branch": "g20-freeze-1054-1056",
+   "note": "nextPairNum left at tip 328; leftover id 1054",
+   "ratio": 1.443,
+   "cadrUs": 1.961,
+   "piUs": 1.359,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1055,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.oa_typ",
+   "branch": "g20-freeze-1054-1056",
+   "note": "nextPairNum left at tip 328; leftover id 1055",
+   "ratio": 1.254,
+   "cadrUs": 0.575,
+   "piUs": 0.458,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1056,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.oa_env",
+   "branch": "g20-freeze-1054-1056",
+   "note": "nextPairNum left at tip 328; leftover id 1056",
+   "ratio": 1.548,
+   "cadrUs": 1.061,
+   "piUs": 0.686,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
