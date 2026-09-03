@@ -12297,6 +12297,30 @@ Leftover sibling unused-slug remount. Does not remount `login_dialog_show_progre
 
 Leftover sibling unused-slug remount. Does not remount `login_dialog_show_manual_input`. Timed work is the remounted path. Observed `ldmi_*` are exact. First n=5 freeze **5.275×** (5.863 / 1.112 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1252 — `cli_selectors` (ldprx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ldprx_ok` | `login-dialog-show-prompt` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showPrompt |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_show_prompt`. Timed work is the remounted path. Observed `ldpr_*` are exact. First n=5 freeze **5.043×** (8.460 / 1.678 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1253 — `cli_selectors` (ldix_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ldix_ok` | `login-dialog-show-info` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showInfo |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_show_info`. Timed work is the remounted path. Observed `ldi_*` are exact. First n=5 freeze **5.533×** (11.876 / 2.146 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1254 — `cli_selectors` (lddtx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lddtx_ok` | `login-dialog-show-details` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | leftover replica of LoginDialogComponent.showDetails |
+
+Leftover sibling unused-slug remount. Does not remount `login_dialog_show_details`. Timed work is the remounted path. Observed `lddt_*` are exact. First n=5 freeze **1.897×** (3.003 / 1.583 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
