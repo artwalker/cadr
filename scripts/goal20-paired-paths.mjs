@@ -1271,6 +1271,9 @@ const REPETITIONS = {
 	"cli_selectors.lmh_ok": 50,
 	"cli_selectors.rte_ok": 50,
 	"cli_selectors.lpr_ok": 50,
+	"cli_selectors.latx_ok": 50,
+	"cli_selectors.lpox_ok": 50,
+	"cli_selectors.lgox_ok": 50,
 	"cli_selectors.lhe_ok": 50,
 	"cli_selectors.lui_ok": 50,
 	"cli_selectors.aku_ok": 50,
@@ -36141,6 +36144,15 @@ async function measureCliSelectorsSessionSearch() {
 		lpr_ok: await collect("cli_selectors.lpr_ok", () => {
 			return () => runCliSelectorsLoginProviderOptions();
 		}),
+		latx_ok: await collect("cli_selectors.latx_ok", () => {
+			return () => runCliSelectorsLoginAuthTypeRoute();
+		}),
+		lpox_ok: await collect("cli_selectors.lpox_ok", () => {
+			return () => runCliSelectorsLoginProviderOptions();
+		}),
+		lgox_ok: await collect("cli_selectors.lgox_ok", () => {
+			return () => runCliSelectorsLogoutProviderOptions();
+		}),
 		lhe_ok: await collect("cli_selectors.lhe_ok", () => {
 			return () => runCliSelectorsLoginMethodSelectorHandleEvent();
 		}),
@@ -42393,6 +42405,12 @@ const result = {
 				"packages/coding-agent/... login-auth-type-route leftover remount",
 			"cli_selectors.lpr_ok":
 				"packages/coding-agent/... login-provider-options leftover remount",
+			"cli_selectors.latx_ok":
+				"packages/coding-agent/... login-auth-type-route leftover remount",
+			"cli_selectors.lpox_ok":
+				"packages/coding-agent/... login-provider-options leftover remount",
+			"cli_selectors.lgox_ok":
+				"packages/coding-agent/... logout-provider-options leftover remount",
 			"cli_selectors.lhe_ok":
 				"packages/coding-agent/... login-method-selector-handle-event leftover remount",
 			"cli_selectors.lui_ok":
