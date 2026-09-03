@@ -365,6 +365,12 @@
 ;;;;      (does not remount trust_selector_selection)
 ;;;; 1050. cli_selectors tr_tdd vs leftover replica of trust-decision-description
 ;;;;      (does not remount trust_decision_description)
+;;;; 1051. cli_selectors tr_mv vs leftover replica of trust-selector-move
+;;;;      (does not remount trust_selector_move)
+;;;; 1052. cli_selectors tr_he vs leftover replica of trust-selector-handle-event
+;;;;      (does not remount trust_selector_handle_event)
+;;;; 1053. cli_selectors tr_ui vs leftover replica of trust-selector-ui-state
+;;;;      (does not remount trust_selector_ui_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1216,6 +1222,9 @@
     ("cli_selectors.trust_selector_handle_event" . 50)
     ("cli_selectors.trust_selector_handle_raw_input" . 50)
     ("cli_selectors.trust_selector_ui_state" . 50)
+    ("cli_selectors.tr_mv" . 50)
+    ("cli_selectors.tr_he" . 50)
+    ("cli_selectors.tr_ui" . 50)
     ("cli_selectors.oauth_option_status_label" . 50)
     ("cli_selectors.oauth_option_status_rendered" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
@@ -35284,6 +35293,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-trust-selector-ui-state))))
+     "tr_mv"
+     (collect "cli_selectors.tr_mv"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-move))))
+     "tr_he"
+     (collect "cli_selectors.tr_he"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-handle-event))))
+     "tr_ui"
+     (collect "cli_selectors.tr_ui"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-ui-state))))
      "oauth_option_status_label"
      (collect "cli_selectors.oauth_option_status_label"
               (lambda ()
@@ -41251,6 +41275,12 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-raw-input"
       "cli_selectors.trust_selector_ui_state"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
+      "cli_selectors.tr_mv"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-move leftover remount"
+      "cli_selectors.tr_he"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-event leftover remount"
+      "cli_selectors.tr_ui"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-ui-state leftover remount"
       "cli_selectors.oauth_option_status_label"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label"
       "cli_selectors.oauth_option_status_rendered"
