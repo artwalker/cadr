@@ -10713,6 +10713,30 @@ Leftover sibling unused-slug remount on trust selectors. Does not remount `trust
 
 Leftover sibling unused-slug remount on trust selectors. Does not remount `trust_decision_description`. Timed work is the remounted path. Observed `tdd_*` are exact. First n=5 freeze **3.101×** (176.212 / 56.817 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1051 — `cli_selectors` (tr_mv)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_mv` | `trust-selector-move` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust move |
+
+Leftover sibling unused-slug remount. Does not remount `trust_selector_move`. Timed work is the remounted path. Observed `tsm_*` are exact. First n=5 freeze **2.529×** (286.724 / 113.395 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1052 — `cli_selectors` (tr_he)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_he` | `trust-selector-handle-event` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust handleEvent |
+
+Leftover sibling unused-slug remount. Does not remount `trust_selector_handle_event`. Timed work is the remounted path. Observed `tshe_*` are exact. First n=5 freeze **2.405×** (301.199 / 125.263 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1053 — `cli_selectors` (tr_ui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tr_ui` | `trust-selector-ui-state` (`src/cadr-cli/interactive/selectors/trust.lisp`) | leftover replica of trust uiState |
+
+Leftover sibling unused-slug remount. Does not remount `trust_selector_ui_state`. Timed work is the remounted path. Observed `rts_*` are exact. First n=5 freeze **2.093×** (335.271 / 160.186 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
