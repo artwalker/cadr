@@ -1215,6 +1215,9 @@ const REPETITIONS = {
 	"cli_selectors.oa_lui": 50,
 	"cli_selectors.oa_aki": 50,
 	"cli_selectors.lmh_ok": 50,
+	"cli_selectors.rte_ok": 50,
+	"cli_selectors.lpr_ok": 50,
+	"cli_selectors.lhe_ok": 50,
 	"cli_selectors.lui_ok": 50,
 	"cli_selectors.aku_ok": 50,
 	"cli_selectors.oauth_selector_ui_state": 50,
@@ -36048,6 +36051,15 @@ async function measureCliSelectorsSessionSearch() {
 		lmh_ok: await collect("cli_selectors.lmh_ok", () => {
 			return () => runCliSelectorsLoginMethodSelectorHandleEvent();
 		}),
+		rte_ok: await collect("cli_selectors.rte_ok", () => {
+			return () => runCliSelectorsLoginAuthTypeRoute();
+		}),
+		lpr_ok: await collect("cli_selectors.lpr_ok", () => {
+			return () => runCliSelectorsLoginProviderOptions();
+		}),
+		lhe_ok: await collect("cli_selectors.lhe_ok", () => {
+			return () => runCliSelectorsLoginMethodSelectorHandleEvent();
+		}),
 		lui_ok: await collect("cli_selectors.lui_ok", () => {
 			return () => runCliSelectorsLoginMethodSelectorUiState();
 		}),
@@ -42094,6 +42106,12 @@ const result = {
 			"cli_selectors.oa_aki":
 				"packages/coding-agent/... api-key-input-ui-state leftover remount",
 			"cli_selectors.lmh_ok":
+				"packages/coding-agent/... login-method-selector-handle-event leftover remount",
+			"cli_selectors.rte_ok":
+				"packages/coding-agent/... login-auth-type-route leftover remount",
+			"cli_selectors.lpr_ok":
+				"packages/coding-agent/... login-provider-options leftover remount",
+			"cli_selectors.lhe_ok":
 				"packages/coding-agent/... login-method-selector-handle-event leftover remount",
 			"cli_selectors.lui_ok":
 				"packages/coding-agent/... login-method-selector-ui-state leftover remount",
