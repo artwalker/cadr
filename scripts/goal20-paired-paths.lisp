@@ -353,6 +353,12 @@
 ;;;;      (does not remount thinking_selector_clamp_selected)
 ;;;; 1044. cli_selectors th_sc vs leftover replica of thinking-selector-select-current
 ;;;;      (does not remount thinking_selector_select_current)
+;;;; 1045. cli_selectors th_mv vs leftover replica of thinking-selector-move
+;;;;      (does not remount thinking_selector_move)
+;;;; 1046. cli_selectors th_lv vs leftover replica of thinking-selector-selected-level
+;;;;      (does not remount thinking_selector_selected_level)
+;;;; 1047. cli_selectors th_ds vs leftover replica of thinking-level-description-line
+;;;;      (does not remount thinking_level_description_line)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1312,6 +1318,9 @@
     ("cli_selectors.thclxxx_ok" . 50)
     ("cli_selectors.thscxxx_ok" . 50)
     ("cli_selectors.thinking_selector_move" . 50)
+    ("cli_selectors.th_mv" . 50)
+    ("cli_selectors.th_lv" . 50)
+    ("cli_selectors.th_ds" . 50)
     ("cli_selectors.thinking_selector_handle_raw_input" . 50)
     ("cli_selectors.thinking_selector_handle_event" . 50)
     ("cli_selectors.henxxx_ok" . 50)
@@ -35804,6 +35813,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-move))))
+     "th_mv"
+     (collect "cli_selectors.th_mv"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-move))))
+     "th_lv"
+     (collect "cli_selectors.th_lv"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-selected-level))))
+     "th_ds"
+     (collect "cli_selectors.th_ds"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-description-line))))
      "thinking_selector_handle_raw_input"
      (collect "cli_selectors.thinking_selector_handle_raw_input"
               (lambda ()
@@ -41417,6 +41441,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current leftover"
       "cli_selectors.thinking_selector_move"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move"
+      "cli_selectors.th_mv"
+      "src/cadr-cli/interactive/selectors/thinking.lisp move leftover remount"
+      "cli_selectors.th_lv"
+      "src/cadr-cli/interactive/selectors/thinking.lisp selected-level leftover remount"
+      "cli_selectors.th_ds"
+      "src/cadr-cli/interactive/selectors/thinking.lisp description-line leftover remount"
       "cli_selectors.thinking_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input"
       "cli_selectors.thinking_selector_handle_event"
