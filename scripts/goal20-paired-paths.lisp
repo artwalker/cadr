@@ -437,6 +437,12 @@
 ;;;;      (does not remount api_key_input_ui_state)
 ;;;; 1086. cli_selectors oa_ahe vs leftover replica of api-key-input-state-handle-event
 ;;;;      (does not remount api_key_input_state_handle_event)
+;;;; 1087. cli_selectors sec_ok vs leftover replica of Math.ceil(timeoutMs/1000)
+;;;;      (does not remount countdown_seconds)
+;;;; 1088. cli_selectors tick_ok vs leftover replica of countdown-timer-tick
+;;;;      (does not remount countdown_tick)
+;;;; 1089. cli_selectors rnd_ok vs leftover replica of countdown-request-render
+;;;;      (does not remount countdown_render)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -1306,6 +1312,9 @@
     ("cli_selectors.oa_lms" . 50)
     ("cli_selectors.oa_aku" . 50)
     ("cli_selectors.oa_ahe" . 50)
+    ("cli_selectors.sec_ok" . 50)
+    ("cli_selectors.tick_ok" . 50)
+    ("cli_selectors.rnd_ok" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oa_lbl" . 50)
     ("cli_selectors.oa_typ" . 50)
@@ -35482,6 +35491,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-api-key-input-state-handle-event))))
+          "sec_ok"
+     (collect "cli_selectors.sec_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "tick_ok"
+     (collect "cli_selectors.tick_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "rnd_ok"
+     (collect "cli_selectors.rnd_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render))))
      "oauth_environment_source_p"
      (collect "cli_selectors.oauth_environment_source_p"
               (lambda ()
@@ -41575,6 +41599,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-ui-state leftover remount"
 "cli_selectors.oa_ahe"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event leftover remount"
+"cli_selectors.sec_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp Math.ceil(timeoutMs/1000) leftover remount"
+"cli_selectors.tick_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp countdown-timer-tick leftover remount"
+"cli_selectors.rnd_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp countdown-request-render leftover remount"
 "cli_selectors.oauth_environment_source_p"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
       "cli_selectors.oa_lbl"
