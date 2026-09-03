@@ -832,6 +832,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.dn_tick` | 5.390 | 0.344 | 15.673× | 8.00× | measure-only leftover 1095; dn_tick leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.th_lbl` | 0.386 | 0.197 | 1.960× | 8.00× | measure-only leftover 1024; thinking-level-label leftover | invent pause；地板优化另刀 |
 | `cli_selectors.th_kb` | 4.463 | 1.064 | 4.194× | 8.00× | measure-only leftover 1026; thinking-selector-keybindings leftover | invent pause；地板优化另刀 |
+| `cli_selectors.tlbl_ok` | 0.484 | 0.142 | 3.419× | 8.00× | measure-only leftover 1099; tlbl_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.tqry_ok` | 12.620 | 8.834 | 1.429× | 8.00× | measure-only leftover 1100; tqry_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.tkb_ok` | 3.415 | 0.289 | 11.805× | 8.00× | measure-only leftover 1101; tkb_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ld_wait` | 6.342 | 1.871 | 3.389× | 8.00× | measure-only leftover 1027; login-dialog-show-waiting leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_prog` | 3.541 | 1.369 | 2.586× | 8.00× | measure-only leftover 1028; login-dialog-show-progress leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_man` | 6.210 | 2.343 | 2.650× | 8.00× | measure-only leftover 1029; login-dialog-show-manual-input leftover | invent pause；地板优化另刀 |
