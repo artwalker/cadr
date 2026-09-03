@@ -11385,6 +11385,30 @@ Leftover sibling unused-slug remount. Does not remount `thinking_level_descripti
 
 Leftover sibling unused-slug remount. Does not remount `render_thinking_selector`. Timed work is the remounted path. Observed `tsrd_*` are exact. First n=5 freeze **41.601×** (294.766 / 7.086 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1135 — `cli_selectors` (lbl_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lbl_ok` | `oauth-option-status-label` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of formatStatusIndicator plain label |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_option_status_label`. Timed work is the remounted path. Observed `oosl_*` are exact. First n=5 freeze **2.544×** (2.108 / 0.829 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1136 — `cli_selectors` (typ_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `typ_ok` | `credential-entry-auth-type` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of credential-entry authType |
+
+Leftover sibling unused-slug remount. Does not remount `credential_entry_auth_type`. Timed work is the remounted path. Observed `ceat_*` are exact. First n=5 freeze **5.457×** (0.847 / 0.155 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1137 — `cli_selectors` (env_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `env_ok` | `oauth-environment-source-p` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of env source regex |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_environment_source_p`. Timed work is the remounted path. Observed `oesp_*` are exact. First n=5 freeze **5.427×** (1.199 / 0.221 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
