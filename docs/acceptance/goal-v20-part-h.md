@@ -9819,7 +9819,7 @@ Leftover trio on unclaimed `src/cadr-ai/oauth/providers/xai.lisp` (leftover 379�
 Leftover sibling of Pair 895. Timed work is stub device HTTP 400 throwing — not exact message text. Observed `xlf_throw` / `xlf_n` are exact. First n=5 freeze **3.870×** (8.266 / 2.136 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 897 — `oauth_pkce_device` (xai_refresh)
 | `xai_refresh` | `refresh-xai-oauth-credential` (`src/cadr-ai/oauth/providers/xai.lisp`) | `refreshXaiToken` / `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
-Leftover sibling of Pairs 895–896. Timed work is stub token HTTP 200 refresh — exact access/refresh, not expires. Observed `xrf_acc` / `xrf_ref` / `xrf_n` are exact. First n=5 freeze **22.614×** (5.365 / 0.237 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 895–896. Timed work is stub token HTTP 200 refresh — exact access/refresh, not expires. Observed `xrf_acc` / `xrf_ref` / `xrf_n` are exact. First n=5 freeze **22.614×** (5.365 / 0.237 µs) on host `Friend-MachineD`, ceiling 20.0 (raised 8→20). Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 ### Pair 898 — `oauth_pkce_device` (openrouter_login)
 | `openrouter_login` | `login-openrouter-oauth` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `parseAuthorizationInput` + `exchangeAuthorizationCode` (`packages/ai/src/auth/oauth/openrouter.ts`) |
 Leftover trio on unclaimed `src/cadr-ai/oauth/providers/openrouter.lisp` (leftover 436–438 queued openrouter_input / openrouter_refresh / openrouter_exchange). Timed work is stub HTTP login after a pasted code — not parse-openrouter-authorization-input fixtures, not PKCE, not callback port. Observed `olg_acc` / `olg_ref` / `olg_n` are exact. First n=5 freeze **35.027×** (168.272 / 4.804 µs) on host `Friend-MachineD`, ceiling 50.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
@@ -10880,6 +10880,30 @@ Leftover sibling unused-slug remount. Does not remount `make_thinking_selector_s
 | `th_lst` | `thinking-level-search-text` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinkingLevelSearchText |
 
 Leftover sibling unused-slug remount. Does not remount `thinking_level_search_text`. Timed work is the remounted path. Observed `tlst_*` are exact. First n=5 freeze **6.810×** (1.536 / 0.226 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1072 — `cli_selectors` (oa_ohe)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_ohe` | `oauth-selector-handle-event` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauth handleEvent |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_selector_handle_event`. Timed work is the remounted path. Observed `oshe_*` are exact. First n=5 freeze **12.153×** (134.720 / 11.085 µs) on host `Friend-MachineD`, ceiling 20.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1073 — `cli_selectors` (oa_mos)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_mos` | `make-oauth-selector-state` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of makeOauthSelectorState |
+
+Leftover sibling unused-slug remount. Does not remount `make_oauth_selector_state`. Timed work is the remounted path. Observed `moss_*` are exact. First n=5 freeze **1.155×** (11.495 / 9.950 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1074 — `cli_selectors` (oa_sst)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oa_sst` | `oauth-selector-search-text` (`src/cadr-cli/interactive/selectors/auth.lisp`) | leftover replica of oauth searchText |
+
+Leftover sibling unused-slug remount. Does not remount `oauth_selector_search_text`. Timed work is the remounted path. Observed `osst_*` are exact. First n=5 freeze **2.920×** (1.769 / 0.606 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
