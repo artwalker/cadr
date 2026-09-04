@@ -965,6 +965,12 @@
 ;;;;      (does not remount oauth_selector_apply_filter)
 ;;;; 1353. cli_selectors qryxxx_ok vs leftover replica of oauth-selector-search-text
 ;;;;      (does not remount oauth_selector_search_text)
+;;;; 1360. cli_selectors akhexxx_ok vs leftover replica of api-key-input-state-handle-event
+;;;;      (does not remount api_key_input_state_handle_event)
+;;;; 1361. cli_selectors mlsxxx_ok vs leftover replica of make-login-method-selector-state
+;;;;      (does not remount make_login_method_selector_state)
+;;;; 1362. cli_selectors aisxxx_ok vs leftover replica of make-api-key-input-state
+;;;;      (does not remount make_api_key_input_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2156,6 +2162,9 @@
     ("cli_selectors.ossxx_ok" . 50)
     ("cli_selectors.lmsxxx_ok" . 50)
     ("cli_selectors.akixxx_ok" . 50)
+    ("cli_selectors.akhexxx_ok" . 50)
+    ("cli_selectors.mlsxxx_ok" . 50)
+    ("cli_selectors.aisxxx_ok" . 50)
     ("cli_selectors.ossxxx_ok" . 50)
     ("cli_selectors.sst_ok" . 50)
     ("cli_selectors.oasx_ok" . 50)
@@ -37885,6 +37894,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-make-api-key-input-state))))
+     "akhexxx_ok"
+     (collect "cli_selectors.akhexxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-state-handle-event))))
+     "mlsxxx_ok"
+     (collect "cli_selectors.mlsxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "aisxxx_ok"
+     (collect "cli_selectors.aisxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
      "ossxxx_ok"
      (collect "cli_selectors.ossxxx_ok"
               (lambda ()
@@ -44331,6 +44355,12 @@
 "cli_selectors.lmsxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover remount"
 "cli_selectors.akixxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover remount"
+"cli_selectors.akhexxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event leftover remount"
+"cli_selectors.mlsxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state leftover remount"
+"cli_selectors.aisxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state leftover remount"
 "cli_selectors.ossxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state leftover remount"
