@@ -759,6 +759,9 @@ const REPETITIONS = {
 	"cli_selectors.mlsxx_ok": 50,
 	"cli_selectors.aisxx_ok": 50,
 	"cli_selectors.ossxx_ok": 50,
+	"cli_selectors.lmsxxx_ok": 50,
+	"cli_selectors.akixxx_ok": 50,
+	"cli_selectors.ossxxx_ok": 50,
 	"cli_selectors.sst_ok": 50,
 	"cli_selectors.oasx_ok": 50,
 	"cli_selectors.fltx_ok": 50,
@@ -37399,6 +37402,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsMakeOauthSelectorState();
 			},
 		),
+		lmsxxx_ok: await collect(
+			"cli_selectors.lmsxxx_ok",
+			() => {
+				return () => runCliSelectorsMakeLoginMethodSelectorState();
+			},
+		),
+		akixxx_ok: await collect(
+			"cli_selectors.akixxx_ok",
+			() => {
+				return () => runCliSelectorsMakeApiKeyInputState();
+			},
+		),
+		ossxxx_ok: await collect(
+			"cli_selectors.ossxxx_ok",
+			() => {
+				return () => runCliSelectorsMakeOauthSelectorState();
+			},
+		),
 		sst_ok: await collect(
 			"cli_selectors.sst_ok",
 			() => {
@@ -43454,6 +43475,12 @@ const result = {
 			"cli_selectors.aisxx_ok":
 				"packages/coding-agent/... make-api-key-input-state leftover remount",
 			"cli_selectors.ossxx_ok":
+				"packages/coding-agent/... make-oauth-selector-state leftover remount",
+			"cli_selectors.lmsxxx_ok":
+				"packages/coding-agent/... make-login-method-selector-state leftover remount",
+			"cli_selectors.akixxx_ok":
+				"packages/coding-agent/... make-api-key-input-state leftover remount",
+			"cli_selectors.ossxxx_ok":
 				"packages/coding-agent/... make-oauth-selector-state leftover remount",
 			"cli_selectors.sst_ok":
 				"packages/coding-agent/... oauth-selector-search-text leftover remount",
