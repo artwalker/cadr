@@ -72,4 +72,22 @@ sbcl --noinform --non-interactive \
   --eval '(ql:quickload (list "babel" "bordeaux-threads" "cl-jpeg" "cl-ppcre" "cl+ssl" "fiveam" "flexi-streams" "png-read" "sqlite" "trivial-gray-streams" "usocket") :silent t)' \
   --eval '(format t "~&cadr install: Quicklisp dependencies ready.~%")'
 
+# build.lisp loads slynk/mrepl before dumping ./cadr. The admitted snapshot is
+# Quicklisp 2026-01-01 sly-20260101-git (docs/dependency-audit.md).
+QL_ROOT="$(CDPATH= cd -- "$(dirname -- "$QUICKLISP_SETUP")" && pwd)"
+if ! sbcl --noinform --non-interactive --load "$QUICKLISP_SETUP" \
+  --eval '(handler-case (asdf:find-system "slynk/mrepl") (error () (uiop:quit 1)))' \
+  --eval '(uiop:quit 0)' >/dev/null 2>&1; then
+  log "installing sly-20260101-git into Quicklisp local-projects (slynk/mrepl)"
+  mkdir -p "$QL_ROOT/local-projects"
+  tmp_sly="$(mktemp -d)"
+  curl -fL --retry 4 --retry-delay 4 \
+    -o "$tmp_sly/sly.tgz" \
+    "https://beta.quicklisp.org/archive/sly/2026-01-01/sly-20260101-git.tgz"
+  tar -xzf "$tmp_sly/sly.tgz" -C "$tmp_sly"
+  rm -rf "$QL_ROOT/local-projects/sly-20260101-git"
+  mv "$tmp_sly"/sly-20260101-git "$QL_ROOT/local-projects/"
+  rm -rf -- "$tmp_sly"
+fi
+
 log "done. Build with: QUICKLISP_SETUP=\"${QUICKLISP_SETUP}\" ./build.sh"
