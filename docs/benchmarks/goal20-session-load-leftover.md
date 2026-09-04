@@ -1,27 +1,24 @@
 # Executor current (2026-09-04)
 
-**Kept:** message-envelope compact-prefix (shared `{"role":"`
-gate; user + toolResult fixture envelopes). Content-compact
-sibling. Not stack-local typed fill. Not bag reuse.
+**Kept:** discovery header probe invent (buffered
+`read-sequence` + `parse-session-header-octets`; not per-byte
+`read-byte`; not string JSON). Friend-MachineD n=5 microbench
+**1053→732 µs** (confirm 1187→834). Observed EQUAL.
+cadr-agent FiveAM 1488 pass.
 
-Friend-MachineD n=5 CLOCK_MONOTONIC load of pairing
-`session.jsonl`: **1546→1192 µs** median. Fingerprint EQUAL tip
-vs knife. cadr-agent FiveAM 1481 pass (2 fail = missing
-`cadr-cli` asd in isolated run, unrelated).
+**Prior kept:** message-envelope compact-prefix (shared
+`{"role":"` gate; user + toolResult). Load **1546→1192 µs**.
 
-G.17 stays `missing`. Goal 20 not complete. Floor still pi
-on pairing ratio; this knife is cadr µs only.
+**Withdrawn this turn:** assistant type-branch compact
+(EQUAL; no clear µs win vs tip). Do not redo without a new
+allocation story.
 
-**Prior walker:** proposal-3 era (`0084f0703`) / ~1763. Net keep
-from earlier: content compact-prefix + put-entry u32 +
-put-message first-byte (~1879→1763).
-
-**Withdrawn this turn:** user-only prefix without shared role
-gate (1546→2411). Do not redo miss-heavy single-envelope try.
+G.17 stays `missing`. Goal 20 not complete.
 
 **Do not:** mark G.17 `met`; redo withdrawn classes.
 
 ---
+
 
 # Executor note (2026-08-21)
 

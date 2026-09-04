@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: discovery header probe uses buffered
+  `read-sequence` + `parse-session-header-octets` (load-session
+  sibling). Friend-MachineD n=5 `header_probe` microbench
+  **1053→732 µs** (confirm 1187→834). Observed EQUAL (32/32).
+  cadr-agent FiveAM 1488 pass. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after discovery
+  header invent (+54 lines). needs-pair=0 uncovered=0.
+
 - Goal 20 invent: message-envelope compact-prefix for fixture-stable
   user/toolResult JSONL (shared `{"role":"` gate). Friend-MachineD
   n=5 load **1546→1192 µs**. Fingerprint EQUAL. G.17 missing.
