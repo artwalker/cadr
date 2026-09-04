@@ -1001,6 +1001,12 @@
 ;;;;      (does not remount response_text)
 ;;;; 1377. cli_bootstrap_sessions dpkxxx_ok vs leftover replica of dispatch-user-input
 ;;;;      (does not remount dispatch_plain)
+;;;; 1378. cli_selectors tllxxx_ok vs leftover replica of thinking-level-label
+;;;;      (does not remount thinking_level_label)
+;;;; 1379. cli_selectors tsqxxx_ok vs leftover replica of thinking-selector-set-query
+;;;;      (does not remount thinking_selector_set_query)
+;;;; 1380. cli_selectors tskbxxx_ok vs leftover replica of thinking-selector-keybindings
+;;;;      (does not remount thinking_selector_keybindings)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2055,6 +2061,9 @@
     ("cli_selectors.tllxx_ok" . 50)
     ("cli_selectors.tsqxx_ok" . 50)
     ("cli_selectors.tskbxx_ok" . 50)
+    ("cli_selectors.tllxxx_ok" . 50)
+    ("cli_selectors.tsqxxx_ok" . 50)
+    ("cli_selectors.tskbxxx_ok" . 50)
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
@@ -37255,6 +37264,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-thinking-selector-keybindings))))
+     "tllxxx_ok"
+     (collect "cli_selectors.tllxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-label))))
+     "tsqxxx_ok"
+     (collect "cli_selectors.tsqxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-set-query))))
+     "tskbxxx_ok"
+     (collect "cli_selectors.tskbxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-keybindings))))
      "thinking_selector_apply_filter"
      (collect "cli_selectors.thinking_selector_apply_filter"
               (lambda ()
@@ -44202,6 +44226,12 @@
 "cli_selectors.tsqxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query leftover remount"
 "cli_selectors.tskbxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings leftover remount"
+"cli_selectors.tllxxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label leftover remount"
+"cli_selectors.tsqxxx_ok"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query leftover remount"
+"cli_selectors.tskbxxx_ok"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings leftover remount"
 "cli_selectors.thinking_selector_apply_filter"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-apply-filter"
