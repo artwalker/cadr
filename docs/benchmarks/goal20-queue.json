@@ -14844,6 +14844,51 @@
    "piUs": 0.212,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1309,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_bootstrap_sessions.pbkxx_ok",
+   "branch": "g20-freeze-1309-1311",
+   "note": "nextPairNum left at tip 328; leftover id 1309",
+   "ratio": 3.227,
+   "cadrUs": 0.965,
+   "piUs": 0.299,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1310,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_bootstrap_sessions.rtkxx_ok",
+   "branch": "g20-freeze-1309-1311",
+   "note": "nextPairNum left at tip 328; leftover id 1310",
+   "ratio": 2.628,
+   "cadrUs": 1.442,
+   "piUs": 0.549,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1311,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_bootstrap_sessions.dpkxx_ok",
+   "branch": "g20-freeze-1309-1311",
+   "note": "nextPairNum left at tip 328; leftover id 1311",
+   "ratio": 1.799,
+   "cadrUs": 0.847,
+   "piUs": 0.471,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
