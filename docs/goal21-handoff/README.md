@@ -2,7 +2,7 @@
 
 > **Retired local crew.** Live process is
 > [`docs/acceptance/team-dev-platform.md`](../acceptance/team-dev-platform.md)
-> (three Grok Bot agents + Cursor cloud agent on GitHub `cadr-migration`).
+> (Cursor cloud agents on GitHub `cadr-migration`; Grok Bot is retired).
 > The notes below record the old tmux / `cursor-agent --resume` lanes; do not
 > treat them as how work is dispatched now.
 

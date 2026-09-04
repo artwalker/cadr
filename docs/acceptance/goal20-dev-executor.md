@@ -1,13 +1,13 @@
 # Goal 20 开发执行 brief（顾问维护）
 
-> **Process (live):** [`team-dev-platform.md`](team-dev-platform.md) — three
-> Grok Bot agents plus a Cursor cloud agent on GitHub `artwalker/cadr`.
-> The tmux / worktree / `goal20-director-merge.sh` crew below is the Goal 20
-> pairing record; it is not how cadr is developed now. **Live merge** of
-> READY leftover pairing PRs is a Cursor cloud-agent duty (serial onto
-> `cadr-migration`), not a local director pane and not Grok Bot 实现.
+> **Process (live):** [`team-dev-platform.md`](team-dev-platform.md) — Cursor
+> cloud agents on GitHub `artwalker/cadr` (总控 / 实现 / 审 / 合入). Grok Bot
+> is retired. The tmux / worktree / `goal20-director-merge.sh` crew below is
+> the Goal 20 pairing record; it is not how cadr is developed now. **Live
+> merge** of READY leftover pairing PRs is a Cursor cloud-agent duty (serial
+> onto `cadr-migration`), not a local director pane.
 
-**读者：** 开发 Cursor 实例（执行方）。**顾问实例：** 只审阅 digest、回答问题，不写 `src/`。
+**读者：** Cursor cloud agent（执行方）。**审 run：** 只审阅 digest、回答问题，不写 `src/`。
 
 **规格：** `goal20-draft.md`。**验收：** `docs/acceptance/goal-v20-part-*.md`，Part H 配对台账 `docs/acceptance/goal-v20-part-h.md`。
 

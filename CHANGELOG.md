@@ -7,6 +7,8 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Live process: Cursor cloud agents are the standing crew (总控 / 实现 / 审 / 合入). Grok Bot is retired for live crew. See `docs/acceptance/team-dev-platform.md`.
+
 ### Changed
 - Goal 20 leftover: pair `cli_selectors.tllxxx_ok` n=5 **2.746×** (0.396 / 0.144 µs) Friend-MachineD, ceiling 8.0. Pair 1378. Over-1×. `nextPairNum` unchanged.
 - Goal 20 leftover: pair `cli_selectors.tsqxxx_ok` n=5 **1.165×** (12.192 / 10.467 µs) Friend-MachineD, ceiling 8.0. Pair 1379. Over-1×. `nextPairNum` unchanged.

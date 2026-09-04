@@ -248,12 +248,12 @@ the working set.
   CHANGELOG, ledgers, and `RATIO_CEILINGS` stay with the main executor.
   Merge one worktree at a time and run `test-cl.sh` on that commit.
   Full rule: `docs/development-policy.md` §7.
-- Cursor cloud agents on Goal 20 leftover pairing: after a READY PR has
-  its n=5 freeze on the branch, **merge that PR into `cadr-migration`**
-  (serial, one leftover PR at a time; rebase the next onto the new tip).
-  Live process: `docs/acceptance/team-dev-platform.md`. Do not mark G.17
-  `met`. Do not announce Goal 20 complete. Tags, force-push, and spend
-  stay with Ethan.
+- Live crew is **Cursor cloud agents** only (`docs/acceptance/team-dev-platform.md`).
+  Grok Bot 总控 / 实现 / 审 is retired. Goal 20 leftover pairing: after a
+  READY PR has its n=5 freeze on the branch, **merge that PR into
+  `cadr-migration`** (serial, one leftover PR at a time; rebase the next
+  onto the new tip). Do not mark G.17 `met`. Do not announce Goal 20
+  complete. Tags, force-push, and spend stay with Ethan.
 
 ## Recounting scale figures
 
