@@ -12705,6 +12705,30 @@ Leftover sibling unused-slug remount. Does not remount `countdown_tick`. Timed w
 
 Leftover sibling unused-slug remount. Does not remount `countdown_render`. Timed work is the remounted path. Observed `cdr_*` are exact. First n=5 freeze **7.367×** (1.204 / 0.163 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1303 — `powershell_tool` (utfxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `utfxx_ok` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling unused-slug remount. Does not remount `utf8_prefix`. Timed work is the remounted path. Observed `psu_*` are exact. First n=5 freeze **6.209×** (0.702 / 0.113 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1304 — `powershell_tool` (pfxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pfxxx_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of prefix+command wrap |
+
+Leftover sibling unused-slug remount. Does not remount `prefix_command`. Timed work is the remounted path. Observed `psc_*` are exact. First n=5 freeze **4.585×** (1.042 / 0.227 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1305 — `powershell_tool` (mtbxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mtbxx_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling unused-slug remount. Does not remount `make_tool`. Timed work is the remounted path. Observed `pmt_*` are exact. First n=5 freeze **2.131×** (3.145 / 1.476 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
