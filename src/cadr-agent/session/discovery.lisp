@@ -1,37 +1,52 @@
 (in-package #:cadr-agent)
 
-(defun session-header-candidate (octets)
-  (handler-case
-      (let ((line
-              (sb-ext:octets-to-string
-               octets :external-format :utf-8)))
-        (if
-            (zerop
-             (length
-              (string-trim
-               '(#\Space #\Tab #\Newline #\Return)
-               line)))
-            :skip
-            (let ((object (cadr-ai::parse-json line)))
-              (if
-                  (and
-                   (hash-table-p object)
-                   (string=
-                    "session"
-                    (cadr-ai::json-get object "type" ""))
-                   (stringp
-                    (cadr-ai::json-get object "id")))
-                  object
-                  :invalid))))
-    (error () :skip)))
+(defconstant +session-header-read-buffer-size+ 4096)
+
+(defun blank-header-octets-p (octets start end)
+  (loop for index from start below end
+        for unit = (aref octets index)
+        always
+        (or (= unit 32)
+            (= unit 9)
+            (= unit 13)
+            (= unit 10))))
+
+(defun session-header-candidate (octets &optional (start 0) end)
+  (let ((end (or end (length octets))))
+    (cond
+      ((or (>= start end)
+           (blank-header-octets-p octets start end))
+       :skip)
+      (t
+       (handler-case
+           (let ((header
+                   (parse-session-header-octets
+                    octets start end)))
+             (if
+                 (and
+                  (string=
+                   "session"
+                   (session-file-header-type header))
+                  (stringp
+                   (session-file-header-id header)))
+                 header
+                 :invalid))
+         (error () :skip))))))
 
 (defun read-session-header-for-discovery (path)
+  ;; Buffered read-sequence + parse-session-header-octets.
+  ;; Sibling of load-session header walk. Not per-byte read-byte.
+  ;; Not string JSON roundtrip.
   (handler-case
       (with-open-file
           (stream path
                   :direction :input
                   :element-type '(unsigned-byte 8))
-        (let ((line
+        (let ((chunk
+                (make-array
+                 +session-header-read-buffer-size+
+                 :element-type '(unsigned-byte 8)))
+              (pending
                 (make-array
                  256
                  :element-type '(unsigned-byte 8)
@@ -39,42 +54,82 @@
                  :fill-pointer 0))
               (scanned 0))
           (labels
-              ((inspect-line ()
-                 (let ((candidate
-                         (session-header-candidate
-                          line)))
-                   (setf (fill-pointer line) 0)
-                   (cond
-                     ((eq candidate :skip) nil)
-                     ((eq candidate :invalid)
-                      (return-from
-                          read-session-header-for-discovery
-                        nil))
-                     (t
-                      (return-from
-                          read-session-header-for-discovery
-                        candidate))))))
+              ((finish (candidate)
+                 (cond
+                   ((eq candidate :skip) nil)
+                   ((eq candidate :invalid)
+                    (return-from
+                        read-session-header-for-discovery
+                      nil))
+                   (t
+                    (return-from
+                        read-session-header-for-discovery
+                      candidate))))
+               (inspect-range (octets start end)
+                 (finish
+                  (session-header-candidate
+                   octets start end)))
+               (flush-pending ()
+                 (when (plusp (fill-pointer pending))
+                   (inspect-range
+                    pending 0 (fill-pointer pending))
+                   (setf (fill-pointer pending) 0)))
+               (scan-chunk (count)
+                 (let ((start 0))
+                   (declare (type fixnum start count))
+                   (loop
+                     (let ((lf
+                             (octet-find-lf
+                              chunk start count)))
+                       (unless lf
+                         (when (< start count)
+                           (loop for copy of-type fixnum
+                                 from start below count
+                                 do (vector-push-extend
+                                     (aref chunk copy)
+                                     pending)))
+                         (return))
+                       (cond
+                         ((zerop (fill-pointer pending))
+                          (inspect-range chunk start lf))
+                         (t
+                          (loop for copy of-type fixnum
+                                from start below lf
+                                do (vector-push-extend
+                                    (aref chunk copy)
+                                    pending))
+                          (inspect-range
+                           pending
+                           0
+                           (fill-pointer pending))
+                          (setf (fill-pointer pending) 0)))
+                       (setf start (1+ lf)))))))
             (loop
-              (when
-                  (= scanned
-                     +max-session-header-scan-bytes+)
-                (let ((probe
-                        (read-byte stream nil :eof)))
-                  (if (eq probe :eof)
-                      (progn
-                        (inspect-line)
-                        (return nil))
-                      (return nil))))
-              (let ((octet
-                      (read-byte stream nil :eof)))
-                (when (eq octet :eof)
-                  (inspect-line)
-                  (return nil))
-                (incf scanned)
-                (if (= octet 10)
-                    (inspect-line)
-                    (vector-push-extend
-                     octet line)))))))
+              (let ((room
+                      (- +max-session-header-scan-bytes+
+                         scanned)))
+                (when (<= room 0)
+                  (let ((probe
+                          (read-byte stream nil :eof)))
+                    (if (eq probe :eof)
+                        (progn
+                          (flush-pending)
+                          (return nil))
+                        (return nil))))
+                (let* ((want
+                         (min
+                          (length chunk)
+                          room))
+                       (count
+                         (read-sequence
+                          chunk stream
+                          :end want)))
+                  (declare (type fixnum count))
+                  (when (zerop count)
+                    (flush-pending)
+                    (return nil))
+                  (incf scanned count)
+                  (scan-chunk count)))))))
     (error () nil)))
 
 (defun list-sessions (&key
@@ -110,7 +165,7 @@
                (null canonical-cwd)
                (string=
                 canonical-cwd
-                (cadr-ai::json-get
+                (session-header-ref
                  header "cwd" ""))))
              append
              (let ((session
@@ -151,4 +206,3 @@
    (list-sessions
     :directory directory
     :cwd (or cwd (uiop:getcwd)))))
-

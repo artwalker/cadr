@@ -13068,7 +13068,9 @@
               (setf best-mtime mtime
                     best-path path
                     session-id
-                    (or (cadr-ai::json-get header "id") "")))))))
+                    (or (cadr-agent::session-header-ref
+                         header "id")
+                        "")))))))
     (values best-path file-count header-count session-id)))
 
 (defparameter *session-discovery-fixture-id*
