@@ -7782,8 +7782,17 @@ def check_provenance(cadr: dict, pi: dict, failures: list[str]) -> None:
     )
 
 
-def check_parameters(cadr: dict, pi: dict, failures: list[str]) -> None:
+def check_parameters(cadr: dict, pi: dict, failures: list[str], only_enforce: frozenset[str] | None = None) -> None:
     for field in ("repetitions", "samples", "warmups", "quick", "journal_append_entry_count"):
+        if field == "repetitions" and only_enforce is not None:
+            for key in sorted(only_enforce):
+                check(
+                    cadr["parameters"]["repetitions"].get(key)
+                    == pi["parameters"]["repetitions"].get(key),
+                    f"parameter repetitions[{key}] differs between the two reports",
+                    failures,
+                )
+            continue
         check(
             cadr["parameters"][field] == pi["parameters"][field],
             f"parameter {field} differs between the two reports",
@@ -7793,7 +7802,9 @@ def check_parameters(cadr: dict, pi: dict, failures: list[str]) -> None:
         samples = report["parameters"]["samples"]
         for group, names in METRICS.items():
             for name in names:
-                metric = report["metrics"][group][name]
+                metric = timed_metric_slot(report, group, name)
+                if metric is None:
+                    continue
                 check(
                     len(metric["samples_us"]) == samples,
                     f"{label} {group}.{name} does not carry {samples} samples",
@@ -7814,12 +7825,40 @@ def fold_pi_roles(roles: dict) -> dict:
     return dict(sorted(folded.items()))
 
 
-def check_observed(cadr: dict, pi: dict, failures: list[str]) -> list[str]:
+def observed_table(report: dict, group: str) -> dict:
+    groups = report.get("metrics")
+    if not isinstance(groups, dict):
+        return {}
+    named = groups.get(group)
+    if not isinstance(named, dict):
+        return {}
+    observed = named.get("observed")
+    return observed if isinstance(observed, dict) else {}
+
+def check_observed(cadr: dict, pi: dict, failures: list[str], only_enforce: frozenset[str] | None = None) -> list[str]:
     notes: list[str] = []
+    scoped = (
+        None
+        if only_enforce is None
+        else {key.split(".", 1)[0] for key in only_enforce}
+    )
     for group, keys in OBSERVED_EXACT.items():
-        cadr_observed = cadr["metrics"][group]["observed"]
-        pi_observed = pi["metrics"][group]["observed"]
+        if scoped is not None and group not in scoped:
+            continue
+        cadr_observed = observed_table(cadr, group)
+        pi_observed = observed_table(pi, group)
         for key in keys:
+            cadr_has = key in cadr_observed
+            pi_has = key in pi_observed
+            if not cadr_has and not pi_has:
+                continue
+            if not cadr_has or not pi_has:
+                check(
+                    False,
+                    f"{group}.{key} observed on only one report",
+                    failures,
+                )
+                continue
             check(
                 cadr_observed[key] == pi_observed[key],
                 f"{group}.{key} differs: pi={pi_observed[key]!r} cadr={cadr_observed[key]!r}",
@@ -7981,6 +8020,34 @@ def parse_only_enforce(values: list[str]) -> frozenset[str] | None:
     return frozenset(keys)
 
 
+def timed_metric_slot(report: dict, group: str, name: str) -> dict | None:
+    """Return a timed collect slot, or None for observed-only METRICS names.
+
+    Leftover mill restored unused slugs into METRICS without a median_us
+    collect. Those names live under observed, not under metrics[group][name].
+    """
+    groups = report.get("metrics")
+    if not isinstance(groups, dict):
+        return None
+    named = groups.get(group)
+    if not isinstance(named, dict):
+        return None
+    slot = named.get(name)
+    if not isinstance(slot, dict):
+        return None
+    if "median_us" not in slot or "mad_us" not in slot:
+        return None
+    return slot
+
+
+def timed_metric_ratio(cadr: dict, pi: dict, group: str, name: str) -> float | None:
+    cadr_metric = timed_metric_slot(cadr, group, name)
+    pi_metric = timed_metric_slot(pi, group, name)
+    if cadr_metric is None or pi_metric is None:
+        return None
+    return cadr_metric["median_us"] / max(1e-9, pi_metric["median_us"])
+
+
 def check_ratios(
     cadr: dict,
     pi: dict,
@@ -7992,8 +8059,24 @@ def check_ratios(
     for group, names in METRICS.items():
         for name in names:
             key = f"{group}.{name}"
-            cadr_metric = cadr["metrics"][group][name]
-            pi_metric = pi["metrics"][group][name]
+            cadr_metric = timed_metric_slot(cadr, group, name)
+            pi_metric = timed_metric_slot(pi, group, name)
+            if cadr_metric is None and pi_metric is None:
+                if only_enforce is not None and key in only_enforce:
+                    check(
+                        False,
+                        f"{key} is not a timed median_us slot on both reports",
+                        failures,
+                    )
+                continue
+            if cadr_metric is None or pi_metric is None:
+                if only_enforce is None or key in only_enforce:
+                    check(
+                        False,
+                        f"{key} timed median_us slot present on only one report",
+                        failures,
+                    )
+                continue
             ratio = cadr_metric["median_us"] / max(1e-9, pi_metric["median_us"])
             ceiling = RATIO_CEILINGS[key]
             limit = paired_limit_us(
@@ -8012,6 +8095,7 @@ def check_ratios(
             bound = "ratio" if ceiling * pi_metric["median_us"] >= limit else "variance"
             summary.append(f"{key}={ratio:.2f}x/{ceiling:.2f}x[{bound}]")
     return summary
+
 
 
 def main() -> int:
@@ -8038,8 +8122,8 @@ def main() -> int:
         cadr = load_json(arguments.cadr)
         pi = load_json(arguments.pi)
         check_provenance(cadr, pi, failures)
-        check_parameters(cadr, pi, failures)
-        notes += check_observed(cadr, pi, failures)
+        check_parameters(cadr, pi, failures, only_enforce)
+        notes += check_observed(cadr, pi, failures, only_enforce)
 
         host_match = goal11.same_machine(cadr, pi)
         quick = bool(cadr["parameters"]["quick"] or pi["parameters"]["quick"])
@@ -8080,12 +8164,11 @@ def main() -> int:
                     "only_enforce": sorted(only_enforce) if only_enforce else None,
                     "failures": failures,
                     "ratios": {
-                        f"{group}.{name}": (
-                            cadr["metrics"][group][name]["median_us"]
-                            / max(1e-9, pi["metrics"][group][name]["median_us"])
-                        )
+                        f"{group}.{name}": ratio
                         for group, names in METRICS.items()
                         for name in names
+                        for ratio in [timed_metric_ratio(cadr, pi, group, name)]
+                        if ratio is not None
                     },
                     "ceilings": RATIO_CEILINGS,
                     "notes": notes,
