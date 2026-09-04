@@ -13161,6 +13161,30 @@ Leftover sibling unused-slug remount. Does not remount `login_method_selector_ui
 
 Leftover sibling unused-slug remount. Does not remount `api_key_input_ui_state`. Timed work is the remounted path. Observed `akiui_*` are exact. First n=5 freeze **2.180×** (210.540 / 96.557 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1372 — `cli_selectors` (draxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `draxxx_ok` | `daxnuts-rgb-at` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of parseImage pixel lookup |
+
+Leftover sibling unused-slug remount. Does not remount `daxnuts_rgb_at`. Timed work is the remounted path. Observed `dra_*` are exact. First n=5 freeze **6.787×** (1.597 / 0.235 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1373 — `cli_selectors` (dmcxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dmcxxx_ok` | `make-daxnuts-component` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of DaxnutsComponent constructor |
+
+Leftover sibling unused-slug remount. Does not remount `make_daxnuts_component`. Timed work is the remounted path. Observed `dmc_*` are exact. First n=5 freeze **8.963×** (1.165 / 0.130 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1374 — `cli_selectors` (dctxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dctxxx_ok` | `daxnuts-component-tick` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | leftover replica of DaxnutsComponent interval |
+
+Leftover sibling unused-slug remount. Does not remount `daxnuts_component_tick`. Timed work is the remounted path. Observed `dct_*` are exact. First n=5 freeze **18.022×** (4.660 / 0.259 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

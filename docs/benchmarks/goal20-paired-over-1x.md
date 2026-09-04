@@ -929,6 +929,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.draxx_ok` | 1.297 | 0.239 | 5.419× | 8.00× | measure-only leftover 1306; draxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.dmcxx_ok` | 1.025 | 0.136 | 7.513× | 8.00× | measure-only leftover 1307; dmcxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.dctxx_ok` | 4.434 | 0.285 | 15.546× | 8.00× | measure-only leftover 1308; dctxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.draxxx_ok` | 1.597 | 0.235 | 6.787× | 8.00× | measure-only leftover 1372; draxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.dmcxxx_ok` | 1.165 | 0.130 | 8.963× | 8.00× | measure-only leftover 1373; dmcxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.dctxxx_ok` | 4.660 | 0.259 | 18.022× | 8.00× | measure-only leftover 1374; dctxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.th_lbl` | 0.386 | 0.197 | 1.960× | 8.00× | measure-only leftover 1024; thinking-level-label leftover | invent pause；地板优化另刀 |
 | `cli_selectors.th_kb` | 4.463 | 1.064 | 4.194× | 8.00× | measure-only leftover 1026; thinking-selector-keybindings leftover | invent pause；地板优化另刀 |
 | `cli_selectors.tlbl_ok` | 0.484 | 0.142 | 3.419× | 8.00× | measure-only leftover 1099; tlbl_ok leftover remount | invent pause；地板优化另刀 |
