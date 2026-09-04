@@ -12681,6 +12681,30 @@ Leftover sibling unused-slug remount. Does not remount `make_thinking_selector_s
 
 Leftover sibling unused-slug remount. Does not remount `thinking_level_search_text`. Timed work is the remounted path. Observed `tlst_*` are exact. First n=5 freeze **6.705×** (1.473 / 0.220 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1300 — `cli_selectors` (cdsxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cdsxx_ok` | `Math.ceil(timeoutMs/1000)` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of Math.ceil(timeoutMs/1000) |
+
+Leftover sibling unused-slug remount. Does not remount `countdown_seconds`. Timed work is the remounted path. Observed `cds_*` are exact. First n=5 freeze **9.253×** (1.212 / 0.131 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1301 — `cli_selectors` (cdtxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cdtxx_ok` | `countdown-timer-tick` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown tick |
+
+Leftover sibling unused-slug remount. Does not remount `countdown_tick`. Timed work is the remounted path. Observed `cdt_*` are exact. First n=5 freeze **6.431×** (1.052 / 0.164 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1302 — `cli_selectors` (cdrxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cdrxx_ok` | `countdown-request-render` (`src/cadr-cli/interactive/components/countdown.lisp`) | leftover replica of countdown requestRender |
+
+Leftover sibling unused-slug remount. Does not remount `countdown_render`. Timed work is the remounted path. Observed `cdr_*` are exact. First n=5 freeze **7.367×** (1.204 / 0.163 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

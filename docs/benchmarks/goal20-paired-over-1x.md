@@ -890,6 +890,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.cdsx_ok` | 1.110 | 0.115 | 9.650× | 8.00× | measure-only leftover 1234; cdsx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.cdtx_ok` | 1.045 | 0.146 | 7.172× | 8.00× | measure-only leftover 1235; cdtx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.cdrx_ok` | 1.357 | 0.271 | 5.010× | 8.00× | measure-only leftover 1236; cdrx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.cdsxx_ok` | 1.212 | 0.131 | 9.253× | 8.00× | measure-only leftover 1300; cdsxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.cdtxx_ok` | 1.052 | 0.164 | 6.431× | 8.00× | measure-only leftover 1301; cdtxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.cdrxx_ok` | 1.204 | 0.163 | 7.367× | 8.00× | measure-only leftover 1302; cdrxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.dax_rgb` | 1.131 | 0.359 | 3.149× | 8.00× | measure-only leftover 1021; daxnuts-rgb-at leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_make` | 0.999 | 0.153 | 6.531× | 8.00× | measure-only leftover 1022; make-daxnuts-component leftover | invent pause；地板优化另刀 |
 | `cli_selectors.dax_tick` | 5.142 | 0.581 | 8.845× | 12.00× | measure-only leftover 1023; daxnuts-component-tick leftover; first-freeze ceiling 12.0 | invent pause；地板优化另刀 |
