@@ -40,6 +40,35 @@
 (defparameter +export-html-highlight-js+
   (funcall *export-html-asset-reader* "vendor/highlight.min.js"))
 
+(defun split-export-html-template (template placeholders)
+  (let ((parts nil)
+        (start 0))
+    (dolist (placeholder placeholders)
+      (let ((pos (search placeholder template :start2 start)))
+        (unless pos
+          (error "export-html template missing ~A" placeholder))
+        (push (subseq template start pos) parts)
+        (setf start (+ pos (length placeholder)))))
+    (push (subseq template start) parts)
+    (nreverse parts)))
+
+(defparameter +export-html-css-parts+
+  (split-export-html-template
+   +export-html-template-css+
+   '("{{THEME_VARS}}"
+     "{{BODY_BG}}"
+     "{{CONTAINER_BG}}"
+     "{{INFO_BG}}")))
+
+(defparameter +export-html-html-parts+
+  (split-export-html-template
+   +export-html-template+
+   '("{{CSS}}"
+     "{{SESSION_DATA}}"
+     "{{MARKED_JS}}"
+     "{{HIGHLIGHT_JS}}"
+     "{{JS}}")))
+
 (defparameter +export-html-base64-alphabet+
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
@@ -410,6 +439,8 @@
 (defun export-session-html
     (session path
      &key (theme-name "dark") theme-object)
+  ;; Stream-splice pre-split template parts. Not nested
+  ;; replace-all copies of the full HTML/CSS.
   (multiple-value-bind
         (theme-vars page-background
          card-background info-background)
@@ -422,28 +453,8 @@
              (encode-export-html-base64
               (cadr-ai::utf8-octets
                session-data)))
-           (css
-             (cadr-ai::replace-all
-              (cadr-ai::replace-all
-               (cadr-ai::replace-all
-                (cadr-ai::replace-all
-                 +export-html-template-css+
-                 "{{THEME_VARS}}" theme-vars)
-                "{{BODY_BG}}" page-background)
-               "{{CONTAINER_BG}}" card-background)
-              "{{INFO_BG}}" info-background))
-           (html
-             (cadr-ai::replace-all
-              (cadr-ai::replace-all
-               (cadr-ai::replace-all
-                (cadr-ai::replace-all
-                 (cadr-ai::replace-all
-                  +export-html-template+
-                  "{{CSS}}" css)
-                 "{{JS}}" +export-html-template-js+)
-                "{{SESSION_DATA}}" encoded-data)
-               "{{MARKED_JS}}" +export-html-marked-js+)
-              "{{HIGHLIGHT_JS}}" +export-html-highlight-js+)))
+           (css-parts +export-html-css-parts+)
+           (html-parts +export-html-html-parts+))
       (ensure-directories-exist path)
       (with-open-file
           (stream path
@@ -451,5 +462,23 @@
                   :if-exists :supersede
                   :if-does-not-exist :create
                   :external-format :utf-8)
-        (write-string html stream))
+        (write-string (first html-parts) stream)
+        (write-string (first css-parts) stream)
+        (write-string theme-vars stream)
+        (write-string (second css-parts) stream)
+        (write-string page-background stream)
+        (write-string (third css-parts) stream)
+        (write-string card-background stream)
+        (write-string (fourth css-parts) stream)
+        (write-string info-background stream)
+        (write-string (fifth css-parts) stream)
+        (write-string (second html-parts) stream)
+        (write-string encoded-data stream)
+        (write-string (third html-parts) stream)
+        (write-string +export-html-marked-js+ stream)
+        (write-string (fourth html-parts) stream)
+        (write-string +export-html-highlight-js+ stream)
+        (write-string (fifth html-parts) stream)
+        (write-string +export-html-template-js+ stream)
+        (write-string (sixth html-parts) stream))
       (pathname path))))
