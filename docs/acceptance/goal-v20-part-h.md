@@ -13257,6 +13257,30 @@ Leftover sibling unused-slug remount. Does not remount `response_text`. Timed wo
 
 Leftover sibling unused-slug remount. Does not remount `dispatch_plain`. Timed work is the remounted path. Observed `dp_*` are exact. First n=5 freeze **1.828×** (0.715 / 0.391 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1378 — `cli_selectors` (tllxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tllxxx_ok` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of thinking level label |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_level_label`. Timed work is the remounted path. Observed `tll_*` are exact. First n=5 freeze **2.746×** (0.396 / 0.144 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1379 — `cli_selectors` (tsqxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tsqxxx_ok` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of applyFilter from search |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_set_query`. Timed work is the remounted path. Observed `tsq_*` are exact. First n=5 freeze **1.165×** (12.192 / 10.467 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1380 — `cli_selectors` (tskbxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tskbxxx_ok` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | leftover replica of getKeybindings |
+
+Leftover sibling unused-slug remount. Does not remount `thinking_selector_keybindings`. Timed work is the remounted path. Observed `tskb_*` are exact. First n=5 freeze **14.631×** (2.908 / 0.199 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -15744,6 +15744,51 @@
    "piUs": 0.391,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 1378,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.tllxxx_ok",
+   "branch": "g20-freeze-1378-1380",
+   "note": "nextPairNum left at tip 328; leftover id 1378",
+   "ratio": 2.746,
+   "cadrUs": 0.396,
+   "piUs": 0.144,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1379,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.tsqxxx_ok",
+   "branch": "g20-freeze-1378-1380",
+   "note": "nextPairNum left at tip 328; leftover id 1379",
+   "ratio": 1.165,
+   "cadrUs": 12.192,
+   "piUs": 10.467,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 1380,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors",
+   "metric": "cli_selectors.tskbxxx_ok",
+   "branch": "g20-freeze-1378-1380",
+   "note": "nextPairNum left at tip 328; leftover id 1380",
+   "ratio": 14.631,
+   "cadrUs": 2.908,
+   "piUs": 0.199,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "freezeQueue": [
