@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import copy
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -1428,21 +1429,48 @@ def metric_median(report: dict, key: str) -> float:
     return float(report["metrics"][group][name]["median_us"])
 
 
+
+def previous_history_metrics(history_path: Path) -> dict[str, dict] | None:
+    if not history_path.is_file():
+        return None
+    history = json.loads(history_path.read_text(encoding="utf-8"))
+    entries = history.get("entries") or []
+    if not entries:
+        return None
+    metrics = entries[-1].get("metrics")
+    return metrics if isinstance(metrics, dict) else None
+
+
+def inherit_metric(previous: dict[str, dict], key: str) -> dict:
+    slot = previous[key]
+    return copy.deepcopy(slot)
+
+
 def build_entry(
     summary: dict,
     cadr: dict,
     recorded_at: str | None = None,
+    previous_metrics: dict[str, dict] | None = None,
 ) -> dict:
     ratios = summary["ratios"]
     ceilings = summary["ceilings"]
     metrics: dict[str, dict] = {}
     for key in METRIC_KEYS:
         if key not in ratios or key not in ceilings:
+            if previous_metrics and key in previous_metrics:
+                metrics[key] = inherit_metric(previous_metrics, key)
+                continue
             raise ValueError(f"summary is missing {key}")
         ratio = float(ratios[key])
         if ratio <= 0:
             raise ValueError(f"{key} ratio must be positive, got {ratio}")
-        cadr_us = metric_median(cadr, key)
+        try:
+            cadr_us = metric_median(cadr, key)
+        except (KeyError, TypeError):
+            if previous_metrics and key in previous_metrics:
+                metrics[key] = inherit_metric(previous_metrics, key)
+                continue
+            raise
         metrics[key] = {
             "cadrMedianUs": cadr_us,
             "baselineMedianUs": cadr_us / ratio,
@@ -1545,7 +1573,12 @@ def main() -> int:
     try:
         summary = json.loads(args.summary.read_text(encoding="utf-8"))
         cadr = json.loads(args.cadr_report.read_text(encoding="utf-8"))
-        entry = build_entry(summary, cadr, args.recorded_at)
+        entry = build_entry(
+            summary,
+            cadr,
+            args.recorded_at,
+            previous_history_metrics(args.history),
+        )
         history = append_entry(args.history, entry)
         if not args.skip_ledger:
             rewrite_ledger(args.history, args.ledger)
