@@ -977,6 +977,12 @@
 ;;;;      (does not remount login_method_selector_ui_state)
 ;;;; 1359. cli_selectors akuxxx_ok vs leftover replica of api-key-input-ui-state
 ;;;;      (does not remount api_key_input_ui_state)
+;;;; 1372. cli_selectors draxxx_ok vs leftover replica of daxnuts-rgb-at
+;;;;      (does not remount daxnuts_rgb_at)
+;;;; 1373. cli_selectors dmcxxx_ok vs leftover replica of make-daxnuts-component
+;;;;      (does not remount make_daxnuts_component)
+;;;; 1374. cli_selectors dctxxx_ok vs leftover replica of daxnuts-component-tick
+;;;;      (does not remount daxnuts_component_tick)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2311,6 +2317,9 @@
     ("cli_selectors.draxx_ok" . 50)
     ("cli_selectors.dmcxx_ok" . 50)
     ("cli_selectors.dctxx_ok" . 50)
+    ("cli_selectors.draxxx_ok" . 50)
+    ("cli_selectors.dmcxxx_ok" . 50)
+    ("cli_selectors.dctxxx_ok" . 50)
     ("cli_selectors.countdown_seconds" . 50)
     ("cli_selectors.countdown_tick" . 50)
     ("cli_selectors.countdown_render" . 50)
@@ -38618,6 +38627,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-daxnuts-component-tick))))
+     "draxxx_ok"
+     (collect "cli_selectors.draxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "dmcxxx_ok"
+     (collect "cli_selectors.dmcxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "dctxxx_ok"
+     (collect "cli_selectors.dctxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick))))
      "countdown_seconds"
      (collect "cli_selectors.countdown_seconds"
               (lambda ()
@@ -44705,6 +44729,12 @@
 "cli_selectors.dmcxx_ok"
       "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover remount"
 "cli_selectors.dctxx_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover remount"
+"cli_selectors.draxxx_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at leftover remount"
+"cli_selectors.dmcxxx_ok"
+      "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component leftover remount"
+"cli_selectors.dctxxx_ok"
       "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick leftover remount"
 "cli_selectors.countdown_seconds"
       "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds"
