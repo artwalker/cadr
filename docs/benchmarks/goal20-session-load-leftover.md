@@ -1,23 +1,21 @@
 # Executor current (2026-09-04)
 
-**Kept:** discovery header probe invent (buffered
-`read-sequence` + `parse-session-header-octets`; not per-byte
-`read-byte`; not string JSON). Friend-MachineD n=5 microbench
-**1053→732 µs** (confirm 1187→834). Observed EQUAL.
-cadr-agent FiveAM 1488 pass.
+**Kept:** autocomplete dirent table invent (`opendir`/`readdir`
++ `stat`; not UIOP pathname nconc). Friend-MachineD n=50
+`suggest_apply` **87→27 µs**. Observed EQUAL. cadr-tui FiveAM
+3658 pass.
 
-**Prior kept:** message-envelope compact-prefix (shared
-`{"role":"` gate; user + toolResult). Load **1546→1192 µs**.
+**Prior kept:** discovery header invent (1053→732 µs);
+message-envelope compact (load 1546→1192 µs).
 
-**Withdrawn this turn:** assistant type-branch compact
-(EQUAL; no clear µs win vs tip). Do not redo without a new
-allocation story.
+**Withdrawn:** assistant type-branch compact (EQUAL, no µs win).
 
 G.17 stays `missing`. Goal 20 not complete.
 
 **Do not:** mark G.17 `met`; redo withdrawn classes.
 
 ---
+
 
 
 # Executor note (2026-08-21)
