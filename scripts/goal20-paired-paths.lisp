@@ -905,6 +905,12 @@
 ;;;;      (does not remount login_dialog_show_progress)
 ;;;; 1317. cli_selectors ldmixx_ok vs leftover replica of login-dialog-show-manual-input
 ;;;;      (does not remount login_dialog_show_manual_input)
+;;;; 1321. cli_selectors ldcixx_ok vs leftover replica of login-dialog-complete-input
+;;;;      (does not remount login_dialog_complete_input)
+;;;; 1322. cli_selectors ldhexx_ok vs leftover replica of login-dialog-state-handle-event
+;;;;      (does not remount login_dialog_handle_event)
+;;;; 1323. cli_selectors ldrdxx_ok vs leftover replica of render-login-dialog-state
+;;;;      (does not remount render_login_dialog)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2143,6 +2149,9 @@
     ("cli_selectors.ldcix_ok" . 50)
     ("cli_selectors.ldhex_ok" . 50)
     ("cli_selectors.ldrdx_ok" . 50)
+    ("cli_selectors.ldcixx_ok" . 50)
+    ("cli_selectors.ldhexx_ok" . 50)
+    ("cli_selectors.ldrdxx_ok" . 50)
     ("cli_selectors.user_message_handle_event" . 50)
     ("cli_selectors.user_message_handle_raw" . 50)
     ("cli_selectors.render_user_message_selector" . 50)
@@ -38030,6 +38039,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-login-dialog))))
+     "ldcixx_ok"
+     (collect "cli_selectors.ldcixx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-complete-input))))
+     "ldhexx_ok"
+     (collect "cli_selectors.ldhexx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-handle-event))))
+     "ldrdxx_ok"
+     (collect "cli_selectors.ldrdxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-login-dialog))))
      "user_message_handle_event"
      (collect "cli_selectors.user_message_handle_event"
               (lambda ()
@@ -44185,6 +44209,12 @@
 "cli_selectors.ldhex_ok"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event leftover remount"
 "cli_selectors.ldrdx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp render-login-dialog-state leftover remount"
+"cli_selectors.ldcixx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-complete-input leftover remount"
+"cli_selectors.ldhexx_ok"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-state-handle-event leftover remount"
+"cli_selectors.ldrdxx_ok"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp render-login-dialog-state leftover remount"
 "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
