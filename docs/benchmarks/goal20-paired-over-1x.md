@@ -874,6 +874,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.oasxx_ok` | 77.864 | 4.382 | 17.768× | 8.00× | measure-only leftover 1285; oasxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.fltxx_ok` | 89.250 | 8.810 | 10.131× | 8.00× | measure-only leftover 1286; fltxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.qryxx_ok` | 1.512 | 0.291 | 5.191× | 8.00× | measure-only leftover 1287; qryxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.oasxxx_ok` | 99.113 | 4.686 | 21.149× | 8.00× | measure-only leftover 1351; oasxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.fltxxx_ok` | 108.534 | 8.311 | 13.059× | 8.00× | measure-only leftover 1352; fltxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.qryxxx_ok` | 2.538 | 0.458 | 5.541× | 8.00× | measure-only leftover 1353; qryxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_extensions_install.hp_ok` | 0.604 | 0.597 | 1.012× | 8.00× | measure-only leftover 1007; handle-extension-command plain leftover | invent pause；地板优化另刀 |
 | `cli_interactive_controller.br_ok` | 1.316 | 0.337 | 3.907× | 8.00× | measure-only leftover 1009; append-tui-user-bash-running leftover | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bf_ok` | 1.405 | 0.267 | 5.260× | 8.00× | measure-only leftover 1010; complete-tui-user-bash-string leftover | invent pause；地板优化另刀 |
