@@ -937,6 +937,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ldwx_ok` | 6.326 | 4.145 | 1.526× | 8.00× | measure-only leftover 1249; ldwx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ldpx_ok` | 3.738 | 0.939 | 3.981× | 8.00× | measure-only leftover 1250; ldpx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ldmix_ok` | 5.863 | 1.112 | 5.275× | 8.00× | measure-only leftover 1251; ldmix_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.ldwxx_ok` | 7.936 | 1.447 | 5.483× | 8.00× | measure-only leftover 1315; ldwxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.ldpxx_ok` | 6.653 | 1.011 | 6.580× | 8.00× | measure-only leftover 1316; ldpxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.ldmixx_ok` | 7.435 | 1.197 | 6.211× | 8.00× | measure-only leftover 1317; ldmixx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.ld_prmt` | 10.038 | 3.250 | 3.088× | 8.00× | measure-only leftover 1030; login-dialog-show-prompt leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_cmp` | 6.716 | 2.977 | 2.256× | 8.00× | measure-only leftover 1033; login-dialog-complete-input leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_evt` | 7.339 | 2.254 | 3.257× | 8.00× | measure-only leftover 1034; login-dialog-handle-event leftover | invent pause；地板优化另刀 |
