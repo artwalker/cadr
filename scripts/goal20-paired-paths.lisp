@@ -857,6 +857,12 @@
 ;;;;      (does not remount make_thinking_selector_state)
 ;;;; 1299. cli_selectors lstxx_ok vs leftover replica of thinking-level-search-text
 ;;;;      (does not remount thinking_level_search_text)
+;;;; 1300. cli_selectors cdsxx_ok vs leftover replica of Math.ceil(timeoutMs/1000)
+;;;;      (does not remount countdown_seconds)
+;;;; 1301. cli_selectors cdtxx_ok vs leftover replica of countdown-timer-tick
+;;;;      (does not remount countdown_tick)
+;;;; 1302. cli_selectors cdrxx_ok vs leftover replica of countdown-request-render
+;;;;      (does not remount countdown_render)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2149,6 +2155,9 @@
     ("cli_selectors.cdsx_ok" . 50)
     ("cli_selectors.cdtx_ok" . 50)
     ("cli_selectors.cdrx_ok" . 50)
+    ("cli_selectors.cdsxx_ok" . 50)
+    ("cli_selectors.cdtxx_ok" . 50)
+    ("cli_selectors.cdrxx_ok" . 50)
     ("cli_selectors.armin_pixel" . 50)
     ("cli_selectors.armin_cell" . 50)
     ("cli_selectors.armin_grid_height" . 50)
@@ -38232,6 +38241,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-countdown-render))))
+     "cdsxx_ok"
+     (collect "cli_selectors.cdsxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "cdtxx_ok"
+     (collect "cli_selectors.cdtxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "cdrxx_ok"
+     (collect "cli_selectors.cdrxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render))))
      "armin_cell"
      (collect "cli_selectors.armin_cell"
               (lambda ()
@@ -44140,6 +44164,12 @@
 "cli_selectors.cdtx_ok"
       "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick leftover remount"
 "cli_selectors.cdrx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render leftover remount"
+"cli_selectors.cdsxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp Math.ceil(timeoutMs/1000) leftover remount"
+"cli_selectors.cdtxx_ok"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick leftover remount"
+"cli_selectors.cdrxx_ok"
       "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render leftover remount"
 "cli_selectors.armin_pixel"
       "src/cadr-cli/interactive/components/armin.lisp armin-pixel-p"
