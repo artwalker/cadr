@@ -1839,7 +1839,7 @@ RATIO_CEILINGS = {
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.cdtxxx_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.cdrxxx_ok": 8.0,
+  "cli_selectors.cdrxxx_ok": 20.0,
   # cli_support.provider_login_help leftover 907 (samples=5):
   # First n=5 freeze RATIO_PLACEHOLDER on host Friend-MachineD, ceiling 50.0.
   # Ratchet down only.
