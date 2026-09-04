@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: export-html stream-splices pre-split template
+  parts instead of nested `replace-all` copies. Friend-MachineD
+  n=5 `to_html` microbench **24770→16335 µs**. HTML EQUAL
+  (555702 chars). G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after export-html
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: autocomplete path listing uses dirent table
   (`opendir`/`readdir` + `stat`) instead of UIOP pathname
   `nconc`. Friend-MachineD n=50 `suggest_apply` microbench

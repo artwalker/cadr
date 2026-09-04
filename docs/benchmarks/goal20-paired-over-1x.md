@@ -13,7 +13,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `session_compact.compact` | 36.7 | 35.3 | 1.04× | 20.00× | near 1.0; uuid-v7 entropy pool already kept | 待 MAD/本质；不开现象刀 |
 | `session_compact.branch_summarize` | 37.3 | 32.5 | 1.15× | 20.00× | measure-only pair 255; collect+generate branch summary | invent pause；地板优化另刀 |
 | `session_discovery.header_probe` | 732.2 (cadr µs invent; prior ledger 1449.6) | 708.6 | pending remesure | 8.00× | buffered read-sequence + parse-session-header-octets | invent keep (cadr µs); pairing ratio remesure later | 708.6 | ~1.03× (cadr µs invent; pi ledger unremeasured) | 8.00× | buffered read-sequence + parse-session-header-octets; prior ledger 1449.6 | invent keep (cadr µs); remesure pairing ratio later |
-| `session_export_html.to_html` | 29217.8 | 8239.7 | 3.55× | 20.00× | measure-only pair `7cefd82b9`; html_chars size gap booked | invent pause；地板优化另刀 |
+| `session_export_html.to_html` | 16335 (cadr µs invent; prior ledger 29217.8) | 8239.7 | pending remesure | 20.00× | stream-splice pre-split templates | invent keep (cadr µs); pairing ratio remesure later | 8239.7 | 3.55× | 20.00× | measure-only pair `7cefd82b9`; html_chars size gap booked | invent pause；地板优化另刀 |
 | `harness_storage.open_walk` | 11643.5 | 6484.9 | 1.80× | 8.00× | measure-only pair `7d0d772b1`; branch_entry_count shape gap booked | invent pause；地板优化另刀 |
 | `agent_proxy.stream_roundtrip` | 25.4 | 16.0 | 1.59× | 1.50× | measure-only pair `c5fa14820`; **over ceiling** (variance-bound 1.5) | invent pause；地板/抬天花板另刀 |
 | `ai_crypto_model_data.manifest` | 77.3 | 8.6 | 8.97× | 20.00× | measure-only pair `287109b9e`; SHA-256 catalog (not dir walk) | invent pause；地板优化另刀 |

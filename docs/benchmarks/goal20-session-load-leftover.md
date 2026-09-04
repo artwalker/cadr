@@ -1,12 +1,11 @@
 # Executor current (2026-09-04)
 
-**Kept:** autocomplete dirent table invent (`opendir`/`readdir`
-+ `stat`; not UIOP pathname nconc). Friend-MachineD n=50
-`suggest_apply` **87→27 µs**. Observed EQUAL. cadr-tui FiveAM
-3658 pass.
+**Kept:** export-html stream-splice invent (pre-split template
+parts; not nested replace-all). Friend-MachineD n=5 **24770→16335 µs**.
+HTML EQUAL.
 
-**Prior kept:** discovery header invent (1053→732 µs);
-message-envelope compact (load 1546→1192 µs).
+**Prior kept:** autocomplete dirent (87→27 µs); discovery header
+(1053→732 µs); message-envelope load (1546→1192 µs).
 
 **Withdrawn:** assistant type-branch compact (EQUAL, no µs win).
 
@@ -15,6 +14,7 @@ G.17 stays `missing`. Goal 20 not complete.
 **Do not:** mark G.17 `met`; redo withdrawn classes.
 
 ---
+
 
 
 
