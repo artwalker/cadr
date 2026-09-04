@@ -811,6 +811,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.slxx_ok` | 0.785 | 0.351 | 2.236× | 8.00× | measure-only leftover 1279; slxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.dscxx_ok` | 0.519 | 0.139 | 3.744× | 8.00× | measure-only leftover 1280; dscxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.rthxx_ok` | 280.415 | 3.068 | 91.402× | 8.00× | measure-only leftover 1281; rthxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.slxxx_ok` | 1.096 | 0.244 | 4.489× | 8.00× | measure-only leftover 1345; slxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.dscxxx_ok` | 0.591 | 0.144 | 4.094× | 8.00× | measure-only leftover 1346; dscxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.rthxxx_ok` | 360.624 | 6.606 | 54.590× | 8.00× | measure-only leftover 1347; rthxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.um_evt` | 2.504 | 1.649 | 1.518× | 8.00× | measure-only leftover 997; user-message-selector-handle-event leftover | invent pause；地板优化另刀 |
 | `cli_selectors.um_raw` | 100.493 | 7.058 | 14.238× | 30.00× | measure-only leftover 998; user-message-selector-handle-raw-input leftover | invent pause；地板优化另刀 |
 | `cli_selectors.um_draw` | 312.691 | 2.973 | 105.189× | 120.00× | measure-only leftover 999; render-user-message-selector leftover; first-freeze ceiling 120.0 | invent pause；地板优化另刀 |
