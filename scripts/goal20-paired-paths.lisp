@@ -887,6 +887,12 @@
 ;;;;      (does not remount response_text)
 ;;;; 1311. cli_bootstrap_sessions dpkxx_ok vs leftover replica of dispatch-user-input
 ;;;;      (does not remount dispatch_plain)
+;;;; 1324. cli_selectors umevxx_ok vs leftover replica of user-message-selector-handle-event
+;;;;      (does not remount user_message_handle_event)
+;;;; 1325. cli_selectors umrwxx_ok vs leftover replica of user-message-selector-handle-raw-input
+;;;;      (does not remount user_message_handle_raw)
+;;;; 1326. cli_selectors umrsxx_ok vs leftover replica of render-user-message-selector
+;;;;      (does not remount render_user_message_selector)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2140,6 +2146,9 @@
     ("cli_selectors.umevx_ok" . 50)
     ("cli_selectors.umrwx_ok" . 50)
     ("cli_selectors.umrsx_ok" . 50)
+    ("cli_selectors.umevxx_ok" . 50)
+    ("cli_selectors.umrwxx_ok" . 50)
+    ("cli_selectors.umrsxx_ok" . 50)
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
@@ -38078,6 +38087,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-render-user-message-selector))))
+     "umevxx_ok"
+     (collect "cli_selectors.umevxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-event))))
+     "umrwxx_ok"
+     (collect "cli_selectors.umrwxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-handle-raw))))
+     "umrsxx_ok"
+     (collect "cli_selectors.umrsxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-render-user-message-selector))))
      "make_models_selector_keybindings"
      (collect "cli_selectors.make_models_selector_keybindings"
               (lambda ()
@@ -44183,6 +44207,12 @@
 "cli_selectors.umrwx_ok"
       "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input leftover remount"
 "cli_selectors.umrsx_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector leftover remount"
+"cli_selectors.umevxx_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-event leftover remount"
+"cli_selectors.umrwxx_ok"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-handle-raw-input leftover remount"
+"cli_selectors.umrsxx_ok"
       "src/cadr-cli/interactive/selectors/fork.lisp render-user-message-selector leftover remount"
 "cli_selectors.make_models_selector_keybindings"
       "src/cadr-cli/interactive/selectors/models.lisp make-models-selector-keybindings"
