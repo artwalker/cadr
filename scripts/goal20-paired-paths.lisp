@@ -959,6 +959,12 @@
 ;;;;      (does not remount thinking_level_description_line)
 ;;;; 1347. cli_selectors rthxxx_ok vs leftover replica of render-thinking-selector
 ;;;;      (does not remount render_thinking_selector)
+;;;; 1351. cli_selectors oasxxx_ok vs leftover replica of oauth-selector-selection
+;;;;      (does not remount oauth_selector_selection)
+;;;; 1352. cli_selectors fltxxx_ok vs leftover replica of oauth-selector-apply-filter
+;;;;      (does not remount oauth_selector_apply_filter)
+;;;; 1353. cli_selectors qryxxx_ok vs leftover replica of oauth-selector-search-text
+;;;;      (does not remount oauth_selector_search_text)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2158,6 +2164,9 @@
     ("cli_selectors.oasxx_ok" . 50)
     ("cli_selectors.fltxx_ok" . 50)
     ("cli_selectors.qryxx_ok" . 50)
+    ("cli_selectors.oasxxx_ok" . 50)
+    ("cli_selectors.fltxxx_ok" . 50)
+    ("cli_selectors.qryxxx_ok" . 50)
     ("cli_selectors.login_dialog_show_waiting" . 50)
     ("cli_selectors.login_dialog_show_progress" . 50)
     ("cli_selectors.login_dialog_show_manual_input" . 50)
@@ -37916,6 +37925,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-selector-search-text))))
+     "oasxxx_ok"
+     (collect "cli_selectors.oasxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-selection))))
+     "fltxxx_ok"
+     (collect "cli_selectors.fltxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-apply-filter))))
+     "qryxxx_ok"
+     (collect "cli_selectors.qryxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-search-text))))
      "login_dialog_show_waiting"
      (collect "cli_selectors.login_dialog_show_waiting"
               (lambda ()
@@ -44323,6 +44347,12 @@
 "cli_selectors.fltxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter leftover remount"
 "cli_selectors.qryxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text leftover remount"
+"cli_selectors.oasxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection leftover remount"
+"cli_selectors.fltxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter leftover remount"
+"cli_selectors.qryxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text leftover remount"
 "cli_selectors.login_dialog_show_waiting"
       "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
