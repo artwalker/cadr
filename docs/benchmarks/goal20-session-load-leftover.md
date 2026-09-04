@@ -1,19 +1,20 @@
 # Executor current (2026-09-04)
 
-**Kept:** export-html stream-splice invent (pre-split template
-parts; not nested replace-all). Friend-MachineD n=5 **24770→16335 µs**.
-HTML EQUAL.
+**Kept:** autocomplete command-item bake on provider.
+Friend-MachineD n=50 suggest_apply **46.9→31.0 µs**.
 
-**Prior kept:** autocomplete dirent (87→27 µs); discovery header
-(1053→732 µs); message-envelope load (1546→1192 µs).
+**Prior kept:** export-html splice; autocomplete dirent;
+discovery header; message-envelope load.
 
-**Withdrawn:** assistant type-branch compact (EQUAL, no µs win).
+**Withdrawn:** list-sessions single-pass (breaks oversized
+header bound); assistant type-branch compact.
 
 G.17 stays `missing`. Goal 20 not complete.
 
 **Do not:** mark G.17 `met`; redo withdrawn classes.
 
 ---
+
 
 
 

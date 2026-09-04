@@ -35,23 +35,38 @@
         (autocomplete-request-signal-state signal))))
 
 (defstruct (autocomplete-provider
-            (:constructor make-autocomplete-provider
-                (&key
-                   (commands nil)
-                   (base-path
-                     (uiop:getcwd))
-                   fd-path
-                   trigger-characters
-                   suggestions-function
-                   apply-completion-function
-                   should-trigger-file-completion-function)))
+            (:constructor %make-autocomplete-provider))
   (commands nil :type list)
+  (command-items nil :type list)
   base-path
   fd-path
   (trigger-characters nil :type list)
   suggestions-function
   apply-completion-function
   should-trigger-file-completion-function)
+
+(defun make-autocomplete-provider
+    (&key
+       (commands nil)
+       (base-path (uiop:getcwd))
+       fd-path
+       trigger-characters
+       suggestions-function
+       apply-completion-function
+       should-trigger-file-completion-function)
+  ;; Bake command autocomplete-items once. Hot slash path
+  ;; filters the vector; not mapcar+format each keystroke.
+  (%make-autocomplete-provider
+   :commands commands
+   :command-items
+   (mapcar #'command-autocomplete-item commands)
+   :base-path base-path
+   :fd-path fd-path
+   :trigger-characters trigger-characters
+   :suggestions-function suggestions-function
+   :apply-completion-function apply-completion-function
+   :should-trigger-file-completion-function
+   should-trigger-file-completion-function))
 
 (defun autocomplete-delimiter-p (character)
   (member character
@@ -465,9 +480,8 @@
     (if (null space)
         (let ((items
                 (fuzzy-filter
-                 (mapcar #'command-autocomplete-item
-                         (autocomplete-provider-commands
-                          provider))
+                 (autocomplete-provider-command-items
+                  provider)
                  prefix
                  #'autocomplete-item-value)))
           (and items
