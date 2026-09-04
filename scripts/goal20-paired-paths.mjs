@@ -621,6 +621,9 @@ const REPETITIONS = {
 	"cli_selectors.tllx_ok": 50,
 	"cli_selectors.tsqx_ok": 50,
 	"cli_selectors.tskbx_ok": 50,
+	"cli_selectors.tllxx_ok": 50,
+	"cli_selectors.tsqxx_ok": 50,
+	"cli_selectors.tskbxx_ok": 50,
 	"cli_selectors.thinking_selector_apply_filter": 50,
 	"cli_selectors.thinking_selector_clamp_selected": 50,
 	"cli_selectors.thinking_selector_select_current": 50,
@@ -36745,6 +36748,15 @@ async function measureCliSelectorsSessionSearch() {
 		tskbx_ok: await collect("cli_selectors.tskbx_ok", () => {
 			return () => runCliSelectorsThinkingSelectorKeybindings();
 		}),
+		tllxx_ok: await collect("cli_selectors.tllxx_ok", () => {
+			return () => runCliSelectorsThinkingLevelLabel();
+		}),
+		tsqxx_ok: await collect("cli_selectors.tsqxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorSetQuery();
+		}),
+		tskbxx_ok: await collect("cli_selectors.tskbxx_ok", () => {
+			return () => runCliSelectorsThinkingSelectorKeybindings();
+		}),
 		thinking_selector_apply_filter: await collect(
 			"cli_selectors.thinking_selector_apply_filter",
 			() => {
@@ -43013,6 +43025,12 @@ const result = {
 			"cli_selectors.tsqx_ok":
 				"packages/coding-agent/... thinking-selector-set-query leftover remount",
 			"cli_selectors.tskbx_ok":
+				"packages/coding-agent/... thinking-selector-keybindings leftover remount",
+			"cli_selectors.tllxx_ok":
+				"packages/coding-agent/... thinking-level-label leftover remount",
+			"cli_selectors.tsqxx_ok":
+				"packages/coding-agent/... thinking-selector-set-query leftover remount",
+			"cli_selectors.tskbxx_ok":
 				"packages/coding-agent/... thinking-selector-keybindings leftover remount",
 			"cli_selectors.thinking_selector_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts applyFilter",
