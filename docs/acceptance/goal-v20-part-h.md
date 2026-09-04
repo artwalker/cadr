@@ -13185,6 +13185,30 @@ Leftover sibling unused-slug remount. Does not remount `make_daxnuts_component`.
 
 Leftover sibling unused-slug remount. Does not remount `daxnuts_component_tick`. Timed work is the remounted path. Observed `dct_*` are exact. First n=5 freeze **18.022×** (4.660 / 0.259 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1369 — `powershell_tool` (utfxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `utfxxx_ok` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of UTF8_OUTPUT_PREFIX |
+
+Leftover sibling unused-slug remount. Does not remount `utf8_prefix`. Timed work is the remounted path. Observed `psu_*` are exact. First n=5 freeze **5.837×** (0.665 / 0.114 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1370 — `powershell_tool` (pfxxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pfxxxx_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of prefix+command wrap |
+
+Leftover sibling unused-slug remount. Does not remount `prefix_command`. Timed work is the remounted path. Observed `psc_*` are exact. First n=5 freeze **4.008×** (0.843 / 0.210 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1371 — `powershell_tool` (mtbxxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mtbxxx_ok` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | leftover replica of createPowerShellToolDefinition |
+
+Leftover sibling unused-slug remount. Does not remount `make_tool`. Timed work is the remounted path. Observed `pmt_*` are exact. First n=5 freeze **1.998×** (2.845 / 1.424 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
