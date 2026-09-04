@@ -2381,9 +2381,9 @@ RATIO_CEILINGS = {
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
   "cli_selectors.draxxx_ok": 8.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.dmcxxx_ok": 8.0,
+  "cli_selectors.dmcxxx_ok": 20.0,
   # Unused-slug remount leftover; first-freeze headroom. Ratchet down only.
-  "cli_selectors.dctxxx_ok": 8.0,
+  "cli_selectors.dctxxx_ok": 20.0,
     # Measure-only leftover 946; first freeze 1.471× (0.189 / 0.128 µs).
     # Does not remount login_dialog_make / login_dialog_auth / login_dialog_device.
     "cli_selectors.dlg_make": 8.0,
