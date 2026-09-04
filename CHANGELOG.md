@@ -7,6 +7,8 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 P.13: tip inventory `needs-pair=0` / `uncovered=0` after remount mill; additional-pairs row booked number. Floor >1.0× invent still leftover. G.17 missing.
+
 - Live process: Cursor cloud agents are the standing crew (总控 / 实现 / 审 / 合入). Grok Bot is retired for live crew. See `docs/acceptance/team-dev-platform.md`.
 
 ### Changed

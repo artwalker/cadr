@@ -76,8 +76,7 @@ Not `parse-json-octets`. Not a G.17 close.
 - Goal 20 complete.
 - G.17 `met`.
 - Live three-game play (deferred 18:09).
-- P.13 complete (schema 0% uncovered; required holes have H
-  metrics; floor on >1.0× paths still leftover + invent pause).
+- P.13 schema/holes/additional-pairs booked number on tip; floor on >1.0× paths still leftover + invent pause).
 
 ## P.13 (user 2026-08-19 18:30)
 
@@ -85,5 +84,5 @@ Not `parse-json-octets`. Not a G.17 close.
 |---|---|---|---|
 | P.13 schema | number | `pairable-uncovered` **0%** of 295 files / 127,389 lines (`f0e299523`). `--check` books `covered-as-callee` + `needs-pair`. | `goal20-unpaired-paths.py --check`. Not G.17. |
 | P.13 required holes | number | sqlite / tool_loop / compact / providers / settings / package / skills all have named H metrics (`315a16c1c`). No new pair. No optimize. | inventory vs `pairedMetrics`. |
-| P.13 additional pairs | leftover | discovery 2.05×/8.0; export-html 3.55×/20.0; cbor 0.25×/1.5; schema 0.38×/1.5; harness JSONL 1.80×/8.0; codec 0.10×/1.5; proxy 1.59×/1.5; oauth 0.37×/1.5; evals 0.88×/1.5; crypto 8.97×/20.0; models 1.65×/3.0; image 5.44×/8.0; print JSONL 13.21×/8.0 variance; latex 2.49×/3.0; fuzzy 0.45×/8.0; osc11 1.16×/8.0; estimate 3.10×/8.0 variance; select-list 1.27×/8.0 variance; word-nav 0.17×/8.0; overlay 0.87×/8.0; kill-ring 0.85×/8.0; undo-stack 0.21×/8.0; autocomplete 5.17×/8.0; keybindings 1.88×/8.0; stdin-buffer 0.33×/8.0; input-component 0.06×/8.0; `tui_native_modifiers.pressed` 7.50×/8.0 (measure-only). Remaining `needs-pair` still ~57k lines. | this knife. Not P.13 complete. |
+| P.13 additional pairs | number | Tip `f13c96603` inventory: `needs-pair=0`, `uncovered=0`, paired lines 104353 / 129374 (`goal20-unpaired-paths.py --check`). Remount leftover open=0 through freeze #631 / gate #632. Historical first-freeze ratios above stay in Part H / over-1× ledger. | remount mill + inventory. Not G.17. |
 | P.13 floor / leftover | leftover | load ~1.11× / journal_read / pi_messages / mistral still >1.0×. Invent paused. Not P.13 complete. | `docs/benchmarks/goal20-paired-over-1x.md`. G.17 still `missing`. |
