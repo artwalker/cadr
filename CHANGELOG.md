@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: autocomplete path listing uses dirent table
+  (`opendir`/`readdir` + `stat`) instead of UIOP pathname
+  `nconc`. Friend-MachineD n=50 `suggest_apply` microbench
+  **87→27 µs** (near pi ledger 26.4). Observed EQUAL.
+  cadr-tui FiveAM 3658 pass. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after autocomplete
+  dirent invent (+19 lines). needs-pair=0 uncovered=0.
+
 - Goal 20 invent: discovery header probe uses buffered
   `read-sequence` + `parse-session-header-octets` (load-session
   sibling). Friend-MachineD n=5 `header_probe` microbench

@@ -195,23 +195,41 @@
                          (uiop:ensure-directory-pathname
                           base)))))))
 
-(defun directory-entry-paths (directory)
+(defun directory-entry-dirents (directory)
+  ;; Vector of (name . directory-p). One opendir/readdir +
+  ;; stat; not UIOP pathname nconc of subdirectories+files.
   (handler-case
-      (nconc
-       (uiop:subdirectories directory)
-       (uiop:directory-files directory))
+      (let* ((dir-path
+               (uiop:ensure-directory-pathname directory))
+             (dir-native
+               (uiop:native-namestring dir-path))
+             (dp (sb-posix:opendir dir-native))
+             (entries nil))
+        (unwind-protect
+             (loop
+               (let ((entry (sb-posix:readdir dp)))
+                 (when (or (null entry)
+                           (sb-alien:null-alien entry))
+                   (return))
+                 (let ((name
+                         (copy-seq
+                          (sb-posix:dirent-name entry))))
+                   (unless (or (string= name ".")
+                               (string= name ".."))
+                     (let* ((full
+                              (concatenate
+                               'string dir-native name))
+                            (directory-p
+                              (handler-case
+                                  (sb-posix:s-isdir
+                                   (sb-posix:stat-mode
+                                    (sb-posix:stat full)))
+                                (error () nil))))
+                       (push (cons name directory-p)
+                             entries))))))
+          (sb-posix:closedir dp))
+        entries)
     (condition () nil)))
-
-(defun autocomplete-entry-directory-p (pathname)
-  (uiop:directory-pathname-p pathname))
-
-(defun autocomplete-entry-name (pathname)
-  (if (autocomplete-entry-directory-p pathname)
-      (let* ((directory
-               (pathname-directory pathname))
-             (last (car (last directory))))
-        (string last))
-      (file-namestring pathname)))
 
 (defun autocomplete-direct-suggestions
     (provider prefix)
@@ -236,19 +254,20 @@
              (if (or root-p trailing-p)
                  ""
                  (autocomplete-basename raw)))
+           (search-down
+             (string-downcase search-prefix))
            (directory
              (autocomplete-directory-pathname
               (autocomplete-provider-base-path provider)
               directory-part))
            (items nil))
-      (dolist (entry (directory-entry-paths directory))
-        (let ((name (autocomplete-entry-name entry)))
+      (dolist (entry (directory-entry-dirents directory))
+        (let ((name (car entry))
+              (directory-p (cdr entry)))
           (when (string-prefix-p
-                 (string-downcase search-prefix)
+                 search-down
                  (string-downcase name))
-            (let* ((directory-p
-                     (autocomplete-entry-directory-p entry))
-                   (display-directory
+            (let* ((display-directory
                      (cond
                        ((or root-p trailing-p)
                         raw)
