@@ -4299,20 +4299,36 @@
       "screenSha256": {
         "narrow": {
           "pi": "a6b42831274f7b330e7f92662632b0dd80d81829d170d1b51509dd2f13c39156",
-          "cadr": "c1aa2858bbee95ce352cbdfbd1a3f811af8b487f9c37edd9d4ba851c20bd05ef"
+          "cadr": "ad9fba1944bab0038c02ac3abe94640a0040439f32925e2373f73e16ef850cd3"
         },
         "wide": {
           "pi": "8dfcc963e4a87cfd0b347972e5e4e48f2a8fc0f42ec3df315c88497276b7409b",
           "cadr": "8355db8f1d7c6aa85ab35be121c666512fb2e7f59921decdbf270ada0ec00cdd"
         }
       },
-      "note": "At example-commands/commands-path both sides opened the View source path? confirm after selecting /commands. Residual deltas are path/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-commands/commands-path both sides opened the View source path? confirm after selecting /commands. Narrow: pi wraps <HOME>/.pi/agent/extensions/commands.ts onto two rows; cadr shows <CADR_ROOT>/examples/extensions/commands.lisp on one row (I04 identity paths plus wrap). Residual chrome/I01 ANSI remain. Wide hashes unchanged."
     },
     {
       "scenario": "example-commands",
       "checkpoint": "process-exit",
       "dimensions": [
-        "narrow",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "60e787e71b153552512456f409ba4829cf2168ec734930673542588c10eead41",
+          "cadr": "60e787e71b153552512456f409ba4829cf2168ec734930673542588c10eead41"
+        }
+      },
+      "note": "At example-commands/process-exit [narrow] the selector is gone and the semantic screens match (identical screenSha256). Residual raw ANSI only (I01). Do not delete this entry."
+    },
+    {
+      "scenario": "example-commands",
+      "checkpoint": "process-exit",
+      "dimensions": [
         "wide"
       ],
       "classes": [
@@ -4320,16 +4336,12 @@
         "I04"
       ],
       "screenSha256": {
-        "narrow": {
-          "pi": "60e787e71b153552512456f409ba4829cf2168ec734930673542588c10eead41",
-          "cadr": "2ecf859f20e1dcca06dc17790ef813c61be4c365933c0a62b7856a9d9d72b178"
-        },
         "wide": {
           "pi": "d67cfa7c7787fd7d0d79ca80f0fd22b39b1bf7a33c9c4336237cbb0780378f61",
           "cadr": "ebb78f327d417ad468a2a2b38742f9db6639881477dc273b19ad416a29a1a834"
         }
       },
-      "note": "At example-commands/process-exit the selector is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the command list."
+      "note": "At example-commands/process-exit [wide] the selector is gone; remaining semantic deltas are startup chrome / I04 identity wrapping. Raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "example-custom-footer",

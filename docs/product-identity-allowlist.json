@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1339,
+  "expected_findings": 1340,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -209,6 +209,14 @@
       "line": "  (isolated cwd; cadr `create-agent-session-services` vs pi",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (leftover replica of `%eval-main` suite cond; pi has no `--suite`).",
+      "occurrences": 1,
+      "reason": "Leftover pairing changelog records that pi run-evals.mjs has no --suite; this is baseline-CLI prose, not Cadr product identity."
     },
     {
       "path": "CHANGELOG.md",
@@ -3646,6 +3654,14 @@
       "path": "scripts/goal20-paired-paths.lisp",
       "kind": "pi-token",
       "token": "pi",
+      "line": "  ;; Do not exact cadr vs pi error copy.",
+      "occurrences": 1,
+      "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "  ;; Do not exact empty input (Lisp \"\" / NIL vs pi {}).",
       "occurrences": 1,
       "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
@@ -3751,6 +3767,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; pi returns cwd as-is) or Windows separators.",
+      "occurrences": 1,
+      "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi run-evals.mjs has no --suite.",
       "occurrences": 1,
       "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
     },
@@ -4271,6 +4295,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "\t\t\t\t\"packages/coding-agent/src/utils/pi-user-agent.ts getPiUserAgent\",",
+      "occurrences": 1,
+      "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t\t\"packages/evals leftover replica of cadr %eval-main suite cond (pi has no --suite)\",",
       "occurrences": 1,
       "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
     },
@@ -5990,7 +6022,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    \"evals_harness\": (\"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"sv_hash\", \"sv_plist\", \"sv_intern\", \"sv_miss\", \"sv_n\", \"us_in\", \"us_out\", \"us_total\", \"us_tools\", \"us_prov\", \"us_model\", \"us_cost\", \"us_n\", \"rj_out\", \"rj_ev\", \"rj_err\", \"rj_art\", \"rj_time\", \"rj_n\", \"ee_trim\", \"ee_model\", \"ee_ws\", \"ee_miss\", \"ee_n\", \"ps_type\", \"ps_content\", \"ps_n\", \"rs_type\", \"rs_no_content\", \"rs_n\", \"mer_exists\", \"mer_prefix\", \"mer_no_ws\", \"mer_n\", \"nst_kw\", \"nst_sym\", \"nst_str\", \"nst_bad\", \"nst_n\", \"set_n\", \"set_names\", \"set_all\", \"set_filt_n\", \"set_no_bash\", \"set_cases\", \"pea_out\", \"pea_msgs\", \"pea_stop\", \"pea_n\", \"rld_err\", \"rld_active\", \"rld_reports\", \"rld_n\", \"rca_out\", \"rca_events\", \"rca_err\", \"rca_ms\", \"rca_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"apr_val\", \"apr_empty\", \"apr_miss\", \"apr_model\", \"apr_n\", \"pa_space\", \"pa_eq\", \"pa_mix\", \"pa_miss\", \"pa_empty\", \"pa_unknown\", \"pa_n\", \"vs_ok\", \"vs_trim\", \"vs_city\", \"vs_tok\", \"vs_n\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\"),",
+      "line": "    \"evals_harness\": (\"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"sv_hash\", \"sv_plist\", \"sv_intern\", \"sv_miss\", \"sv_n\", \"us_in\", \"us_out\", \"us_total\", \"us_tools\", \"us_prov\", \"us_model\", \"us_cost\", \"us_n\", \"rj_out\", \"rj_ev\", \"rj_err\", \"rj_art\", \"rj_time\", \"rj_n\", \"ee_trim\", \"ee_model\", \"ee_ws\", \"ee_miss\", \"ee_n\", \"ps_type\", \"ps_content\", \"ps_n\", \"rs_type\", \"rs_no_content\", \"mer_exists\", \"mer_prefix\", \"mer_no_ws\", \"mer_n\", \"nst_kw\", \"nst_sym\", \"nst_str\", \"nst_bad\", \"nst_n\", \"set_n\", \"set_names\", \"set_all\", \"set_filt_n\", \"set_no_bash\", \"set_cases\", \"pea_out\", \"pea_msgs\", \"pea_stop\", \"pea_n\", \"rld_err\", \"rld_active\", \"rld_reports\", \"rld_n\", \"rca_out\", \"rca_events\", \"rca_err\", \"rca_ms\", \"rca_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"apr_val\", \"apr_empty\", \"apr_miss\", \"apr_model\", \"apr_n\", \"pa_space\", \"pa_eq\", \"pa_mix\", \"pa_miss\", \"pa_empty\", \"pa_unknown\", \"pa_n\", \"vs_ok\", \"vs_trim\", \"vs_city\", \"vs_tok\", \"vs_n\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\", \"ve_ok\", \"ve_greet\", \"ve_paths\", \"ve_empty\", \"ve_n\", \"sd_smoke\", \"sd_ext\", \"sd_auth\", \"sd_unk\", \"sd_n\", \"er_yes\", \"er_hash\", \"er_str\", \"er_nil\", \"er_n\", \"at_empty\", \"at_n\", \"at_read\", \"at_bash\", \"at_keys\", \"ep_none\", \"ep_n\", \"ep_path\", \"ep_skip\", \"ep_keys\", \"ai_crypto_model_data\", \"mr_explicit\", \"mr_env\", \"mr_miss\", \"mr_n\", \"fn_int\", \"fn_float\", \"fn_nil\", \"fn_inf\", \"fn_str\", \"fn_n\", \"am_keep\", \"am_runid\", \"am_snap\", \"am_n\"),",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -5998,7 +6030,7 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    \"evals_harness\": (\"summarize\", \"group_key\", \"artifact_persist\", \"format\", \"normalize_steps\", \"resolve_selection\", \"transcript\", \"last_assistant\", \"step_value\", \"usage\", \"result_json\", \"eval_environment\", \"prompt_step\", \"reload_step\", \"make_eval_root\", \"normalize_step_type\", \"selected_eval_tools\", \"prompt_eval_agent\", \"reload_shutdown\", \"run_coding_agent_eval\", \"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"release_extensions\", \"agent_tools\", \"extension_paths\", \"argument_prefix\", \"parse_arguments\", \"validate_smoke\", \"eval_result\", \"root_observer\", \"model_resolver\", \"status_name\", \"case_observation\", \"finish\", \"eval_layout\", \"system_prompt\", \"output_selector\", \"make_reporter\", \"finite_number\", \"artifact_metadata\", \"extension_authoring_input\", \"json_array_items\", \"json_string\", \"canonical_api\", \"legacy_api\", \"extension_error_json\", \"required_prompt_boundary\", \"exclude_guidelines\", \"prepare_default_prompt\", \"reporter_run_id\", \"artifact_reference_json\", \"reporter_artifacts\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\"),",
+      "line": "    \"evals_harness\": (\"summarize\", \"group_key\", \"artifact_persist\", \"format\", \"normalize_steps\", \"resolve_selection\", \"transcript\", \"last_assistant\", \"step_value\", \"usage\", \"result_json\", \"eval_environment\", \"prompt_step\", \"reload_step\", \"make_eval_root\", \"normalize_step_type\", \"selected_eval_tools\", \"prompt_eval_agent\", \"reload_shutdown\", \"run_coding_agent_eval\", \"eval_sets\", \"comparisons\", \"candidate_wins\", \"ties\", \"gk_id\", \"gk_trim\", \"art_ok\", \"art_bad\", \"ap_n\", \"ap_sess\", \"ap_src\", \"ap_sess_prefix\", \"ap_src_prefix\", \"ap_sess_file\", \"ap_src_file\", \"fmt_empty\", \"fmt_empty_hdr\", \"fmt_hdr\", \"fmt_base\", \"fmt_pass\", \"ns_empty\", \"ns_str_n\", \"ns_str_pr\", \"ns_seq_n\", \"ns_seq_rel\", \"ns_kw_n\", \"ns_kw_rel\", \"ns_vec_n\", \"ns_bad\", \"rs_explicit\", \"rs_env\", \"rs_miss\", \"rs_prov\", \"rs_blank\", \"rs_n\", \"tr_n\", \"tr_user\", \"tr_role\", \"tr_text\", \"tr_call\", \"tr_name\", \"tr_result\", \"tr_err\", \"tr_keys\", \"la_new\", \"la_none\", \"la_full\", \"la_n\", \"ct_plain\", \"ct_join\", \"ct_empty\", \"ct_blank\", \"ct_n\", \"te_type\", \"te_role\", \"te_content\", \"te_asst_role\", \"te_asst\", \"te_n\", \"el_now\", \"el_past\", \"el_order\", \"el_n\", \"release_extensions\", \"agent_tools\", \"extension_paths\", \"argument_prefix\", \"parse_arguments\", \"validate_smoke\", \"eval_result\", \"root_observer\", \"model_resolver\", \"status_name\", \"case_observation\", \"finish\", \"eval_layout\", \"system_prompt\", \"output_selector\", \"make_reporter\", \"finite_number\", \"artifact_metadata\", \"extension_authoring_input\", \"json_array_items\", \"json_string\", \"canonical_api\", \"legacy_api\", \"extension_error_json\", \"required_prompt_boundary\", \"exclude_guidelines\", \"prepare_default_prompt\", \"reporter_run_id\", \"artifact_reference_json\", \"reporter_artifacts\", \"validate_extension\", \"suite_dispatch\", \"eval_result_p\", \"sca_def\", \"sca_pkg\", \"sca_case\", \"sca_miss\", \"sca_leg\", \"sla_mz\", \"sla_tb\", \"sla_pi\", \"sla_case\", \"sla_miss\", \"see_path\", \"see_err\", \"see_empty\", \"see_blank\", \"see_n\", \"rpb_mid\", \"rpb_end\", \"rpb_zero\", \"rpb_miss\", \"rpb_n\", \"egd_cut\", \"egd_len\", \"egd_no_g\", \"egd_head\", \"egd_n\", \"pdp_cut\", \"pdp_dbl\", \"pdp_no_cwd\", \"pdp_keep\", \"pdp_n\", \"rid_hit\", \"rid_empty\", \"rid_custom\", \"rid_gen\", \"rid_n\", \"arj_name\", \"arj_path\", \"arj_empty\", \"arj_keys\", \"arj_n\", \"ra_empty\", \"ra_sess\", \"ra_rec\", \"ra_case\", \"ra_n\", \"ve_ok\", \"ve_greet\", \"ve_paths\", \"ve_empty\", \"ve_n\", \"sd_smoke\", \"sd_ext\", \"sd_auth\", \"sd_unk\", \"sd_n\", \"er_yes\", \"er_hash\", \"er_str\", \"er_nil\", \"er_n\", \"msg_content\", \"eval_tools\", \"eval_paths\", \"at_empty\", \"at_n\", \"at_read\", \"at_bash\", \"at_keys\", \"ep_none\", \"ep_n\", \"ep_path\", \"ep_skip\", \"ep_keys\", \"ai_crypto_model_data\", \"manifest\", \"schema_version\", \"structure_hash\", \"generated_at\", \"file_count\", \"openai_json_hash\", \"anthropic_json_hash\", \"rep_make\", \"fin_num\", \"art_meta\", \"mr_explicit\", \"mr_env\", \"mr_miss\", \"mr_n\", \"fn_int\", \"fn_float\", \"fn_nil\", \"fn_inf\", \"fn_str\", \"fn_n\", \"am_keep\", \"am_runid\", \"am_snap\", \"am_n\"),",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
@@ -6254,14 +6286,6 @@
       "path": "scripts/goal20-paired-paths.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "# Recorded cadr/pi median ratios plus headroom.  Observed spread over repeated",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "# The pi revision is owned by the BASELINE anchor (goal 18 L2.1); deriving it",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
@@ -6295,22 +6319,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "# pi's help render lands under a microsecond and its run-to-run swing alone",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "# state so further drift fails; they are NOT a claim that cadr matches pi on",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "# swings on pi's own jitter; the MICROSECOND_FLOOR_US term below, not the ratio,",
       "occurrences": 1,
       "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
     },
