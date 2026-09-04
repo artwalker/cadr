@@ -709,6 +709,9 @@ const REPETITIONS = {
 	"cli_selectors.trsvx_ok": 50,
 	"cli_selectors.trmkx_ok": 50,
 	"cli_selectors.trrsx_ok": 50,
+	"cli_selectors.trsvxx_ok": 50,
+	"cli_selectors.trmkxx_ok": 50,
+	"cli_selectors.trrsxx_ok": 50,
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
 	"cli_selectors.oa_akhe": 50,
@@ -37108,6 +37111,24 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsRenderTrustSelector();
 			},
 		),
+		trsvxx_ok: await collect(
+			"cli_selectors.trsvxx_ok",
+			() => {
+				return () => runCliSelectorsTrustOptionSavedP();
+			},
+		),
+		trmkxx_ok: await collect(
+			"cli_selectors.trmkxx_ok",
+			() => {
+				return () => runCliSelectorsMakeTrustSelectorState();
+			},
+		),
+		trrsxx_ok: await collect(
+			"cli_selectors.trrsxx_ok",
+			() => {
+				return () => runCliSelectorsRenderTrustSelector();
+			},
+		),
 		make_login_method_selector_state: await collect(
 			"cli_selectors.make_login_method_selector_state",
 			() => {
@@ -43297,6 +43318,12 @@ const result = {
 			"cli_selectors.trmkx_ok":
 				"packages/coding-agent/... make-trust-selector-state leftover remount",
 			"cli_selectors.trrsx_ok":
+				"packages/coding-agent/... render-trust-selector leftover remount",
+			"cli_selectors.trsvxx_ok":
+				"packages/coding-agent/... trust-option-saved-p leftover remount",
+			"cli_selectors.trmkxx_ok":
+				"packages/coding-agent/... make-trust-selector-state leftover remount",
+			"cli_selectors.trrsxx_ok":
 				"packages/coding-agent/... render-trust-selector leftover remount",
 			"cli_selectors.make_login_method_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
