@@ -1103,30 +1103,108 @@
                       (skip-value)))
                  (t
                   (skip-value)))))
+           (try-compact-message ()
+             ;; Shared {"role":" gate then fixture envelopes. Content-compact
+             ;; sibling. Miss rewinds. Not stack-local typed fill.
+             (unless (eql (peek-code) 123)
+               (return-from try-compact-message nil))
+             (let ((saved position))
+               (flet ((rewind ()
+                        (setf position saved)
+                        nil)
+                      (take-prefix (literal)
+                        (let ((n (length literal)))
+                          (declare (type fixnum n))
+                          (when (and (<= (the fixnum (+ position n)) length)
+                                     (key= position
+                                           (the fixnum (+ position n))
+                                           literal))
+                            (incf position n)
+                            t))))
+                 (unless (take-prefix "{\"role\":\"")
+                   (return-from try-compact-message (rewind)))
+                 (cond
+                   ((take-prefix "user\",\"content\":[{\"type\":\"text\",\"text\":")
+                    (let ((text (parse-string-value)))
+                      (if (not (take-prefix "}],\"timestamp\":"))
+                          (rewind)
+                          (let ((timestamp (parse-timestamp-value)))
+                            (if (eql (peek-code) 125)
+                                (progn
+                                  (take-code)
+                                  (make-session-json-message
+                                   :role "user"
+                                   :content
+                                   (list
+                                    (cadr-ai:make-text-content
+                                     :text (or text "")))
+                                   :timestamp timestamp))
+                                (rewind))))))
+                   ((take-prefix
+                     "toolResult\",\"toolCallId\":")
+                    (let ((tool-call-id (parse-string-value)))
+                      (if (not (take-prefix ",\"toolName\":"))
+                          (rewind)
+                          (let ((tool-name (parse-string-value)))
+                            (if (not
+                                 (take-prefix
+                                  ",\"content\":[{\"type\":\"text\",\"text\":"))
+                                (rewind)
+                                (let ((text (parse-string-value)))
+                                  (if (not (take-prefix "}],\"isError\":"))
+                                      (rewind)
+                                      (let ((is-error (parse-generic)))
+                                        (if (not (take-prefix
+                                                  ",\"timestamp\":"))
+                                            (rewind)
+                                            (let ((timestamp
+                                                    (parse-timestamp-value)))
+                                              (if (eql (peek-code) 125)
+                                                  (progn
+                                                    (take-code)
+                                                    (make-session-json-message
+                                                     :role "toolResult"
+                                                     :content
+                                                     (list
+                                                      (cadr-ai:make-text-content
+                                                       :text (or text "")))
+                                                     :timestamp timestamp
+                                                     :extra
+                                                     (list
+                                                      :tool-call-id
+                                                      (or tool-call-id "")
+                                                      :tool-name
+                                                      (or tool-name "")
+                                                      :is-error
+                                                      (eq t is-error))))
+                                                  (rewind))))))))))))
+                   (t
+                    (rewind))))))
            (parse-message ()
-             (let ((bag (make-session-json-message)))
-               (expect-code 123)
-               (skip-space)
-               (unless (eql (peek-code) 125)
-                 (loop
-                   (multiple-value-bind (key-start key-end)
-                       (scan-key)
-                     (skip-space)
-                     (expect-code 58)
-                     (skip-space)
-                     (if key-start
-                         (put-message-field bag key-start key-end)
-                         (skip-value)))
+             (or (try-compact-message)
+                 (let ((bag (make-session-json-message)))
+                   (expect-code 123)
                    (skip-space)
-                   (let ((code (peek-code)))
-                     (cond
-                       ((eql code 44)
-                        (take-code)
-                        (skip-space))
-                       ((eql code 125) (return))
-                       (t (fail "Expected comma or }"))))))
-               (expect-code 125)
-               bag))
+                   (unless (eql (peek-code) 125)
+                     (loop
+                       (multiple-value-bind (key-start key-end)
+                           (scan-key)
+                         (skip-space)
+                         (expect-code 58)
+                         (skip-space)
+                         (if key-start
+                             (put-message-field bag key-start key-end)
+                             (skip-value)))
+                       (skip-space)
+                       (let ((code (peek-code)))
+                         (cond
+                           ((eql code 44)
+                            (take-code)
+                            (skip-space))
+                           ((eql code 125) (return))
+                           (t (fail "Expected comma or }"))))))
+                   (expect-code 125)
+                   bag)))
            (put-entry-field (key-start key-end)
              ;; Unique 4-byte little-endian prefix (gperf-style).
              ;; Not length-case. fromId/fromHook share "from".

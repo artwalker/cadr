@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: message-envelope compact-prefix for fixture-stable
+  user/toolResult JSONL (shared `{"role":"` gate). Friend-MachineD
+  n=5 load **1546→1192 µs**. Fingerprint EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after message-envelope
+  compact (+78 lines). needs-pair=0 uncovered=0.
+
 - Goal 20: refresh unpaired-path denominator after ASDF floor memoize (+15 lines).
 
 - Goal 20 floor: memoize `cadr-cli-source-directory` and move
