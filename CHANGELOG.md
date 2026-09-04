@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: bake autocomplete command items on the
+  provider once; slash filter reuses them. Friend-MachineD
+  n=50 `suggest_apply` **46.9→31.0 µs** (dirent tip baseline).
+  Observed EQUAL. cadr-tui FiveAM 3658 pass. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after command-item
+  bake. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: export-html stream-splices pre-split template
   parts instead of nested `replace-all` copies. Friend-MachineD
   n=5 `to_html` microbench **24770→16335 µs**. HTML EQUAL

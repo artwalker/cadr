@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 129,569 lines**
+Denominator: **297 files / 129,583 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 104,548 | 80.7% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 104,562 | 80.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14058,7 +14058,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-protocol/schema.lisp` | 610 | `protocol_codec.roundtrip` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
-| `src/cadr-tui/autocomplete.lisp` | 633 | `tui_autocomplete.suggest_apply` |
+| `src/cadr-tui/autocomplete.lisp` | 647 | `tui_autocomplete.suggest_apply` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/select-list.lisp` | 305 | `tui_select_settings_loaders.filter` |
