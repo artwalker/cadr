@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 floor: memoize `cadr-cli-source-directory` and move
+  `build-system-prompt` ASDF path defaults out of `&key` initforms.
+  Friend-MachineD n=5: `skill_prompt_load.build_prompt` 1170.57×→34.86×
+  (2196→52.9 µs); `ai_support.auth_guidance` 27.66×→1.16× (1922→57.6 µs);
+  `cli_bootstrap_sessions.default_changelog_path` 1182×→188×;
+  `cli_support.docs_directory` 33.35×→8.02×. G.17 missing.
+
 - Goal 20 P.13: tip inventory `needs-pair=0` / `uncovered=0` after remount mill; additional-pairs row booked number. Floor >1.0× invent still leftover. G.17 missing.
 
 - Live process: Cursor cloud agents are the standing crew (总控 / 实现 / 审 / 合入). Grok Bot is retired for live crew. See `docs/acceptance/team-dev-platform.md`.

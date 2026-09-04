@@ -22,17 +22,24 @@
        prompt-guidelines context-files
        skills cwd custom-prompt
        append-system-prompt
-       (readme-path
-         (merge-pathnames
-          "README.md"
-          (asdf:system-source-directory "cadr-cli")))
-       (docs-directory
-         (cadr-ai::cadr-docs-directory))
-       (examples-directory
-         (merge-pathnames
-          "examples/"
-          (asdf:system-source-directory "cadr-cli"))))
-  (let* ((selected
+       (readme-path nil readme-path-p)
+       (docs-directory nil docs-directory-p)
+       (examples-directory nil examples-directory-p))
+  ;; &key defaults re-run every call; resolve paths in the body from the memoized root.
+  (let* ((cli-root (cadr-ai::cadr-cli-source-directory))
+         (readme-path
+           (if readme-path-p
+               readme-path
+               (merge-pathnames "README.md" cli-root)))
+         (docs-directory
+           (if docs-directory-p
+               docs-directory
+               (cadr-ai::cadr-docs-directory)))
+         (examples-directory
+           (if examples-directory-p
+               examples-directory
+               (merge-pathnames "examples/" cli-root)))
+         (selected
            (if selected-tools-p
                selected-tools
                '("read" "bash" "edit" "write")))
