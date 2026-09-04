@@ -1037,6 +1037,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_bootstrap_sessions.pbkxx_ok` | 0.965 | 0.299 | 3.227× | 8.00× | measure-only leftover 1309; pbkxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.rtkxx_ok` | 1.442 | 0.549 | 2.628× | 8.00× | measure-only leftover 1310; rtkxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.dpkxx_ok` | 0.847 | 0.471 | 1.799× | 8.00× | measure-only leftover 1311; dpkxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.pbkxxx_ok` | 0.766 | 0.318 | 2.411× | 8.00× | measure-only leftover 1375; pbkxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.rtkxxx_ok` | 1.418 | 0.558 | 2.539× | 8.00× | measure-only leftover 1376; rtkxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.dpkxxx_ok` | 0.715 | 0.391 | 1.828× | 8.00× | measure-only leftover 1377; dpkxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.mv_ok` | 1.300 | 0.133 | 9.747× | 8.00× | measure-only leftover 1120; mv_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.hri_ok` | 161.015 | 10.052 | 16.019× | 8.00× | measure-only leftover 1121; hri_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.hev_ok` | 4.005 | 2.304 | 1.738× | 8.00× | measure-only leftover 1122; hev_ok leftover remount | invent pause；地板优化另刀 |
