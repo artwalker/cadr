@@ -72,11 +72,18 @@ short-commit)."
      distance
      short-commit)))
 
+(defvar *cadr-cli-source-directory* nil)
+
+(defun cadr-cli-source-directory ()
+  "Memoized ASDF source root for cadr-cli (hot paths call this repeatedly)."
+  (or *cadr-cli-source-directory*
+      (setf *cadr-cli-source-directory*
+            (asdf:system-source-directory "cadr-cli"))))
+
 (defun cadr-docs-directory ()
   ;; The product docs live in docs/ beside the ASDF source root; the
   ;; deliverable binary keeps the same relative layout.
-  (merge-pathnames "docs/"
-                   (asdf:system-source-directory "cadr-cli")))
+  (merge-pathnames "docs/" (cadr-cli-source-directory)))
 
 (defun provider-login-help-text ()
   ;; Baseline core/auth-guidance.ts getProviderLoginHelp.

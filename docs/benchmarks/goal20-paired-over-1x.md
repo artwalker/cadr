@@ -43,8 +43,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.strip_ansi` | 1.3 | 0.5 | 2.73× | 8.00× | measure-only pair `b0c27cd59`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `cli_interactive_controller.decode_entity` | 0.63 | 0.42 | 1.49× | 8.00× | measure-only pair `1cc4b83d5`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `provider_registry_defs.lookup` | 1.03 | 0.23 | 4.44× | 8.00× | measure-only pair `cec8aa391`; catalog count gap booked (40/39); sub-µs variance | invent pause；地板优化另刀 |
-| `skill_prompt_load.build_prompt` | 2196 | 1.88 | 1170.57× | 3000.00× | measure-only pair `221af13c1`; **keyword initforms still hit ASDF** | invent pause；地板/去 ASDF 另刀 |
-| `ai_support.auth_guidance` | 1922 | 69.5 | 27.66× | 50.00× | measure-only pair `b04d7b46e`; **ASDF docs-dir** (prefix-only exact) | invent pause；地板/去 ASDF 另刀 |
+| `skill_prompt_load.build_prompt` | 52.91 | 1.52 | 34.86× | 3000.00× | Friend-MachineD n=5 after ASDF source-dir memoize + `&key` default hoist (`g20-asdf-floor-cache`); was 2196 µs / 1170.57× | floor knife landed; still >1.0× |
+| `ai_support.auth_guidance` | 57.64 | 49.65 | 1.16× | 50.00× | Friend-MachineD n=5 after docs-dir memoize; was 1922 µs / 27.66× | floor knife landed |
 | `cli_bootstrap_sessions.coding_tools` | 11.1 | 4.6 | 2.40× | 8.00× | measure-only pair `e8da8ac48` | invent pause；地板优化另刀 |
 | `ai_runtime_faux.blocks` | 0.27 | 0.15 | 1.76× | 8.00× | measure-only pair `25826109b`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `cli_support.normalize_path` | 4.58 | 1.63 | 2.82× | 8.00× | measure-only pair `03559cdc7`; sibling of strip_ansi | invent pause；地板优化另刀 |
@@ -340,7 +340,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.no_model_selected` | 245.4 | 8.87 | 27.67× | 50.00× | measure-only pair 461; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_support.no_api_key` | 480.3 | 17.48 | 27.48× | 50.00× | measure-only pair 462; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_support.provider_login_help` | 477.0 | 10.48 | 45.52× | 50.00× | measure-only pair 907; leftover CLI wrapper; same ASDF docs-dir as 460–462 | invent pause；地板/去 ASDF 另刀 |
-| `cli_support.docs_directory` | 227.9 | 6.83 | 33.35× | 50.00× | measure-only pair 908; leftover CLI docs path; same ASDF docs-dir as 460–462 | invent pause；地板/去 ASDF 另刀 |
+| `cli_support.docs_directory` | 42.51 | 5.30 | 8.02× | 50.00× | Friend-MachineD n=5 after docs-dir memoize; was 227.9 µs / 33.35× | floor knife landed; still >1.0× |
 | `cli_print_rpc.rpc_prompt` | 1.323 | 0.584 | 2.266× | 8.00× | measure-only leftover 464; `rpc-prompt-message` vs RPC prompt message+images (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.bash_result` | 2.165 | 0.743 | 2.913× | 8.00× | measure-only leftover 465; `rpc-bash-result-json` vs RPC bash result payload (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.dialog_request` | 1.570 | 0.648 | 2.423× | 8.00× | leftover collect restore pair 466; `rpc-dialog-request-object` vs createDialogPromise request | invent pause；地板优化另刀 |
@@ -755,7 +755,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.catalog_notify` | 9.316 | 0.654 | 14.250× | 60.00× | measure-only leftover 851; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.progress_notify` | 11.417 | 0.577 | 19.792× | 60.00× | measure-only leftover 852; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.session_info_style` | 2.643 | 0.367 | 7.201× | 8.00× | measure-only leftover 854; `session-info-style` vs leftover heading/label/other style; remeasure Friend-MachineD | invent pause；地板优化另刀 |
-| `cli_bootstrap_sessions.default_changelog_path` | 218.058 | 0.184 | 1182.272× | 1200.00× | measure-only leftover 855; `default-changelog-path` vs leftover CHANGELOG env/leaf; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.default_changelog_path` | 44.09 | 0.23 | 188.14× | 1200.00× | Friend-MachineD n=5 after CHANGELOG path uses memoized root; was 218 µs / 1182× | floor knife landed; still >1.0× |
 | `cli_selectors.armin_copy_cell` | 25.759 | 4.869 | 5.290× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
 | `cli_selectors.armin_copy_row` | 23.953 | 5.08 | 4.716× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |
 | `cli_selectors.armin_rotate_row` | 21.362 | 6.23 | 3.429× | 8.00× | measure-only leftover 862-864; remeasure Friend-MachineD | typewriter/scanline/rotate grid helpers |

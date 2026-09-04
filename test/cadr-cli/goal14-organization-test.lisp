@@ -1259,7 +1259,8 @@
               "(defun cadr-product-display-name"
               "(defun cadr-canonical-repository-url"
               "(defun cadr-default-share-viewer-url"
-              "(defun cadr-release-identity")
+              "(defun cadr-release-identity"
+              "(defun cadr-cli-source-directory")
              ("support/retry.lisp"
               "(defun retryable-assistant-error-p"
               "(defun retry-assistant-call")
@@ -1308,7 +1309,9 @@
     ;; +1 Goal 20 P0: terminal-quota-error-text-p (support/retry.lisp),
     ;; HTTP 429 GoUsageLimit / pi isTerminalRateLimitError set.
     ;; +1 Goal 21 v0.84.3: faux-tool-json-object (runtime/faux-provider.lisp).
-    (is (= 276 definition-count)
+    ;; +2 Goal 20 floor: *cadr-cli-source-directory* + cadr-cli-source-directory
+    ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
+    (is (= 278 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

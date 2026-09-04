@@ -1497,8 +1497,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
           (plusp (length value))
           (pathname value)))
    (handler-case
-       (asdf:system-relative-pathname
-        "cadr-cli" "CHANGELOG.md")
+       (merge-pathnames
+        "CHANGELOG.md"
+        (cadr-ai::cadr-cli-source-directory))
      (condition () nil))
    #p"CHANGELOG.md"))
 
