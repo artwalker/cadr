@@ -902,6 +902,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `powershell_tool.utfxx_ok` | 0.702 | 0.113 | 6.209× | 8.00× | measure-only leftover 1303; utfxx_ok leftover remount | invent pause；地板优化另刀 |
 | `powershell_tool.pfxxx_ok` | 1.042 | 0.227 | 4.585× | 8.00× | measure-only leftover 1304; pfxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `powershell_tool.mtbxx_ok` | 3.145 | 1.476 | 2.131× | 8.00× | measure-only leftover 1305; mtbxx_ok leftover remount | invent pause；地板优化另刀 |
+| `powershell_tool.utfxxx_ok` | 0.665 | 0.114 | 5.837× | 8.00× | measure-only leftover 1369; utfxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `powershell_tool.pfxxxx_ok` | 0.843 | 0.210 | 4.008× | 8.00× | measure-only leftover 1370; pfxxxx_ok leftover remount | invent pause；地板优化另刀 |
+| `powershell_tool.mtbxxx_ok` | 2.845 | 1.424 | 1.998× | 8.00× | measure-only leftover 1371; mtbxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.cd_sec` | 1.152 | 0.204 | 5.648× | 8.00× | measure-only leftover 1018; countdown-seconds leftover | invent pause；地板优化另刀 |
 | `cli_selectors.cd_tick` | 1.066 | 0.165 | 6.479× | 8.00× | measure-only leftover 1019; countdown-tick leftover | invent pause；地板优化另刀 |
 | `cli_selectors.cd_rnd` | 1.539 | 0.335 | 4.599× | 8.00× | measure-only leftover 1020; countdown-render leftover | invent pause；地板优化另刀 |
