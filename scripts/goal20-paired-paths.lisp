@@ -971,6 +971,12 @@
 ;;;;      (does not remount make_login_method_selector_state)
 ;;;; 1362. cli_selectors aisxxx_ok vs leftover replica of make-api-key-input-state
 ;;;;      (does not remount make_api_key_input_state)
+;;;; 1357. cli_selectors lmhxxx_ok vs leftover replica of login-method-selector-handle-event
+;;;;      (does not remount login_method_selector_handle_event)
+;;;; 1358. cli_selectors luixxx_ok vs leftover replica of login-method-selector-ui-state
+;;;;      (does not remount login_method_selector_ui_state)
+;;;; 1359. cli_selectors akuxxx_ok vs leftover replica of api-key-input-ui-state
+;;;;      (does not remount api_key_input_ui_state)
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -2142,6 +2148,9 @@
     ("cli_selectors.lmhxx_ok" . 50)
     ("cli_selectors.luixx_ok" . 50)
     ("cli_selectors.akuxx_ok" . 50)
+    ("cli_selectors.lmhxxx_ok" . 50)
+    ("cli_selectors.luixxx_ok" . 50)
+    ("cli_selectors.akuxxx_ok" . 50)
     ("cli_selectors.ahe_ok" . 50)
     ("cli_selectors.mls_ok" . 50)
     ("cli_selectors.ais_ok" . 50)
@@ -37794,6 +37803,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-api-key-input-ui-state))))
+     "lmhxxx_ok"
+     (collect "cli_selectors.lmhxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event))))
+     "luixxx_ok"
+     (collect "cli_selectors.luixxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-ui-state))))
+     "akuxxx_ok"
+     (collect "cli_selectors.akuxxx_ok"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-ui-state))))
      "ahe_ok"
      (collect "cli_selectors.ahe_ok"
               (lambda ()
@@ -44315,6 +44339,12 @@
 "cli_selectors.luixx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-ui-state leftover remount"
 "cli_selectors.akuxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-ui-state leftover remount"
+"cli_selectors.lmhxxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event leftover remount"
+"cli_selectors.luixxx_ok"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-ui-state leftover remount"
+"cli_selectors.akuxxx_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-ui-state leftover remount"
 "cli_selectors.ahe_ok"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event leftover remount"
