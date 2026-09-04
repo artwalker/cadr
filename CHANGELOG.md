@@ -7,6 +7,8 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: refresh unpaired-path denominator after ASDF floor memoize (+15 lines).
+
 - Goal 20 floor: memoize `cadr-cli-source-directory` and move
   `build-system-prompt` ASDF path defaults out of `&key` initforms.
   Friend-MachineD n=5: `skill_prompt_load.build_prompt` 1170.57×→34.86×
