@@ -12777,6 +12777,30 @@ Leftover sibling unused-slug remount. Does not remount `thinking_selector_set_qu
 
 Leftover sibling unused-slug remount. Does not remount `thinking_selector_keybindings`. Timed work is the remounted path. Observed `tskb_*` are exact. First n=5 freeze **15.428×** (3.278 / 0.212 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 1309 — `cli_bootstrap_sessions` (pbkxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pbkxx_ok` | `parse-user-bash-input` (`src/cadr-cli/repl.lisp`) | leftover replica of ! / !! bash extract |
+
+Leftover sibling unused-slug remount. Does not remount `parse_bash`. Timed work is the remounted path. Observed `pb_*` are exact. First n=5 freeze **3.227×** (0.965 / 0.299 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1310 — `cli_bootstrap_sessions` (rtkxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rtkxx_ok` | `response-text` (`src/cadr-cli/repl.lisp`) | leftover replica of textParts.join |
+
+Leftover sibling unused-slug remount. Does not remount `response_text`. Timed work is the remounted path. Observed `rt_*` are exact. First n=5 freeze **2.628×** (1.442 / 0.549 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 1311 — `cli_bootstrap_sessions` (dpkxx_ok)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dpkxx_ok` | `dispatch-user-input` (`src/cadr-cli/repl.lisp`) | leftover replica of submit classify |
+
+Leftover sibling unused-slug remount. Does not remount `dispatch_plain`. Timed work is the remounted path. Observed `dp_*` are exact. First n=5 freeze **1.799×** (0.847 / 0.471 µs) on host `Friend-MachineD`, ceiling 8.0. Over-1× booked. Scoped gate PASS. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
