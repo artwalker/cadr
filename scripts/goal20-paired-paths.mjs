@@ -832,6 +832,9 @@ const REPETITIONS = {
 	"cli_selectors.umevx_ok": 50,
 	"cli_selectors.umrwx_ok": 50,
 	"cli_selectors.umrsx_ok": 50,
+	"cli_selectors.umevxx_ok": 50,
+	"cli_selectors.umrwxx_ok": 50,
+	"cli_selectors.umrsxx_ok": 50,
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
@@ -37627,6 +37630,15 @@ async function measureCliSelectorsSessionSearch() {
 		umrsx_ok: await collect("cli_selectors.umrsx_ok", () => {
 			return () => runCliSelectorsRenderUserMessageSelector();
 		}),
+		umevxx_ok: await collect("cli_selectors.umevxx_ok", () => {
+			return () => runCliSelectorsUserMessageHandleEvent();
+		}),
+		umrwxx_ok: await collect("cli_selectors.umrwxx_ok", () => {
+			return () => runCliSelectorsUserMessageHandleRaw();
+		}),
+		umrsxx_ok: await collect("cli_selectors.umrsxx_ok", () => {
+			return () => runCliSelectorsRenderUserMessageSelector();
+		}),
 		make_models_selector_keybindings: await collect(
 			"cli_selectors.make_models_selector_keybindings",
 			() => {
@@ -43459,6 +43471,12 @@ const result = {
 			"cli_selectors.umrwx_ok":
 				"packages/coding-agent/... user-message-selector-handle-raw-input leftover remount",
 			"cli_selectors.umrsx_ok":
+				"packages/coding-agent/... render-user-message-selector leftover remount",
+			"cli_selectors.umevxx_ok":
+				"packages/coding-agent/... user-message-selector-handle-event leftover remount",
+			"cli_selectors.umrwxx_ok":
+				"packages/coding-agent/... user-message-selector-handle-raw-input leftover remount",
+			"cli_selectors.umrsxx_ok":
 				"packages/coding-agent/... render-user-message-selector leftover remount",
 			"cli_selectors.make_models_selector_keybindings":
 				"packages/coding-agent/src/core/keybindings.ts KEYBINDINGS app.models.* KeybindingsManager constructor",
