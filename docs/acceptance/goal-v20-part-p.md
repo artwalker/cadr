@@ -42,7 +42,7 @@ FFI.**
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | leftover | Walker `0084f0703` / Friend-MachineD load **~1763 µs** (~1.11×). Invent **paused** (user 2026-08-21). Do not redo: knife 1, A/D/E, bag, first-byte family, single-block shortcut, usage ASCII number (`56ef6f06a` 1763→1951), intern length-gate, fill-kernel, WRITE-JSON-STRING unescaped, `:json-object` pairs, pre-size EQUAL hash. Resume only with algorithm/DS + allocation story. | leftover 文首; adjudications stop circling / essence over phenomena; 十B.17–18. Not G.17. |
+| P.1 JSON read | leftover | Friend-MachineD load **~1192 µs** after message-envelope compact-prefix keep (user+toolResult; 1546→1192). Prior walker `0084f0703` ~1763. Do not redo withdrawn classes (knife 1, A/D/E, bag, 三连, EQ dedupe, user-only prefix without shared role gate, …). Floor vs pi still leftover. G.17 missing. | leftover 文首 2026-09-04; Not G.17. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
 | P.4 help / argv / walk | number | remesure `b7f1f7de0`: argv 0.98× (3.0 / 3.1 µs). `cli-token-tail=` now `schar`; this-host 3.0→1.96 µs | this knife for argv. Not intern. |

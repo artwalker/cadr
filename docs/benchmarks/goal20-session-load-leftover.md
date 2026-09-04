@@ -1,4 +1,29 @@
-# Executor current (2026-08-21)
+# Executor current (2026-09-04)
+
+**Kept:** message-envelope compact-prefix (shared `{"role":"`
+gate; user + toolResult fixture envelopes). Content-compact
+sibling. Not stack-local typed fill. Not bag reuse.
+
+Friend-MachineD n=5 CLOCK_MONOTONIC load of pairing
+`session.jsonl`: **1546→1192 µs** median. Fingerprint EQUAL tip
+vs knife. cadr-agent FiveAM 1481 pass (2 fail = missing
+`cadr-cli` asd in isolated run, unrelated).
+
+G.17 stays `missing`. Goal 20 not complete. Floor still pi
+on pairing ratio; this knife is cadr µs only.
+
+**Prior walker:** proposal-3 era (`0084f0703`) / ~1763. Net keep
+from earlier: content compact-prefix + put-entry u32 +
+put-message first-byte (~1879→1763).
+
+**Withdrawn this turn:** user-only prefix without shared role
+gate (1546→2411). Do not redo miss-heavy single-envelope try.
+
+**Do not:** mark G.17 `met`; redo withdrawn classes.
+
+---
+
+# Executor note (2026-08-21)
 
 Walker `0084f0703` / load ~1763 (~1.11×).
 
