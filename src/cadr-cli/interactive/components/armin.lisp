@@ -37,15 +37,21 @@
 (defun armin-grid-height ()
   (ceiling +armin-height+ 2))
 
-(defun make-armin-grid (&optional final-p)
-  (let* ((height (armin-grid-height))
+(defparameter +armin-final-grid+
+  (let* ((height (ceiling +armin-height+ 2))
          (grid (make-array (list height +armin-width+)
                            :initial-element #\Space)))
-    (when final-p
-      (dotimes (row height)
-        (dotimes (x +armin-width+)
-          (setf (aref grid row x) (armin-cell x row)))))
-    grid))
+    (dotimes (row height)
+      (dotimes (x +armin-width+)
+        (setf (aref grid row x) (armin-cell x row))))
+    grid)
+  "Baked half-block grid for make-armin-grid final-p.")
+
+(defun make-armin-grid (&optional final-p)
+  (if final-p
+      (copy-armin-grid +armin-final-grid+)
+      (make-array (list (armin-grid-height) +armin-width+)
+                  :initial-element #\Space)))
 
 (defun copy-armin-grid (grid)
   (let ((copy (make-array (array-dimensions grid))))

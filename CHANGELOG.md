@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `make-armin-grid` copies a load-time baked
+  final half-block grid (no 558 bit tests per call).
+  Friend-MachineD **30.6→6.6 µs** (~0.22× tip). Observed
+  EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after armin-grid
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `make-keybindings-manager` shares the
   default definitions constant (no `copy-tree`) and
   `keybinding-keys` / `keybinding-conflicts` return stored
