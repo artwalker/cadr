@@ -157,6 +157,32 @@
              (write-char character stream))))
     (write-char #\$ stream)))
 
+(defvar *config-glob-scanner-cache*
+  (make-hash-table :test #'equal)
+  "Normalized pattern -> cl-ppcre scanner. Package enable
+filters reuse the same pattern across many paths; rebuilding
+the regex per path was the 7× leftover vs picomatch.")
+
+(defun cached-config-glob-scanner (normalized)
+  (or (gethash normalized *config-glob-scanner-cache*)
+      (setf (gethash normalized *config-glob-scanner-cache*)
+            (cl-ppcre:create-scanner
+             (config-glob-regex normalized)))))
+
+(defun config-star-extension-suffix (normalized)
+  (let ((length (length normalized)))
+    (when (and (>= length 2)
+               (char= (char normalized 0) #\*)
+               (char= (char normalized 1) #\.)
+               (not (find #\/ normalized))
+               (not (find #\? normalized))
+               (= 1 (count #\* normalized)))
+      (subseq normalized 1))))
+
+(defun config-literal-pattern-p (normalized)
+  (not (or (find #\* normalized)
+           (find #\? normalized))))
+
 (defun config-pattern-candidates (path base-directory)
   (let* ((absolute
            (config-normalize-pattern-path
@@ -185,18 +211,35 @@
 
 (defun config-pattern-matches-p
     (path pattern base-directory &key exact-p)
-  (let ((normalized
-          (config-normalize-pattern-path pattern)))
-    (some
-     (lambda (candidate)
-       (if exact-p
-           (string= normalized candidate)
-           (not
-            (null
-             (cl-ppcre:scan
-              (config-glob-regex normalized)
-              candidate)))))
-     (config-pattern-candidates path base-directory))))
+  (let* ((normalized
+           (config-normalize-pattern-path pattern))
+         (candidates
+           (config-pattern-candidates path base-directory)))
+    (cond
+      ((or exact-p
+           (config-literal-pattern-p normalized))
+       (find normalized candidates :test #'string=))
+      (t
+       (let ((suffix
+               (config-star-extension-suffix normalized)))
+         (if suffix
+             (some
+              (lambda (candidate)
+                (and (not (find #\/ candidate))
+                     (let ((n (length candidate))
+                           (m (length suffix)))
+                       (and (>= n m)
+                            (string-equal
+                             candidate suffix
+                             :start1 (- n m))))))
+              candidates)
+             (let ((scanner
+                     (cached-config-glob-scanner
+                      normalized)))
+               (some
+                (lambda (candidate)
+                  (cl-ppcre:scan scanner candidate))
+                candidates))))))))
 
 (defun config-enabled-by-patterns-p
     (path patterns base-directory &key (default t))

@@ -558,7 +558,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.resource_group_label` | 17.081 | 0.540 | 31.609× | 50.00× | measure-only leftover 731; `config-resource-group-label` vs resource group label; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `package_manager.settings_values` | 5.209 | 0.808 | 6.444× | 8.00× | measure-only leftover 732; `config-selector-settings-values` vs settings values | invent pause；地板优化另刀 |
 | `package_manager.pattern_candidates` | 15.875 | 2.686 | 5.911× | 8.00× | measure-only leftover 733; `config-pattern-candidates` vs pattern candidates | invent pause；地板优化另刀 |
-| `package_manager.pattern_matches` | 32.598 | 4.556 | 7.155× | 8.00× | measure-only leftover 734; `config-pattern-matches-p` vs pattern matches | invent pause；地板优化另刀 |
+| `package_manager.pattern_matches` | 5.42 (cadr µs invent; prior ledger 32.598) | 4.556 | ~1.19× invent micro vs booked pi | 8.00× | invent: scanner cache + literal/`*.ext` fast path; remount later | invent kept 2026-09-05 |
 | `package_manager.enabled_by_patterns` | 31.989 | 6.637 | 4.820× | 8.00× | measure-only leftover 735; `config-enabled-by-patterns-p` vs enabled by patterns | invent pause；地板优化另刀 |
 | `package_manager.delta_resource_state` | 17.140 | 4.344 | 3.946× | 8.00× | measure-only leftover 736; `config-package-delta-resource-state` vs package delta resource state | invent pause；地板优化另刀 |
 | `package_manager.project_top_level_state` | 31.215 | 5.227 | 5.971× | 8.00× | measure-only leftover 737; `config-selector-project-top-level-state` vs project top-level state | invent pause；地板优化另刀 |

@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `config-pattern-matches-p` caches glob
+  scanners, literal/`*.ext` (no-slash candidate) fast paths.
+  Friend-MachineD microbench **14.1→5.4 µs** (~0.38× tip;
+  ~1.19× vs booked pi 4.56 µs). Observed EQUAL (truthy).
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  package pattern invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `find-pattern-match-p` caches glob scanners
   and fast-paths basename `*.ext` via suffix compare (no
   per-call `create-scanner`). Friend-MachineD harness-shaped
