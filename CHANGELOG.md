@@ -15,6 +15,10 @@ tag/Release step.
   ~0.87×. Observed EQUAL. FiveAM session-search 5/5.
   G.17 missing.
 
+- Goal 20: refresh unpaired-path denominator after
+  filter-and-sort invent (+5 lines). needs-pair=0
+  uncovered=0.
+
 - Goal 20 invent: `session-manager-list` streams
   `session-list-info` (one open + schema-walker lines) instead
   of full `load-session` graphs. Friend-MachineD n=9
