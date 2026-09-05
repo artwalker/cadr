@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `decode-base64` skips whitespace strip when
+  clean, pre-sizes the octet vector (no per-quad subseq/
+  collect), and `image-dimensions` bounds decode to header
+  bytes. Friend-MachineD microbench **6.1→1.0 µs** (~0.17×
+  tip; ~0.73× vs booked pi 1.4 µs). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  image-dimensions invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `config-pattern-matches-p` caches glob
   scanners, literal/`*.ext` (no-slash candidate) fast paths.
   Friend-MachineD microbench **14.1→5.4 µs** (~0.38× tip;

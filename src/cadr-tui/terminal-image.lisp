@@ -512,52 +512,89 @@
     (and (< code 256)
          (aref +base64-decode-table+ code))))
 
-(defun decode-base64 (text)
-  (let ((clean
-          (remove-if
-           (lambda (character)
-             (find character
-                   '(#\Space #\Tab #\Newline #\Return)))
-           text))
-        (bytes
-          (make-array 0
-                      :element-type '(unsigned-byte 8)
-                      :adjustable t
-                      :fill-pointer 0)))
-    (handler-case
-        (loop for position from 0 below (length clean) by 4
-              when (> (+ position 4) (length clean))
-                do (error "invalid base64 length")
-              do
-              (let* ((characters
-                       (subseq clean position
-                               (+ position 4)))
-                     (padding
-                       (count #\= characters))
-                     (values
-                       (loop for character across characters
-                             collect
-                             (if (char= character #\=)
-                                 0
-                                 (or (base64-value character)
-                                     (error
-                                      "invalid base64 character")))))
-                     (packed
-                       (logior
-                        (ash (first values) 18)
-                        (ash (second values) 12)
-                        (ash (third values) 6)
-                        (fourth values))))
-                (vector-push-extend
-                 (ldb (byte 8 16) packed) bytes)
-                (when (< padding 2)
-                  (vector-push-extend
-                   (ldb (byte 8 8) packed) bytes))
-                (when (zerop padding)
-                  (vector-push-extend
-                   (ldb (byte 8 0) packed) bytes))))
-      (condition () (return-from decode-base64 nil)))
-    bytes))
+(defun decode-base64 (text &optional max-bytes)
+  "Decode TEXT into an octet vector. When MAX-BYTES is set, stop once
+that many output bytes are produced (PNG/GIF/WEBP headers only need
+a few dozen). Returns NIL on malformed input."
+  (let ((length (length text)))
+    (labels
+        ((emit (bytes out packed padding limit)
+           (setf (aref bytes out) (ldb (byte 8 16) packed))
+           (incf out)
+           (when (and (< padding 2) (< out limit))
+             (setf (aref bytes out) (ldb (byte 8 8) packed))
+             (incf out))
+           (when (and (zerop padding) (< out limit))
+             (setf (aref bytes out) (ldb (byte 8 0) packed))
+             (incf out))
+           out)
+         (decode-clean (clean)
+           (let* ((clean-length (length clean))
+                  (limit
+                    (or max-bytes
+                        (* (floor clean-length 4) 3)))
+                  (bytes
+                    (make-array
+                     (min limit (* (floor clean-length 4) 3))
+                     :element-type '(unsigned-byte 8)))
+                  (out 0))
+             (when (or (zerop clean-length)
+                       (not (zerop (mod clean-length 4))))
+               (return-from decode-base64 nil))
+             (handler-case
+                 (loop for position from 0 below clean-length by 4
+                       while (< out limit)
+                       do
+                       (let* ((c0 (char clean position))
+                              (c1 (char clean (1+ position)))
+                              (c2 (char clean (+ position 2)))
+                              (c3 (char clean (+ position 3)))
+                              (padding
+                                (+ (if (char= c2 #\=) 1 0)
+                                   (if (char= c3 #\=) 1 0)))
+                              (v0
+                                (if (char= c0 #\=)
+                                    0
+                                    (or (base64-value c0)
+                                        (error "bad"))))
+                              (v1
+                                (if (char= c1 #\=)
+                                    0
+                                    (or (base64-value c1)
+                                        (error "bad"))))
+                              (v2
+                                (if (char= c2 #\=)
+                                    0
+                                    (or (base64-value c2)
+                                        (error "bad"))))
+                              (v3
+                                (if (char= c3 #\=)
+                                    0
+                                    (or (base64-value c3)
+                                        (error "bad"))))
+                              (packed
+                                (logior (ash v0 18)
+                                        (ash v1 12)
+                                        (ash v2 6)
+                                        v3)))
+                         (setf out
+                               (emit bytes out packed padding
+                                     limit))))
+               (condition ()
+                 (return-from decode-base64 nil)))
+             (if (= out (length bytes))
+                 bytes
+                 (subseq bytes 0 out)))))
+      (if (loop for i below length
+                for c = (char text i)
+                never (find c '(#\Space #\Tab #\Newline #\Return)))
+          (decode-clean text)
+          (decode-clean
+           (remove-if
+            (lambda (character)
+              (find character
+                    '(#\Space #\Tab #\Newline #\Return)))
+            text))))))
 
 (defun bytes-u16-be (bytes position)
   (logior (ash (aref bytes position) 8)
@@ -588,7 +625,17 @@
                        (codepoint character)))))
 
 (defun image-dimensions (base64-data mime-type)
-  (let ((bytes (decode-base64 base64-data)))
+  (let* ((header-bytes
+           (cond
+             ((string= mime-type "image/png") 24)
+             ((string= mime-type "image/gif") 10)
+             ((string= mime-type "image/webp") 30)
+             ((string= mime-type "image/jpeg") 65536)
+             (t nil)))
+         (bytes
+           (if header-bytes
+               (decode-base64 base64-data header-bytes)
+               (decode-base64 base64-data))))
     (unless bytes
       (return-from image-dimensions
         (values nil nil)))

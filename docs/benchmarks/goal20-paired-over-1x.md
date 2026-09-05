@@ -19,7 +19,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ai_crypto_model_data.manifest` | 77.3 | 8.6 | 8.97× | 20.00× | measure-only pair `287109b9e`; SHA-256 catalog (not dir walk) | invent pause；地板优化另刀 |
 | `ai_crypto.hmac` | 133.9 | 7.1 | 18.81× | 30.00× | measure-only pair `e4eb5e647`; pure-Lisp SHA-256 vs OpenSSL | invent pause；地板优化另刀 |
 | `cli_models_rest.pattern_match` | 31.9 | 19.4 | 1.65× | 3.00× | measure-only pair `53b522b00` | invent pause；地板优化另刀 |
-| `image_runtime.dimensions` | 7.8 | 1.4 | 5.44× | 8.00× | measure-only pair `bc6e6a527`; header parse only | invent pause；地板优化另刀 |
+| `image_runtime.dimensions` | 1.02 (cadr µs invent; prior ledger 7.8) | 1.4 | ~0.73× invent micro vs booked pi | 8.00× | invent: bounded header decode-base64 + no per-quad alloc; remount later | invent kept 2026-09-05 |
 | `image_runtime.mime_type` | 6.63 | 4.09 | 1.62× | 8.00× | measure-only pair `db66f79e6`; sibling of dimensions; JPEG 0xf7/APNG/BMP gaps booked | invent pause；地板优化另刀 |
 | `image_runtime.lookup` | 1.51 | 0.20 | 7.38× | 8.00× | measure-only pair `6d48a539f`; catalog presence; count not exact; sub-µs variance | invent pause；地板优化另刀 |
 | `image_runtime.dimension_note` | 3.67 | 2.12 | 1.73× | 8.00× | measure-only pair `94d472e68`; format note only (no decode/resize) | invent pause；地板优化另刀 |
