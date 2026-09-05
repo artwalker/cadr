@@ -384,6 +384,39 @@
          (cadr-ai:assistant-message-diagnostic-details
           loaded-diagnostic)))))
 
+(test session-round-trips-assistant-provider-thinking-level
+  (let* ((message
+           (cadr-ai:make-assistant-message
+            :api :anthropic-messages
+            :provider :anthropic
+            :model "claude-fable-5-1"
+            :content
+            (list (cadr-ai:make-text-content :text "ok"))
+            :stop-reason :stop
+            :provider-thinking-level "low"
+            :timestamp 789))
+         (json (cadr-agent::message-to-json message))
+         (loaded (cadr-agent::message-from-json json))
+         (buffer (cadr-agent::make-session-octet-buffer)))
+    (is (string= "low"
+                 (cadr-ai::json-get json "providerThinkingLevel")))
+    (is (string=
+         "low"
+         (cadr-ai:assistant-message-provider-thinking-level
+          loaded)))
+    (cadr-agent::write-session-message message buffer)
+    (let* ((encoded
+             (sb-ext:octets-to-string
+              buffer :external-format :utf-8))
+           (from-octets
+             (cadr-agent::message-from-json
+              (cadr-ai::parse-json encoded))))
+      (is (search "\"providerThinkingLevel\":\"low\"" encoded))
+      (is (string=
+           "low"
+           (cadr-ai:assistant-message-provider-thinking-level
+            from-octets))))))
+
 (test make-session-entry-id-seeds-rng-once-and-stays-unique
   (let* ((root (asdf:system-source-directory "cadr-agent"))
          (source

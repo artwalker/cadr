@@ -337,6 +337,12 @@
            'vector
            #'assistant-diagnostic-to-json
            (cadr-ai:assistant-message-diagnostics message))))
+       (when (cadr-ai:assistant-message-provider-thinking-level
+              message)
+         (cadr-ai::json-put
+          object "providerThinkingLevel"
+          (cadr-ai:assistant-message-provider-thinking-level
+           message)))
        object))
     ((typep message 'bash-execution-message)
      (let ((object
@@ -559,6 +565,8 @@
              'list
              #'assistant-diagnostic-from-json
              (or (getf extra :diagnostics) #()))
+            :provider-thinking-level
+            (getf extra :provider-thinking-level)
             :timestamp
             (session-json-message-timestamp object)))
           ((member type '("toolResult" "tool_result")
@@ -637,6 +645,9 @@
          (or
           (cadr-ai::json-get object "diagnostics")
           #()))
+        :provider-thinking-level
+        (json-get-either
+         object "providerThinkingLevel" "provider_thinking_level")
         :timestamp (cadr-ai::json-get object "timestamp")))
       ((member type '("toolResult" "tool_result")
                :test #'string=)
@@ -981,7 +992,10 @@
      (let ((diagnostics (cadr-ai:assistant-message-diagnostics message))
            (error-message (cadr-ai:assistant-message-error-message message))
            (raw-stop (cadr-ai:assistant-message-raw-stop-reason message))
-           (response-id (cadr-ai:assistant-message-response-id message)))
+           (response-id (cadr-ai:assistant-message-response-id message))
+           (provider-thinking-level
+             (cadr-ai:assistant-message-provider-thinking-level
+              message)))
        (emit-json-key buffer t "api")
        (emit-json-value
         buffer
@@ -1003,6 +1017,9 @@
        (emit-json-value
         buffer
         (symbol-json-name (cadr-ai:assistant-message-provider message)))
+       (when provider-thinking-level
+         (emit-json-key buffer nil "providerThinkingLevel")
+         (emit-json-value buffer provider-thinking-level))
        (when raw-stop
          (emit-json-key buffer nil "rawStopReason")
          (emit-json-value buffer raw-stop))

@@ -1030,10 +1030,19 @@
                   (if (and (= n 3) (key= key-start key-end "api"))
                       (keep-extra bag :api (parse-string-value))
                       (skip-value)))
-                 (112 ; p: provider
-                  (if (and (= n 8) (key= key-start key-end "provider"))
-                      (keep-extra bag :provider (parse-string-value))
-                      (skip-value)))
+                 (112 ; p: provider / providerThinkingLevel
+                  (cond
+                    ((and (= n 8) (key= key-start key-end "provider"))
+                     (keep-extra bag :provider (parse-string-value)))
+                    ((or (and (= n 22)
+                              (key= key-start key-end
+                                    "providerThinkingLevel"))
+                         (and (= n 23)
+                              (key= key-start key-end
+                                    "provider_thinking_level")))
+                     (keep-extra bag :provider-thinking-level
+                                 (parse-string-value)))
+                    (t (skip-value))))
                  (109 ; m: model
                   (if (and (= n 5) (key= key-start key-end "model"))
                       (keep-extra bag :model (parse-string-value))
@@ -1539,9 +1548,14 @@
                 (when (or (eq field "api") (string= field "api"))
                   (keep-extra bag :api value)))
                (#\p
-                (when (or (eq field "provider")
-                          (string= field "provider"))
-                  (keep-extra bag :provider value)))
+                (cond
+                  ((or (eq field "provider")
+                       (string= field "provider"))
+                   (keep-extra bag :provider value))
+                  ((or (eq field "providerThinkingLevel")
+                       (string= field "providerThinkingLevel")
+                       (string= field "provider_thinking_level"))
+                   (keep-extra bag :provider-thinking-level value))))
                (#\m
                 (when (or (eq field "model") (string= field "model"))
                   (keep-extra bag :model value)))

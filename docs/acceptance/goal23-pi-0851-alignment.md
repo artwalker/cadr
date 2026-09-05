@@ -8,7 +8,7 @@
 > **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
 > 机械锚点与部分用户可见增量已落；全门禁与剩余 disposition 未完成。
 
-## 已落地上游增量（tip `974c80866`）
+## 已落地上游增量（tip `8dedb33bb`）
 
 | 项 | 状态 |
 |---|---|
@@ -19,7 +19,8 @@
 | Jump to latest overlay | done（FiveAM） |
 | Working indicator in default editor border | done（`974c80866`；FiveAM） |
 | `app.thinking.save` | already present |
-| mid-convo effort / inMemory entries / `CADR_TUI_DEBUG_REDRAW` | open |
+| Anthropic mid-convo thinking effort | done（`8dedb33bb` + session `providerThinkingLevel`；FiveAM） |
+| inMemory entries / `CADR_TUI_DEBUG_REDRAW` | open |
 | Experimental error / MouseRegion / tool renderers barrel | ledger-defer |
 | `verify.sh` / `test-cl.sh` | not yet green for G23 close |
 | Goal 20 invent unpause | blocked on G23 close |
@@ -47,7 +48,7 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
 
 | 上游能力 | cadr 动作 |
 |---|---|
-| Persistent Claude thinking effort | 移植或书面豁免 |
+| Persistent Claude thinking effort | done（`8dedb33bb`；session field follows） |
 | Fullscreen「Jump to latest」+ `tui.altScreen.bottom` | 交互 + keybinding |
 | Working indicator 嵌进 default editor border | done（`974c80866`） |
 | Restorable in-memory sessions (`SessionManager.inMemory`) | SDK / session 面 |
