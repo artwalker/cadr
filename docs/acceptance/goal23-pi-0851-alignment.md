@@ -8,7 +8,7 @@
 > **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
 > 机械锚点与部分用户可见增量已落；全门禁与剩余 disposition 未完成。
 
-## 已落地上游增量（tip `a232cf05e`）
+## 已落地上游增量（tip `eb9b9590a`）
 
 | 项 | 状态 |
 |---|---|
@@ -52,7 +52,7 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
 | Persistent Claude thinking effort | done（`8dedb33bb`；session field follows） |
 | Fullscreen「Jump to latest」+ `tui.altScreen.bottom` | 交互 + keybinding |
 | Working indicator 嵌进 default editor border | done（`974c80866`） |
-| Restorable in-memory sessions (`SessionManager.inMemory`) | SDK / session 面 |
+| Restorable in-memory sessions (`SessionManager.inMemory`) | done（`eb9b9590a`） |
 | Fullscreen search 缓存与可见高亮 | 行为对齐或回归 |
 | Alt 滚轮加速（0.85.1） | keybinding / TUI |
 | GPT-6 Astra（0.85.1） | provider / model 表 |
