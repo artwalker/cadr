@@ -467,7 +467,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.login_dialog_show_info` | 8.766 | 5.594 | 1.567× | 8.00× | measure-only leftover 623; `login-dialog-show-info` vs LoginDialogComponent.showInfo | invent pause；地板优化另刀 |
 | `cli_selectors.login_dialog_complete_input` | 5.722 | 3.482 | 1.643× | 8.00× | measure-only leftover 625; `login-dialog-complete-input` vs replaceInputWithSubmittedText | invent pause；地板优化另刀 |
 | `cli_selectors.login_dialog_handle_event` | 6.392 | 3.325 | 1.923× | 8.00× | measure-only leftover 626; `login-dialog-state-handle-event` vs handleInput | invent pause；地板优化另刀 |
-| `cli_selectors.render_login_dialog` | 135.552 | 4.147 | 32.688× | 50.00× | measure-only leftover 627; `render-login-dialog-state` vs LoginDialogComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `cli_selectors.render_login_dialog` | 12.0 (cadr µs invent; prior ledger 135.552) | 4.147 | pending remesure | 50.00× | invent: title/themed/url/hint chrome caches; remount later | invent kept 2026-09-05 |
 | `cli_selectors.user_message_handle_raw` | 85.983 | 5.433 | 15.827× | 30.00× | measure-only leftover 629; `user-message-selector-handle-raw-input` vs UserMessageList.handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_selectors.render_user_message_selector` | 84.4 (cadr µs invent; prior ledger 265.302) | 4.081 | pending remesure | 100.00× | invent: flatten-label scan + chrome caches; remount later | invent kept 2026-09-05 |
 | `cli_selectors.make_models_selector_keybindings` | 32.105 | 21.468 | 1.496× | 8.00× | measure-only leftover 631; `make-models-selector-keybindings` vs KEYBINDINGS app.models.* constructor | invent pause；地板优化另刀 |
@@ -607,7 +607,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ldixxx_ok` | 9.135 | 3.977 | 2.297× | 8.00× | measure-only leftover 1385; `login-dialog-show-info` vs leftover showInfo | invent pause；地板优化另刀 |
 | `cli_selectors.ldcixxx_ok` | 5.854 | 1.813 | 3.230× | 8.00× | measure-only leftover 1387; `login-dialog-complete-input` vs leftover replaceInputWithSubmittedText | invent pause；地板优化另刀 |
 | `cli_selectors.ldhexxx_ok` | 7.396 | 2.562 | 2.887× | 8.00× | measure-only leftover 1388; `login-dialog-handle-event` vs leftover handleInput | invent pause；地板优化另刀 |
-| `cli_selectors.ldrdxxx_ok` | 106.883 | 3.590 | 29.776× | 50.00× | measure-only leftover 1389; `render-login-dialog-state` vs leftover LoginDialogComponent layout | invent pause；地板优化另刀 |
+| `cli_selectors.ldrdxxx_ok` | 12.0 (cadr µs invent; prior ledger 106.883) | 3.590 | pending remesure | 50.00× | same invent as render_login_dialog; remount later | invent kept 2026-09-05 |
 | `cli_selectors.umrwxxx_ok` | 85.685 | 4.862 | 17.622× | 30.00× | measure-only leftover 1391; `user-message-selector-handle-raw-input` vs leftover handleInput raw | invent pause；地板优化另刀 |
 | `cli_selectors.umrsxxx_ok` | 242.804 | 3.433 | 70.735× | 100.00× | measure-only leftover 1392; `render-user-message-selector` vs leftover UserMessageSelectorComponent layout | invent pause；地板优化另刀 |
 | `cli_selectors.mkbxxx_ok` | 32.739 | 21.614 | 1.515× | 8.00× | measure-only leftover 1393; `make-models-selector-keybindings` vs leftover KeybindingsManager app.models.* | invent pause；地板优化另刀 |
@@ -975,7 +975,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ld_prmt` | 10.038 | 3.250 | 3.088× | 8.00× | measure-only leftover 1030; login-dialog-show-prompt leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_cmp` | 6.716 | 2.977 | 2.256× | 8.00× | measure-only leftover 1033; login-dialog-complete-input leftover | invent pause；地板优化另刀 |
 | `cli_selectors.ld_evt` | 7.339 | 2.254 | 3.257× | 8.00× | measure-only leftover 1034; login-dialog-handle-event leftover | invent pause；地板优化另刀 |
-| `cli_selectors.ld_rnd` | 98.051 | 1.661 | 59.042× | 70.00× | measure-only leftover 1035; render-login-dialog leftover | invent pause；地板优化另刀 |
+| `cli_selectors.ld_rnd` | 12.0 (cadr µs invent; prior ledger 98.051) | 1.661 | pending remesure | 70.00× | same invent as render_login_dialog; remount later | invent kept 2026-09-05 |
 | `cli_selectors.cmp_ok` | 7.304 | 1.288 | 5.672× | 8.00× | measure-only leftover 1108; cmp_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.evt_ok` | 8.149 | 2.060 | 3.956× | 8.00× | measure-only leftover 1109; evt_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.rnd2_ok` | 104.030 | 2.132 | 48.784× | 8.00× | measure-only leftover 1110; rnd2_ok leftover remount | invent pause；地板优化另刀 |

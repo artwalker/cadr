@@ -152,9 +152,100 @@
             (values (if (eq action :submit) :select action) value))
           (values :changed nil))))
 
+;; Width-keyed chrome so login-dialog paint reuses overlay title,
+;; themed wraps, URL/link wraps, submitted input, and keybinding hints.
+(defparameter *login-dialog-title-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *login-dialog-themed-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *login-dialog-url-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *login-dialog-link-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *login-dialog-submitted-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *login-dialog-hint-by-key*
+  (make-hash-table :test #'equal))
+
+(defun login-dialog-title-line (name width)
+  (let ((key (cons name width)))
+    (or (gethash key *login-dialog-title-by-key*)
+        (setf (gethash key *login-dialog-title-by-key*)
+              (selector-overlay-title-line
+               (format nil "Login to ~A" name)
+               width)))))
+
+(defun login-dialog-themed-lines (kind text width)
+  (let ((key (list kind text width)))
+    (or (gethash key *login-dialog-themed-by-key*)
+        (setf (gethash key *login-dialog-themed-by-key*)
+              (component-text-lines
+               (cadr-tui:theme-foreground
+                kind text :enabled-p t)
+               width)))))
+
+(defun login-dialog-url-lines (url width)
+  (let* ((inner (max 1 (- width 2)))
+         (key (cons url inner)))
+    (or (gethash key *login-dialog-url-by-key*)
+        (setf (gethash key *login-dialog-url-by-key*)
+              (mapcar
+               (lambda (line)
+                 (selector-component-text-line line width))
+               (render-auth-url-lines url inner))))))
+
+(defun login-dialog-link-lines (url text width)
+  (let* ((inner (max 1 (- width 2)))
+         (key (list url text inner)))
+    (or (gethash key *login-dialog-link-by-key*)
+        (setf (gethash key *login-dialog-link-by-key*)
+              (mapcar
+               (lambda (line)
+                 (selector-component-text-line line width))
+               (cadr-tui:wrap-text
+                (cadr-tui:theme-foreground
+                 :accent
+                 (terminal-hyperlink url text)
+                 :enabled-p t)
+                inner))))))
+
+(defun login-dialog-submitted-line (text width)
+  (let ((key (cons text width)))
+    (or (gethash key *login-dialog-submitted-by-key*)
+        (setf (gethash key *login-dialog-submitted-by-key*)
+              (selector-fit-line
+               (format nil "> ~A" text)
+               width)))))
+
+(defun login-dialog-hint-lines (kind width)
+  (let ((key (cons kind width)))
+    (or (gethash key *login-dialog-hint-by-key*)
+        (setf (gethash key *login-dialog-hint-by-key*)
+              (let ((keybindings (cadr-tui:get-keybindings)))
+                (list
+                 (selector-component-text-line
+                  (ecase kind
+                    (:hint-cancel
+                     (format
+                      nil "(~A)"
+                      (selector-keybinding-hint
+                       keybindings "tui.select.cancel" "to cancel")))
+                    (:hint-cancel-submit
+                     (format
+                      nil "(~A ~A)"
+                      (selector-keybinding-hint
+                       keybindings "tui.select.cancel" "to cancel,")
+                      (selector-keybinding-hint
+                       keybindings "tui.select.confirm" "to submit")))
+                    (:hint-close
+                     (format
+                      nil "(~A)"
+                      (selector-keybinding-hint
+                       keybindings "tui.select.cancel" "to close"))))
+                  width)))))))
+
 (defun render-login-dialog-state (state width)
-  (let ((keybindings (cadr-tui:get-keybindings))
-        (input (login-dialog-state-input state)))
+  (let ((input (login-dialog-state-input state)))
     (multiple-value-bind (input-lines input-row input-column)
         (if input
             (cadr-tui:render-single-line-input input width)
@@ -166,113 +257,53 @@
                   (list
                    (list
                     :lines
-                    (mapcar
-                     (lambda (line)
-                       (selector-component-text-line line width))
-                     (render-auth-url-lines
-                      (getf section :url)
-                      (max 1 (- width 2)))))))
-                 ((:warning :dim :text)
-                  (list
-                   (list
-                    :lines
-                    (component-text-lines
-                     (cadr-tui:theme-foreground
-                      (getf section :kind)
-                      (getf section :text)
-                      :enabled-p t)
+                    (login-dialog-url-lines
+                     (getf section :url)
                      width))))
-                 (:muted
+                 ((:warning :dim :text :muted :accent)
                   (list
                    (list
                     :lines
-                    (component-text-lines
-                     (cadr-tui:theme-foreground
-                      :muted
-                      (getf section :text)
-                      :enabled-p t)
-                     width))))
-                 (:accent
-                  (list
-                   (list
-                    :lines
-                    (component-text-lines
-                     (cadr-tui:theme-foreground
-                      :accent
-                      (getf section :text)
-                      :enabled-p t)
+                    (login-dialog-themed-lines
+                     (getf section :kind)
+                     (getf section :text)
                      width))))
                  (:link
                   (list
                    (list
                     :lines
-                    (mapcar
-                     (lambda (line)
-                       (selector-component-text-line line width))
-                     (cadr-tui:wrap-text
-                      (cadr-tui:theme-foreground
-                       :accent
-                       (terminal-hyperlink
-                        (getf section :url)
-                        (getf section :text))
-                       :enabled-p t)
-                      (max 1 (- width 2)))))))
+                    (login-dialog-link-lines
+                     (getf section :url)
+                     (getf section :text)
+                     width))))
                  (:submitted
                   (list
                    (list
                     :lines
                     (list
-                     (selector-fit-line
-                      (format nil "> ~A" (getf section :text))
+                     (login-dialog-submitted-line
+                      (getf section :text)
                       width)))))
                  (:input
                   (list (list :component input-lines input-row input-column)))
-                 (:hint-cancel
+                 ((:hint-cancel :hint-cancel-submit :hint-close)
                   (list
                    (list
                     :lines
-                    (list
-                     (selector-component-text-line
-                      (format
-                       nil "(~A)"
-                       (selector-keybinding-hint
-                         keybindings "tui.select.cancel" "to cancel"))
-                      width)))))
-                 (:hint-cancel-submit
-                  (list
-                   (list
-                    :lines
-                     (list
-                      (selector-component-text-line
-                       (format
-                        nil "(~A ~A)"
-                        (selector-keybinding-hint
-                         keybindings "tui.select.cancel" "to cancel,")
-                        (selector-keybinding-hint
-                         keybindings "tui.select.confirm" "to submit"))
-                      width)))))
-                 (:hint-close
-                  (list
-                   (list
-                    :lines
-                    (list
-                     (selector-component-text-line
-                      (format
-                       nil "(~A)"
-                       (selector-keybinding-hint
-                         keybindings "tui.select.cancel" "to close"))
-                      width))))))))
+                    (login-dialog-hint-lines
+                     (getf section :kind)
+                     width)))))))
         (render-selector-frame
          (make-selector-frame
           :sections
           (append
            (list (list :border :border)
                  (list
-                  :title
-                  (format
-                   nil "Login to ~A"
-                   (login-dialog-state-provider-name state))
-                  :overlay))
+                  :lines
+                  (list
+                   (login-dialog-title-line
+                    (login-dialog-state-provider-name state)
+                    width))))
            (mapcan #'frame-section
                    (login-dialog-state-sections state))
            (list (list :border :border))))

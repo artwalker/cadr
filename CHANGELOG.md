@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-login-dialog-state` caches overlay title,
+  themed wraps, URL/link wraps, submitted lines, and cancel/submit/close
+  hints. Friend-MachineD **99.9→12.0 µs** (~0.12× tip). Observed
+  EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after login-dialog invent.
+  needs-pair=0 uncovered=0.
+
 - Goal 20: book leftover `rtrs_ok` / `trrsxxx_ok` and same-fn
   remounts (`trn_ok`, `trrs_ok`, `trrsx_ok`, `trrsxx_ok`) after
   `render-trust-selector` invent. G.17 missing.
