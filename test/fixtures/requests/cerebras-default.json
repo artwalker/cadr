@@ -1,5 +1,5 @@
 {
-  "model": "zai-glm-4.7",
+  "model": "gpt-oss-120b",
   "messages": [
     {
       "role": "system",
@@ -35,6 +35,5 @@
         "strict": false
       }
     }
-  ],
-  "reasoning_effort": "none"
+  ]
 }

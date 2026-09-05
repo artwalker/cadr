@@ -393,7 +393,7 @@ const completionProviders: ReadonlyArray<{
 }> = [
 	{ id: "ant-ling", models: readCatalog<"openai-completions">("ant-ling"), defaultModel: "Ring-2.6-1T" },
 	{ id: "baseten", models: readCatalog<"openai-completions">("baseten"), defaultModel: "zai-org/GLM-5.2" },
-	{ id: "cerebras", models: readCatalog<"openai-completions">("cerebras"), defaultModel: "zai-glm-4.7" },
+	{ id: "cerebras", models: readCatalog<"openai-completions">("cerebras"), defaultModel: "gpt-oss-120b" },
 	{ id: "groq", models: readCatalog<"openai-completions">("groq"), defaultModel: "openai/gpt-oss-120b" },
 	{ id: "huggingface", models: readCatalog<"openai-completions">("huggingface"), defaultModel: "moonshotai/Kimi-K2.6" },
 	{ id: "moonshotai", models: readCatalog<"openai-completions">("moonshotai"), defaultModel: "kimi-k2.6" },

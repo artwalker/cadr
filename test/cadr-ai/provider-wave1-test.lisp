@@ -50,25 +50,25 @@
     baseten-provider-matches-fixed-catalog
     :baseten :openai-completions
     "https://inference.baseten.co/v1"
-    "BASETEN_API_KEY" "zai-org/GLM-5.2" 16)
+    "BASETEN_API_KEY" "zai-org/GLM-5.2" 20)
 
 (define-wave1-provider-test
     cerebras-provider-matches-fixed-catalog
     :cerebras :openai-completions
     "https://api.cerebras.ai/v1"
-    "CEREBRAS_API_KEY" "zai-glm-4.7" 3)
+    "CEREBRAS_API_KEY" "gpt-oss-120b" 2)
 
 (define-wave1-provider-test
     groq-provider-matches-fixed-catalog
     :groq :openai-completions
     "https://api.groq.com/openai/v1"
-    "GROQ_API_KEY" "openai/gpt-oss-120b" 6)
+    "GROQ_API_KEY" "openai/gpt-oss-120b" 7)
 
 (define-wave1-provider-test
     huggingface-provider-matches-fixed-catalog
     :huggingface :openai-completions
     "https://router.huggingface.co/v1"
-    "HF_TOKEN" "moonshotai/Kimi-K2.6" 58)
+    "HF_TOKEN" "moonshotai/Kimi-K2.6" 71)
 
 (define-wave1-provider-test
     minimax-provider-matches-fixed-catalog
@@ -98,27 +98,27 @@
     qwen-token-plan-provider-matches-fixed-catalog
     :qwen-token-plan :openai-completions
     "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
-    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.7-max" 16)
+    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.7-max" 18)
 
 (define-wave1-provider-test
     qwen-token-plan-cn-provider-matches-fixed-catalog
     :qwen-token-plan-cn :openai-completions
     "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
-    "QWEN_TOKEN_PLAN_CN_API_KEY" "qwen3.7-max" 16)
+    "QWEN_TOKEN_PLAN_CN_API_KEY" "qwen3.7-max" 18)
 (define-wave1-provider-test
     qwen-token-plan-individual-provider-matches-fixed-catalog
     :qwen-token-plan-individual :openai-completions
     "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
-    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.8-max" 7)
+    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.8-max" 9)
 
 (define-wave1-provider-test
     together-provider-matches-fixed-catalog
     :together :openai-completions
     "https://api.together.ai/v1"
-    "TOGETHER_API_KEY" "moonshotai/Kimi-K2.6" 18)
+    "TOGETHER_API_KEY" "moonshotai/Kimi-K2.6" 21)
 
 (define-wave1-provider-test
     xiaomi-provider-matches-fixed-catalog
     :xiaomi :openai-completions
     "https://api.xiaomimimo.com/v1"
-    "XIAOMI_API_KEY" "mimo-v2.5-pro" 6)
+    "XIAOMI_API_KEY" "mimo-v2.5-pro" 3)

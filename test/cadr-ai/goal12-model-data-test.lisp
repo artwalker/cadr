@@ -48,7 +48,7 @@
   (is (null
        (cadr-ai::models-dev-effort-thinking-level-map
         '((:type :budget-tokens :min 128 :max 8192)))))
-  (is (string= "2026-08-07T05:53:06.539Z"
+  (is (string= "2026-09-05T11:58:56.761Z"
                (cadr-ai::get-builtin-model-data-generated-at))))
 
 (test g22-openrouter-thinking-level-map-matches-effort-and-mandatory

@@ -29,7 +29,7 @@
   '(:accent :border :border-accent :border-muted
     :success :error :warning :muted :dim :text
    :thinking-text
-   :selected-bg :scrollbar-thumb :search-match-bg :search-match-text
+   :selected-bg :scrollbar-track :scrollbar-thumb :search-match-bg :search-match-text
    :user-message-bg :user-message-text
     :custom-message-bg :custom-message-text
     :custom-message-label

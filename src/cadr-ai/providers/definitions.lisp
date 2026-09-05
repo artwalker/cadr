@@ -160,13 +160,13 @@
      :protocols (:openai-completions)
      :base-url "https://api.cerebras.ai/v1"
      :auth-types (:api-key)
-     :default-model "zai-glm-4.7"
+     :default-model "gpt-oss-120b"
      :key-environment "CEREBRAS_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
      :supports-images-p nil
      :supports-tools-p t
-     :reasoning-p nil
+     :reasoning-p t
      :oauth-metadata nil
      :api-key-name "Cerebras API key"
      :environment-names ("CEREBRAS_API_KEY")

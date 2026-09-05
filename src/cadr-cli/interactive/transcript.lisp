@@ -898,7 +898,12 @@
              (and (eq type :package-update)
                   (getf (tui-entry-custom-options entry)
                         :packages))
-             width))
+             width
+             ;; Version/package update lines embed OSC-8 when
+             ;; hyperlinks are on; omit that bit and a no-link
+             ;; paint is reused under a later hyperlink capability.
+             (cadr-tui:terminal-capabilities-hyperlinks-p
+              (cadr-tui:get-terminal-capabilities))))
       (otherwise
        (list type
              (tui-entry-text entry)

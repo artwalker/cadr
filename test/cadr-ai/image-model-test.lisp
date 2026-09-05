@@ -165,7 +165,7 @@
                (levels :anthropic "claude-opus-4-8")))
     (is (equal '(:medium :high :xhigh)
                (levels :openai "gpt-5.5-pro")))
-    (is (equal '(:off :high :max)
+    (is (equal '(:off :low :high :max)
                (levels :deepseek "deepseek-v4-flash")))
     (is (equal '(:low :high :max)
                (levels :kimi-coding "k3")))))

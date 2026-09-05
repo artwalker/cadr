@@ -121,10 +121,10 @@
     (is (string= "x" none)
         "none is unstyled")))
 
-(test mermaid-theme-token-count-stays-58
-  ;; v0.84.2 added searchMatchBg/searchMatchText; the pin still guards
-  ;; against unreviewed growth.
-  (is (= 58 (length cadr-tui::+dark-theme-colors+))
+(test mermaid-theme-token-count-stays-59
+  ;; v0.85.1 added scrollbarTrack; the pin still guards against
+  ;; unreviewed growth.
+  (is (= 59 (length cadr-tui::+dark-theme-colors+))
       "theme tokens must not grow without review; dark has ~D"
       (length cadr-tui::+dark-theme-colors+)))
 

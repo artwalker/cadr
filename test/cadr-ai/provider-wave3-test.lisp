@@ -13,45 +13,45 @@
            '(("PI_CACHE_RETENTION" . "long"))))))
 
 (defparameter *baseline-provider-counts*
-  '((:amazon-bedrock . 114)
+  '((:amazon-bedrock . 121)
     (:ant-ling . 3)
-    (:anthropic . 13)
-    (:azure-openai-responses . 38)
-    (:baseten . 16)
-    (:cerebras . 3)
-    (:cloudflare-ai-gateway . 43)
-    (:cloudflare-workers-ai . 13)
+    (:anthropic . 14)
+    (:azure-openai-responses . 39)
+    (:baseten . 20)
+    (:cerebras . 2)
+    (:cloudflare-ai-gateway . 50)
+    (:cloudflare-workers-ai . 18)
     (:deepseek . 3)
-    (:fireworks . 17)
-    (:github-copilot . 30)
-    (:google . 24)
-    (:google-vertex . 12)
-    (:groq . 6)
-    (:huggingface . 58)
+    (:fireworks . 20)
+    (:github-copilot . 28)
+    (:google . 22)
+    (:google-vertex . 14)
+    (:groq . 7)
+    (:huggingface . 71)
     (:kimi-coding . 4)
     (:minimax . 3)
     (:minimax-cn . 3)
-    (:mistral . 31)
+    (:mistral . 32)
     (:moonshotai . 10)
     (:moonshotai-cn . 10)
-    (:nvidia . 30)
-    (:openai . 38)
-    (:openai-codex . 7)
-    (:opencode . 59)
-    (:opencode-go . 18)
-    (:openrouter . 335)
-    (:qwen-token-plan . 16)
-    (:qwen-token-plan-cn . 16)
-    (:qwen-token-plan-individual . 7)
-    (:together . 18)
-    (:vercel-ai-gateway . 197)
+    (:nvidia . 20)
+    (:openai . 39)
+    (:openai-codex . 8)
+    (:opencode . 68)
+    (:opencode-go . 27)
+    (:openrouter . 366)
+    (:qwen-token-plan . 18)
+    (:qwen-token-plan-cn . 18)
+    (:qwen-token-plan-individual . 9)
+    (:together . 21)
+    (:vercel-ai-gateway . 237)
     (:xai . 3)
-    (:xiaomi . 6)
-    (:xiaomi-token-plan-ams . 3)
-    (:xiaomi-token-plan-cn . 3)
-    (:xiaomi-token-plan-sgp . 3)
-    (:zai . 4)
-    (:zai-coding-cn . 4)))
+    (:xiaomi . 3)
+    (:xiaomi-token-plan-ams . 2)
+    (:xiaomi-token-plan-cn . 2)
+    (:xiaomi-token-plan-sgp . 2)
+    (:zai . 7)
+    (:zai-coding-cn . 10)))
 
 (test wave3-provider-registry-is-baseline-exact
   (is
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1221 (length (cadr-ai:list-model-metadata))))
+  (is (= 1354 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
@@ -103,13 +103,13 @@
        (is (eq ,provider (cadr-ai:model-provider model))))))
 
 (define-wave3-route-test cloudflare-routes-anthropic-models
-  :cloudflare-ai-gateway "claude-3-5-haiku"
+  :cloudflare-ai-gateway "claude-haiku-4.5"
   :anthropic-messages cadr-ai:anthropic-provider)
 (define-wave3-route-test cloudflare-routes-completions-models
-  :cloudflare-ai-gateway "workers-ai/@cf/moonshotai/kimi-k2.5"
+  :cloudflare-ai-gateway "workers-ai/@cf/moonshotai/kimi-k2.6"
   :openai-completions cadr-ai:openai-completions-provider)
 (define-wave3-route-test cloudflare-routes-responses-models
-  :cloudflare-ai-gateway "gpt-4"
+  :cloudflare-ai-gateway "gpt-4.1"
   :openai-responses cadr-ai:openai-provider)
 (define-wave3-route-test opencode-routes-google-models
   :opencode "gemini-3-flash"
