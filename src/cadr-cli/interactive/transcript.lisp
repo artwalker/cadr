@@ -25,25 +25,31 @@
        output-pad 1)
    :initial-element #\Space))
 
+(defparameter *user-message-lines-by-key*
+  (make-hash-table :test #'equal))
+
 (defun render-user-message-lines
     (text width &key (output-pad 1))
-  (let* ((padding
-           (output-padding-string output-pad))
-         (lines
-           (cadr-tui:wrap-text
-            (concatenate 'string padding text)
-            width)))
-    (append
-     (list
-      (concatenate
-       'string +osc-133-start+
-       (format nil "~C[49m" #\Escape)))
-     lines
-     (list
-      (concatenate
-       'string +osc-133-end+
-       +osc-133-final+
-       (format nil "~C[49m" #\Escape))))))
+  (let ((key (list text width output-pad)))
+    (or (gethash key *user-message-lines-by-key*)
+        (setf (gethash key *user-message-lines-by-key*)
+              (let* ((padding
+                       (output-padding-string output-pad))
+                     (lines
+                       (cadr-tui:wrap-text
+                        (concatenate 'string padding text)
+                        width)))
+                (append
+                 (list
+                  (concatenate
+                   'string +osc-133-start+
+                   (format nil "~C[49m" #\Escape)))
+                 lines
+                 (list
+                  (concatenate
+                   'string +osc-133-end+
+                   +osc-133-final+
+                   (format nil "~C[49m" #\Escape)))))))))
 
 (defun render-assistant-message-lines
     (blocks width

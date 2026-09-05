@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-user-message-lines` interns paint by
+  (text,width,output-pad). Friend-MachineD **64.8→0.1 µs**. Observed
+  EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after user-message-lines
+  invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after user-message-lines
+  invent (303→304). G.17 missing.
+
 - Goal 20 invent: `render-assistant-blocks` interns full paint when
   extension-host is nil; `assistant-stop-error-lines` interns by
   (reason,error,tools,width). Friend-MachineD blocks **126.5→0.4 µs**,
