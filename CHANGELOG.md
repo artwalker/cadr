@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `strip-ansi` returns the input string when
+  it contains no ESC / CSI 0x9B (no output buffer). Friend-
+  MachineD harness bundle **0.50→0.44 µs** (~0.89× tip).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  strip-ansi invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `normalize-path-input` uses a unicode-space
   hash set (skip rewrite when clean) and skips percent decode
   for `file://` paths without `%`. Friend-MachineD harness

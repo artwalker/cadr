@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,135 lines**
+Denominator: **297 files / 130,139 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,102 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,106 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14017,7 +14017,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/settings/manager.lisp` | 632 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/atomic-write.lisp` | 7 | `cli_support.write_hello`, `cli_support.write_overwrite`, `cli_support.write_empty` |
-| `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
+| `src/cadr-cli/support/changelog-share.lisp` | 346 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/external-editor.lisp` | 20 | `cli_support.editor_success`, `cli_support.editor_fail`, `cli_support.editor_empty` |
 | `src/cadr-cli/support/file-watcher.lisp` | 69 | `cli_support.watch_retry_delay`, `cli_support.close_watcher`, `cli_support.watch_signature`, `cli_support.watch_error`, `cli_support.watch_start_close`, `cli_support.poll_once` |

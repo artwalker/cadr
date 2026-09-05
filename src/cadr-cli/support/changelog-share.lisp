@@ -5,6 +5,10 @@
     (error 'type-error
            :datum value
            :expected-type 'string))
+  (when (loop for character across value
+              never (or (char= character #\Escape)
+                        (= (char-code character) #x9b)))
+    (return-from strip-ansi value))
   (with-output-to-string (output)
     (loop with index = 0
           while (< index (length value))

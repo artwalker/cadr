@@ -40,7 +40,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ai_capabilities.short_hash` | 1.5 | 0.9 | 1.70× | 8.00× | measure-only pair `f5e3817db`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `ai_capabilities.deferred_tools` | 5.51 | 2.70 | 2.04× | 8.00× | measure-only pair `8924f239d`; sibling of short_hash | invent pause；地板优化另刀 |
 | `ai_capabilities.event_stream` | 1.73 | 1.20 | 1.44× | 8.00× | measure-only pair `eedd1753d`; sibling of short_hash/deferred | invent pause；地板优化另刀 |
-| `cli_support.strip_ansi` | 1.3 | 0.5 | 2.73× | 8.00× | measure-only pair `b0c27cd59`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `cli_support.strip_ansi` | 0.44 (cadr µs invent; prior ledger 1.3) | 0.5 | ~0.88× invent micro vs booked pi | 8.00× | invent: clean-string early return; remount later | invent kept 2026-09-05 |
 | `cli_interactive_controller.decode_entity` | 0.63 | 0.42 | 1.49× | 8.00× | measure-only pair `1cc4b83d5`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `provider_registry_defs.lookup` | 1.03 | 0.23 | 4.44× | 8.00× | measure-only pair `cec8aa391`; catalog count gap booked (40/39); sub-µs variance | invent pause；地板优化另刀 |
 | `skill_prompt_load.build_prompt` | 52.91 | 1.52 | 34.86× | 3000.00× | Friend-MachineD n=5 after ASDF source-dir memoize + `&key` default hoist (`g20-asdf-floor-cache`); was 2196 µs / 1170.57× | floor knife landed; still >1.0× |
