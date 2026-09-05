@@ -734,7 +734,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.write_http_response` | 6.758 | 0.620 | 10.896× | 12.00× | measure-only leftover 833; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `oauth_pkce_device.present_auth_url` | 2.080 | 0.354 | 5.875× | 8.00× | measure-only leftover 834; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_selectors.armin_make_grid` | 6.6 (cadr µs invent; prior ledger 27.119) | 16.108 | pending remesure | 8.00× | invent: load-time baked final grid copy; remount later | invent kept 2026-09-05 |
-| `cli_selectors.armin_copy_grid` | 24.841 | 3.842 | 6.466× | 8.00× | measure-only leftover 836; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_selectors.armin_copy_grid` | 2.3 (cadr µs invent; prior ledger 24.841) | 3.842 | pending remesure | 8.00× | invent: character grid + row-major replace; remount later | invent kept 2026-09-05 |
 | `cli_selectors.armin_row_string` | 23.584 | 5.494 | 4.293× | 8.00× | measure-only leftover 837; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.http_timeout_p` | 1.356 | 0.303 | 4.480× | 8.00× | measure-only leftover 844; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.same_source` | 0.759 | 0.158 | 4.802× | 8.00× | measure-only leftover 845; remeasure Friend-MachineD | invent pause；地板优化另刀 |
@@ -803,7 +803,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.dlg_code` | 5.677 | 0.949 | 5.985× | 8.00× | measure-only leftover 993; login-dialog-show-device-code leftover | invent pause；地板优化另刀 |
 | `cli_selectors.th_sel` | 0.809 | 0.454 | 1.783× | 8.00× | measure-only leftover 994; thinking-selector-selected-level leftover | invent pause；地板优化另刀 |
 | `cli_selectors.th_desc` | 0.729 | 0.133 | 5.486× | 8.00× | measure-only leftover 995; thinking-level-description-line leftover | invent pause；地板优化另刀 |
-| `cli_selectors.th_draw` | 278.008 | 4.681 | 59.389× | 60.00× | measure-only leftover 996; render-thinking-selector leftover; first-freeze ceiling 60.0 | invent pause；地板优化另刀 |
+| `cli_selectors.th_draw` | 68.9 (cadr µs invent; prior ledger 278.008) | 4.681 | pending remesure | 60.00× | invent: width chrome cache + themed fragments + stream level rows; remount later | invent kept 2026-09-05 |
 | `cli_selectors.sl_ok` | 0.982 | 0.223 | 4.398× | 8.00× | measure-only leftover 1132; sl_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.dsc_ok` | 0.505 | 0.135 | 3.757× | 8.00× | measure-only leftover 1133; dsc_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.rth_ok` | 294.766 | 7.086 | 41.601× | 8.00× | measure-only leftover 1134; rth_ok leftover remount | invent pause；地板优化另刀 |

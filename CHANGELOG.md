@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-thinking-selector` bakes title/footer/
+  empty/cycle chrome by width and reuses themed arrow/check/
+  muted/accent fragments; level rows stream via
+  `with-output-to-string`. Friend-MachineD **276.4→68.9 µs**
+  (~0.25× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after th_draw
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `copy-armin-grid` uses row-major `replace`
   on displaced character vectors (no nested `aref` walk);
   grids are `character`-specialized. Friend-MachineD

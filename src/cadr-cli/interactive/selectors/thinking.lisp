@@ -207,12 +207,118 @@
         (concatenate 'string base suffix)
         base)))
 
+;; Immutable chrome + themed fragments keyed by width / text so
+;; th_draw paints reuse ANSI wraps instead of rebuilding title,
+;; footer, arrows, and muted descriptions every frame.
+(defparameter *thinking-selector-title-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *thinking-selector-footer-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *thinking-selector-empty-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *thinking-selector-cycle-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *thinking-selector-muted-by-text*
+  (make-hash-table :test #'equal))
+(defparameter *thinking-selector-accent-by-text*
+  (make-hash-table :test #'equal))
+(defparameter *thinking-selector-arrow-accent* nil)
+(defparameter *thinking-selector-check-success* nil)
+
+(defun thinking-selector-muted (text)
+  (or (gethash text *thinking-selector-muted-by-text*)
+      (setf (gethash text *thinking-selector-muted-by-text*)
+            (cadr-tui:theme-foreground :muted text))))
+
+(defun thinking-selector-accent (text)
+  (or (gethash text *thinking-selector-accent-by-text*)
+      (setf (gethash text *thinking-selector-accent-by-text*)
+            (cadr-tui:theme-foreground :accent text))))
+
+(defun thinking-selector-arrow-accent ()
+  (or *thinking-selector-arrow-accent*
+      (setf *thinking-selector-arrow-accent*
+            (cadr-tui:theme-foreground :accent "→ "))))
+
+(defun thinking-selector-check-success ()
+  (or *thinking-selector-check-success*
+      (setf *thinking-selector-check-success*
+            (cadr-tui:theme-foreground :success " ✓"))))
+
+(defun thinking-selector-title-line (width)
+  (or (gethash width *thinking-selector-title-by-width*)
+      (setf (gethash width *thinking-selector-title-by-width*)
+            (selector-component-text-line
+             (cadr-tui:theme-foreground
+              :accent
+              (cadr-tui:theme-bold "Thinking Level"))
+             width :padding-x 0))))
+
+(defun thinking-selector-footer-line (width)
+  (or (gethash width *thinking-selector-footer-by-width*)
+      (setf (gethash width *thinking-selector-footer-by-width*)
+            (selector-component-text-line
+             (cadr-tui:theme-foreground
+              :dim
+              "  Enter to select · Ctrl+S to set as default · Esc to cancel")
+             width :padding-x 0))))
+
+(defun thinking-selector-empty-line (width)
+  (or (gethash width *thinking-selector-empty-by-width*)
+      (setf (gethash width *thinking-selector-empty-by-width*)
+            (selector-component-text-line
+             (thinking-selector-muted "  No matching levels")
+             width :padding-x 0))))
+
+(defun thinking-selector-cycle-line (state width)
+  (let* ((key
+           (or
+            (first
+             (cadr-tui:keybinding-keys
+              (thinking-selector-keybindings state)
+              "app.thinking.cycle"))
+            "ctrl+t"))
+         (cache-key (cons width key)))
+    (or (gethash cache-key *thinking-selector-cycle-by-key*)
+        (setf (gethash cache-key *thinking-selector-cycle-by-key*)
+              (selector-component-text-line
+               (thinking-selector-muted
+                (format
+                 nil
+                 "~A cycles thinking levels in-session"
+                 key))
+               width :padding-x 0)))))
+
+(defun thinking-selector-level-row
+    (level selected-p current-p default width)
+  (let ((label (thinking-level-label level))
+        (description
+          (thinking-level-description-line level default)))
+    (selector-component-text-line
+     (with-output-to-string (out)
+       (write-string
+        (if selected-p
+            (thinking-selector-arrow-accent)
+            "  ")
+        out)
+       (write-string
+        (if selected-p
+            (thinking-selector-accent label)
+            label)
+        out)
+       (write-string "  " out)
+       (write-string (thinking-selector-muted description) out)
+       (when current-p
+         (write-string (thinking-selector-check-success) out)))
+     width :padding-x 0)))
+
 (defun render-thinking-selector (state width)
   (multiple-value-bind (visible start end total)
       (selector-frame-visible-slice
        (thinking-selector-state-filtered-levels state)
        (thinking-selector-state-selected state)
        10)
+    (declare (ignore end))
     (let* ((selected (thinking-selector-state-selected state))
            (current (thinking-selector-state-current-level state))
            (default (thinking-selector-state-default-level state))
@@ -221,58 +327,38 @@
                   (nth selected
                        (thinking-selector-state-filtered-levels
                         state))))
-           (body-lines
-             (append
-              (if visible
-                  (loop
-                    for level in visible
-                    for index from start
-                    for selected-p = (= index selected)
-                    for current-p = (eq level current)
-                    for label = (thinking-level-label level)
-                    for description =
-                      (thinking-level-description-line
-                       level default)
-                    collect
-                    (selector-component-text-line
-                     (concatenate
-                      'string
-                      (if selected-p
-                          (cadr-tui:theme-foreground :accent "→ ")
-                          "  ")
-                      (if selected-p
-                          (cadr-tui:theme-foreground
-                           :accent label)
-                          label)
-                      "  "
-                      (cadr-tui:theme-foreground
-                       :muted description)
-                      (if current-p
-                          (cadr-tui:theme-foreground :success " ✓")
-                          ""))
-                     width :padding-x 0))
-                  (list
-                   (selector-component-text-line
-                    (cadr-tui:theme-foreground
-                     :muted "  No matching levels")
-                    width :padding-x 0)))
-              (when (> total (length visible))
-                (list
-                 (selector-component-text-line
-                  (cadr-tui:theme-foreground
-                   :muted
-                   (format nil "  (~D/~D)" (1+ selected) total))
-                  width :padding-x 0)))
-              (when selected-level
-                (list
-                 ""
-                 (selector-component-text-line
-                  (cadr-tui:theme-foreground
-                   :muted
-                   (format nil "  ~A"
-                           (thinking-level-description-line
-                            selected-level default)))
-                  width :padding-x 0))))))
+           (body-lines nil))
+      (if visible
+          (loop
+            for level in visible
+            for index from start
+            do (push
+                (thinking-selector-level-row
+                 level
+                 (= index selected)
+                 (eq level current)
+                 default
+                 width)
+                body-lines))
+          (push (thinking-selector-empty-line width) body-lines))
+      (when (> total (length visible))
+        (push
+         (selector-component-text-line
+          (thinking-selector-muted
+           (format nil "  (~D/~D)" (1+ selected) total))
+          width :padding-x 0)
+         body-lines))
+      (when selected-level
+        (push "" body-lines)
+        (push
+         (selector-component-text-line
+          (thinking-selector-muted
+           (format nil "  ~A"
+                   (thinking-level-description-line
+                    selected-level default)))
+          width :padding-x 0)
+         body-lines))
+      (setf body-lines (nreverse body-lines))
       (render-selector-frame
        (make-selector-frame
         :sections
@@ -280,25 +366,9 @@
          (list
           :lines
           (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :accent
-             (cadr-tui:theme-bold "Thinking Level"))
-            width :padding-x 0)
+           (thinking-selector-title-line width)
            ""
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :muted
-             (format
-              nil
-              "~A cycles thinking levels in-session"
-              (or
-               (first
-                (cadr-tui:keybinding-keys
-                 (thinking-selector-keybindings state)
-                 "app.thinking.cycle"))
-               "ctrl+t")))
-            width :padding-x 0)
+           (thinking-selector-cycle-line state width)
            ""))
          (list :input (thinking-selector-state-query state))
          :blank
@@ -306,11 +376,6 @@
          :blank
          (list
           :lines
-          (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :dim
-             "  Enter to select · Ctrl+S to set as default · Esc to cancel")
-            width :padding-x 0)))
+          (list (thinking-selector-footer-line width)))
          :border))
        width))))
