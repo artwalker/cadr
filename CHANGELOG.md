@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: book leftover `rtrs_ok` / `trrsxxx_ok` and same-fn
+  remounts (`trn_ok`, `trrs_ok`, `trrsx_ok`, `trrsxx_ok`) after
+  `render-trust-selector` invent. G.17 missing.
+
 - Goal 20 invent: `render-trust-selector` caches cwd/saved/session/
   footer chrome and interns pointer/check/label wraps.
   Friend-MachineD **662.5→426.5 µs** (~0.64× tip). Observed

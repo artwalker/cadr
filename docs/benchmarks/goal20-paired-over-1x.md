@@ -618,7 +618,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thhrxxx_ok` | 143.544 | 5.996 | 23.939× | 30.00× | measure-only leftover 1400; `thinking-selector-handle-raw-input` vs leftover handleInput | invent pause；地板优化另刀 |
 | `cli_selectors.trsvxxx_ok` | 76.972 | 15.197 | 5.065× | 8.00× | measure-only leftover 1402; `trust-option-saved-p` vs leftover isSavedOption | invent pause；地板优化另刀 |
 | `cli_selectors.trmkxxx_ok` | 131.369 | 51.480 | 2.552× | 8.00× | measure-only leftover 1403; `make-trust-selector-state` vs leftover TrustSelectorComponent constructor | invent pause；地板优化另刀 |
-| `cli_selectors.trrsxxx_ok` | 1023.386 | 111.757 | 9.157× | 15.00× | measure-only leftover 1404; `render-trust-selector` vs leftover TrustSelectorComponent layout | invent pause；地板优化另刀 |
+| `cli_selectors.trrsxxx_ok` | 426.5 (cadr µs invent; prior ledger 1023.386) | 111.757 | pending remesure | 15.00× | same `render-trust-selector` invent as render_trust_selector; remount later | invent kept 2026-09-05 |
 | `cli_selectors.lmsxxxx_ok` | 2.681 | 2.105 | 1.274× | 8.00× | measure-only leftover 1405; `make-login-method-selector-state` vs leftover ExtensionSelector login-method constructor | invent pause；地板优化另刀 |
 | `cli_selectors.akixxxx_ok` | 2.164 | 1.061 | 2.039× | 8.00× | measure-only leftover 1406; `make-api-key-input-state` vs leftover showPrompt api key Input constructor | invent pause；地板优化另刀 |
 | `cli_selectors.ossxxxx_ok` | 7.239 | 5.400 | 1.340× | 8.00× | measure-only leftover 1407; `make-oauth-selector-state` vs leftover OauthSelectorComponent constructor | invent pause；地板优化另刀 |
@@ -821,19 +821,19 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.um_draw` | 84.4 (cadr µs invent; prior ledger 312.691) | 2.973 | pending remesure | 120.00× | invent: flatten-label scan + chrome caches; remount later | invent kept 2026-09-05 |
 | `cli_selectors.tosp_ok` | 51.075 | 26.680 | 1.914× | 8.00× | measure-only leftover 1000; trust-option-saved-p leftover | invent pause；地板优化另刀 |
 | `cli_selectors.mtss_ok` | 164.943 | 85.159 | 1.937× | 8.00× | measure-only leftover 1001; make-trust-selector-state leftover | invent pause；地板优化另刀 |
-| `cli_selectors.rtrs_ok` | 1370.312 | 194.933 | 7.030× | 15.00× | measure-only leftover 1002; render-trust-selector leftover | invent pause；地板优化另刀 |
+| `cli_selectors.rtrs_ok` | 426.5 (cadr µs invent; prior ledger 1370.312) | 194.933 | pending remesure | 15.00× | same `render-trust-selector` invent as render_trust_selector; remount later | invent kept 2026-09-05 |
 | `cli_selectors.sv_ok` | 56.278 | 36.077 | 1.560× | 8.00× | measure-only leftover 1123; sv_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.mk_ok` | 145.127 | 108.325 | 1.340× | 8.00× | measure-only leftover 1124; mk_ok leftover remount | invent pause；地板优化另刀 |
-| `cli_selectors.trn_ok` | 1162.348 | 215.910 | 5.383× | 8.00× | measure-only leftover 1125; trn_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trn_ok` | 426.5 (cadr µs invent; prior ledger 1162.348) | 215.910 | pending remesure | 8.00× | same `render-trust-selector` invent as render_trust_selector; remount later | invent kept 2026-09-05 |
 | `cli_selectors.trsv_ok` | 52.581 | 24.296 | 2.164× | 8.00× | measure-only leftover 1204; trsv_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.trmk_ok` | 136.316 | 82.531 | 1.652× | 8.00× | measure-only leftover 1205; trmk_ok leftover remount | invent pause；地板优化另刀 |
-| `cli_selectors.trrs_ok` | 1114.238 | 177.291 | 6.285× | 8.00× | measure-only leftover 1206; trrs_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trrs_ok` | 426.5 (cadr µs invent; prior ledger 1114.238) | 177.291 | pending remesure | 8.00× | same `render-trust-selector` invent as render_trust_selector; trrs_ok remount later | invent kept 2026-09-05 |
 | `cli_selectors.trsvx_ok` | 54.839 | 28.920 | 1.896× | 8.00× | measure-only leftover 1270; trsvx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.trmkx_ok` | 154.616 | 87.346 | 1.770× | 8.00× | measure-only leftover 1271; trmkx_ok leftover remount | invent pause；地板优化另刀 |
-| `cli_selectors.trrsx_ok` | 1224.489 | 196.750 | 6.224× | 8.00× | measure-only leftover 1272; trrsx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trrsx_ok` | 426.5 (cadr µs invent; prior ledger 1224.489) | 196.750 | pending remesure | 8.00× | same `render-trust-selector` invent as render_trust_selector; trrsx_ok remount later | invent kept 2026-09-05 |
 | `cli_selectors.trsvxx_ok` | 60.336 | 36.304 | 1.662× | 8.00× | measure-only leftover 1336; trsvxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.trmkxx_ok` | 160.158 | 118.732 | 1.349× | 8.00× | measure-only leftover 1337; trmkxx_ok leftover remount | invent pause；地板优化另刀 |
-| `cli_selectors.trrsxx_ok` | 1286.519 | 266.786 | 4.822× | 8.00× | measure-only leftover 1338; trrsxx_ok leftover remount | invent pause；地板优化另刀 |
+| `cli_selectors.trrsxx_ok` | 426.5 (cadr µs invent; prior ledger 1286.519) | 266.786 | pending remesure | 8.00× | same `render-trust-selector` invent as render_trust_selector; trrsxx_ok remount later | invent kept 2026-09-05 |
 | `cli_selectors.mlms_ok` | 3.649 | 1.921 | 1.900× | 8.00× | measure-only leftover 1003; make-login-method-selector-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.makis_ok` | 3.372 | 0.881 | 3.828× | 8.00× | measure-only leftover 1004; make-api-key-input-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.moss_ok` | 9.651 | 5.922 | 1.630× | 8.00× | measure-only leftover 1005; make-oauth-selector-state leftover | invent pause；地板优化另刀 |
