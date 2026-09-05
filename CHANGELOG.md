@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 23: preserve Anthropic mid-conversation thinking effort
+  (`supportsMidConvoEffort` system markers + `providerThinkingLevel`
+  on assistants; session JSONL round-trips the field).
+
 - Goal 23: embed the default editor's `Working...` spinner in the top
   border (pi@d981de122 `custom-editor.ts` / `status-indicator.ts`).
   Custom editors that do not opt in keep the standalone indicator row.
