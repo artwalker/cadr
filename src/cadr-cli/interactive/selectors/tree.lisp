@@ -124,6 +124,8 @@
   label-edit-id
   (label-input "" :type string)
   keybindings
+  (help-items nil)
+  (help-item-widths nil)
   copy-callback
   select-callback
   cancel-callback
@@ -1726,81 +1728,118 @@
                               (write-string key out))))))
         (tree-selector-help-replace-arrows compact)))))
 
+(defparameter +tree-selector-help-item-specs+
+  '((("tui.select.up" "tui.select.down")
+     "move")
+    (("tui.editor.cursorLeft"
+      "tui.editor.cursorRight")
+     "page")
+    (("app.tree.foldOrUp"
+      "app.tree.unfoldOrDown")
+     "branch")
+    (("app.message.copy") "copy")
+    (("app.tree.editLabel") "label")
+    (("app.tree.toggleLabelTimestamp")
+     "label time")
+    (("app.tree.filter.default"
+      "app.tree.filter.noTools"
+      "app.tree.filter.userOnly"
+      "app.tree.filter.labeledOnly"
+      "app.tree.filter.all")
+     "filters" :label-first t)
+    (("app.tree.filter.cycleForward"
+      "app.tree.filter.cycleBackward")
+     "cycle" :label-first t)))
+
+(defun tree-selector-ensure-help-items (state)
+  ;; Cache chip strings + visible widths on the state so multi-width
+  ;; paints (and harness OBS) skip eight help-keys rebuilds.
+  (or
+   (tree-selector-state-help-items state)
+   (let* ((count (length +tree-selector-help-item-specs+))
+          (items (make-array count))
+          (widths (make-array count :element-type 'fixnum)))
+     (loop for entry in +tree-selector-help-item-specs+
+           for index from 0
+           do (let* ((keys
+                       (tree-selector-help-keys
+                        state (first entry)))
+                     (item
+                       (if (getf (cddr entry) :label-first)
+                           (with-output-to-string (out)
+                             (write-string (second entry) out)
+                             (write-char #\Space out)
+                             (write-string keys out))
+                           (with-output-to-string (out)
+                             (write-string keys out)
+                             (write-char #\Space out)
+                             (write-string (second entry) out)))))
+                (setf (aref items index) item)
+                (setf (aref widths index)
+                      (cadr-tui:visible-width item))))
+     (setf (tree-selector-state-help-item-widths state) widths)
+     (setf (tree-selector-state-help-items state) items))))
+
 (defun tree-selector-help-lines (state width)
-  (let* ((items
-           (mapcar
-            (lambda (entry)
-              (let ((keys
-                      (tree-selector-help-keys
-                       state (first entry))))
-                (if (getf (cddr entry) :label-first)
-                    (format nil "~A ~A"
-                            (second entry) keys)
-                    (format nil "~A ~A"
-                            keys (second entry)))))
-            '((("tui.select.up" "tui.select.down")
-               "move")
-              (("tui.editor.cursorLeft"
-                "tui.editor.cursorRight")
-               "page")
-              (("app.tree.foldOrUp"
-                "app.tree.unfoldOrDown")
-               "branch")
-              (("app.message.copy") "copy")
-              (("app.tree.editLabel") "label")
-              (("app.tree.toggleLabelTimestamp")
-               "label time")
-              (("app.tree.filter.default"
-                "app.tree.filter.noTools"
-                "app.tree.filter.userOnly"
-                "app.tree.filter.labeledOnly"
-                "app.tree.filter.all")
-               "filters" :label-first t)
-              (("app.tree.filter.cycleForward"
-                "app.tree.filter.cycleBackward")
-               "cycle" :label-first t))))
+  ;; Integer-width greedy pack over cached chips. Probe with running
+  ;; width (no concatenate-to-measure). wrap-text only on overflow.
+  (let* ((items (tree-selector-ensure-help-items state))
+         (widths (tree-selector-state-help-item-widths state))
          (lines nil)
-         (current ""))
-    (dolist (item items)
-      (let* ((indented
-               (concatenate 'string "  " item))
-             (candidate
-               (if (zerop (length current))
-                   (if
-                       (<= (cadr-tui:visible-width indented)
-                           width)
-                       indented item)
-                   (concatenate
-                    'string current " · " item))))
-        (if
-            (or (zerop (length current))
-                (<= (cadr-tui:visible-width candidate)
-                    width))
-            (setf current candidate)
-            (progn
-              (setf lines
-                    (nconc
-                     lines
-                     (cadr-tui:wrap-text
-                      (string-right-trim " " current)
-                      width)))
-              (setf current
-                    (if
-                        (<=
-                         (cadr-tui:visible-width indented)
-                         width)
-                        indented item))))))
-    (when (plusp (length current))
-      (setf lines
-            (nconc
-             lines
-             (cadr-tui:wrap-text
-              (string-right-trim " " current)
-              width))))
-    (mapcar
-     (lambda (line)
-       (selector-muted-line line width))
-     lines)))
+         (current nil)
+         (current-width 0))
+    (labels ((flush ()
+               (when current
+                 (let ((text
+                         (string-right-trim " " current)))
+                   (setf lines
+                         (nconc
+                          lines
+                          (if (<= current-width width)
+                              (list text)
+                              (cadr-tui:wrap-text text width)))))
+                 (setf current nil current-width 0))))
+      (loop for index from 0 below (length items)
+            for item = (aref items index)
+            for item-width = (aref widths index)
+            do (let* ((indented-width (+ 2 item-width))
+                      (indented-fits
+                        (<= indented-width width)))
+                 (if (null current)
+                     (if indented-fits
+                         (progn
+                           (setf current
+                                 (concatenate 'string "  " item))
+                           (setf current-width indented-width))
+                         (progn
+                           (setf current item)
+                           (setf current-width item-width)))
+                     (let ((candidate-width
+                             (+ current-width 3 item-width)))
+                       (if (<= candidate-width width)
+                           (progn
+                             (setf current
+                                   (concatenate
+                                    'string current " · " item))
+                             (setf current-width candidate-width))
+                           (progn
+                             (flush)
+                             (if indented-fits
+                                 (progn
+                                   (setf current
+                                         (concatenate
+                                          'string "  " item))
+                                   (setf current-width
+                                         indented-width))
+                                 (progn
+                                   (setf current item)
+                                   (setf current-width
+                                         item-width)))))))))
+      (flush)
+      (mapcar
+       (lambda (line)
+         (selector-muted-line line width))
+       lines))))
 
 (defun render-tree-selector (state width)
   (let ((label-mode-p

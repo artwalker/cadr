@@ -70,7 +70,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_sdk.session_list` | ~2156 | ~2700 tip list-sessions | ~0.80× on Friend-MachineD invent microbench | 8.00× | streaming `session-list-info` (tip `85995ddb6`); ledger pair still measure-only until remount | invent kept 2026-09-04 |
 
-| `oauth_pkce_device.cloudflare_url` | 9.27 | 1.39 | 6.66× | 8.00× | measure-only pair `7b718d200`; variance floor; near ceiling | invent pause；地板优化另刀 |
+| `oauth_pkce_device.cloudflare_url` | 0.752 (cadr µs invent; prior ledger 9.27) | 1.39 | pending remesure | 8.00× | invent: one brace scan validate+rewrite no 4× search/replace-all; remount later | invent kept 2026-09-05 |
 
 | `oauth_pkce_device.radius_gateway` | 0.57 | 0.54 | 1.05× | 8.00× | measure-only pair `08636862d`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 

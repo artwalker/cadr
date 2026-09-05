@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `tree-selector-help-lines` caches chip
+  strings/widths on state and packs with integer running
+  width (`wrap-text` only on overflow). Friend-MachineD
+  **372→168 µs** (~0.45× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  tree-help-lines invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `materialize-cloudflare-url` scans braces
   once to validate and rewrite placeholders (no four
   `search` + four `replace-all` copies). Friend-MachineD
