@@ -90,52 +90,57 @@
     (sessions query
      &key (sort-mode :recent)
        (name-filter :all))
-  (let ((matches nil)
-        (regex-p
-          (uiop:string-prefix-p
-           "re:" query))
-        (scanner nil))
-    (when regex-p
-      (setf
-       scanner
-       (handler-case
-           (cl-ppcre:create-scanner
-            (subseq query 3)
-            :case-insensitive-mode t)
-         (condition ()
-           (return-from
-               filter-and-sort-sessions nil)))))
-    (dolist (session sessions)
-      (when (and
-             (or
-              (eq name-filter :all)
-              (and
-               (eq name-filter :named)
-               (named-session-p session)))
-             (let ((position
-                     (search-record-position
-                      session query scanner)))
-               (when position
-                 (push
-                  (cons session position)
-                  matches)
-                 t)))))
-    (setf matches (nreverse matches))
-    (when (eq sort-mode :relevance)
-      (setf
-       matches
-       (stable-sort
-        matches
-        (lambda (left right)
-          (if (= (cdr left) (cdr right))
-              (>
-               (session-search-record-modified
-                (car left))
-               (session-search-record-modified
-                (car right)))
-              (< (cdr left) (cdr right)))))))
-    (mapcar #'car matches)))
-
+  ;; Baseline filterAndSortSessions: empty query returns the
+  ;; name-filtered list with no match/score cons cells. Recent mode
+  ;; filters in place; relevance alone builds scored pairs.
+  (let* ((trimmed (string-trim '(#\Space #\Tab #\Newline #\Return) query))
+         (named-only-p (eq name-filter :named))
+         (name-filtered
+           (if named-only-p
+               (remove-if-not #'named-session-p sessions)
+               sessions)))
+    (when (zerop (length trimmed))
+      (return-from filter-and-sort-sessions name-filtered))
+    (let ((regex-p (uiop:string-prefix-p "re:" trimmed))
+          (scanner nil))
+      (when regex-p
+        (setf
+         scanner
+         (handler-case
+             (cl-ppcre:create-scanner
+              (subseq trimmed 3)
+              :case-insensitive-mode t)
+           (condition ()
+             (return-from filter-and-sort-sessions nil)))))
+      (if (eq sort-mode :relevance)
+          (let ((matches nil))
+            (dolist (session name-filtered)
+              (let ((position
+                      (search-record-position
+                       session trimmed scanner)))
+                (when position
+                  (push (cons session position) matches))))
+            (setf matches (nreverse matches))
+            (setf
+             matches
+             (stable-sort
+              matches
+              (lambda (left right)
+                (if (= (cdr left) (cdr right))
+                    (>
+                     (session-search-record-modified
+                      (car left))
+                     (session-search-record-modified
+                      (car right)))
+                    (< (cdr left) (cdr right))))))
+            (mapcar #'car matches))
+          (let ((matches nil))
+            (dolist (session name-filtered)
+              (when
+                  (search-record-position
+                   session trimmed scanner)
+                (push session matches)))
+            (nreverse matches))))))
 (defun canonical-file-name (path)
   (namestring
    (or (ignore-errors (truename path))

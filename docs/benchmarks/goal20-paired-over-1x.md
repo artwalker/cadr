@@ -78,7 +78,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `oauth_pkce_device.copilot_auth` | 3.21 | 2.38 | 1.35× | 8.00× | measure-only pair `1cd076b8d`; sibling of copilot_url | invent pause；地板优化另刀 |
 
-| `cli_selectors.session_search` | 42.40 | 17.10 | 2.48× | 8.00× | measure-only pair `51b4a868e`; filter/sort only | invent pause；地板优化另刀 |
+| `cli_selectors.session_search` | empty ~0 / recent alpha ~101 (n=200 micro) | tip cons path empty ~20 / alpha ~116 | empty ~0.00×; recent alpha ~0.87× vs tip | 8.00× | invent: early-empty + recent no score-cons (Friend-MachineD); ledger pair remount later | invent kept 2026-09-05 |
 
 | `websocket_stream.stream_roundtrip` | 44298 | 87.25 | 507.72× | 800.00× | measure-only pair `11ab40877`; TCP loopback vs MockWebSocket shape gap | invent pause；地板优化另刀 |
 

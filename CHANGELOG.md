@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `filter-and-sort-sessions` early-returns
+  empty/whitespace query after name filter (pi
+  `filterAndSortSessions`); recent mode pushes sessions
+  without score cons cells. Friend-MachineD n=200 empty
+  query **~20→~0 µs** vs tip cons path; recent `"alpha"`
+  ~0.87×. Observed EQUAL. FiveAM session-search 5/5.
+  G.17 missing.
+
 - Goal 20 invent: `session-manager-list` streams
   `session-list-info` (one open + schema-walker lines) instead
   of full `load-session` graphs. Friend-MachineD n=9
