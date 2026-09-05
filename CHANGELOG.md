@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `tree-selector-apply-filter` path uses
+  push/nreverse adjacency, one-shot query tokens, empty-
+  assistant raw-text short-circuit, and shared by-id for
+  nearest-visible. Friend-MachineD **36.2→26.9 µs**
+  (~0.74× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  tree-apply-filter invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `tree-selector-help-lines` caches chip
   strings/widths on state and packs with integer running
   width (`wrap-text` only on overflow). Friend-MachineD

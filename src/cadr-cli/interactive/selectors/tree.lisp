@@ -187,13 +187,15 @@
               (getf entry :parent-id)))
         (if (and parent-id
                  (gethash parent-id known))
-            (setf
-             (gethash parent-id children)
-             (nconc
-              (gethash parent-id children)
-              (list entry)))
-            (setf roots
-                  (nconc roots (list entry))))))
+            (push entry
+                  (gethash parent-id children))
+            (push entry roots))))
+    (setf roots (nreverse roots))
+    (maphash
+     (lambda (parent kids)
+       (setf (gethash parent children)
+             (nreverse kids)))
+     children)
     (let ((stack
             (tree-selector-prioritize-active
              roots active-path)))
@@ -226,10 +228,13 @@
     (and
      (eq (getf entry :type) :message)
      (eq (getf entry :role) :assistant)
-     (zerop
-      (length
-       (tree-selector-normalize-display-text
-        (getf entry :text))))
+     (let ((text (getf entry :text)))
+       (or (null text)
+           (zerop (length text))
+           (zerop
+            (length
+             (tree-selector-normalize-display-text
+              text)))))
      (not
       (let ((stop-reason
               (getf entry :stop-reason)))
@@ -265,41 +270,60 @@
        (tree-selector-settings-entry-p entry))))))
 
 (defun tree-selector-entry-search-text (entry)
-  (format
-   nil "~{~A~^ ~}"
-   (remove
-    nil
-    (list
-     (getf entry :label)
-     (getf entry :role)
-     (getf entry :text)
-     (getf entry :summary)
-     (getf entry :name)
-     (getf entry :model-id)
-     (getf entry :thinking-level)
-     (getf entry :custom-type)))))
+  (with-output-to-string (out)
+    (let ((first t))
+      (dolist
+          (value
+           (list
+            (getf entry :label)
+            (getf entry :role)
+            (getf entry :text)
+            (getf entry :summary)
+            (getf entry :name)
+            (getf entry :model-id)
+            (getf entry :thinking-level)
+            (getf entry :custom-type)))
+        (when value
+          (unless first
+            (write-char #\Space out))
+          (setf first nil)
+          (princ value out))))))
+
+(defun tree-selector-query-tokens (query)
+  (if (or (null query) (zerop (length query)))
+      nil
+      (mapcar
+       #'string-downcase
+       (remove
+        ""
+        (cl-ppcre:split "\\s+" query)
+        :test #'string=))))
+
+(defun tree-selector-query-matches-tokens-p
+    (entry tokens)
+  (or
+   (null tokens)
+   (let ((haystack
+           (string-downcase
+            (tree-selector-entry-search-text
+             entry))))
+     (every
+      (lambda (token)
+        (search token haystack))
+      tokens))))
 
 (defun tree-selector-query-matches-p
     (entry query)
-  (let ((haystack
-          (string-downcase
-           (tree-selector-entry-search-text
-            entry))))
-    (every
-     (lambda (token)
-       (search
-        (string-downcase token)
-        haystack))
-     (remove
-      ""
-      (cl-ppcre:split "\\s+" query)
-      :test #'string=))))
+  (tree-selector-query-matches-tokens-p
+   entry
+   (tree-selector-query-tokens query)))
 
 (defun tree-selector-nearest-visible-id
-    (state target visible-set)
+    (state target visible-set &optional by-id)
   (let ((by-id
-          (tree-selector-entry-map
-           (tree-selector-state-entries state)))
+          (or by-id
+              (tree-selector-entry-map
+               (tree-selector-state-entries state))))
         (current target))
     (loop while current
           for entry = (gethash current by-id)
@@ -317,15 +341,15 @@
 
 (defun tree-selector-rebuild-visible-maps
     (state entries)
-  (let ((visible-set
-          (make-hash-table :test #'equal))
-        (parent-map
-          (make-hash-table :test #'equal))
-        (children-map
-          (make-hash-table :test #'equal))
-        (by-id
-          (tree-selector-entry-map
-           (tree-selector-state-entries state))))
+  (let* ((visible-set
+           (make-hash-table :test #'equal))
+         (parent-map
+           (make-hash-table :test #'equal))
+         (children-map
+           (make-hash-table :test #'equal))
+         (by-id
+           (tree-selector-entry-map
+            (tree-selector-state-entries state))))
     (dolist (entry entries)
       (setf
        (gethash (getf entry :id)
@@ -333,7 +357,8 @@
        t))
     (dolist (entry entries)
       (let ((parent
-              (getf entry :parent-id)))
+              (getf entry :parent-id))
+            (id (getf entry :id)))
         (loop while
               (and parent
                    (not
@@ -347,14 +372,13 @@
                             (getf
                              parent-entry
                              :parent-id))))
-        (setf
-         (gethash (getf entry :id)
-                  parent-map)
-         parent
-         (gethash parent children-map)
-         (nconc
-          (gethash parent children-map)
-          (list (getf entry :id))))))
+        (setf (gethash id parent-map) parent)
+        (push id (gethash parent children-map))))
+    (maphash
+     (lambda (parent kids)
+       (setf (gethash parent children-map)
+             (nreverse kids)))
+     children-map)
     (setf
      (tree-selector-state-visible-parent
       state)
@@ -362,7 +386,7 @@
      (tree-selector-state-visible-children
       state)
      children-map)
-    visible-set))
+    (values visible-set by-id)))
 
 (defun tree-selector-apply-filter (state)
   (let* ((target
@@ -371,6 +395,14 @@
             (tree-selector-state-preserved-id state)))
          (skip
            (make-hash-table :test #'equal))
+         (filter
+           (tree-selector-state-filter state))
+         (leaf-id
+           (tree-selector-state-current-leaf-id
+            state))
+         (tokens
+           (tree-selector-query-tokens
+            (tree-selector-state-query state)))
          (visible
            (loop
              for entry in
@@ -392,13 +424,9 @@
                (and
                 (not (gethash id skip))
                 (tree-selector-entry-filtered-p
-                 entry
-                 (tree-selector-state-filter state)
-                 (tree-selector-state-current-leaf-id
-                  state))
-                (tree-selector-query-matches-p
-                 entry
-                 (tree-selector-state-query state)))
+                 entry filter leaf-id)
+                (tree-selector-query-matches-tokens-p
+                 entry tokens))
                collect entry)))
     (setf
      (tree-selector-state-visible-ids state)
@@ -406,27 +434,28 @@
       (lambda (entry)
         (getf entry :id))
       visible))
-    (let* ((visible-set
-             (tree-selector-rebuild-visible-maps
-              state visible))
-           (nearest
-             (tree-selector-nearest-visible-id
-              state target visible-set)))
-      (if nearest
-          (setf
-           (tree-selector-state-selected-id
-            state)
-           nearest
-           (tree-selector-state-preserved-id
-            state)
-           nil)
-          (setf
-           (tree-selector-state-preserved-id
-            state)
-           target
-           (tree-selector-state-selected-id
-            state)
-           nil))))
+    (multiple-value-bind
+          (visible-set by-id)
+        (tree-selector-rebuild-visible-maps
+         state visible)
+      (let ((nearest
+              (tree-selector-nearest-visible-id
+               state target visible-set by-id)))
+        (if nearest
+            (setf
+             (tree-selector-state-selected-id
+              state)
+             nearest
+             (tree-selector-state-preserved-id
+              state)
+             nil)
+            (setf
+             (tree-selector-state-preserved-id
+              state)
+             target
+             (tree-selector-state-selected-id
+              state)
+             nil)))))
   state)
 
 (defun make-tree-selector-state
