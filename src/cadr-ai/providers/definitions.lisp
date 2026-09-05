@@ -1017,22 +1017,43 @@
    :key (lambda (definition)
           (symbol-name (provider-definition-id definition)))))
 
+(defvar *provider-definition-ids-cache* nil)
+(defvar *provider-definition-ids-digest-cache* nil)
+
 (defun list-provider-definition-ids ()
   ;; pi packages/ai/src/providers/all.ts getBuiltinProviders: Object.keys(MODELS).
-  (sort
-   (loop with seen = (make-hash-table :test #'equal)
-         for metadata being the hash-values of *model-catalog*
-         for name = (string-downcase (symbol-name (model-metadata-provider metadata)))
-         unless (gethash name seen)
-           do (setf (gethash name seen) t)
-           and collect name)
-   #'string<))
+  (let ((source *model-catalog*))
+    (if (and *provider-definition-ids-cache*
+             (eq (first *provider-definition-ids-cache*) source))
+        (second *provider-definition-ids-cache*)
+        (let ((ids
+                (sort
+                 (loop with seen = (make-hash-table :test #'equal)
+                       for metadata being the hash-values of source
+                       for name = (string-downcase
+                                   (symbol-name
+                                    (model-metadata-provider metadata)))
+                       unless (gethash name seen)
+                         do (setf (gethash name seen) t)
+                         and collect name)
+                 #'string<)))
+          (setf *provider-definition-ids-cache* (list source ids)
+                *provider-definition-ids-digest-cache* nil)
+          ids))))
 
 (defun provider-definition-ids-sorted-digest ()
-  (octets-hex
-   (sha256-bytes
-    (utf8-octets
-     (format nil "~{~a~^~%~}" (list-provider-definition-ids))))))
+  (let ((ids (list-provider-definition-ids)))
+    (if (and *provider-definition-ids-digest-cache*
+             (eq (first *provider-definition-ids-digest-cache*) ids))
+        (second *provider-definition-ids-digest-cache*)
+        (let ((digest
+                (octets-hex
+                 (sha256-bytes
+                  (utf8-octets
+                   (format nil "~{~a~^~%~}" ids))))))
+          (setf *provider-definition-ids-digest-cache*
+                (list ids digest))
+          digest))))
 
 (defun register-built-in-providers ()
   (clrhash *provider-definitions*)

@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: cache `list-provider-definition-ids` and its
+  SHA-256 digest keyed by `*model-catalog*` / ids identity.
+  Friend-MachineD list-only **44→0.02 µs**; harness-shaped
+  (ids+digest) warm **~70 µs** (prior ledger ~270 µs). Observed
+  EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  provider-definition-ids invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `openai-account-id-from-token` finds the
   three JWT segments with two `position` scans (no
   `split-string` list) and rejects malformed shapes before

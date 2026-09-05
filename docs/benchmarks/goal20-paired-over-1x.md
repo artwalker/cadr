@@ -42,6 +42,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ai_capabilities.event_stream` | 1.73 | 1.20 | 1.44× | 8.00× | measure-only pair `eedd1753d`; sibling of short_hash/deferred | invent pause；地板优化另刀 |
 | `cli_support.strip_ansi` | 0.44 (cadr µs invent; prior ledger 1.3) | 0.5 | ~0.88× invent micro vs booked pi | 8.00× | invent: clean-string early return; remount later | invent kept 2026-09-05 |
 | `cli_interactive_controller.decode_entity` | 0.63 | 0.42 | 1.49× | 8.00× | measure-only pair `1cc4b83d5`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `provider_registry_defs.definition_ids` | ~70 warm invent micro (prior ledger ~270) | ~5 | pending remesure | 125.00× | invent: ids+digest cache; remount later | invent kept 2026-09-05 |
+
 | `provider_registry_defs.lookup` | 1.03 | 0.23 | 4.44× | 8.00× | measure-only pair `cec8aa391`; catalog count gap booked (40/39); sub-µs variance | invent pause；地板优化另刀 |
 | `skill_prompt_load.build_prompt` | 52.91 | 1.52 | 34.86× | 3000.00× | Friend-MachineD n=5 after ASDF source-dir memoize + `&key` default hoist (`g20-asdf-floor-cache`); was 2196 µs / 1170.57× | floor knife landed; still >1.0× |
 | `ai_support.auth_guidance` | 57.64 | 49.65 | 1.16× | 50.00× | Friend-MachineD n=5 after docs-dir memoize; was 1922 µs / 27.66× | floor knife landed |
@@ -285,7 +287,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.parse_callback_request` | 12.588 | 3.403 | 3.699× | 8.00× | measure-only pair 336; `parse-oauth-callback-request` vs openai-codex loopback pathname/state/code | invent pause；地板优化另刀 |
 | `core_rest.cancellation_wait` | 53.40 | 8.840 | 6.041× | 8.00× | measure-only pair 337; leftover `wait-for-cancellation` vs Atomics.wait timeout + aborted AbortSignal | invent pause；地板优化另刀 |
 | `core_rest.redacted_types` | 0.15 (cadr µs invent; prior ledger 2.375) | 0.528 | ~0.27× invent micro vs booked pi | 8.00× | invent: sorted-list cache keyed by source; remount later | invent kept 2026-09-05 |
-| `oauth_pkce_device.base64url_value` | 0.739 | 0.293 | 2.520× | 8.00× | leftover collect restore pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_value` | ~0.48 alphabet-sum invent micro (table) | 0.293 | pending remesure | 8.00× | invent: 256-entry decode table (shared with decode); remount later | invent kept 2026-09-05 |
 | `oauth_pkce_device.base64url_decode` | 1.45 (cadr µs invent; prior ledger 2.922) | 0.452 | ~3.2× invent micro vs booked pi | 8.00× | invent: 256-table + pre-sized octets; remount later | invent kept 2026-09-05 |
 | `oauth_pkce_device.account_id` | 1.98 (cadr µs invent; prior ledger 6.065) | 1.174 | ~1.7× invent micro vs booked pi | 8.00× | invent: two-dot JWT scan no split-string; remount later | invent kept 2026-09-05 |
 | `evals_harness.release_extensions` | 6.187 | 0.293 | 21.13× | 8.00× | measure-only pair 370; `release-eval-extensions`; ratio > named ceiling — gate uses variance/µs floor | invent pause；地板优化另刀 |
