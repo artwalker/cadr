@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 23: refresh built-in model catalog from
+  `@earendil-works/pi-ai@0.85.1` (includes GPT-6 Astra). Compat map
+  gains `allowedFallbackModels`, `supportsMidConvoEffort`,
+  `supportsAdditionalTools`. Theme gains `scrollbarTrack`.
+
 - Goal 23 opened: bump fixed pi baseline from v0.84.4 to
   **v0.85.1** (`d981de122`). Goal 20 invent/pair paused until
   G23 gates are green. G.17 stays `missing`. Not Goal 20 complete.

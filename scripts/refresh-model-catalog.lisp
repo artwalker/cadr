@@ -40,6 +40,7 @@
 
 (defparameter *compat-key-map*
   '(("allowEmptySignature" . :allow-empty-signature)
+    ("allowedFallbackModels" . :allowed-fallback-models)
     ("cacheControlFormat" . :cache-control-format)
     ("chatTemplateArgs" . :chat-template-args)
     ("deferredToolsMode" . :deferred-tools-mode)
@@ -50,6 +51,7 @@
     ("sendSessionAffinityHeaders"
      . :send-session-affinity-headers)
     ("sessionAffinityFormat" . :session-affinity-format)
+    ("supportsAdditionalTools" . :supports-additional-tools)
     ("supportsCacheControlOnTools"
      . :supports-cache-control-on-tools)
     ("supportsDeveloperRole" . :supports-developer-role)
@@ -59,6 +61,7 @@
      . :supports-explicit-prompt-cache-mode)
     ("supportsLongCacheRetention"
      . :supports-long-cache-retention)
+    ("supportsMidConvoEffort" . :supports-mid-convo-effort)
     ("supportsOpenAIGrammarTools"
      . :supports-openai-grammar-tools)
     ("supportsReasoningEffort" . :supports-reasoning-effort)
@@ -94,6 +97,47 @@
    (loop for key being the hash-keys of object collect key)
    #'string<))
 
+(defun compat-fallback-models (entries)
+  (when (vectorp entries)
+    (loop for entry across entries
+          collect
+          (list
+           :provider (json-get entry "provider")
+           :model (json-get entry "model")
+           :cost
+           (let ((cost (json-get entry "cost")))
+             (when (hash-table-p cost)
+               (list
+                :input (number-or-zero (json-get cost "input"))
+                :output (number-or-zero (json-get cost "output"))
+                :cache-read (number-or-zero (json-get cost "cacheRead"))
+                :cache-write
+                (number-or-zero (json-get cost "cacheWrite")))))))))
+
+(defun compat-chat-template-args (object key)
+  (loop for arg-key in (sorted-json-keys (json-get object key))
+        for arg-value = (json-get (json-get object key) arg-key)
+        collect
+        (cons
+         arg-key
+         (if (hash-table-p arg-value)
+             (list :var
+                   (json-get arg-value "$var")
+                   :omit-when-off
+                   (eq t (json-get arg-value "omitWhenOff")))
+             (normalized-json-value arg-value)))))
+
+(defun compat-scalar-value (mapped object key)
+  (let ((value (normalized-json-value (json-get object key))))
+    (if (member mapped
+                '(:cache-control-format
+                  :deferred-tools-mode
+                  :max-tokens-field
+                  :session-affinity-format
+                  :thinking-format))
+        (keyword-value value)
+        value)))
+
 (defun compat-plist (object)
   (when (hash-table-p object)
     (loop for key in (sorted-json-keys object)
@@ -102,38 +146,15 @@
           unless mapped
             do (error "Unsupported compat key in catalog: ~A" key)
           append
-          (list mapped
-                (if (eq mapped :chat-template-args)
-                    ;; Object values must survive PPRINT as quoted
-                    ;; literals: emit a sorted alist whose $var
-                    ;; objects become (:var name :omit-when-off bool)
-                    ;; plists (openai-completions.ts:85-93).
-                    (loop for arg-key in (sorted-json-keys
-                                          (json-get object key))
-                          for arg-value =
-                            (json-get (json-get object key) arg-key)
-                          collect
-                          (cons
-                           arg-key
-                           (if (hash-table-p arg-value)
-                               (list :var
-                                     (json-get arg-value "$var")
-                                     :omit-when-off
-                                     (eq t
-                                         (json-get
-                                          arg-value "omitWhenOff")))
-                               (normalized-json-value arg-value))))
-                    (let ((value
-                            (normalized-json-value
-                             (json-get object key))))
-                      (if (member mapped
-                                  '(:cache-control-format
-                                    :deferred-tools-mode
-                                    :max-tokens-field
-                                    :session-affinity-format
-                                    :thinking-format))
-                          (keyword-value value)
-                          value)))))))
+          (list
+           mapped
+           (cond
+             ((eq mapped :chat-template-args)
+              (compat-chat-template-args object key))
+             ((eq mapped :allowed-fallback-models)
+              (compat-fallback-models (json-get object key)))
+             (t
+              (compat-scalar-value mapped object key)))))))
 
 (defun thinking-level-map (object)
   (when (hash-table-p object)
@@ -235,7 +256,7 @@
               :if-does-not-exist :create
               :external-format :utf-8)
     (write-line
-     ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.84.1 catalog snapshot."
+     ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.85.1 catalog snapshot."
      stream)
     (write-line
      ";; Runtime use is offline and deterministic."

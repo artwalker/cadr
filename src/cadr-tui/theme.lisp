@@ -13,6 +13,7 @@
     (:text . "#d4d4d4")
     (:thinking-text . "#808080")
     (:selected-bg . "#3a3a4a")
+    (:scrollbar-track . "#1e1e24")
     (:scrollbar-thumb . "#3a3a4a")
     (:search-match-bg . "#3a3a4a")
     (:search-match-text . "#d4d4d4")
@@ -73,6 +74,7 @@
     (:text . "#1f2328")
     (:thinking-text . "#6c6c6c")
     (:selected-bg . "#d0d0e0")
+    (:scrollbar-track . "#e8e8e8")
     (:scrollbar-thumb . "#d0d0e0")
     (:search-match-bg . "#d0d0e0")
     (:search-match-text . "#1f2328")
@@ -122,6 +124,7 @@
 
 (defparameter +background-theme-color-keys+
   '(:selected-bg
+    :scrollbar-track
     :scrollbar-thumb
     :search-match-bg
     :user-message-bg

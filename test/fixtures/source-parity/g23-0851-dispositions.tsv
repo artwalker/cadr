@@ -1,0 +1,221 @@
+status	old_path	new_path	decision
+A	-	packages/agent/benchmark/session/allocation-profile-worker.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/allocation-profile.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/benchmark.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/loaded-footprint-worker.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/loaded-footprint.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/session-repo-targets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/session-repo.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/storage-targets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/benchmark/session/storage.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta-impl.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta.examples.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/02-scopes/scopes.variance.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/03-execenv/bash.after.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/01-harness/03-execenv/output-capture.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/demo-facet.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/escape-audit.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/iso-vs-ctx.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/leak.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/membrane.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/property-test.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/src/harness/config.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/context.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/execution/assistant.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/execution/effect-gate.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/execution/tools.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/hooks.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/reducer.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/boundary.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/checkpoint.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/deferred.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/generation.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/reconcile.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/recovery.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/response.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/retry.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/structural.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/terminal.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/tool-placement.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/drive/tools.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/harness.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/index.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/lane.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/progress.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/reducer.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/restore.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/transcript.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/runtime/types.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/commit.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/fork-policy.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/fork.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/in-memory-storage-state.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/jsonl.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/jsonl/errors.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/jsonl/index.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/jsonl/legacy-v3.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/mutation-line.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/state.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/testing/benchmark/datasets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/src/harness/session/testing/benchmark/session-repo.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/agent/src/harness/session/testing/benchmark/storage.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/agent/src/harness/session/testing/conformance.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/testing/conformance/session-repo.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/testing/conformance/storage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/testing/gating-storage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/testing/instrumented-storage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/testing/storage-decorator.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/values.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/utils/adaptive-publisher.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/utils/output-capture.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/utils/usage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/search/scanning.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/agent/test/harness/runtime/test-utils.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/test/utils/wait-for-tick.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/agent/vitest.benchmark.config.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/ai/src/api/cloudflare-ai-binding.ts	implement: ai transport/frame; map in cadr-ai or ledger N/A with reason
+D	packages/ai/src/api/cloudflare-gateway-binding.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/ai/src/utils/assistant-message-frame.ts	implement: ai transport/frame; map in cadr-ai or ledger N/A with reason
+A	-	packages/chord/src/api.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/bundler.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/context/index.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/delta/index.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/facets/host.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/facets/loader.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/index.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/json.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/node.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/node/bundle-loader.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/node/bundle.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/node/manifest.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/node/package.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/consumer.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/errors.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/handle.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/instances.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/loopback.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/provider.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/state-codec.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/state-internals.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/state.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/services/wire.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/src/types.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/chord/test/helpers.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/client/src/session-handle.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/client/src/state.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/coding-agent/examples/plugins/pi-example-plugin/src/contract.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/examples/plugins/pi-example-plugin/src/session.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/examples/plugins/pi-example-plugin/src/tui.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/coding-agent/src/bun/register-bedrock.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/coding-agent/src/bun/runtime-setup.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/bun/sandbox-env-setup.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/coding-agent/src/cli/experimental/auth.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/coding-agent/src/cli/experimental/commands/pi.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/coding-agent/src/cli/experimental/transport-address.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/cli/setup.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/coding-agent/src/client/remote-session.ts	-	implement: session surface; audit SessionManager.inMemory restore path
+D	packages/coding-agent/src/client/transcript.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/coding-agent/src/core/tools/renderers/bash.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/core/tools/renderers/edit.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/core/tools/renderers/find.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/core/tools/renderers/grep.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/core/tools/renderers/index.ts	implement: tool renderer index barrel; map or cover via existing tool UI renderers
+A	-	packages/coding-agent/src/core/tools/renderers/ls.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/core/tools/renderers/read.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/core/tools/renderers/write.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/src/experimental/cli.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/client-runtime.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/client-tui-chat.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/client-tui.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/client.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/commands.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/coordinator-entry.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/coordinator.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/main.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/server/entry.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/server/run.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/shared/protocol.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/shared/rpc.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/shared/transport.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/tui/run.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/tui/session.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/tui/view.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/worker/entry.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/worker/lane-service.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/worker/models-service.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/mini/worker/run.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/plugin.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/plugins/bundled.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/plugins/package.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/process.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/radius-auth.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/radius-relay.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/server.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/agent-controller-provider.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/agent-controller.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/connection.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/models-provider.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/models.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/plugins.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/presentation-ui.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/server.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/sessions.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/slash-commands-provider.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/slash-commands.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/transcript-provider.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/transcript.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/services/worker.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/session-worker-manager.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/session-worker.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/source-resolver.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/modes/interactive/chat-viewport.ts	implement: interactive TUI surface; audit against cadr-tui / interactive controller
+A	-	packages/coding-agent/src/modes/interactive/theme/theme-json.ts	implement: interactive TUI surface; audit against cadr-tui / interactive controller
+A	-	packages/coding-agent/src/modes/interactive/tui-renderer.ts	implement: interactive TUI surface; audit against cadr-tui / interactive controller
+D	packages/coding-agent/src/server/create-harness.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/coding-agent/test/client/support.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/coding-agent/test/experimental-service-binding.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/test/experimental-session-support.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/test/fixtures/faux-session-worker.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/coding-agent/test/fixtures/keyed-service.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/protocol/src/protocol.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/protocol/src/schemas.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/server/src/protocol.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/server/src/session-router.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/server/src/sessions.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/server/src/snapshots.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/server/src/testing/host.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/server/src/testing/service.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/server/src/transports/unix/address.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/benchmark/session/session-repo-targets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/session-backends/sqlite-node/benchmark/session/session-repo.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/session-backends/sqlite-node/benchmark/session/storage-targets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/session-backends/sqlite-node/benchmark/session/storage.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/session-backends/sqlite-node/src/sqlite/branch-cache.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/search-backend.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/session-backends/sqlite-node/src/sqlite/session.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/branch-entries.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/entries.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/session-row.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/session-sequences.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/session-stats.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/usage-ledger.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/session/values.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/session-backends/sqlite-node/src/sqlite/storage.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+D	packages/session-backends/sqlite-node/src/sqlite/storage/branch-entries.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/branch-tips.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/entries.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/facts.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/lanes.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/records.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/session-sequences.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/session-stats.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/sessions.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/storage/writer-leases.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/test/test-utils.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/session-backends/sqlite-node/vitest.benchmark.config.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/tui/src/components/mouse-region.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
+A	-	packages/tui/test/alt-screen-large-transcript-bench.ts	audit: added baseline source; implement user-visible contract or ledger defer with reason
