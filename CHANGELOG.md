@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 process: user delegates G.17 process signatures to
+  the Cursor executor when no separate advisor session exists
+  (`docs/adjudications.md` 2026-09-05; `development-policy.md`
+  §5.1). G.17 stays `missing`. Not Goal 20 complete.
+
 - Goal 20 invent: `daxnuts` component-render adds global paint by
   (width,tick) for harness recreates. Friend-MachineD **1101.7→0.2 µs**.
   Observed EQUAL. G.17 missing.

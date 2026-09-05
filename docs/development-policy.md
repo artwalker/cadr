@@ -282,14 +282,23 @@ Every human-judgement exit in this project is covered alike: the intentional-dif
 
 **Adding an intentional-difference class is equivalent to changing the definition of "alignment"**; **changing a gate's obligation unit or counting basis** (such as the denominator of a coverage figure) **is equivalent to changing what the gate promises.** Both require a written proposal first; neither may be self-authorised, and neither may change the criteria and declare compliance under the new criteria in the same commit. Before adjudication, figures under the new criteria may not serve as acceptance evidence.
 
-#### 5.1 Who adjudicates (user adjudication, 2026-08-15)
+#### 5.1 Who adjudicates (user adjudication, 2026-08-15; amended 2026-09-05)
 
-**The advisor adjudicates; the user retains an unconditional veto.** This
-records what was already the practice — goal20 Part A and the I04 covering
-proposal were both advisor-ruled — and an earlier revision of this section
-that still demanded user adjudication for every proposal had drifted from
-it. **A decision mechanism that disagrees with its own documentation cannot
-be improved, because its real rules are written down nowhere.**
+**Standing form (2026-08-15):** the advisor adjudicates; the user retains
+an unconditional veto. That recorded practice for a two-session structure
+(executor + separate advisor).
+
+**Amendment (user 2026-09-05, Cursor-only development):** when work runs
+in a single Cursor session with **no separate advisor session**, the user
+delegates technical adjudication (including Goal 20 G.17 process
+signatures) to the **Cursor executor**. The user keeps an unconditional
+veto. A change to that delegated authority still requires a user ruling
+in `docs/adjudications.md`.
+
+This amendment does **not** mark G.17 `met` and does **not** close Goal 20.
+When the executor later writes a G.17 `met` ruling, the delivery must state
+plainly that it was not independently audited by a separate advisor
+(§5.2). Mechanical gate evidence still stands.
 
 Three consequences, all binding:
 
@@ -304,9 +313,9 @@ Three consequences, all binding:
    which is tracked. A goal state file is disposable scratch; it is
    gitignored, and one `git clean` would destroy the entire rationale layer
    while every gate stayed green.
-3. **The advisor may not adjudicate a change to the advisor's own authority
-   or role boundary.** Those go to the user. This clause is itself an
-   instance: it was written by the advisor and adjudicated by the user.
+3. **Neither advisor nor Cursor executor may self-authorise a change to
+   adjudication authority.** Those go to the user. The 2026-09-05 Cursor
+   delegation is itself a user ruling.
 
 #### 5.2 Role boundary: executing and auditing are different hats (user adjudication, 2026-08-15)
 

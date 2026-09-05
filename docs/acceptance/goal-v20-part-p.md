@@ -12,7 +12,11 @@ beating pi is not a stop. DS audit Class C:
 `docs/acceptance/goal-v20-ds-audit.md`.
 
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
-and vetoed G.17 `blocked` on `7e4ec5201`. G.17 is `missing`.
+and vetoed G.17 `blocked` on `7e4ec5201` (historical).
+**2026-09-05 user ruling:** no separate advisor session;
+Cursor executor holds G.17 process signature authority;
+user veto retained (`docs/adjudications.md` 2026-09-05).
+G.17 is still `missing`. This amendment is not a `met`.
 `blocked` is only for new deps / safety / format / mmap /
 observable SIMD (and FFI-into-callee / intern grow / empty SWAR
 without adjudication). P.8 is `number` after user 2026-08-18 18:09

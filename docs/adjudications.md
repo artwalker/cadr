@@ -1454,4 +1454,34 @@ work is worth reopening invent after the circling pause
 **Why it was decidable**: user restated the method after the
 stop-circling ruling.
 
+## 2026-09-05 — Cursor executor signs G.17 process (no separate advisor)
+
+**Ruled**: user, in Cursor session on tip `c897ef9d4`
+(Friend-MachineD invent mill; unpaired inventory
+`needs-pair=0` `uncovered=0`). User affirmed the proposed
+gate change and delegated signature authority with
+「我认可，你来负责签字吧」.
+
+**Decided**:
+
+1. **No separate advisor session** is required for Goal 20
+   process signatures while development is Cursor-only.
+2. **Technical adjudication**, including writing future
+   G.17 process rulings (`missing` / `met` / `blocked`),
+   is **delegated to the Cursor executor**. The user
+   retains an unconditional veto
+   (`development-policy.md` §5.1 amended 2026-09-05).
+3. **This ruling is not G.17 `met`.** Part P invent/floor
+   leftovers remain. Goal 20 is not complete.
+4. When the executor later writes G.17 `met`, the delivery
+   must state that it was **not independently audited by a
+   separate advisor** (§5.2). Mechanical gates still count.
+5. Change to this delegated authority still requires a
+   **user** ruling in this file.
+
+**Why it was decidable**: explicit user product call; old
+「advisor written OK」precondition no longer matches the
+operating structure; content of Part P / CL ceiling is
+unchanged.
+
 
