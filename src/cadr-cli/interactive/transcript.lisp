@@ -670,11 +670,18 @@
               :children children)))
       (cadr-tui:component-render component width))))
 
+(defparameter *update-notification-border-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *package-update-notification-by-key*
+  (make-hash-table :test #'equal))
+
 (defun update-notification-border-line (width)
-  (cadr-tui:theme-foreground
-   :warning
-   (make-string width :initial-element #\─)
-   :enabled-p t))
+  (or (gethash width *update-notification-border-by-width*)
+      (setf (gethash width *update-notification-border-by-width*)
+            (cadr-tui:theme-foreground
+             :warning
+             (make-string width :initial-element #\─)
+             :enabled-p t))))
 
 (defun update-notification-text-lines (text width)
   (cadr-tui:component-render
@@ -742,40 +749,43 @@
      (list (update-notification-border-line width)))))
 
 (defun render-package-update-notification (entry width)
-  (let* ((slug (cadr-ai::cadr-product-slug))
-         (action
-           (cadr-tui:theme-foreground
-            :accent
-            (format nil "~A update --extensions" slug)
-            :enabled-p t))
-         (instruction
-           (concatenate
-            'string
-            (cadr-tui:theme-foreground
-             :muted
-             "Package updates are available. Run "
-             :enabled-p t)
-            action))
-         (packages
-           (getf (tui-entry-custom-options entry)
-                 :packages))
-         (package-lines
-           (format nil "~{- ~A~^~%~}" packages)))
-    (append
-     (list "" (update-notification-border-line width))
-     (update-notification-text-lines
-      (format
-       nil "~A~%~A~%~A~%~A"
-       (cadr-tui:theme-bold
-        (cadr-tui:theme-foreground
-         :warning "Package Updates Available" :enabled-p t)
-        :enabled-p t)
-       instruction
-       (cadr-tui:theme-foreground
-        :muted "Packages:" :enabled-p t)
-       package-lines)
-      width)
-     (list (update-notification-border-line width)))))
+  (let* ((packages
+           (getf (tui-entry-custom-options entry) :packages))
+         (key (cons packages width)))
+    (or (gethash key *package-update-notification-by-key*)
+        (setf (gethash key *package-update-notification-by-key*)
+              (let* ((slug (cadr-ai::cadr-product-slug))
+                     (action
+                       (cadr-tui:theme-foreground
+                        :accent
+                        (format nil "~A update --extensions" slug)
+                        :enabled-p t))
+                     (instruction
+                       (concatenate
+                        'string
+                        (cadr-tui:theme-foreground
+                         :muted
+                         "Package updates are available. Run "
+                         :enabled-p t)
+                        action))
+                     (package-lines
+                       (format nil "~{- ~A~^~%~}" packages)))
+                (append
+                 (list "" (update-notification-border-line width))
+                 (update-notification-text-lines
+                  (format
+                   nil "~A~%~A~%~A~%~A"
+                   (cadr-tui:theme-bold
+                    (cadr-tui:theme-foreground
+                     :warning "Package Updates Available"
+                     :enabled-p t)
+                    :enabled-p t)
+                   instruction
+                   (cadr-tui:theme-foreground
+                    :muted "Packages:" :enabled-p t)
+                   package-lines)
+                  width)
+                 (list (update-notification-border-line width))))))))
 
 (defun render-tui-entry-uncached
     (entry width &key extension-host now

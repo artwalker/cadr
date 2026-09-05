@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-package-update-notification` caches full
+  paint by (packages,width) and reuses width-keyed warning borders.
+  Friend-MachineD **214.9→7.4 µs** (~0.03× tip). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after package-notification
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20: remesure Goal14 B6/B8 top-level `(def` counts on tip
   `89e8b852b` (B6 290→293, B8 310→319). Drift is outside selector
   invent owners. G.17 missing.
