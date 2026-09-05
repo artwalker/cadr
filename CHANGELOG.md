@@ -14,7 +14,7 @@ tag/Release step.
 
 - Goal 23: gate TUI full-redraw debug logs on `CADR_TUI_DEBUG_REDRAW=1`
   (`cadr-tui-debug.log` under the agent directory). `CADR_CODING_AGENT_DIR`
-  is unchanged. `PI_TUI_DEBUG_REDRAW` and `PI_DEBUG_REDRAW` are not read.
+  is unchanged. Legacy upstream redraw-debug env names are not read.
 
 - Goal 23: preserve Anthropic mid-conversation thinking effort
   (`supportsMidConvoEffort` system markers + `providerThinkingLevel`
