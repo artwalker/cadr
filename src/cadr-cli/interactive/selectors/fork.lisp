@@ -90,6 +90,71 @@
       (t
        (values nil nil nil)))))
 
+;; Single-pass newline→space + trim; avoids cl-ppcre per paint.
+;; Chrome strings keyed by width so description/empty reuse ANSI wraps.
+(defparameter *user-message-selector-desc-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *user-message-selector-empty-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *user-message-selector-pointer-accent* nil)
+(defparameter *user-message-selector-count-by-key*
+  (make-hash-table :test #'equal))
+
+(defun user-message-flatten-label (raw)
+  (let* ((text (or raw ""))
+         (length (length text))
+         (start 0)
+         (end length))
+    (loop while (and (< start end)
+                     (member (char text start)
+                             '(#\Space #\Tab #\Newline #\Return)))
+          do (incf start))
+    (loop while (and (< start end)
+                     (member (char text (1- end))
+                             '(#\Space #\Tab #\Newline #\Return)))
+          do (decf end))
+    (if (loop for index from start below end
+              never (char= (char text index) #\Newline))
+        (if (and (zerop start) (= end length))
+            text
+            (subseq text start end))
+        (with-output-to-string (out)
+          (loop for index from start below end
+                for char = (char text index)
+                do (write-char
+                    (if (char= char #\Newline) #\Space char)
+                    out))))))
+
+(defun user-message-selector-pointer-accent ()
+  (or *user-message-selector-pointer-accent*
+      (setf *user-message-selector-pointer-accent*
+            (cadr-tui:theme-foreground :accent "› "))))
+
+(defun user-message-selector-description-lines (width)
+  (or (gethash width *user-message-selector-desc-by-width*)
+      (setf (gethash width *user-message-selector-desc-by-width*)
+            (component-text-lines
+             (cadr-tui:theme-foreground
+              :muted
+              "Select a user message to copy the active path up to that point into a new session")
+             width :padding-x 1))))
+
+(defun user-message-selector-empty-lines (item-width)
+  (or (gethash item-width *user-message-selector-empty-by-width*)
+      (setf (gethash item-width *user-message-selector-empty-by-width*)
+            (list
+             (selector-muted-line
+              "  No user messages found" item-width)))))
+
+(defun user-message-selector-count-line (index total item-width)
+  (let ((key (list index total item-width)))
+    (or (gethash key *user-message-selector-count-by-key*)
+        (setf (gethash key *user-message-selector-count-by-key*)
+              (selector-muted-line
+               (format nil "  Message ~D of ~D"
+                       (1+ index) total)
+               item-width)))))
+
 (defun render-user-message-selector
     (state width)
   (render-selector-frame
@@ -103,21 +168,13 @@
      (list :title "Fork from Message" :plain)
      (list
       :lines
-      (component-text-lines
-       (cadr-tui:theme-foreground
-        :muted
-        "Select a user message to copy the active path up to that point into a new session")
-       width :padding-x 1))
+      (user-message-selector-description-lines width))
      :blank :border :blank :viewport :count :blank :border)
     :item-renderer
     (lambda (item index selected-p total item-width)
       (let* ((text
-               (string-trim
-                '(#\Space #\Tab #\Newline #\Return)
-                (cl-ppcre:regex-replace-all
-                 "\\n"
-                 (cadr-tui:select-item-label item)
-                 " ")))
+               (user-message-flatten-label
+                (cadr-tui:select-item-label item)))
              (message
                (cadr-tui:truncate-to-width
                 text (max 0 (- item-width 2)) "")))
@@ -126,22 +183,17 @@
           (concatenate
            'string
            (if selected-p
-               (cadr-tui:theme-foreground
-                :accent "› ")
+               (user-message-selector-pointer-accent)
                "  ")
            (if selected-p
                (cadr-tui:theme-bold message)
                message))
           item-width)
-         (selector-muted-line
-          (format nil "  Message ~D of ~D"
-                  (1+ index) total)
-          item-width)
+         (user-message-selector-count-line
+          index total item-width)
          "")))
     :empty-renderer
     (lambda (item-width total)
       (declare (ignore total))
-      (list
-       (selector-muted-line
-        "  No user messages found" item-width))))
+      (user-message-selector-empty-lines item-width)))
    width))

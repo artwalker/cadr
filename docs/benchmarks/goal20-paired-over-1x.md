@@ -453,7 +453,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thinking_selector_move` | 0.637 | 0.471 | 1.353× | 8.00× | measure-only leftover 607; `thinking-selector-move` vs wrap selected index | invent pause；地板优化另刀 |
 | `cli_selectors.thinking_selector_handle_raw_input` | 144.448 | 6.908 | 20.910× | 30.00× | measure-only leftover 608; `thinking-selector-handle-raw-input` vs handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_selectors.thinking_level_description_line` | 0.268 | 0.232 | 1.155× | 8.00× | measure-only leftover 611; `thinking-level-description-line` vs LEVEL_DESCRIPTIONS · default | invent pause；地板优化另刀 |
-| `cli_selectors.render_thinking_selector` | 316.671 | 7.080 | 44.726× | 60.00× | measure-only leftover 612; `render-thinking-selector` vs ThinkingSelectorComponent layout; first-freeze headroom 60.0 | invent pause；地板优化另刀 |
+| `cli_selectors.render_thinking_selector` | 68.9 (cadr µs invent; prior ledger 316.671) | 7.080 | pending remesure | 60.00× | same invent as th_draw chrome/fragment/stream; remount later | invent kept 2026-09-05 |
 | `cli_selectors.trust_option_saved_p` | 35.594 | 15.530 | 2.292× | 8.00× | measure-only leftover 613; `trust-option-saved-p` vs isSavedOption | invent pause；地板优化另刀 |
 | `cli_selectors.make_trust_selector_state` | 91.097 | 53.106 | 1.715× | 8.00× | measure-only leftover 614; `make-trust-selector-state` vs TrustSelectorComponent constructor | invent pause；地板优化另刀 |
 | `cli_selectors.render_trust_selector` | 1074.462 | 122.128 | 8.798× | 15.00× | measure-only leftover 615; `render-trust-selector` vs TrustSelectorComponent layout; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
@@ -469,7 +469,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.login_dialog_handle_event` | 6.392 | 3.325 | 1.923× | 8.00× | measure-only leftover 626; `login-dialog-state-handle-event` vs handleInput | invent pause；地板优化另刀 |
 | `cli_selectors.render_login_dialog` | 135.552 | 4.147 | 32.688× | 50.00× | measure-only leftover 627; `render-login-dialog-state` vs LoginDialogComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `cli_selectors.user_message_handle_raw` | 85.983 | 5.433 | 15.827× | 30.00× | measure-only leftover 629; `user-message-selector-handle-raw-input` vs UserMessageList.handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
-| `cli_selectors.render_user_message_selector` | 265.302 | 4.081 | 65.009× | 100.00× | measure-only leftover 630; `render-user-message-selector` vs UserMessageSelectorComponent layout; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
+| `cli_selectors.render_user_message_selector` | 84.4 (cadr µs invent; prior ledger 265.302) | 4.081 | pending remesure | 100.00× | invent: flatten-label scan + chrome caches; remount later | invent kept 2026-09-05 |
 | `cli_selectors.make_models_selector_keybindings` | 32.105 | 21.468 | 1.496× | 8.00× | measure-only leftover 631; `make-models-selector-keybindings` vs KEYBINDINGS app.models.* constructor | invent pause；地板优化另刀 |
 | `cli_selectors.make_scoped_models_selector_state` | 97.005 | 4.620 | 20.997× | 40.00× | measure-only leftover 632; `make-scoped-models-selector-state` vs ScopedModelsSelectorComponent constructor; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
 | `cli_selectors.render_model_selector` | 247.317 | 9.300 | 26.593× | 50.00× | measure-only leftover 633; `render-model-selector` vs ModelSelectorComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
@@ -818,7 +818,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.rthxxx_ok` | 360.624 | 6.606 | 54.590× | 8.00× | measure-only leftover 1347; rthxxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.um_evt` | 2.504 | 1.649 | 1.518× | 8.00× | measure-only leftover 997; user-message-selector-handle-event leftover | invent pause；地板优化另刀 |
 | `cli_selectors.um_raw` | 100.493 | 7.058 | 14.238× | 30.00× | measure-only leftover 998; user-message-selector-handle-raw-input leftover | invent pause；地板优化另刀 |
-| `cli_selectors.um_draw` | 312.691 | 2.973 | 105.189× | 120.00× | measure-only leftover 999; render-user-message-selector leftover; first-freeze ceiling 120.0 | invent pause；地板优化另刀 |
+| `cli_selectors.um_draw` | 84.4 (cadr µs invent; prior ledger 312.691) | 2.973 | pending remesure | 120.00× | invent: flatten-label scan + chrome caches; remount later | invent kept 2026-09-05 |
 | `cli_selectors.tosp_ok` | 51.075 | 26.680 | 1.914× | 8.00× | measure-only leftover 1000; trust-option-saved-p leftover | invent pause；地板优化另刀 |
 | `cli_selectors.mtss_ok` | 164.943 | 85.159 | 1.937× | 8.00× | measure-only leftover 1001; make-trust-selector-state leftover | invent pause；地板优化另刀 |
 | `cli_selectors.rtrs_ok` | 1370.312 | 194.933 | 7.030× | 15.00× | measure-only leftover 1002; render-trust-selector leftover | invent pause；地板优化另刀 |
@@ -990,7 +990,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.ldrdxx_ok` | 133.993 | 1.470 | 91.160× | 8.00× | measure-only leftover 1323; ldrdxx_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.um_he` | 1.736 | 0.582 | 2.984× | 8.00× | measure-only leftover 1036; user-message-handle-event leftover | invent pause；地板优化另刀 |
 | `cli_selectors.um_hr` | 95.867 | 7.576 | 12.654× | 16.00× | measure-only leftover 1037; user-message-handle-raw leftover | invent pause；地板优化另刀 |
-| `cli_selectors.um_rd` | 276.946 | 1.227 | 225.713× | 250.00× | measure-only leftover 1038; render-user-message-selector leftover | invent pause；地板优化另刀 |
+| `cli_selectors.um_rd` | 84.4 (cadr µs invent; prior ledger 276.946) | 1.227 | pending remesure | 250.00× | invent: same as um_draw flatten+chrome; remount later | invent kept 2026-09-05 |
 | `cli_selectors.he_ok` | 1.652 | 0.989 | 1.670× | 8.00× | measure-only leftover 1111; he_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.raw_ok` | 91.365 | 5.688 | 16.062× | 8.00× | measure-only leftover 1112; raw_ok leftover remount | invent pause；地板优化另刀 |
 | `cli_selectors.sel_ok` | 254.663 | 2.210 | 115.242× | 8.00× | measure-only leftover 1113; sel_ok leftover remount | invent pause；地板优化另刀 |
