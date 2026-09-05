@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `selector-modified-cursor-key` walks CSI
+  modified-arrow octets (no per-call regex `format`+scan).
+  Friend-MachineD **13.8→0.42 µs**. Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  modified-cursor invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `thread-session-records` matches pi
   `buildSessionTree`/`flattenSessionTree` (node struct, one
   canonicalize, post-order latest-activity, sort on cached

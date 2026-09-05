@@ -1,38 +1,44 @@
 (in-package #:cadr-cli)
 
 (defun selector-modified-cursor-key (data)
-  (multiple-value-bind
-        (matched registers)
-      (cl-ppcre:scan-to-strings
-       (format nil "^~C\\[1;(\\d+)([ABCD])$"
-               #\Escape)
-       data)
-    (when matched
-      (let* ((mask
-               (1-
-                (parse-integer
-                 (aref registers 0))))
+  ;; Baseline CSI modified arrows: ESC [ 1 ; <mask+1> <ABCD>.
+  ;; Walk the octets once; avoid building a fresh regex per call.
+  (let ((length (length data)))
+    (unless (and (>= length 6)
+                 (char= (char data 0) #\Escape)
+                 (char= (char data 1) #\[)
+                 (char= (char data 2) #\1)
+                 (char= (char data 3) #\;))
+      (return-from selector-modified-cursor-key nil))
+    (let ((index 4))
+      (loop while (and (< index length)
+                       (digit-char-p (char data index)))
+            do (incf index))
+      (unless (and (> index 4)
+                   (= (1+ index) length))
+        (return-from selector-modified-cursor-key nil))
+      (let* ((direction-char (char data index))
              (direction
                (cdr
-                (assoc
-                 (char (aref registers 1) 0)
-                 '((#\A . "up")
-                   (#\B . "down")
-                   (#\C . "right")
-                   (#\D . "left"))))))
+                (assoc direction-char
+                       '((#\A . "up")
+                         (#\B . "down")
+                         (#\C . "right")
+                         (#\D . "left")))))
+             (mask
+               (1-
+                (parse-integer data :start 4 :end index))))
         (when direction
-          (format
-           nil "~{~A~^+~}"
-           (append
+          (with-output-to-string (out)
             (when (logtest 1 mask)
-              '("shift"))
+              (write-string "shift+" out))
             (when (logtest 4 mask)
-              '("ctrl"))
+              (write-string "ctrl+" out))
             (when (logtest 2 mask)
-              '("alt"))
+              (write-string "alt+" out))
             (when (logtest 8 mask)
-              '("super"))
-            (list direction))))))))
+              (write-string "super+" out))
+            (write-string direction out)))))))
 
 (defun selector-keybinding-matches-p
     (manager data name)

@@ -101,7 +101,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.align_left_right` | 27.2 | 7.2 | 3.79× | 8.00× | measure-only pair `6c2f97c61`; truncate/pad only | invent pause；地板优化另刀 |
 
-| `cli_selectors.modified_cursor_key` | 47.3 | 4.1 | 11.56× | 20.00× | measure-only pair `f5a3f5bfa`; CSI modified arrows only | invent pause；地板优化另刀 |
+| `cli_selectors.modified_cursor_key` | 0.42 (cadr µs invent; prior ledger 47.3) | 4.1 | pending remesure | 20.00× | invent: octet CSI walk no per-call regex; remount later | invent kept 2026-09-05 |
 
 | `cli_selectors.keybinding_hint` | 59.9 | 23.2 | 1.32× | 8.00× | measure-only pair `120292c32`; rawKeyHint dim/muted on joined keys | invent pause；地板优化另刀 |
 
