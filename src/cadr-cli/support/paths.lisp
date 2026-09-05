@@ -40,6 +40,23 @@
           '(#x00a0 #x2000 #x2001 #x2002 #x2003 #x2004 #x2005 #x2006
             #x2007 #x2008 #x2009 #x200a #x202f #x205f #x3000)))
 
+(defparameter +unicode-path-space-p+
+  (let ((table (make-hash-table :test #'eql)))
+    (dolist (character +unicode-path-spaces+)
+      (setf (gethash character table) t))
+    table))
+
+(defun normalize-unicode-path-spaces (value)
+  (if (loop for character across value
+            never (gethash character +unicode-path-space-p+))
+      value
+      (map 'string
+           (lambda (character)
+             (if (gethash character +unicode-path-space-p+)
+                 #\Space
+                 character))
+           value)))
+
 (defun decode-file-url-path (text)
   (let ((octets
           (make-array 0 :element-type '(unsigned-byte 8)
@@ -70,12 +87,7 @@
                    (string-trim '(#\Space #\Tab #\Newline #\Return) input)
                    input)))
     (when normalize-unicode-spaces-p
-      (setf value
-            (map 'string
-                 (lambda (character)
-                   (if (member character +unicode-path-spaces+)
-                       #\Space character))
-                 value)))
+      (setf value (normalize-unicode-path-spaces value)))
     (when (and strip-at-prefix-p (uiop:string-prefix-p "@" value))
       (setf value (subseq value 1)))
     (when expand-tilde-p
@@ -88,7 +100,11 @@
                         (merge-pathnames (subseq value 2)
                                          (uiop:ensure-directory-pathname home))))))))
     (when (uiop:string-prefix-p "file://" value)
-      (setf value (decode-file-url-path (subseq value 7))))
+      (let ((rest (subseq value 7)))
+        (setf value
+              (if (find #\% rest)
+                  (decode-file-url-path rest)
+                  rest))))
     value))
 
 (defun resolve-path-input

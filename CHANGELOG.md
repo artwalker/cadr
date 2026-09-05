@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `normalize-path-input` uses a unicode-space
+  hash set (skip rewrite when clean) and skips percent decode
+  for `file://` paths without `%`. Friend-MachineD harness
+  bundle **2.72→1.40 µs** (~0.51× tip). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  normalize-path invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: model pattern match walks once for a unique
   exact hit (no `remove-if-not` lists) and picks the best
   partial with a single pass (no alias filter + `sort` copy).

@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,119 lines**
+Denominator: **297 files / 130,135 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,086 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,102 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14024,7 +14024,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/html.lisp` | 63 | `cli_support.experimental` |
 | `src/cadr-cli/support/model-help.lisp` | 20 | `cli_support.default_thinking_level`, `cli_support.docs_directory`, `cli_support.no_api_key`, `cli_support.no_model_selected`, `cli_support.no_models_help`, `cli_support.provider_login_help` |
-| `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
+| `src/cadr-cli/support/paths.lisp` | 135 | `cli_support.normalize_path` |
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 151 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/threads.lisp` | 7 | `cli_support.threads_absent`, `cli_support.threads_current`, `cli_support.threads_joined` |

@@ -47,7 +47,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ai_support.auth_guidance` | 57.64 | 49.65 | 1.16× | 50.00× | Friend-MachineD n=5 after docs-dir memoize; was 1922 µs / 27.66× | floor knife landed |
 | `cli_bootstrap_sessions.coding_tools` | 11.1 | 4.6 | 2.40× | 8.00× | measure-only pair `e8da8ac48` | invent pause；地板优化另刀 |
 | `ai_runtime_faux.blocks` | 0.27 | 0.15 | 1.76× | 8.00× | measure-only pair `25826109b`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
-| `cli_support.normalize_path` | 4.58 | 1.63 | 2.82× | 8.00× | measure-only pair `03559cdc7`; sibling of strip_ansi | invent pause；地板优化另刀 |
+| `cli_support.normalize_path` | 1.40 (cadr µs invent; prior ledger 4.58) | 1.63 | ~0.86× invent micro vs booked pi | 8.00× | invent: unicode-space hash + file:// no-% skip; remount later | invent kept 2026-09-05 |
 | `cli_support.timings` | 4.55 | 2.66 | 1.71× | 8.00× | measure-only pair `477f6d74f`; sibling of strip_ansi/normalize_path | invent pause；地板优化另刀 |
 | `ai_support.context_overflow` | 1.85 | 1.11 | 1.67× | 8.00× | measure-only pair `e03a52133`; sibling of estimate_text | invent pause；地板优化另刀 |
 | `ai_support.grammar_delta` | 1.52 | 0.53 | 2.87× | 8.00× | measure-only pair `1cc632962`; sibling of estimate/overflow | invent pause；地板优化另刀 |
