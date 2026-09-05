@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,723 lines**
+Denominator: **297 files / 130,760 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,690 | 80.9% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,727 | 80.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13962,7 +13962,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 234 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/auth.lisp` | 683 | `cli_selectors.api_key_input_state_handle_event`, `cli_selectors.api_key_input_ui_state`, `cli_selectors.credential_entry_auth_type`, `cli_selectors.login_auth_type_route`, `cli_selectors.login_method_selector_handle_event`, `cli_selectors.login_method_selector_ui_state`, `cli_selectors.login_provider_options`, `cli_selectors.logout_provider_options`, `cli_selectors.make_api_key_input_state`, `cli_selectors.make_login_method_selector_state`, `cli_selectors.make_oauth_selector_state`, `cli_selectors.oauth_environment_source_p`, `cli_selectors.oauth_option_status_label`, `cli_selectors.oauth_option_status_rendered`, `cli_selectors.oauth_selector_apply_filter`, `cli_selectors.oauth_selector_handle_event`, `cli_selectors.oauth_selector_handle_raw_input`, `cli_selectors.oauth_selector_move`, `cli_selectors.oauth_selector_search_text`, `cli_selectors.oauth_selector_selection`, `cli_selectors.oauth_selector_ui_state` |
+| `src/cadr-cli/interactive/selectors/auth.lisp` | 720 | `cli_selectors.api_key_input_state_handle_event`, `cli_selectors.api_key_input_ui_state`, `cli_selectors.credential_entry_auth_type`, `cli_selectors.login_auth_type_route`, `cli_selectors.login_method_selector_handle_event`, `cli_selectors.login_method_selector_ui_state`, `cli_selectors.login_provider_options`, `cli_selectors.logout_provider_options`, `cli_selectors.make_api_key_input_state`, `cli_selectors.make_login_method_selector_state`, `cli_selectors.make_oauth_selector_state`, `cli_selectors.oauth_environment_source_p`, `cli_selectors.oauth_option_status_label`, `cli_selectors.oauth_option_status_rendered`, `cli_selectors.oauth_selector_apply_filter`, `cli_selectors.oauth_selector_handle_event`, `cli_selectors.oauth_selector_handle_raw_input`, `cli_selectors.oauth_selector_move`, `cli_selectors.oauth_selector_search_text`, `cli_selectors.oauth_selector_selection`, `cli_selectors.oauth_selector_ui_state` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 402 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/fork.lisp` | 199 | `cli_selectors.render_user_message_selector`, `cli_selectors.user_message_handle_event`, `cli_selectors.user_message_handle_raw`, `cli_selectors.user_message_make`, `cli_selectors.user_message_move`, `cli_selectors.user_message_selection` |
 | `src/cadr-cli/interactive/selectors/login-dialog.lisp` | 279 | `cli_selectors.dlg_auth`, `cli_selectors.dlg_dev`, `cli_selectors.dlg_make`, `cli_selectors.login_dialog_complete_input`, `cli_selectors.login_dialog_handle_event`, `cli_selectors.login_dialog_show_details`, `cli_selectors.login_dialog_show_info`, `cli_selectors.login_dialog_show_manual_input`, `cli_selectors.login_dialog_show_progress`, `cli_selectors.login_dialog_show_prompt`, `cli_selectors.login_dialog_show_waiting`, `cli_selectors.render_login_dialog` |

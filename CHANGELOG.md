@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-api-key-input-state` caches overlay
+  title by (name,width), prompt/footer by width, and interns
+  mask stars by length. Friend-MachineD **172.0→67.5 µs**
+  (~0.39× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after api-key
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `render-oauth-selector` caches overlay title
   by (title,width), empty chrome by (kind,width), and interns
   the accent pointer plus mixed-auth suffixes.

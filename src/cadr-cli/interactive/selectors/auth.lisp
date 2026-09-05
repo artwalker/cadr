@@ -203,6 +203,58 @@
                 (values :changed nil))
             (values action value)))))
 
+;; Width-keyed chrome so api-key paint reuses overlay title, prompt,
+;; and footer wrap. Mask stars interned by length.
+(defparameter *api-key-input-title-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *api-key-input-prompt-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *api-key-input-footer-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *api-key-input-stars-by-length*
+  (make-hash-table :test #'eql))
+(defparameter *api-key-input-prompt-text* nil)
+
+(defun api-key-input-prompt-text ()
+  (or *api-key-input-prompt-text*
+      (setf *api-key-input-prompt-text*
+            (cadr-tui:theme-foreground :text "Enter API key"))))
+
+(defun api-key-input-stars (length)
+  (or (gethash length *api-key-input-stars-by-length*)
+      (setf (gethash length *api-key-input-stars-by-length*)
+            (make-string length :initial-element #\*))))
+
+(defun api-key-input-title-line (name width)
+  (let ((key (cons name width)))
+    (or (gethash key *api-key-input-title-by-key*)
+        (setf (gethash key *api-key-input-title-by-key*)
+              (selector-overlay-title-line
+               (format nil "Login to ~A" name)
+               width)))))
+
+(defun api-key-input-prompt-lines (width)
+  (or (gethash width *api-key-input-prompt-by-width*)
+      (setf (gethash width *api-key-input-prompt-by-width*)
+            (list
+             (selector-component-text-line
+              (api-key-input-prompt-text)
+              width)))))
+
+(defun api-key-input-footer-lines (width)
+  (or (gethash width *api-key-input-footer-by-width*)
+      (setf (gethash width *api-key-input-footer-by-width*)
+            (let ((keybindings (cadr-tui:get-keybindings)))
+              (list
+               (selector-component-text-line
+                (format
+                 nil "(~A ~A)"
+                 (selector-keybinding-hint
+                  keybindings "tui.select.cancel" "to cancel,")
+                 (selector-keybinding-hint
+                  keybindings "tui.select.confirm" "to submit"))
+                width))))))
+
 (defun render-api-key-input-state (state width)
   (let* ((option
            (api-key-input-state-option state))
@@ -211,11 +263,10 @@
          (masked
            (cadr-tui:make-single-line-input
             :value
-            (make-string
+            (api-key-input-stars
              (length
               (cadr-tui:single-line-input-value
-               input))
-             :initial-element #\*)
+               input)))
             :prompt "> ")))
     (setf
      (cadr-tui::single-line-input-cursor masked)
@@ -229,33 +280,19 @@
         (list
          (list :border :border)
          (list
-          :title
-          (format nil "Login to ~A"
-                  (oauth-selector-option-name option))
-          :overlay)
+          :lines
+          (list
+           (api-key-input-title-line
+            (oauth-selector-option-name option)
+            width)))
          :blank
          (list
-         :lines
-          (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :text
-             "Enter API key")
-            width)))
+          :lines
+          (api-key-input-prompt-lines width))
          (list :component input-lines row column)
          (list
           :lines
-          (list
-           (selector-component-text-line
-            (format
-             nil "(~A ~A)"
-             (selector-keybinding-hint
-              (cadr-tui:get-keybindings)
-              "tui.select.cancel" "to cancel,")
-             (selector-keybinding-hint
-              (cadr-tui:get-keybindings)
-              "tui.select.confirm" "to submit"))
-            width)))
+          (api-key-input-footer-lines width))
          (list :border :border)))
        width))))
 
