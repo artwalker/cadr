@@ -565,6 +565,54 @@
       (t
        (values nil nil nil)))))
 
+;; Width-keyed overlay title and empty chrome. Pointer and mixed-auth
+;; suffixes are interned. This paint has no footer keybinding hints.
+(defparameter *oauth-selector-title-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *oauth-selector-empty-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *oauth-selector-pointer-accent* nil)
+(defparameter *oauth-selector-auth-oauth* nil)
+(defparameter *oauth-selector-auth-api-key* nil)
+
+(defun oauth-selector-pointer-accent ()
+  (or *oauth-selector-pointer-accent*
+      (setf *oauth-selector-pointer-accent*
+            (cadr-tui:theme-foreground
+             :accent "→ " :enabled-p t))))
+
+(defun oauth-selector-title-line (title width)
+  (let ((key (cons title width)))
+    (or (gethash key *oauth-selector-title-by-key*)
+        (setf (gethash key *oauth-selector-title-by-key*)
+              (selector-overlay-title-line title width)))))
+
+(defun oauth-selector-auth-suffix (auth-type)
+  (if (eq auth-type :oauth)
+      (or *oauth-selector-auth-oauth*
+          (setf *oauth-selector-auth-oauth*
+                (cadr-tui:theme-foreground
+                 :muted " [subscription]" :enabled-p t)))
+      (or *oauth-selector-auth-api-key*
+          (setf *oauth-selector-auth-api-key*
+                (cadr-tui:theme-foreground
+                 :muted " [API key]" :enabled-p t)))))
+
+(defun oauth-selector-empty-lines (kind width)
+  (let ((key (cons kind width)))
+    (or (gethash key *oauth-selector-empty-by-key*)
+        (setf (gethash key *oauth-selector-empty-by-key*)
+              (list
+               (selector-component-text-line
+                (cadr-tui:theme-foreground
+                 :muted
+                 (ecase kind
+                   (:miss "  No matching providers")
+                   (:logout
+                    "  No providers logged in. Use /login first.")
+                   (:none "  No providers available")))
+                width))))))
+
 (defun render-oauth-selector (state width)
   (let* ((options
            (oauth-selector-state-filtered-options state))
@@ -574,7 +622,12 @@
                (remove-duplicates
                 (mapcar #'oauth-selector-option-auth-type
                         (oauth-selector-state-options state))))
-              1)))
+              1))
+         (pointer (oauth-selector-pointer-accent))
+         (title
+           (if (eq (oauth-selector-state-mode state) :logout)
+               "Select provider to logout:"
+               "Select provider to configure:")))
     (render-selector-frame
      (make-selector-frame
       :items options
@@ -585,11 +638,8 @@
        (list :border :border)
        :blank
        (list
-        :title
-        (if (eq (oauth-selector-state-mode state) :logout)
-            "Select provider to logout:"
-            "Select provider to configure:")
-        :overlay)
+        :lines
+        (list (oauth-selector-title-line title width)))
        :blank
        (list :input (oauth-selector-state-query state))
        :blank :viewport :count :blank
@@ -597,34 +647,20 @@
       :item-renderer
       (lambda (option index selected-p total item-width)
         (declare (ignore index total))
-        (let* ((prefix
-                 (if selected-p
-                     (cadr-tui:theme-foreground
-                      :accent "→ " :enabled-p t)
-                     "  "))
-               (name
-                 (cadr-tui:theme-foreground
-                  (if selected-p :accent :text)
-                  (oauth-selector-option-name option)
-                  :enabled-p t))
-               (auth-type
-                 (if show-auth-type-labels-p
-                     (cadr-tui:theme-foreground
-                      :muted
-                      (format nil " [~A]"
-                              (if (eq
-                                   (oauth-selector-option-auth-type
-                                    option)
-                                   :oauth)
-                                  "subscription"
-                                  "API key"))
-                      :enabled-p t)
-                     "")))
-          (selector-component-text-line
-           (concatenate
-            'string prefix name auth-type
-            (oauth-option-status-rendered option))
-           item-width)))
+        (selector-component-text-line
+         (concatenate
+          'string
+          (if selected-p pointer "  ")
+          (cadr-tui:theme-foreground
+           (if selected-p :accent :text)
+           (oauth-selector-option-name option)
+           :enabled-p t)
+          (if show-auth-type-labels-p
+              (oauth-selector-auth-suffix
+               (oauth-selector-option-auth-type option))
+              "")
+          (oauth-option-status-rendered option))
+         item-width))
       :count-renderer
       (lambda (current total item-width)
         (list
@@ -636,16 +672,12 @@
       :empty-renderer
       (lambda (item-width total)
         (declare (ignore total))
-        (list
-         (selector-component-text-line
-          (cadr-tui:theme-foreground
-           :muted
-           (cond
-             ((plusp (length
-                      (oauth-selector-state-options state)))
-              "  No matching providers")
-             ((eq (oauth-selector-state-mode state) :logout)
-              "  No providers logged in. Use /login first.")
-             (t "  No providers available")))
-          item-width))))
+        (oauth-selector-empty-lines
+         (cond
+           ((plusp (length (oauth-selector-state-options state)))
+            :miss)
+           ((eq (oauth-selector-state-mode state) :logout)
+            :logout)
+           (t :none))
+         item-width)))
      width)))

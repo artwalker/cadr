@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-oauth-selector` caches overlay title
+  by (title,width), empty chrome by (kind,width), and interns
+  the accent pointer plus mixed-auth suffixes.
+  Friend-MachineD **215.6→179.5 µs** (~0.83× tip).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after oauth
+  selector invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `render-login-method-selector` caches overlay
   title by (title,width), footer by width, and interns the accent
   pointer. Friend-MachineD **388.7→102.6 µs** (~0.26× tip).
