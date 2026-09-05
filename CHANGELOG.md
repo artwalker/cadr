@@ -7,6 +7,17 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-framed-select-state` interns full paint by
+  (title,message,secs,width,selection,query,height,items). Different
+  knife from discarded chrome invent. Friend-MachineD **66.9→0.3 µs**.
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after framed-select invent.
+  needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after framed-select invent
+  (304→305). G.17 missing.
+
 - Goal 20 invent: `render-user-message-lines` interns paint by
   (text,width,output-pad). Friend-MachineD **64.8→0.1 µs**. Observed
   EQUAL. G.17 missing.

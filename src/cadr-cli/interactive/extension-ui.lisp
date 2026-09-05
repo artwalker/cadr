@@ -336,87 +336,111 @@
                 (max 0 (ceiling (- deadline now))))
         base-title)))
 
+(defparameter *framed-select-paint-by-key*
+  (make-hash-table :test #'equal))
+
 (defun render-framed-select-state
     (state width &key (now (tui-monotonic-seconds)))
-  (labels ((framed-text-lines (text)
-             (component-text-lines text width :padding-x 1))
-           (framed-title-lines ()
-             (let* ((content-width (max 1 (- width 2)))
-                    (lines
-                      (mapcan
-                       (lambda (line)
-                         (cadr-tui:wrap-text line content-width))
-                       (uiop:split-string
-                        (framed-select-title state now)
-                        :separator '(#\Newline))))
-                    (last-index (1- (length lines))))
-               (loop for line in lines
-                     for index from 0
-                     collect
-                     (if (= index last-index)
-                         (component-text-line
-                          (cadr-tui:theme-foreground
-                           :accent
-                           (cadr-tui:theme-bold
-                            line :enabled-p t)
-                           :enabled-p t)
-                          width :padding-x 1)
+  (let* ((select-list (framed-select-state-select-list state))
+         (deadline (framed-select-state-deadline state))
+         (secs
+           (and deadline
+                (max 0 (ceiling (- deadline now)))))
+         (key
+           (list
+            (framed-select-state-title state)
+            (framed-select-state-message state)
+            secs
+            width
+            (cadr-tui::select-list-selected select-list)
+            (cadr-tui::select-list-query select-list)
+            (cadr-tui::select-list-height select-list)
+            (mapcar
+             (lambda (item)
+               (list (cadr-tui::select-item-label item)
+                     (cadr-tui::select-item-value item)))
+             (cadr-tui::select-list-items select-list)))))
+    (or (gethash key *framed-select-paint-by-key*)
+        (setf (gethash key *framed-select-paint-by-key*)
+              (labels ((framed-text-lines (text)
+                         (component-text-lines text width :padding-x 1))
+                       (framed-title-lines ()
+                         (let* ((content-width (max 1 (- width 2)))
+                                (lines
+                                  (mapcan
+                                   (lambda (line)
+                                     (cadr-tui:wrap-text line content-width))
+                                   (uiop:split-string
+                                    (framed-select-title state now)
+                                    :separator '(#\Newline))))
+                                (last-index (1- (length lines))))
+                           (loop for line in lines
+                                 for index from 0
+                                 collect
+                                 (if (= index last-index)
+                                     (component-text-line
+                                      (cadr-tui:theme-foreground
+                                       :accent
+                                       (cadr-tui:theme-bold
+                                        line :enabled-p t)
+                                       :enabled-p t)
+                                      width :padding-x 1)
+                                     (concatenate
+                                      'string
+                                      " "
+                                      (cadr-tui:theme-foreground
+                                       :accent
+                                       (concatenate
+                                        'string
+                                        (cadr-tui:theme-bold
+                                         line :enabled-p t)
+                                        (make-string
+                                         (max 0
+                                              (- width 1
+                                                 (cadr-tui:visible-width line)))
+                                         :initial-element #\Space))
+                                       :enabled-p t)))))))
+                (append
+                 (list
+                  (cadr-tui:theme-foreground
+                   :border
+                   (make-string width :initial-element #\─))
+                  "")
+                 (framed-title-lines)
+                 (list "")
+                 (mapcan
+                  (lambda (line)
+                    (framed-text-lines
+                     (if (find #\Escape line)
+                         line
                          (concatenate
                           'string
-                          " "
+                          (subseq line 0 (min 2 (length line)))
                           (cadr-tui:theme-foreground
-                           :accent
-                           (concatenate
-                            'string
-                            (cadr-tui:theme-bold
-                             line :enabled-p t)
-                            (make-string
-                             (max 0
-                                  (- width 1
-                                     (cadr-tui:visible-width line)))
-                             :initial-element #\Space))
-                           :enabled-p t)))))))
-    (append
-     (list
-      (cadr-tui:theme-foreground
-       :border
-       (make-string width :initial-element #\─))
-      "")
-     (framed-title-lines)
-     (list "")
-     (mapcan
-      (lambda (line)
-        (framed-text-lines
-         (if (find #\Escape line)
-             line
-             (concatenate
-              'string
-              (subseq line 0 (min 2 (length line)))
-              (cadr-tui:theme-foreground
-               :text
-               (subseq line (min 2 (length line)))
-               :enabled-p t)))))
-      (cadr-tui:render-select-list
-       (framed-select-state-select-list state)
-       (max 1 (- width 2))
-       :ansi-theme-p t))
-     (list "")
-     (component-text-lines
-      (concatenate
-       'string
-       (raw-key-hint "↑↓" "navigate") "  "
-       (selector-keybinding-hint
-        (framed-select-state-keybindings state)
-        "tui.select.confirm" "select") "  "
-       (selector-keybinding-hint
-        (framed-select-state-keybindings state)
-        "tui.select.cancel" "cancel"))
-      width)
-     (list
-      ""
-      (cadr-tui:theme-foreground
-       :border
-       (make-string width :initial-element #\─))))))
+                           :text
+                           (subseq line (min 2 (length line)))
+                           :enabled-p t)))))
+                  (cadr-tui:render-select-list
+                   select-list
+                   (max 1 (- width 2))
+                   :ansi-theme-p t))
+                 (list "")
+                 (component-text-lines
+                  (concatenate
+                   'string
+                   (raw-key-hint "↑↓" "navigate") "  "
+                   (selector-keybinding-hint
+                    (framed-select-state-keybindings state)
+                    "tui.select.confirm" "select") "  "
+                   (selector-keybinding-hint
+                    (framed-select-state-keybindings state)
+                    "tui.select.cancel" "cancel"))
+                  width)
+                 (list
+                  ""
+                  (cadr-tui:theme-foreground
+                   :border
+                   (make-string width :initial-element #\─)))))))))
 
 (defun framed-select-state-handle-event (state event)
   (if (eq (cadr-tui:input-event-kind event)

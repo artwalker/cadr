@@ -617,7 +617,9 @@
     ;; (interactive/transcript.lisp).
     ;; +1 Goal 20 user-message-lines invent:
     ;; *user-message-lines-by-key* (interactive/transcript.lisp).
-    (is (= 304 definition-count)
+    ;; +1 Goal 20 framed-select paint invent:
+    ;; *framed-select-paint-by-key* (interactive/extension-ui.lisp).
+    (is (= 305 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
