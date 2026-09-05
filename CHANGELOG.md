@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `short-hash` streams UTF-16 code units
+  without allocating a unit list. Friend-MachineD n=2000
+  ASCII **17.9→14.5 µs** (~0.81× tip). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  short-hash invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: cache sorted `list-provider-definitions`
   keyed by `*provider-definitions*` (invalidate on register /
   rebuild). Friend-MachineD **1.21→0.07 µs**. Observed EQUAL.

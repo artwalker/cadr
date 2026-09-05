@@ -37,7 +37,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_autocomplete.suggest_apply` | 31.0 (cadr µs invent; prior ledger 136.4) | 26.4 | pending remesure | 8.00× | dirent table + command-item bake | invent keep (cadr µs); pairing ratio remesure later | 26.4 | pending remesure | 8.00× | dirent table vs UIOP pathnames | invent keep (cadr µs); pairing ratio remesure later | 26.4 | 5.17× | 8.00× | measure-only pair `5fb0f589d` | invent pause；地板优化另刀 |
 | `tui_keybindings.resolve_match` | 27.7 | 14.8 | 1.88× | 8.00× | measure-only pair `0d2c6c287` | invent pause；地板优化另刀 |
 | `tui_native_modifiers.pressed` | 1.22 | 0.16 | 7.50× | 8.00× | measure-only pair `791ea158e`; Linux no-addon gate (all 0); sub-µs variance | invent pause；地板优化另刀 |
-| `ai_capabilities.short_hash` | 1.5 | 0.9 | 1.70× | 8.00× | measure-only pair `f5e3817db`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `ai_capabilities.short_hash` | 14.5 on n=2000 invent micro (prior ledger 1.5 harness) | 0.9 | pending remesure | 8.00× | invent: stream UTF-16 units no list; remount later | invent kept 2026-09-05 |
 | `ai_capabilities.deferred_tools` | 5.51 | 2.70 | 2.04× | 8.00× | measure-only pair `8924f239d`; sibling of short_hash | invent pause；地板优化另刀 |
 | `ai_capabilities.event_stream` | 1.73 | 1.20 | 1.44× | 8.00× | measure-only pair `eedd1753d`; sibling of short_hash/deferred | invent pause；地板优化另刀 |
 | `cli_support.strip_ansi` | 0.44 (cadr µs invent; prior ledger 1.3) | 0.5 | ~0.88× invent micro vs booked pi | 8.00× | invent: clean-string early return; remount later | invent kept 2026-09-05 |

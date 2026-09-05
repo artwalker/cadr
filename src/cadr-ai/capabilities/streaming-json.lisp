@@ -34,9 +34,17 @@
   "Return the fixed-baseline two-word hash over JavaScript UTF-16 code units."
   (let ((h1 #xdeadbeef)
         (h2 #x41c6ce57))
-    (dolist (unit (javascript-utf16-code-units string))
-      (setf h1 (u32-multiply (logxor h1 unit) 2654435761)
-            h2 (u32-multiply (logxor h2 unit) 1597334677)))
+    (flet ((mix (unit)
+             (setf h1 (u32-multiply (logxor h1 unit) 2654435761)
+                   h2 (u32-multiply (logxor h2 unit) 1597334677))))
+      (loop for character across string
+            for code = (char-code character)
+            do
+            (if (<= code #xffff)
+                (mix code)
+                (let ((adjusted (- code #x10000)))
+                  (mix (+ #xd800 (ash adjusted -10)))
+                  (mix (+ #xdc00 (logand adjusted #x3ff)))))))
     (setf h1
           (logxor
            (u32-multiply (logxor h1 (ash h1 -16)) 2246822507)

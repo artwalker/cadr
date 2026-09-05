@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,183 lines**
+Denominator: **297 files / 130,191 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,150 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,158 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13891,7 +13891,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | `image_runtime.api_provider` |
 | `src/cadr-ai/capabilities/proxy-config.lisp` | 77 | `ai_capabilities.http_proxy` |
 | `src/cadr-ai/capabilities/session-resources.lisp` | 34 | `ai_capabilities.session_resources` |
-| `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
+| `src/cadr-ai/capabilities/streaming-json.lisp` | 170 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
 | `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image`, `image_runtime.openrouter_usage`, `image_runtime.parse_openrouter_images`, `image_runtime.error_result` |
