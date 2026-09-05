@@ -876,27 +876,44 @@
      :width (reduce #'+ layouts :key #'latex-layout-width)
      :baseline baseline)))
 
+(defparameter +latex-marker-group-scanner+
+  (cl-ppcre:create-scanner
+   (format nil "~C([0-9]+)~C"
+           (code-char #xf000) (code-char #xf001)))
+  "Captures marker index digits between U+F000 / U+F001.")
+
+(defparameter +latex-marker-scan-scanner+
+  (cl-ppcre:create-scanner
+   (format nil "~C[0-9]+~C"
+           (code-char #xf000) (code-char #xf001)))
+  "Matches a full layout marker (unused match; kept for parity).")
+
+(defun latex-marker-string (index-string)
+  (with-output-to-string (out)
+    (write-char (code-char #xf000) out)
+    (write-string index-string out)
+    (write-char (code-char #xf001) out)))
+
 (defun latex-render-layout (source nodes)
   (let ((rendered-lines (make-array 0 :adjustable t :fill-pointer 0))
         (first-baseline 0)
         (have-baseline-p nil))
-    (dolist (source-line (cl-ppcre:split "\\n" source))
+    (dolist (source-line
+             (if (find #\Newline source)
+                 (cl-ppcre:split "\\n" source)
+                 (list source)))
       (let ((layouts nil)
             (position 0)
             (previous-node nil))
         (cl-ppcre:do-register-groups
             (index-string)
-            ((format nil "~C([0-9]+)~C"
-                     (code-char #xf000) (code-char #xf001))
+            (+latex-marker-group-scanner+
              source-line)
           (let* ((marker
-                   (format nil "~C~A~C"
-                           (code-char #xf000) index-string
-                           (code-char #xf001)))
+                   (latex-marker-string index-string))
                  (index
                    (cl-ppcre:scan
-                    (format nil "~C[0-9]+~C"
-                            (code-char #xf000) (code-char #xf001))
+                    +latex-marker-scan-scanner+
                     source-line))
                  ;; do-register-groups does not expose match offsets;
                  ;; find this marker from the current position.
@@ -930,10 +947,12 @@
                        (text
                          (cond
                            ((plusp (length trimmed))
-                            (format nil "~A~A~A"
-                                    (if preserve-leading " " "")
-                                    trimmed
-                                    (if preserve-trailing " " "")))
+                            (with-output-to-string (out)
+                              (when preserve-leading
+                                (write-char #\Space out))
+                              (write-string trimmed out)
+                              (when preserve-trailing
+                                (write-char #\Space out))))
                            ((or preserve-leading
                                 preserve-trailing)
                             " ")
@@ -1939,12 +1958,16 @@ syntax.  DISPLAY-P stacks fractions and operator limits vertically."
                    0))))
       (latex-trim-end
        (literal-string-replace-all
-        (format nil "~{~A~^~%~}"
-                (map 'list
-                     (lambda (line)
-                       (latex-trim-end
-                        (subseq line
-                                (min indentation
-                                     (length line)))))
-                     lines))
+        (with-output-to-string (out)
+          (loop for index from 0
+                for line across lines
+                do
+                   (when (plusp index)
+                     (write-char #\Newline out))
+                   (write-string
+                    (latex-trim-end
+                     (subseq line
+                             (min indentation
+                                  (length line))))
+                    out)))
         +latex-protected-space+ " ")))))

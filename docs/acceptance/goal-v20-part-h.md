@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,468 lines**
+Denominator: **297 files / 130,491 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,435 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,458 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14076,7 +14076,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/keybindings.lisp` | 269 | `tui_keybindings.resolve_match` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/kill-ring.lisp` | 38 | `tui_kill_ring.push_peek` |
-| `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
+| `src/cadr-tui/latex.lisp` | 1,973 | `tui_latex.render` |
 | `src/cadr-tui/mermaid/index.lisp` | 109 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/source-box.lisp` | 93 | `tui_mermaid.source_box` |
 | `src/cadr-tui/mermaid/transform.lisp` | 428 | `tui_mermaid.transform` |

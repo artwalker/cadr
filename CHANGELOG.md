@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `latex-render-layout` caches marker scanners
+  and builds markers/joins without per-hit `format` regex
+  strings; `render-latex` joins layout lines via a stream.
+  Friend-MachineD **50.1→31.5 µs** (~0.63× tip). Observed
+  EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after latex
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `glob-files` matches during the tree walk
   with a cached scanner and sorts only K relatives (no
   N-pathname sort + rematch). Friend-MachineD scaled harness
