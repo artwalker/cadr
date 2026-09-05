@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-tui-entry-uncached` interns host-nil paint by
+  content key (skips tool/bash/custom/auth-url). Friend-MachineD
+  **156.0→0.4 µs**. Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after entry-uncached invent.
+  needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after entry-uncached invent
+  (305→308). G.17 missing.
+
 - Goal 20 invent: `render-framed-select-state` interns full paint by
   (title,message,secs,width,selection,query,height,items). Different
   knife from discarded chrome invent. Friend-MachineD **66.9→0.3 µs**.

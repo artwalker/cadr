@@ -841,7 +841,88 @@
                   width)
                  (list (update-notification-border-line width))))))))
 
+(defparameter *tui-entry-uncached-by-key*
+  (make-hash-table :test #'equal))
+
+(defun tui-entry-uncached-paint-key
+    (entry width hide-thinking-block-p
+     hidden-thinking-label mermaid-mode)
+  "Equal-safe content key when extension-host is nil and paint ignores now."
+  (let ((type (tui-entry-type entry)))
+    (case type
+      ((:tool :bash-execution :custom-message :custom-entry
+        :auth-url)
+       nil)
+      (:assistant
+       (list type
+             (tui-entry-text entry)
+             (tui-entry-content-blocks entry)
+             width
+             hide-thinking-block-p
+             hidden-thinking-label
+             mermaid-mode
+             (tui-entry-stop-reason entry)
+             (tui-entry-error-message entry)
+             (tui-entry-has-tool-calls-p entry)))
+      ((:skill-invocation :branch-summary :compaction-summary)
+       (list type
+             (tui-entry-expanded-p entry)
+             (tui-entry-label entry)
+             (tui-entry-text entry)
+             (tui-entry-tokens-before entry)
+             width))
+      ((:user :command-markdown)
+       (list type
+             (tui-entry-text entry)
+             (tui-entry-label entry)
+             width
+             mermaid-mode))
+      ((:notice :status :error :warning
+        :project-trust-warning :success :debug-written
+        :version-update :package-update)
+       (list type
+             (tui-entry-text entry)
+             (tui-entry-label entry)
+             (and (eq type :package-update)
+                  (getf (tui-entry-custom-options entry)
+                        :packages))
+             width))
+      (otherwise
+       (list type
+             (tui-entry-text entry)
+             (tui-entry-label entry)
+             width)))))
+
 (defun render-tui-entry-uncached
+    (entry width &key extension-host now
+                      hide-thinking-block-p
+                      hidden-thinking-label
+                      (mermaid-mode "streaming"))
+  (let* ((key
+           (and (null extension-host)
+                (tui-entry-uncached-paint-key
+                 entry width
+                 hide-thinking-block-p
+                 hidden-thinking-label
+                 mermaid-mode)))
+         (cached
+           (and key
+                (gethash key *tui-entry-uncached-by-key*))))
+    (or cached
+        (let ((lines
+                (render-tui-entry-uncached-compute
+                 entry width
+                 :extension-host extension-host
+                 :now now
+                 :hide-thinking-block-p hide-thinking-block-p
+                 :hidden-thinking-label hidden-thinking-label
+                 :mermaid-mode mermaid-mode)))
+          (when key
+            (setf (gethash key *tui-entry-uncached-by-key*)
+                  lines))
+          lines))))
+
+(defun render-tui-entry-uncached-compute
     (entry width &key extension-host now
                       hide-thinking-block-p
                       hidden-thinking-label

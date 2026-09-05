@@ -619,7 +619,10 @@
     ;; *user-message-lines-by-key* (interactive/transcript.lisp).
     ;; +1 Goal 20 framed-select paint invent:
     ;; *framed-select-paint-by-key* (interactive/extension-ui.lisp).
-    (is (= 305 definition-count)
+    ;; +3 Goal 20 entry-uncached paint invent:
+    ;; *tui-entry-uncached-by-key*, tui-entry-uncached-paint-key, and
+    ;; render-tui-entry-uncached-compute (interactive/transcript.lisp).
+    (is (= 308 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
