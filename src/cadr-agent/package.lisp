@@ -295,6 +295,8 @@
    #:session-list-info-modified
    #:session-list-info-message-count
    #:session-list-info-first-message
+   #:session-list-info-all-messages-text
+   #:session-list-info-parent-session
    #:read-session-list-info
    #:resume-session
    #:continue-session

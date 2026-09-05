@@ -400,24 +400,49 @@
       (format nil "~{~A~^~%~}" corpus-texts)
      :payload session)))
 
+(defun session-list-info-to-search-record (info)
+  (make-session-search-record
+   :id (cadr-agent:session-list-info-id info)
+   :path (cadr-agent:session-list-info-path info)
+   :parent-path
+   (cadr-agent:session-list-info-parent-session info)
+   :name (cadr-agent:session-list-info-name info)
+   :cwd
+   (let ((cwd (cadr-agent:session-list-info-cwd info)))
+     (and cwd (string-right-trim "/" cwd)))
+   :first-message
+   (or (cadr-agent:session-list-info-first-message info)
+       "(no messages)")
+   :message-count
+   (cadr-agent:session-list-info-message-count info)
+   :modified
+   (cadr-agent:session-list-info-modified info)
+   :all-messages-text
+   (cadr-agent:session-list-info-all-messages-text info)
+   :payload info))
+
 (defun session-select-items-to-records (items)
   (loop
     for item in items
     for value = (cadr-tui:select-item-value item)
     collect
-    (if (typep value 'cadr-agent:session)
-        (session-to-search-record value)
-        (make-session-search-record
-         :id
-         (princ-to-string value)
-         :path
-         (princ-to-string value)
-         :modified 0
-         :first-message
-         (cadr-tui:select-item-label item)
-         :all-messages-text
-         (cadr-tui:select-item-label item)
-         :payload value))))
+    (cond
+      ((typep value 'cadr-agent:session)
+       (session-to-search-record value))
+      ((typep value 'cadr-agent:session-list-info)
+       (session-list-info-to-search-record value))
+      (t
+       (make-session-search-record
+        :id
+        (princ-to-string value)
+        :path
+        (princ-to-string value)
+        :modified 0
+        :first-message
+        (cadr-tui:select-item-label item)
+        :all-messages-text
+        (cadr-tui:select-item-label item)
+        :payload value)))))
 
 (defun session-selector-source-sessions (selector)
   ;; Baseline session-selector.ts:1003-1018 — toggling to All before
@@ -627,10 +652,15 @@
        name)
       (let ((payload
               (session-search-record-payload record)))
-        (when (typep payload 'cadr-agent:session)
-          (setf
-           (cadr-agent:session-name payload)
-           name)))))
+        (cond
+          ((typep payload 'cadr-agent:session)
+           (setf
+            (cadr-agent:session-name payload)
+            name))
+          ((typep payload 'cadr-agent:session-list-info)
+           (setf
+            (cadr-agent:session-list-info-name payload)
+            name)))))
   records)
 
 (defun session-selector-confirm-rename (selector)

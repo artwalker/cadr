@@ -141,7 +141,8 @@
   (created 0 :type integer)
   (modified 0 :type integer)
   (message-count 0 :type integer)
-  first-message)
+  first-message
+  (all-messages-text "" :type string))
 
 (defun session-list-info-file-mtime-ms (path)
   (handler-case
@@ -171,7 +172,8 @@
               (header-scanned 0)
               (mtime-ms
                 (session-list-info-file-mtime-ms path))
-              (last-activity 0))
+              (last-activity 0)
+              (corpus nil))
           (labels
               ((blank-p (octets start end)
                  (loop for index from start below end
@@ -222,80 +224,62 @@
                (note-message (entry)
                  (incf (session-list-info-message-count info))
                  (let ((message (session-entry-message entry)))
-                   (cond
-                     ((session-json-message-p message)
-                      (let ((role
-                              (session-json-message-role
-                               message))
-                            (timestamp
-                              (session-json-message-timestamp
-                               message)))
-                        (when
-                            (and
-                             (stringp role)
-                             (or (string= role "user")
-                                 (string= role "assistant"))
-                             (integerp timestamp))
-                          (setf last-activity
-                                (max last-activity timestamp)))
-                        (when
-                            (and
-                             (null
-                              (session-list-info-first-message
-                               info))
-                             (string= role "user"))
-                          (let ((text
-                                  (content-text
-                                   (session-json-message-content
-                                    message)
-                                   "")))
+                   (flet ((note-text (role timestamp text)
                             (when
-                                (plusp
-                                 (length
-                                  (string-trim
-                                   '(#\Space #\Tab #\Newline
-                                     #\Return)
-                                   text)))
-                              (setf
-                               (session-list-info-first-message
-                                info)
-                               text))))))
-                     ((typep message 'cadr-ai:user-message)
-                      (let ((timestamp
-                              (cadr-ai:user-message-timestamp
-                               message)))
-                        (when (integerp timestamp)
-                          (setf last-activity
-                                (max last-activity timestamp)))
-                        (when
-                            (null
-                             (session-list-info-first-message
-                              info))
-                          (let ((text
-                                  (content-text
-                                   (cadr-ai:user-message-content
-                                    message)
-                                   "")))
+                                (and
+                                 (stringp role)
+                                 (or (string= role "user")
+                                     (string= role "assistant"))
+                                 (integerp timestamp))
+                              (setf last-activity
+                                    (max last-activity timestamp)))
                             (when
-                                (plusp
-                                 (length
-                                  (string-trim
-                                   '(#\Space #\Tab #\Newline
-                                     #\Return)
-                                   text)))
-                              (setf
-                               (session-list-info-first-message
-                                info)
-                               text))))))
-                     ((typep message
-                             'cadr-ai:assistant-message)
-                      (let ((timestamp
-                              (cadr-ai:assistant-message-timestamp
-                               message)))
-                        (when (integerp timestamp)
-                          (setf last-activity
-                                (max last-activity
-                                     timestamp))))))))
+                                (and
+                                 (stringp text)
+                                 (plusp
+                                  (length
+                                   (string-trim
+                                    '(#\Space #\Tab #\Newline
+                                      #\Return)
+                                    text)))
+                                 (or (string= role "user")
+                                     (string= role "assistant")))
+                              (push text corpus)
+                              (when
+                                  (and
+                                   (null
+                                    (session-list-info-first-message
+                                     info))
+                                   (string= role "user"))
+                                (setf
+                                 (session-list-info-first-message
+                                  info)
+                                 text)))))
+                     (cond
+                       ((session-json-message-p message)
+                        (note-text
+                         (session-json-message-role message)
+                         (session-json-message-timestamp message)
+                         (content-text
+                          (session-json-message-content message)
+                          "")))
+                       ((typep message 'cadr-ai:user-message)
+                        (note-text
+                         "user"
+                         (cadr-ai:user-message-timestamp message)
+                         (content-text
+                          (cadr-ai:user-message-content message)
+                          "")))
+                       ((typep message
+                               'cadr-ai:assistant-message)
+                        (note-text
+                         "assistant"
+                         (cadr-ai:assistant-message-timestamp
+                          message)
+                         (content-text
+                          (cadr-ai:assistant-message-content
+                           message)
+                          "")))))))
                (accept-entry (octets start end)
                  (let ((entry
                          (handler-case
@@ -381,7 +365,11 @@
               (setf (session-list-info-modified info)
                     (if (plusp last-activity)
                         last-activity
-                        mtime-ms)))
+                        mtime-ms)
+                    (session-list-info-all-messages-text info)
+                    (if corpus
+                        (format nil "~{~A~^ ~}" (nreverse corpus))
+                        "")))
             info)))
     (error () nil)))
 

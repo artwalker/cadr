@@ -23,6 +23,10 @@ tag/Release step.
   path (no full-graph list). FiveAM continue/resume/list
   checks pass. G.17 missing.
 
+- Goal 20: session resume/TUI list paths use
+  `session-list-info` (incl. all-messages corpus) and load
+  only on select. G.17 missing.
+
 - Goal 20 invent: bake autocomplete command items on the
   provider once; slash filter reuses them. Friend-MachineD
   n=50 `suggest_apply` **46.9→31.0 µs** (dirent tip baseline).

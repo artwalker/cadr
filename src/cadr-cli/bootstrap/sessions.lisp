@@ -14,18 +14,38 @@
    (uiop:string-suffix-p argument ".jsonl")))
 
 (defun find-session-by-id-or-prefix
-    (argument sessions)
-  (or
-   (find
-    argument sessions
-    :key #'cadr-agent:session-id
-    :test #'string=)
-   (find-if
-    (lambda (session)
-      (uiop:string-prefix-p
-       argument
-       (cadr-agent:session-id session)))
-    sessions)))
+    (argument candidates)
+  (flet ((candidate-id (candidate)
+           (cond
+             ((typep candidate 'cadr-agent:session)
+              (cadr-agent:session-id candidate))
+             ((typep candidate 'cadr-agent:session-list-info)
+              (cadr-agent:session-list-info-id candidate))
+             (t "")))
+         (materialize (candidate)
+           (cond
+             ((typep candidate 'cadr-agent:session)
+              candidate)
+             ((typep candidate 'cadr-agent:session-list-info)
+              (cadr-agent:load-session
+               (cadr-agent:session-list-info-path
+                candidate)))
+             (t nil))))
+    (or
+     (let ((exact
+             (find
+              argument candidates
+              :key #'candidate-id
+              :test #'string=)))
+       (and exact (materialize exact)))
+     (let ((prefix
+             (find-if
+              (lambda (candidate)
+                (uiop:string-prefix-p
+                 argument
+                 (candidate-id candidate)))
+              candidates)))
+       (and prefix (materialize prefix))))))
 
 (defun resolve-session-reference
     (argument directory cwd)
@@ -39,11 +59,11 @@
       (or
        (find-session-by-id-or-prefix
         argument
-        (cadr-agent:list-sessions
+        (cadr-agent:list-session-infos
          :directory directory :cwd cwd))
        (find-session-by-id-or-prefix
         argument
-        (cadr-agent:list-sessions
+        (cadr-agent:list-session-infos
          :directory directory)))))
 
 (defun resolve-fork-source-session
@@ -171,9 +191,9 @@
             session-id
             (find
              session-id
-             (cadr-agent:list-sessions
+             (cadr-agent:list-session-infos
               :directory directory :cwd cwd)
-             :key #'cadr-agent:session-id
+             :key #'cadr-agent:session-list-info-id
              :test #'string=))
          (error
           'cadr-ai:configuration-error
@@ -272,28 +292,32 @@
       (cadr-agent:create-session
        :directory directory :cwd cwd)))
     (session-id
-     (or
-      (find
-       session-id
-       (cadr-agent:list-sessions
-        :directory directory :cwd cwd)
-       :key #'cadr-agent:session-id
-       :test #'string=)
-      (progn
-        ;; Baseline main.ts:393-399 — yellow warning on stderr.
-        (format
-         output
-         "~A~%"
-         (cli-warning-text
-          output
+     (let ((info
+             (find
+              session-id
+              (cadr-agent:list-session-infos
+               :directory directory :cwd cwd)
+              :key #'cadr-agent:session-list-info-id
+              :test #'string=)))
+       (or
+        (and info
+             (cadr-agent:load-session
+              (cadr-agent:session-list-info-path info)))
+        (progn
+          ;; Baseline main.ts:393-399 — yellow warning on stderr.
           (format
-           nil
-           "Warning: No project session found with id '~A'; creating a new session with that id."
-           session-id)))
-        (finish-output output)
-        (cadr-agent:create-session
-         :directory directory :cwd cwd
-         :id session-id))))
+           output
+           "~A~%"
+           (cli-warning-text
+            output
+            (format
+             nil
+             "Warning: No project session found with id '~A'; creating a new session with that id."
+             session-id)))
+          (finish-output output)
+          (cadr-agent:create-session
+           :directory directory :cwd cwd
+           :id session-id)))))
     (t
      (cadr-agent:create-session
       :directory directory :cwd cwd))))
@@ -328,8 +352,8 @@ interrupt (baseline selectSession onExit: silent exit 0)."
            (make-session-selector-state
             :current-sessions
             (mapcar
-             #'session-to-search-record
-             (cadr-agent:list-sessions
+             #'session-list-info-to-search-record
+             (cadr-agent:list-session-infos
               :directory directory :cwd cwd))
             :all-sessions nil
             :delete-function #'delete-session-file
@@ -357,8 +381,8 @@ interrupt (baseline selectSession onExit: silent exit 0)."
                    (session-selector-complete-all-load
                     state token
                     (mapcar
-                     #'session-to-search-record
-                     (cadr-agent:list-sessions
+                     #'session-list-info-to-search-record
+                     (cadr-agent:list-session-infos
                       :directory directory)))
                  (condition (condition)
                    (session-selector-fail-all-load
@@ -369,7 +393,13 @@ interrupt (baseline selectSession onExit: silent exit 0)."
              (:select
               (setf
                selected-path
-               (namestring (cadr-agent:session-path value))
+               (namestring
+                (cond
+                  ((typep value 'cadr-agent:session)
+                   (cadr-agent:session-path value))
+                  ((typep value 'cadr-agent:session-list-info)
+                   (cadr-agent:session-list-info-path value))
+                  (t value)))
                done-p t))
              (:cancel
               (setf done-p t))

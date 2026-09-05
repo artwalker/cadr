@@ -1814,48 +1814,54 @@
                   (cadr-agent:session-path clone)))))
          (session-items ()
            (loop
-             for candidate in
-             (cadr-agent:list-sessions
+             for info in
+             (cadr-agent:list-session-infos
               :directory session-directory
               :cwd cwd)
              collect
              (cadr-tui:make-select-item
               :label
               (format nil "~A  ~D messages"
-                      (cadr-agent:session-id
-                       candidate)
-                      (length
-                       (cadr-agent:session-messages
-                        candidate)))
-              :value candidate)))
+                      (cadr-agent:session-list-info-id info)
+                      (cadr-agent:session-list-info-message-count
+                       info))
+              :value info)))
          (all-session-items (&optional progress-function)
            (loop
-             for candidate in
-             (cadr-agent:list-sessions
+             for info in
+             (cadr-agent:list-session-infos
               :directory session-directory
               :progress-function progress-function)
              collect
              (cadr-tui:make-select-item
               :label
               (format nil "~A  ~D messages"
-                      (cadr-agent:session-id
-                       candidate)
-                      (length
-                       (cadr-agent:session-messages
-                        candidate)))
-              :value candidate)))
+                      (cadr-agent:session-list-info-id info)
+                      (cadr-agent:session-list-info-message-count
+                       info))
+              :value info)))
          (current-session-display-state ()
            (let ((current
                    (cadr-agent:agent-session
                     agent)))
              (session-compaction-display-state current)))
          (select-session (candidate)
-           (switch-agent-session agent candidate)
-           (values
-            (cadr-agent:session-id candidate)
-            (cadr-agent:session-messages
-             candidate)
-            (cadr-agent:session-path candidate)))
+           (let ((session
+                   (cond
+                     ((typep candidate 'cadr-agent:session)
+                      candidate)
+                     ((typep candidate
+                             'cadr-agent:session-list-info)
+                      (cadr-agent:load-session
+                       (cadr-agent:session-list-info-path
+                        candidate)))
+                     (t
+                      (cadr-agent:load-session candidate)))))
+             (switch-agent-session agent session)
+             (values
+              (cadr-agent:session-id session)
+              (cadr-agent:session-messages session)
+              (cadr-agent:session-path session))))
          (current-session-tree ()
            (session-tree-selector-data
             (cadr-agent:agent-session agent)))
