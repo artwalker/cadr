@@ -55,6 +55,11 @@
   ;; v0.85.1 tui-alt-screen.ts copyOnSelect: default true; when false
   ;; mouse release leaves the highlight and Ctrl+X copies it.
   (copy-on-select-p t :type boolean)
+  ;; pi@d981de122 tui-alt-screen.ts scrollToEndIndicator — when the
+  ;; transcript is scrolled up, paint a centered label on the last
+  ;; viewport row. Nil disables the overlay.
+  (scroll-to-end-indicator-function nil)
+  (scroll-to-end-indicator-rect nil)
   image-protocol
   saved-capabilities
   ;; Stashed main-screen render state for live TUI-mode round-trips
@@ -79,11 +84,12 @@
        (mouse-p t)
        (show-hardware-cursor-p nil)
        (clear-on-shrink-p nil)
-      (scrollbar-mode :auto)
+       (scrollbar-mode :auto)
        (exit-output-mode :transcript)
        copy-selection-function
        (copy-on-select-p t)
-       open-url-function)
+       open-url-function
+       scroll-to-end-indicator-function)
   (%make-terminal-renderer
    :terminal terminal
    :alt-screen-p (not (null alt-p))
@@ -104,7 +110,9 @@
        :transcript)
    :copy-selection-function copy-selection-function
    :copy-on-select-p (not (null copy-on-select-p))
-   :open-url-function open-url-function))
+   :open-url-function open-url-function
+   :scroll-to-end-indicator-function
+   scroll-to-end-indicator-function))
 
 (defun renderer-open-search (renderer)
   ;; Baseline tui-alt-screen.ts openSearch: focus the existing bar or
@@ -1043,16 +1051,33 @@ word-navigation character classes, then join word runs across '-' and
               (min
                (1- (terminal-rows terminal))
                (getf event :y))))
+           (viewport-column
+             (max
+              0
+              (min
+               (1- (terminal-columns terminal))
+               (getf event :x))))
            (point
              (cons
               (+ (terminal-renderer-scroll-top
                   renderer)
                  viewport-row)
-              (max
-               0
-               (min
-                (1- (terminal-columns terminal))
-                (getf event :x))))))
+              viewport-column))
+           (jump-rect
+             (terminal-renderer-scroll-to-end-indicator-rect
+              renderer)))
+      ;; pi@d981de122 handleScrollToEndIndicatorMouseEvent
+      (when
+          (and jump-rect
+               (not (getf event :release-p))
+               (zerop (logand button 32))
+               (= viewport-row (getf jump-rect :row))
+               (<= (getf jump-rect :column) viewport-column)
+               (< viewport-column
+                  (+ (getf jump-rect :column)
+                     (getf jump-rect :width))))
+        (renderer-scroll-to-bottom renderer)
+        (return-from renderer-handle-mouse t))
       (cond
         ((getf event :release-p)
          (when

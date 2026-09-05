@@ -651,6 +651,41 @@
      (format nil "~C[<73;1;1M" #\Escape))
     (is (= 18 (cadr-tui:renderer-viewport-top renderer)))))
 
+(test alt-screen-jump-to-latest-indicator-when-scrolled-up
+  ;; pi@d981de122 tui-alt-screen.ts:1618-1635
+  (let* ((terminal
+           (make-alt-recording-terminal :rows 4 :columns 48))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal
+            :alt-p t
+            :scroll-to-end-indicator-function
+            (lambda ()
+              " ↓ Jump to latest message · End ")))
+         (lines
+           (loop for index from 1 to 20
+                 collect
+                 (format nil "line ~D" index))))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer lines)
+    (cadr-tui:renderer-scroll-to-top renderer)
+    (alt-render renderer lines)
+    (is
+     (alt-write-containing-p
+      terminal "Jump to latest message"))
+    (let ((rect
+            (cadr-tui::terminal-renderer-scroll-to-end-indicator-rect
+             renderer)))
+      (is (not (null rect)))
+      (cadr-tui:renderer-handle-input
+       renderer
+       (format
+        nil "~C[<0;~D;~DM"
+        #\Escape
+        (1+ (getf rect :column))
+        (1+ (getf rect :row))))
+      (is (cadr-tui:renderer-following-output-p renderer)))))
+
 (test alt-screen-restores-terminal-before-exit-and-prints-document
   (let* ((terminal
            (make-alt-recording-terminal :rows 3))

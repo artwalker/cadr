@@ -14,6 +14,7 @@
     ("thinkingText" . :thinking-text)
     ("selectedBg" . :selected-bg)
     ("scrollbarThumb" . :scrollbar-thumb)
+    ("scrollbarTrack" . :scrollbar-track)
     ("searchMatchBg" . :search-match-bg)
     ("searchMatchText" . :search-match-text)
     ("userMessageBg" . :user-message-bg)
@@ -225,7 +226,7 @@
              variables))
            overrides))
        ;; pi@d981de122 theme.ts:326-332 — optional scrollbarThumb
-       ;; falls back to selectedBg.
+       ;; falls back to selectedBg; scrollbarTrack falls back to muted.
        (unless
            (nth-value 1
                       (gethash "scrollbarThumb"
@@ -235,6 +236,18 @@
            :scrollbar-thumb
            (resolve-tui-theme-value
             (gethash "selectedBg" colors)
+            variables))
+          overrides))
+       (unless
+           (nth-value 1
+                      (gethash "scrollbarTrack"
+                               colors))
+         (push
+          (cons
+           :scrollbar-track
+           (resolve-tui-theme-value
+            (or (gethash "muted" colors)
+                (gethash "dim" colors))
             variables))
           overrides))
        ;; v0.85.1: the search-match colors fall back to selectedBg/text.

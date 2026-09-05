@@ -181,6 +181,61 @@
           lines)
         lines)))
 
+(defun composite-scroll-to-end-indicator
+    (renderer lines width height)
+  ;; pi@d981de122 tui-alt-screen.ts:1618-1635 — when follow-end is
+  ;; armed but the viewport is not at the bottom, center the jump
+  ;; label on the last transcript row (leaving the scrollbar column).
+  (setf (terminal-renderer-scroll-to-end-indicator-rect renderer)
+        nil)
+  (let ((indicator
+          (terminal-renderer-scroll-to-end-indicator-function
+           renderer)))
+    (unless
+        (and indicator
+             (functionp indicator)
+             (not (terminal-renderer-stick-to-bottom-p renderer))
+             (plusp height)
+             (consp lines))
+      (return-from composite-scroll-to-end-indicator lines))
+    (let* ((row (1- (min height (length lines))))
+           (line (nth row lines))
+           (available-width
+             (if (alt-scrollbar-visible-p
+                  renderer
+                  (terminal-renderer-content-line-count renderer)
+                  height)
+                 (max 0 (1- width))
+                 width)))
+      (when (or (null line) (image-line-p line)
+                (<= available-width 0))
+        (return-from composite-scroll-to-end-indicator lines))
+      (let* ((raw (funcall indicator))
+             (text
+               (if (stringp raw)
+                   (truncate-to-width raw available-width "")
+                   ""))
+             (text-width (visible-width text)))
+        (when (zerop text-width)
+          (return-from composite-scroll-to-end-indicator lines))
+        (let ((column
+                (floor (- available-width text-width) 2)))
+          (setf (nth row lines)
+                (concatenate
+                 'string
+                 (slice-by-column line 0 column t)
+                 text
+                 (slice-by-column
+                  line (+ column text-width)
+                  (max 0 (- (visible-width line)
+                            (+ column text-width)))
+                  t)))
+          (setf
+           (terminal-renderer-scroll-to-end-indicator-rect
+            renderer)
+           (list :row row :column column :width text-width))
+          lines)))))
+
 (defun alt-viewport-lines
     (renderer document height)
   (let* ((top
@@ -483,9 +538,12 @@
                         line 0 width t))))
            (current
              (overlay-search-bar renderer current width))
-          (current
-            (apply-alt-scrollbar
-             renderer current width height))
+           (current
+             (composite-scroll-to-end-indicator
+              renderer current width height))
+           (current
+             (apply-alt-scrollbar
+              renderer current width height))
            (previous
              (terminal-renderer-previous-lines
               renderer))

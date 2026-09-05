@@ -173,7 +173,28 @@ interactive-mode.ts:5956-5960).")
          (progn (copy-to-clipboard text) t)
        (condition () nil)))
    :open-url-function
-   #'open-tui-url))
+   #'open-tui-url
+   :scroll-to-end-indicator-function
+   ;; pi@d981de122 tui-renderer.ts scrollToEndIndicator
+   (when alt-p
+     (lambda ()
+       (let* ((shortcut
+                (key-display-text "tui.altScreen.bottom"))
+              (label
+                (format
+                 nil
+                 " ↓ Jump to latest message~A "
+                 (if (and shortcut (plusp (length shortcut)))
+                     (format nil " · ~A" shortcut)
+                     ""))))
+         (concatenate
+          'string
+          (cadr-tui:theme-background-ansi
+           :selected-bg :enabled-p t)
+          (cadr-tui:theme-foreground-ansi
+           :text :enabled-p t)
+          label
+          (format nil "~C[39;49m" #\Escape)))))))
 
 (defun route-tui-submission
     (line busy-p busy-input-function
