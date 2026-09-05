@@ -602,7 +602,9 @@
     ;; +2 Goal 20 package-notification invent:
     ;; *update-notification-border-by-width* and
     ;; *package-update-notification-by-key* (interactive/transcript.lisp).
-    (is (= 295 definition-count)
+    ;; +1 Goal 20 version-notification invent:
+    ;; *version-update-notification-by-key* (interactive/transcript.lisp).
+    (is (= 296 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

@@ -674,6 +674,8 @@
   (make-hash-table :test #'eql))
 (defparameter *package-update-notification-by-key*
   (make-hash-table :test #'equal))
+(defparameter *version-update-notification-by-key*
+  (make-hash-table :test #'equal))
 
 (defun update-notification-border-line (width)
   (or (gethash width *update-notification-border-by-width*)
@@ -690,63 +692,68 @@
    width))
 
 (defun render-version-update-notification (entry width)
-  (let* ((slug (cadr-ai::cadr-product-slug))
-         (version (tui-entry-text entry))
-         (action
-           (cadr-tui:theme-foreground
-            :accent
-            (format nil "~A update" slug)
-            :enabled-p t))
-         (instruction
-           (concatenate
-            'string
-            (cadr-tui:theme-foreground
-             :muted
-             (format nil "New version ~A is available. Run " version)
-             :enabled-p t)
-            action))
-         (changelog-url (cadr-ai::cadr-changelog-url))
-         (changelog
-           (concatenate
-            'string
-            (cadr-tui:theme-foreground
-             :muted "Changelog: " :enabled-p t)
-            (let ((styled-url
-                    (cadr-tui:theme-foreground
-                     :accent changelog-url :enabled-p t)))
-              (if
-                  (cadr-tui:terminal-capabilities-hyperlinks-p
-                   (cadr-tui:get-terminal-capabilities))
-                  (cadr-tui:terminal-hyperlink
-                   styled-url changelog-url)
-                  styled-url))))
-         (note (tui-entry-label entry)))
-    (append
-     (list "" (update-notification-border-line width))
-     (update-notification-text-lines
-      (format nil "~A~%~A"
-              (cadr-tui:theme-bold
-               (cadr-tui:theme-foreground
-                :warning "Update Available" :enabled-p t)
-               :enabled-p t)
-              instruction)
-      width)
-     (when note
-       (append
-        (list "")
-        (cadr-tui:render-markdown
-         note width
-         :padding-x 1
-         :ansi-theme-p t
-         :default-style-function
-         (lambda (text)
-           (cadr-tui:theme-foreground
-            :muted text :enabled-p t))
-         :syntax-highlight-function
-         #'tui-syntax-highlight)
-        (list "")))
-     (update-notification-text-lines changelog width)
-     (list (update-notification-border-line width)))))
+  (let* ((version (tui-entry-text entry))
+         (note (tui-entry-label entry))
+         (hyperlinks-p
+           (cadr-tui:terminal-capabilities-hyperlinks-p
+            (cadr-tui:get-terminal-capabilities)))
+         (key (list version note width hyperlinks-p)))
+    (or (gethash key *version-update-notification-by-key*)
+        (setf (gethash key *version-update-notification-by-key*)
+              (let* ((slug (cadr-ai::cadr-product-slug))
+                     (action
+                       (cadr-tui:theme-foreground
+                        :accent
+                        (format nil "~A update" slug)
+                        :enabled-p t))
+                     (instruction
+                       (concatenate
+                        'string
+                        (cadr-tui:theme-foreground
+                         :muted
+                         (format nil "New version ~A is available. Run "
+                                 version)
+                         :enabled-p t)
+                        action))
+                     (changelog-url (cadr-ai::cadr-changelog-url))
+                     (changelog
+                       (concatenate
+                        'string
+                        (cadr-tui:theme-foreground
+                         :muted "Changelog: " :enabled-p t)
+                        (let ((styled-url
+                                (cadr-tui:theme-foreground
+                                 :accent changelog-url :enabled-p t)))
+                          (if hyperlinks-p
+                              (cadr-tui:terminal-hyperlink
+                               styled-url changelog-url)
+                              styled-url)))))
+                (append
+                 (list "" (update-notification-border-line width))
+                 (update-notification-text-lines
+                  (format nil "~A~%~A"
+                          (cadr-tui:theme-bold
+                           (cadr-tui:theme-foreground
+                            :warning "Update Available" :enabled-p t)
+                           :enabled-p t)
+                          instruction)
+                  width)
+                 (when note
+                   (append
+                    (list "")
+                    (cadr-tui:render-markdown
+                     note width
+                     :padding-x 1
+                     :ansi-theme-p t
+                     :default-style-function
+                     (lambda (text)
+                       (cadr-tui:theme-foreground
+                        :muted text :enabled-p t))
+                     :syntax-highlight-function
+                     #'tui-syntax-highlight)
+                    (list "")))
+                 (update-notification-text-lines changelog width)
+                 (list (update-notification-border-line width))))))))
 
 (defun render-package-update-notification (entry width)
   (let* ((packages

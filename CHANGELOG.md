@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-version-update-notification` interns the
+  full paint by (version,note,width,hyperlinks). Friend-MachineD
+  **310.8→10.3 µs** (~0.03× tip). Observed EQUAL. G.17 missing.
+
 - Goal 20 invent: `render-package-update-notification` caches full
   paint by (packages,width) and reuses width-keyed warning borders.
   Friend-MachineD **214.9→7.4 µs** (~0.03× tip). Observed EQUAL.
