@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `glob-files` matches during the tree walk
+  with a cached scanner and sorts only K relatives (no
+  N-pathname sort + rematch). Friend-MachineD scaled harness
+  fixture **22892→17173 µs** (~0.75× tip). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after glob-files
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `find-files` matches during the tree walk
   and sorts only K relative hits (no N-pathname sort +
   rematch). Friend-MachineD scaled fixture **33049→23994 µs**

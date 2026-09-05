@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,437 lines**
+Denominator: **297 files / 130,468 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,404 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,435 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14034,7 +14034,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/bash.lisp` | 591 | `bash_tool.append_status`, `bash_tool.live_output`, `bash_tool.make_tool`, `bash_tool.normalized_extension`, `bash_tool.output_path`, `bash_tool.process_deadline`, `bash_tool.record_nil`, `bash_tool.strip_exit_footer`, `bash_tool.strip_status`, `bash_tool.strip_truncation`, `bash_tool.truncation_notice`, `bash_tool.user_bash_result` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/find.lisp` | 171 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
-| `src/cadr-cli/tools/glob.lisp` | 218 | `find_tool.gitignore_regex`, `find_tool.gitignored`, `find_tool.glob_regex`, `find_tool.glob_regex_body`, `find_tool.glob_scanner`, `find_tool.glob_special`, `find_tool.ignored_directory`, `find_tool.make_glob_tool`, `find_tool.parse_gitignore_line`, `find_tool.directory_gitignore_rules`, `find_tool.collect_tree_files`, `find_tool.glob_files` |
+| `src/cadr-cli/tools/glob.lisp` | 249 | `find_tool.gitignore_regex`, `find_tool.gitignored`, `find_tool.glob_regex`, `find_tool.glob_regex_body`, `find_tool.glob_scanner`, `find_tool.glob_special`, `find_tool.ignored_directory`, `find_tool.make_glob_tool`, `find_tool.parse_gitignore_line`, `find_tool.directory_gitignore_rules`, `find_tool.collect_tree_files`, `find_tool.glob_files` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/ls.lisp` | 100 | `ls_tool.directory_entry_name`, `ls_tool.list_directory`, `ls_tool.make_tool` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |

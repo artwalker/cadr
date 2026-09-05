@@ -159,41 +159,72 @@
           :key (lambda (path)
                  (relative-posix-path path canonical-root)))))
 
+(defun glob-collect-matching-relatives
+    (canonical-base scanner cwd base-is-cwd)
+  ;; Match during walk; sort only K relative hits (same gitignore
+  ;; / skip rules as collect-tree-files). Relative to cwd when the
+  ;; search base is the cwd directory.
+  (let ((matches nil))
+    (labels
+        ((walk (directory inherited-rules)
+           (let ((rules
+                   (append
+                    inherited-rules
+                    (directory-gitignore-rules directory))))
+             (dolist (file (uiop:directory-files directory))
+               (unless (gitignored-p file rules)
+                 (let ((relative-base
+                         (relative-posix-path
+                          file canonical-base)))
+                   (when (cl-ppcre:scan scanner relative-base)
+                     (push
+                      (if base-is-cwd
+                          relative-base
+                          (relative-posix-path file cwd))
+                      matches)))))
+             (dolist
+                 (child (uiop:subdirectories directory))
+               (unless (ignored-directory-p child)
+                 (walk child rules))))))
+      (walk canonical-base nil))
+    (sort matches #'string<)))
+
 (defun glob-files (cwd arguments)
   (let* ((pattern (required-string arguments "pattern"))
          (base
            (resolve-tool-path
             cwd (optional-string arguments "path" ".")))
          (limit (optional-integer arguments "limit" 1000))
-         (scanner (glob-scanner pattern))
-         (_
-           (unless (uiop:directory-exists-p base)
-             (error "Path not found: ~A" (namestring base))))
-         (matches
-           (loop for file in (collect-tree-files base)
-                 for relative-base =
-                   (relative-posix-path file base)
-                 when (cl-ppcre:scan scanner relative-base)
-                   collect
-                   ;; The default path "." makes base and cwd the same
-                   ;; directory; reuse the match string instead of
-                   ;; computing the relative path twice (goal 20, 12F-4).
-                   (if (string= (namestring base) (namestring cwd))
-                       relative-base
-                       (relative-posix-path file cwd)))))
-    (declare (ignore _))
+         (scanner (cached-glob-scanner pattern)))
+    (unless (uiop:directory-exists-p base)
+      (error "Path not found: ~A" (namestring base)))
     (when (< limit 1)
       (error "limit must be at least 1"))
-    (let* ((truncated (> (length matches) limit))
-           (selected (subseq matches 0 (min limit (length matches))))
+    (let* ((canonical-base
+             (truename (uiop:ensure-directory-pathname base)))
+           (base-is-cwd
+             (string= (namestring base) (namestring cwd)))
+           (matches
+             (glob-collect-matching-relatives
+              canonical-base scanner cwd base-is-cwd))
+           (match-count (length matches))
+           (truncated (> match-count limit))
+           (selected-count (min limit match-count))
            (text
-             (if selected
-                 (join-lines selected)
-                 "No files found")))
+             (if (zerop selected-count)
+                 "No files found"
+                 (with-output-to-string (out)
+                   (loop for index from 0
+                         for relative in matches
+                         while (< index selected-count)
+                         do
+                            (when (plusp index)
+                              (write-char #\Newline out))
+                            (write-string relative out))))))
       (values
        (list (cadr-ai:make-text-content :text text))
        (list :truncated truncated
-             :matches (length matches))))))
+             :matches match-count)))))
 
 (defun make-glob-tool (cwd)
   (cadr-ai:make-tool
