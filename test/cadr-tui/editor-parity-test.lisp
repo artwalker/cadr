@@ -490,6 +490,37 @@
            (cadr-tui:theme-foreground-ansi :border-muted)
            (first (top-border)))))))
 
+(test editor-embeds-working-status-in-default-border
+  (let ((editor
+          (cadr-tui:make-multiline-editor
+           :text "hello" :prompt "")))
+    (cadr-tui:editor-set-border-mode editor :thinking :high)
+    (flet ((top-border (&rest args)
+             (first
+              (first
+               (multiple-value-list
+                (apply #'cadr-tui:render-editor
+                       editor 20 args))))))
+      (let ((border
+              (top-border
+               :working-message "Working..."
+               :working-spinner-frame "⠋")))
+        (is (search "Working..." border))
+        (is (search "⠋" border))
+        (is (search
+             (cadr-tui:theme-foreground-ansi :thinking-high)
+             border))
+        (is (= 20 (cadr-tui:visible-width border))))
+      (let ((border (top-border)))
+        (is (not (search "Working..." border)))
+        (is (= 20 (cadr-tui:visible-width border))))
+      (cadr-tui:editor-set-embed-working-status editor nil)
+      (let ((border
+              (top-border
+               :working-message "Working..."
+               :working-spinner-frame "⠋")))
+        (is (not (search "Working..." border)))))))
+
 (test editor-autocomplete-debounce-is-pollable-and-latest-request-wins
   (with-autocomplete-tree
    (lambda (root)

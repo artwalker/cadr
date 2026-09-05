@@ -160,17 +160,21 @@
 (test goal15-root-composition-has-no-invented-idle-status-rows
   ;; pi@d981de122 interactive-mode.ts:734-746 leaves statusContainer empty
   ;; while idle.  Only widgetContainerAbove contributes its default spacer.
-  (labels ((editor-top (status)
+  ;; Working... embeds in the default editor border (no extra status rows).
+  (labels ((editor-top (working-p)
              (let ((state
                      (cadr-cli::make-tui-state
                       :model "faux-1"
                       :cwd "/tmp/project"
                       :context-window 128000)))
-               (setf (cadr-cli::tui-state-status-message state) status)
+               (when working-p
+                 (cadr-cli::tui-handle-agent-event
+                  state
+                  (cadr-agent::make-agent-event :type :agent-start)))
                (multiple-value-bind (lines row column)
                    (cadr-cli::render-tui-state
                     state (cadr-tui:make-multiline-editor)
-                    60 20 :full-document-p t
+                    60 20 :full-document-p working-p
                     :spinner-frame "x")
                  (declare (ignore row column))
                  (position-if
@@ -183,7 +187,50 @@
                                   plain))))
                   lines)))))
     (is (= 1 (editor-top nil)))
-    (is (= 3 (editor-top "Working...")))))
+    (is (= 1 (editor-top t)))))
+
+(test goal23-default-editor-embeds-working-indicator-in-border
+  (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event :type :agent-start))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state (cadr-tui:make-multiline-editor) 60 20
+         :busy-p t :spinner-frame "⠋" :full-document-p t)
+      (declare (ignore row column))
+      (is (find-if
+           (lambda (line)
+             (and (search "Working..."
+                          (cadr-tui:strip-terminal-sequences line))
+                  (search "⠋"
+                          (cadr-tui:strip-terminal-sequences line))))
+           lines))
+      (is (null
+           (find-if
+            (lambda (line)
+              (let ((plain
+                      (cadr-tui:strip-terminal-sequences line)))
+                (and (search "Working..." plain)
+                     (not (find #\─ plain)))))
+            lines))))))
+
+(test goal23-custom-editor-keeps-standalone-working-indicator
+  (let ((state (cadr-cli::make-tui-state))
+        (editor (cadr-tui:make-spacer-component :lines 1)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event :type :agent-start))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 60 20 :busy-p t :spinner-frame "⠋"
+         :full-document-p t)
+      (declare (ignore row column))
+      (let ((plain-lines
+              (mapcar #'cadr-tui:strip-terminal-sequences lines)))
+        (is (find-if (lambda (line) (search "Working..." line))
+                     plain-lines))
+        (is (find "" plain-lines :test #'string=))))))
 
 (test goal15-footer-initial-context-and-thinking-follow-model-capability
   ;; footer.ts:116-119 renders an absent initial usage estimate as 0.0%, but

@@ -62,6 +62,7 @@
   (autocomplete-generation 0 :type (integer 0 *))
   autocomplete-request
   (border-color-key :border-muted :type keyword)
+  (embed-working-status-p t :type boolean)
   (last-render-width 80 :type (integer 1 *))
   (scroll-offset 0 :type (integer 0 *))
   last-yank-start
@@ -96,7 +97,8 @@
 (defun make-multiline-editor
     (&key (text "") (prompt "")
           (history-limit 100)
-          (autocomplete-max-visible 5))
+          (autocomplete-max-visible 5)
+          (embed-working-status-p t))
   (let ((normalized (normalize-editor-text text)))
     (%make-multiline-editor
      :text normalized
@@ -104,7 +106,8 @@
      :prompt prompt
      :history-limit history-limit
      :autocomplete-max-visible
-     (max 3 (min 20 autocomplete-max-visible)))))
+     (max 3 (min 20 autocomplete-max-visible))
+     :embed-working-status-p embed-working-status-p)))
 
 (defun editor-text (editor)
   (multiline-editor-text editor))
@@ -1283,6 +1286,16 @@
      (:bash :bash-mode)))
   editor)
 
+(defun editor-set-embed-working-status (editor embed-p)
+  (setf (multiline-editor-embed-working-status-p editor)
+        (not (null embed-p)))
+  editor)
+
+(defun editor-border-dashes (editor count)
+  (theme-foreground
+   (multiline-editor-border-color-key editor)
+   (make-string (max 0 count) :initial-element #\─)))
+
 (defun editor-set-autocomplete-provider
     (editor provider)
   (editor-cancel-autocomplete editor)
@@ -1651,28 +1664,42 @@
 (defun editor-scroll-border
     (direction hidden-line-count width)
   (let* ((available-width (max 0 width))
-         (indicator
-           (format nil "─── ~A ~D more "
-                   direction hidden-line-count))
-         (remaining
-           (- available-width
-              (visible-width indicator))))
-    (if (>= remaining 0)
-        (concatenate
-         'string indicator
-         (make-string remaining
-                      :initial-element #\─))
-        (let* ((ellipsis
-                 (subseq "..." 0
-                         (min 3 available-width)))
-               (indicator-width
-                 (- available-width
-                    (visible-width ellipsis))))
+         (label
+           (format nil " ~A ~D more " direction hidden-line-count))
+         (label-width (visible-width label)))
+    (if (and (plusp label-width)
+             (<= (+ label-width 2) available-width))
+        (let* ((left-width
+                 (floor (/ (- available-width label-width) 2)))
+               (right-width
+                 (- available-width left-width label-width)))
           (concatenate
            'string
-           (slice-by-column
-            indicator 0 (max 0 indicator-width) t)
-           ellipsis)))))
+           (make-string left-width :initial-element #\─)
+           label
+           (make-string right-width :initial-element #\─)))
+        (let* ((indicator
+                 (format nil "─── ~A ~D more "
+                         direction hidden-line-count))
+               (remaining
+                 (- available-width
+                    (visible-width indicator))))
+          (if (>= remaining 0)
+              (concatenate
+               'string indicator
+               (make-string remaining
+                            :initial-element #\─))
+              (let* ((ellipsis
+                       (subseq "..." 0
+                               (min 3 available-width)))
+                     (indicator-width
+                       (- available-width
+                          (visible-width ellipsis))))
+                (concatenate
+                 'string
+                 (slice-by-column
+                  indicator 0 (max 0 indicator-width) t)
+                 ellipsis)))))))
 
 (defun editor-pad-rendered-line (line width)
   (multiple-value-bind (prefix prefix-width)
@@ -1826,9 +1853,120 @@
            width)))
         lines)))
 
+(defun editor-working-status-border-text
+    (editor message spinner-frame max-width
+     &key spinner-only-p)
+  (let* ((frame (or spinner-frame ""))
+         (color-key (multiline-editor-border-color-key editor))
+         (styled
+           (if spinner-only-p
+               (theme-foreground color-key frame :enabled-p t)
+               (concatenate
+                'string
+                (theme-foreground color-key frame :enabled-p t)
+                (if (plusp (length frame)) " " "")
+                (theme-foreground color-key message :enabled-p t)))))
+    (truncate-to-width
+     (string-trim '(#\Space) styled)
+     (max 0 max-width) "")))
+
+(defun editor-render-top-border
+    (editor width hidden-line-count
+     &key working-message working-spinner-frame)
+  (flet ((plain-border ()
+           (theme-foreground
+            (multiline-editor-border-color-key editor)
+            (if (plusp hidden-line-count)
+                (editor-scroll-border "↑" hidden-line-count width)
+                (make-string width :initial-element #\─)))))
+    (unless
+        (and (multiline-editor-embed-working-status-p editor)
+             working-message
+             (plusp width))
+      (return-from editor-render-top-border (plain-border)))
+    (let* ((status
+             (editor-working-status-border-text
+              editor working-message working-spinner-frame
+              (max 1 (- width 5))))
+           (status-width (visible-width status)))
+      (when (zerop status-width)
+        (return-from editor-render-top-border (plain-border)))
+      (let* ((overflow-label
+               (and (plusp hidden-line-count)
+                    (format nil " ↑ ~D more " hidden-line-count)))
+             (overflow-label-width
+               (and overflow-label (visible-width overflow-label)))
+             (overflow-start
+               (and overflow-label-width
+                    (floor (/ (- width overflow-label-width) 2))))
+             (can-fit-overflow-p
+               (lambda ()
+                 (and overflow-label
+                      overflow-label-width
+                      overflow-start
+                      (<= (+ overflow-label-width 2) width)
+                      (>= (- overflow-start (+ 3 status-width 1)) 1)))))
+        (when (and overflow-label (not (funcall can-fit-overflow-p)))
+          (setf status
+                (editor-working-status-border-text
+                 editor working-message working-spinner-frame
+                 width :spinner-only-p t)
+                status-width (visible-width status)))
+        (cond
+          ((funcall can-fit-overflow-p)
+           (let* ((left-block-width (+ 3 status-width 1))
+                  (middle-dashes
+                    (max 0 (- overflow-start left-block-width)))
+                 (right-dashes
+                   (- width overflow-start overflow-label-width)))
+             (concatenate
+              'string
+              (editor-border-dashes editor 2)
+              " "
+              status
+              (theme-foreground
+               (multiline-editor-border-color-key editor)
+               (concatenate
+                'string " "
+                (make-string middle-dashes
+                             :initial-element #\─)
+                overflow-label
+                (make-string right-dashes
+                             :initial-element #\─))))))
+          ((>= width (+ status-width 5))
+           (concatenate
+            'string
+            (editor-border-dashes editor 2)
+            " "
+            status
+            (theme-foreground
+             (multiline-editor-border-color-key editor)
+             (concatenate
+              'string " "
+              (make-string
+               (max 0 (- width status-width 4))
+               :initial-element #\─)))))
+          (t
+           (setf status
+                 (editor-working-status-border-text
+                  editor working-message working-spinner-frame
+                  width :spinner-only-p t)
+                 status-width (visible-width status))
+           (let ((prefix-width
+                   (min 3 (max 0 (- width status-width)))))
+             (concatenate
+              'string
+              (editor-border-dashes editor prefix-width)
+              status
+              (editor-border-dashes editor
+                                    (max 0 (- width prefix-width
+                                              status-width)))))))))))
+
 (defun render-editor
     (editor width &key (terminal-rows 24)
-                       (focused-p t))
+                       (focused-p t)
+                       working-message
+                       working-spinner-frame)
   (let* ((prompt (multiline-editor-prompt editor))
          (prompt-width (visible-width prompt))
          (content-width
@@ -1944,13 +2082,11 @@
                  (length layout-lines)
                  (+ scroll-offset maximum-visible))))
              (top-border
-               (theme-foreground
-                (multiline-editor-border-color-key editor)
-                (if (plusp scroll-offset)
-                    (editor-scroll-border
-                     "↑" scroll-offset width)
-                    (make-string
-                     width :initial-element #\─))))
+               (editor-render-top-border
+                editor width scroll-offset
+                :working-message working-message
+                :working-spinner-frame
+                working-spinner-frame))
              (lines-below
                (- (length layout-lines)
                   (+ scroll-offset

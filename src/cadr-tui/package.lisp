@@ -182,6 +182,8 @@
    #:editor-set-autocomplete-clock
    #:editor-poll-autocomplete
    #:editor-set-border-mode
+   #:editor-set-embed-working-status
+   #:multiline-editor-embed-working-status-p
    #:editor-autocomplete-visible-p
    #:editor-autocomplete-items
    #:editor-handle-event
