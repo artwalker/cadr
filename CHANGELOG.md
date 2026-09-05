@@ -7,6 +7,19 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `theme-message-background-lines` interns by
+  (token,lines). Friend-MachineD **2.4→0.04 µs**. Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after theme-background
+  invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after theme-background invent
+  (311→312). G.17 missing.
+
+- Goal 20: remesure `framed-select-state-handle-raw-input` tip OBS
+  **12.1 µs** (ledger 87.4). G.17 missing.
+
 - Goal 20 invent: `render-runtime-auth-input-state` interns full paint
   by (prompt fields,value,cursor,width). Different knife from discarded
   chrome invent. Friend-MachineD **43.8→0.2 µs**. Observed EQUAL.
