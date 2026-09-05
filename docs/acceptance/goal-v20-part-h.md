@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,121 lines**
+Denominator: **297 files / 130,119 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,088 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,086 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13985,7 +13985,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/migration.lisp` | 512 | `cli_bootstrap_sessions.data_directory`, `cli_bootstrap_sessions.legacy_data_directory`, `cli_bootstrap_sessions.manual_migration_command`, `cli_bootstrap_sessions.managed_binary_names`, `cli_bootstrap_sessions.migration_guide_url`, `cli_bootstrap_sessions.extensions_doc_url` |
 | `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
 | `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
-| `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
+| `src/cadr-cli/models/matching.lisp` | 396 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/modes/print.lisp` | 600 | `cli_print_rpc.jsonl_line` |

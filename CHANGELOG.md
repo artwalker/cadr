@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: model pattern match walks once for a unique
+  exact hit (no `remove-if-not` lists) and picks the best
+  partial with a single pass (no alias filter + `sort` copy).
+  Friend-MachineD n=32 five-query bundle **40.4→32.1 µs**
+  (~0.79× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  model-match invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `redacted-object-types` caches the sorted
   copy keyed by the live source list (invalidate on register /
   special rebind). Friend-MachineD n=20 **1.38→0.15 µs**

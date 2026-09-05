@@ -8,32 +8,33 @@
 
 (defun exact-model-reference-match
     (reference models)
-  (let* ((trimmed
-           (string-trim
-            '(#\Space #\Tab #\Newline #\Return)
-            reference))
-         (canonical
-           (remove-if-not
-            (lambda (model)
-              (string-equal
-               trimmed
-               (canonical-model-id model)))
-            models)))
-    (cond
-      ((zerop (length trimmed)) nil)
-      ((= 1 (length canonical))
-       (first canonical))
-      ((plusp (length canonical)) nil)
-      (t
-       (let ((by-id
-               (remove-if-not
-                (lambda (model)
-                  (string-equal
-                   trimmed
-                   (cadr-ai:model-id model)))
-                models)))
-         (and (= 1 (length by-id))
-              (first by-id)))))))
+  (let ((trimmed
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return)
+           reference)))
+    (when (zerop (length trimmed))
+      (return-from exact-model-reference-match nil))
+    (flet ((unique-match (predicate)
+             (let ((found nil)
+                   (count 0))
+               (dolist (model models)
+                 (when (funcall predicate model)
+                   (incf count)
+                   (when (> count 1)
+                     (return-from unique-match nil))
+                   (setf found model)))
+               found)))
+      (or
+       (unique-match
+        (lambda (model)
+          (string-equal
+           trimmed
+           (canonical-model-id model))))
+       (unique-match
+        (lambda (model)
+          (string-equal
+           trimmed
+           (cadr-ai:model-id model))))))))
 
 (defun alias-model-id-p (id)
   (or
@@ -53,24 +54,21 @@
 
 (defun best-partial-model-match
     (pattern models)
-  (let* ((matches
-           (remove-if-not
-            (lambda (model)
-              (model-text-contains-p
-               model pattern))
-            models))
-         (aliases
-           (remove-if-not
-            (lambda (model)
-              (alias-model-id-p
-               (cadr-ai:model-id model)))
-            matches))
-         (candidates
-           (or aliases matches)))
-    (first
-     (sort (copy-list candidates)
-           #'string>
-           :key #'cadr-ai:model-id))))
+  (let ((best nil)
+        (best-alias-p nil)
+        (best-id nil))
+    (dolist (model models)
+      (when (model-text-contains-p model pattern)
+        (let* ((id (cadr-ai:model-id model))
+               (alias-p (alias-model-id-p id)))
+          (when (or (null best)
+                    (and alias-p (not best-alias-p))
+                    (and (eq alias-p best-alias-p)
+                         (string> id best-id)))
+            (setf best model
+                  best-alias-p alias-p
+                  best-id id)))))
+    best))
 
 (defun match-single-model-pattern
     (pattern models)
