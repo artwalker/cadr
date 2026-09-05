@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 131,212 lines**
+Denominator: **297 files / 131,221 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 106,179 | 80.9% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 106,188 | 80.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13954,7 +13954,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | `cli_interactive_controller.announcement_make`, `cli_interactive_controller.announcement_url`, `cli_interactive_controller.announcement_title` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 294 | `cli_selectors.armin_cell`, `cli_selectors.armin_copy_cell`, `cli_selectors.armin_copy_grid`, `cli_selectors.armin_copy_row`, `cli_selectors.armin_grid_height`, `cli_selectors.armin_make_grid`, `cli_selectors.armin_pixel`, `cli_selectors.armin_rotate_row`, `cli_selectors.armin_row_string` |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_dispose`, `cli_selectors.countdown_render`, `cli_selectors.countdown_seconds`, `cli_selectors.countdown_start_guard`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_unstarted` |
-| `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_dispose`, `cli_selectors.daxnuts_invalidate`, `cli_selectors.daxnuts_render`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
+| `src/cadr-cli/interactive/components/daxnuts.lisp` | 194 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_dispose`, `cli_selectors.daxnuts_invalidate`, `cli_selectors.daxnuts_render`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 197 | `cli_selectors.key_text` |
 | `src/cadr-cli/interactive/controller.lisp` | 2,999 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

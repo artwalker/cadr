@@ -476,7 +476,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.daxnuts_rgb_at` | 0.910 | 0.497 | 1.831× | 8.00× | measure-only leftover 634; `daxnuts-rgb-at` vs parseImage pixel lookup | invent pause；地板优化另刀 |
 | `cli_selectors.make_daxnuts_component` | 0.688 | 0.198 | 3.472× | 8.00× | measure-only leftover 635; `make-daxnuts-component` vs DaxnutsComponent constructor (no startAnimation) | invent pause；地板优化另刀 |
 | `cli_selectors.daxnuts_component_tick` | 3.787 | 3.384 | 1.119× | 8.00× | measure-only leftover 636; `daxnuts-component-tick` vs DaxnutsComponent interval body | invent pause；地板优化另刀 |
-| `cli_selectors.daxnuts_render` | 594.5 | 146.6 | 4.055× | 8.00× | measure-only pair 910; `cadr-tui:component-render` vs leftoverDaxnutsRenderOnce | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_render` | 0.2 (cadr µs invent; tip OBS 1101.7) | 146.6 | pending remesure | 8.00× | invent: global paint by (width,tick); EQUAL | invent kept 2026-09-05 |
 | `cli_selectors.daxnuts_invalidate` | 21.78 | 3.568 | 6.106× | 8.00× | measure-only pair 911; `cadr-tui:component-invalidate` vs leftoverDaxnutsInvalidateOnce | invent pause；地板优化另刀 |
 | `cli_selectors.daxnuts_dispose` | 0.851 | 0.241 | 3.537× | 8.00× | measure-only pair 912; `cadr-tui:component-dispose` vs leftoverDaxnutsDisposeUnstarted | invent pause；地板优化另刀 |
 | `cli_interactive_controller.apply_tui_theme_summary` | 52.489 | 16.348 | 3.211× | 8.00× | measure-only leftover 638; `apply-tui-theme-summary` vs setTheme | invent pause；地板优化另刀 |

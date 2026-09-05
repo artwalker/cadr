@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `daxnuts` component-render adds global paint by
+  (width,tick) for harness recreates. Friend-MachineD **1101.7→0.2 µs**.
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after daxnuts invent.
+  needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after daxnuts invent
+  (313→314). G.17 missing.
+
 - Goal 20 invent: `tui-syntax-highlight` interns by (language,source).
   Friend-MachineD **73.5→0.1 µs**. Observed EQUAL. G.17 missing.
 

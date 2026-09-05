@@ -103,15 +103,23 @@
       :name "cadr Daxnuts animation")))
   component)
 
+(defparameter *daxnuts-render-by-key*
+  (make-hash-table :test #'equal))
+
 (defmethod cadr-tui:component-render
     ((component daxnuts-component) width &key focused-p)
   (declare (ignore focused-p))
-  (let ((key (list width (daxnuts-component-tick-value component))))
+  (let* ((tick (daxnuts-component-tick-value component))
+         (key (list width tick))
+         (cached (gethash key *daxnuts-render-by-key*)))
     (when (equal key (daxnuts-component-cached-key component))
       (return-from cadr-tui:component-render
         (daxnuts-component-cached-lines component)))
-    (let* ((tick (daxnuts-component-tick-value component))
-           (revealed
+    (when cached
+      (setf (daxnuts-component-cached-key component) key
+            (daxnuts-component-cached-lines component) cached)
+      (return-from cadr-tui:component-render cached))
+    (let* ((revealed
              (min 16
                   (floor
                    (* tick 19)
@@ -164,6 +172,7 @@
                   "")
                  '("" "" ""))))
       (setf
+       (gethash key *daxnuts-render-by-key*) lines
        (daxnuts-component-cached-key component) key
        (daxnuts-component-cached-lines component) lines)
       lines)))
