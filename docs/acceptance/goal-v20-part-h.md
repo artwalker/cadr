@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,088 lines**
+Denominator: **297 files / 130,111 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,055 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,078 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13855,7 +13855,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/branch-summarization.lisp` | 184 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
 | `src/cadr-agent/compaction.lisp` | 943 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
-| `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
+| `src/cadr-agent/execution-env.lisp` | 878 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
 | `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue`, `file_mutation_queue.queue_key`, `file_mutation_queue.lock`, `file_mutation_queue.register`, `file_mutation_queue.wait_turn`, `file_mutation_queue.release_turn`, `file_mutation_queue.ensure_state`, `file_mutation_queue.call_with`, `file_mutation_queue.make_state`, `file_mutation_queue.state_key`, `file_mutation_queue.pending_count`, `file_mutation_queue.next_ticket`, `file_mutation_queue.serving_ticket`, `file_mutation_queue.waitqueue`, `file_mutation_queue.registry`, `file_mutation_queue.state_p` |
 | `src/cadr-agent/harness-events.lisp` | 75 | `harness_events.emit`, `harness_events.on`, `harness_events.watch`, `harness_events.make_start`, `harness_events.make_end`, `harness_events.event_type`, `harness_events.make_bus` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 453 | `agent_tool_loop.roundtrip` |

@@ -109,8 +109,28 @@
 (defun split-execution-path (path)
   (uiop:split-string path :separator '(#\/)))
 
+(defun execution-posix-absolute-p (text)
+  (and (plusp (length text))
+       (char= (char text 0) #\/)))
+
+(defun execution-join-parts (parts)
+  (with-output-to-string (out)
+    (loop for part in parts
+          for first = t then nil
+          do
+          (unless first
+            (write-char #\/ out))
+          (write-string
+           (if (stringp part)
+               part
+               (princ-to-string part))
+           out))))
+
 (defun execution-normalize-path (path cwd)
-  (let* ((text (princ-to-string path))
+  (let* ((text
+           (if (stringp path)
+               path
+               (princ-to-string path)))
          (expanded
            (cond
              ((string= text "~")
@@ -127,9 +147,7 @@
               (subseq text 7))
              (t text)))
          (absolute
-           (if
-               (uiop:absolute-pathname-p
-                (pathname expanded))
+           (if (execution-posix-absolute-p expanded)
                expanded
                (concatenate
                 'string
@@ -138,15 +156,20 @@
                       (uiop:ensure-directory-pathname
                        cwd)))
                 "/" expanded)))
-         (parts nil))
+         (stack nil))
     (dolist (part (split-execution-path absolute))
       (cond
         ((or (zerop (length part))
              (string= "." part)))
         ((string= ".." part)
-         (when parts (pop parts)))
-        (t (push part parts))))
-    (format nil "/~{~A~^/~}" (nreverse parts))))
+         (when stack (pop stack)))
+        (t (push part stack))))
+    (if (null stack)
+        "/"
+        (with-output-to-string (out)
+          (dolist (part (nreverse stack))
+            (write-char #\/ out)
+            (write-string part out))))))
 
 (defun execution-env-absolute-path
     (environment path &key signal)
@@ -170,7 +193,7 @@
         (values nil error)
         (values
          (execution-normalize-path
-          (format nil "~{~A~^/~}" parts)
+          (execution-join-parts parts)
           (node-execution-env-cwd
            environment))
          nil))))

@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `execution-normalize-path` uses POSIX `/`
+  absolute check (no `pathname`), string-preserving input,
+  and stream rebuild instead of `format ~{`; join uses
+  `execution-join-parts`. Friend-MachineD join microbench
+  **4.44→1.92 µs** (~0.43× tip; ~2.1× vs booked pi 0.92 µs).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  execution-env path invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `base64url-decode` uses a 256-entry decode
   table (O(1) vs `position` on the alphabet) and a pre-sized
   octet vector (no fill-pointer push). Friend-MachineD
