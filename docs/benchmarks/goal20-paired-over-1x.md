@@ -287,7 +287,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `core_rest.redacted_types` | 0.15 (cadr µs invent; prior ledger 2.375) | 0.528 | ~0.27× invent micro vs booked pi | 8.00× | invent: sorted-list cache keyed by source; remount later | invent kept 2026-09-05 |
 | `oauth_pkce_device.base64url_value` | 0.739 | 0.293 | 2.520× | 8.00× | leftover collect restore pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs | invent pause；地板优化另刀 |
 | `oauth_pkce_device.base64url_decode` | 1.45 (cadr µs invent; prior ledger 2.922) | 0.452 | ~3.2× invent micro vs booked pi | 8.00× | invent: 256-table + pre-sized octets; remount later | invent kept 2026-09-05 |
-| `oauth_pkce_device.account_id` | 6.065 | 1.174 | 5.167× | 8.00× | leftover collect restore pair 360; `openai-account-id-from-token` vs `getAccountId` | invent pause；地板优化另刀 |
+| `oauth_pkce_device.account_id` | 1.98 (cadr µs invent; prior ledger 6.065) | 1.174 | ~1.7× invent micro vs booked pi | 8.00× | invent: two-dot JWT scan no split-string; remount later | invent kept 2026-09-05 |
 | `evals_harness.release_extensions` | 6.187 | 0.293 | 21.13× | 8.00× | measure-only pair 370; `release-eval-extensions`; ratio > named ceiling — gate uses variance/µs floor | invent pause；地板优化另刀 |
 | `evals_harness.agent_tools` | 1.466 | 0.286 | 5.118× | 8.00× | measure-only pair 371; `eval-agent-tools` vs session tools list | invent pause；地板优化另刀 |
 | `evals_harness.extension_paths` | 2.963 | 0.464 | 6.381× | 8.00× | measure-only pair 372; `eval-extension-paths` vs `getExtensionPaths` | invent pause；地板优化另刀 |

@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `openai-account-id-from-token` finds the
+  three JWT segments with two `position` scans (no
+  `split-string` list) and rejects malformed shapes before
+  decode. Friend-MachineD **3.63→1.98 µs** (~0.55× prior tip;
+  ~1.7× vs booked pi 1.17 µs). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  account-id invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `strip-ansi` returns the input string when
   it contains no ESC / CSI 0x9B (no output buffer). Friend-
   MachineD harness bundle **0.50→0.44 µs** (~0.89× tip).

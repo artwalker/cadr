@@ -114,15 +114,25 @@
 
 (defun openai-account-id-from-token (token)
   (handler-case
-      (let* ((parts (uiop:split-string token :separator '(#\.)))
-             (payload
-               (parse-json
-                (utf8-string
-                 (base64url-decode
-                  (second parts)))))
-             (auth
-               (json-get payload "https://api.openai.com/auth")))
-        (json-get auth "chatgpt_account_id"))
+      (let* ((dot1 (position #\. token))
+             (dot2
+               (and dot1
+                    (position #\. token :start (1+ dot1))))
+             (dot3
+               (and dot2
+                    (position #\. token :start (1+ dot2)))))
+        (unless (and dot1 dot2 (null dot3)
+                     (< (1+ dot1) dot2)
+                     (< (1+ dot2) (length token)))
+          (return-from openai-account-id-from-token nil))
+        (let* ((payload
+                 (parse-json
+                  (utf8-string
+                   (base64url-decode
+                    (subseq token (1+ dot1) dot2)))))
+               (auth
+                 (json-get payload "https://api.openai.com/auth")))
+          (json-get auth "chatgpt_account_id")))
     (error ()
       nil)))
 
