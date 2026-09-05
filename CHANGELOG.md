@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `thread-session-records` matches pi
+  `buildSessionTree`/`flattenSessionTree` (node struct, one
+  canonicalize, post-order latest-activity, sort on cached
+  activity). Friend-MachineD harness fixture **75.8→37.2 µs**
+  (~0.49× tip). Observed EQUAL. Symlink FiveAM 4/4.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  session-thread invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `short-hash` streams UTF-16 code units
   without allocating a unit list. Friend-MachineD n=2000
   ASCII **17.9→14.5 µs** (~0.81× tip). Observed EQUAL.

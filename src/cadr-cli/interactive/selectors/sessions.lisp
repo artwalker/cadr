@@ -146,71 +146,85 @@
    (or (ignore-errors (truename path))
        (uiop:ensure-absolute-pathname path))))
 
+(defstruct (session-tree-node
+            (:constructor make-session-tree-node
+             (session canonical-path
+              &optional (latest-activity
+                         (session-search-record-modified
+                          session)))))
+  session
+  canonical-path
+  (children nil :type list)
+  (latest-activity 0 :type real))
+
+(defun update-session-tree-latest-activity (node)
+  (let ((latest
+          (session-search-record-modified
+           (session-tree-node-session node))))
+    (dolist (child (session-tree-node-children node))
+      (setf latest
+            (max latest
+                 (update-session-tree-latest-activity
+                  child))))
+    (setf (session-tree-node-latest-activity node) latest)
+    latest))
+
+(defun sort-session-tree-nodes (nodes)
+  (setf nodes
+        (sort nodes #'>
+              :key #'session-tree-node-latest-activity))
+  (dolist (node nodes)
+    (setf (session-tree-node-children node)
+          (sort-session-tree-nodes
+           (session-tree-node-children node))))
+  nodes)
+
+(defun flatten-session-tree-nodes (roots)
+  (let ((result nil))
+    (labels ((walk (node depth)
+               (push
+                (cons depth
+                      (session-tree-node-session node))
+                result)
+               (dolist (child
+                        (session-tree-node-children node))
+                 (walk child (1+ depth)))))
+      (dolist (root roots)
+        (walk root 0)))
+    (nreverse result)))
+
 (defun thread-session-records (sessions)
-  (let ((by-path
-          (make-hash-table :test #'equal))
-        (children
-          (make-hash-table :test #'equal))
+  ;; Baseline buildSessionTree + flattenSessionTree: canonicalize
+  ;; once per session, compute subtree latest-activity once, then
+  ;; sort on the cached number (no recursive :key during compare).
+  (let ((by-path (make-hash-table :test #'equal))
         (roots nil))
     (dolist (session sessions)
-      (setf
-       (gethash
-        (canonical-file-name
-         (session-search-record-path session))
-        by-path)
-       session))
-    (dolist (session sessions)
-      (let* ((parent-path
-               (session-search-record-parent-path
-                session))
-             (parent
-               (and parent-path
-                    (gethash
-                     (canonical-file-name
-                      parent-path)
-                     by-path))))
-        (if parent
-            (push session
-                  (gethash
-                   (canonical-file-name
-                    (session-search-record-path
-                     parent))
-                   children))
-            (push session roots))))
-    (labels
-        ((latest (session)
-           (max
-            (session-search-record-modified
-             session)
-            (loop for child in
-                  (gethash
-                   (canonical-file-name
-                    (session-search-record-path
-                     session))
-                   children)
-                  maximize (latest child)
-                    into value
-                  finally
-                  (return (or value 0)))))
-         (emit (session depth)
-           (cons
-            (cons depth session)
-            (mapcan
-             (lambda (child)
-               (emit child (1+ depth)))
-             (sort
-              (copy-list
-               (gethash
-                (canonical-file-name
-                 (session-search-record-path
-                  session))
-                children))
-              #'>
-              :key #'latest)))))
-      (mapcan
-       (lambda (root)
-         (emit root 0))
-       (sort roots #'> :key #'latest)))))
+      (let* ((canonical
+               (canonical-file-name
+                (session-search-record-path session)))
+             (node
+               (make-session-tree-node session canonical)))
+        (setf (gethash canonical by-path) node)))
+    (maphash
+     (lambda (canonical node)
+       (declare (ignore canonical))
+       (let* ((session (session-tree-node-session node))
+              (parent-path
+                (session-search-record-parent-path session))
+              (parent
+                (and parent-path
+                     (gethash
+                      (canonical-file-name parent-path)
+                      by-path))))
+         (if parent
+             (push node (session-tree-node-children parent))
+             (push node roots))))
+     by-path)
+    (dolist (root roots)
+      (update-session-tree-latest-activity root))
+    (flatten-session-tree-nodes
+     (sort-session-tree-nodes roots))))
 
 (define-condition active-session-deletion-error
     (error)

@@ -111,7 +111,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.session_quoted_search` | 11.0 | 8.6 | 1.29× | 8.00× | measure-only pair `27579bfa1`; quoted phrase position only | invent pause；地板优化另刀 |
 
-| `cli_selectors.session_thread_records` | 165.9 | 12.7 | 13.07× | 30.00× | measure-only pair `9964bdb69`; thread tree flatten only | invent pause；地板优化另刀 |
+| `cli_selectors.session_thread_records` | 37.2 (cadr µs invent) | pending remesure | ~0.49× vs tip micro | 8.00× | invent: pi tree phases + cached latest-activity; remount later | invent kept 2026-09-05 |
 
 | `cli_selectors.session_binding_label` | 41.2 | 28.9 | 1.43× | 8.00× | measure-only pair `d080c3d21`; first key or binding id fallback | invent pause；地板优化另刀 |
 
