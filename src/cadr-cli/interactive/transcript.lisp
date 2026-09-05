@@ -489,22 +489,28 @@
                        :error message :enabled-p t)
                       width :padding-x 1)))))))))
 
+(defparameter *tui-syntax-highlight-by-key*
+  (make-hash-table :test #'equal))
+
 (defun tui-syntax-highlight (language source)
-  (simple-syntax-highlight
-   source language
-   (list
-    (cons
-     "keyword"
-     (lambda (text)
-       (cadr-tui:theme-foreground
-        :syntax-keyword text
-        :enabled-p t)))
-    (cons
-     "number"
-     (lambda (text)
-       (cadr-tui:theme-foreground
-        :syntax-number text
-        :enabled-p t))))))
+  (let ((key (list language source)))
+    (or (gethash key *tui-syntax-highlight-by-key*)
+        (setf (gethash key *tui-syntax-highlight-by-key*)
+              (simple-syntax-highlight
+               source language
+               (list
+                (cons
+                 "keyword"
+                 (lambda (text)
+                   (cadr-tui:theme-foreground
+                    :syntax-keyword text
+                    :enabled-p t)))
+                (cons
+                 "number"
+                 (lambda (text)
+                   (cadr-tui:theme-foreground
+                    :syntax-number text
+                    :enabled-p t)))))))))
 
 (defparameter *assistant-blocks-by-key*
   (make-hash-table :test #'equal))

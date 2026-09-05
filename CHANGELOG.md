@@ -7,6 +7,19 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `tui-syntax-highlight` interns by (language,source).
+  Friend-MachineD **73.5→0.1 µs**. Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after syntax-highlight
+  invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after syntax-highlight invent
+  (312→313). G.17 missing.
+
+- Goal 20: remesure `render-extension-custom-ui` tip OBS **7.9 µs**
+  (ledger 32.3) and `render-tui-entries` **0.7 µs** after prior paint
+  invents. G.17 missing.
+
 - Goal 20 invent: `theme-message-background-lines` interns by
   (token,lines). Friend-MachineD **2.4→0.04 µs**. Observed EQUAL.
   G.17 missing.

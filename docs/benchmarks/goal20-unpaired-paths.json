@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "denominator": {
     "files": 297,
-    "lines": 131206
+    "lines": 131212
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",

@@ -491,7 +491,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.update_notification_border` | 6.319 | 1.484 | 4.259× | 8.00× | measure-only leftover 648; `update-notification-border-line` vs warning DynamicBorder | invent pause；地板优化另刀 |
 | `cli_interactive_controller.theme_message_background` | 0.04 (cadr µs invent; tip OBS 2.4) | 1.571 | pending remesure | 8.00× | invent: intern by (token,lines); EQUAL | invent kept 2026-09-05 |
 | `cli_interactive_controller.update_notification_text` | 0.1 (cadr µs invent; tip OBS 77.7) | 2.032 | pending remesure | 50.00× | invent: intern paint by (text,width); EQUAL | invent kept 2026-09-05 |
-| `cli_interactive_controller.syntax_highlight` | 13.174 | 1.081 | 12.184× | 20.00× | measure-only leftover 651; `tui-syntax-highlight` vs syntaxHighlight; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.syntax_highlight` | 0.1 (cadr µs invent; tip OBS 73.5) | 1.081 | pending remesure | 20.00× | invent: intern by (language,source); EQUAL | invent kept 2026-09-05 |
 | `cli_interactive_controller.accumulate_usage` | 0.775 | 0.652 | 1.188× | 8.00× | measure-only leftover 653; `accumulate-message-usage` vs session usage accumulate | invent pause；地板优化另刀 |
 | `cli_interactive_controller.append_user_message` | 5.050 | 1.201 | 4.205× | 8.00× | measure-only leftover 654; `append-tui-user-message` vs parseSkillBlock UserMessageComponent | invent pause；地板优化另刀 |
 | `cli_interactive_controller.reset_tui_messages` | 2.035 | 1.570 | 1.296× | 8.00× | measure-only leftover 656; `reset-tui-messages` vs chatContainer reset + usage preserve | invent pause；地板优化另刀 |
@@ -504,7 +504,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.render_package_notification` | 7.4 (cadr µs invent; prior ledger 217.221) | 4.120 | pending remesure | 100.00× | invent: intern border by width + full notification by (packages,width); remount later | invent kept 2026-09-05 |
 | `cli_interactive_controller.render_tui_entry_uncached` | 0.4 (cadr µs invent; tip OBS 156.0) | 7.276 | pending remesure | 50.00× | invent: host-nil content-key paint intern; EQUAL | invent kept 2026-09-05 |
 | `cli_interactive_controller.render_tui_entry` | 0.15 (cadr µs remesure after uncached invent) | 5.999 | pending remesure | 30.00× | remesure: recreating entries hits content-key uncached cache; EQUAL path | invent kept 2026-09-05 |
-| `cli_interactive_controller.render_tui_entries` | 42.711 | 7.723 | 5.530× | 8.00× | measure-only leftover 666; `render-tui-entries` vs chat-log render entries + user gap | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_tui_entries` | 0.7 (cadr µs remesure after entry invents) | 7.723 | pending remesure | 8.00× | remesure Friend-MachineD tip OBS 0.7 | invent kept 2026-09-05 |
 | `cli_interactive_controller.extension_dialog_chrome` | 1.2 (cadr µs invent; tip OBS 10.9) | 1.528 | pending remesure | 30.00× | invent: border-by-width + full paint by (title,width,body,footer,row,col); EQUAL | invent kept 2026-09-05 |
 | `cli_interactive_controller.tui_component_protocol` | 0.587 | 0.384 | 1.527× | 8.00× | measure-only leftover 671; `tui-component-protocol-p` vs Component protocol predicate | invent pause；地板优化另刀 |
 | `cli_interactive_controller.extension_render_value_lines` | 2.505 | 1.022 | 2.452× | 8.00× | measure-only leftover 672; `extension-render-value-lines` vs custom value lines | invent pause；地板优化另刀 |
@@ -520,7 +520,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.render_framed_select_state` | 0.3 (cadr µs invent; tip OBS 66.9) | 2.267 | pending remesure | 180.00× | invent: full paint intern (not chrome); EQUAL; prior chrome invent discarded | invent kept 2026-09-05 |
 | `cli_interactive_controller.framed_select_state_handle_event` | 1.259 | 1.006 | 1.252× | 8.00× | measure-only leftover 683; `framed-select-state-handle-event` vs framed select-list handleEvent | invent pause；地板优化另刀 |
 | `cli_interactive_controller.framed_select_state_handle_raw_input` | 12.1 (cadr µs remesure) | 0.953 | 12.7× | 8.00× | remesure Friend-MachineD tip OBS 12.1; event dispatch leftover | invent pause；地板优化另刀 |
-| `cli_interactive_controller.render_extension_custom_ui` | 32.260 | 1.416 | 22.775× | 40.00× | measure-only leftover 685; `render-extension-custom-ui` vs custom ui render; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_extension_custom_ui` | 7.9 (cadr µs remesure after dialog chrome) | 1.416 | 5.6× | 40.00× | remesure Friend-MachineD tip OBS 7.9; under first-freeze | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_tui_extension_overlay` | 0.9 (cadr µs invent; tip OBS 273.6) | 1.629 | pending remesure | 160.00× | invent: idle host-nil full paint by fingerprint; EQUAL | invent kept 2026-09-05 |
 | `find_tool.glob_scanner` | 10.624 | 0.951 | 11.176× | 20.00× | measure-only leftover 688; `glob-scanner` vs glob scanner compile+test; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `find_tool.glob_regex_body` | 0.580 | 0.417 | 1.393× | 8.00× | measure-only leftover 689; `glob-regex-body` vs glob regex body | invent pause；地板优化另刀 |
