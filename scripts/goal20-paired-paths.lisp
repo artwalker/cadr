@@ -39310,7 +39310,7 @@
       (list
        (length listed)
        (if (find *sdk-session-list-id* listed
-                 :key #'cadr-agent:session-id
+                 :key #'cadr-agent:session-list-info-id
                  :test #'string=)
            1
            0)

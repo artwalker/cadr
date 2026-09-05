@@ -66,7 +66,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `oauth_pkce_device.copilot_url` | 2.12 | 1.85 | 1.15× | 8.00× | measure-only pair `15853bedf`; sibling of auth_json/poll | invent pause；地板优化另刀 |
 
-| `cli_sdk.session_list` | 15402 | 7989 | 1.93× | 8.00× | measure-only pair `40e704d50`; SessionManager.list vs session-manager-list | invent pause；地板优化另刀 |
+| `cli_sdk.session_list` | ~2156 | ~2700 tip list-sessions | ~0.80× on Friend-MachineD invent microbench | 8.00× | streaming `session-list-info` (#pending); ledger pair still measure-only until remount | invent kept 2026-09-04 |
 
 | `oauth_pkce_device.cloudflare_url` | 9.27 | 1.39 | 6.66× | 8.00× | measure-only pair `7b718d200`; variance floor; near ceiling | invent pause；地板优化另刀 |
 

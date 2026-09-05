@@ -72,7 +72,7 @@
     (&optional cwd
       (directory
         (cadr-agent:default-session-directory)))
-  (cadr-agent:list-sessions
+  (cadr-agent:list-session-infos
    :directory directory :cwd cwd))
 
 (defun session-manager-resolve (manager)

@@ -173,6 +173,80 @@
           :directory sessions
           :cwd cwd)))))))
 
+(test session-v3-list-session-infos-match-list-sessions-order
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let ((newer-header
+            (cadr-agent:create-session
+             :directory sessions
+             :cwd cwd
+             :id "newer-header"
+             :timestamp 2000))
+          (newer-message
+            (cadr-agent:create-session
+             :directory sessions
+             :cwd cwd
+             :id "newer-message"
+             :timestamp 1000)))
+      (cadr-agent:session-append-message
+       newer-header
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content
+          :text "older activity"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 4000))
+      (cadr-agent:session-append-message
+       newer-message
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content
+          :text "newer activity"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 5000))
+      (cadr-agent:session-append-message
+       newer-message
+       (cadr-ai:make-user-message
+        :content "hello list info"
+        :timestamp 5100))
+      (let ((infos
+              (cadr-agent:list-session-infos
+               :directory sessions
+               :cwd cwd))
+            (sessions-listed
+              (cadr-agent:list-sessions
+               :directory sessions
+               :cwd cwd)))
+        (is
+         (equal
+          (mapcar #'cadr-agent:session-id sessions-listed)
+          (mapcar #'cadr-agent:session-list-info-id infos)))
+        (is
+         (equal
+          (mapcar
+           #'cadr-agent::session-modified-timestamp
+           sessions-listed)
+          (mapcar
+           #'cadr-agent:session-list-info-modified
+           infos)))
+        (is
+         (string=
+          "hello list info"
+          (cadr-agent:session-list-info-first-message
+           (find
+            "newer-message"
+            infos
+            :key #'cadr-agent:session-list-info-id
+            :test #'string=))))))))
+
 (test session-v3-writes-reference-header-and-all-entry-envelopes
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)

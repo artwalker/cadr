@@ -286,6 +286,16 @@
    #:create-session
    #:load-session
    #:list-sessions
+   #:list-session-infos
+   #:session-list-info
+   #:session-list-info-id
+   #:session-list-info-path
+   #:session-list-info-cwd
+   #:session-list-info-name
+   #:session-list-info-modified
+   #:session-list-info-message-count
+   #:session-list-info-first-message
+   #:read-session-list-info
    #:resume-session
    #:continue-session
    #:session-branch

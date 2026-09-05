@@ -1,10 +1,13 @@
 # Executor current (2026-09-04)
 
-**Kept:** autocomplete command-item bake on provider.
-Friend-MachineD n=50 suggest_apply **46.9→31.0 µs**.
+**Kept:** session-list-info streaming list for
+`session-manager-list` / `cli_sdk.session_list`.
+Friend-MachineD n=9 **2700→2156 µs** vs tip `list-sessions`
+(same 2× fixture). Activity order EQUAL.
 
-**Prior kept:** export-html splice; autocomplete dirent;
-discovery header; message-envelope load.
+**Prior kept:** autocomplete command-item bake; export-html
+splice; autocomplete dirent; discovery header;
+message-envelope load.
 
 **Withdrawn:** list-sessions single-pass (breaks oversized
 header bound); assistant type-branch compact.

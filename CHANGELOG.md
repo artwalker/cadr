@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `session-manager-list` streams
+  `session-list-info` (one open + schema-walker lines) instead
+  of full `load-session` graphs. Friend-MachineD n=9
+  `session_list` microbench **2700→2156 µs** vs tip
+  `list-sessions` on the same 2× fixture stage (~0.80×).
+  Activity order EQUAL. G.17 missing.
+
 - Goal 20 invent: bake autocomplete command items on the
   provider once; slash filter reuses them. Friend-MachineD
   n=50 `suggest_apply` **46.9→31.0 µs** (dirent tip baseline).

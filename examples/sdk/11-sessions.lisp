@@ -34,7 +34,7 @@
             (values sessions
                     (and sessions
                          (cadr-cli:session-manager-open
-                          (cadr-agent:session-info-path
+                          (cadr-agent:session-list-info-path
                            (first sessions)))))))
       (dolist (session (list memory persistent continued))
         (when session
