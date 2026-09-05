@@ -986,7 +986,10 @@
                               (getf row :id)))))
   row)
 
+(defvar *provider-definitions-list-cache* nil)
+
 (defun register-provider-definition (definition)
+  (setf *provider-definitions-list-cache* nil)
   (setf (gethash (provider-definition-id definition)
                  *provider-definitions*)
         definition)
@@ -1009,13 +1012,22 @@
                 t)))))
 
 (defun list-provider-definitions ()
-  (sort
-   (loop for definition being the hash-values
-           of *provider-definitions*
-         collect definition)
-   #'string<
-   :key (lambda (definition)
-          (symbol-name (provider-definition-id definition)))))
+  (let ((source *provider-definitions*))
+    (if (and *provider-definitions-list-cache*
+             (eq (first *provider-definitions-list-cache*) source))
+        (second *provider-definitions-list-cache*)
+        (let ((definitions
+                (sort
+                 (loop for definition being the hash-values
+                         of source
+                       collect definition)
+                 #'string<
+                 :key (lambda (definition)
+                        (symbol-name
+                         (provider-definition-id definition))))))
+          (setf *provider-definitions-list-cache*
+                (list source definitions))
+          definitions))))
 
 (defvar *provider-definition-ids-cache* nil)
 (defvar *provider-definition-ids-digest-cache* nil)
@@ -1057,6 +1069,7 @@
 
 (defun register-built-in-providers ()
   (clrhash *provider-definitions*)
+  (setf *provider-definitions-list-cache* nil)
   (dolist (row *built-in-provider-definition-rows*)
     (validate-provider-definition-row row)
     (when (gethash (getf row :id) *provider-definitions*)

@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: cache sorted `list-provider-definitions`
+  keyed by `*provider-definitions*` (invalidate on register /
+  rebuild). Friend-MachineD **1.21→0.07 µs**. Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  list-provider-definitions invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: cache `list-provider-definition-ids` and its
   SHA-256 digest keyed by `*model-catalog*` / ids identity.
   Friend-MachineD list-only **44→0.02 µs**; harness-shaped
