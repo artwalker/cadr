@@ -4,8 +4,9 @@
 > 冻结至本 goal 完成。Does not announce Goal 20 complete. G.17 stays
 > `missing`.
 >
-> **当前：** `BASELINE` = `b79e4cc83` · `v0.84.4` +0  
-> **目标：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）
+> **自：** `b79e4cc83` · `v0.84.4` +0  
+> **当前锚点（机械步已跑）：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
+> 用户可见 delta 与门禁尚未完成。
 
 ## 为什么单独开 goal
 
