@@ -595,8 +595,10 @@
     ;; kebab-keyword-to-camel, startup help table, dialog chrome,
     ;; armin 2D helpers, daxnuts parse cache, tui-multiline-editor-p.
     ;; +1 v0.84.4: *fullscreen-copy-on-select-hook* (controller.lisp).
-    ;; +3 remesure on cadr-migration tip 89e8b852b (Friend-MachineD):
-    ;; interactive owner files now count 293 `(def` lines.
+    ;; +2 Goal 20 keybinding_hint: +ansi-foreground-reset+ and
+    ;; write-raw-key-hint (interactive/components/loaders.lisp).
+    ;; +1 Goal 20 armin_make_grid: +armin-final-grid+
+    ;; (interactive/components/armin.lisp).
     (is (= 293 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
@@ -973,8 +975,14 @@
     ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
     ;; SeqOneByteString word; not empty SWAR).
     ;; +1 v0.84.4: repair-unterminated-session-file (session/migration.lisp).
-    ;; +9 remesure on cadr-migration tip 89e8b852b (Friend-MachineD):
-    ;; cadr-agent owner files now count 319 `(def` lines.
+    ;; +6 Goal 20 session_list: +session-header-read-buffer-size+,
+    ;; blank-header-octets-p, session-header-candidate &optional end
+    ;; (replaces the old 1-arg defun), session-list-info,
+    ;; session-list-info-file-mtime-ms, list-session-infos,
+    ;; read-session-list-info (session/discovery.lisp).
+    ;; +3 Goal 20 export-html splice: split-export-html-template,
+    ;; +export-html-css-parts+, +export-html-html-parts+
+    ;; (session/export-html.lisp).
     (is (= 319 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
