@@ -14,6 +14,10 @@ tag/Release step.
   `list-sessions` on the same 2× fixture stage (~0.80×).
   Activity order EQUAL. G.17 missing.
 
+- Goal 20: refresh unpaired-path denominator after
+  session-list-info invent (+293 lines). needs-pair=0
+  uncovered=0.
+
 - Goal 20 invent: bake autocomplete command items on the
   provider once; slash filter reuses them. Friend-MachineD
   n=50 `suggest_apply` **46.9→31.0 µs** (dirent tip baseline).
