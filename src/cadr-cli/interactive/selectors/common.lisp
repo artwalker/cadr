@@ -149,12 +149,18 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
   (component-text-line
    line width :padding-x padding-x))
 
+(defparameter *selector-border-by-key*
+  (make-hash-table :test #'equal))
+
 (defun selector-border-line
     (width &optional (color :border))
-  (cadr-tui:theme-foreground
-   color
-   (make-string (max 0 width)
-                :initial-element #\─)))
+  (let ((key (cons width color)))
+    (or (gethash key *selector-border-by-key*)
+        (setf (gethash key *selector-border-by-key*)
+              (cadr-tui:theme-foreground
+               color
+               (make-string (max 0 width)
+                            :initial-element #\─))))))
 
 (defun auth-overlay-border-line (width)
   (selector-border-line width :border))

@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `selector-border-line` interns by (width,color).
+  Friend-MachineD **4.7→0.1 µs**. Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after selector-border invent.
+  needs-pair=0 uncovered=0.
+
+- Goal 20: remesure `render-tui-entry` after entry-uncached invent
+  (Friend-MachineD tip OBS **0.15 µs** on recreating entries). G.17 missing.
+
 - Goal 20 invent: `render-tui-entry-uncached` interns host-nil paint by
   content key (skips tool/bash/custom/auth-url). Friend-MachineD
   **156.0→0.4 µs**. Observed EQUAL. G.17 missing.
