@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `copy-armin-grid` uses row-major `replace`
+  on displaced character vectors (no nested `aref` walk);
+  grids are `character`-specialized. Friend-MachineD
+  **8.4→2.3 µs** (~0.27× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after armin-copy
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `make-armin-grid` copies a load-time baked
   final half-block grid (no 558 bit tests per call).
   Friend-MachineD **30.6→6.6 µs** (~0.22× tip). Observed

@@ -40,6 +40,7 @@
 (defparameter +armin-final-grid+
   (let* ((height (ceiling +armin-height+ 2))
          (grid (make-array (list height +armin-width+)
+                           :element-type 'character
                            :initial-element #\Space)))
     (dotimes (row height)
       (dotimes (x +armin-width+)
@@ -51,13 +52,18 @@
   (if final-p
       (copy-armin-grid +armin-final-grid+)
       (make-array (list (armin-grid-height) +armin-width+)
+                  :element-type 'character
                   :initial-element #\Space)))
 
 (defun copy-armin-grid (grid)
-  (let ((copy (make-array (array-dimensions grid))))
-    (dotimes (row (array-dimension grid 0))
-      (dotimes (column (array-dimension grid 1))
-        (setf (aref copy row column) (aref grid row column))))
+  ;; Row-major replace on displaced vectors (no nested aref walk).
+  (let* ((dims (array-dimensions grid))
+         (n (array-total-size grid))
+         (etype (array-element-type grid))
+         (copy (make-array dims :element-type etype)))
+    (replace
+     (make-array n :element-type etype :displaced-to copy)
+     (make-array n :element-type etype :displaced-to grid))
     copy))
 
 (defun armin-grid-row-string (grid row)

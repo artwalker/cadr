@@ -733,7 +733,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.close_pending` | 2.293 | 0.714 | 3.213× | 8.00× | measure-only leftover 831; `rpc-close-pending-dialogs` vs leftover pending map clear; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `oauth_pkce_device.write_http_response` | 6.758 | 0.620 | 10.896× | 12.00× | measure-only leftover 833; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `oauth_pkce_device.present_auth_url` | 2.080 | 0.354 | 5.875× | 8.00× | measure-only leftover 834; remeasure Friend-MachineD | invent pause；地板优化另刀 |
-| `cli_selectors.armin_make_grid` | 27.119 | 16.108 | 1.684× | 8.00× | measure-only leftover 835; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_selectors.armin_make_grid` | 6.6 (cadr µs invent; prior ledger 27.119) | 16.108 | pending remesure | 8.00× | invent: load-time baked final grid copy; remount later | invent kept 2026-09-05 |
 | `cli_selectors.armin_copy_grid` | 24.841 | 3.842 | 6.466× | 8.00× | measure-only leftover 836; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_selectors.armin_row_string` | 23.584 | 5.494 | 4.293× | 8.00× | measure-only leftover 837; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_extensions_install.http_timeout_p` | 1.356 | 0.303 | 4.480× | 8.00× | measure-only leftover 844; remeasure Friend-MachineD | invent pause；地板优化另刀 |
