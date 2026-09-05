@@ -8,7 +8,7 @@
 > **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
 > 机械锚点与部分用户可见增量已落；全门禁与剩余 disposition 未完成。
 
-## 已落地上游增量（tip `fa0d8cc87`）
+## 已落地上游增量（tip `974c80866`）
 
 | 项 | 状态 |
 |---|---|
@@ -17,8 +17,9 @@
 | `scrollbarTrack` theme + JSON | done |
 | Alt+wheel 5× | done（FiveAM） |
 | Jump to latest overlay | done（FiveAM） |
+| Working indicator in default editor border | done（`974c80866`；FiveAM） |
 | `app.thinking.save` | already present |
-| Working-in-border / mid-convo effort / inMemory entries / CADR_TUI_DEBUG_REDRAW | open |
+| mid-convo effort / inMemory entries / `CADR_TUI_DEBUG_REDRAW` | open |
 | Experimental error / MouseRegion / tool renderers barrel | ledger-defer |
 | `verify.sh` / `test-cl.sh` | not yet green for G23 close |
 | Goal 20 invent unpause | blocked on G23 close |
@@ -48,7 +49,7 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
 |---|---|
 | Persistent Claude thinking effort | 移植或书面豁免 |
 | Fullscreen「Jump to latest」+ `tui.altScreen.bottom` | 交互 + keybinding |
-| Working indicator 嵌进 default editor border | TUI parity |
+| Working indicator 嵌进 default editor border | done（`974c80866`） |
 | Restorable in-memory sessions (`SessionManager.inMemory`) | SDK / session 面 |
 | Fullscreen search 缓存与可见高亮 | 行为对齐或回归 |
 | Alt 滚轮加速（0.85.1） | keybinding / TUI |
