@@ -5,8 +5,23 @@
 > `missing`.
 >
 > **自：** `b79e4cc83` · `v0.84.4` +0  
-> **当前锚点（机械步已跑）：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
-> 用户可见 delta 与门禁尚未完成。
+> **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
+> 机械锚点与部分用户可见增量已落；全门禁与剩余 disposition 未完成。
+
+## 已落地上游增量（tip `fa0d8cc87`）
+
+| 项 | 状态 |
+|---|---|
+| `BASELINE` / model-data pin | done |
+| GPT-6 Astra catalog (1354 models) | done |
+| `scrollbarTrack` theme + JSON | done |
+| Alt+wheel 5× | done（FiveAM） |
+| Jump to latest overlay | done（FiveAM） |
+| `app.thinking.save` | already present |
+| Working-in-border / mid-convo effort / inMemory entries / CADR_TUI_DEBUG_REDRAW | open |
+| Experimental error / MouseRegion / tool renderers barrel | ledger-defer |
+| `verify.sh` / `test-cl.sh` | not yet green for G23 close |
+| Goal 20 invent unpause | blocked on G23 close |
 
 ## 为什么单独开 goal
 
