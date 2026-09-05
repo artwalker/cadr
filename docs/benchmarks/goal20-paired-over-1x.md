@@ -490,7 +490,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.assistant_stop_error` | 24.257 | 2.323 | 10.444× | 20.00× | measure-only leftover 647; `assistant-stop-error-lines` vs AssistantMessageComponent stopReason; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.update_notification_border` | 6.319 | 1.484 | 4.259× | 8.00× | measure-only leftover 648; `update-notification-border-line` vs warning DynamicBorder | invent pause；地板优化另刀 |
 | `cli_interactive_controller.theme_message_background` | 8.586 | 1.571 | 5.465× | 8.00× | measure-only leftover 649; `theme-message-background-lines` vs theme.bg | invent pause；地板优化另刀 |
-| `cli_interactive_controller.update_notification_text` | 59.152 | 2.032 | 29.104× | 50.00× | measure-only leftover 650; `update-notification-text-lines` vs warning body text; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.update_notification_text` | 0.1 (cadr µs invent; tip OBS 77.7) | 2.032 | pending remesure | 50.00× | invent: intern paint by (text,width); EQUAL | invent kept 2026-09-05 |
 | `cli_interactive_controller.syntax_highlight` | 13.174 | 1.081 | 12.184× | 20.00× | measure-only leftover 651; `tui-syntax-highlight` vs syntaxHighlight; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.accumulate_usage` | 0.775 | 0.652 | 1.188× | 8.00× | measure-only leftover 653; `accumulate-message-usage` vs session usage accumulate | invent pause；地板优化另刀 |
 | `cli_interactive_controller.append_user_message` | 5.050 | 1.201 | 4.205× | 8.00× | measure-only leftover 654; `append-tui-user-message` vs parseSkillBlock UserMessageComponent | invent pause；地板优化另刀 |

@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `update-notification-text-lines` interns paint by
+  (text,width). Friend-MachineD **77.7→0.1 µs** (~0.001× tip).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after update-notification
+  text invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after update-notification
+  text invent (299→300). G.17 missing.
+
 - Goal 20 invent: `extension-dialog-chrome` caches width-keyed borders
   and full paint by (title,width,body,footer,row,col). Friend-MachineD
   **10.9→1.2 µs** (~0.11× tip). Observed EQUAL. G.17 missing.

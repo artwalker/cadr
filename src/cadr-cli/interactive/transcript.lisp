@@ -676,6 +676,8 @@
   (make-hash-table :test #'equal))
 (defparameter *version-update-notification-by-key*
   (make-hash-table :test #'equal))
+(defparameter *update-notification-text-by-key*
+  (make-hash-table :test #'equal))
 
 (defun update-notification-border-line (width)
   (or (gethash width *update-notification-border-by-width*)
@@ -686,10 +688,13 @@
              :enabled-p t))))
 
 (defun update-notification-text-lines (text width)
-  (cadr-tui:component-render
-   (cadr-tui:make-text-component
-    text :padding-x 1 :padding-y 0)
-   width))
+  (let ((key (list text width)))
+    (or (gethash key *update-notification-text-by-key*)
+        (setf (gethash key *update-notification-text-by-key*)
+              (cadr-tui:component-render
+               (cadr-tui:make-text-component
+                text :padding-x 1 :padding-y 0)
+               width)))))
 
 (defun render-version-update-notification (entry width)
   (let* ((version (tui-entry-text entry))
