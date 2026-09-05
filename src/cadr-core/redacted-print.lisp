@@ -1,14 +1,24 @@
 (in-package #:cadr-core)
 
 (defvar *redacted-object-types* nil)
+(defvar *redacted-object-types-cache* nil)
 
 (defun register-redacted-object-type (type)
   (pushnew type *redacted-object-types* :test #'eq)
+  (setf *redacted-object-types-cache* nil)
   type)
 
 (defun redacted-object-types ()
-  (sort (copy-list *redacted-object-types*)
-        #'string< :key #'symbol-name))
+  (let ((source *redacted-object-types*))
+    (if (and *redacted-object-types-cache*
+             (eq (first *redacted-object-types-cache*) source))
+        (second *redacted-object-types-cache*)
+        (let ((sorted
+                (sort (copy-list source)
+                      #'string< :key #'symbol-name)))
+          (setf *redacted-object-types-cache*
+                (list source sorted))
+          sorted))))
 
 (defmacro define-redacted-print-object
     ((type value stream) &body body)

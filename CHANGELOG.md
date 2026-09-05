@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `redacted-object-types` caches the sorted
+  copy keyed by the live source list (invalidate on register /
+  special rebind). Friend-MachineD n=20 **1.38→0.15 µs**
+  (~0.11× tip; ~0.27× vs booked pi 0.53 µs). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  redacted-types invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `execution-normalize-path` uses POSIX `/`
   absolute check (no `pathname`), string-preserving input,
   and stream rebuild instead of `format ~{`; join uses

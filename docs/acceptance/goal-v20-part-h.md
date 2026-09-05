@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,111 lines**
+Denominator: **297 files / 130,121 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,078 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,088 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14043,7 +14043,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/write.lisp` | 70 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort`, `core_rest.cancellation_predicate` |
-| `src/cadr-core/redacted-print.lisp` | 44 | `core_rest.redacted_secrets`, `core_rest.redacted_register`, `core_rest.redacted_replace` |
+| `src/cadr-core/redacted-print.lisp` | 54 | `core_rest.redacted_secrets`, `core_rest.redacted_register`, `core_rest.redacted_replace` |
 | `src/cadr-core/threads.lisp` | 47 | `core_rest.threads_cleanup` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
