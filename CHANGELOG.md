@@ -27,6 +27,9 @@ tag/Release step.
   `session-list-info` (incl. all-messages corpus) and load
   only on select. G.17 missing.
 
+- Goal 20: refresh unpaired-path denominator after resume/TUI
+  list-info migrate (+60 lines). needs-pair=0 uncovered=0.
+
 - Goal 20 invent: bake autocomplete command items on the
   provider once; slash filter reuses them. Friend-MachineD
   n=50 `suggest_apply` **46.9→31.0 µs** (dirent tip baseline).
