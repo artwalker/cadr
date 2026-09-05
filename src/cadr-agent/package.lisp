@@ -246,6 +246,7 @@
    #:make-extension-hook-result
    #:session
    #:session-id
+   #:session-version
    #:session-timestamp
    #:session-cwd
    #:session-path
@@ -253,7 +254,9 @@
    #:session-name
    #:session-label
    #:session-leaf-id
+   #:session-persisted-p
    #:session-messages
+   #:session-context-entries
    #:session-entry
    #:session-entry-type
    #:session-entry-id
@@ -284,6 +287,7 @@
    #:session-entry-count
    #:default-session-directory
    #:create-session
+   #:create-in-memory-session
    #:load-session
    #:list-sessions
    #:list-session-infos

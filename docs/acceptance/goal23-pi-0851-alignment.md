@@ -21,7 +21,7 @@
 | `app.thinking.save` | already present |
 | Anthropic mid-convo thinking effort | done（`8dedb33bb` + session `providerThinkingLevel`；FiveAM） |
 | `CADR_TUI_DEBUG_REDRAW` | done（FiveAM getenv helper + first-render log） |
-| inMemory entries | open |
+| inMemory entries | done（FiveAM `session-manager-in-memory` entries） |
 | Experimental error / MouseRegion / tool renderers barrel | ledger-defer |
 | `verify.sh` / `test-cl.sh` | not yet green for G23 close |
 | Goal 20 invent unpause | blocked on G23 close |

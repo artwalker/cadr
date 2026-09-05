@@ -16,6 +16,18 @@
     :initarg :path
     :initform nil
     :reader session-manager-path)
+   (session-id
+    :initarg :session-id
+    :initform nil
+    :reader session-manager-session-id)
+   (parent-session
+    :initarg :parent-session
+    :initform nil
+    :reader session-manager-parent-session)
+   (entries
+    :initarg :entries
+    :initform nil
+    :reader session-manager-entries)
    (resolved
     :initform :unresolved
     :accessor session-manager-resolved)
@@ -26,7 +38,7 @@
     :reader session-manager-lock)))
 
 (defun make-session-manager
-    (mode cwd &key directory path)
+    (mode cwd &key directory path id parent-session entries)
   (make-instance
    'session-manager
    :mode mode
@@ -38,11 +50,19 @@
     (uiop:ensure-absolute-pathname
      (or directory
          (cadr-agent:default-session-directory))))
-   :path path))
+   :path path
+   :session-id id
+   :parent-session parent-session
+   :entries entries))
 
 (defun session-manager-in-memory
-    (&optional (cwd (uiop:getcwd)))
-  (make-session-manager :memory cwd))
+    (&optional (cwd (uiop:getcwd))
+     &key id parent-session entries)
+  (make-session-manager
+   :memory cwd
+   :id id
+   :parent-session parent-session
+   :entries entries))
 
 (defun session-manager-create
     (&optional (cwd (uiop:getcwd))
@@ -83,7 +103,13 @@
       (setf
        (session-manager-resolved manager)
        (ecase (session-manager-mode manager)
-         (:memory nil)
+         (:memory
+          (cadr-agent:create-in-memory-session
+           :cwd (session-manager-cwd manager)
+           :id (session-manager-session-id manager)
+           :parent-session
+           (session-manager-parent-session manager)
+           :entries (session-manager-entries manager)))
          (:create
           (cadr-agent:create-session
            :directory

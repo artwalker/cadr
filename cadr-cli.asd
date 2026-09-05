@@ -210,6 +210,7 @@
                              (:file "goal12-tui-composition-test")
                              (:file "goal12-core-capabilities-test")
                              (:file "goal12-sdk-test")
+                             (:file "goal23-in-memory-session-test")
                              (:file "goal12-examples-test")
                              (:file "goal20-example-games-test")
                              (:file "tic-tac-toe-steer-test")

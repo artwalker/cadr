@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 23: `session-manager-in-memory` restores external entries into a
+  non-persisted session (adopt ids, rebuild leaf/labels/tree, migrate
+  only when a header is present). FiveAM mirrors pi
+  `load-entries.test.ts`.
+
 - Goal 23: gate TUI full-redraw debug logs on `CADR_TUI_DEBUG_REDRAW=1`
   (`cadr-tui-debug.log` under the agent directory). `CADR_CODING_AGENT_DIR`
   is unchanged. `PI_TUI_DEBUG_REDRAW` and `PI_DEBUG_REDRAW` are not read.

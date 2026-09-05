@@ -56,6 +56,7 @@
 (defstruct (session
             (:constructor %make-session))
   id
+  (version 3)
   timestamp
   cwd
   path

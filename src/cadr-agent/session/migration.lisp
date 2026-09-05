@@ -2114,7 +2114,8 @@
     (t raw)))
 
 (defun finalize-session-entry
-    (entry path line-number by-id)
+    (entry path line-number by-id
+     &key (decode-message-p t))
   (let* ((type (session-type-keyword (session-entry-type entry)))
          (id (session-entry-id entry))
          (parent-id
@@ -2173,12 +2174,15 @@
     (let ((usage-object (session-entry-usage entry)))
       (case type
         (:message
-         (setf
-          (session-entry-message entry)
-          (message-from-json
-           (require-session-slot
+         (let ((raw
+                 (require-session-slot
+                  (session-entry-message entry)
+                  "message" path line-number)))
+           (setf
             (session-entry-message entry)
-            "message" path line-number))))
+            (if decode-message-p
+                (message-from-json raw)
+                raw))))
         (:thinking-level-change
          (let ((value
                  (require-session-slot
@@ -2424,6 +2428,141 @@
      (session-failure
       path line-number
       "Session record must be an object"))))
+
+(defun session-header-like-p (object)
+  (or (session-file-header-p object)
+      (and (hash-table-p object)
+           (string=
+            "session"
+            (or (cadr-ai::json-get object "type") "")))))
+
+(defun file-entry-header (entries)
+  (find-if #'session-header-like-p entries))
+
+(defun file-entry-body (entries)
+  (remove-if #'session-header-like-p entries))
+
+(defun hash-message-role (object)
+  (and (hash-table-p object)
+       (let ((message (cadr-ai::json-get object "message")))
+         (and (hash-table-p message)
+              (cadr-ai::json-get message "role")))))
+
+(defun adopt-session-object (object path line-number by-id)
+  (cond
+    ((session-entry-p object)
+     (let ((id (session-entry-id object)))
+       (when (gethash id by-id)
+         (session-failure
+          path line-number
+          "Duplicate session entry id: ~A" id))
+       (setf (gethash id by-id) object)
+       object))
+    ((member (hash-message-role object)
+             '("hookMessage" "custom")
+             :test #'string=)
+     (finalize-session-entry
+      (session-entry-from-hash object)
+      path line-number by-id
+      :decode-message-p nil))
+    (t
+     (record-to-session-entry
+      object path line-number by-id))))
+
+(defun session-index-adopted-body (session records)
+  (let ((by-id (session-by-id session))
+        (labels (session-labels session))
+        (entries nil)
+        (entries-tail nil)
+        (session-name nil)
+        (line-number 1))
+    (clrhash by-id)
+    (clrhash labels)
+    (dolist (object records)
+      (incf line-number)
+      (let ((entry
+              (adopt-session-object
+               object (session-path session) line-number by-id)))
+        (when (eq :label (session-entry-type entry))
+          (if (and (session-entry-label entry)
+                   (plusp (length (session-entry-label entry))))
+              (setf (gethash (session-entry-target-id entry) labels)
+                    (session-entry-label entry))
+              (remhash (session-entry-target-id entry) labels)))
+        (when (eq :session-info (session-entry-type entry))
+          (setf session-name
+                (let ((name (session-entry-name entry)))
+                  (and name
+                       (plusp
+                        (length
+                         (string-trim '(#\Space #\Tab) name)))
+                       name))))
+        (let ((cell (list entry)))
+          (if entries-tail
+              (setf (cdr entries-tail) cell
+                    entries-tail cell)
+              (setf entries cell
+                    entries-tail cell)))))
+    (setf (session-%entries session) entries
+          (session-%entries-tail session) entries-tail
+          (session-%entries-tail-head session) entries
+          (session-name session) session-name
+          (session-leaf-id session)
+          (and entries-tail
+               (session-entry-id (car entries-tail)))
+          (session-modified-timestamp session)
+          (reduce
+           #'max
+           entries
+           :key
+           (lambda (entry)
+             (or (session-entry-activity-timestamp entry)
+                 (session-timestamp session)))
+           :initial-value (session-timestamp session)))
+    session))
+
+(defun create-in-memory-session
+    (&key cwd id parent-session entries
+          (timestamp (cadr-ai::unix-milliseconds)))
+  (let ((header (file-entry-header entries))
+        (body (file-entry-body entries)))
+    (if header
+        (let* ((header-hash
+                 (if (session-file-header-p header)
+                     (session-file-header-to-hash header)
+                     header))
+               (objects (cons header-hash (copy-list body)))
+               (version (session-header-ref header-hash "version" 1)))
+          (when (< version 3)
+            (when (every #'hash-table-p objects)
+              (when (= version 1)
+                (migrate-v1-session-objects objects))
+              (migrate-v2-session-objects objects)))
+          (let ((resolved (first objects)))
+            (session-index-adopted-body
+             (%make-session
+              :id (session-header-ref resolved "id")
+              :version 3
+              :timestamp
+              (iso8601-to-milliseconds
+               (session-header-ref resolved "timestamp"))
+              :cwd (session-header-ref resolved "cwd")
+              :path nil
+              :parent-session
+              (json-null-to-nil
+               (session-header-ref resolved "parentSession"))
+              :modified-timestamp
+              (iso8601-to-milliseconds
+               (session-header-ref resolved "timestamp")))
+             (rest objects))))
+        (session-index-adopted-body
+         (create-session
+          :cwd cwd
+          :id id
+          :parent-session parent-session
+          :timestamp timestamp
+          :persist-p nil)
+         body))))
 
 (defun load-session (path)
   (let* ((pathname (pathname path))

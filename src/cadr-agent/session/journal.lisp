@@ -208,23 +208,30 @@
                              id
                              parent-session
                              (timestamp
-                               (cadr-ai::unix-milliseconds)))
-  (let* ((session-directory
-           (uiop:ensure-directory-pathname directory))
-         (canonical-cwd
-           (canonical-session-cwd
-            (or cwd (uiop:getcwd))))
-         (session-id (or id (make-session-id)))
+                               (cadr-ai::unix-milliseconds))
+                             (persist-p t))
+  (let* ((session-id (or id (make-session-id)))
+         (resolved-cwd
+           (if persist-p
+               (canonical-session-cwd
+                (or cwd (uiop:getcwd)))
+               (namestring
+                (uiop:ensure-directory-pathname
+                 (or cwd (uiop:getcwd))))))
          (path
-           (merge-pathnames
-            (format nil "~A.jsonl" session-id)
-            session-directory)))
-    (ensure-directories-exist
-     (merge-pathnames "anchor" session-directory))
+           (when persist-p
+             (let ((session-directory
+                     (uiop:ensure-directory-pathname directory)))
+               (ensure-directories-exist
+                (merge-pathnames "anchor" session-directory))
+               (merge-pathnames
+                (format nil "~A.jsonl" session-id)
+                session-directory)))))
     (%make-session
      :id session-id
+     :version 3
      :timestamp timestamp
-     :cwd canonical-cwd
+     :cwd resolved-cwd
      :path path
      :parent-session parent-session
      :modified-timestamp timestamp)))
@@ -285,6 +292,8 @@
                 (setf (session-%journal-octets session)
                       (make-session-octet-buffer)))))
     (cond
+      ((null (session-path session))
+       nil)
       ((session-persisted-p session)
        (handler-case
            (write-session-entry-jsonl

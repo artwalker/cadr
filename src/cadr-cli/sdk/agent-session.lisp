@@ -101,12 +101,13 @@
          (cadr-agent:session-id persistent))))
 
 (defun agent-session-file (session)
-  (let ((persistent
-          (cadr-agent:agent-session
-           (agent-session-agent session))))
-    (and persistent
-         (namestring
-          (cadr-agent:session-path persistent)))))
+  (let* ((persistent
+           (cadr-agent:agent-session
+            (agent-session-agent session)))
+         (path
+           (and persistent
+                (cadr-agent:session-path persistent))))
+    (and path (namestring path))))
 
 (defun agent-session-bind-extensions
     (session &optional context)
