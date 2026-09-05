@@ -593,13 +593,19 @@
                     (compute)))
           (compute)))))
 
+(defparameter *theme-message-background-by-key*
+  (make-hash-table :test #'equal))
+
 (defun theme-message-background-lines
     (lines background-token)
-  (loop for line in lines
-        collect
-        (cadr-tui:theme-background
-         background-token line
-         :enabled-p t)))
+  (let ((key (cons background-token lines)))
+    (or (gethash key *theme-message-background-by-key*)
+        (setf (gethash key *theme-message-background-by-key*)
+              (loop for line in lines
+                    collect
+                    (cadr-tui:theme-background
+                     background-token line
+                     :enabled-p t))))))
 
 (defun transcript-summary-label (name)
   (cadr-tui:theme-foreground

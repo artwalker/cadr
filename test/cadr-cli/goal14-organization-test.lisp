@@ -627,7 +627,9 @@
     ;; extension-custom-ui-paint-fingerprint (interactive/extension-ui.lisp).
     ;; +1 Goal 20 runtime-auth paint invent:
     ;; *runtime-auth-input-paint-by-key* (interactive/extension-ui.lisp).
-    (is (= 311 definition-count)
+    ;; +1 Goal 20 theme-message-background invent:
+    ;; *theme-message-background-by-key* (interactive/transcript.lisp).
+    (is (= 312 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
