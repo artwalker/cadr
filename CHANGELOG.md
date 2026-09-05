@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `extension-dialog-chrome` caches width-keyed borders
+  and full paint by (title,width,body,footer,row,col). Friend-MachineD
+  **10.9→1.2 µs** (~0.11× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after extension-dialog
+  invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after extension-dialog
+  invent (296→299). G.17 missing.
+
 - Goal 20 invent: `render-version-update-notification` interns the
   full paint by (version,note,width,hyperlinks). Friend-MachineD
   **310.8→10.3 µs** (~0.03× tip). Observed EQUAL. G.17 missing.

@@ -23,25 +23,45 @@
    :title title
    :input (cadr-tui:make-single-line-input :prompt "> ")))
 
+(defparameter *extension-dialog-border-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *extension-dialog-chrome-by-key*
+  (make-hash-table :test #'equal))
+
+(defun extension-dialog-border-line (width)
+  (or (gethash width *extension-dialog-border-by-width*)
+      (setf (gethash width *extension-dialog-border-by-width*)
+            (selector-border-line width))))
+
 (defun extension-dialog-chrome
     (title width body-lines body-row body-column footer)
-  (let ((prefix
-          (list
-           (selector-border-line width)
-           ""
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :accent title :enabled-p t)
-            width)
-           "")))
-    (values
-     (append
-      prefix body-lines
-      (list "")
-      (component-text-lines footer width)
-      (list "" (selector-border-line width)))
-     (+ (length prefix) body-row)
-     body-column)))
+  (let* ((key (list title width body-lines footer
+                    body-row body-column))
+         (cached
+           (gethash key *extension-dialog-chrome-by-key*)))
+    (if cached
+        (values-list cached)
+        (let* ((border (extension-dialog-border-line width))
+               (prefix
+                 (list
+                  border
+                  ""
+                  (selector-component-text-line
+                   (cadr-tui:theme-foreground
+                    :accent title :enabled-p t)
+                   width)
+                  ""))
+               (lines
+                 (append
+                  prefix body-lines
+                  (list "")
+                  (component-text-lines footer width)
+                  (list "" border)))
+               (row (+ (length prefix) body-row))
+               (result (list lines row body-column)))
+          (setf (gethash key *extension-dialog-chrome-by-key*)
+                result)
+          (values-list result)))))
 
 (defmethod cadr-tui:component-render
     ((dialog extension-input-dialog) width &key focused-p)
