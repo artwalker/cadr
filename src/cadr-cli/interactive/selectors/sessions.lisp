@@ -660,7 +660,7 @@
           ((typep payload 'cadr-agent:session-list-info)
            (setf
             (cadr-agent:session-list-info-name payload)
-            name)))))
+            name))))))
   records)
 
 (defun session-selector-confirm-rename (selector)
