@@ -1263,6 +1263,173 @@ shows the terminal message with the given style."
      name))
    name))
 
+;; Width-keyed chrome and interned row fragments so scoped-models paint
+;; reuses title, session line, empty miss, pointer/check, and footer wrap.
+(defparameter *scoped-models-title-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *scoped-models-session-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *scoped-models-empty-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *scoped-models-border-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *scoped-models-row-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *scoped-models-name-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *scoped-models-count-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *scoped-models-status-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *scoped-models-footer-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *scoped-models-arrow-accent* nil)
+(defparameter *scoped-models-check-success* nil)
+(defparameter *scoped-models-cross-dim* nil)
+
+(defun scoped-models-arrow-accent ()
+  (or *scoped-models-arrow-accent*
+      (setf *scoped-models-arrow-accent*
+            (cadr-tui:theme-foreground :accent "→ "))))
+
+(defun scoped-models-check-success ()
+  (or *scoped-models-check-success*
+      (setf *scoped-models-check-success*
+            (cadr-tui:theme-foreground :success " ✓"))))
+
+(defun scoped-models-cross-dim ()
+  (or *scoped-models-cross-dim*
+      (setf *scoped-models-cross-dim*
+            (cadr-tui:theme-foreground :dim " ✗"))))
+
+(defun scoped-models-border-line (width)
+  (or (gethash width *scoped-models-border-by-width*)
+      (setf (gethash width *scoped-models-border-by-width*)
+            (selector-border-line width))))
+
+(defun scoped-models-title-line (width)
+  (or (gethash width *scoped-models-title-by-width*)
+      (setf (gethash width *scoped-models-title-by-width*)
+            (selector-component-text-line
+             (cadr-tui:theme-foreground
+              :accent
+              (cadr-tui:theme-bold "Model Configuration"))
+             width :padding-x 0))))
+
+(defun scoped-models-session-line (save-label width)
+  (let ((key (cons save-label width)))
+    (or (gethash key *scoped-models-session-by-key*)
+        (setf (gethash key *scoped-models-session-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground
+                :muted
+                (format
+                 nil "Session-only. ~A to save to settings."
+                 save-label))
+               width :padding-x 0)))))
+
+(defun scoped-models-empty-line (width)
+  (or (gethash width *scoped-models-empty-by-width*)
+      (setf (gethash width *scoped-models-empty-by-width*)
+            (selector-component-text-line
+             (cadr-tui:theme-foreground
+              :muted "  No matching models")
+             width :padding-x 0))))
+
+(defun scoped-models-count-line (selected total width)
+  (let ((key (list selected total width)))
+    (or (gethash key *scoped-models-count-by-key*)
+        (setf (gethash key *scoped-models-count-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground
+                :muted
+                (format nil "  (~D/~D)" (1+ selected) total))
+               width :padding-x 0)))))
+
+(defun scoped-models-name-line (text width)
+  (let ((key (cons text width)))
+    (or (gethash key *scoped-models-name-by-key*)
+        (setf (gethash key *scoped-models-name-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground
+                :muted
+                (format nil "  ~A" text))
+               width :padding-x 0)))))
+
+(defun scoped-models-refresh-line (kind message width)
+  (let ((key (list kind message width)))
+    (or (gethash key *scoped-models-status-by-key*)
+        (setf (gethash key *scoped-models-status-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground
+                kind
+                (format nil "  ~A" message))
+               width :padding-x 0)))))
+
+(defun scoped-models-row-line
+    (identifier provider selected-p status-tag width)
+  (let ((key (list identifier provider selected-p status-tag width)))
+    (or (gethash key *scoped-models-row-by-key*)
+        (setf (gethash key *scoped-models-row-by-key*)
+              (selector-component-text-line
+               (concatenate
+                'string
+                (if selected-p
+                    (scoped-models-arrow-accent)
+                    "  ")
+                (if selected-p
+                    (cadr-tui:theme-foreground :accent identifier)
+                    identifier)
+                (cadr-tui:theme-foreground
+                 :muted
+                 (format nil " [~A]" provider))
+                (ecase status-tag
+                  (:missing (scoped-models-cross-dim))
+                  (:on (scoped-models-check-success))
+                  (:off (scoped-models-cross-dim))
+                  (:all "")))
+               width :padding-x 0)))))
+
+(defun scoped-models-footer-lines
+    (state width enabled unavailable all-p)
+  (let* ((save (scoped-models-binding-label state "app.models.save"))
+         (confirm (scoped-models-binding-label state "tui.select.confirm"))
+         (enable-all (scoped-models-binding-label state "app.models.enableAll"))
+         (clear (scoped-models-binding-label state "app.models.clearAll"))
+         (toggle (scoped-models-binding-label state "app.models.toggleProvider"))
+         (up (scoped-models-binding-label state "app.models.reorderUp"))
+         (down (scoped-models-binding-label state "app.models.reorderDown"))
+         (dirty-p (scoped-models-selector-state-dirty-p state))
+         (all-count
+           (length (scoped-models-selector-state-all-ids state)))
+         (key
+           (list width enabled unavailable all-p dirty-p all-count
+                 save confirm enable-all clear toggle up down)))
+    (or (gethash key *scoped-models-footer-by-key*)
+        (setf (gethash key *scoped-models-footer-by-key*)
+              (mapcar
+               (lambda (line)
+                 (selector-fit-line line width :pad-p t))
+               (cadr-tui:wrap-text
+                (concatenate
+                 'string
+                 (cadr-tui:theme-foreground
+                  :dim
+                  (format
+                   nil
+                   "  ~A toggle · ~A all · ~A clear · ~A provider · ~A/~A reorder · ~A save · ~A"
+                   confirm enable-all clear toggle up down save
+                   (if all-p
+                       "all enabled"
+                       (format
+                        nil "~D/~D enabled~@[ · ~D unavailable~]"
+                        enabled all-count
+                        (and (plusp unavailable) unavailable)))))
+                 (if dirty-p
+                     (cadr-tui:theme-foreground :warning " (unsaved)")
+                     ""))
+                width))))))
+
 (defun render-scoped-models-selector
     (state width)
   (multiple-value-bind (input-lines input-row input-column)
@@ -1276,21 +1443,12 @@ shows the terminal message with the given style."
        (list
         :lines
         (list
-         (selector-border-line width)
+         (scoped-models-border-line width)
          ""
-         (selector-component-text-line
-          (cadr-tui:theme-foreground
-           :accent
-           (cadr-tui:theme-bold "Model Configuration"))
-          width :padding-x 0)
-         (selector-component-text-line
-          (cadr-tui:theme-foreground
-           :muted
-           (format
-            nil "Session-only. ~A to save to settings."
-            (scoped-models-binding-label
-             state "app.models.save")))
-          width :padding-x 0)
+         (scoped-models-title-line width)
+         (scoped-models-session-line
+          (scoped-models-binding-label state "app.models.save")
+          width)
          ""))
        (list :component input-lines input-row input-column)
        (list
@@ -1308,142 +1466,67 @@ shows the terminal message with the given style."
                   (enabled unavailable all-p)
                 (scoped-models-selector-counts state)
               (append
-       (list "")
-       (if visible
-           (loop
-             for item in visible
-             for index from start
-             for model = (getf item :model)
-             for selected-p = (= index selected)
-             for identifier =
-               (if model
-                   (cadr-ai:model-id model)
-                   (getf item :id))
-             for provider =
-               (if model
-                   (provider-key
-                    (cadr-ai:model-provider model))
-                   "unavailable")
-             for status =
-               (cond
-                 ((null model)
-                  (cadr-tui:theme-foreground
-                   :dim " ✗"))
-                 (all-p "")
-                 ((getf item :enabled-p)
-                  (cadr-tui:theme-foreground
-                   :success " ✓"))
-                 (t
-                  (cadr-tui:theme-foreground
-                   :dim " ✗")))
-             for line =
-               (concatenate
-                'string
-                (if selected-p
-                    (cadr-tui:theme-foreground
-                     :accent "→ ")
-                    "  ")
-                (if selected-p
-                    (cadr-tui:theme-foreground
-                     :accent identifier)
-                    identifier)
-                (cadr-tui:theme-foreground
-                 :muted
-                 (format nil " [~A]" provider))
-                status)
-             collect
-               (selector-component-text-line
-                line width :padding-x 0))
-           (list
-            (selector-component-text-line
-             (cadr-tui:theme-foreground
-              :muted "  No matching models")
-             width :padding-x 0)))
-       (when
-           (or (> start 0)
-               (< end (length items)))
-         (list
-          (selector-component-text-line
-           (cadr-tui:theme-foreground
-            :muted
-            (format nil "  (~D/~D)"
-                    (1+ selected)
-                    (length items)))
-           width :padding-x 0)))
-       (when visible
-         (let* ((item
-                  (scoped-models-selector-selected-item
-                   state))
-                (model
-                  (and item
-                       (getf item :model))))
-           (list
-            ""
-            (selector-component-text-line
-             (cadr-tui:theme-foreground
-              :muted
-              (format
-               nil "  ~A"
-               (if model
-                   (format nil "Model Name: ~A"
-                           (cadr-ai::model-name
-                            model))
-                   "Model unavailable")))
-             width :padding-x 0))))
-       (append
-        (list "")
-        (when
-            (scoped-models-selector-state-refresh-status-message state)
-          (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             (scoped-models-selector-state-refresh-status-kind state)
-             (format
-              nil "  ~A"
-              (scoped-models-selector-state-refresh-status-message
-               state)))
-            width :padding-x 0)))
-        (mapcar
-         (lambda (line)
-           (selector-fit-line line width :pad-p t))
-         (cadr-tui:wrap-text
-          (concatenate
-           'string
-           (cadr-tui:theme-foreground
-            :dim
-            (format
-             nil
-             "  ~A toggle · ~A all · ~A clear · ~A provider · ~A/~A reorder · ~A save · ~A"
-             (scoped-models-binding-label
-              state "tui.select.confirm")
-             (scoped-models-binding-label
-              state "app.models.enableAll")
-             (scoped-models-binding-label
-              state "app.models.clearAll")
-             (scoped-models-binding-label
-              state "app.models.toggleProvider")
-             (scoped-models-binding-label
-              state "app.models.reorderUp")
-             (scoped-models-binding-label
-              state "app.models.reorderDown")
-             (scoped-models-binding-label
-              state "app.models.save")
-             (if all-p
-                 "all enabled"
-                 (format
-                  nil "~D/~D enabled~@[ · ~D unavailable~]"
-                  enabled
-                  (length
-                   (scoped-models-selector-state-all-ids
-                    state))
-                  (and (plusp unavailable)
-                       unavailable)))))
-           (if
-               (scoped-models-selector-state-dirty-p
-                state)
-               (cadr-tui:theme-foreground
-                :warning " (unsaved)")
-               ""))
-          width))
-                          (list (selector-border-line width))))))))))
+               (list "")
+               (if visible
+                   (loop
+                     for item in visible
+                     for index from start
+                     for model = (getf item :model)
+                     for selected-p = (= index selected)
+                     for identifier =
+                       (if model
+                           (cadr-ai:model-id model)
+                           (getf item :id))
+                     for provider =
+                       (if model
+                           (provider-key
+                            (cadr-ai:model-provider model))
+                           "unavailable")
+                     for status-tag =
+                       (cond
+                         ((null model) :missing)
+                         (all-p :all)
+                         ((getf item :enabled-p) :on)
+                         (t :off))
+                     collect
+                       (scoped-models-row-line
+                        identifier provider selected-p
+                        status-tag width))
+                   (list (scoped-models-empty-line width)))
+               (when
+                   (or (> start 0)
+                       (< end (length items)))
+                 (list
+                  (scoped-models-count-line
+                   selected (length items) width)))
+               (when visible
+                 (let* ((item
+                          (scoped-models-selector-selected-item
+                           state))
+                        (model
+                          (and item
+                               (getf item :model))))
+                   (list
+                    ""
+                    (scoped-models-name-line
+                     (if model
+                         (format nil "Model Name: ~A"
+                                 (cadr-ai::model-name model))
+                         "Model unavailable")
+                     width))))
+               (append
+                (list "")
+                (let ((message
+                        (scoped-models-selector-state-refresh-status-message
+                         state)))
+                  (when message
+                    (list
+                     (scoped-models-refresh-line
+                      (scoped-models-selector-state-refresh-status-kind
+                       state)
+                      message
+                      width))))
+                (scoped-models-footer-lines
+                 state width enabled unavailable all-p)
+                (list (scoped-models-border-line width))))))))))
      width)))

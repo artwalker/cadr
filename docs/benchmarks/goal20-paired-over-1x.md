@@ -213,7 +213,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.scoped_models_selector_move` | 170.8 | 11.7 | 14.63× | 20.00× | measure-only pair (Pair 227); scoped models wrap move | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_handle_event` | 246.1 | 36.4 | 6.76× | 12.00× | measure-only pair (Pair 228); scoped models event dispatch | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_handle_raw_input` | 1,638.3 | 181.4 | 9.03× | 8.00× | measure-only pair (Pair 229); scoped models raw key dispatch | invent pause；地板优化另刀 |
-| `cli_selectors.scoped_models_selector_ui_state` | 1,636.7 | 49.5 | 33.04× | 35.00× | measure-only pair (Pair 230); scoped models UI render | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_ui_state` | 169.8 (cadr µs invent; prior ledger 1,636.7) | 49.5 | pending remesure | 35.00× | invent: chrome+row/footer tables; remount later | invent kept 2026-09-05 |
 | `cli_selectors.scoped_models_selector_counts` | 158.5 | 3.7 | 43.32× | 55.00× | measure-only pair (Pair 232); scoped models footer enabled/unavailable counts | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_sorted_ids` | 145.0 | 3.9 | 37.36× | 50.00× | measure-only pair (Pair 233); scoped models enabled-first sort | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_toggle_selected` | 247.0 | 83.7 | 2.95× | 8.00× | measure-only pair (Pair 231); scoped models confirm toggle | invent pause；地板优化另刀 |

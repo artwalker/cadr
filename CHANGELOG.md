@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-scoped-models-selector` caches title/session/
+  empty/border chrome, interned pointer/check, row/name/count/status
+  tables, and footer wrap. Friend-MachineD **1009.4→169.8 µs**
+  (~0.17× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after scoped-models invent.
+  needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `render-login-dialog-state` caches overlay title,
   themed wraps, URL/link wraps, submitted lines, and cancel/submit/close
   hints. Friend-MachineD **99.9→12.0 µs** (~0.12× tip). Observed
