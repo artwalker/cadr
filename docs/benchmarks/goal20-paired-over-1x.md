@@ -196,7 +196,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.oauth_selector_move` | 83.8 | 3.1 | 27.34× | 50.00× | measure-only pair (Pair 210); oauth selector wrap move | invent pause；地板优化另刀 |
 | `cli_selectors.oauth_option_status_rendered` | 13.9 | 1.4 | 10.02× | 15.00× | measure-only pair (Pair 211); themed status indicator | invent pause；地板优化另刀 |
 | `cli_selectors.api_key_input_state_handle_event` | 7.0 | 4.2 | 1.66× | 8.00× | measure-only pair (Pair 212); api key overlay dispatch | invent pause；地板优化另刀 |
-| `cli_selectors.login_method_selector_ui_state` | 622.6 | 61.8 | 10.07× | 12.00× | measure-only pair (Pair 213); login method selector UI | invent pause；地板优化另刀 |
+| `cli_selectors.login_method_selector_ui_state` | 102.6 (cadr µs invent; prior ledger 622.6) | 61.8 | pending remesure | 12.00× | invent: title/footer chrome cache + interned pointer; remount later | invent kept 2026-09-05 |
 | `cli_selectors.api_key_input_ui_state` | 263.5 | 54.2 | 4.86× | 8.00× | measure-only pair (Pair 214); api key overlay UI | invent pause；地板优化另刀 |
 | `cli_selectors.oauth_selector_ui_state` | 372.1 | 15.1 | 24.66× | 35.00× | measure-only pair (Pair 215); oauth selector UI | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_search_text` | 5.6 | 0.8 | 6.78× | 8.00× | measure-only pair (Pair 216); model selector search text | invent pause；地板优化另刀 |
