@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: remesure Goal14 B6/B8 top-level `(def` counts on tip
+  `89e8b852b` (B6 290→293, B8 310→319). Drift is outside selector
+  invent owners. G.17 missing.
+
 - Goal 20 invent: `render-scoped-models-selector` caches title/session/
   empty/border chrome, interned pointer/check, row/name/count/status
   tables, and footer wrap. Friend-MachineD **1009.4→169.8 µs**

@@ -595,7 +595,9 @@
     ;; kebab-keyword-to-camel, startup help table, dialog chrome,
     ;; armin 2D helpers, daxnuts parse cache, tui-multiline-editor-p.
     ;; +1 v0.84.4: *fullscreen-copy-on-select-hook* (controller.lisp).
-    (is (= 290 definition-count)
+    ;; +3 remesure on cadr-migration tip 89e8b852b (Friend-MachineD):
+    ;; interactive owner files now count 293 `(def` lines.
+    (is (= 293 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -971,7 +973,9 @@
     ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
     ;; SeqOneByteString word; not empty SWAR).
     ;; +1 v0.84.4: repair-unterminated-session-file (session/migration.lisp).
-    (is (= 310 definition-count)
+    ;; +9 remesure on cadr-migration tip 89e8b852b (Friend-MachineD):
+    ;; cadr-agent owner files now count 319 `(def` lines.
+    (is (= 319 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
