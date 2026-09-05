@@ -711,6 +711,14 @@ controlling mode flag and repaint afterwards."
               (char data
                     (aref starts 3)))))))
 
+(defun renderer-wheel-scroll-lines (renderer button)
+  ;; pi@d981de122 tui-alt-screen.ts:968-970 — SGR bit 3 (value 8) is Alt.
+  (let ((lines
+          (terminal-renderer-wheel-scroll-lines renderer)))
+    (if (zerop (logand button 8))
+        lines
+        (* lines 5))))
+
 (defun renderer-selection-bounds (renderer)
   (let ((anchor
           (terminal-renderer-selection-anchor
@@ -1224,14 +1232,13 @@ word-navigation character classes, then join word runs across '-' and
             (0
              (renderer-scroll-by
               renderer
-              (-
-               (terminal-renderer-wheel-scroll-lines
-                renderer))))
+              (- (renderer-wheel-scroll-lines
+                  renderer button))))
             (1
              (renderer-scroll-by
               renderer
-              (terminal-renderer-wheel-scroll-lines
-               renderer)))))
+              (renderer-wheel-scroll-lines
+               renderer button)))))
         (unless
             (not
              (zerop (logand button 64)))

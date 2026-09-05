@@ -625,6 +625,32 @@
            (cadr-tui:renderer-viewport-top
             renderer)))))
 
+(test alt-screen-alt-wheel-scrolls-five-times-faster
+  ;; pi@d981de122 tui-alt-screen.ts:75,968-970 — SGR bit 3 (8) is Alt.
+  (let* ((terminal
+           (make-alt-recording-terminal :rows 4))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t :wheel-scroll-lines 3))
+         (lines
+           (loop for index from 1 to 40
+                 collect
+                 (format nil "line ~D" index))))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer lines)
+    (cadr-tui:renderer-scroll-to-top renderer)
+    (is (= 0 (cadr-tui:renderer-viewport-top renderer)))
+    ;; Plain wheel down (button 65 = 64|1): +3 lines.
+    (cadr-tui:renderer-handle-input
+     renderer
+     (format nil "~C[<65;1;1M" #\Escape))
+    (is (= 3 (cadr-tui:renderer-viewport-top renderer)))
+    ;; Alt+wheel down (button 73 = 64|8|1): +15 lines.
+    (cadr-tui:renderer-handle-input
+     renderer
+     (format nil "~C[<73;1;1M" #\Escape))
+    (is (= 18 (cadr-tui:renderer-viewport-top renderer)))))
+
 (test alt-screen-restores-terminal-before-exit-and-prints-document
   (let* ((terminal
            (make-alt-recording-terminal :rows 3))

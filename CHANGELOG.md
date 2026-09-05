@@ -7,6 +7,9 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 23: Alt+mouse-wheel scrolls 5× in fullscreen
+  (`renderer-wheel-scroll-lines`, SGR bit 3). FiveAM covers plain vs Alt.
+
 - Goal 23: refresh built-in model catalog from
   `@earendil-works/pi-ai@0.85.1` (includes GPT-6 Astra). Compat map
   gains `allowedFallbackModels`, `supportsMidConvoEffort`,
