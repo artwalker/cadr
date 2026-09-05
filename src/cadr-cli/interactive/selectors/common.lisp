@@ -201,14 +201,16 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
    width))
 
 (defun selector-keybinding-text (manager name)
-  (format nil "~{~A~^/~}"
-          (cadr-tui:keybinding-keys manager name)))
+  (format-key-text*
+   (cadr-tui:keybinding-keys manager name)))
 
 (defun selector-keybinding-hint
     (manager name description)
-  (raw-key-hint
-   (selector-keybinding-text manager name)
-   description))
+  (with-output-to-string (out)
+    (write-raw-key-hint
+     out
+     (cadr-tui:keybinding-keys manager name)
+     description)))
 
 (defun selector-fuzzy-filter
     (items query text-function)

@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `selector-keybinding-hint` streams key
+  lists and theme ANSI without join/split/`format ~{`
+  round-trips. Friend-MachineD **45.5→33.7 µs** (~0.74× tip).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  keybinding-hint invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `latex-render-layout` caches marker scanners
   and builds markers/joins without per-hit `format` regex
   strings; `render-latex` joins layout lines via a stream.

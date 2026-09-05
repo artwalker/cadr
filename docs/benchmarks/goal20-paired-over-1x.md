@@ -30,7 +30,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `image_runtime.parse_openrouter_images` | 3.188 | 1.068 | 2.99× | 8.00× | measure-only pair 368; OpenRouter image response parse on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
 | `image_runtime.error_result` | 1.047 | 0.346 | 3.03× | 8.00× | measure-only pair 369; image error/abort mapping on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
 | `cli_print_rpc.jsonl_line` | 3.3 | 0.25 | 13.21× | 8.00× | measure-only pair `7178273d6`; **ratio > named ceiling**; sub-µs path — gate uses variance/10µs floor | invent pause；地板/抬天花板另刀 |
-| `tui_latex.render` | 64.4 | 25.8 | 2.49× | 3.00× | measure-only pair `d73577497` | invent pause；地板优化另刀 |
+| `tui_latex.render` | 31.5 (cadr µs invent; prior ledger 64.4) | 25.8 | pending remesure | 3.00× | invent: cached marker scanners + stream joins; remount later | invent kept 2026-09-05 |
 | `tui_theme_overlay.osc11_bg` | 3.8 | 3.3 | 1.16× | 8.00× | measure-only pair `5f8210ae6` | invent pause；地板优化另刀 |
 | `ai_support.estimate_text` | 0.54 | 0.17 | 3.10× | 8.00× | measure-only pair `0aac11a8d`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `tui_select_settings_loaders.filter` | 1.2 | 1.0 | 1.27× | 8.00× | measure-only pair `096fcc540`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
@@ -103,7 +103,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.modified_cursor_key` | 0.42 (cadr µs invent; prior ledger 47.3) | 4.1 | pending remesure | 20.00× | invent: octet CSI walk no per-call regex; remount later | invent kept 2026-09-05 |
 
-| `cli_selectors.keybinding_hint` | 59.9 | 23.2 | 1.32× | 8.00× | measure-only pair `120292c32`; rawKeyHint dim/muted on joined keys | invent pause；地板优化另刀 |
+| `cli_selectors.keybinding_hint` | 33.7 (cadr µs invent; prior ledger 59.9) | 23.2 | pending remesure | 8.00× | invent: stream key lists + theme ANSI no join/split round-trip; remount later | invent kept 2026-09-05 |
 
 | `cli_selectors.session_record_label` | 2.6 | 1.4 | 1.84× | 8.00× | measure-only pair `c10fe79bb`; row label sanitize only | invent pause；地板优化另刀 |
 

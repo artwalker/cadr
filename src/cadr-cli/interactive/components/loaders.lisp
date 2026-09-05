@@ -13,22 +13,41 @@
          (subseq display 1))
         display)))
 
+(defparameter +ansi-foreground-reset+
+  (format nil "~C[39m" #\Escape))
+
 (defun format-key-text* (keys &key capitalize-p)
-  ;; List-level owner. String format-key-text only exists so
-  ;; raw-key-hint can still take a literal "ctrl+c/escape" hint.
-  (format
-   nil "~{~A~^/~}"
-   (mapcar
-    (lambda (alternative)
-      (format
-       nil "~{~A~^+~}"
-       (mapcar
-        (lambda (part)
-          (format-key-part part capitalize-p))
-        (if (stringp alternative)
-            (uiop:split-string alternative :separator '(#\+))
-            (list (princ-to-string alternative))))))
-    keys)))
+  ;; Stream join. On non-macOS without capitalize, each alternative
+  ;; string is already display-ready (no split/rejoin on +).
+  (with-output-to-string (out)
+    (loop for alternative in keys
+          for index from 0
+          do
+             (when (plusp index)
+               (write-char #\/ out))
+             (cond
+               ((and (not capitalize-p)
+                     (stringp alternative)
+                     (not (uiop:os-macosx-p)))
+                (write-string alternative out))
+               (t
+                (let ((parts
+                        (if (stringp alternative)
+                            (uiop:split-string
+                             alternative
+                             :separator '(#\+))
+                            (list
+                             (princ-to-string
+                              alternative)))))
+                  (loop for part in parts
+                        for part-index from 0
+                        do
+                           (when (plusp part-index)
+                             (write-char #\+ out))
+                           (write-string
+                            (format-key-part
+                             part capitalize-p)
+                            out))))))))
 
 (defun format-key-text (key &key capitalize-p)
   (format-key-text*
@@ -46,12 +65,35 @@
     (cadr-tui:get-keybindings) keybinding)
    :capitalize-p t))
 
+(defun write-raw-key-hint
+    (out keys description)
+  (let* ((theme (cadr-tui:current-theme))
+         (enabled-p
+           (cadr-tui::effective-theme-enabled-p
+            theme nil nil)))
+    (when enabled-p
+      (write-string
+       (cadr-tui:theme-foreground-ansi
+        :dim :theme theme :enabled-p t)
+       out))
+    (write-string (format-key-text* keys) out)
+    (when enabled-p
+      (write-string +ansi-foreground-reset+ out)
+      (write-string
+       (cadr-tui:theme-foreground-ansi
+        :muted :theme theme :enabled-p t)
+       out))
+    (write-char #\Space out)
+    (write-string description out)
+    (when enabled-p
+      (write-string +ansi-foreground-reset+ out))))
+
 (defun raw-key-hint (key description)
-  (concatenate
-   'string
-   (cadr-tui:theme-foreground :dim (format-key-text key))
-   (cadr-tui:theme-foreground
-    :muted (concatenate 'string " " description))))
+  (with-output-to-string (out)
+    (write-raw-key-hint
+     out
+     (uiop:split-string key :separator '(#\/))
+     description)))
 
 (defun key-hint (keybinding description)
   (raw-key-hint (key-text keybinding) description))
