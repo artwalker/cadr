@@ -34,6 +34,7 @@ Legacy `PI_CL_*` names are not read.
 
 | Variable | Purpose |
 |---|---|
+| `CADR_TUI_DEBUG_REDRAW` | If the value is `1`, the main screen appends full-redraw reasons to `cadr-tui-debug.log` in the agent directory. |
 | `CADR_TIMING` | Print startup timing breakdown. |
 | `CADR_STARTUP_BENCHMARK` | Startup benchmark mode (interactive only). |
 | `CADR_HARDWARE_CURSOR` / `CADR_CLEAR_ON_SHRINK` | Terminal rendering toggles. |

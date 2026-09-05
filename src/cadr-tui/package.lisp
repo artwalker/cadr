@@ -342,6 +342,7 @@
    #:invalidate-renderer
    #:renderer-request-canonical-repaint
    #:*canonical-repaint-hook*
+   #:tui-debug-redraw-p
    #:render-frame
    #:virtual-terminal
    #:make-virtual-terminal

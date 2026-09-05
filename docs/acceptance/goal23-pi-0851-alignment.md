@@ -20,7 +20,8 @@
 | Working indicator in default editor border | done（`974c80866`；FiveAM） |
 | `app.thinking.save` | already present |
 | Anthropic mid-convo thinking effort | done（`8dedb33bb` + session `providerThinkingLevel`；FiveAM） |
-| inMemory entries / `CADR_TUI_DEBUG_REDRAW` | open |
+| `CADR_TUI_DEBUG_REDRAW` | done（FiveAM getenv helper + first-render log） |
+| inMemory entries | open |
 | Experimental error / MouseRegion / tool renderers barrel | ledger-defer |
 | `verify.sh` / `test-cl.sh` | not yet green for G23 close |
 | Goal 20 invent unpause | blocked on G23 close |

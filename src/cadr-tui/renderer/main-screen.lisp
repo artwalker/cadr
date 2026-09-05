@@ -1,5 +1,33 @@
 (in-package #:cadr-tui)
 
+(defparameter *tui-environment-function* #'uiop:getenv)
+
+(defun tui-debug-redraw-p ()
+  (string=
+   (or (funcall *tui-environment-function* "CADR_TUI_DEBUG_REDRAW")
+       "")
+   "1"))
+
+(defun tui-debug-redraw-log-path ()
+  (merge-pathnames
+   "cadr-tui-debug.log"
+   (cadr-core:coding-agent-directory)))
+
+(defun log-tui-full-redraw (renderer current reason)
+  (when (tui-debug-redraw-p)
+    (cadr-core:append-string-to-file
+     (tui-debug-redraw-log-path)
+     (format
+      nil
+      "[~A] fullRender: ~A (prev=~D, new=~D, height=~D)~%"
+      (cadr-core:current-utc-iso8601)
+      reason
+      (length (terminal-renderer-previous-lines renderer))
+      (length current)
+      (max 1
+           (terminal-rows
+            (terminal-renderer-terminal renderer)))))))
+
 (defun clipped-frame-lines (terminal lines)
   ;; Keep the natural document as the renderer's comparison buffer.  Clipping
   ;; every line here made an unchanged large transcript allocate and copy in
@@ -157,7 +185,9 @@
 
 (defun render-main-full-frame
     (renderer current clear-p
-     cursor-row cursor-column)
+     cursor-row cursor-column
+     &optional (reason "full"))
+  (log-tui-full-redraw renderer current reason)
   (let* ((terminal
            (terminal-renderer-terminal renderer))
          (height
@@ -290,24 +320,43 @@
       (return-from render-main-frame
         (render-main-full-frame
          renderer current nil
-         cursor-row cursor-column)))
-    (when
-        (or
-         (terminal-renderer-invalid-p renderer)
-         width-changed-p
-         (and height-changed-p
-              (null (uiop:getenv "TERMUX_VERSION")))
-         (and
-          (terminal-renderer-clear-on-shrink-p
-           renderer)
-          (not overlay-active-p)
-          (< (length current)
-             (terminal-renderer-max-lines-rendered
-              renderer))))
-      (return-from render-main-frame
-        (render-main-full-frame
-         renderer current t
-         cursor-row cursor-column)))
+         cursor-row cursor-column
+         "first render")))
+    (let ((full-reason
+            (cond
+              ((terminal-renderer-invalid-p renderer)
+               "invalid")
+              (width-changed-p
+               (format
+                nil
+                "terminal width changed (~A -> ~A)"
+                (terminal-renderer-previous-width renderer)
+                width))
+              ((and height-changed-p
+                    (null (uiop:getenv "TERMUX_VERSION")))
+               (format
+                nil
+                "terminal height changed (~A -> ~A)"
+                (terminal-renderer-previous-height renderer)
+                height))
+              ((and
+                (terminal-renderer-clear-on-shrink-p
+                 renderer)
+                (not overlay-active-p)
+                (< (length current)
+                   (terminal-renderer-max-lines-rendered
+                    renderer)))
+               (format
+                nil
+                "clearOnShrink (maxLinesRendered=~A)"
+                (terminal-renderer-max-lines-rendered
+                 renderer))))))
+      (when full-reason
+        (return-from render-main-frame
+          (render-main-full-frame
+           renderer current t
+           cursor-row cursor-column
+           full-reason))))
     (let ((canonical-repaint-p
             (prog1
                 (terminal-renderer-canonical-repaint-p
@@ -358,12 +407,20 @@
               (return-from render-main-frame
                 (render-main-full-frame
                  renderer current t
-                 cursor-row cursor-column)))
+                 cursor-row cursor-column
+                 (format
+                  nil
+                  "deleted lines moved viewport up (~A < ~A)"
+                  target-row previous-viewport-top))))
             (when (> extra-lines height)
               (return-from render-main-frame
                 (render-main-full-frame
                  renderer current t
-                 cursor-row cursor-column)))
+                 cursor-row cursor-column
+                 (format
+                  nil
+                  "extraLines > height (~A > ~A)"
+                  extra-lines height))))
             (let ((output
                     (with-output-to-string (stream)
                       (write-string +synchronized-update-begin+ stream)
@@ -423,7 +480,11 @@
           (return-from render-main-frame
             (render-main-full-frame
              renderer current t
-             cursor-row cursor-column)))
+             cursor-row cursor-column
+             (format
+              nil
+              "firstChanged < viewportTop (~A < ~A)"
+              first-changed previous-viewport-top))))
         ;; Canonical repaint (harness work-rendered acknowledgement):
         ;; the natural diff survived every full-clear check, so expand
         ;; it to the whole visible region in place.

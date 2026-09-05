@@ -404,3 +404,60 @@
       (is (= previous-row
              (cadr-tui::terminal-renderer-hardware-cursor-row
               renderer))))))
+
+(test tui-debug-redraw-helper-reads-cadr-tui-debug-redraw
+  (flet ((call-with-env (entries thunk)
+           (let ((cadr-tui::*tui-environment-function*
+                   (lambda (name)
+                     (cdr (assoc name entries :test #'string=)))))
+             (funcall thunk))))
+    (call-with-env
+     '(("CADR_TUI_DEBUG_REDRAW" . "1"))
+     (lambda ()
+       (is (eq t (cadr-tui:tui-debug-redraw-p)))))
+    (call-with-env
+     '(("CADR_TUI_DEBUG_REDRAW" . "0"))
+     (lambda ()
+       (is (null (cadr-tui:tui-debug-redraw-p)))))
+    (call-with-env
+     '(("PI_TUI_DEBUG_REDRAW" . "1")
+       ("PI_DEBUG_REDRAW" . "1"))
+     (lambda ()
+       (is (null (cadr-tui:tui-debug-redraw-p)))))
+    (call-with-env
+     nil
+     (lambda ()
+       (is (null (cadr-tui:tui-debug-redraw-p)))))))
+
+(test tui-debug-redraw-logs-first-full-render-when-gated
+  (let* ((root
+           (uiop:ensure-directory-pathname
+            (merge-pathnames
+             (format nil "cadr-tui-debug-redraw-~D/"
+                     (get-internal-real-time))
+             (uiop:temporary-directory))))
+         (log-path
+           (merge-pathnames "cadr-tui-debug.log" root)))
+    (unwind-protect
+         (let ((cadr-tui::*tui-environment-function*
+                 (lambda (name)
+                   (when (string= name "CADR_TUI_DEBUG_REDRAW")
+                     "1")))
+               (cadr-core::*path-environment-function*
+                 (lambda (name)
+                   (when (string= name "CADR_CODING_AGENT_DIR")
+                     (namestring root)))))
+           (ensure-directories-exist root)
+           (let* ((terminal
+                    (cadr-tui:make-virtual-terminal
+                     :columns 20 :rows 3))
+                  (renderer
+                    (cadr-tui:make-terminal-renderer terminal)))
+             (cadr-tui:render-frame renderer '("one" "two"))
+             (is (probe-file log-path))
+             (let ((text (uiop:read-file-string log-path)))
+               (is (search "fullRender: first render" text))
+               (is (search "prev=0" text))
+               (is (search "new=2" text)))))
+      (uiop:delete-directory-tree
+       root :validate t :if-does-not-exist :ignore))))
