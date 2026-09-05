@@ -622,7 +622,10 @@
     ;; +3 Goal 20 entry-uncached paint invent:
     ;; *tui-entry-uncached-by-key*, tui-entry-uncached-paint-key, and
     ;; render-tui-entry-uncached-compute (interactive/transcript.lisp).
-    (is (= 308 definition-count)
+    ;; +2 Goal 20 extension-overlay invent:
+    ;; *tui-extension-overlay-by-key* and
+    ;; extension-custom-ui-paint-fingerprint (interactive/extension-ui.lisp).
+    (is (= 310 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

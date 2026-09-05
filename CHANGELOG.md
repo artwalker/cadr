@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-tui-extension-overlay` interns idle host-nil
+  paint by state/editor/dialog fingerprint. Friend-MachineD
+  **273.6→0.9 µs**. Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after extension-overlay
+  invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after extension-overlay
+  invent (308→310). G.17 missing.
+
 - Goal 20 invent: `selector-border-line` interns by (width,color).
   Friend-MachineD **4.7→0.1 µs**. Observed EQUAL. G.17 missing.
 
