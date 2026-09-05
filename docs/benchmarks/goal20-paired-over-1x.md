@@ -158,7 +158,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tree_nearest_visible_id` | 14.9 | 6.4 | 2.34× | 8.00× | measure-only pair (Pair 163); visible ancestor walk + fallback | invent pause；地板优化另刀 |
 | `cli_selectors.tree_prioritize_active` | 16.3 | 8.9 | 1.83× | 8.00× | measure-only pair (Pair 164); active-path entry reorder | invent pause；地板优化另刀 |
 | `cli_selectors.tree_rebuild_visible_maps` | 41.3 | 27.7 | 1.49× | 8.00× | measure-only pair (Pair 165); visible parent/children maps | invent pause；地板优化另刀 |
-| `cli_selectors.tree_apply_filter` | 71.6 | 19.9 | 3.60× | 8.00× | measure-only pair (Pair 166); filter/fold/query + selection preserve | invent pause；地板优化另刀 |
+| `cli_selectors.tree_apply_filter` | 26.9 (cadr µs invent; prior ledger 71.6) | 19.9 | pending remesure | 8.00× | invent: push/nreverse maps + one-shot query tokens + empty-text short-circuit + shared by-id; remount later | invent kept 2026-09-05 |
 | `cli_selectors.tree_move` | 331.4 | 190.3 | 1.74× | 8.00× | measure-only pair (Pair 168); visible-id selection move | invent pause；地板优化另刀 |
 | `cli_selectors.tree_fold_or_up` | 316.9 | 179.6 | 1.76× | 8.00× | measure-only pair (Pair 169); fold or branch-segment up | invent pause；地板优化另刀 |
 | `cli_selectors.tree_unfold_or_down` | 324.4 | 178.0 | 1.82× | 8.00× | measure-only pair (Pair 170); unfold or move down | invent pause；地板优化另刀 |

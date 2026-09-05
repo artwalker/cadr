@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `find-files` matches during the tree walk
+  and sorts only K relative hits (no N-pathname sort +
+  rematch). Friend-MachineD scaled fixture **33049→23994 µs**
+  (~0.73× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after find-files
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `tree-selector-apply-filter` path uses
   push/nreverse adjacency, one-shot query tokens, empty-
   assistant raw-text short-circuit, and shared by-id for

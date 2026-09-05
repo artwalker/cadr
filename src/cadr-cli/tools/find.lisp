@@ -45,6 +45,33 @@ metacharacters, return the \".EXT\" suffix. Else NIL."
         (cached-glob-scanner pattern)
         target)))))
 
+(defun find-collect-matching-relatives
+    (canonical-base pattern)
+  ;; Walk like collect-tree-files but match during the walk and
+  ;; sort only the K hits (not all N pathnames). One relative
+  ;; string per kept file.
+  (let ((matches nil))
+    (labels
+        ((walk (directory inherited-rules)
+           (let ((rules
+                   (append
+                    inherited-rules
+                    (directory-gitignore-rules directory))))
+             (dolist (file (uiop:directory-files directory))
+               (unless (gitignored-p file rules)
+                 (let ((relative
+                         (relative-posix-path
+                          file canonical-base)))
+                   (when (find-pattern-match-p
+                          pattern relative)
+                     (push relative matches)))))
+             (dolist
+                 (child (uiop:subdirectories directory))
+               (unless (ignored-directory-p child)
+                 (walk child rules))))))
+      (walk canonical-base nil))
+    (sort matches #'string<)))
+
 (defun find-files (cwd arguments)
   (let* ((pattern (required-string arguments "pattern"))
          (base
@@ -60,17 +87,22 @@ metacharacters, return the \".EXT\" suffix. Else NIL."
     (when (< limit 1)
       (error "limit must be at least 1"))
     (let* ((matches
-             (loop for file in (collect-tree-files canonical-base)
-                   for relative = (relative-posix-path
-                                   file canonical-base)
-                   when (find-pattern-match-p pattern relative)
-                     collect relative))
-           (limit-reached-p (>= (length matches) limit))
-           (selected
-             (subseq matches 0 (min limit (length matches))))
+             (find-collect-matching-relatives
+              canonical-base pattern))
+           (match-count (length matches))
+           (limit-reached-p (>= match-count limit))
+           (selected-count (min limit match-count))
            (raw-output
-             (and selected (join-lines selected))))
-      (if (null selected)
+             (when (plusp selected-count)
+               (with-output-to-string (out)
+                 (loop for index from 0
+                       for relative in matches
+                       while (< index selected-count)
+                       do
+                          (when (plusp index)
+                            (write-char #\Newline out))
+                          (write-string relative out))))))
+      (if (zerop selected-count)
           (values
            (list
             (cadr-ai:make-text-content
