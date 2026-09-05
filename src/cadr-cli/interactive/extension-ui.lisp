@@ -179,113 +179,135 @@
          (if (eq action :submit) :select action)
          value))))
 
+(defparameter *runtime-auth-input-paint-by-key*
+  (make-hash-table :test #'equal))
+
 (defun render-runtime-auth-input-state (state width)
   (let* ((prompt (runtime-auth-input-state-prompt state))
          (input (runtime-auth-input-state-input state))
-         (secret-p (eq :secret (getf prompt :type)))
-         (manual-code-p
-           (eq :manual-code (getf prompt :type)))
-         (display-input
-           (if secret-p
-               (let ((masked
-                       (cadr-tui:make-single-line-input
-                        :value
-                        (make-string
-                         (length
-                          (cadr-tui:single-line-input-value input))
-                         :initial-element #\*)
-                        :prompt "> ")))
-                 (setf
-                  (cadr-tui::single-line-input-cursor masked)
-                  (cadr-tui::single-line-input-cursor input))
-                 masked)
-               input)))
-    (multiple-value-bind (input-lines row column)
-        (cadr-tui:render-single-line-input display-input width)
-      (if manual-code-p
-          (let* ((url-lines
-                   (mapcar
-                    (lambda (line)
-                      (selector-component-text-line line width))
-                    (render-auth-url-lines
-                     (getf prompt :url)
-                     (max 1 (- width 2)))))
-                 (prefix
-                   (append
-                    (list
-                     (selector-border-line width)
-                     (selector-component-text-line
-                      (cadr-tui:theme-foreground
-                       :accent
-                       (cadr-tui:theme-bold
-                        (getf prompt :title)
-                        :enabled-p t)
-                       :enabled-p t)
-                      width)
-                     "")
-                    url-lines
-                    (list "")
-                    (component-text-lines
-                     (cadr-tui:theme-foreground
-                      :warning (getf prompt :instructions)
-                      :enabled-p t)
-                     width)
-                    (list "")
-                    (component-text-lines
-                     (cadr-tui:theme-foreground
-                      :dim (getf prompt :message)
-                      :enabled-p t)
-                     width))))
-            (values
-             (append
-              prefix input-lines
-              (list
-               (selector-component-text-line
-                (format
-                 nil "(~A)"
-                 (selector-keybinding-hint
-                  (cadr-tui:get-keybindings)
-                  "tui.select.cancel" "to cancel"))
-                width)
-               (selector-border-line width)))
-             (+ (length prefix) row)
-             column))
-          (let ((prefix
-                  (append
-                   (list
-                    (selector-border-line width)
-                    (selector-component-text-line
-                     (cadr-tui:theme-foreground
-                      :accent
-                      (cadr-tui:theme-bold
-                       (getf prompt :message)
-                       :enabled-p t)
-                      :enabled-p t)
-                     width))
-                   (when (getf prompt :placeholder)
-                     (list
-                      (selector-component-text-line
-                       (cadr-tui:theme-foreground
-                        :dim (getf prompt :placeholder)
-                        :enabled-p t)
-                       width))))))
-            (values
-             (append
-              prefix input-lines
-              (list
-               (selector-component-text-line
-                (format
-                 nil "(~A  ~A)"
-                 (selector-keybinding-hint
-                  (cadr-tui:get-keybindings)
-                  "tui.select.cancel" "to cancel,")
-                 (selector-keybinding-hint
-                  (cadr-tui:get-keybindings)
-                  "tui.select.confirm" "to submit"))
-                width)
-               (selector-border-line width)))
-             (+ (length prefix) row)
-             column))))))
+         (value (cadr-tui:single-line-input-value input))
+         (cursor (cadr-tui::single-line-input-cursor input))
+         (key
+           (list width
+                 (getf prompt :type)
+                 (getf prompt :title)
+                 (getf prompt :url)
+                 (getf prompt :instructions)
+                 (getf prompt :message)
+                 (getf prompt :placeholder)
+                 value
+                 cursor))
+         (cached (gethash key *runtime-auth-input-paint-by-key*)))
+    (if cached
+        (values-list cached)
+        (let* ((secret-p (eq :secret (getf prompt :type)))
+               (manual-code-p
+                 (eq :manual-code (getf prompt :type)))
+               (display-input
+                 (if secret-p
+                     (let ((masked
+                             (cadr-tui:make-single-line-input
+                              :value
+                              (make-string
+                               (length value)
+                               :initial-element #\*)
+                              :prompt "> ")))
+                       (setf
+                        (cadr-tui::single-line-input-cursor masked)
+                        cursor)
+                       masked)
+                     input))
+               (result
+                 (multiple-value-list
+                  (multiple-value-bind (input-lines row column)
+                      (cadr-tui:render-single-line-input display-input width)
+                    (if manual-code-p
+                        (let* ((url-lines
+                                 (mapcar
+                                  (lambda (line)
+                                    (selector-component-text-line line width))
+                                  (render-auth-url-lines
+                                   (getf prompt :url)
+                                   (max 1 (- width 2)))))
+                               (prefix
+                                 (append
+                                  (list
+                                   (selector-border-line width)
+                                   (selector-component-text-line
+                                    (cadr-tui:theme-foreground
+                                     :accent
+                                     (cadr-tui:theme-bold
+                                      (getf prompt :title)
+                                      :enabled-p t)
+                                     :enabled-p t)
+                                    width)
+                                   "")
+                                  url-lines
+                                  (list "")
+                                  (component-text-lines
+                                   (cadr-tui:theme-foreground
+                                    :warning (getf prompt :instructions)
+                                    :enabled-p t)
+                                   width)
+                                  (list "")
+                                  (component-text-lines
+                                   (cadr-tui:theme-foreground
+                                    :dim (getf prompt :message)
+                                    :enabled-p t)
+                                   width))))
+                          (values
+                           (append
+                            prefix input-lines
+                            (list
+                             (selector-component-text-line
+                              (format
+                               nil "(~A)"
+                               (selector-keybinding-hint
+                                (cadr-tui:get-keybindings)
+                                "tui.select.cancel" "to cancel"))
+                              width)
+                             (selector-border-line width)))
+                           (+ (length prefix) row)
+                           column))
+                        (let ((prefix
+                                (append
+                                 (list
+                                  (selector-border-line width)
+                                  (selector-component-text-line
+                                   (cadr-tui:theme-foreground
+                                    :accent
+                                    (cadr-tui:theme-bold
+                                     (getf prompt :message)
+                                     :enabled-p t)
+                                    :enabled-p t)
+                                   width))
+                                 (when (getf prompt :placeholder)
+                                   (list
+                                    (selector-component-text-line
+                                     (cadr-tui:theme-foreground
+                                      :dim (getf prompt :placeholder)
+                                      :enabled-p t)
+                                     width))))))
+                          (values
+                           (append
+                            prefix input-lines
+                            (list
+                             (selector-component-text-line
+                              (format
+                               nil "(~A  ~A)"
+                               (selector-keybinding-hint
+                                (cadr-tui:get-keybindings)
+                                "tui.select.cancel" "to cancel,")
+                               (selector-keybinding-hint
+                                (cadr-tui:get-keybindings)
+                                "tui.select.confirm" "to submit"))
+                              width)
+                             (selector-border-line width)))
+                           (+ (length prefix) row)
+                           column)))))))
+          (setf (gethash key *runtime-auth-input-paint-by-key*)
+                result)
+          (values-list result)))))
 
 (defstruct (framed-select-state
             (:constructor %make-framed-select-state))

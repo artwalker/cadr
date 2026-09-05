@@ -625,7 +625,9 @@
     ;; +2 Goal 20 extension-overlay invent:
     ;; *tui-extension-overlay-by-key* and
     ;; extension-custom-ui-paint-fingerprint (interactive/extension-ui.lisp).
-    (is (= 310 definition-count)
+    ;; +1 Goal 20 runtime-auth paint invent:
+    ;; *runtime-auth-input-paint-by-key* (interactive/extension-ui.lisp).
+    (is (= 311 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

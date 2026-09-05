@@ -7,6 +7,17 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-runtime-auth-input-state` interns full paint
+  by (prompt fields,value,cursor,width). Different knife from discarded
+  chrome invent. Friend-MachineD **43.8→0.2 µs**. Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after runtime-auth invent.
+  needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after runtime-auth invent
+  (310→311). G.17 missing.
+
 - Goal 20 invent: `render-tui-extension-overlay` interns idle host-nil
   paint by state/editor/dialog fingerprint. Friend-MachineD
   **273.6→0.9 µs**. Observed EQUAL. G.17 missing.
