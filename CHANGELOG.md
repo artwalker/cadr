@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 22 opened: bump fixed pi baseline from v0.84.4 to
+  **v0.85.1** (`d981de122`). Goal 20 invent/pair paused until
+  G22 gates are green. G.17 stays `missing`. Not Goal 20 complete.
+
 - Goal 20 process: user delegates G.17 process signatures to
   the Cursor executor when no separate advisor session exists
   (`docs/adjudications.md` 2026-09-05; `development-policy.md`
