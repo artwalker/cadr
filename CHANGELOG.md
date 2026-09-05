@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `tree-selector-cycle-filter` uses
+  successor/predecessor cases (no `position`/`nth` on the
+  mode list). Friend-MachineD **2.248→1.295 µs** (~0.58× tip).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  tree-cycle-filter invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `tree-selector-status-labels` returns
   precomputed filter/timestamp suffix strings (no
   `format`/`~@[`). Friend-MachineD **0.916→0.626 µs**

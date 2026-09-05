@@ -145,7 +145,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.tree_tool_argument` | 24.7 | 7.4 | 3.32× | 8.00× | measure-only pair `841211d61`; tree tool-arg path lookup only | invent pause；地板优化另刀 |
 
-| `cli_selectors.tree_cycle_filter` | 4.8 | 0.3 | 17.08× | 8.00× | measure-only pair `637496621`; tree filter cycle only | invent pause；地板优化另刀 |
+| `cli_selectors.tree_cycle_filter` | 1.295 (cadr µs invent; prior ledger 4.8) | 0.3 | pending remesure | 8.00× | invent: successor/predecessor cases no position/nth; remount later | invent kept 2026-09-05 |
 
 | `cli_selectors.tree_format_label_timestamp` | 9.2 | 4.9 | 1.85× | 8.00× | measure-only pair `9b65af57f`; tree label timestamp only | invent pause；地板优化另刀 |
 

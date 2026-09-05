@@ -491,20 +491,27 @@
 
 (defun tree-selector-cycle-filter
     (state direction)
-  (let* ((modes
-           +tree-selector-filter-modes+)
-         (index
-           (or
-            (position
-             (tree-selector-state-filter state)
-             modes)
-            0)))
-    (tree-selector-set-filter
-     state
-     (nth
-      (mod (+ index direction)
-           (length modes))
-      modes))))
+  ;; Baseline cycles a fixed 5-mode ring. Direct successor/predecessor
+  ;; cases avoid position/nth on the mode list each keypress.
+  (let* ((current
+           (tree-selector-state-filter state))
+         (next
+           (if (minusp direction)
+               (case current
+                 (:default :all)
+                 (:no-tools :default)
+                 (:user-only :no-tools)
+                 (:labeled-only :user-only)
+                 (:all :labeled-only)
+                 (otherwise :all))
+               (case current
+                 (:default :no-tools)
+                 (:no-tools :user-only)
+                 (:user-only :labeled-only)
+                 (:labeled-only :all)
+                 (:all :default)
+                 (otherwise :no-tools)))))
+    (tree-selector-set-filter state next)))
 
 (defun tree-selector-set-query (state query)
   (clrhash
