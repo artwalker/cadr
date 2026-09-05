@@ -35,7 +35,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ai_support.estimate_text` | 0.54 | 0.17 | 3.10× | 8.00× | measure-only pair `0aac11a8d`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `tui_select_settings_loaders.filter` | 1.2 | 1.0 | 1.27× | 8.00× | measure-only pair `096fcc540`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `tui_autocomplete.suggest_apply` | 31.0 (cadr µs invent; prior ledger 136.4) | 26.4 | pending remesure | 8.00× | dirent table + command-item bake | invent keep (cadr µs); pairing ratio remesure later | 26.4 | pending remesure | 8.00× | dirent table vs UIOP pathnames | invent keep (cadr µs); pairing ratio remesure later | 26.4 | 5.17× | 8.00× | measure-only pair `5fb0f589d` | invent pause；地板优化另刀 |
-| `tui_keybindings.resolve_match` | 27.7 | 14.8 | 1.88× | 8.00× | measure-only pair `0d2c6c287` | invent pause；地板优化另刀 |
+| `tui_keybindings.resolve_match` | 18.8 (cadr µs invent; prior ledger 27.7) | 14.8 | pending remesure | 8.00× | invent: share default definitions + no defensive key/conflict copies; remount later | invent kept 2026-09-05 |
 | `tui_native_modifiers.pressed` | 1.22 | 0.16 | 7.50× | 8.00× | measure-only pair `791ea158e`; Linux no-addon gate (all 0); sub-µs variance | invent pause；地板优化另刀 |
 | `ai_capabilities.short_hash` | 14.5 on n=2000 invent micro (prior ledger 1.5 harness) | 0.9 | pending remesure | 8.00× | invent: stream UTF-16 units no list; remount later | invent kept 2026-09-05 |
 | `ai_capabilities.deferred_tools` | 5.51 | 2.70 | 2.04× | 8.00× | measure-only pair `8924f239d`; sibling of short_hash | invent pause；地板优化另刀 |
