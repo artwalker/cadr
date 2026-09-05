@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `base64url-decode` uses a 256-entry decode
+  table (O(1) vs `position` on the alphabet) and a pre-sized
+  octet vector (no fill-pointer push). Friend-MachineD
+  microbench **2.45→1.45 µs** (~0.59× tip; ~3.2× vs booked
+  pi 0.45 µs). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  base64url-decode invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `decode-base64` skips whitespace strip when
   clean, pre-sizes the octet vector (no per-quad subseq/
   collect), and `image-dimensions` bounds decode to header

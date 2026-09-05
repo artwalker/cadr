@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,069 lines**
+Denominator: **297 files / 130,088 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,036 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,055 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13898,7 +13898,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 431 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/callback.lisp` | 324 | `oauth_pkce_device.hex_value`, `oauth_pkce_device.http_status_text`, `oauth_pkce_device.parse_authorization_input`, `oauth_pkce_device.parse_callback_request`, `oauth_pkce_device.parse_query`, `oauth_pkce_device.percent_decode`, `oauth_pkce_device.present_auth_url`, `oauth_pkce_device.provider_key`, `oauth_pkce_device.write_http_response` |
-| `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id`, `oauth_pkce_device.token_fields`, `oauth_pkce_device.openai_exchange`, `oauth_pkce_device.anthropic_exchange` |
+| `src/cadr-ai/oauth/openai-anthropic.lisp` | 323 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id`, `oauth_pkce_device.token_fields`, `oauth_pkce_device.openai_exchange`, `oauth_pkce_device.anthropic_exchange` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
 | `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | `oauth_pkce_device.anth_oauth_name`, `oauth_pkce_device.anth_oauth_sub`, `oauth_pkce_device.anth_oauth_instructions` |
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth`, `oauth_pkce_device.github_domain`, `oauth_pkce_device.github_oauth_url`, `oauth_pkce_device.github_request_headers` |

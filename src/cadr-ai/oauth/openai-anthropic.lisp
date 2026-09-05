@@ -59,17 +59,31 @@
                           (princ-to-string cause) secrets))
                  :cause cause)))))
 
+(defparameter +base64-url-decode-table+
+  (let ((table
+          (make-array 256
+                      :element-type '(signed-byte 16)
+                      :initial-element -1)))
+    (loop for index from 0
+          for character across +base64-url-alphabet+
+          do (setf (aref table (char-code character)) index))
+    table))
+
 (defun base64url-value (character)
-  (position character +base64-url-alphabet+))
+  (let ((code (char-code character)))
+    (when (< code 256)
+      (let ((value (aref +base64-url-decode-table+ code)))
+        (and (>= value 0) value)))))
 
 (defun base64url-decode (string)
-  (let ((octets
-          (make-array (ceiling (* (length string) 3) 4)
-                      :element-type '(unsigned-byte 8)
-                      :adjustable t
-                      :fill-pointer 0)))
-    (loop for index from 0 below (length string) by 4
-          for remaining = (- (length string) index)
+  (let* ((length (length string))
+         (capacity (ceiling (* length 3) 4))
+         (octets
+           (make-array capacity
+                       :element-type '(unsigned-byte 8)))
+         (out 0))
+    (loop for index from 0 below length by 4
+          for remaining = (- length index)
           for a = (base64url-value (char string index))
           for b = (and (> remaining 1)
                        (base64url-value (char string (1+ index))))
@@ -86,12 +100,17 @@
                           (ash b 12)
                           (ash (or c 0) 6)
                           (or d 0))))
-            (vector-push-extend (ldb (byte 8 16) bits) octets)
+            (setf (aref octets out) (ldb (byte 8 16) bits))
+            (incf out)
             (when c
-              (vector-push-extend (ldb (byte 8 8) bits) octets))
+              (setf (aref octets out) (ldb (byte 8 8) bits))
+              (incf out))
             (when d
-              (vector-push-extend (ldb (byte 8 0) bits) octets))))
-    octets))
+              (setf (aref octets out) (ldb (byte 8 0) bits))
+              (incf out))))
+    (if (= out capacity)
+        octets
+        (subseq octets 0 out))))
 
 (defun openai-account-id-from-token (token)
   (handler-case
