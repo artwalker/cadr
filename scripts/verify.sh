@@ -258,6 +258,10 @@ run_goal22_source_parity_gate() {
   python3 "$PROJECT_DIRECTORY/test/goal22-source-parity-test.py"
 }
 
+run_goal23_source_parity_gate() {
+  python3 "$PROJECT_DIRECTORY/test/goal23-source-parity-test.py"
+}
+
 run_source_parity_ledger_gate() {
   local ledger="$PROJECT_DIRECTORY/docs/source-parity.md"
   "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
@@ -509,10 +513,18 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "goal 23 source parity enumeration" \
+    run_goal23_source_parity_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "goal 23 source parity enumeration" "goal 22 source parity enumeration failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "real source parity ledger" \
     run_source_parity_ledger_gate || DETERMINISTIC_READY=0
 else
-  skip_deterministic "real source parity ledger" "goal 22 source parity enumeration failed"
+  skip_deterministic "real source parity ledger" "goal 23 source parity enumeration failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

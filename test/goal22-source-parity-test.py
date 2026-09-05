@@ -85,13 +85,10 @@ class Goal22SourceParityTest(unittest.TestCase):
         self.assertIn("openrouter-reasoning-options.ts", text)
         self.assertIn("g22-0844-dispositions.tsv", text)
 
-    def test_source_ledger_matches_v0844_manifest(self) -> None:
+    def test_source_ledger_records_v0844_upgrade_lock(self) -> None:
+        # Live GOAL12_LEDGER baseline advances with later goals; v0.84.4 still
+        # locks the path-set digest, totals, and the openrouter mapper row.
         text = LEDGER.read_text(encoding="utf-8")
-        self.assertIn(
-            "GOAL12_LEDGER baseline=b79e4cc834970cca69daebffab7df1da7d1e52c4 "
-            "source=686/514/169/3",
-            text,
-        )
         self.assertIn("sorted 686-path manifest", text)
         self.assertIn(MANIFEST_SHA, text)
         self.assertIn("| **Total** | **686** | **514** | **169** | **3** |", text)
@@ -99,6 +96,7 @@ class Goal22SourceParityTest(unittest.TestCase):
             "| `packages/ai/scripts/openrouter-reasoning-options.ts` |",
             text,
         )
+        self.assertIn("source=686/514/169/3", text)
 
     def test_ledger_only_gate_passes(self) -> None:
         proc = run(
