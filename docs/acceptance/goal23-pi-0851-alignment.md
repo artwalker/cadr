@@ -1,4 +1,4 @@
-# Goal 22：pi 基线推进至 v0.85.1（Goal 20 invent 前置）
+# Goal 23：pi 基线推进至 v0.85.1（Goal 20 invent 前置）
 
 > **状态：** 进行中（用户 2026-09-05 采纳推荐 B）。Goal 20 invent/pair
 > 冻结至本 goal 完成。Does not announce Goal 20 complete. G.17 stays
@@ -66,7 +66,7 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
    ./scripts/check-source-parity-drift.sh --repo ../pi-mono \
      --from b79e4cc834970cca69daebffab7df1da7d1e52c4 \
      --to d981de1229ef899957bbe968bc8dcda02a21f477 \
-     --dispositions /tmp/g22-source-dispositions.tsv
+     --dispositions /tmp/g23-source-dispositions.tsv
    python3 scripts/enumerate-baseline-diff.py \
      b79e4cc834970cca69daebffab7df1da7d1e52c4 \
      d981de1229ef899957bbe968bc8dcda02a21f477
@@ -93,5 +93,5 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
 
 ## 与 Goal 20 的关系
 
-- **G22 完成前：** 不新开 Goal 20 invent/pair（避免双次 freeze）。
-- **G22 完成后：** 恢复 invent；G.17 仍 `missing` 直至 Part P 证据足够。
+- **G23 完成前：** 不新开 Goal 20 invent/pair（避免双次 freeze）。
+- **G23 完成后：** 恢复 invent；G.17 仍 `missing` 直至 Part P 证据足够。

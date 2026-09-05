@@ -1,13 +1,13 @@
-# Goal 22 开发执行 brief
+# Goal 23 开发执行 brief
 
 > **Process (live):** Cursor-only on `artwalker/cadr` `cadr-migration`
 > (`docs/adjudications.md` 2026-09-05 Cursor executor). No separate
 > advisor session. User veto retained.
 
 **读者：** Cursor executor。**规格：**
-[`goal22-pi-0851-alignment.md`](goal22-pi-0851-alignment.md)。
+[`goal23-pi-0851-alignment.md`](goal23-pi-0851-alignment.md)。
 
-**禁止：** G22 完成前新开 Goal 20 invent/pair；宣布 Goal 20 完成；
+**禁止：** G23 完成前新开 Goal 20 invent/pair；宣布 Goal 20 完成；
 标 G.17 `met`；为过关抬 pairing ceiling。
 
 ## 目标
@@ -16,7 +16,7 @@
 
 ## 退出谓词（autonomous）
 
-全部为真才算 Goal 22 完成：
+全部为真才算 Goal 23 完成：
 
 1. `BASELINE` = `d981de1229ef899957bbe968bc8dcda02a21f477 v0.85.1 0`
 2. `python3 scripts/baseline-anchor.py check` exit 0
@@ -37,5 +37,5 @@
 
 ## Trail
 
-本地：`.audit/goal22-decision-trail.tsv`（默认不入库，除非需要可审计
+本地：`.audit/goal23-decision-trail.tsv`（默认不入库，除非需要可审计
 合入记录）。

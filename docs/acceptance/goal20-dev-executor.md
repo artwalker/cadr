@@ -25,9 +25,9 @@ file's leftover slugs are on tip, `goal20-unpaired-paths.py --write &&
 
 - [x] Goal 21 完成（pi `v0.84.3` / `4e58f324f`）。队列在 **0843 基线**。Ethan restored pairing on 2026-08-27（`docs/benchmarks/goal21-queue.json` `goal20Paused` = false；`docs/benchmarks/goal20-queue.json` `paused` = false）。This cut does not announce Goal 20 complete, does not mark G.17 `met`, and does not start a new pair.
 
-## G22 前置（进行中）
+## G23 前置（进行中）
 
-- [ ] Goal 22：基线推进至 pi `v0.85.1` / `d981de122`（自 `v0.84.4` / `b79e4cc83`）。规格 [`goal22-pi-0851-alignment.md`](goal22-pi-0851-alignment.md)。**G22 完成前** `goal20-queue.json` `paused=true`；不新开 invent/pair。Does not mark G.17 `met`.
+- [ ] Goal 23：基线推进至 pi `v0.85.1` / `d981de122`（自 `v0.84.4` / `b79e4cc83`）。规格 [`goal23-pi-0851-alignment.md`](goal23-pi-0851-alignment.md)。**G23 完成前** `goal20-queue.json` `paused=true`；不新开 invent/pair。Does not mark G.17 `met`.
 
 ---
 
