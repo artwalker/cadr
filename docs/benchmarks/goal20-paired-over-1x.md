@@ -233,7 +233,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `harness_events.make_start` | 0.14 | 0.12 | 1.18× | 8.00× | measure-only pair 285; `make-run-start-event` vs `RunStartEvent` object (sub-µs variance) | invent pause；地板优化另刀 |
 | `file_mutation_queue.make_state` | 105.7 | 66.2 | 1.597× | 8.00× | measure-only pair 287; `make-file-mutation-queue-state` vs JS object literal | invent pause；地板优化另刀 |
 | `file_mutation_queue.state_key` | 134.3 | 133.1 | 1.009× | 8.00× | measure-only pair 288; `file-mutation-queue-state-key` after ensure | invent pause；地板优化另刀 |
-| `find_tool.pattern_match` | 30.5 | 4.26 | 7.16× | 8.00× | measure-only pair 289; `find-pattern-match-p` basename vs path glob | invent pause；地板优化另刀 |
+| `find_tool.pattern_match` | 3.75 (cadr µs invent; prior ledger 30.5) | 4.26 | ~0.88× invent micro vs booked pi | 8.00× | invent: scanner cache + `*.ext` suffix; remount pair later | invent kept 2026-09-05 |
 | `find_tool.find_files` | 633.4 | 184.1 | 3.44× | 8.00× | measure-only pair 290; `find-files` empty copy + fixture counts | invent pause；地板优化另刀 |
 | `find_tool.make_tool` | 131.9 | 93.3 | 1.41× | 8.00× | measure-only pair 291; `make-find-tool` vs `createFindToolDefinition` | invent pause；地板优化另刀 |
 | `tool_manager.cleanup_quarantine` | 120.1 | 88.0 | 1.37× | 8.00× | measure-only pair 294; `cleanup-windows-self-update-quarantine` (not download/ensure) | invent pause；地板优化另刀 |

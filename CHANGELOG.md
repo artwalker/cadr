@@ -7,6 +7,16 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `find-pattern-match-p` caches glob scanners
+  and fast-paths basename `*.ext` via suffix compare (no
+  per-call `create-scanner`). Friend-MachineD harness-shaped
+  microbench **28.7→3.8 µs** (~0.13× tip; ~0.88× vs booked
+  pi 4.26 µs). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  find-pattern invent (+38 lines). needs-pair=0
+  uncovered=0.
+
 - Goal 20 invent: `filter-and-sort-sessions` early-returns
   empty/whitespace query after name filter (pi
   `filterAndSortSessions`); recent mode pushes sessions

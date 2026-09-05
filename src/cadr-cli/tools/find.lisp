@@ -1,11 +1,49 @@
 (in-package #:cadr-cli)
 
+(defvar *glob-scanner-cache*
+  (make-hash-table :test #'equal)
+  "Pattern string -> cl-ppcre scanner. find-pattern-match-p and
+find-files share this so a walk does not rebuild the same regex
+per file. fd compiles the pattern once per invocation.")
+
+(defun cached-glob-scanner (pattern)
+  (or (gethash pattern *glob-scanner-cache*)
+      (setf (gethash pattern *glob-scanner-cache*)
+            (glob-scanner pattern))))
+
+(defun star-extension-suffix (pattern)
+  "When PATTERN is a basename-only *.EXT with no other glob
+metacharacters, return the \".EXT\" suffix. Else NIL."
+  (let ((length (length pattern)))
+    (when (and (>= length 2)
+               (char= (char pattern 0) #\*)
+               (char= (char pattern 1) #\.)
+               (not (find #\/ pattern))
+               (not (find #\? pattern))
+               (= 1 (count #\* pattern)))
+      (subseq pattern 1))))
+
 (defun find-pattern-match-p (pattern relative)
-  (if (find #\/ pattern)
-      (cl-ppcre:scan (glob-scanner pattern) relative)
-      (cl-ppcre:scan
-       (glob-scanner pattern)
-       (file-namestring relative))))
+  (let* ((path-p (find #\/ pattern))
+         (target
+           (if path-p
+               relative
+               (file-namestring relative)))
+         (suffix
+           (and (not path-p)
+                (star-extension-suffix pattern))))
+    (cond
+      (suffix
+       (let ((n (length target))
+             (m (length suffix)))
+         (and (>= n m)
+              (string-equal target suffix
+                            :start1 (- n m))
+              0)))
+      (t
+       (cl-ppcre:scan
+        (cached-glob-scanner pattern)
+        target)))))
 
 (defun find-files (cwd arguments)
   (let* ((pattern (required-string arguments "pattern"))
