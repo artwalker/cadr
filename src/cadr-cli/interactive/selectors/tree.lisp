@@ -1043,17 +1043,25 @@
         (or value ""))))
 
 (defun tree-selector-status-labels (state)
-  (format
-   nil "~@[ [~A]~]~@[ [+label time]~]"
-   (case
-       (tree-selector-state-filter state)
-     (:no-tools "no-tools")
-     (:user-only "user")
-     (:labeled-only "labeled")
-     (:all "all")
-     (otherwise nil))
-   (tree-selector-state-show-label-timestamps-p
-    state)))
+  ;; Baseline getStatusLabels: append fixed filter / timestamp
+  ;; suffixes. Precomputed strings avoid format/~@[ each paint.
+  (let ((filter (tree-selector-state-filter state))
+        (time-p
+          (tree-selector-state-show-label-timestamps-p
+           state)))
+    (if time-p
+        (case filter
+          (:no-tools " [no-tools] [+label time]")
+          (:user-only " [user] [+label time]")
+          (:labeled-only " [labeled] [+label time]")
+          (:all " [all] [+label time]")
+          (otherwise " [+label time]"))
+        (case filter
+          (:no-tools " [no-tools]")
+          (:user-only " [user]")
+          (:labeled-only " [labeled]")
+          (:all " [all]")
+          (otherwise "")))))
 
 (defun tree-selector-visual-nodes (state)
   (let* ((children

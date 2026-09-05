@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `tree-selector-status-labels` returns
+  precomputed filter/timestamp suffix strings (no
+  `format`/`~@[`). Friend-MachineD **0.916→0.626 µs**
+  (~0.68× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  tree-status-labels invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `selector-modified-cursor-key` walks CSI
   modified-arrow octets (no per-call regex `format`+scan).
   Friend-MachineD **13.8→0.42 µs**. Observed EQUAL. G.17 missing.
