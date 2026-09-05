@@ -612,7 +612,10 @@
     ;; *update-notification-text-by-key* (interactive/transcript.lisp).
     ;; +1 Goal 20 transcript-summary invent:
     ;; *transcript-summary-entry-by-key* (interactive/transcript.lisp).
-    (is (= 301 definition-count)
+    ;; +2 Goal 20 assistant-blocks/stop-error invent:
+    ;; *assistant-stop-error-by-key* and *assistant-blocks-by-key*
+    ;; (interactive/transcript.lisp).
+    (is (= 303 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

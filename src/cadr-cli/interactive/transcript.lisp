@@ -442,39 +442,46 @@
              :test #'equal)))
           transformed))))
 
+(defparameter *assistant-stop-error-by-key*
+  (make-hash-table :test #'equal))
+
 (defun assistant-stop-error-lines
     (entry width)
-  (let ((message
-          (case (tui-entry-stop-reason entry)
-            (:length
-             "Response was truncated before completion.")
-            (:aborted
-             (let ((error-message
-                     (tui-entry-error-message
-                      entry)))
-               (if
-                   (and error-message
-                        (not
-                         (string=
-                          error-message
-                          "Request was aborted")))
-                   error-message
-                   "Operation aborted")))
-            (:error
-             (unless
-                 (tui-entry-has-tool-calls-p entry)
-               (format
-                nil "Error: ~A"
-                (or
-                 (tui-entry-error-message entry)
-                 "Unknown error")))))))
-    (when message
-      (cons
-       ""
-       (component-text-lines
-        (cadr-tui:theme-foreground
-         :error message :enabled-p t)
-        width :padding-x 1)))))
+  (let* ((reason (tui-entry-stop-reason entry))
+         (error-message (tui-entry-error-message entry))
+         (has-tool-calls-p (tui-entry-has-tool-calls-p entry))
+         (key (list reason error-message has-tool-calls-p width)))
+    (multiple-value-bind (cached found-p)
+        (gethash key *assistant-stop-error-by-key*)
+      (if found-p
+          cached
+          (setf (gethash key *assistant-stop-error-by-key*)
+                (let ((message
+                        (case reason
+                          (:length
+                           "Response was truncated before completion.")
+                          (:aborted
+                           (if
+                               (and error-message
+                                    (not
+                                     (string=
+                                      error-message
+                                      "Request was aborted")))
+                               error-message
+                               "Operation aborted"))
+                          (:error
+                           (unless has-tool-calls-p
+                             (format
+                              nil "Error: ~A"
+                              (or error-message
+                                  "Unknown error")))))))
+                  (when message
+                    (cons
+                     ""
+                     (component-text-lines
+                      (cadr-tui:theme-foreground
+                       :error message :enabled-p t)
+                      width :padding-x 1)))))))))
 
 (defun tui-syntax-highlight (language source)
   (simple-syntax-highlight
@@ -493,74 +500,92 @@
         :syntax-number text
         :enabled-p t))))))
 
+(defparameter *assistant-blocks-by-key*
+  (make-hash-table :test #'equal))
+
 (defun render-assistant-blocks
     (entry width extension-host
      &key hide-thinking-block-p hidden-thinking-label
           (mermaid-mode "streaming"))
-  (let ((available-width
-          (max 1 (- width 2))))
-    (let ((blocks
-            (or
-             (tui-entry-content-blocks entry)
-             (and
-              (plusp
-               (length
-                (string-trim
-                 '(#\Space #\Tab #\Newline
-                   #\Return)
-                 (tui-entry-text entry))))
-              (list
-               (cons
-                :assistant
-                (string-trim
-                 '(#\Space #\Tab #\Newline
-                   #\Return)
-                 (tui-entry-text entry)))))))
-          (rendered nil))
-      (loop for (message-type . source)
-              in blocks
-            for block-index from 0
-            for display-source =
-              (if (and hide-thinking-block-p
-                       (eq message-type :assistant-thinking))
-                  (or hidden-thinking-label "Thinking...")
-                  source)
-            for transformed =
-              (transform-tui-markdown
-               entry display-source message-type
-               available-width extension-host
-               :cache-key (list message-type block-index)
-               :mermaid-mode mermaid-mode)
-            for lines =
-              (cadr-tui:render-markdown
-               transformed width
-               :padding-x 1
-               :ansi-theme-p t
-               :default-style-function
-               (and
-                (eq message-type
-                    :assistant-thinking)
-                (lambda (text)
-                  (cadr-tui:theme-foreground
-                   :thinking-text
-                   (cadr-tui:theme-italic text)
-                   :enabled-p t)))
-               :syntax-highlight-function
-               #'tui-syntax-highlight)
-            do
-            (when rendered
-              (setf rendered
-                    (nconc rendered
-                           (list ""))))
-            (setf rendered
-                  (nconc rendered lines)))
-      (let ((errors
-              (assistant-stop-error-lines
-               entry width)))
-        (when rendered
-          (setf rendered
-                (cons "" rendered)))
-        (nconc rendered errors)))))
+  (let* ((available-width
+           (max 1 (- width 2)))
+         (blocks
+           (or
+            (tui-entry-content-blocks entry)
+            (and
+             (plusp
+              (length
+               (string-trim
+                '(#\Space #\Tab #\Newline
+                  #\Return)
+                (tui-entry-text entry))))
+             (list
+              (cons
+               :assistant
+               (string-trim
+                '(#\Space #\Tab #\Newline
+                  #\Return)
+                (tui-entry-text entry)))))))
+         (key
+           (and (null extension-host)
+                (list blocks width
+                      hide-thinking-block-p
+                      hidden-thinking-label
+                      mermaid-mode
+                      (tui-entry-stop-reason entry)
+                      (tui-entry-error-message entry)
+                      (tui-entry-has-tool-calls-p entry)))))
+    (flet ((compute ()
+             (let ((rendered nil))
+               (loop for (message-type . source)
+                       in blocks
+                     for block-index from 0
+                     for display-source =
+                       (if (and hide-thinking-block-p
+                                (eq message-type :assistant-thinking))
+                           (or hidden-thinking-label "Thinking...")
+                           source)
+                     for transformed =
+                       (transform-tui-markdown
+                        entry display-source message-type
+                        available-width extension-host
+                        :cache-key (list message-type block-index)
+                        :mermaid-mode mermaid-mode)
+                     for lines =
+                       (cadr-tui:render-markdown
+                        transformed width
+                        :padding-x 1
+                        :ansi-theme-p t
+                        :default-style-function
+                        (and
+                         (eq message-type
+                             :assistant-thinking)
+                         (lambda (text)
+                           (cadr-tui:theme-foreground
+                            :thinking-text
+                            (cadr-tui:theme-italic text)
+                            :enabled-p t)))
+                        :syntax-highlight-function
+                        #'tui-syntax-highlight)
+                     do
+                     (when rendered
+                       (setf rendered
+                             (nconc rendered
+                                    (list ""))))
+                     (setf rendered
+                           (nconc rendered lines)))
+               (let ((errors
+                       (assistant-stop-error-lines
+                        entry width)))
+                 (when rendered
+                   (setf rendered
+                         (cons "" rendered)))
+                 (nconc rendered errors)))))
+      (if key
+          (or (gethash key *assistant-blocks-by-key*)
+              (setf (gethash key *assistant-blocks-by-key*)
+                    (compute)))
+          (compute)))))
 
 (defun theme-message-background-lines
     (lines background-token)

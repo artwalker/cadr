@@ -7,6 +7,17 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-assistant-blocks` interns full paint when
+  extension-host is nil; `assistant-stop-error-lines` interns by
+  (reason,error,tools,width). Friend-MachineD blocks **126.5→0.4 µs**,
+  stop-error **21.3→0.3 µs**. Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after assistant-blocks
+  invent. needs-pair=0 uncovered=0.
+
+- Goal 20: remesure Goal14 B6 `(def` count after assistant-blocks
+  invent (301→303). G.17 missing.
+
 - Goal 20 invent: `render-transcript-summary-entry` interns full paint
   by (type,expanded,label,text,tokens,width). Friend-MachineD
   **700.7→0.7 µs** (~0.001× tip). Observed EQUAL. G.17 missing.
