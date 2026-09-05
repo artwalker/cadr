@@ -15,6 +15,9 @@ tag/Release step.
 - Goal 20: refresh unpaired-path denominator after package-notification
   invent. needs-pair=0 uncovered=0.
 
+- Goal 20: remesure Goal14 B6 `(def` count after package-notification
+  invent (293→295; transcript.lisp chrome tables). G.17 missing.
+
 - Goal 20: remesure Goal14 B6/B8 top-level `(def` counts on tip
   `89e8b852b` (B6 290→293, B8 310→319). Drift is outside selector
   invent owners. G.17 missing.
