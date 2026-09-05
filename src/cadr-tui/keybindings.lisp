@@ -236,16 +236,17 @@
   (rebuild-keybindings-manager
    (%make-keybindings-manager
     :definitions
-    (copy-tree definitions)
+    (if (eq definitions +tui-keybinding-definitions+)
+        definitions
+        (copy-tree definitions))
     :user-bindings
     (copy-tree user-bindings))))
 
 (defun keybinding-keys (manager name)
-  (copy-list
-   (cdr
-    (assoc name
-           (keybindings-manager-resolved manager)
-           :test #'string=))))
+  (cdr
+   (assoc name
+          (keybindings-manager-resolved manager)
+          :test #'string=)))
 
 (defun keybinding-matches-p
     (manager data name)
@@ -255,8 +256,7 @@
    (keybinding-keys manager name)))
 
 (defun keybinding-conflicts (manager)
-  (copy-tree
-   (keybindings-manager-conflicts manager)))
+  (keybindings-manager-conflicts manager))
 
 (defvar *global-keybindings* nil)
 

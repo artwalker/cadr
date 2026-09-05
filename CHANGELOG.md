@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `make-keybindings-manager` shares the
+  default definitions constant (no `copy-tree`) and
+  `keybinding-keys` / `keybinding-conflicts` return stored
+  structure without defensive copies. Friend-MachineD
+  **24.5→18.8 µs** (~0.77× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  keybindings resolve invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `selector-keybinding-hint` streams key
   lists and theme ANSI without join/split/`format ~{`
   round-trips. Friend-MachineD **45.5→33.7 µs** (~0.74× tip).
