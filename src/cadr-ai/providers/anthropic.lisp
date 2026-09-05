@@ -176,64 +176,108 @@
                ((vectorp ordinary-content) (coerce ordinary-content 'list))
                (t nil))))))))
 
+(defun anthropic-effort-marker (effort)
+  (json-object
+   "role" "system"
+   "content" (json-array)
+   "output_config" (json-object "effort" effort)))
+
+(defun insert-thinking-level-messages
+    (messages assistant-levels active-effort)
+  (let ((out nil))
+    (loop for message across messages
+          for index from 0
+          for historical = (gethash index assistant-levels)
+          do
+          (when historical
+            (push (anthropic-effort-marker historical) out))
+          (push message out))
+    (push (anthropic-effort-marker active-effort) out)
+    (list-json-array (nreverse out))))
+
 (defun anthropic-messages
-    (model messages &optional cache-control deferred-tools)
+    (model messages &optional cache-control deferred-tools reasoning)
   (let ((prepared
           (prepare-messages-for-model
            messages model #'normalize-provider-id))
         (result nil)
+        (assistant-levels (make-hash-table :test #'eql))
         (loaded-tool-names (make-hash-table :test #'equal))
         (allow-empty-signature-p
-          (model-compat-value model :allow-empty-signature nil)))
-    (loop while prepared
-          for message = (first prepared)
-          do
-          (cond
-            ((typep message 'tool-result-message)
-             (let ((blocks nil))
-               (loop while (and prepared
-                                (typep (first prepared)
-                                       'tool-result-message))
-                     do (dolist
-                            (block
-                             (anthropic-tool-result-blocks
-                              (pop prepared)
-                              allow-empty-signature-p
-                              deferred-tools
-                              loaded-tool-names))
-                          (push block blocks)))
-               (push
-                (json-object
-                 "role" "user"
-                 "content" (list-json-array (nreverse blocks)))
-                result)))
-            ((typep message 'assistant-message)
-             (pop prepared)
-             (let ((content
-                     (anthropic-message-content
-                      message allow-empty-signature-p)))
-               (when (plusp (length content))
-                 (push
-                  (json-object "role" "assistant"
-                               "content" content)
-                  result))))
-            ((typep message 'user-message)
-             (pop prepared)
-             (let ((content
-                     (anthropic-message-content
-                      message allow-empty-signature-p)))
-               (when (if (stringp content)
-                         (non-empty-string-p content)
-                         (plusp (length content)))
-                 (push
-                  (json-object "role" "user"
-                               "content" content)
-                  result))))
-            (t
-             (pop prepared))))
-    (add-anthropic-cache-control-to-messages
-     (list-json-array (nreverse result))
-     cache-control)))
+          (model-compat-value model :allow-empty-signature nil))
+        (mid-convo-p
+          (model-compat-value model :supports-mid-convo-effort nil)))
+    (flet ((record (encoded effort)
+             (when mid-convo-p
+               (when effort
+                 (setf (gethash (length result) assistant-levels)
+                       effort)))
+             (push encoded result)))
+      (loop while prepared
+            for message = (first prepared)
+            do
+            (cond
+              ((typep message 'tool-result-message)
+               (let ((blocks nil))
+                 (loop while (and prepared
+                                  (typep (first prepared)
+                                         'tool-result-message))
+                       do (dolist
+                              (block
+                               (anthropic-tool-result-blocks
+                                (pop prepared)
+                                allow-empty-signature-p
+                                deferred-tools
+                                loaded-tool-names))
+                            (push block blocks)))
+                 (record
+                  (json-object
+                   "role" "user"
+                   "content" (list-json-array (nreverse blocks)))
+                  nil)))
+              ((typep message 'assistant-message)
+               (pop prepared)
+               (let ((content
+                       (anthropic-message-content
+                        message allow-empty-signature-p)))
+                 (when (plusp (length content))
+                   (record
+                    (json-object "role" "assistant"
+                                 "content" content)
+                    (and mid-convo-p
+                         (eq (assistant-message-api message)
+                             :anthropic-messages)
+                         (eq (assistant-message-provider message)
+                             (model-provider model))
+                         (anthropic-effort-p
+                          (assistant-message-provider-thinking-level
+                           message))
+                         (assistant-message-provider-thinking-level
+                          message))))))
+              ((typep message 'user-message)
+               (pop prepared)
+               (let ((content
+                       (anthropic-message-content
+                        message allow-empty-signature-p)))
+                 (when (if (stringp content)
+                           (non-empty-string-p content)
+                           (plusp (length content)))
+                   (record
+                    (json-object "role" "user"
+                                 "content" content)
+                    nil))))
+              (t
+               (pop prepared)))))
+    (let ((encoded
+            (add-anthropic-cache-control-to-messages
+             (list-json-array (nreverse result))
+             cache-control)))
+      (if mid-convo-p
+          (insert-thinking-level-messages
+           encoded
+           assistant-levels
+           (anthropic-active-effort model reasoning))
+          encoded))))
 
 (defun anthropic-tools
     (model tools cache-control &optional defer-loading-p)
@@ -286,26 +330,35 @@
          collect encoded-tool)))
 
 (defun anthropic-thinking-options (model reasoning)
-  (when (model-reasoning-p model)
-    (cond
-      (reasoning
-       (if (model-compat-value model :force-adaptive-thinking nil)
-           (values
-            (json-object "type" "adaptive"
-                         "display" "summarized")
-            (json-object
-             "effort"
-             (or (model-thinking-level-value model reasoning)
-                 (string-downcase (symbol-name reasoning)))))
-           (values
-            (json-object
-             "type" "enabled"
-             "budget_tokens" 1024
-             "display" "summarized")
-            nil)))
-      ((or (not (model-thinking-level-present-p model :off))
-           (model-thinking-level-value model :off))
-       (values (json-object "type" "disabled") nil)))))
+  (cond
+    ((model-compat-value model :supports-mid-convo-effort nil)
+     (values
+      (json-object
+       "type" "adaptive"
+       "display" "summarized"
+       "block_binding"
+       (json-object "prefix_mismatch_behavior" "drop_block"))
+      (json-object "effort" "high")))
+    ((not (model-reasoning-p model))
+     nil)
+    (reasoning
+     (if (model-compat-value model :force-adaptive-thinking nil)
+         (values
+          (json-object "type" "adaptive"
+                       "display" "summarized")
+          (json-object
+           "effort"
+           (or (model-thinking-level-value model reasoning)
+               (string-downcase (symbol-name reasoning)))))
+         (values
+          (json-object
+           "type" "enabled"
+           "budget_tokens" 1024
+           "display" "summarized")
+          nil)))
+    ((or (not (model-thinking-level-present-p model :off))
+         (model-thinking-level-value model :off))
+     (values (json-object "type" "disabled") nil))))
 
 (defun anthropic-tool-choice (choice)
   (if (stringp choice)
@@ -340,7 +393,8 @@
     (json-put
      payload "messages"
      (anthropic-messages
-      model (context-messages context) cache-control deferred-tools))
+      model (context-messages context) cache-control deferred-tools
+      reasoning))
     (when (non-empty-string-p (context-system-prompt context))
       (let ((block
               (json-object
@@ -367,6 +421,8 @@
           'list)))))
     (when (and (not (null temperature))
                (null reasoning)
+               (not (model-compat-value
+                     model :supports-mid-convo-effort nil))
                (model-compat-value model :supports-temperature t))
       (json-put payload "temperature" temperature))
     (multiple-value-bind (thinking output-config)
@@ -386,7 +442,20 @@
      :url (format nil "~A/v1/messages"
                   (strip-trailing-slash (model-base-url model)))
      :headers
-     (let ((headers
+    (let* ((beta-features
+             (append
+              (when oauth-token
+                '("claude-code-20250219" "oauth-2025-04-20"))
+              (when (and (context-tools context)
+                         (not
+                          (model-compat-value
+                           model :supports-eager-tool-input-streaming t)))
+                '("fine-grained-tool-streaming-2025-05-14"))
+              (when (model-compat-value
+                     model :supports-mid-convo-effort nil)
+                '("mid-conversation-output-config-2026-07-01"
+                  "thinking-binding-controls-2026-08-01"))))
+           (headers
              (append
               `(("content-type" . "application/json")
                 ("accept" . ,(if stream-p
@@ -394,17 +463,13 @@
                                  "application/json")))
               (if oauth-token
                   `(("authorization" . ,(format nil "Bearer ~A" key))
-                    ("anthropic-beta"
-                     . "claude-code-20250219,oauth-2025-04-20")
                     ("x-app" . "cli"))
                   `(("x-api-key" . ,key)))
               '(("anthropic-version" . "2023-06-01"))
-              (when (and (context-tools context)
-                         (not
-                          (model-compat-value
-                           model :supports-eager-tool-input-streaming t)))
-                '(("anthropic-beta"
-                   . "fine-grained-tool-streaming-2025-05-14")))
+              (when beta-features
+                (list
+                 (cons "anthropic-beta"
+                       (format nil "~{~A~^,~}" beta-features))))
               (when (and cache-control
                          (non-empty-string-p session-id)
                          (model-compat-value

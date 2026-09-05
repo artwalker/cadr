@@ -140,7 +140,8 @@
   ;; flow.  Wire-level only: the baseline does not persist it either.
   (end-turn nil :type (or null boolean))
   (diagnostics nil :type list)
-  (timestamp (unix-milliseconds) :type integer))
+  (timestamp (unix-milliseconds) :type integer)
+  (provider-thinking-level nil :type (or null string)))
 
 (defstruct tool-result-message
   (tool-call-id "" :type string)

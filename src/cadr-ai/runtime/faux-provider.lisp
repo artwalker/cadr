@@ -180,7 +180,9 @@
    :error-message (assistant-message-error-message message)
    :raw-stop-reason (assistant-message-raw-stop-reason message)
    :diagnostics (assistant-message-diagnostics message)
-   :timestamp (assistant-message-timestamp message)))
+   :timestamp (assistant-message-timestamp message)
+   :provider-thinking-level
+   (assistant-message-provider-thinking-level message)))
 
 (defun faux-copy-message (message handle model)
   (make-assistant-message
@@ -198,7 +200,9 @@
    :error-message (assistant-message-error-message message)
    :raw-stop-reason
    (assistant-message-raw-stop-reason message)
-   :timestamp (assistant-message-timestamp message)))
+   :timestamp (assistant-message-timestamp message)
+   :provider-thinking-level
+   (assistant-message-provider-thinking-level message)))
 
 (defun faux-content-text (content)
   (cond
@@ -430,7 +434,9 @@
    :stop-reason :pending
    :error-message (assistant-message-error-message message)
    :raw-stop-reason (assistant-message-raw-stop-reason message)
-   :timestamp (assistant-message-timestamp message)))
+   :timestamp (assistant-message-timestamp message)
+   :provider-thinking-level
+   (assistant-message-provider-thinking-level message)))
 
 (defun faux-aborted-partial-message (partial)
   (make-assistant-message
@@ -444,7 +450,9 @@
    :usage (assistant-message-usage partial)
    :stop-reason :aborted
    :error-message "Request was aborted"
-   :timestamp (unix-milliseconds)))
+   :timestamp (unix-milliseconds)
+   :provider-thinking-level
+   (assistant-message-provider-thinking-level partial)))
 
 (defun faux-split-string (handle text)
   (let ((chunks nil)

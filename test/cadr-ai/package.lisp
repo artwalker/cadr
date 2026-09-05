@@ -4,6 +4,7 @@
                 #:*http-request-function*
                 #:assistant-message-content
                 #:assistant-message-error-message
+                #:assistant-message-provider-thinking-level
                 #:assistant-message-response-id
                 #:assistant-message-stop-reason
                 #:assistant-message-usage

@@ -86,6 +86,7 @@
    #:assistant-message-end-turn
    #:assistant-message-diagnostics
    #:assistant-message-timestamp
+   #:assistant-message-provider-thinking-level
    #:assistant-message-diagnostic
    #:make-assistant-message-diagnostic
    #:assistant-message-diagnostic-type

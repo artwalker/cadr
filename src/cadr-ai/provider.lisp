@@ -179,6 +179,27 @@ completed assistant message."))
            (model-thinking-level-map model)
            :test #'eq))))
 
+(defun anthropic-effort-p (value)
+  (and (stringp value)
+       (member value '("low" "medium" "high" "xhigh" "max")
+               :test #'string=)))
+
+(defun anthropic-active-effort (model reasoning)
+  (or (when reasoning
+        (let ((mapped (model-thinking-level-value model reasoning)))
+          (if (anthropic-effort-p mapped)
+              mapped
+              (let ((down (string-downcase
+                           (if (symbolp reasoning)
+                               (symbol-name reasoning)
+                               (princ-to-string reasoning)))))
+                (when (anthropic-effort-p down) down)))))
+      "high"))
+
+(defun mid-convo-thinking-level (model reasoning)
+  (when (model-compat-value model :supports-mid-convo-effort nil)
+    (anthropic-active-effort model reasoning)))
+
 (defun normalize-cache-retention (value)
   (let ((retention (or value :short)))
     (unless (member retention '(:none :short :long))
@@ -290,11 +311,13 @@ string. Returns the buffer to store back. Per-delta
 (defun strip-trailing-slash (url)
   (string-right-trim "/" url))
 
-(defun empty-assistant-message (model)
+(defun empty-assistant-message (model &optional reasoning)
   (make-assistant-message
    :api (model-api model)
    :provider (model-provider model)
-   :model (model-id model)))
+   :model (model-id model)
+   :provider-thinking-level
+   (mid-convo-thinking-level model reasoning)))
 
 (defun same-model-message-p (message model)
   (and (eq (assistant-message-provider message)
@@ -395,7 +418,9 @@ string. Returns the buffer to store back. Per-delta
                :diagnostics
                (copy-list
                 (assistant-message-diagnostics message))
-               :timestamp (assistant-message-timestamp message))
+               :timestamp (assistant-message-timestamp message)
+               :provider-thinking-level
+               (assistant-message-provider-thinking-level message))
               transformed))))
         ((typep message 'tool-result-message)
          (push
@@ -607,7 +632,11 @@ string. Returns the buffer to store back. Per-delta
                         status headers model)))))))
           (declare (ignore _prepared))
           (check-abort abort-p)
-          (parse-complete-response provider model response)))
+          (let ((message
+                  (parse-complete-response provider model response)))
+            (setf (assistant-message-provider-thinking-level message)
+                  (mid-convo-thinking-level model reasoning))
+            message)))
     (error (condition)
       (error-assistant-message
        model condition provider))))
@@ -616,7 +645,7 @@ string. Returns the buffer to store back. Per-delta
                     &key max-tokens temperature reasoning cache-retention
                       session-id tool-choice metadata abort-p
                       on-payload transform-headers on-response transport)
-  (let* ((message (empty-assistant-message model))
+  (let* ((message (empty-assistant-message model reasoning))
          (state (make-provider-stream-state :message message))
          (saw-provider-event-p nil)
          (response-request-id nil))
