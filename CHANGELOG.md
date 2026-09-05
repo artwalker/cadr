@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `render-login-method-selector` caches overlay
+  title by (title,width), footer by width, and interns the accent
+  pointer. Friend-MachineD **388.7→102.6 µs** (~0.26× tip).
+  Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after login-method
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `render-user-message-selector` flattens labels
   with a single-pass newline→space trim (no `cl-ppcre`), caches
   description/empty/count chrome by width, and reuses the accent

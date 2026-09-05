@@ -82,6 +82,40 @@
         state)
        event)))
 
+;; Width-keyed chrome so login-method paint reuses overlay title and
+;; footer wrap. Pointer ANSI is interned. Empty item lists stay empty
+;; lines; make-login-method-selector-state rejects height 0.
+(defparameter *login-method-selector-title-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *login-method-selector-footer-by-width*
+  (make-hash-table :test #'eql))
+(defparameter *login-method-selector-pointer-accent* nil)
+
+(defun login-method-selector-pointer-accent ()
+  (or *login-method-selector-pointer-accent*
+      (setf *login-method-selector-pointer-accent*
+            (cadr-tui:theme-foreground :accent "→ "))))
+
+(defun login-method-selector-title-line (title width)
+  (let ((key (cons title width)))
+    (or (gethash key *login-method-selector-title-by-key*)
+        (setf (gethash key *login-method-selector-title-by-key*)
+              (selector-overlay-title-line title width)))))
+
+(defun login-method-selector-footer-lines (width)
+  (or (gethash width *login-method-selector-footer-by-width*)
+      (setf (gethash width *login-method-selector-footer-by-width*)
+            (let ((keybindings (cadr-tui:get-keybindings)))
+              (component-text-lines
+               (concatenate
+                'string
+                (raw-key-hint "↑↓" "navigate") "  "
+                (selector-keybinding-hint
+                 keybindings "tui.select.confirm" "select") "  "
+                (selector-keybinding-hint
+                 keybindings "tui.select.cancel" "cancel"))
+               width)))))
+
 (defun render-login-method-selector (state width)
   (let* ((select-list
            (login-method-selector-state-select-list state))
@@ -92,16 +126,19 @@
                (min (cadr-tui::select-list-selected select-list)
                     (1- (length items)))
                0))
-         (keybindings (cadr-tui:get-keybindings)))
+         (pointer (login-method-selector-pointer-accent)))
     (render-selector-frame
      (make-selector-frame
       :sections
       (list
        (list :border :border)
        :blank
-       (list :title
-             (login-method-selector-state-title state)
-             :overlay)
+       (list
+        :lines
+        (list
+         (login-method-selector-title-line
+          (login-method-selector-state-title state)
+          width)))
        :blank
        (list
         :lines
@@ -112,9 +149,7 @@
               (selector-component-text-line
                (concatenate
                 'string
-                (if selected-p
-                    (cadr-tui:theme-foreground :accent "→ ")
-                    "  ")
+                (if selected-p pointer "  ")
                 (cadr-tui:theme-foreground
                  (if selected-p :accent :text)
                  (cadr-tui:select-item-label item)))
@@ -122,15 +157,7 @@
        :blank
        (list
         :lines
-        (component-text-lines
-         (concatenate
-          'string
-          (raw-key-hint "↑↓" "navigate") "  "
-          (selector-keybinding-hint
-           keybindings "tui.select.confirm" "select") "  "
-          (selector-keybinding-hint
-           keybindings "tui.select.cancel" "cancel"))
-         width))
+        (login-method-selector-footer-lines width))
        :blank
        (list :border :border)))
      width)))
