@@ -582,93 +582,104 @@
   (cadr-tui:theme-foreground
    :custom-message-text text :enabled-p t))
 
+(defparameter *transcript-summary-entry-by-key*
+  (make-hash-table :test #'equal))
+
 (defun render-transcript-summary-entry (entry width)
-  (labels
-      ((text-component (text)
-         (cadr-tui:make-text-component
-          text :padding-x 0 :padding-y 0))
-       (markdown-component (text)
-         (cadr-tui:make-markdown-component
-          text
-          :ansi-theme-p t
-          :syntax-highlight-function #'tui-syntax-highlight
-          :default-style-function #'transcript-summary-text)))
-    (let* ((expanded-p (tui-entry-expanded-p entry))
-           (type (tui-entry-type entry))
-           (children
-             (case type
-               (:skill-invocation
-                (if expanded-p
-                    (list
-                     (text-component
-                      (transcript-summary-label "skill"))
-                     (markdown-component
-                      (format nil "**~A**~%~%~A"
-                              (tui-entry-label entry)
-                              (tui-entry-text entry))))
-                    (list
-                     (text-component
-                      (concatenate
-                       'string
-                       (transcript-summary-label "skill")
-                       " "
-                       (transcript-summary-text
-                        (tui-entry-label entry))
-                       (cadr-tui:theme-foreground
-                        :dim " (ctrl+o to expand)"
-                        :enabled-p t))))))
-               (:branch-summary
-                (list
-                 (text-component
-                  (transcript-summary-label "branch"))
-                 (cadr-tui:make-spacer-component :lines 1)
-                 (if expanded-p
-                     (markdown-component
-                      (format nil "**Branch Summary**~%~%~A"
-                              (tui-entry-text entry)))
-                     (text-component
-                      (concatenate
-                       'string
-                       (transcript-summary-text
-                        "Branch summary (")
-                       (cadr-tui:theme-foreground
-                        :dim "ctrl+o" :enabled-p t)
-                       (transcript-summary-text
-                        " to expand)"))))))
-               (:compaction-summary
-                (let ((tokens
-                        (format nil "~:D"
-                                (or (tui-entry-tokens-before entry)
-                                    0))))
-                  (list
-                   (text-component
-                    (transcript-summary-label "compaction"))
-                   (cadr-tui:make-spacer-component :lines 1)
-                   (if expanded-p
-                       (markdown-component
-                        (format nil
-                                "**Compacted from ~A tokens**~%~%~A"
-                                tokens (tui-entry-text entry)))
-                       (text-component
-                        (concatenate
-                         'string
-                         (transcript-summary-text
-                          (format nil
-                                  "Compacted from ~A tokens ("
-                                  tokens))
-                         (cadr-tui:theme-foreground
-                          :dim "ctrl+o" :enabled-p t)
-                         (transcript-summary-text
-                          " to expand)")))))))))
-           (component
-             (cadr-tui:make-box-component
-              :padding-x 1 :padding-y 1
-              :background-function
-              (lambda (text)
-                (cadr-tui:theme-background
-                 :custom-message-bg text :enabled-p t))
-              :children children)))
-      (cadr-tui:component-render component width))))
+  (let* ((type (tui-entry-type entry))
+         (expanded-p (tui-entry-expanded-p entry))
+         (key
+           (list type expanded-p
+                 (tui-entry-label entry)
+                 (tui-entry-text entry)
+                 (tui-entry-tokens-before entry)
+                 width)))
+    (or (gethash key *transcript-summary-entry-by-key*)
+        (setf (gethash key *transcript-summary-entry-by-key*)
+              (labels
+                  ((text-component (text)
+                     (cadr-tui:make-text-component
+                      text :padding-x 0 :padding-y 0))
+                   (markdown-component (text)
+                     (cadr-tui:make-markdown-component
+                      text
+                      :ansi-theme-p t
+                      :syntax-highlight-function #'tui-syntax-highlight
+                      :default-style-function #'transcript-summary-text)))
+                (let* ((children
+                         (case type
+                           (:skill-invocation
+                            (if expanded-p
+                                (list
+                                 (text-component
+                                  (transcript-summary-label "skill"))
+                                 (markdown-component
+                                  (format nil "**~A**~%~%~A"
+                                          (tui-entry-label entry)
+                                          (tui-entry-text entry))))
+                                (list
+                                 (text-component
+                                  (concatenate
+                                   'string
+                                   (transcript-summary-label "skill")
+                                   " "
+                                   (transcript-summary-text
+                                    (tui-entry-label entry))
+                                   (cadr-tui:theme-foreground
+                                    :dim " (ctrl+o to expand)"
+                                    :enabled-p t))))))
+                           (:branch-summary
+                            (list
+                             (text-component
+                              (transcript-summary-label "branch"))
+                             (cadr-tui:make-spacer-component :lines 1)
+                             (if expanded-p
+                                 (markdown-component
+                                  (format nil "**Branch Summary**~%~%~A"
+                                          (tui-entry-text entry)))
+                                 (text-component
+                                  (concatenate
+                                   'string
+                                   (transcript-summary-text
+                                    "Branch summary (")
+                                   (cadr-tui:theme-foreground
+                                    :dim "ctrl+o" :enabled-p t)
+                                   (transcript-summary-text
+                                    " to expand)"))))))
+                           (:compaction-summary
+                            (let ((tokens
+                                    (format nil "~:D"
+                                            (or (tui-entry-tokens-before entry)
+                                                0))))
+                              (list
+                               (text-component
+                                (transcript-summary-label "compaction"))
+                               (cadr-tui:make-spacer-component :lines 1)
+                               (if expanded-p
+                                   (markdown-component
+                                    (format nil
+                                            "**Compacted from ~A tokens**~%~%~A"
+                                            tokens (tui-entry-text entry)))
+                                   (text-component
+                                    (concatenate
+                                     'string
+                                     (transcript-summary-text
+                                      (format nil
+                                              "Compacted from ~A tokens ("
+                                              tokens))
+                                     (cadr-tui:theme-foreground
+                                      :dim "ctrl+o" :enabled-p t)
+                                     (transcript-summary-text
+                                      " to expand)")))))))))
+                       (component
+                         (cadr-tui:make-box-component
+                          :padding-x 1 :padding-y 1
+                          :background-function
+                          (lambda (text)
+                            (cadr-tui:theme-background
+                             :custom-message-bg text :enabled-p t))
+                          :children children)))
+                  (cadr-tui:component-render component width)))))))
 
 (defparameter *update-notification-border-by-width*
   (make-hash-table :test #'eql))

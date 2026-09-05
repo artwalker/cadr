@@ -610,7 +610,9 @@
     ;; extension-dialog-border-line (interactive/extension-ui.lisp).
     ;; +1 Goal 20 update-notification-text invent:
     ;; *update-notification-text-by-key* (interactive/transcript.lisp).
-    (is (= 300 definition-count)
+    ;; +1 Goal 20 transcript-summary invent:
+    ;; *transcript-summary-entry-by-key* (interactive/transcript.lisp).
+    (is (= 301 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
