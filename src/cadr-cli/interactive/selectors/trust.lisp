@@ -209,6 +209,88 @@
                       decision
                       (display-directory-name path)))))))
 
+;; Width-keyed chrome for trust paint; interned pointer/check.
+(defparameter *trust-selector-arrow-accent* nil)
+(defparameter *trust-selector-check-success* nil)
+(defparameter *trust-selector-session-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *trust-selector-footer-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *trust-selector-cwd-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *trust-selector-saved-by-key*
+  (make-hash-table :test #'equal))
+(defparameter *trust-selector-accent-by-text*
+  (make-hash-table :test #'equal))
+(defparameter *trust-selector-text-by-text*
+  (make-hash-table :test #'equal))
+
+(defun trust-selector-arrow-accent ()
+  (or *trust-selector-arrow-accent*
+      (setf *trust-selector-arrow-accent*
+            (cadr-tui:theme-foreground :accent "→ "))))
+
+(defun trust-selector-check-success ()
+  (or *trust-selector-check-success*
+      (setf *trust-selector-check-success*
+            (cadr-tui:theme-foreground :success " ✓"))))
+
+(defun trust-selector-accent (text)
+  (or (gethash text *trust-selector-accent-by-text*)
+      (setf (gethash text *trust-selector-accent-by-text*)
+            (cadr-tui:theme-foreground :accent text))))
+
+(defun trust-selector-text (text)
+  (or (gethash text *trust-selector-text-by-text*)
+      (setf (gethash text *trust-selector-text-by-text*)
+            (cadr-tui:theme-foreground :text text))))
+
+(defun trust-selector-cwd-line (cwd width)
+  (let ((key (cons cwd width)))
+    (or (gethash key *trust-selector-cwd-by-key*)
+        (setf (gethash key *trust-selector-cwd-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground :muted cwd)
+               width)))))
+
+(defun trust-selector-saved-lines (state width)
+  (let* ((desc (trust-decision-description state))
+         (key (cons desc width)))
+    (or (gethash key *trust-selector-saved-by-key*)
+        (setf (gethash key *trust-selector-saved-by-key*)
+              (component-text-lines
+               (cadr-tui:theme-foreground
+                :muted
+                (format nil "Saved decision: ~A" desc))
+               width)))))
+
+(defun trust-selector-session-line (trusted-p width)
+  (let ((key (cons trusted-p width)))
+    (or (gethash key *trust-selector-session-by-key*)
+        (setf (gethash key *trust-selector-session-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground
+                :muted
+                (format nil "Current session: ~A"
+                        (if trusted-p "trusted" "untrusted")))
+               width)))))
+
+(defun trust-selector-footer-line (state width)
+  (or (gethash width *trust-selector-footer-by-key*)
+      (setf (gethash width *trust-selector-footer-by-key*)
+            (let ((keybindings
+                    (or (trust-selector-state-keybindings state)
+                        (cadr-tui:get-keybindings))))
+              (selector-component-text-line
+               (concatenate
+                'string
+                (raw-key-hint "↑↓" "navigate") "  "
+                (selector-keybinding-hint
+                 keybindings "tui.select.confirm" "save") "  "
+                (selector-keybinding-hint
+                 keybindings "tui.select.cancel" "cancel"))
+               width)))))
+
 (defun render-trust-selector
     (state width)
   (render-selector-frame
@@ -224,47 +306,22 @@
      (list
       :lines
       (list
-       (selector-component-text-line
-        (cadr-tui:theme-foreground
-         :muted
-         (trust-selector-state-cwd state))
+       (trust-selector-cwd-line
+        (trust-selector-state-cwd state)
         width)))
      :blank
      (list
       :lines
       (append
-       (component-text-lines
-        (cadr-tui:theme-foreground
-         :muted
-         (format nil "Saved decision: ~A"
-                 (trust-decision-description state)))
-        width)
+       (trust-selector-saved-lines state width)
        (list
-        (selector-component-text-line
-         (cadr-tui:theme-foreground
-          :muted
-          (format nil "Current session: ~A"
-                  (if
-                      (trust-selector-state-project-trusted-p
-                       state)
-                      "trusted"
-                      "untrusted")))
+        (trust-selector-session-line
+         (trust-selector-state-project-trusted-p state)
          width))))
      :blank :viewport :blank
      (list
       :lines
-      (list
-       (selector-component-text-line
-        (concatenate
-         'string
-         (raw-key-hint "↑↓" "navigate") "  "
-         (selector-keybinding-hint
-          (trust-selector-state-keybindings state)
-          "tui.select.confirm" "save") "  "
-         (selector-keybinding-hint
-          (trust-selector-state-keybindings state)
-          "tui.select.cancel" "cancel"))
-        width)))
+      (list (trust-selector-footer-line state width)))
      :blank :border)
     :item-renderer
     (lambda (option index selected-p total item-width)
@@ -272,22 +329,19 @@
       (let ((saved-p
               (trust-option-saved-p
                option
-               (trust-selector-state-saved-entry state))))
+               (trust-selector-state-saved-entry state)))
+            (label (getf option :label)))
         (component-text-lines
          (concatenate
           'string
           (if selected-p
-              (cadr-tui:theme-foreground
-               :accent "→ ")
+              (trust-selector-arrow-accent)
               "  ")
           (if selected-p
-              (cadr-tui:theme-foreground
-               :accent (getf option :label))
-              (cadr-tui:theme-foreground
-               :text (getf option :label)))
+              (trust-selector-accent label)
+              (trust-selector-text label))
           (if saved-p
-              (cadr-tui:theme-foreground
-               :success " ✓")
+              (trust-selector-check-success)
               ""))
          item-width))))
    width))
