@@ -11,6 +11,9 @@ tag/Release step.
   full paint by (version,note,width,hyperlinks). Friend-MachineD
   **310.8→10.3 µs** (~0.03× tip). Observed EQUAL. G.17 missing.
 
+- Goal 20: refresh unpaired-path denominator after version-notification
+  invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `render-package-update-notification` caches full
   paint by (packages,width) and reuses width-keyed warning borders.
   Friend-MachineD **214.9→7.4 µs** (~0.03× tip). Observed EQUAL.
@@ -21,6 +24,9 @@ tag/Release step.
 
 - Goal 20: remesure Goal14 B6 `(def` count after package-notification
   invent (293→295; transcript.lisp chrome tables). G.17 missing.
+
+- Goal 20: remesure Goal14 B6 `(def` count after version-notification
+  invent (295→296; *version-update-notification-by-key*). G.17 missing.
 
 - Goal 20: remesure Goal14 B6/B8 top-level `(def` counts on tip
   `89e8b852b` (B6 290→293, B8 310→319). Drift is outside selector
