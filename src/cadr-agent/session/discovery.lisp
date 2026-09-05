@@ -425,7 +425,7 @@
            for header =
              (read-session-header-for-discovery
               path)
-           ;; pi@b79e4cc83 SessionManager.list onProgress: invoked per
+           ;; pi@d981de122 SessionManager.list onProgress: invoked per
            ;; scanned session file with 1-based loaded and total counts.
            do (when progress-function
                 (funcall progress-function loaded total))

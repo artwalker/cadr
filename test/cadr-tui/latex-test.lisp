@@ -3,7 +3,7 @@
 
 (test latex-render-matches-baseline-reference-cases
   ;; Every case in +latex-reference-cases+ is the baseline renderLatex
-  ;; output captured from pi@b79e4cc83 packages/tui/src/latex.ts.
+  ;; output captured from pi@d981de122 packages/tui/src/latex.ts.
   (dolist (case +latex-reference-cases+)
     (destructuring-bind (source display expected) case
       (is

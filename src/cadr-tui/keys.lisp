@@ -64,7 +64,7 @@
     (,(format nil "~COb" #\Escape) . "ctrl+down")
     (,(format nil "~COc" #\Escape) . "ctrl+right")
     (,(format nil "~COd" #\Escape) . "ctrl+left")
-    ;; pi@b79e4cc83 tui/keybindings.ts:170-175 — the prompt-jump
+    ;; pi@d981de122 tui/keybindings.ts:170-175 — the prompt-jump
     ;; defaults use the legacy 1;6 modifier encoding.
     (,(format nil "~C[1;6A" #\Escape) . "ctrl+shift+up")
     (,(format nil "~C[1;6B" #\Escape) . "ctrl+shift+down")

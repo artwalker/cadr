@@ -319,7 +319,7 @@
   (all-loaded-p nil :type boolean)
   (all-loading-p nil :type boolean)
   (all-load-sequence 0 :type (integer 0 *))
-  ;; pi@b79e4cc83 session-selector.ts:140-143 — incremental load
+  ;; pi@d981de122 session-selector.ts:140-143 — incremental load
   ;; progress renders as "Loading <loaded>/<total>".
   (load-progress-loaded nil :type (or null integer))
   (load-progress-total nil :type (or null integer))
@@ -801,7 +801,7 @@
 
 (defun session-selector-note-load-progress
     (selector token loaded total)
-  ;; pi@b79e4cc83 session-selector.ts onProgress: progress is applied
+  ;; pi@d981de122 session-selector.ts onProgress: progress is applied
   ;; only while the same load is current.
   (when
       (= token

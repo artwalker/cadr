@@ -3,7 +3,7 @@
 ## Contract
 
 The render differential drives fixed pi baseline
-`b79e4cc834970cca69daebffab7df1da7d1e52c4` and Cadr with the same scenario
+`d981de1229ef899957bbe968bc8dcda02a21f477` and Cadr with the same scenario
 manifest and their native faux providers.  Each side runs under a real PTY.
 The collector fixes terminal size, dark theme, `C.UTF-8`, `TERM=xterm-256color`,
 `COLORTERM=truecolor`, forced chalk truecolor styles (`FORCE_COLOR=3` with the
@@ -245,8 +245,8 @@ the authority.
 | Isolated cwd | Exact per-side temporary workspace prefix to `<CWD>` | The programs must use different workspaces; punctuation and suffixes remain checked. |
 | Isolated sandbox | Exact per-side temporary sandbox prefix to `<SANDBOX>` | Parent-directory text otherwise contains the random `mkdtemp` name. |
 | Isolated session directory | Exact per-side temporary session directory to `<SESSION_DIR>` | Both drivers persist the same fixture state outside their product-specific config roots; suffixes and command syntax remain checked. |
-| Fixed baseline cache | Exact `/tmp/cadr-render-diff-pi-b79e4cc83` to `<PI_BASELINE>` | The pi crash stack necessarily names the materialized immutable baseline. |
-| Product/version header | Exact plain and observed styled `pi v0.84.4` / `cadr v0.2.0` forms to `<PRODUCT> v<VERSION>` | Product rename and release version are approved; surrounding SGR remains checked. |
+| Fixed baseline cache | Exact `/tmp/cadr-render-diff-pi-d981de122` to `<PI_BASELINE>` | The pi crash stack necessarily names the materialized immutable baseline. |
+| Product/version header | Exact plain and observed styled `pi v0.85.1` / `cadr v0.2.0` forms to `<PRODUCT> v<VERSION>` | Product rename and release version are approved; surrounding SGR remains checked. |
 | Terminal-title product | Exact OSC title prefix `π - ` to `<PRODUCT> - ` | Only the brand glyph is replaced; title existence, workspace suffix, framing, and BEL remain checked. |
 | Product prose/config/commands | Exact onboarding sentences, `.pi/agent` / `.cadr`, untrusted-resource tokens, restart tokens, and styled/plain resume-command product tokens | These are direct consequences of the approved product rename; arbitrary substrings are not replaced. |
 | Export filename | Exact fixed-clock `pi-session-2023-11-14T22-13-20-000Z_render-session.html` / Cadr counterpart to `<PRODUCT>-session-<FIXED_TIME>_<SESSION_ID>.html` | Prefix and ID spellings differ only by the approved brand and fixed driver identity. |
@@ -255,7 +255,7 @@ the authority.
 | Hidden hardware cursor | Exact tmux cursor record `<CURSOR X,Y,0>` to `<CURSOR hidden>` | Both products hide the hardware cursor and draw the editor cursor as a screen cell. Its retained internal coordinates are not observable; coordinates remain exact whenever `cursor_flag=1`. |
 | Crash-log ID | Digits only between exact `cadr-crash-` and `.log` delimiters to `<CRASH_ID>` | PID/time/counter identity is intentionally unique; directory, filename grammar, and mode are tested elsewhere. |
 | Bash full-output file | Exact `/tmp/pi-bash-<hex>.log` or `/tmp/cadr-bash-<decimal>-<decimal>.log` grammar to `/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log` | The suffix is process-generated; the full warning copy, punctuation, color and replay geometry remain checked. |
-| Unbold product banner | Exact unbold pi banner `ESC[38;2;138;190;183m pi ESC[38;2;102;102;102m v0.84.4 ESC[39m` (and its plain form) to the same `<PRODUCT> v<VERSION>` placeholder the bold form already produces | This host's tmux replay of the baseline banner sometimes omits the bold `1m`/`0m` wrapper around the accent product name — the same pi frame arrives in two envelopes. Both pi envelopes converge to one I04 pair; a cadr banner in either envelope has no unbold mapping and still compares unequal (evidence below). |
+| Unbold product banner | Exact unbold pi banner `ESC[38;2;138;190;183m pi ESC[38;2;102;102;102m v0.85.1 ESC[39m` (and its plain form) to the same `<PRODUCT> v<VERSION>` placeholder the bold form already produces | This host's tmux replay of the baseline banner sometimes omits the bold `1m`/`0m` wrapper around the accent product name — the same pi frame arrives in two envelopes. Both pi envelopes converge to one I04 pair; a cadr banner in either envelope has no unbold mapping and still compares unequal (evidence below). |
 | Node inspect stack-frame gray | Only the two Node inspect shapes lose their `90m`/`39m` wrapper: a `    at ...` frame wrapped as `ESC[90m    at ... ESC[39m`, and the split path `(dir/ ESC[39m file:line:col ESC[90m)`. Implemented as `strip_node_inspect_stack_colors` (`scripts/render-diff.py`). | Node 22 adds the gray stack wrapper when `FORCE_COLOR` is set; the disposition book was captured without that envelope, and the closer `39m` can land mid-path and defeat the driver-location normalizer. Every other `90m`/`39m` pair (theme gray such as `esc to interrupt`) remains checked byte-for-byte; cells and visible text are unchanged (I01 only). |
 
 The `FORCE_COLOR=3` / `NO_COLOR` handling documented in the contract section is
@@ -276,8 +276,8 @@ spec = importlib.util.spec_from_file_location("render_diff", "scripts/render-dif
 rd = importlib.util.module_from_spec(spec); sys.modules["render_diff"] = rd
 spec.loader.exec_module(rd)
 n = rd.normalize_fixed_values
-pi_bold = b"\x1b[1m\x1b[38;2;138;190;183mpi\x1b[0m\x1b[38;2;102;102;102m v0.84.4\x1b[39m"
-pi_unbold = b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.4\x1b[39m"
+pi_bold = b"\x1b[1m\x1b[38;2;138;190;183mpi\x1b[0m\x1b[38;2;102;102;102m v0.85.1\x1b[39m"
+pi_unbold = b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.85.1\x1b[39m"
 cadr_unbold = b"\x1b[38;2;138;190;183mcadr\x1b[38;2;102;102;102m v0.2.0\x1b[39m"
 print("pi bold == pi unbold   ->", n(pi_bold) == n(pi_unbold))      # True
 print("pi bold == cadr unbold ->", n(pi_bold) == n(cadr_unbold))    # False

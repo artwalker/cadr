@@ -435,7 +435,7 @@
              (cadr-core:project-config-directory cwd))
             :project-trusted-p project-trusted-p))
          (_use-theme-override
-           ;; Baseline v0.84.4 main.ts: --use-theme applies a runtime
+           ;; Baseline v0.85.1 main.ts: --use-theme applies a runtime
            ;; (non-persisted) settings override for this invocation.
            (when (cli-arguments-use-theme command)
              (settings-override-runtime-value
@@ -451,7 +451,7 @@
             (make-file-auth-storage
              (default-auth-path))))
          (image-normalizer
-           ;; pi@b79e4cc83 utils/tool-result-images.ts via
+           ;; pi@d981de122 utils/tool-result-images.ts via
            ;; agent-session.ts:517-520.
            (progn
              (setf
@@ -719,7 +719,7 @@
                   (or
                    (cli-arguments-tools command)
                    (append
-                    ;; Baseline v0.84.4 sdk.ts: the defaultTools setting
+                    ;; Baseline v0.85.1 sdk.ts: the defaultTools setting
                     ;; overrides the built-in default selection.
                     (or
                      (settings-default-tools settings-manager)
@@ -873,7 +873,7 @@
            (let ((provider
                    (provider-config-provider config)))
              (or
-              ;; pi@b79e4cc83 footer.ts:139-141 — Kimi Coding is
+              ;; pi@d981de122 footer.ts:139-141 — Kimi Coding is
               ;; subscription-backed despite API-key authentication.
               (string-equal
                (provider-key
@@ -1162,7 +1162,7 @@
            (refresh-auth provider :logout)
            (values
             provider
-            ;; pi@b79e4cc83 model-runtime.ts:532 — non-nil when the
+            ;; pi@d981de122 model-runtime.ts:532 — non-nil when the
             ;; credential was removed but the local snapshot did not
             ;; sync.
             (model-registry-error model-registry)))
@@ -1401,7 +1401,7 @@
          (refresh-model-catalogs ()
            ;; Worker side of the selector-open catalog refresh: re-read
            ;; the registry without holding the TUI lock.  Baseline
-           ;; v0.84.4 model-catalog-refresh.ts: a second caller while one
+           ;; v0.85.1 model-catalog-refresh.ts: a second caller while one
            ;; refresh is in flight shares that run's result.
            (sb-thread:with-mutex (catalog-refresh-lock)
              (when catalog-refresh-in-flight-p
@@ -1655,7 +1655,7 @@
               status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
-           ;; v0.84.4: the selector opens even with an empty catalog; the
+           ;; v0.85.1: the selector opens even with an empty catalog; the
            ;; baseline dropped the "No models available" early exit.
            (make-scoped-models-selector-state
             :all-models available-models
@@ -2416,7 +2416,7 @@
                    (file-auth-storage-path
                     (model-registry-credentials model-registry))
                    (default-auth-path)))
-              ;; pi@b79e4cc83 model-runtime.ts:532 — non-nil when the
+              ;; pi@d981de122 model-runtime.ts:532 — non-nil when the
               ;; credential saved but the local snapshot did not sync.
               (model-registry-error model-registry)))
            :auth-status-function #'authentication-status
@@ -2518,7 +2518,7 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           ;; pi@b79e4cc83 interactive-mode.ts:530-531 — the CLI flag
+           ;; pi@d981de122 interactive-mode.ts:530-531 — the CLI flag
            ;; wins over the tuiMode setting; default regular.
            (eq :fullscreen
                (or (cli-arguments-tui-mode command)

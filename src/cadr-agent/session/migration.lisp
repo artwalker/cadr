@@ -1827,7 +1827,7 @@
   object)
 
 (defun repair-unterminated-session-file (path)
-  ;; pi@b79e4cc83 session-manager.ts #8345: after a valid load, append a
+  ;; pi@d981de122 session-manager.ts #8345: after a valid load, append a
   ;; trailing newline so the next JSONL entry cannot fuse with a
   ;; truncated last line.
   (when (probe-file path)

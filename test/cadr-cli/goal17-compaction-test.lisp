@@ -175,7 +175,7 @@
               (cadr-tui:virtual-terminal-snapshot terminal))))))
 
 (test goal17-direct-bash-renders-running-output-and-completes-the-same-entry
-  ;; pi@b79e4cc83 interactive-mode.ts:6052-6075 creates the
+  ;; pi@d981de122 interactive-mode.ts:6052-6075 creates the
   ;; BashExecutionComponent before executeBash and appends every onChunk
   ;; delta to that same component.  The semaphores freeze the command after
   ;; its first chunk so this assertion observes the live state, not a final
@@ -366,7 +366,7 @@
         lines)))
 
 (test goal17-direct-user-bash-component-matches-fixed-baseline-final-states
-  ;; pi@b79e4cc83 bash-execution.ts:100-204 owns a framed component distinct
+  ;; pi@d981de122 bash-execution.ts:100-204 owns a framed component distinct
   ;; from notices and agent tool blocks.  Its collapsed budget is 20 logical
   ;; lines, expansion preserves the context-truncated output, and completion
   ;; states have component-local copy rather than generic Error/status text.
@@ -451,7 +451,7 @@
     (is (find "(cancelled)" cancelled :test #'search))
     (is (null (find "Error:" cancelled :test #'search)))
     (is (null (find "Command aborted" cancelled :test #'search)))
-    ;; pi@b79e4cc83 bash-execution.ts:112-173 preserves the trailing empty
+    ;; pi@d981de122 bash-execution.ts:112-173 preserves the trailing empty
     ;; stdout line, then the status Text contributes its own leading newline.
     ;; The result is exactly two blank rows between output and `(exit 7)`.
     (let ((output-position
@@ -465,7 +465,7 @@
       (is (= 3 (- status-position output-position))))))
 
 (test goal17-direct-user-bash-running-spacer-matches-fixed-baseline
-  ;; pi@b79e4cc83 bash-execution.ts:140-147 adds Loader after the command;
+  ;; pi@d981de122 bash-execution.ts:140-147 adds Loader after the command;
   ;; Loader renders a zero-cell spacer row followed by the spinner row.
   (let ((running
           (goal17-render-user-bash-state
@@ -475,7 +475,7 @@
                 (fifth running)))))
 
 (test goal17-direct-user-bash-enters-agent-session-and-context
-  ;; pi@b79e4cc83 agent-session.ts:2803-2824 records every direct bash result
+  ;; pi@d981de122 agent-session.ts:2803-2824 records every direct bash result
   ;; before the footer asks getContextUsage().  This is observable even before
   ;; the next provider turn: a 50 KiB tail must move the 128k footer to 10.0%.
   (with-test-directory (root)
@@ -540,7 +540,7 @@
     (is (cadr-cli::user-bash-result-exclude-from-context-p result))))
 
 (test goal17-persisted-direct-bash-is-seeded-back-into-the-transcript
-  ;; pi@b79e4cc83 interactive-mode.ts:3308-3322 reconstructs the dedicated
+  ;; pi@d981de122 interactive-mode.ts:3308-3322 reconstructs the dedicated
   ;; BashExecutionComponent when a persisted session is displayed again.
   (let* ((state (cadr-cli::make-tui-state :messages nil))
          (message
@@ -561,7 +561,7 @@
                      :exit-code))))))
 
 (test goal17-cancelled-truncated-direct-bash-preserves-full-output-metadata
-  ;; pi@b79e4cc83 bash-executor.ts:112-137 returns the truncation fields even
+  ;; pi@d981de122 bash-executor.ts:112-137 returns the truncation fields even
   ;; when cancellation interrupts execution after the output limit is crossed.
   (with-test-directory (root)
     (let* ((ready (merge-pathnames "bash-output-ready" root))
@@ -589,7 +589,7 @@
             (delete-file path)))))))
 
 (test goal17-session-tree-classifies-persisted-direct-bash
-  ;; pi@b79e4cc83 tree-selector.ts:568-578 indexes bashExecution by role and
+  ;; pi@d981de122 tree-selector.ts:568-578 indexes bashExecution by role and
   ;; command, and its display branch renders the bash-specific label.
   (with-test-directory (root)
     (let* ((session
@@ -614,7 +614,7 @@
                 (cadr-cli::tree-selector-entry-display-text entry nil)))))))))
 
 (test goal17-agent-bash-header-and-expand-hint-match-fixed-baseline-spans
-  ;; pi@b79e4cc83 tool-execution renders "$ <command>" as one bold
+  ;; pi@d981de122 tool-execution renders "$ <command>" as one bold
   ;; toolTitle span.  The collapsed preview styles the configurable expand
   ;; key separately from the surrounding muted copy.
   (let ((caps
@@ -699,7 +699,7 @@
     (is (not (string= first second)))))
 
 (test goal17-edit-preview-preserves-unchanged-line-on-pure-insertion
-  ;; pi@b79e4cc83 edit-diff.ts:478-490 emits a leading ellipsis whenever the
+  ;; pi@d981de122 edit-diff.ts:478-490 emits a leading ellipsis whenever the
   ;; unchanged prefix exceeds four context lines.  It also preserves the
   ;; unchanged line that a pure insertion follows instead of synthesizing a
   ;; red/green remove-add pair for identical text.
@@ -724,7 +724,7 @@
         diff)))))
 
 (test goal17-session-display-and-tree-projections-match-fixed-baseline
-  ;; pi@b79e4cc83 session-manager.ts:383-407 and
+  ;; pi@d981de122 session-manager.ts:383-407 and
   ;; interactive-mode.ts:3471-3528 keep display messages typed, report every
   ;; historical compaction, and never expose the provider-facing <summary>
   ;; wrapper in the transcript.
@@ -781,7 +781,7 @@
           (is (null (getf label-entry :label))))))))
 
 (test goal17-agent-context-estimation-uses-message-order-for-compaction
-  ;; pi@b79e4cc83 coding-agent/core/compaction/compaction.ts:190-222 has a
+  ;; pi@d981de122 coding-agent/core/compaction/compaction.ts:190-222 has a
   ;; deliberately different contract from packages/ai: coding-agent context
   ;; usage follows session message order even when imported timestamps differ.
   (let ((messages
@@ -798,7 +798,7 @@
            (cadr-agent::context-estimated-tokens messages)))))
 
 (test goal17-compaction-end-rebuilds-only-the-active-context-once
-  ;; pi@b79e4cc83 interactive-mode.ts:3155-3177,3599-3602 rebuilds the
+  ;; pi@d981de122 interactive-mode.ts:3155-3177,3599-3602 rebuilds the
   ;; transcript from SessionManager.buildContextEntries after compaction.
   ;; Pre-boundary messages must not reappear and the typed summary is seeded
   ;; exactly once by the normal transcript projection.
@@ -867,7 +867,7 @@
                         :key #'cadr-cli::tui-entry-text :test #'string=)))))))
 
 (test goal17-summary-components-retain-baseline-leading-spacer
-  ;; pi@b79e4cc83 interactive-mode.ts:3398-3412 inserts Spacer(1) before
+  ;; pi@d981de122 interactive-mode.ts:3398-3412 inserts Spacer(1) before
   ;; branch and compaction components.  The summary component's own box
   ;; padding is separate and cannot substitute for this transcript gap.
   (let* ((state (cadr-cli::make-tui-state))
@@ -895,7 +895,7 @@
     (is (= 4 (- branch-position user-position)))))
 
 (test goal17-tree-filter-and-error-copy-match-fixed-baseline
-  ;; pi@b79e4cc83 tree-selector.ts:343-359,768-851 hides every non-current
+  ;; pi@d981de122 tree-selector.ts:343-359,768-851 hides every non-current
   ;; assistant entry that has neither text nor an error/abort stop reason.
   ;; Error and aborted entries remain distinct and compactions show token count.
   (let* ((entries
@@ -993,7 +993,7 @@
       (cadr-tui:set-keybindings previous))))
 
 (test goal17-overflow-status-uses-baseline-loader-wrapping-at-narrow-width
-  ;; pi@b79e4cc83 status-indicator.ts:78-88 passes one message to Loader;
+  ;; pi@d981de122 status-indicator.ts:78-88 passes one message to Loader;
   ;; Loader inherits Text paddingX=1, so Text.render wraps at width - 2
   ;; instead of truncating the message to the first physical line.
   (is
@@ -1193,7 +1193,7 @@
           (cadr-agent:agent-shutdown agent)))))
 
 (test goal17-package-command-help-preserves-baseline-contract
-  ;; Fixed pi@b79e4cc83 package-manager-cli.ts:66-155 owns the complete
+  ;; Fixed pi@d981de122 package-manager-cli.ts:66-155 owns the complete
   ;; foreground help contract.  Cadr changes product identity only; the
   ;; examples match the baseline verbatim (npm:@foo/bar included — the
   ;; npm install capability gap is reported separately).

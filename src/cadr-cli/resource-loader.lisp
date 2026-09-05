@@ -160,7 +160,7 @@ Returns the deduped list and a list of collision records
         (return path)))))
 
 (defun load-project-context-files (&key cwd agent-directory)
-  ;; pi@b79e4cc83 core/resource-loader.ts:118-155: global agent-dir
+  ;; pi@d981de122 core/resource-loader.ts:118-155: global agent-dir
   ;; context first, then cwd→root ancestors rootward-first. First
   ;; existing candidate wins per directory; paths are deduped.
   (let ((ancestors nil)
