@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `materialize-cloudflare-url` scans braces
+  once to validate and rewrite placeholders (no four
+  `search` + four `replace-all` copies). Friend-MachineD
+  harness **6.013→0.752 µs** (~0.13× tip). Observed EQUAL.
+  G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  cloudflare-url invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `tree-selector-help-keys` resolves keys,
   compact-joins `ctrl+` suffixes, and replaces arrow words
   with one stream walk (no parts conses / `format ~{` /

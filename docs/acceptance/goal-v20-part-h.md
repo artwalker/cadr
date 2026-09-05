@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 130,264 lines**
+Denominator: **297 files / 130,337 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 105,231 | 80.8% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 105,304 | 80.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,472 | 13.4% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13884,7 +13884,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/device-code.lisp` | 239 | `oauth_pkce_device.poll` |
 | `src/cadr-ai/auth/github-copilot.lisp` | 53 | `oauth_pkce_device.copilot_url` |
-| `src/cadr-ai/auth/radius-cloudflare.lisp` | 118 | `oauth_pkce_device.cloudflare_url` |
+| `src/cadr-ai/auth/radius-cloudflare.lisp` | 191 | `oauth_pkce_device.cloudflare_url` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/capabilities/event-stream.lisp` | 69 | `ai_capabilities.event_stream` |
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |

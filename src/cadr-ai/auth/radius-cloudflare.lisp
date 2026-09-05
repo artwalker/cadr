@@ -23,28 +23,101 @@
 
 (defun materialize-cloudflare-url
     (base-url account-id gateway-id)
-  (when (and
-         (or (search "{CLOUDFLARE_ACCOUNT_ID}" base-url)
-             (search "{accountId}" base-url))
-         (not (non-empty-string-p account-id)))
-    (error 'configuration-error
-           :message "CLOUDFLARE_ACCOUNT_ID is not set"))
-  (when (and
-         (or (search "{CLOUDFLARE_GATEWAY_ID}" base-url)
-             (search "{gatewayId}" base-url))
-         (not (non-empty-string-p gateway-id)))
-    (error 'configuration-error
-           :message "CLOUDFLARE_GATEWAY_ID is not set"))
-  (let ((result base-url))
-    (dolist (entry
-             `(("{CLOUDFLARE_ACCOUNT_ID}" . ,account-id)
-               ("{CLOUDFLARE_GATEWAY_ID}" . ,gateway-id)
-               ("{accountId}" . ,account-id)
-               ("{gatewayId}" . ,gateway-id)))
-      (when (cdr entry)
-        (setf result
-              (replace-all result (car entry) (cdr entry)))))
-    result))
+  ;; One brace scan: validate required ids and rewrite placeholders
+  ;; without four search + four replace-all string copies.
+  (let ((n (length base-url))
+        (need-account nil)
+        (need-gateway nil)
+        (has-brace nil))
+    (let ((i 0))
+      (loop while (< i n)
+            do (if (char= (char base-url i) #\{)
+                   (cond
+                     ((and
+                       (<= (+ i 23) n)
+                       (string=
+                        base-url "{CLOUDFLARE_ACCOUNT_ID}"
+                        :start1 i :end1 (+ i 23)))
+                      (setf has-brace t need-account t)
+                      (incf i 23))
+                     ((and
+                       (<= (+ i 23) n)
+                       (string=
+                        base-url "{CLOUDFLARE_GATEWAY_ID}"
+                        :start1 i :end1 (+ i 23)))
+                      (setf has-brace t need-gateway t)
+                      (incf i 23))
+                     ((and
+                       (<= (+ i 11) n)
+                       (string=
+                        base-url "{accountId}"
+                        :start1 i :end1 (+ i 11)))
+                      (setf has-brace t need-account t)
+                      (incf i 11))
+                     ((and
+                       (<= (+ i 11) n)
+                       (string=
+                        base-url "{gatewayId}"
+                        :start1 i :end1 (+ i 11)))
+                      (setf has-brace t need-gateway t)
+                      (incf i 11))
+                     (t
+                      (setf has-brace t)
+                      (incf i)))
+                   (incf i))))
+    (when (and need-account
+               (not (non-empty-string-p account-id)))
+      (error 'configuration-error
+             :message "CLOUDFLARE_ACCOUNT_ID is not set"))
+    (when (and need-gateway
+               (not (non-empty-string-p gateway-id)))
+      (error 'configuration-error
+             :message "CLOUDFLARE_GATEWAY_ID is not set"))
+    (if (not has-brace)
+        base-url
+        (with-output-to-string (out)
+          (let ((i 0))
+            (loop while (< i n)
+                  do (if (char= (char base-url i) #\{)
+                         (cond
+                           ((and
+                             account-id
+                             (<= (+ i 23) n)
+                             (string=
+                              base-url "{CLOUDFLARE_ACCOUNT_ID}"
+                              :start1 i :end1 (+ i 23)))
+                            (write-string account-id out)
+                            (incf i 23))
+                           ((and
+                             gateway-id
+                             (<= (+ i 23) n)
+                             (string=
+                              base-url "{CLOUDFLARE_GATEWAY_ID}"
+                              :start1 i :end1 (+ i 23)))
+                            (write-string gateway-id out)
+                            (incf i 23))
+                           ((and
+                             account-id
+                             (<= (+ i 11) n)
+                             (string=
+                              base-url "{accountId}"
+                              :start1 i :end1 (+ i 11)))
+                            (write-string account-id out)
+                            (incf i 11))
+                           ((and
+                             gateway-id
+                             (<= (+ i 11) n)
+                             (string=
+                              base-url "{gatewayId}"
+                              :start1 i :end1 (+ i 11)))
+                            (write-string gateway-id out)
+                            (incf i 11))
+                           (t
+                            (write-char #\{ out)
+                            (incf i)))
+                         (progn
+                           (write-char (char base-url i) out)
+                           (incf i)))))))))
 
 (defun radius-required-field (object field predicate)
   (let ((value (json-get object field)))
