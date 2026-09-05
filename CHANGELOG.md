@@ -18,6 +18,11 @@ tag/Release step.
   session-list-info invent (+293 lines). needs-pair=0
   uncovered=0.
 
+- Goal 20: `continue-session` / `resume-session` pick via
+  `list-session-infos` then `load-session` only the chosen
+  path (no full-graph list). FiveAM continue/resume/list
+  checks pass. G.17 missing.
+
 - Goal 20 invent: bake autocomplete command items on the
   provider once; slash filter reuses them. Friend-MachineD
   n=50 `suggest_apply` **46.9→31.0 µs** (dirent tip baseline).

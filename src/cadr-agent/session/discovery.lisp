@@ -470,12 +470,13 @@
 
 (defun resume-session
     (id &key (directory (default-session-directory)))
-  (let ((session
+  (let ((info
           (find id
-                (list-sessions :directory directory)
-                :key #'session-id
+                (list-session-infos :directory directory)
+                :key #'session-list-info-id
                 :test #'string=)))
-    (or session
+    (if info
+        (load-session (session-list-info-path info))
         (session-failure
          (uiop:ensure-directory-pathname directory)
          nil
@@ -485,7 +486,10 @@
                                (directory
                                  (default-session-directory))
                                cwd)
-  (first
-   (list-sessions
-    :directory directory
-    :cwd (or cwd (uiop:getcwd)))))
+  (let ((info
+          (first
+           (list-session-infos
+            :directory directory
+            :cwd (or cwd (uiop:getcwd))))))
+    (and info
+         (load-session (session-list-info-path info)))))
