@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 invent: `tree-selector-help-keys` resolves keys,
+  compact-joins `ctrl+` suffixes, and replaces arrow words
+  with one stream walk (no parts conses / `format ~{` /
+  four `regex-replace-all` copies). Friend-MachineD
+  **98.1→32.9 µs** (~0.34× tip). Observed EQUAL. G.17 missing.
+
+- Goal 20: refresh unpaired-path denominator after
+  tree-help-keys invent. needs-pair=0 uncovered=0.
+
 - Goal 20 invent: `tree-selector-cycle-filter` uses
   successor/predecessor cases (no `position`/`nth` on the
   mode list). Friend-MachineD **2.248→1.295 µs** (~0.58× tip).

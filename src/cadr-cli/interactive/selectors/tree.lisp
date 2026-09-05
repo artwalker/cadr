@@ -1641,52 +1641,90 @@
        ("tui.editor.cursorRight" . "right"))
      :test #'string=))))
 
+(defun tree-selector-help-word-char-p (char)
+  (or (alphanumericp char) (char= char #\_)))
+
+(defun tree-selector-help-replace-arrows (text)
+  ;; Same word-boundary rule as cl-ppcre \\b for [A-Za-z0-9_],
+  ;; without four regex-replace-all string copies.
+  (let ((n (length text)))
+    (with-output-to-string (out)
+      (let ((i 0))
+        (loop while (< i n)
+              do (let ((matched nil))
+                   (dolist
+                       (pair
+                        '(("up" . "↑")
+                          ("down" . "↓")
+                          ("left" . "←")
+                          ("right" . "→")))
+                     (let* ((word (car pair))
+                            (wl (length word)))
+                       (when
+                           (and
+                            (<= (+ i wl) n)
+                            (string=
+                             text word
+                             :start1 i :end1 (+ i wl))
+                            (or
+                             (zerop i)
+                             (not
+                              (tree-selector-help-word-char-p
+                               (char text (1- i)))))
+                            (or
+                             (= (+ i wl) n)
+                             (not
+                              (tree-selector-help-word-char-p
+                               (char text (+ i wl))))))
+                         (write-string (cdr pair) out)
+                         (incf i wl)
+                         (setf matched t)
+                         (return))))
+                   (unless matched
+                     (write-char (char text i) out)
+                     (incf i))))))))
+
 (defun tree-selector-help-keys
     (state names)
-  (let ((keys
-          (remove
-           nil
-           (mapcar
-            (lambda (name)
-              (tree-selector-help-key state name))
-            names))))
+  ;; Resolve keys, compact ctrl+ suffixes, and arrow-glyph in one
+  ;; stream pass (no parts conses / format ~{ / four PPCRE copies).
+  (let ((keys nil))
+    (dolist (name names)
+      (let ((key (tree-selector-help-key state name)))
+        (when key
+          (push key keys))))
+    (setf keys (nreverse keys))
     (when keys
-      (let* ((parts
-               (mapcar
+      (let* ((ctrl-prefix-p
+               (every
                 (lambda (key)
                   (let ((separator
-                          (position #\+ key
-                                    :from-end t)))
-                    (if separator
-                        (cons
-                         (subseq key 0 (1+ separator))
-                         (subseq key (1+ separator)))
-                        (cons "" key))))
+                          (position #\+ key :from-end t)))
+                    (and
+                     separator
+                     (= separator 4)
+                     (>= (length key) 5)
+                     (string= key "ctrl+" :end1 5))))
                 keys))
-             (prefix (caar parts))
              (compact
-               (if
-                   (and
-                    (string= prefix "ctrl+")
-                    (every
-                     (lambda (part)
-                       (string= prefix (car part)))
-                     parts))
-                   (concatenate
-                    'string prefix
-                    (format nil "~{~A~^/~}"
-                            (mapcar #'cdr parts)))
-                   (format nil "~{~A~^/~}" keys))))
-        (reduce
-         (lambda (text replacement)
-           (cl-ppcre:regex-replace-all
-            (car replacement) text
-            (cdr replacement)))
-         '(("\\bup\\b" . "↑")
-           ("\\bdown\\b" . "↓")
-           ("\\bleft\\b" . "←")
-           ("\\bright\\b" . "→"))
-         :initial-value compact)))))
+               (with-output-to-string (out)
+                 (if ctrl-prefix-p
+                     (progn
+                       (write-string "ctrl+" out)
+                       (loop for key in keys
+                             for index from 0
+                             do
+                                (when (plusp index)
+                                  (write-char #\/ out))
+                                (write-string
+                                 key out :start 5)))
+                     (loop for key in keys
+                           for index from 0
+                           do
+                              (when (plusp index)
+                                (write-char #\/ out))
+                              (write-string key out))))))
+        (tree-selector-help-replace-arrows compact)))))
 
 (defun tree-selector-help-lines (state width)
   (let* ((items
