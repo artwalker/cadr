@@ -1442,3 +1442,16 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure21` (and shell 321541).
 | mistral | 1633.9 | 2540.9 | **0.64× (met)** |
 
 Load closed on this booking. Journal remains the named leftover. G.17 missing.
+
+### Remesure22 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10; tip `3dd8385b2` small-array + toolCall envelope)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure22`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1923.5 | 1575.3 | **1.22× (open)** |
+| journal_read | 1530.8 | 1599.8 | **0.96× (met)** |
+| pi_messages | 741.6 | 913.6 | **0.81× (met)** |
+| mistral | 1653.1 | 2966.8 | **0.56× (met)** |
+
+Host swing vs remesure21 (load met / journal open). Still one named leftover open. G.17 missing.
