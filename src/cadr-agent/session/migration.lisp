@@ -969,147 +969,121 @@
                      (list* key value
                             (session-json-message-extra bag)))))
            (put-message-field (bag key-start key-end)
-             ;; First-byte dispatch (proposal 3). Not length-case.
-             (let ((n (- key-end key-start))
-                   (b0 (aref octets key-start)))
-               (case b0
-                 (114 ; r: role / response* / rawStop*
-                  (cond
-                    ((and (= n 4) (key= key-start key-end "role"))
-                     (setf (session-json-message-role bag)
-                           (parse-string-value)))
-                    ((or (and (= n 10)
-                              (key= key-start key-end "responseId"))
-                         (and (= n 11)
-                              (key= key-start key-end "response_id")))
-                     (keep-extra bag :response-id (parse-string-value)))
-                    ((or (and (= n 14)
-                              (key= key-start key-end "rawStopReason"))
-                         (and (= n 15)
-                              (key= key-start key-end "raw_stop_reason")))
-                     (keep-extra bag :raw-stop-reason
-                                 (parse-string-value)))
-                    (t (skip-value))))
-                 (116 ; t: type / timestamp / tool* / truncated
-                  (cond
-                    ((and (= n 4) (key= key-start key-end "type"))
-                     (if (session-json-message-role bag)
-                         (skip-value)
-                         (setf (session-json-message-role bag)
-                               (parse-string-value))))
-                    ((and (= n 9)
-                          (key= key-start key-end "timestamp"))
-                     (setf (session-json-message-timestamp bag)
-                           (parse-timestamp-value)))
-                    ((or (and (= n 10)
-                              (key= key-start key-end "toolCallId"))
-                         (and (= n 11)
-                              (key= key-start key-end "tool_call_id")))
-                     (keep-extra bag :tool-call-id (parse-string-value)))
-                    ((or (and (= n 8)
-                              (key= key-start key-end "toolName"))
-                         (and (= n 9)
-                              (key= key-start key-end "tool_name")))
-                     (keep-extra bag :tool-name (parse-string-value)))
-                    ((and (= n 9)
-                          (key= key-start key-end "truncated"))
-                     (keep-extra bag :truncated (parse-generic)))
-                    (t (skip-value))))
-                 (99 ; c: content / command / cancelled
-                  (cond
-                    ((and (= n 7) (key= key-start key-end "content"))
-                     (setf (session-json-message-content bag)
-                           (parse-content-value)))
-                    ((and (= n 7) (key= key-start key-end "command"))
-                     (keep-extra bag :command (parse-string-value)))
-                    ((and (= n 9)
-                          (key= key-start key-end "cancelled"))
-                     (keep-extra bag :cancelled (parse-generic)))
-                    (t (skip-value))))
-                 (97 ; a: api
-                  (if (and (= n 3) (key= key-start key-end "api"))
-                      (keep-extra bag :api (parse-string-value))
-                      (skip-value)))
-                 (112 ; p: provider / providerThinkingLevel
-                  (cond
-                    ((and (= n 8) (key= key-start key-end "provider"))
-                     (keep-extra bag :provider (parse-string-value)))
-                    ((or (and (= n 22)
-                              (key= key-start key-end
-                                    "providerThinkingLevel"))
-                         (and (= n 23)
-                              (key= key-start key-end
-                                    "provider_thinking_level")))
-                     (keep-extra bag :provider-thinking-level
-                                 (parse-string-value)))
-                    (t (skip-value))))
-                 (109 ; m: model
-                  (if (and (= n 5) (key= key-start key-end "model"))
-                      (keep-extra bag :model (parse-string-value))
-                      (skip-value)))
-                 (117 ; u: usage
-                  (if (and (= n 5) (key= key-start key-end "usage"))
-                      (progn
-                        (skip-space)
-                        (setf (session-json-message-usage bag)
-                              (if (eql (peek-code) 123)
-                                  (parse-usage)
-                                  (parse-generic))))
-                      (skip-value)))
-                 (115 ; s: stopReason
-                  (if (or (and (= n 10)
-                               (key= key-start key-end "stopReason"))
-                          (and (= n 11)
-                               (key= key-start key-end "stop_reason")))
-                      (keep-extra bag :stop-reason (parse-string-value))
-                      (skip-value)))
-                 (101 ; e: error* / exit* / exclude*
-                  (cond
-                    ((or (and (= n 12)
-                              (key= key-start key-end "errorMessage"))
-                         (and (= n 13)
-                              (key= key-start key-end "error_message")))
-                     (keep-extra bag :error-message (parse-string-value)))
-                    ((or (and (= n 8)
-                              (key= key-start key-end "exitCode"))
-                         (and (= n 9)
-                              (key= key-start key-end "exit_code")))
-                     (keep-extra bag :exit-code (parse-number-value)))
-                    ((or (and (= n 18)
-                              (key= key-start key-end
-                                    "excludeFromContext"))
-                         (and (= n 20)
-                              (key= key-start key-end
-                                    "exclude_from_context")))
-                     (keep-extra bag :exclude-from-context
-                                 (parse-generic)))
-                    (t (skip-value))))
-                 (100 ; d: diagnostics / details
-                  (cond
-                    ((and (= n 12)
-                          (key= key-start key-end "diagnostics"))
-                     (keep-extra bag :diagnostics (parse-generic)))
-                    ((and (= n 7) (key= key-start key-end "details"))
-                     (keep-extra bag :details (parse-generic)))
-                    (t (skip-value))))
-                 (105 ; i: isError
-                  (if (or (and (= n 7) (key= key-start key-end "isError"))
-                          (and (= n 8) (key= key-start key-end "is_error")))
-                      (keep-extra bag :is-error (parse-generic))
-                      (skip-value)))
-                 (111 ; o: output
-                  (if (and (= n 6) (key= key-start key-end "output"))
-                      (keep-extra bag :output (parse-string-value))
-                      (skip-value)))
-                 (102 ; f: fullOutputPath
-                  (if (or (and (= n 14)
-                               (key= key-start key-end "fullOutputPath"))
-                          (and (= n 16)
-                               (key= key-start key-end
-                                     "full_output_path")))
-                      (keep-extra bag :full-output-path
-                                  (parse-string-value))
-                      (skip-value)))
+             ;; Closed message keys: (u32, length) is unique.  Skip
+             ;; second octet-window-equals after scan-key.  Not
+             ;; length-case. Not intern. Not FFI.
+             (let ((n (- key-end key-start)))
+               (cond
+                 ((and (= n 3)
+                       (= (aref octets key-start) 97)
+                       (= (aref octets (+ key-start 1)) 112)
+                       (= (aref octets (+ key-start 2)) 105))
+                  (keep-extra bag :api (parse-string-value)))
+                 ((>= n 4)
+                  (let ((w (%octet-u32-le octets key-start)))
+                    (cond
+                      ((and (= w #x656c6f72) (= n 4))
+                       (setf (session-json-message-role bag)
+                             (parse-string-value)))
+                      ((and (= w #x70736572) (= n 10))
+                       (keep-extra bag :response-id
+                                   (parse-string-value)))
+                      ((and (= w #x70736572) (= n 11))
+                       (keep-extra bag :response-id
+                                   (parse-string-value)))
+                      ((and (= w #x53776172) (= n 13))
+                       (keep-extra bag :raw-stop-reason
+                                   (parse-string-value)))
+                      ((and (= w #x5f776172) (= n 15))
+                       (keep-extra bag :raw-stop-reason
+                                   (parse-string-value)))
+                      ((and (= w #x65707974) (= n 4))
+                       (if (session-json-message-role bag)
+                           (skip-value)
+                           (setf (session-json-message-role bag)
+                                 (parse-string-value))))
+                      ((and (= w #x656d6974) (= n 9))
+                       (setf (session-json-message-timestamp bag)
+                             (parse-timestamp-value)))
+                      ((and (= w #x6c6f6f74) (= n 10))
+                       (keep-extra bag :tool-call-id
+                                   (parse-string-value)))
+                      ((and (= w #x6c6f6f74) (= n 12))
+                       (keep-extra bag :tool-call-id
+                                   (parse-string-value)))
+                      ((and (= w #x6c6f6f74) (= n 8))
+                       (keep-extra bag :tool-name
+                                   (parse-string-value)))
+                      ((and (= w #x6c6f6f74) (= n 9))
+                       (keep-extra bag :tool-name
+                                   (parse-string-value)))
+                      ((and (= w #x6e757274) (= n 9))
+                       (keep-extra bag :truncated (parse-generic)))
+                      ((and (= w #x746e6f63) (= n 7))
+                       (setf (session-json-message-content bag)
+                             (parse-content-value)))
+                      ((and (= w #x6d6d6f63) (= n 7))
+                       (keep-extra bag :command (parse-string-value)))
+                      ((and (= w #x636e6163) (= n 9))
+                       (keep-extra bag :cancelled (parse-generic)))
+                      ((and (= w #x766f7270) (= n 8))
+                       (keep-extra bag :provider (parse-string-value)))
+                      ((and (= w #x766f7270) (= n 21))
+                       (keep-extra bag :provider-thinking-level
+                                   (parse-string-value)))
+                      ((and (= w #x766f7270) (= n 23))
+                       (keep-extra bag :provider-thinking-level
+                                   (parse-string-value)))
+                      ((and (= w #x65646f6d) (= n 5))
+                       (keep-extra bag :model (parse-string-value)))
+                      ((and (= w #x67617375) (= n 5))
+                       (skip-space)
+                       (setf (session-json-message-usage bag)
+                             (if (eql (peek-code) 123)
+                                 (parse-usage)
+                                 (parse-generic))))
+                      ((and (= w #x706f7473) (= n 10))
+                       (keep-extra bag :stop-reason
+                                   (parse-string-value)))
+                      ((and (= w #x706f7473) (= n 11))
+                       (keep-extra bag :stop-reason
+                                   (parse-string-value)))
+                      ((and (= w #x6f727265) (= n 12))
+                       (keep-extra bag :error-message
+                                   (parse-string-value)))
+                      ((and (= w #x6f727265) (= n 13))
+                       (keep-extra bag :error-message
+                                   (parse-string-value)))
+                      ((and (= w #x74697865) (= n 8))
+                       (keep-extra bag :exit-code
+                                   (parse-number-value)))
+                      ((and (= w #x74697865) (= n 9))
+                       (keep-extra bag :exit-code
+                                   (parse-number-value)))
+                      ((and (= w #x6c637865) (= n 18))
+                       (keep-extra bag :exclude-from-context
+                                   (parse-generic)))
+                      ((and (= w #x6c637865) (= n 20))
+                       (keep-extra bag :exclude-from-context
+                                   (parse-generic)))
+                      ((and (= w #x67616964) (= n 11))
+                       (keep-extra bag :diagnostics (parse-generic)))
+                      ((and (= w #x61746564) (= n 7))
+                       (keep-extra bag :details (parse-generic)))
+                      ((and (= w #x72457369) (= n 7))
+                       (keep-extra bag :is-error (parse-generic)))
+                      ((and (= w #x655f7369) (= n 8))
+                       (keep-extra bag :is-error (parse-generic)))
+                      ((and (= w #x7074756f) (= n 6))
+                       (keep-extra bag :output (parse-string-value)))
+                      ((and (= w #x6c6c7566) (= n 14))
+                       (keep-extra bag :full-output-path
+                                   (parse-string-value)))
+                      ((and (= w #x6c6c7566) (= n 16))
+                       (keep-extra bag :full-output-path
+                                   (parse-string-value)))
+                      (t
+                       (skip-value)))))
                  (t
                   (skip-value)))))
            (try-compact-message ()
