@@ -1274,6 +1274,20 @@
                                                      (eq t is-error)
                                                      :timestamp timestamp))
                                                   (rewind))))))))))))
+                   ((take-prefix "assistant\",\"content\":")
+                    ;; Role+content gate, then existing assistant-tail.
+                    ;; Hits thinking+text and toolCall. Not a
+                    ;; thinking-text envelope. Not typed toolUse emit.
+                    (let ((content (parse-content-value)))
+                      (if (not (take-prefix ",\"api\":"))
+                          (rewind)
+                          (let ((bag (make-session-json-message)))
+                            (setf (session-json-message-role bag)
+                                  "assistant"
+                                  (session-json-message-content bag)
+                                  content)
+                            (or (try-compact-assistant-tail bag)
+                                (rewind))))))
                    (t
                     (rewind))))))
            (try-compact-assistant-tail (bag)
