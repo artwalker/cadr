@@ -1319,3 +1319,6 @@ Gate PASS. Roles EQUAL.
 Still open: session_load, journal_read.
 - Ban: journal `parse-number` digit unrolling (slice journal mom ~1659→1615 noise; session_load mom 1828→2128 regress; revert).
 
+- Ban: journal `iso-ms` digits-2/3/4 unroll (journal ~7% slice win, load ~6% regress; revert).
+- Ban: content-block fixed-vector-8 / vector+adjust (load regress or incomplete; fill-pointer-adjacent).
+
