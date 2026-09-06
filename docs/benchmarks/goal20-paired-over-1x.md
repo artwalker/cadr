@@ -1422,6 +1422,8 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure20`.
 
 Still open load+journal. Drain continues.
 
+- Keep: `parse-content-small-array` — structural 1- or 2-object content array without first-block rewind between one-block and two-block; not three-block; not thinking-text prefix. Friend-MachineD g20-load-slice n=10 interleaved FP_BYTES 37832 EQUAL; session_load mom 2079.9→1641.3 µs; journal_read mom 1590.5→1452.9 µs. Floor remesure pending. G.17 missing.
+
 ### Invent keep (Friend-MachineD g20-load-slice n=5×5; knife `10039b20b`; tip `8f5993958`)
 
 - Keep: `8f5993958` `try-compact-message` assistant toolCall-only envelope — structural inline single `toolCall` block + `try-compact-assistant-tail`. Not thinking-text inline. Not generic role+content gate. Not typed toolUse emit. session_load mom **1818.3→1575.3 µs** (−243 µs, 13.4%). journal_read mom **1699.7→1492.0 µs** (−208 µs). FP_BYTES 37832 EQUAL. G.17 missing.
