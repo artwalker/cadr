@@ -1462,3 +1462,16 @@ Host swing vs remesure21 (load met / journal open). Still one named leftover ope
 
 - Keep: `parse-arguments-object` key windows with closed `path`/`offset`/`limit` literals. Not three-pair compact. Not intern-table grow. Not decode-escaped simple-escape. FP_BYTES 38072 EQUAL. journal_read mom **1428.8→1333.4 µs** (−95 µs, 6.7%). session_load mom 1557.9→1479.1 µs (not worse). G.17 missing.
 - Small-array and toolCall envelope keeps untouched.
+
+### Remesure23 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10; tip `796b00203` args key windows)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure23`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1617.1 | 1851.7 | **0.87× (met)** |
+| journal_read | 1344.4 | 1265.2 | **1.06× (open)** |
+| pi_messages | 645.4 | 1002.7 | **0.64× (met)** |
+| mistral | 1569.6 | 1639.5 | **0.96× (met)** |
+
+Load met. Journal still open (~1.06×). G.17 missing.
