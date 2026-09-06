@@ -1185,8 +1185,7 @@
                             (if (eql (peek-code) 125)
                                 (progn
                                   (take-code)
-                                  (make-session-json-message
-                                   :role "user"
+                                  (cadr-ai:make-user-message
                                    :content
                                    (list
                                     (cadr-ai:make-text-content
@@ -1215,21 +1214,18 @@
                                               (if (eql (peek-code) 125)
                                                   (progn
                                                     (take-code)
-                                                    (make-session-json-message
-                                                     :role "toolResult"
+                                                    (cadr-ai:make-tool-result-message
+                                                     :tool-call-id
+                                                     (or tool-call-id "")
+                                                     :tool-name
+                                                     (or tool-name "")
                                                      :content
                                                      (list
                                                       (cadr-ai:make-text-content
                                                        :text (or text "")))
-                                                     :timestamp timestamp
-                                                     :extra
-                                                     (list
-                                                      :tool-call-id
-                                                      (or tool-call-id "")
-                                                      :tool-name
-                                                      (or tool-name "")
-                                                      :is-error
-                                                      (eq t is-error))))
+                                                     :is-error
+                                                     (eq t is-error)
+                                                     :timestamp timestamp))
                                                   (rewind))))))))))))
                    (t
                     (rewind))))))

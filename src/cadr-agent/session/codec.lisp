@@ -534,6 +534,11 @@
          (cadr-ai:make-cost)))))
 
 (defun message-from-json (object)
+  (when (or (typep object 'cadr-ai:user-message)
+            (typep object 'cadr-ai:assistant-message)
+            (typep object 'cadr-ai:tool-result-message)
+            (typep object 'cadr-agent:bash-execution-message))
+    (return-from message-from-json object))
   (when (session-json-message-p object)
     (return-from message-from-json
       (let ((type (session-json-message-role object))
