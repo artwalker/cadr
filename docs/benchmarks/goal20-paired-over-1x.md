@@ -1327,7 +1327,6 @@ Still open: session_load, journal_read.
 - Ban: `try-compact-thinking-text-array` in `parse-content-value` (pairing [thinking,text]; load/journal no clear win; revert).
 - Ban: `put-block-field` classify-entry-key-style tag/(u32,n) dispatch (journal regress ~+10%; load mixed; revert).
 - Ban: compact-path `parse-number-value` for timestamps instead of `parse-timestamp-value` (WIP left dirty on tip; restored; do not land without measure).
-
 ### Remesure14 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `3c8e58ff7` try-compact-assistant-tail; `b6d92703f` two-block landed after measure)
 
 Gate PASS. Roles EQUAL.
@@ -1342,3 +1341,4 @@ Gate PASS. Roles EQUAL.
 **Named Part-P leftovers all ≤1.0×.** Invent/floor exit predicate met on this booking (G.17 still separate).
 - Ban: `scan-key` quote-only SWAR / `octet-find-quote` (paired A/B load+journal regress; revert).
 - Ban: handler elide fail→return-from dropping `handler-bind` on v3 body (load regress; revert).
+- Keep (post-exit invent): `parse-content-one-block-array` — structural exactly-one-object content array; Friend-MachineD g20-jr-slice n=5 load mom ~1839→1715 µs, journal_read mom ~1561→1528 µs; FP_BYTES 38072 EQUAL. Floor still closed.

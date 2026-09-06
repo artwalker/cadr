@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `parse-content-one-block-array` structural exactly-one-object
+  content array fast path in `parse-content-value`. Friend-MachineD
+  g20-jr-slice n=5 session_load mom ~1839→1715 µs, journal_read mom
+  ~1561→1528 µs. FP_BYTES 38072 EQUAL. G.17 stays `missing`. Not Goal 20
+  complete.
+
 - Goal 20: `copy-ascii-octets-or-nil` one-pass ASCII path for
   `copy-utf8-octets` / `copy-unescaped-json-octets`. Friend-MachineD
   mistral slice median-of-medians ~3825→3439 µs. OBS EQUAL.
