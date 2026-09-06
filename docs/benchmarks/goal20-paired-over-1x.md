@@ -1378,3 +1378,31 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure17`.
 | mistral | 1495.9 | 1522.3 | **0.98× (met)** |
 
 **Floor reopen.** remesure14 all-met did not hold on tip under remesure15–17 host swing. Named leftover open: `session_pipeline.session_load` (1.03× on n=10). Invent/floor resumes on load. G.17 stays `missing` (advisor 2026-09-06).
+
+### Remesure18 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; tip `3fa0b071a`)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure18`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 2012.1 | 1490.2 | **1.35× (open)** |
+| journal_read | 1985.1 | 1401.9 | **1.42× (open)** |
+| pi_messages | 707.4 | 884.6 | **0.80× (met)** |
+| mistral | 1691.3 | 1802.0 | **0.94× (met)** |
+
+Host swing widened load+journal. Invent continues both axes. G.17 missing.
+- Ban: `parse-content-three-block-array` (slice load −12 µs noise, journal −76 µs; not clear keep; revert).
+- Keep: `0f209dce6` `try-compact-message` assistant role+content gate, then existing `try-compact-assistant-tail`. Hits thinking+text and toolCall. Not thinking-text envelope. Not typed toolUse. Not three-block. Friend-MachineD g20-load-slice n=5x5 session_load mom 1828.811→1737.706 µs (confirm 1681.234→1612.902). FP_BYTES 37832 EQUAL. G.17 missing.
+
+### Remesure19 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; tip `3fa0b071a`)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure19`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1783.2 | 1766.0 | **1.01× (open)** |
+| journal_read | 1656.7 | 1266.6 | **1.31× (open)** |
+| pi_messages | 644.3 | 1020.8 | **0.63× (met)** |
+| mistral | 1767.4 | 2230.1 | **0.79× (met)** |
+
+Load near-miss. Journal still open. Invent priority: journal_read.
