@@ -1321,4 +1321,6 @@ Still open: session_load, journal_read.
 
 - Ban: journal `iso-ms` digits-2/3/4 unroll (journal ~7% slice win, load ~6% regress; revert).
 - Ban: content-block fixed-vector-8 / vector+adjust (load regress or incomplete; fill-pointer-adjacent).
+- Ban: `try-compact-message` toolResult `isError` false/true literal prefix (FP EQUAL; g20-load-slice load tip mom 2386 vs knife mom 2633 µs; inside host variance as regress; revert).
+- Ban: `try-compact-content-block` read `arguments` path+offset:1+limit:4 compact (re-tried; correctness bug then prior class; revert).
 
