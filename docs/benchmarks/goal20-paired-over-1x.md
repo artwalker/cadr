@@ -1235,3 +1235,6 @@ Host variance note: mistral met at remesure5 (0.98×) then 1.42× here; session_
 - Ban: `message-entry-prefix` rewindable JSONL compact (miss-tax; revert).
 - Ban: mistral content-delta schema extract + `call-next-method` (re-tried; worse; revert).
 
+- Ban: `civil-time-unix-ms` / Hinnant days_from_civil replacing `encode-universal-time` on 24-char timestamps (journal+load mom worse; revert).
+- Ban: mistral `structural-skip-value` chat-chunk walk (~2% slower than parse-json-scratch; revert).
+
