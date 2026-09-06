@@ -1175,3 +1175,26 @@ Ceilings not lowered. Do not redo withdrawn phenomenon knives.
 | cli_interactive_controller.terminal_title_sequence | 1.519 | 2.713 | 1.785 | 8.0 | Friend-MachineD | leftover 859 loop-tick-48 |
 | cli_interactive_controller.make_notification_stream | 8.280 | 1.429 | 0.173 | 8.0 | Friend-MachineD | leftover 860 loop-tick-48 |
 | cli_interactive_controller.notification_stream_flush | 4.675 | 1.154 | 0.247 | 8.0 | Friend-MachineD | leftover 861 loop-tick-48 |
+
+## Invent notes
+
+- Ban: journal `copy-unescaped-json-octets` ub32 `#x80` splat classify before ASCII fill (re-tried after prior splat ban; tip~1739 vs knife~1750 µs noise; revert).
+- Ban: mistral `reduce-provider-sse-event` delta-content marker extract + `call-next-method` (~3985→4591 µs worse; revert).
+
+### Remesure3 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip ascii keep before journal return-from)
+
+Gate PASS. Roles EQUAL. Journal body bytes still +3.2%.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1969.1 | 2573.2 | **0.77× (met)** |
+| journal_read | 2339.1 | 2135.0 | **1.10× (open)** |
+| pi_messages | 994.0 | 1262.3 | **0.79× (met)** |
+| mistral | 4153.9 | 2819.9 | **1.47× (open)** |
+
+Mistral 1.24→1.47 vs remesure2: host/suite variance; superseded by remesure4/5 after journal+scratch keeps.
+
+- Ban: mistral request `stringify-json` skip-key-sort (mom ~7% inside tip variance; revert).
+- Ban: mistral chat-chunk wire-layout walker aborted (empty-string bugs; no clean measure).
+- Ban: journal ub32 splat re-try / delta-content marker already noted above.
+
