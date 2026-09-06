@@ -174,3 +174,42 @@ ts	phase	decision	why	evidence	result
 2026-09-06T14:40:32Z	invent	kept parse-content-small-array 1-or-2 content without first-block rewind; not three-block; not thinking-text; not role+content gate	n=10 interleaved g20-load-slice vs aa6c1a85e; load mom 2079.9 to 1641.3 us; jr 1590.5 to 1452.9; FP 37832 EQUAL	66e961a0d;/tmp/g20-aa6-tip{1..10}.txt;/tmp/g20-aa6-knife{1..10}.txt	kept; floor remesure pending; G.17 missing
 2026-09-06T14:40:32Z	invent	reverted small-array on first n=5 spike then reconfirm n=10; reverted assistant-stop envelope; reverted assistant-content gate (matches withdrawn keep); reverted first small-array apply on 3fa0	prove-it; bans in goal20-paired-over-1x.md	/tmp/g20-small-*.txt;/tmp/g20-stop-*.txt;/tmp/g20-asst-*.txt	reverted those knives; small-array later kept on aa6 rebase
 2026-09-06T14:41:36Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:13:00Z	advisor	reject optional-intern keep; tip d5f063f68 already bans parse-string-value skip intern on entry id/parentId; remesure x3 jr -104 looked green but class banned	ban supersedes slice	352142; d5f063f68	reverted; tip clean; G.17 missing
+2026-09-06T15:14:31Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:14:30Z	advisor	remesure25 on failed land tip (push rejected vs d5f063f68); load 1.113 journal 1.112 both OPEN; discard	not official tip floor	189999;/tmp/goal20-floor-remesure25	G.17 missing; invent continues
+2026-09-06T15:15:12Z	invent	reverted parse-string-value intern skip on open tokens (id/parentId/path/toolCall id) plus typed offset/limit values; extra labels then &optional intern-p	FP EQUAL; n=10 slice x5 A/B jr pairwise -74/-133/+3/-9/+57 mom -19us; load never worse; not past host noise as clear jr win; not three-pair isError simple-escape message-entry-prefix scan-key SWAR/handler-elide	/tmp/g20-jr-opt-{t,k}{1..5}.txt; tip cfe0aa49d / walker 796b00203	reverted; G.17 missing
+2026-09-06T15:15:12Z	invent	reverted parse-arguments-object typed path/offset/limit values after key windows (parse-string-value / parse-number-value; still interned strings)	FP EQUAL; n=10 slice x3 A/B jr all worse (+105/+5/+15); load mixed	/tmp/g20-jr-ta-{t,k}{1..3}.txt	reverted; G.17 missing
+2026-09-06T15:15:36Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:16:40Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:16:40Z	coord	journal invent idle after open-token+typed-args revert; tip f3503a541; respawn invent outside bans	wake-only was stall	17161336	invent respawned; G.17 missing
+2026-09-06T15:17:43Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:18:47Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:19:52Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:20:57Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:22:00Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:23:05Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:24:10Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:25:15Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:26:20Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:27:25Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:28:27Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:29:32Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:30:37Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:31:42Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:32:47Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:33:52Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:34:57Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:35:59Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:40:00Z	invent	reverted try-parse-path-offset-limit-object + classify-arg-key + consume-line brace fast path; not open-token; not typed values; not three-pair-any-keys; not compact-prefix	Friend-MachineD g20-jr-open-slice n=10 interleaved; FP 47063 EQUAL; tip mom load 1455.303 jr 1288.551 vs knife mom load 1458.100 jr 1284.171 (jr -4.4us 6/10); ordered-only jr +79us; classify-only jr +7us; not past noise; never G.17	f6553e393; fa7f54395;/tmp/g20-jr-{tip,knife}-r{1..10}.txt	reverted; tip f6553e393 clean; G.17 missing; next leftover journal_read
+2026-09-06T15:37:04Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:41:00Z	coord	booked ordered-args/classify-arg-key bans; invent idle; respawn journal invent outside args-key axis	a22f4a71 all revert	f6553e393+/docs	invent respawned; G.17 missing
+2026-09-06T15:38:08Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:39:13Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:40:18Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:41:24Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:42:26Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:43:32Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:44:37Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:45:42Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:46:47Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T15:46:52Z	invent	reverted parse-copy-string-value path value + entry-field id/parentId skip-space + parse-value-at + toolCall id/name compact bundle	Friend-MachineD g20-jr-open-slice n=10x3 interleaved; FP 47063 EQUAL; best jr mom -41us round2 path-only; load mixed/regress; pairwise 2-4/5; not past noise; never G.17	caf4d874b;/tmp/g20-jr-{tip,knife}-r{1..10}.txt	reverted; tip caf4d874b clean; G.17 missing; next leftover journal_read

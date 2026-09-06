@@ -1500,3 +1500,7 @@ Load met. Journal still the named leftover. G.17 missing.
 - Ban: `try-parse-path-offset-limit-object` / ordered path·offset·limit fast path after args key windows (n=10 jr mom −4.4 µs noise; ordered-only jr +79 µs; FP EQUAL; revert).
 - Ban: `classify-arg-key` u32 dispatch in generic args loop (n=5 jr +7 µs load +47 µs; revert).
 - Ban: consume-line `{` blank-skip sibling of ordered-args knife (bundled with path-offset-limit object; revert).
+- Ban: `parse-copy-string-value` for `path` argument values (copy-unescaped without json-intern; not typed offset/limit; Friend-MachineD g20-jr-open-slice n=10×3 interleaved; jr mom −8/−41/−15 µs mixed with load regress round; pairwise 2–4/5; FP EQUAL; revert).
+- Ban: `parse-copy-string-value` for entry `id`/`parentId` plus redundant `skip-space` removal on `message`/`usage` in `put-entry-field` (n=10×3; jr/load inside host noise; round1 jr +18 µs; revert).
+- Ban: `parse-value-at` eliding leading `skip-space` before argument values in `parse-arguments-object` (n=10×3; jr mom +10/+93/+31 µs; revert).
+- Ban: `parse-copy-string-value` on toolCall `id`/`name` in compact envelopes bundled with path value copy (n=10×3; jr mom +26/+88/−12 µs; load regress; FP EQUAL; revert).
