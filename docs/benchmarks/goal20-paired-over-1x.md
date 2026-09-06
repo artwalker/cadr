@@ -1325,4 +1325,5 @@ Still open: session_load, journal_read.
 - Ban: `try-compact-content-block` read `arguments` path+offset:1+limit:4 compact (re-tried; correctness bug then prior class; revert).
 - Ban: `try-compact-message` typed assistant toolUse emit (landed `6117fb803` then reverted `a58a0c61e`; do not redo).
 - Ban: `try-compact-thinking-text-array` in `parse-content-value` (pairing [thinking,text]; load/journal no clear win; revert).
+- Ban: `put-block-field` classify-entry-key-style tag/(u32,n) dispatch (journal regress ~+10%; load mixed; revert).
 
