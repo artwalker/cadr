@@ -1317,4 +1317,5 @@ Gate PASS. Roles EQUAL.
 | mistral | 2025.6 | 2466.9 | **0.82× (met)** |
 
 Still open: session_load, journal_read.
+- Ban: journal `parse-number` digit unrolling (slice journal mom ~1659→1615 noise; session_load mom 1828→2128 regress; revert).
 
