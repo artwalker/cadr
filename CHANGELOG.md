@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `try-compact-message` assistant toolCall-only envelope
+  inline single toolCall + try-compact-assistant-tail. Friend-MachineD
+  g20-load-slice session_load mom 1818.3→1575.3 µs. FP EQUAL. G.17 stays
+  `missing`. Not Goal 20 complete.
+
 - Goal 20: `parse-content-small-array` parses a 1- or 2-object content
   array without rewinding the first object between the old one-block and
   two-block walks. Not three-block. Not thinking-text prefix. Friend-MachineD
@@ -14,12 +19,6 @@ tag/Release step.
   journal_read mom 1590.5→1452.9 µs. FP_BYTES 37832 EQUAL. G.17 stays
   `missing`. Not Goal 20 complete.
 
-- Goal 20: `try-compact-message` assistant role+content gate reuses
-  `parse-content-value` and `try-compact-assistant-tail` so assistant
-  rows skip the bag scan-key loop. Friend-MachineD g20-load-slice
-  n=5x5 session_load mom 1828.811→1737.706 µs (confirm
-  1681.234→1612.902). FP_BYTES 37832 EQUAL. G.17 stays `missing`.
-  Not Goal 20 complete.
 
 - Goal 20: `parse-content-one-block-array` structural exactly-one-object
   content array fast path in `parse-content-value`. Friend-MachineD

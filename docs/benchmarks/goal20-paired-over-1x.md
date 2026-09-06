@@ -1428,3 +1428,4 @@ Still open load+journal. Drain continues.
 
 - Keep: `8f5993958` `try-compact-message` assistant toolCall-only envelope — structural inline single `toolCall` block + `try-compact-assistant-tail`. Not thinking-text inline. Not generic role+content gate. Not typed toolUse emit. session_load mom **1818.3→1575.3 µs** (−243 µs, 13.4%). journal_read mom **1699.7→1492.0 µs** (−208 µs). FP_BYTES 37832 EQUAL. G.17 missing.
 - Reverted this session: assistant role+content gate (noise); thinking-text inline in try-compact-message (aggregate regress).
+- Ban: `parse-tool-result-is-error` structural false/true in toolResult compact (`578c01de7`; tip reconfirm load regress; not land).
