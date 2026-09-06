@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 133,282 lines**
+Denominator: **297 files / 133,280 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 106,885 | 80.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 106,883 | 80.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.7% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 18,836 | 14.1% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -14040,7 +14040,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/powershell.lisp` | 115 | `powershell_tool.make_tool`, `powershell_tool.prefix_command`, `powershell_tool.utf8_prefix` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
-| `src/cadr-cli/tools/write.lisp` | 70 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
+| `src/cadr-cli/tools/write.lisp` | 68 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort`, `core_rest.cancellation_predicate` |
 | `src/cadr-core/redacted-print.lisp` | 54 | `core_rest.redacted_secrets`, `core_rest.redacted_register`, `core_rest.redacted_replace` |
