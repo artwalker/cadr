@@ -1497,3 +1497,6 @@ Load met. Journal still the named leftover. G.17 missing.
 - Ban: `load-session` skip `coerce` to simple-vector, `dolist` the JSONL cons list (n=10 load −4 µs; revert).
 - Ban: `parse-string-value` skip intern / optional `intern-p` on open-token windows (entry id / parentId / path / toolCallId and siblings; n=10 load −36 µs pairwise 6/10; jr −5 µs; later jr mom −19 µs 3/5 not clear win; revert).
 - Ban: `parse-arguments-object` typed path/offset/limit values (`parse-string-value` / `parse-number-value` after key windows; still interned strings) (Friend-MachineD g20-jr-open-slice x3; jr pairwise +105/+5/+15 µs all worse; load mixed; FP EQUAL; revert).
+- Ban: `try-parse-path-offset-limit-object` / ordered path·offset·limit fast path after args key windows (n=10 jr mom −4.4 µs noise; ordered-only jr +79 µs; FP EQUAL; revert).
+- Ban: `classify-arg-key` u32 dispatch in generic args loop (n=5 jr +7 µs load +47 µs; revert).
+- Ban: consume-line `{` blank-skip sibling of ordered-args knife (bundled with path-offset-limit object; revert).
