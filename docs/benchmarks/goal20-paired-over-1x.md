@@ -1455,3 +1455,5 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure22`.
 | mistral | 1653.1 | 2966.8 | **0.56× (met)** |
 
 Host swing vs remesure21 (load met / journal open). Still one named leftover open. G.17 missing.
+- Ban: assistant-tail metadata-prefix bridge after content (`,"api":…`); g20-load-slice n=10 load +15 µs; revert.
+- Ban: journal `decode-escaped` ASCII simple-escape path (jr mom +69 µs / load worse; revert).
