@@ -225,7 +225,8 @@ completed assistant message."))
   (block-indices (make-hash-table) :type hash-table)
   (partial-json (make-hash-table) :type hash-table)
   (terminal-p nil :type boolean)
-  (current-block-index nil :type (or null (integer 0 *))))
+  (current-block-index nil :type (or null (integer 0 *)))
+  (json-scratch nil :type (or null json-parse-scratch)))
 
 (defun nappend-string (buffer chunk)
   "Append CHUNK onto BUFFER in amortized linear time.

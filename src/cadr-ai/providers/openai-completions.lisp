@@ -799,13 +799,20 @@
                           :tool-call block))))))
      (provider-stream-state-block-indices state))))
 
+(defun provider-stream-json-scratch (state)
+  (or (provider-stream-state-json-scratch state)
+      (setf (provider-stream-state-json-scratch state)
+            (make-json-parse-scratch))))
+
 (defmethod reduce-provider-sse-event
     ((provider openai-completions-provider) state event emit)
   (declare (ignore provider))
   (let ((data (sse-event-data event))
         (message (provider-stream-state-message state)))
     (unless (string= data "[DONE]")
-      (let* ((payload (parse-json data))
+      (let* ((payload
+               (parse-json-scratch
+                data (provider-stream-json-scratch state)))
              (choice (chat-choice payload)))
         (when (non-empty-string-p (json-get payload "id"))
           (setf (assistant-message-response-id message)

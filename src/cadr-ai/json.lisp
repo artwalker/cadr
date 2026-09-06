@@ -350,8 +350,73 @@
         (10 (when (val= "toolResult") "toolResult"))
         (18 (when (val= "openai-completions") "openai-completions"))))))
 
+(defstruct (json-parse-scratch
+             (:constructor %make-json-parse-scratch))
+  (hash-index 0 :type fixnum)
+  (array-index 0 :type fixnum)
+  (hashes #() :type simple-vector)
+  (arrays #() :type simple-vector))
+
+(defun make-json-parse-scratch (&key (hash-count 12) (array-count 4))
+  (%make-json-parse-scratch
+   :hashes
+   (coerce
+    (loop for i from 0 below hash-count
+          collect (make-hash-table :test #'equal :size 8))
+    'simple-vector)
+   :arrays
+   (coerce
+    (loop for i from 0 below array-count
+          collect
+          (make-array 8
+                      :adjustable t
+                      :fill-pointer 0
+                      :element-type t))
+    'simple-vector)))
+
+(defun reset-json-parse-scratch (scratch)
+  (setf (json-parse-scratch-hash-index scratch) 0
+        (json-parse-scratch-array-index scratch) 0))
+
+(defun json-scratch-alloc-hash (scratch &optional (size 8))
+  (let ((idx (json-parse-scratch-hash-index scratch))
+        (hashes (json-parse-scratch-hashes scratch)))
+    (when (< idx (length hashes))
+      (let ((object (aref hashes idx)))
+        (clrhash object)
+        (setf (json-parse-scratch-hash-index scratch) (1+ idx))
+        (return-from json-scratch-alloc-hash object))))
+  (make-hash-table :test #'equal :size size))
+
+(defun json-scratch-finish-array (scratch items)
+  (let ((count (length items)))
+    (when (zerop count)
+      (return-from json-scratch-finish-array #()))
+    (let ((idx (json-parse-scratch-array-index scratch))
+          (arrays (json-parse-scratch-arrays scratch)))
+      (when (< idx (length arrays))
+        (let ((vec (aref arrays idx)))
+          (when (< (array-dimension vec 0) count)
+            (adjust-array
+             vec (max count (* 2 (array-dimension vec 0)))))
+          (loop for i from 0 below count
+                for item in items
+                do (setf (aref vec i) item))
+          (setf (fill-pointer vec) count)
+          (setf (json-parse-scratch-array-index scratch) (1+ idx))
+          (return-from json-scratch-finish-array vec)))))
+  (coerce (nreverse items) 'vector))
+
+(defun parse-json-scratch (source scratch &optional (start 0) end)
+  ;; Reuse pre-allocated EQUAL hashes and vectors across parses.
+  ;; Caller must not retain values across the next reset.  OpenAI
+  ;; completions SSE chunks only.  Not parse-json-object-fields.
+  ;; Not data-octets.  Not parse-json-octets.
+  (reset-json-parse-scratch scratch)
+  (parse-json-source source nil nil start end scratch))
+
 (defun parse-json-source
-    (source &optional object-visitor nest (start 0) end)
+    (source &optional object-visitor nest (start 0) end scratch)
   ;; Cost center for session_load / journal_read
   ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
   ;; general STRING and MEMBER whitespace checks show up as generic
@@ -558,6 +623,10 @@
                 (format nil "Expected ~A" literal)))
              (setf position end)
              value))
+         (finish-array (items)
+           (if scratch
+               (json-scratch-finish-array scratch items)
+               (coerce (nreverse items) 'vector)))
          (parse-array (depth)
            (expect #\[)
            (skip-space)
@@ -570,7 +639,9 @@
              (case (peek)
                (#\]
                 (take)
-                (vector first))
+                (if scratch
+                    (json-scratch-finish-array scratch (list first))
+                    (vector first)))
                (#\,
                 (take)
                 (skip-space)
@@ -582,10 +653,7 @@
                       (#\, (take) (skip-space))
                       (#\]
                        (take)
-                       (return
-                         (coerce
-                          (nreverse items)
-                          'vector)))
+                       (return (finish-array items)))
                       (otherwise
                        (fail "Expected comma or ]"))))))
                (otherwise
@@ -636,7 +704,9 @@
                       (char= (peek) #\}))
              (take)
              (return-from parse-object
-               (make-hash-table :test #'equal)))
+               (if scratch
+                   (json-scratch-alloc-hash scratch 0)
+                   (make-hash-table :test #'equal))))
            (let ((pairs (make-array 16))
                  (count 0)
                  (spilled nil))
@@ -661,7 +731,9 @@
                       (incf count))
                      (t
                       (let ((object
-                              (make-hash-table :test #'equal :size 16)))
+                              (if scratch
+                                  (json-scratch-alloc-hash scratch 16)
+                                  (make-hash-table :test #'equal :size 16))))
                         (loop for index from 0 below count
                               do (setf
                                   (gethash
@@ -678,9 +750,11 @@
                   (return
                     (or spilled
                         (let ((object
-                                (make-hash-table
-                                 :test #'equal
-                                 :size count)))
+                                (if scratch
+                                    (json-scratch-alloc-hash scratch count)
+                                    (make-hash-table
+                                     :test #'equal
+                                     :size count))))
                           (loop for index from 0 below count
                                 do (setf
                                     (gethash
