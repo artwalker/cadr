@@ -644,6 +644,9 @@
                           (ash n 32)))
                  (t 0))))
            (parse-arguments-object ()
+             ;; Keys from the octet window. Closed path/offset/limit
+             ;; literals skip copy-unescaped. Not three-pair compact.
+             ;; Not intern-table grow.
              (expect-code 123)
              (skip-space)
              (when (eql (peek-code) 125)
@@ -653,11 +656,30 @@
                (loop
                  (unless (eql (peek-code) 34)
                    (fail "Object key must be a string"))
-                 (let ((key (parse-string-value)))
+                 (multiple-value-bind (key-start key-end)
+                     (scan-key)
                    (skip-space)
                    (expect-code 58)
                    (skip-space)
-                   (setf pairs (list* key (parse-generic) pairs)))
+                   (let* ((n (- key-end key-start))
+                          (key
+                            (cond
+                              ((and (= n 4)
+                                    (key= key-start key-end "path"))
+                               "path")
+                              ((and (= n 6)
+                                    (key= key-start key-end "offset"))
+                               "offset")
+                              ((and (= n 5)
+                                    (key= key-start key-end "limit"))
+                               "limit")
+                              (t
+                               (or
+                                (cadr-ai::json-interned-ascii-value-octets
+                                 octets key-start key-end)
+                                (cadr-ai::copy-unescaped-json-octets
+                                 octets key-start key-end))))))
+                     (setf pairs (list* key (parse-generic) pairs))))
                  (skip-space)
                  (let ((code (peek-code)))
                    (cond

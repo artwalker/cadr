@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `parse-arguments-object` takes object keys from the octet
+  window and uses closed `path`/`offset`/`limit` literals. Not
+  three-pair compact. Friend-MachineD g20-jr-slice n=10 interleaved
+  journal_read mom 1428.8→1333.4 µs, session_load mom 1557.9→1479.1 µs.
+  FP_BYTES 38072 EQUAL. G.17 stays `missing`. Not Goal 20 complete.
+
 - Goal 20: `try-compact-message` assistant toolCall-only envelope
   inline single toolCall + try-compact-assistant-tail. Friend-MachineD
   g20-load-slice session_load mom 1818.3→1575.3 µs. FP EQUAL. G.17 stays

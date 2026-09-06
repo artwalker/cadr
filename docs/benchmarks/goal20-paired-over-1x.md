@@ -1457,3 +1457,8 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure22`.
 Host swing vs remesure21 (load met / journal open). Still one named leftover open. G.17 missing.
 - Ban: assistant-tail metadata-prefix bridge after content (`,"api":…`); g20-load-slice n=10 load +15 µs; revert.
 - Ban: journal `decode-escaped` ASCII simple-escape path (jr mom +69 µs / load worse; revert).
+
+### Invent keep (Friend-MachineD g20-jr-slice n=10 interleaved; remesure21 journal axis)
+
+- Keep: `parse-arguments-object` key windows with closed `path`/`offset`/`limit` literals. Not three-pair compact. Not intern-table grow. Not decode-escaped simple-escape. FP_BYTES 38072 EQUAL. journal_read mom **1428.8→1333.4 µs** (−95 µs, 6.7%). session_load mom 1557.9→1479.1 µs (not worse). G.17 missing.
+- Small-array and toolCall envelope keeps untouched.
