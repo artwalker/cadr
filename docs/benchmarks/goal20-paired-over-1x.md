@@ -1421,3 +1421,8 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure20`.
 | mistral | 1574.2 | 2177.6 | **0.72× (met)** |
 
 Still open load+journal. Drain continues.
+
+### Invent keep (Friend-MachineD g20-load-slice n=5×5; knife `10039b20b`; tip `8f5993958`)
+
+- Keep: `8f5993958` `try-compact-message` assistant toolCall-only envelope — structural inline single `toolCall` block + `try-compact-assistant-tail`. Not thinking-text inline. Not generic role+content gate. Not typed toolUse emit. session_load mom **1818.3→1575.3 µs** (−243 µs, 13.4%). journal_read mom **1699.7→1492.0 µs** (−208 µs). FP_BYTES 37832 EQUAL. G.17 missing.
+- Reverted this session: assistant role+content gate (noise); thinking-text inline in try-compact-message (aggregate regress).
