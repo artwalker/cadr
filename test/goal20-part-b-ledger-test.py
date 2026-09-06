@@ -6834,6 +6834,62 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertNotIn("gru_ascii", paired.observed_table(report, "cli_dispatch"))
 
+    def test_context_message_roles_match_without_folding_synthetic_roles(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertFalse(hasattr(paired, "PI_ROLE_FOLD"))
+        self.assertFalse(hasattr(paired, "fold_pi_roles"))
+        roles = {
+            "assistant": 150,
+            "compactionSummary": 1,
+            "custom": 5,
+            "toolResult": 75,
+            "user": 74,
+        }
+        session_observed = {
+            "entry_count": 1,
+            "leaf_id": "leaf",
+            "session_id": "sid",
+            "session_name": None,
+            "context_entry_count": 305,
+            "context_message_count": 305,
+            "context_thinking_level": "off",
+            "context_model": None,
+            "context_message_roles": roles,
+        }
+        journal_observed = {
+            "read_file_entry_count": 1,
+            "append_entry_count": 128,
+            "session_entry_count": 128,
+            "written_file_entry_count": 128,
+            "journal_cwd": "/goal20-paired-paths",
+            "written_bytes": 50000,
+            "written_body_bytes": 50000,
+        }
+
+        def report(role_bag: dict) -> dict:
+            observed = dict(session_observed)
+            observed["context_message_roles"] = role_bag
+            return {
+                "parameters": {"floor_slice": True},
+                "metrics": {
+                    "session_pipeline": {"observed": observed},
+                    "storage_journal": {"observed": journal_observed},
+                },
+            }
+
+        failures: list[str] = []
+        paired.check_observed(report(roles), report(roles), failures)
+        self.assertEqual(failures, [])
+        folded = dict(roles)
+        folded["user"] = folded["user"] + folded.pop("custom") + folded.pop(
+            "compactionSummary"
+        )
+        failures = []
+        paired.check_observed(report(roles), report(folded), failures)
+        self.assertTrue(
+            any("context message roles differ" in item for item in failures)
+        )
+
     def test_only_enforce_fails_when_named_slot_is_not_timed(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         cadr = fake_cadr(quick=False)
