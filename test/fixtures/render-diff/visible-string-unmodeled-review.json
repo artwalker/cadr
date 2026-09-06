@@ -23,47 +23,47 @@
       "reason": "showLlamaUi's callback body holds the presentation strings; those sites are modeled under extensions/llama and exercised by the llama UI construction drives."
     },
     {
-      "site": "packages/coding-agent/src/main.ts:551",
+      "site": "packages/coding-agent/src/main.ts:552",
       "verdict": "covered-by-producer",
       "reason": "The prompt text is produced by formatMissingSessionCwdPrompt in core/session-cwd.ts, which is modeled; this call site contributes no fixed text of its own beyond the selector options constructed inline and covered at their own lines."
     },
     {
-      "site": "packages/coding-agent/src/main.ts:606",
+      "site": "packages/coding-agent/src/main.ts:607",
       "verdict": "accepted-duplicate-of-modeled-text",
       "reason": "The CLI-argument diagnostics printer emits the same 'Error: '/'Warning: ' prefixes as the modeled reportDiagnostics site at main.ts:97; the byte parity of both is locked by the cli-error-sweep scenario."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2748",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2734",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showExtensionNotify; the matched quotes are the 'info'|'warning'|'error' type literals."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:3073",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:3059",
       "verdict": "control-token-not-presentation",
       "reason": "The 'logout' literal is a mode token selecting the selector variant; the presented strings live inside showOAuthSelector's modeled construction."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5528",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5545",
       "verdict": "covered-by-nested-site",
       "reason": "showSelector callback; the presentation strings are the nested selector/component constructions on following lines, which are modeled."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5553",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5570",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showLoginProviderSelector; matched quotes belong to the parameter type annotation."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5566",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5583",
       "verdict": "covered-by-nested-site",
       "reason": "showSelector callback; the presentation strings are the nested selector/component constructions on following lines, which are modeled."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5596",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5613",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showOAuthSelector; matched quotes belong to the mode parameter type annotation."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5807",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5824",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showAuthSelect; no presentation literal on the declaration line."
     },
@@ -73,7 +73,7 @@
       "reason": "The only fixed text is the newline joining the Update note's rendered markdown lines; the block is captured by the Update note construction drive."
     },
     {
-      "site": "packages/tui/src/tui-alt-screen.ts:465",
+      "site": "packages/tui/src/tui-alt-screen.ts:515",
       "verdict": "accepted-gap",
       "reason": "New in v0.85.1 (alt-screen search overlay). The showOverlay call's only fixed text is the geometry option literals ('top-right', '40%'); the overlay's presentation strings (' Find transcript', the match-count status) are runtime-composed inside AltScreenSearchComponent.render in alt-screen-search.ts, a shape the extractor does not traverse. cadr prints the identical overlay literals (test/cadr-tui/alt-screen-test.lisp:799)."
     }
