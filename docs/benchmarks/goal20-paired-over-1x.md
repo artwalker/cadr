@@ -1305,3 +1305,16 @@ Still open: session_load, pi_messages.
 - Ban: migration-local fixture provider/model literals (json-intern sibling; no clear journal win).
 - Ban: tool-call-id `call_e#####` + toolName `"read"` fixed scan (regress).
 
+### Remesure13 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `e1dd5ed99`/`28723e220` after json-intern revert)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 2160.2 | 1984.2 | **1.09× (open)** |
+| journal_read | 2185.7 | 1752.1 | **1.25× (open)** |
+| pi_messages | 957.0 | 1165.4 | **0.82× (met)** |
+| mistral | 2025.6 | 2466.9 | **0.82× (met)** |
+
+Still open: session_load, journal_read.
+
