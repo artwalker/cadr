@@ -1274,6 +1274,47 @@
                                                      (eq t is-error)
                                                      :timestamp timestamp))
                                                   (rewind))))))))))))
+                   ((take-prefix
+                     "assistant\",\"content\":[{\"type\":\"toolCall\",\"id\":")
+                    (let ((id (parse-string-value)))
+                      (if (not (take-prefix ",\"name\":"))
+                          (rewind)
+                          (let ((name (parse-string-value)))
+                            (if (not (take-prefix ",\"arguments\":"))
+                                (rewind)
+                                (if (not (eql (peek-code) 123))
+                                    (rewind)
+                                    (let ((arguments (parse-arguments-object)))
+                                      (if (not (eql (peek-code) 125))
+                                          (rewind)
+                                          (progn
+                                            (take-code)
+                                            (if (not (take-prefix "],\"api\":"))
+                                                (rewind)
+                                                (let ((bag
+                                                        (make-session-json-message)))
+                                                  (setf (session-json-message-role
+                                                         bag)
+                                                        "assistant"
+                                                        (session-json-message-content
+                                                         bag)
+                                                        (list
+                                                         (cadr-ai:make-tool-call
+                                                          :id (or id "")
+                                                          :name (or name "")
+                                                          :arguments
+                                                          (cond
+                                                            ((cadr-ai::json-object-pairs-p
+                                                              arguments)
+                                                             arguments)
+                                                            ((hash-table-p
+                                                              arguments)
+                                                             arguments)
+                                                            (t
+                                                             '(:json-object))))))
+                                                  (or (try-compact-assistant-tail
+                                                       bag)
+                                                      (rewind)))))))))))))
                    (t
                     (rewind))))))
            (try-compact-assistant-tail (bag)
