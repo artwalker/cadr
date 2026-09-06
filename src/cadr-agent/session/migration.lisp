@@ -1742,19 +1742,13 @@
 
 (defun parse-session-line
     (line path line-number &key raw-hash-p (start 0) end octet-p)
-  (handler-case
-      (cond
-        (raw-hash-p
-         (if octet-p
-             (cadr-ai::parse-json-octets line nil nil start end)
-             (cadr-ai::parse-json-source line nil nil start end)))
-        (t
-         (parse-session-record line start end octet-p)))
-    (error (cause)
-      (session-failure
-       path line-number
-       "Invalid session JSON at line ~D: ~A"
-       line-number cause))))
+  (cond
+    (raw-hash-p
+     (if octet-p
+         (cadr-ai::parse-json-octets line nil nil start end)
+         (cadr-ai::parse-json-source line nil nil start end)))
+    (t
+     (parse-session-record line start end octet-p))))
 
 (defun session-header-ref (object key &optional default)
   (if (session-file-header-p object)
@@ -1887,7 +1881,12 @@
            (incf line-number)
            (unless (blank-octets-p octets start end)
              (let ((object
-                     (handler-case
+                     (block consume-parse
+                       (handler-bind
+                           ((error
+                             #'(lambda (cause)
+                                 (declare (ignore cause))
+                                 (return-from consume-parse nil))))
                          (if (null header)
                              (parse-session-header-octets
                               octets start end)
@@ -1896,9 +1895,7 @@
                               :raw-hash-p raw-hash-p
                               :start start
                               :end end
-                              :octet-p t))
-                       (session-error () nil)
-                       (cadr-ai::json-parse-error () nil))))
+                              :octet-p t))))))
                (when object
                  (unless header
                    (setf header object)
