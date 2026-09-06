@@ -1394,6 +1394,7 @@ Host swing widened load+journal. Invent continues both axes. G.17 missing.
 - Ban: `parse-content-three-block-array` (pairing fixture content arrays only length 1/2; zero 3-object hits; slice “wins” are host noise; revert).
 - Ban / withdrawn: assistant role+content gate (`0f209dce6`/`bc29edb2e`, reverts `579b08bd2`/`43e61a905`). Early slice moms looked like a keep; reconfirm on tip `329ceccc6` load mom 1765.7→1818.9 (+53 µs regress), jr −56 µs. Fixture has no three-block arrays. Do not re-land without fresh clear load win. G.17 missing.
 - Ban: `try-compact-message` toolResult known escaped-text compact-prefix beyond type/text envelope (slice noise; quiet rounds look faster, hot rounds hotter; revert).
+- Ban: `try-compact-three-pair-object` on journal `parse-arguments-object` (g20-jr-slice n=5 FP EQUAL; load +7.1%, journal +2.6%; revert).
 
 ### Remesure19 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; tip `3fa0b071a`)
 
