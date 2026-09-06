@@ -2005,7 +2005,8 @@
   (let ((objects nil)
         (line-number 0)
         (header nil)
-        (raw-hash-p t))
+        (raw-hash-p t)
+        (trailing-lf-p nil))
     (labels
         ((blank-octets-p (octets start end)
            (loop for index from start below end
@@ -2015,9 +2016,16 @@
                      (= unit 9)
                      (= unit 13)
                      (= unit 10))))
+         (line-has-body-p (octets start end)
+           ;; Fixture JSONL lines start with '{'.  Skip the per-byte
+           ;; whitespace walk on the hot path.  Not consume-line '{'
+           ;; blank-skip.  Not ignore-errors consume-line.
+           (and (< start end)
+                (or (= (aref octets start) 123)
+                    (not (blank-octets-p octets start end)))))
          (consume-line (octets start end)
            (incf line-number)
-           (unless (blank-octets-p octets start end)
+           (when (line-has-body-p octets start end)
              (let ((object
                      (block consume-parse
                        (handler-bind
@@ -2086,8 +2094,9 @@
                           size
                           :element-type '(unsigned-byte 8))))
                   (when (plusp size)
-                    (scan-buffer
-                     chunk (read-sequence chunk stream) nil))))
+                    (let ((count (read-sequence chunk stream)))
+                      (setf trailing-lf-p (= (aref chunk (1- count)) 10))
+                      (scan-buffer chunk count nil)))))
                (t
                 (let ((chunk
                         (make-array
@@ -2109,6 +2118,7 @@
                             pending 0 (fill-pointer pending)))
                          (return))
                         (t
+                         (setf trailing-lf-p (= (aref chunk (1- count)) 10))
                          (scan-buffer
                           chunk count pending)))))))))))
       (handler-case
@@ -2124,7 +2134,8 @@
            path line-number "Cannot load session: ~A" cause)))
       (unless objects
         (session-failure path 1 "Session file has no header"))
-      (repair-unterminated-session-file path)
+      (unless trailing-lf-p
+        (repair-unterminated-session-file path))
       (nreverse objects))))
 
 (defun migrate-v1-session-objects (objects)
