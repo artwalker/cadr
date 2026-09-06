@@ -1475,3 +1475,4 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure23`.
 | mistral | 1569.6 | 1639.5 | **0.96× (met)** |
 
 Load met. Journal still open (~1.06×). G.17 missing.
+- Ban: assistant-role continue into `parse-message-fields` after `{"role":"` (no rewind; load/journal inside noise; revert).
