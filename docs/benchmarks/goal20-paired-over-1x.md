@@ -1211,3 +1211,11 @@ Gate PASS. Roles EQUAL. Journal body bytes still +3.2%.
 
 Remesure4 discarded as host noise (session_load 2.27× not reproduced; journal A/B showed return-from does not regress load).
 
+### Remesure6 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `be3cb3ed0` before put-message-field)
+
+Gate PASS. Roles EQUAL. session_load **2031.6 / 1987.8 = 1.02×** (remesure5 1.54× discarded as noise). json-intern / thinking-text / toolCall compact invents reverted.
+
+### Invent keep after remesure6
+
+- `99964afba` `put-message-field` flat `(u32,n)` dispatch (journal_read −2.4%, session_load −3.8% on g20-jr-slice). Remesure7 pending.
+
