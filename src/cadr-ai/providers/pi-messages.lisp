@@ -135,9 +135,56 @@
 (defun pi-key= (key literal)
   (or (eq key literal) (string= key literal)))
 
+(defun pi-extract-text-delta (source)
+  ;; pi_messages SSE volume shape; layout extract + unescape; not visitor.
+  (declare (type string source) (optimize (speed 3) (safety 1)))
+  (let ((slen (length source)))
+    (declare (type fixnum slen))
+    (unless (and (>= slen 38)
+                 (string= source "{\"type\":\"text_delta\"" :end1 20))
+      (return-from pi-extract-text-delta nil))
+    (let ((index 20))
+      (declare (type fixnum index))
+      (unless (and (< index slen) (char= (schar source index) #\,))
+        (return-from pi-extract-text-delta nil))
+      (incf index)
+      (unless (and (<= (+ index 15) slen)
+                   (string= source "\"contentIndex\":"
+                            :start1 index :end1 (+ index 15)))
+        (return-from pi-extract-text-delta nil))
+      (incf index 15)
+      (loop while (and (< index slen) (digit-char-p (schar source index)))
+            do (incf index))
+      (unless (and (< index slen) (char= (schar source index) #\,))
+        (return-from pi-extract-text-delta nil))
+      (incf index)
+      (unless (and (<= (+ index 9) slen)
+                   (string= source "\"delta\":\""
+                            :start1 index :end1 (+ index 9)))
+        (return-from pi-extract-text-delta nil))
+      (incf index 9)
+      (let ((start index) (escaped-p nil) (base-p t))
+        (declare (type fixnum start))
+        (loop while (< index slen)
+              for ch of-type character = (schar source index)
+              do (cond
+                   (escaped-p (setf escaped-p nil) (incf index))
+                   ((char= ch #\\) (setf escaped-p t) (incf index))
+                   ((char= ch #\")
+                    (return-from pi-extract-text-delta
+                      (copy-unescaped-json-string source start index base-p)))
+                   (t (when (and base-p (> (char-code ch) 127)) (setf base-p nil))
+                      (incf index))))
+        nil))))
+
 (defmethod reduce-provider-sse-event
     ((provider pi-messages-provider) state event emit)
   (declare (ignore provider))
+  (let ((data (sse-event-data event)))
+    (let ((fast-delta (pi-extract-text-delta data)))
+      (when fast-delta
+        (append-text-delta state fast-delta emit)
+        (return-from reduce-provider-sse-event nil)))
   (let ((type nil)
         (delta nil)
         (index nil)
@@ -173,7 +220,7 @@
                       usage-cache-write (json-get value "cacheWrite")
                       usage-reasoning (json-get value "reasoning")
                       usage-total (json-get value "totalTokens"))))))
-      (parse-json-object-fields (sse-event-data event) #'put-field))
+      (parse-json-object-fields data #'put-field))
     (cond
       ((string= type "text_start")
        (start-content-block state :text emit))
@@ -269,7 +316,7 @@
             usage-cache-read
             usage-cache-write
             usage-reasoning
-            usage-total)))))))
+            usage-total))))))))
 
 (defmethod parse-complete-response
     ((provider pi-messages-provider) model response)
