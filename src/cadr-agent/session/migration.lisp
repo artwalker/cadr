@@ -1074,7 +1074,8 @@
                        (= (aref octets key-start) 97)
                        (= (aref octets (+ key-start 1)) 112)
                        (= (aref octets (+ key-start 2)) 105))
-                  (keep-extra bag :api (parse-string-value)))
+                  (setf (session-json-message-api bag)
+                        (keyword-from-json (parse-string-value))))
                  ((>= n 4)
                   (let ((w (%octet-u32-le octets key-start)))
                     (cond
@@ -1123,7 +1124,8 @@
                       ((and (= w #x636e6163) (= n 9))
                        (keep-extra bag :cancelled (parse-generic)))
                       ((and (= w #x766f7270) (= n 8))
-                       (keep-extra bag :provider (parse-string-value)))
+                       (setf (session-json-message-provider bag)
+                             (keyword-from-json (parse-string-value))))
                       ((and (= w #x766f7270) (= n 21))
                        (keep-extra bag :provider-thinking-level
                                    (parse-string-value)))
@@ -1131,7 +1133,8 @@
                        (keep-extra bag :provider-thinking-level
                                    (parse-string-value)))
                       ((and (= w #x65646f6d) (= n 5))
-                       (keep-extra bag :model (parse-string-value)))
+                       (setf (session-json-message-model bag)
+                             (parse-string-value)))
                       ((and (= w #x67617375) (= n 5))
                        (skip-space)
                        (setf (session-json-message-usage bag)
@@ -1139,11 +1142,11 @@
                                  (parse-usage)
                                  (parse-generic))))
                       ((and (= w #x706f7473) (= n 10))
-                       (keep-extra bag :stop-reason
-                                   (parse-string-value)))
+                       (setf (session-json-message-stop-reason bag)
+                             (keyword-from-json (parse-string-value))))
                       ((and (= w #x706f7473) (= n 11))
-                       (keep-extra bag :stop-reason
-                                   (parse-string-value)))
+                       (setf (session-json-message-stop-reason bag)
+                             (keyword-from-json (parse-string-value))))
                       ((and (= w #x6f727265) (= n 12))
                        (keep-extra bag :error-message
                                    (parse-string-value)))

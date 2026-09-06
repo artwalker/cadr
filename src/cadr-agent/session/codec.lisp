@@ -36,6 +36,12 @@
   content
   timestamp
   usage
+  ;; Assistant metadata parsed once at put-message-field; not extra
+  ;; alist. message-from-json reads slots. Not fixture-prefix compact.
+  api
+  provider
+  model
+  stop-reason
   extra)
 
 (defstruct session-json-block
@@ -555,15 +561,22 @@
           ((string= type "assistant")
            (cadr-ai:make-assistant-message
             :content (content-blocks-from-json content)
-            :api (keyword-from-json (getf extra :api))
-            :provider (keyword-from-json (getf extra :provider))
-            :model (getf extra :model)
+            :api
+            (or (session-json-message-api object)
+                (keyword-from-json (getf extra :api)))
+            :provider
+            (or (session-json-message-provider object)
+                (keyword-from-json (getf extra :provider)))
+            :model
+            (or (session-json-message-model object)
+                (getf extra :model))
             :response-id (getf extra :response-id)
             :usage
             (or (session-json-message-usage object)
                 (cadr-ai:make-usage))
             :stop-reason
-            (keyword-from-json (getf extra :stop-reason))
+            (or (session-json-message-stop-reason object)
+                (keyword-from-json (getf extra :stop-reason)))
             :error-message (getf extra :error-message)
             :raw-stop-reason (getf extra :raw-stop-reason)
             :diagnostics
