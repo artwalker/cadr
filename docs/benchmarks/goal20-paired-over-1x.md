@@ -1262,3 +1262,14 @@ Gate PASS. Roles EQUAL.
 | pi_messages | 1102.9 | 979.5 | **1.13× (open)** |
 | mistral | 2478.2 | 2398.3 | **1.03× (open)** |
 
+### Remesure10 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `6446cef8e` try-compact-usage + pi text_delta extract)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1766.2 | 1660.5 | **1.06× (open)** |
+| journal_read | 1332.6 | 1671.6 | **0.80× (met)** |
+| pi_messages | 689.2 | 1318.0 | **0.52× (met)** |
+| mistral | 1588.7 | 2196.2 | **0.72× (met)** |
+
