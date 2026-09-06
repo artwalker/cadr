@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `copy-ascii-octets-or-nil` one-pass ASCII path for
+  `copy-utf8-octets` / `copy-unescaped-json-octets`. Friend-MachineD
+  mistral slice median-of-medians ~3825→3439 µs. OBS EQUAL.
+  G.17 stays `missing`. Not Goal 20 complete.
+
 - Goal 20 invent: `copy-utf8-octets` and JSON ASCII windows copy
   in one pass. High-bit words abort into the mixed path, so the
   extra ASCII pre-scan is gone. Friend-MachineD mistral slice
