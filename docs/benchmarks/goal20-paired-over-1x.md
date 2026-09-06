@@ -1219,3 +1219,19 @@ Gate PASS. Roles EQUAL. session_load **2031.6 / 1987.8 = 1.02×** (remesure5 1.5
 
 - `99964afba` `put-message-field` flat `(u32,n)` dispatch (journal_read −2.4%, session_load −3.8% on g20-jr-slice). Remesure7 pending.
 
+### Remesure7 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `99964afba`/`e7a8da8d0` + put-message-field)
+
+Gate PASS. Roles EQUAL. Journal body +3.2%.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1892.1 | 2187.6 | **0.86× (met)** |
+| journal_read | 2156.0 | 1580.2 | **1.36× (open)** |
+| pi_messages | 1083.9 | 1531.2 | **0.71× (met)** |
+| mistral | 2645.8 | 1868.4 | **1.42× (open)** |
+
+Host variance note: mistral met at remesure5 (0.98×) then 1.42× here; session_load met again. Named open leftovers this booking: journal_read, mistral.
+
+- Ban: `message-entry-prefix` rewindable JSONL compact (miss-tax; revert).
+- Ban: mistral content-delta schema extract + `call-next-method` (re-tried; worse; revert).
+
