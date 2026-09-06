@@ -1198,3 +1198,16 @@ Mistral 1.24→1.47 vs remesure2: host/suite variance; superseded by remesure4/5
 - Ban: mistral chat-chunk wire-layout walker aborted (empty-string bugs; no clean measure).
 - Ban: journal ub32 splat re-try / delta-content marker already noted above.
 
+### Remesure5 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `08529e100`+`ae46630b3` journal return-from + parse-json-scratch + ascii)
+
+Gate PASS. Roles EQUAL. Journal body bytes still +3.2%.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 3054.3 | 1980.5 | **1.54× (open)** |
+| journal_read | 2329.2 | 2127.1 | **1.09× (open)** |
+| pi_messages | 1017.1 | 1085.8 | **0.94× (met)** |
+| mistral | 2108.1 | 2160.5 | **0.98× (met)** |
+
+Remesure4 discarded as host noise (session_load 2.27× not reproduced; journal A/B showed return-from does not regress load).
+
