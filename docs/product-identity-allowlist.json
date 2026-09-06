@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1418,
+  "expected_findings": 1420,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -7327,6 +7327,22 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "            \"pi\": row.get(\"piScreenSha256\"),",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            or not screens[dim].get(\"pi\")",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            or screens[dim].get(\"pi\") != screens[dim].get(\"cadr\")",
       "occurrences": 1,
       "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     },
