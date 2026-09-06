@@ -918,54 +918,60 @@
                             ,(char-code (schar literal index)))))))
       form))
 
-(defun copy-unescaped-json-octets (octets start end)
-  ;; UTF-8 only on the value window, not the whole JSONL line.
-  ;; ASCII: ub32 chunks written as four schars (V8 memcpy of
-  ;; the Latin-1 window). Not FFI. Not intern.
+(defun copy-ascii-octets-or-nil (octets start end)
+  ;; One-pass ASCII copy. NIL if any high bit, so the caller
+  ;; can keep its mixed UTF-8 path. Not FFI. Not intern.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
            (optimize (speed 3) (safety 1)))
-  (let ((ascii-p t))
-    (loop for index from start below end
-          when (>= (aref octets index) 128)
-            do (setf ascii-p nil)
-               (return))
-    (if (not ascii-p)
-        (sb-ext:octets-to-string
-         octets
-         :external-format :utf-8
-         :start start
-         :end end)
-        (let* ((count (- end start))
-               (out (make-string count :element-type 'base-char)))
-          (declare (type fixnum count)
-                   (type simple-base-string out))
-          (let ((src start)
-                (dst 0)
-                (left count))
-            (declare (type fixnum src dst left))
-            (loop while (>= left 4)
-                  do
-                  (let ((word (octet-u32-le octets src)))
-                    (setf (schar out dst)
-                          (code-char (ldb (byte 8 0) word)))
-                    (setf (schar out (the fixnum (+ dst 1)))
-                          (code-char (ldb (byte 8 8) word)))
-                    (setf (schar out (the fixnum (+ dst 2)))
-                          (code-char (ldb (byte 8 16) word)))
-                    (setf (schar out (the fixnum (+ dst 3)))
-                          (code-char (ldb (byte 8 24) word))))
-                  (incf src 4)
-                  (incf dst 4)
-                  (decf left 4))
-            (loop while (> left 0)
-                  do
-                  (setf (schar out dst)
-                        (code-char (aref octets src)))
-                  (incf src)
-                  (incf dst)
-                  (decf left))
-            out)))))
+  (let* ((count (the fixnum (- end start)))
+         (out (make-string count :element-type 'base-char))
+         (src start)
+         (dst 0)
+         (left count))
+    (declare (type fixnum count src dst left)
+             (type simple-base-string out))
+    (loop while (>= left 4)
+          do
+          (let ((word (octet-u32-le octets src)))
+            (when (logtest word #x80808080)
+              (return-from copy-ascii-octets-or-nil nil))
+            (setf (schar out dst)
+                  (code-char (ldb (byte 8 0) word)))
+            (setf (schar out (the fixnum (+ dst 1)))
+                  (code-char (ldb (byte 8 8) word)))
+            (setf (schar out (the fixnum (+ dst 2)))
+                  (code-char (ldb (byte 8 16) word)))
+            (setf (schar out (the fixnum (+ dst 3)))
+                  (code-char (ldb (byte 8 24) word))))
+          (incf src 4)
+          (incf dst 4)
+          (decf left 4))
+    (loop while (> left 0)
+          do
+          (let ((b (aref octets src)))
+            (declare (type (unsigned-byte 8) b))
+            (when (>= b 128)
+              (return-from copy-ascii-octets-or-nil nil))
+            (setf (schar out dst) (code-char b))
+            (incf src)
+            (incf dst)
+            (decf left)))
+    out))
+
+(defun copy-unescaped-json-octets (octets start end)
+  ;; UTF-8 only on the value window, not the whole JSONL line.
+  ;; ASCII: one-pass ub32 copy. High bit uses octets-to-string.
+  ;; Not FFI. Not intern. Not parse-json-octets.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (or (copy-ascii-octets-or-nil octets start end)
+      (sb-ext:octets-to-string
+       octets
+       :external-format :utf-8
+       :start start
+       :end end)))
 
 (defun utf8-next-width (octets index end)
   ;; Bytes of the next well-formed UTF-8 scalar, or NIL.
@@ -1038,22 +1044,21 @@
          (logand (aref octets (the fixnum (+ index 3))) #x3f)))))))
 
 (defun copy-utf8-octets (octets start end)
-  ;; Whole-buffer / window decode. All-ASCII uses
-  ;; copy-unescaped-json-octets. Mixed: pre-size a character
+  ;; Whole-buffer / window decode. All-ASCII is one-pass
+  ;; copy-ascii-octets-or-nil. Mixed: pre-size a character
   ;; string, ub32-copy ASCII runs, decode non-ASCII scalars.
   ;; Invalid UTF-8 falls back to octets-to-string.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
            (optimize (speed 3) (safety 1)))
-  (let ((ascii-p t))
-    (loop for index from start below end
-          when (>= (aref octets index) 128)
-            do (setf ascii-p nil)
-               (return))
-    (when ascii-p
-      (return-from copy-utf8-octets
-        (copy-unescaped-json-octets octets start end)))
-    (let ((chars 0)
+  (or (copy-ascii-octets-or-nil octets start end)
+      (copy-utf8-octets-mixed octets start end)))
+
+(defun copy-utf8-octets-mixed (octets start end)
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (let ((chars 0)
           (index start)
           (ok t))
       (declare (type fixnum chars index))
@@ -1072,7 +1077,7 @@
                      (incf chars)
                      (incf index width))))))
       (unless ok
-        (return-from copy-utf8-octets
+        (return-from copy-utf8-octets-mixed
           (sb-ext:octets-to-string
            octets :external-format :utf-8 :start start :end end)))
       (let ((out (make-array chars :element-type 'character))
@@ -1116,7 +1121,7 @@
                           (utf8-decode-char octets src width))
                     (incf src width)
                     (incf dst))))
-        out))))
+        out)))
 
 (defun decode-escaped-json-octets (octets start end &optional buffer)
   ;; JSON string value window (between quotes).  Decode escapes
