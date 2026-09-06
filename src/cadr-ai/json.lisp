@@ -347,7 +347,10 @@
              ((val= "thinking") "thinking")
              ((val= "toolCall") "toolCall")))
         (9 (when (val= "assistant") "assistant"))
-        (10 (when (val= "toolResult") "toolResult"))
+        (10 (cond
+              ((val= "toolResult") "toolResult")
+              ((val= "goal20faux") "goal20faux")))
+        (15 (when (val= "goal20-paired-1") "goal20-paired-1"))
         (18 (when (val= "openai-completions") "openai-completions"))))))
 
 (defstruct (json-parse-scratch
@@ -1394,7 +1397,10 @@
              ((val= "thinking") "thinking")
              ((val= "toolCall") "toolCall")))
         (9 (when (val= "assistant") "assistant"))
-        (10 (when (val= "toolResult") "toolResult"))
+        (10 (cond
+              ((val= "toolResult") "toolResult")
+              ((val= "goal20faux") "goal20faux")))
+        (15 (when (val= "goal20-paired-1") "goal20-paired-1"))
         (18 (when (val= "openai-completions")
               "openai-completions"))))))
 
