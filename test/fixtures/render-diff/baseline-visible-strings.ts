@@ -96,6 +96,12 @@ const exactAssetRules = new Map<string, { kind: string; reason: string }>([
 	["packages/coding-agent/src/core/export-html/vendor/marked.min.js", {
 		kind: "excluded-third-party-html-export-asset", reason: "Vendored third-party browser script embedded only in exported HTML; the export-file gate owns its bytes and license assertions.",
 	}],
+	["packages/coding-agent/src/experimental/mini/README.md", {
+		kind: "excluded-documentation-asset", reason: "Developer-facing README under experimental/mini; not loaded by the interactive TUI presentation path.",
+	}],
+	["packages/coding-agent/src/experimental/services/README.md", {
+		kind: "excluded-documentation-asset", reason: "Developer-facing README under experimental/services; not loaded by the interactive TUI presentation path.",
+	}],
 ]);
 const slashCommandPropertyNames = new Set(["name", "description", "argumentHint"]);
 const callSinkContracts = new Map<string, SinkContract>([
