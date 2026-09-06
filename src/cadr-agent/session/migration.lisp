@@ -847,48 +847,39 @@
                            (t (fail "Expected comma or }"))))))
                    (expect-code 125)
                    (finish-block block))))
-           (parse-content-two-block-array ()
-             ;; Structural exactly-two-object array: no type prefix,
-             ;; no list push/nreverse. Miss rewinds to generic loop.
-             ;; Not try-compact-thinking-text-array. Not svref bag.
+           (parse-content-small-array ()
+             ;; Structural 1- or 2-object array. Parse the first object
+             ;; once; do not rewind into a second size-specialized walk.
+             ;; Miss (non-object element or 3+) rewinds to generic loop.
+             ;; Not try-compact-thinking-text-array. Not type-prefix.
+             ;; Not three-block. Not svref bag.
              (let ((saved position))
                (flet ((rewind ()
                         (setf position saved)
                         nil))
                  (unless (eql (peek-code) 123)
-                   (return-from parse-content-two-block-array (rewind)))
+                   (return-from parse-content-small-array (rewind)))
                  (let ((first (parse-content-block)))
                    (skip-space)
-                   (unless (eql (peek-code) 44)
-                     (return-from parse-content-two-block-array (rewind)))
-                   (take-code)
-                   (skip-space)
-                   (unless (eql (peek-code) 123)
-                     (return-from parse-content-two-block-array (rewind)))
-                   (let ((second (parse-content-block)))
-                     (skip-space)
-                     (if (eql (peek-code) 93)
-                         (progn
-                           (take-code)
-                           (list first second))
-                         (rewind)))))))
-           (parse-content-one-block-array ()
-             ;; Structural exactly-one-object array: no list push/nreverse
-             ;; loop. Miss rewinds to generic loop. Not type-prefix compact.
-             ;; Not try-compact-thinking-text-array. Not svref bag.
-             (let ((saved position))
-               (flet ((rewind ()
-                        (setf position saved)
-                        nil))
-                 (unless (eql (peek-code) 123)
-                   (return-from parse-content-one-block-array (rewind)))
-                 (let ((block (parse-content-block)))
-                   (skip-space)
-                   (if (eql (peek-code) 93)
-                       (progn
-                         (take-code)
-                         (list block))
-                       (rewind))))))
+                   (let ((next (peek-code)))
+                     (cond
+                       ((eql next 93)
+                        (take-code)
+                        (list first))
+                       ((eql next 44)
+                        (take-code)
+                        (skip-space)
+                        (unless (eql (peek-code) 123)
+                          (return-from parse-content-small-array (rewind)))
+                        (let ((second (parse-content-block)))
+                          (skip-space)
+                          (if (eql (peek-code) 93)
+                              (progn
+                                (take-code)
+                                (list first second))
+                              (rewind))))
+                       (t
+                        (rewind))))))))
            (parse-content-value ()
              (skip-space)
              (let ((code (peek-code)))
@@ -901,8 +892,7 @@
                   (when (eql (peek-code) 93)
                     (take-code)
                     (return-from parse-content-value nil))
-                  (or (parse-content-two-block-array)
-                      (parse-content-one-block-array)
+                  (or (parse-content-small-array)
                       (let ((items
                               (list
                                (if (eql (peek-code) 123)

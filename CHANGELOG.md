@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `parse-content-small-array` parses a 1- or 2-object content
+  array without rewinding the first object between the old one-block and
+  two-block walks. Not three-block. Not thinking-text prefix. Friend-MachineD
+  g20-load-slice n=10 interleaved session_load mom 2079.9→1641.3 µs,
+  journal_read mom 1590.5→1452.9 µs. FP_BYTES 37832 EQUAL. G.17 stays
+  `missing`. Not Goal 20 complete.
+
 - Goal 20: `try-compact-message` assistant role+content gate reuses
   `parse-content-value` and `try-compact-assistant-tail` so assistant
   rows skip the bag scan-key loop. Friend-MachineD g20-load-slice

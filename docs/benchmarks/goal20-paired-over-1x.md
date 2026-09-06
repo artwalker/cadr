@@ -1421,3 +1421,5 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure20`.
 | mistral | 1574.2 | 2177.6 | **0.72× (met)** |
 
 Still open load+journal. Drain continues.
+
+- Keep: `parse-content-small-array` (this tip) — structural 1- or 2-object content array without first-block rewind between one-block and two-block; not three-block; not thinking-text prefix. Friend-MachineD g20-load-slice n=10 interleaved FP_BYTES 37832 EQUAL; session_load mom 2079.9→1641.3 µs; journal_read mom 1590.5→1452.9 µs. Floor remesure pending. G.17 missing.
