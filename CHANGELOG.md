@@ -11,7 +11,7 @@ tag/Release step.
   whitespace strip on clean input, optional `max-bytes` stop,
   and uses a decode table (same shape as TUI
   `image-dimensions` invent). Friend-MachineD mime microbench
-  4.63→3.20 µs.
+  4.63→3.20 µs. Refresh unpaired-path denominator after invent.
 
 - Goal 23: release identity is
   `cadr 0.2.0 · aligned with pi v0.85.1 (+0, d981de122)`.
