@@ -1286,3 +1286,16 @@ Gate PASS. Roles EQUAL.
 
 Named leftovers still open: journal_read.
 
+### Remesure12 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `1690f700a` json-intern fixture values)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 2812.9 | 1911.7 | **1.47× (open)** |
+| journal_read | 1670.9 | 1828.5 | **0.91× (met)** |
+| pi_messages | 956.5 | 924.7 | **1.03× (open)** |
+| mistral | 2237.2 | 2684.1 | **0.83× (met)** |
+
+Still open: session_load, pi_messages.
+
