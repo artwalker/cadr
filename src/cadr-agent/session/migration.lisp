@@ -847,6 +847,31 @@
                            (t (fail "Expected comma or }"))))))
                    (expect-code 125)
                    (finish-block block))))
+           (parse-content-two-block-array ()
+             ;; Structural exactly-two-object array: no type prefix,
+             ;; no list push/nreverse. Miss rewinds to generic loop.
+             ;; Not try-compact-thinking-text-array. Not svref bag.
+             (let ((saved position))
+               (flet ((rewind ()
+                        (setf position saved)
+                        nil))
+                 (unless (eql (peek-code) 123)
+                   (return-from parse-content-two-block-array (rewind)))
+                 (let ((first (parse-content-block)))
+                   (skip-space)
+                   (unless (eql (peek-code) 44)
+                     (return-from parse-content-two-block-array (rewind)))
+                   (take-code)
+                   (skip-space)
+                   (unless (eql (peek-code) 123)
+                     (return-from parse-content-two-block-array (rewind)))
+                   (let ((second (parse-content-block)))
+                     (skip-space)
+                     (if (eql (peek-code) 93)
+                         (progn
+                           (take-code)
+                           (list first second))
+                         (rewind)))))))
            (parse-content-value ()
              (skip-space)
              (let ((code (peek-code)))
@@ -859,28 +884,29 @@
                   (when (eql (peek-code) 93)
                     (take-code)
                     (return-from parse-content-value nil))
-                  (let ((items
-                          (list
-                           (if (eql (peek-code) 123)
-                               (parse-content-block)
-                               (parse-generic)))))
-                    (loop
-                      (skip-space)
-                      (let ((next (peek-code)))
-                        (cond
-                          ((eql next 44)
-                           (take-code)
-                           (skip-space)
-                           (push
-                            (if (eql (peek-code) 123)
-                                (parse-content-block)
-                                (parse-generic))
-                            items))
-                          ((eql next 93)
-                           (take-code)
-                           (return (nreverse items)))
-                          (t
-                           (fail "Expected comma or ]")))))))
+                  (or (parse-content-two-block-array)
+                      (let ((items
+                              (list
+                               (if (eql (peek-code) 123)
+                                   (parse-content-block)
+                                   (parse-generic)))))
+                        (loop
+                          (skip-space)
+                          (let ((next (peek-code)))
+                            (cond
+                              ((eql next 44)
+                               (take-code)
+                               (skip-space)
+                               (push
+                                (if (eql (peek-code) 123)
+                                    (parse-content-block)
+                                    (parse-generic))
+                                items))
+                              ((eql next 93)
+                               (take-code)
+                               (return (nreverse items)))
+                              (t
+                               (fail "Expected comma or ]"))))))))
                  (t
                   (parse-generic)))))
            (put-usage-field (usage key-start key-end)
