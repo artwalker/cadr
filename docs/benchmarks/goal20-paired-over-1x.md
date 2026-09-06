@@ -1251,3 +1251,14 @@ Gate PASS. Roles EQUAL.
 
 Keeps after: `00dd01f52` pool 32/8, `eabe3f3a4` classify-entry-key. Remesure9 supersedes if this run predates classify-entry-key.
 
+### Remesure9 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `eabe3f3a4`+ pool 32/8 + classify-entry-key)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1795.5 | 1868.2 | **0.96× (met)** |
+| journal_read | 1859.2 | 1693.0 | **1.10× (open)** |
+| pi_messages | 1102.9 | 979.5 | **1.13× (open)** |
+| mistral | 2478.2 | 2398.3 | **1.03× (open)** |
+
