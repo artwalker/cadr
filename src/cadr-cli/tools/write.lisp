@@ -64,7 +64,5 @@
              (list
               (cadr-ai:make-text-content
                :text
-               (format nil "Successfully wrote ~D bytes to ~A"
-                       (utf16-code-unit-length content)
-                       display-path)))
+               (format nil "Successfully wrote to ~A" display-path)))
              nil))))))))

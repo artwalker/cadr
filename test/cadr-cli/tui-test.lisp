@@ -1764,7 +1764,7 @@
             :content
             (list
              (cadr-ai:make-text-content
-              :text "Successfully wrote 16 bytes to notes.txt"))
+              :text "Successfully wrote to notes.txt"))
             :is-error nil)))
     (cadr-cli::tui-handle-agent-event
      state

@@ -9,7 +9,7 @@
     (error (condition)
       (princ-to-string condition))))
 
-(test goal9-b3-write-result-matches-baseline-utf16-code-unit-count
+(test goal9-b3-write-result-matches-baseline-copy
   (with-test-directory (directory)
     (let* ((content
              (format nil "中~C" (code-char #x1f642)))
@@ -22,7 +22,7 @@
         (declare (ignore details))
         (is
          (string=
-          "Successfully wrote 3 bytes to unicode.txt"
+          "Successfully wrote to unicode.txt"
           (result-text result)))))))
 
 (test goal9-b3-edit-result-and-errors-match-baseline-copy

@@ -73,8 +73,8 @@
                  (content (example-argument arguments "content" "")))
              (ssh-write-text path content)
              (example-result
-              (format nil "Successfully wrote ~D bytes to ~A"
-                      (cadr-cli::utf16-code-unit-length content) path))))
+              (format nil "Successfully wrote to ~A"
+                      path))))
           ((string= name "edit")
            (let* ((path (example-argument arguments "path" ""))
                   (old (example-argument arguments "oldText" ""))
