@@ -1301,3 +1301,7 @@ Still open: session_load, pi_messages.
 
 - Ban (re-confirmed): pairing-fixture `json-intern` for `goal20faux`/`goal20-paired-1` — slice win, remesure12 session_load **1.47×** and pi_messages **1.03×** regress; revert `1690f700a`. Prefer remesure11 tip (`eca3832d2`) as floor baseline; invent journal 1.02× with a different encoding.
 
+- Ban: entry-type / api / stopReason fixed-literal quote-walk skips (journal worse).
+- Ban: migration-local fixture provider/model literals (json-intern sibling; no clear journal win).
+- Ban: tool-call-id `call_e#####` + toolName `"read"` fixed scan (regress).
+
