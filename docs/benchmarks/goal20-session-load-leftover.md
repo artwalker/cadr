@@ -1,9 +1,8 @@
 # Executor current (2026-09-06)
 
-**Tip remesure (cadr µs only):** Friend-MachineD load micro
-~1347 µs median (20×/sample ×9) after message-envelope keep.
-Prior ledger 1762 / Part P ~1192. Pairing ratio pending full
-n=5 remesure (`/tmp/goal20-floor-remesure`).
+**Friend-MachineD n=5 remesure 2026-09-06:** load
+**1719.7 / 1510.2 µs = 1.14×** (journal_read 1.07×). Prior
+ledger 1762 / Part P ~1192. Floor still missed. G.17 missing.
 
 **Kept:** session-list-info streaming list for
 `session-manager-list` / `cli_sdk.session_list`.

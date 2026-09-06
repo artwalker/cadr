@@ -8,10 +8,10 @@ not a live queue freeze. G.17 stays `missing`. Not Goal 20 complete.
 
 | metric | cadr µs | pi µs | ratio | ceiling | leftover | disposition |
 |---|---:|---:|---:|---:|---|---|
-| `session_pipeline.session_load` | ~1347 (cadr µs tip remesure 2026-09-06; prior ledger 1762.6) | 1595.0 | pending remesure vs pi | 9.00× | tip Friend-MachineD load micro ~1347 µs after envelope keep; ledger pi unremeasured; PARSE leftover vs V8 | invent keep (cadr µs); remesure pairing ratio later |
-| `storage_journal.journal_read` | 1577.6 | 1305.4 | 1.21× | 8.00× | `SCAN-BUFFER` / line consume; inline consume-line withdrawn | invent pause; 待本质提案 |
-| `provider_pi_messages.stream_roundtrip` | 1080.8 | 830.4 | 1.30× | 1.50× | character `PARSE-JSON-SOURCE` on SSE; `WRITE-JSON-STRING`; EQUAL hash grow. parse-json-octets / unescaped stringify / pairs / pre-size withdrawn | invent pause; 待本质提案 |
-| `provider_mistral.stream_roundtrip` | 2045.6 | 1644.0 | 1.24× | 3.00× | character `PARSE-JSON-SOURCE` on Conversations SSE; `data-octets` withdrawn | invent pause; 待本质提案 |
+| `session_pipeline.session_load` | 1719.7 | 1510.2 | 1.14× | 9.00× | Friend-MachineD n=5 remesure 2026-09-06 after envelope keep; PARSE leftover vs V8 | invent pause; 待本质提案 |
+| `storage_journal.journal_read` | 1659.3 | 1556.1 | 1.07× | 8.00× | Friend-MachineD n=5 remesure 2026-09-06; SCAN-BUFFER leftover | invent pause; 待本质提案 |
+| `provider_pi_messages.stream_roundtrip` | 1113.4 | 762.8 | 1.46× | 1.50× | Friend-MachineD n=5 remesure 2026-09-06; near ceiling; PARSE-JSON-SOURCE / WRITE-JSON-STRING | invent pause; 待本质提案 |
+| `provider_mistral.stream_roundtrip` | 2323.2 | 2011.0 | 1.16× | 3.00× | Friend-MachineD n=5 remesure 2026-09-06 | invent pause; 待本质提案 |
 | `session_compact.compact` | 36.7 | 35.3 | 1.04× | 20.00× | near 1.0; uuid-v7 entropy pool already kept | 待 MAD/本质；不开现象刀 |
 | `session_compact.branch_summarize` | 37.3 | 32.5 | 1.15× | 20.00× | measure-only pair 255; collect+generate branch summary | invent pause；地板优化另刀 |
 | `session_discovery.header_probe` | 732.2 (cadr µs invent; prior ledger 1449.6) | 708.6 | pending remesure | 8.00× | buffered read-sequence + parse-session-header-octets | invent keep (cadr µs); pairing ratio remesure later | 708.6 | ~1.03× (cadr µs invent; pi ledger unremeasured) | 8.00× | buffered read-sequence + parse-session-header-octets; prior ledger 1449.6 | invent keep (cadr µs); remesure pairing ratio later |
