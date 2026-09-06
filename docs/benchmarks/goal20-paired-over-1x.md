@@ -9,7 +9,7 @@ not a live queue freeze. G.17 stays `missing`. Not Goal 20 complete.
 | metric | cadr µs | pi µs | ratio | ceiling | leftover | disposition |
 |---|---:|---:|---:|---:|---|---|
 | `session_pipeline.session_load` | 2305.7 | 2500.3 | 0.92× | 9.00× | Friend-MachineD n=5 floor_slice 2026-09-06 remesure2; context_message_roles EQUAL (custom/compactionSummary). Gate PASS | invent keep path; floor met on this remesure |
-| `storage_journal.journal_read` | 1897.4 | 1658.0 | 1.14× | 8.00× | Friend-MachineD n=5 floor_slice remesure2; roles EQUAL; journal_body_bytes still diverge (+3.2%). Gate PASS | invent pause; 待本质提案 |
+| `storage_journal.journal_read` | 1897.4 | 1658.0 | 1.14× | 8.00× | Friend-MachineD n=5 floor_slice remesure2; roles EQUAL; journal_body_bytes still diverge (+3.2%). Gate PASS. 2026-09-06: last-octet terminator + ub32 high-byte splat + args compact reverted | invent pause; 待本质提案 |
 | `provider_pi_messages.stream_roundtrip` | 1163.4 | 1216.2 | 0.96× | 1.50× | Friend-MachineD n=5 floor_slice remesure2 after visitor-decode keep `c100f0f95`; variance gate. Gate PASS | invent keep; floor met on this remesure |
 | `provider_mistral.stream_roundtrip` | 3359.1 | 2702.4 | 1.24× | 3.00× | Friend-MachineD n=5 floor_slice remesure2. Gate PASS. 2026-09-06: ascii SSE decode + chat visitor + mistral visitor all reverted worse | invent pause; 待本质提案（禁再试 visitor/ascii-decode 同类） |
 | `session_compact.compact` | 36.7 | 35.3 | 1.04× | 20.00× | near 1.0; uuid-v7 entropy pool already kept | 待 MAD/本质；不开现象刀 |
