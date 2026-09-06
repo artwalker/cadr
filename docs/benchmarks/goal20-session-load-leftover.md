@@ -1,8 +1,9 @@
 # Executor current (2026-09-06)
 
-**Friend-MachineD n=5 remesure 2026-09-06:** load
-**1719.7 / 1510.2 µs = 1.14×** (journal_read 1.07×). Prior
-ledger 1762 / Part P ~1192. Floor still missed. G.17 missing.
+**Friend-MachineD n=5 remesure 2026-09-06 (provisional):** load
+**1719.7 / 1510.2 µs = 1.14×** (journal_read 1.07×). OBS
+roles diverge vs pi floor_slice; re-book after same-suite
+EQUAL remesure. Prior ledger 1762 / Part P ~1192. G.17 missing.
 
 **Kept:** session-list-info streaming list for
 `session-manager-list` / `cli_sdk.session_list`.

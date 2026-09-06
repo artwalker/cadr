@@ -10491,9 +10491,14 @@ async function sqliteOpenReadWalk(databasePath, metadata) {
 
 async function measureSqliteSession() {
 	// 0.85.1: SqliteSessionRepo + appendMessage/Context replaced
-	// appendEntry. Full ingest rewrite is a separate harness unit; stub
-	// observed to the cadr fixture walk so the pi half can finish for
-	// floor remesure of other metrics.
+	// appendEntry. Full ingest rewrite is a separate harness unit.
+	// Stub only when explicitly allowed; default throws so unscoped
+	// paired-paths runs cannot book a fake open_walk.
+	if (process.env.GOAL20_ALLOW_SQLITE_STUB !== "1") {
+		throw new Error(
+			"goal20 paired paths: sqlite_session ingest not ported for pi v0.85.1; set GOAL20_ALLOW_SQLITE_STUB=1 only for floor_slice remesure",
+		);
+	}
 	return {
 		open_walk: await collect("sqlite_session.open_walk", () => {
 			return () => 0;
