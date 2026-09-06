@@ -15,7 +15,7 @@ splice; autocomplete dirent; discovery header;
 message-envelope load.
 
 **Withdrawn:** list-sessions single-pass (breaks oversized
-header bound); assistant type-branch compact.
+header bound); assistant type-branch compact; assistant thinking+text envelope (2026-09-06, miss-tax).
 
 G.17 stays `missing`. Goal 20 not complete.
 
