@@ -138,47 +138,101 @@
 (defparameter +base64-alphabet+
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
-(defun decode-base64-bytes (text)
-  ;; Standard base64 (with padding) into an octet vector; NIL on
-  ;; malformed input.
-  (let ((cleaned
-          (remove-if
-           (lambda (c)
-             (member c '(#\Space #\Tab #\Newline #\Return)))
-           text)))
-    (when (or (zerop (length cleaned))
-              (not (zerop (mod (length cleaned) 4))))
-      (return-from decode-base64-bytes nil))
-    (let ((output
-            (make-array 0 :element-type '(unsigned-byte 8)
-                        :adjustable t :fill-pointer 0)))
-      (loop for position from 0 below (length cleaned) by 4
-            for chars =
-              (subseq cleaned position (+ position 4))
-            do
-            (let ((values
-                    (loop for c across chars
-                          for idx =
-                            (position c +base64-alphabet+)
-                          when (and (null idx)
-                                    (not (char= c #\=)))
-                            do (return-from decode-base64-bytes nil)
-                          collect (or idx 0))))
-              (let ((packed
-                      (logior (ash (first values) 18)
-                              (ash (second values) 12)
-                              (ash (third values) 6)
-                              (fourth values))))
-                (vector-push-extend
-                 (ldb (byte 8 16) packed) output)
-                (when (char/= (char chars 2) #\=)
-                  (vector-push-extend
-                   (ldb (byte 8 8) packed) output))
-                (when (char/= (char chars 3) #\=)
-                  (vector-push-extend
-                   (ldb (byte 8 0) packed) output)))))
-      (coerce output '(simple-array (unsigned-byte 8) (*))))))
+(defparameter +base64-decode-table+
+  (let ((table (make-array 256 :initial-element nil)))
+    (loop for index from 0
+          for character across +base64-alphabet+
+          do (setf (aref table (char-code character)) index))
+    table))
 
+(defun base64-decode-value (character)
+  (let ((code (char-code character)))
+    (and (< code 256)
+         (aref +base64-decode-table+ code))))
+
+(defun decode-base64-bytes (text &optional max-bytes)
+  ;; Standard base64 (with padding) into an octet vector; NIL on
+  ;; malformed input. When MAX-BYTES is set, stop once that many
+  ;; output bytes are produced (mime sniff only needs a short prefix).
+  (let ((length (length text)))
+    (labels
+        ((emit (bytes out packed padding limit)
+           (setf (aref bytes out) (ldb (byte 8 16) packed))
+           (incf out)
+           (when (and (< padding 2) (< out limit))
+             (setf (aref bytes out) (ldb (byte 8 8) packed))
+             (incf out))
+           (when (and (zerop padding) (< out limit))
+             (setf (aref bytes out) (ldb (byte 8 0) packed))
+             (incf out))
+           out)
+         (decode-clean (clean)
+           (let* ((clean-length (length clean))
+                  (limit
+                    (or max-bytes
+                        (* (floor clean-length 4) 3)))
+                  (bytes
+                    (make-array
+                     (min limit (* (floor clean-length 4) 3))
+                     :element-type '(unsigned-byte 8)))
+                  (out 0))
+             (when (or (zerop clean-length)
+                       (not (zerop (mod clean-length 4))))
+               (return-from decode-base64-bytes nil))
+             (handler-case
+                 (loop for position from 0 below clean-length by 4
+                       while (< out limit)
+                       do
+                       (let* ((c0 (char clean position))
+                              (c1 (char clean (1+ position)))
+                              (c2 (char clean (+ position 2)))
+                              (c3 (char clean (+ position 3)))
+                              (padding
+                                (+ (if (char= c2 #\=) 1 0)
+                                   (if (char= c3 #\=) 1 0)))
+                              (v0
+                                (if (char= c0 #\=)
+                                    0
+                                    (or (base64-decode-value c0)
+                                        (error "bad"))))
+                              (v1
+                                (if (char= c1 #\=)
+                                    0
+                                    (or (base64-decode-value c1)
+                                        (error "bad"))))
+                              (v2
+                                (if (char= c2 #\=)
+                                    0
+                                    (or (base64-decode-value c2)
+                                        (error "bad"))))
+                              (v3
+                                (if (char= c3 #\=)
+                                    0
+                                    (or (base64-decode-value c3)
+                                        (error "bad"))))
+                              (packed
+                                (logior (ash v0 18)
+                                        (ash v1 12)
+                                        (ash v2 6)
+                                        v3)))
+                         (setf out
+                               (emit bytes out packed padding
+                                     limit))))
+               (condition ()
+                 (return-from decode-base64-bytes nil)))
+             (if (= out (length bytes))
+                 bytes
+                 (subseq bytes 0 out)))))
+      (if (loop for i below length
+                for c = (char text i)
+                never (find c '(#\Space #\Tab #\Newline #\Return)))
+          (decode-clean text)
+          (decode-clean
+           (remove-if
+            (lambda (character)
+              (find character
+                    '(#\Space #\Tab #\Newline #\Return)))
+            text))))))
 (defun encode-base64-bytes (bytes)
   (with-output-to-string (output)
     (loop for position from 0 below (length bytes) by 3

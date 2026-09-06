@@ -22,7 +22,7 @@ not a live queue freeze. G.17 stays `missing`. Not Goal 20 complete.
 | `ai_crypto.hmac` | 133.9 | 7.1 | 18.81× | 30.00× | measure-only pair `e4eb5e647`; pure-Lisp SHA-256 vs OpenSSL | invent pause；地板优化另刀 |
 | `cli_models_rest.pattern_match` | ~32µs invent micro 5-query (prior ledger 31.9) | 19.4 | pending remesure | 3.00× | invent: unique exact walk + single-pass partial; remount later | invent kept 2026-09-05 |
 | `image_runtime.dimensions` | 1.02 (cadr µs invent; prior ledger 7.8) | 1.4 | ~0.73× invent micro vs booked pi | 8.00× | invent: bounded header decode-base64 + no per-quad alloc; remount later | invent kept 2026-09-05 |
-| `image_runtime.mime_type` | 6.63 | 4.09 | 1.62× | 8.00× | measure-only pair `db66f79e6`; sibling of dimensions; JPEG 0xf7/APNG/BMP gaps booked | invent pause；地板优化另刀 |
+| `image_runtime.mime_type` | 3.20 (cadr µs invent; prior ledger 6.63) | 4.09 | ~0.78× invent micro vs booked pi | 8.00× | invent: pre-size decode-base64-bytes + clean-path table (Friend-MachineD 4.63→3.20 µs); remount later | invent kept 2026-09-06 |
 | `image_runtime.lookup` | 1.51 | 0.20 | 7.38× | 8.00× | measure-only pair `6d48a539f`; catalog presence; count not exact; sub-µs variance | invent pause；地板优化另刀 |
 | `image_runtime.dimension_note` | 3.67 | 2.12 | 1.73× | 8.00× | measure-only pair `94d472e68`; format note only (no decode/resize) | invent pause；地板优化另刀 |
 | `image_runtime.api_provider` | 0.23 | 0.21 | 1.09× | 8.00× | measure-only pair `7823f9c15`; fixture registry lookup; sub-µs variance | invent pause；地板优化另刀 |
