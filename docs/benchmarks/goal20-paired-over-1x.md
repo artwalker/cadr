@@ -1340,4 +1340,5 @@ Gate PASS. Roles EQUAL.
 | mistral | 1817.8 | 2973.9 | **0.61× (met)** |
 
 **Named Part-P leftovers all ≤1.0×.** Invent/floor exit predicate met on this booking (G.17 still separate).
-
+- Ban: `scan-key` quote-only SWAR / `octet-find-quote` (paired A/B load+journal regress; revert).
+- Ban: handler elide fail→return-from dropping `handler-bind` on v3 body (load regress; revert).
