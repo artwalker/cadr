@@ -1,4 +1,9 @@
-# Executor current (2026-09-04)
+# Executor current (2026-09-06)
+
+**Tip remesure (cadr µs only):** Friend-MachineD load micro
+~1347 µs median (20×/sample ×9) after message-envelope keep.
+Prior ledger 1762 / Part P ~1192. Pairing ratio pending full
+n=5 remesure (`/tmp/goal20-floor-remesure`).
 
 **Kept:** session-list-info streaming list for
 `session-manager-list` / `cli_sdk.session_list`.
@@ -17,6 +22,7 @@ G.17 stays `missing`. Goal 20 not complete.
 **Do not:** mark G.17 `met`; redo withdrawn classes.
 
 ---
+
 
 
 
