@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `provider_pi_messages` SSE events fill locals via
+  `parse-json-object-fields` instead of an EQUAL hash per event.
+  Friend-MachineD n=5 stream_roundtrip 966→682 µs. OBS EQUAL.
+  G.17 stays `missing`. Not Goal 20 complete.
+
 - Goal 20: `build-system-prompt` skips default-path and guideline
   assembly on the custom-prompt branch (matches pi
   `buildSystemPrompt`). Friend-MachineD build_prompt microbench

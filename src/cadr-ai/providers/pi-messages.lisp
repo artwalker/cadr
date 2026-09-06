@@ -132,37 +132,66 @@
        :stream-p stream-p
        :provider (model-provider model)))))
 
-(defun pi-event-data (event)
-  (parse-json (sse-event-data event)))
+(defun pi-key= (key literal)
+  (or (eq key literal) (string= key literal)))
 
 (defmethod reduce-provider-sse-event
     ((provider pi-messages-provider) state event emit)
   (declare (ignore provider))
-  (let* ((data (pi-event-data event))
-         (type (json-get data "type"))
-         (message (provider-stream-state-message state))
-         (index (json-get data "contentIndex")))
+  (let ((type nil)
+        (delta nil)
+        (index nil)
+        (id nil)
+        (tool-name nil)
+        (reason nil)
+        (response-id nil)
+        (error-message nil)
+        (usage-p nil)
+        (usage-input nil)
+        (usage-output nil)
+        (usage-cache-read nil)
+        (usage-cache-write nil)
+        (usage-reasoning nil)
+        (usage-total nil)
+        (message (provider-stream-state-message state)))
+    (flet ((put-field (key value)
+             (cond
+               ((pi-key= key "type") (setf type value))
+               ((pi-key= key "delta") (setf delta value))
+               ((pi-key= key "contentIndex") (setf index value))
+               ((pi-key= key "id") (setf id value))
+               ((pi-key= key "toolName") (setf tool-name value))
+               ((pi-key= key "reason") (setf reason value))
+               ((pi-key= key "responseId") (setf response-id value))
+               ((pi-key= key "errorMessage")
+                (setf error-message value))
+               ((pi-key= key "usage")
+                (setf usage-p t
+                      usage-input (json-get value "input")
+                      usage-output (json-get value "output")
+                      usage-cache-read (json-get value "cacheRead")
+                      usage-cache-write (json-get value "cacheWrite")
+                      usage-reasoning (json-get value "reasoning")
+                      usage-total (json-get value "totalTokens"))))))
+      (parse-json-object-fields (sse-event-data event) #'put-field))
     (cond
       ((string= type "text_start")
        (start-content-block state :text emit))
       ((string= type "text_delta")
-       (append-text-delta state
-                          (or (json-get data "delta") "")
-                          emit))
+       (append-text-delta state (or delta "") emit))
       ((string= type "text_end")
        (finish-current-block state emit))
       ((string= type "thinking_start")
        (start-content-block state :thinking emit))
       ((string= type "thinking_delta")
-       (append-thinking-delta
-        state (or (json-get data "delta") "") emit))
+       (append-thinking-delta state (or delta "") emit))
       ((string= type "thinking_end")
        (finish-current-block state emit))
       ((string= type "toolcall_start")
        (let ((call
                (make-tool-call
-                :id (or (json-get data "id") "")
-                :name (or (json-get data "toolName") "")
+                :id (or id "")
+                :name (or tool-name "")
                 :arguments (json-object))))
          (setf
           (provider-stream-state-current-block-index state)
@@ -179,7 +208,7 @@
          (emit-event emit :tool-call-start message
                      :content-index index)))
       ((string= type "toolcall_delta")
-       (let ((piece (or (json-get data "delta") "")))
+       (let ((piece (or delta "")))
          (setf
           (gethash index
                    (provider-stream-state-partial-json state))
@@ -210,10 +239,9 @@
                      :content-index index
                      :tool-call block)))
       ((member type '("done" "error") :test #'string=)
-       (let* ((raw (or (json-get data "reason")
+       (let ((raw (or reason
                        (if (string= type "done")
-                           "stop" "error")))
-              (usage (json-get data "usage")))
+                           "stop" "error"))))
          (setf
           (assistant-message-raw-stop-reason message) raw
           (assistant-message-stop-reason message)
@@ -229,19 +257,19 @@
             (:ABORTED :aborted)
             (otherwise :error))
           (assistant-message-response-id message)
-          (json-get data "responseId")
+          response-id
           (assistant-message-error-message message)
-          (json-get data "errorMessage")
+          error-message
           (provider-stream-state-terminal-p state) t)
-         (when usage
+         (when usage-p
            (update-message-usage
             message
-            (json-get usage "input")
-            (json-get usage "output")
-            (json-get usage "cacheRead")
-            (json-get usage "cacheWrite")
-            (json-get usage "reasoning")
-            (json-get usage "totalTokens"))))))))
+            usage-input
+            usage-output
+            usage-cache-read
+            usage-cache-write
+            usage-reasoning
+            usage-total)))))))
 
 (defmethod parse-complete-response
     ((provider pi-messages-provider) model response)
