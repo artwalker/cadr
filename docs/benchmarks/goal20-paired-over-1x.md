@@ -1496,3 +1496,4 @@ Load met. Journal still the named leftover. G.17 missing.
 - Ban: shared `{"type":"` prefix in `try-compact-content-block` (n=10 load −21 µs jr +23 µs; revert).
 - Ban: `load-session` skip `coerce` to simple-vector, `dolist` the JSONL cons list (n=10 load −4 µs; revert).
 - Ban: `parse-string-value` skip intern on entry id/parentId (n=10 load −36 µs pairwise 6/10; jr −5 µs; revert).
+- Ban: `parse-arguments-object` typed path/offset/limit values (`parse-string-value` / `parse-number-value` after key windows; still interned strings) (Friend-MachineD g20-jr-open-slice x3; jr pairwise +105/+5/+15 µs all worse; load mixed; FP EQUAL; revert).
