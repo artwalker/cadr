@@ -628,6 +628,21 @@
                             (incf position 4))))
                        (t
                         (fail "Unescaped control character"))))))))
+           (classify-entry-key (key-start key-end)
+             ;; Preclassify closed entry keys once after scan-key.
+             ;; Tag = (logior u32-le-prefix (ash n 32)).  Not length-case.
+             ;; Not intern. Not FFI.
+             (let ((n (- key-end key-start)))
+               (cond
+                 ((= n 2)
+                  (if (and (= (aref octets key-start) 105)
+                           (= (aref octets (+ key-start 1)) 100))
+                      #x200006469
+                      0))
+                 ((>= n 4)
+                  (logior (%octet-u32-le octets key-start)
+                          (ash n 32)))
+                 (t 0))))
            (parse-arguments-object ()
              (expect-code 123)
              (skip-space)
@@ -1188,177 +1203,101 @@
                            (t (fail "Expected comma or }"))))))
                    (expect-code 125)
                    bag)))
-           (put-entry-field (key-start key-end)
-             ;; Unique 4-byte little-endian prefix (gperf-style).
-             ;; Not length-case. fromId/fromHook share "from".
-             (let ((n (- key-end key-start)))
-               (cond
-                 ((< n 4)
-                  (if (and (= n 2) (key= key-start key-end "id"))
-                      (setf (session-entry-id entry)
-                            (parse-string-value))
-                      (skip-value)))
-                 (t
-                  (let ((w (%octet-u32-le octets key-start)))
-                    (cond
-                      ((= w #x65707974)
-                       (if (and (= n 4) (key= key-start key-end "type"))
-                           (setf (session-entry-type entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x65726170)
-                       (if (and (= n 8) (key= key-start key-end "parentId"))
-                           (progn
-                             (mark-session-seen
-                              entry +session-seen-parent-id+)
-                             (skip-space)
-                             (setf (session-entry-parent-id entry)
-                                   (if (eql (peek-code) 110)
-                                       (parse-literal-null)
-                                       (parse-string-value))))
-                           (skip-value)))
-                      ((= w #x656d6974)
-                       (if (and (= n 9)
-                                (key= key-start key-end "timestamp"))
-                           (setf (session-entry-timestamp entry)
-                                 (parse-timestamp-value))
-                           (skip-value)))
-                      ((= w #x7373656d)
-                       (if (and (= n 7) (key= key-start key-end "message"))
-                           (progn
-                             (skip-space)
-                             (setf (session-entry-message entry)
-                                   (if (eql (peek-code) 123)
-                                       (parse-message)
-                                       (parse-generic))))
-                           (skip-value)))
-                      ((= w #x6d6d7573)
-                       (if (and (= n 7) (key= key-start key-end "summary"))
-                           (setf (session-entry-summary entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x72756f73)
-                       (if (and (= n 9)
-                                (key= key-start key-end "sourceIds"))
-                           (setf (session-entry-source-ids entry)
-                                 (parse-generic))
-                           (skip-value)))
-                      ((= w #x73726966)
-                       (if (and (= n 16)
-                                (key= key-start key-end
-                                      "firstKeptEntryId"))
-                           (setf (session-entry-first-kept-id entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x656b6f74)
-                       (if (and (= n 12)
-                                (key= key-start key-end "tokensBefore"))
-                           (progn
-                             (mark-session-seen
-                              entry +session-seen-tokens-before+)
-                             (setf (session-entry-tokens-before entry)
-                                   (parse-number-value)))
-                           (skip-value)))
-                      ((= w #x6e696874)
-                       (if (and (= n 13)
-                                (key= key-start key-end "thinkingLevel"))
-                           (setf (session-entry-thinking-level entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x766f7270)
-                       (if (and (= n 8)
-                                (key= key-start key-end "provider"))
-                           (setf (session-entry-provider entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x65646f6d)
-                       (if (and (= n 7) (key= key-start key-end "modelId"))
-                           (setf (session-entry-model-id entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x69746361)
-                       (if (and (= n 15)
-                                (key= key-start key-end
-                                      "activeToolNames"))
-                           (setf (session-entry-active-tool-names entry)
-                                 (parse-generic))
-                           (skip-value)))
-                      ((= w #x6d6f7266)
-                       (cond
-                         ((and (= n 6) (key= key-start key-end "fromId"))
-                          (setf (session-entry-from-id entry)
-                                (parse-string-value)))
-                         ((and (= n 8)
-                               (key= key-start key-end "fromHook"))
-                          (setf (session-entry-from-hook-p entry)
-                                (eq t (parse-generic))))
-                         (t
-                          (skip-value))))
-                      ((= w #x61746564)
-                       (if (and (= n 7) (key= key-start key-end "details"))
-                           (setf (session-entry-details entry)
-                                 (parse-generic))
-                           (skip-value)))
-                      ((= w #x67617375)
-                       (if (and (= n 5) (key= key-start key-end "usage"))
-                           (progn
-                             (skip-space)
-                             (setf (session-entry-usage entry)
-                                   (if (eql (peek-code) 123)
-                                       (parse-usage)
-                                       (parse-generic))))
-                           (skip-value)))
-                      ((= w #x74737563)
-                       (if (and (= n 10)
-                                (key= key-start key-end "customType"))
-                           (setf (session-entry-custom-type entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x61746164)
-                       (if (and (= n 4) (key= key-start key-end "data"))
-                           (setf (session-entry-data entry)
-                                 (parse-generic))
-                           (skip-value)))
-                      ((= w #x746e6f63)
-                       (if (and (= n 7) (key= key-start key-end "content"))
-                           (progn
-                             (mark-session-seen
-                              entry +session-seen-content+)
-                             (setf (session-entry-content entry)
-                                   (parse-content-value)))
-                           (skip-value)))
-                      ((= w #x70736964)
-                       (if (and (= n 7) (key= key-start key-end "display"))
-                           (setf (session-entry-display-p entry)
-                                 (eq t (parse-generic)))
-                           (skip-value)))
-                      ((= w #x67726174)
-                       (if (and (= n 8)
-                                (key= key-start key-end "targetId"))
-                           (progn
-                             (mark-session-seen
-                              entry +session-seen-target-id+)
-                             (setf (session-entry-target-id entry)
-                                   (parse-string-value)))
-                           (skip-value)))
-                      ((= w #x6562616c)
-                       (if (and (= n 5) (key= key-start key-end "label"))
-                           (setf (session-entry-label entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x656d616e)
-                       (if (and (= n 4) (key= key-start key-end "name"))
-                           (setf (session-entry-name entry)
-                                 (parse-string-value))
-                           (skip-value)))
-                      ((= w #x61746572)
-                       (if (and (= n 12)
-                                (key= key-start key-end "retainedTail"))
-                           (setf (session-entry-retained-tail entry)
-                                 (parse-generic))
-                           (skip-value)))
-                      (t
-                       (skip-value)))))))))
+           (put-entry-field (tag)
+             ;; Closed entry keys: scan-key preclassified tag.  One u32
+             ;; read in classify-entry-key; no second key= compare.
+             ;; Not length-case. Not intern. Not FFI.
+             (case tag
+               (#x200006469
+                (setf (session-entry-id entry)
+                      (parse-string-value)))
+               (#x465707974
+                (setf (session-entry-type entry)
+                      (parse-string-value)))
+               (#x865726170
+                (mark-session-seen entry +session-seen-parent-id+)
+                (skip-space)
+                (setf (session-entry-parent-id entry)
+                      (if (eql (peek-code) 110)
+                          (parse-literal-null)
+                          (parse-string-value))))
+               (#x9656d6974
+                (setf (session-entry-timestamp entry)
+                      (parse-timestamp-value)))
+               (#x77373656d
+                (skip-space)
+                (setf (session-entry-message entry)
+                      (if (eql (peek-code) 123)
+                          (parse-message)
+                          (parse-generic))))
+               (#x76d6d7573
+                (setf (session-entry-summary entry)
+                      (parse-string-value)))
+               (#x972756f73
+                (setf (session-entry-source-ids entry)
+                      (parse-generic)))
+               (#x1073726966
+                (setf (session-entry-first-kept-id entry)
+                      (parse-string-value)))
+               (#xc656b6f74
+                (mark-session-seen entry +session-seen-tokens-before+)
+                (setf (session-entry-tokens-before entry)
+                      (parse-number-value)))
+               (#xd6e696874
+                (setf (session-entry-thinking-level entry)
+                      (parse-string-value)))
+               (#x8766f7270
+                (setf (session-entry-provider entry)
+                      (parse-string-value)))
+               (#x765646f6d
+                (setf (session-entry-model-id entry)
+                      (parse-string-value)))
+               (#xf69746361
+                (setf (session-entry-active-tool-names entry)
+                      (parse-generic)))
+               (#x66d6f7266
+                (setf (session-entry-from-id entry)
+                      (parse-string-value)))
+               (#x86d6f7266
+                (setf (session-entry-from-hook-p entry)
+                      (eq t (parse-generic))))
+               (#x761746564
+                (setf (session-entry-details entry)
+                      (parse-generic)))
+               (#x567617375
+                (skip-space)
+                (setf (session-entry-usage entry)
+                      (if (eql (peek-code) 123)
+                          (parse-usage)
+                          (parse-generic))))
+               (#xa74737563
+                (setf (session-entry-custom-type entry)
+                      (parse-string-value)))
+               (#x461746164
+                (setf (session-entry-data entry)
+                      (parse-generic)))
+               (#x7746e6f63
+                (mark-session-seen entry +session-seen-content+)
+                (setf (session-entry-content entry)
+                      (parse-content-value)))
+               (#x770736964
+                (setf (session-entry-display-p entry)
+                      (eq t (parse-generic))))
+               (#x867726174
+                (mark-session-seen entry +session-seen-target-id+)
+                (setf (session-entry-target-id entry)
+                      (parse-string-value)))
+               (#x56562616c
+                (setf (session-entry-label entry)
+                      (parse-string-value)))
+               (#x4656d616e
+                (setf (session-entry-name entry)
+                      (parse-string-value)))
+               (#xc61746572
+                (setf (session-entry-retained-tail entry)
+                      (parse-generic)))
+               (otherwise
+                (skip-value)))))
         (skip-space)
         (expect-code 123)
         (skip-space)
@@ -1370,7 +1309,7 @@
               (expect-code 58)
               (skip-space)
               (if key-start
-                  (put-entry-field key-start key-end)
+                  (put-entry-field (classify-entry-key key-start key-end))
                   (skip-value)))
             (skip-space)
             (let ((code (peek-code)))
