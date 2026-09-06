@@ -1,12 +1,11 @@
 # Goal 23：pi 基线推进至 v0.85.1（Goal 20 invent 前置）
 
-> **状态：** 进行中（用户 2026-09-05 采纳推荐 B）。Goal 20 invent/pair
-> 冻结至本 goal 完成。Does not announce Goal 20 complete. G.17 stays
-> `missing`.
+> **状态：** 完成（gates green on tip）。Goal 20 invent/pair 已恢复
+> (`goal20-queue.json` `paused=false`)。Does not announce Goal 20
+> complete. G.17 stays `missing`.
 >
 > **自：** `b79e4cc83` · `v0.84.4` +0  
-> **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
-> G23 gates green on v0.85.1; invent unpaused. G.17 stays `missing`.
+> **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）
 
 ## 已落地上游增量（tip `eb9b9590a`）
 
@@ -23,8 +22,8 @@
 | `CADR_TUI_DEBUG_REDRAW` | done（FiveAM getenv helper + first-render log） |
 | inMemory entries | done（FiveAM `session-manager-in-memory` entries） |
 | Experimental error / MouseRegion / tool renderers barrel | ledger-defer |
-| `verify.sh` / `test-cl.sh` | not yet green for G23 close |
-| Goal 20 invent unpause | blocked on G23 close |
+| `verify.sh` / `test-cl.sh` | green (G23 close) |
+| Goal 20 invent unpause | done (`paused=false`) |
 
 ## 为什么单独开 goal
 

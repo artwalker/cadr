@@ -80,7 +80,7 @@ Not `parse-json-octets`. Not a G.17 close.
 - Goal 20 complete.
 - G.17 `met`.
 - Live three-game play (deferred 18:09).
-- P.13 schema/holes/additional-pairs booked number on tip; floor on >1.0× paths still leftover + invent pause).
+- P.13 schema/holes/additional-pairs booked number on tip; floor on >1.0× paths still leftover (invent queue unpaused after G23; G.17 still `missing`).
 
 ## P.13 (user 2026-08-19 18:30)
 

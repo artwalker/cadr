@@ -1,8 +1,10 @@
 # Goal 20 — already-paired paths still >1.0× (docs only)
 
 Friend-MachineD ledger in `docs/performance.md` (not a remesure).
-**No optimize in this file.** Invent remains paused (十B.17–18).
-G.17 stays `missing`. Not Goal 20 complete.
+**No optimize in this file.** Invent queue is unpaused after G23
+(`goal20-queue.json` `paused=false`); row dispositions that still say
+`invent pause` mean「no phenomenon knife in this ledger row」(十B.17–18),
+not a live queue freeze. G.17 stays `missing`. Not Goal 20 complete.
 
 | metric | cadr µs | pi µs | ratio | ceiling | leftover | disposition |
 |---|---:|---:|---:|---:|---|---|
