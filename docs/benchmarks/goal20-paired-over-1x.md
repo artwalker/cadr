@@ -1490,3 +1490,4 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure24`.
 | mistral | 1545.2 | 1629.4 | **0.95× (met)** |
 
 Load met. Journal still the named leftover. G.17 missing.
+- Ban: first-byte role dispatch after `{"role":"` peek u/t/a (slice −57 µs inside noise / hot outlier; revert).
