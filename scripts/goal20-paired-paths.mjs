@@ -41601,16 +41601,34 @@ process.stderr.write("goal20 pi paired paths: provider_pi_messages\n");
 const providerPiMessages = await measureProviderPiMessages();
 if (process.env.GOAL20_FLOOR_SLICE === "1") {
 	const floorReport = {
-		kind: "goal20-paired-paths",
-		machine: { machine_instance: process.env.HOSTNAME || "Friend-MachineD" },
+		kind: "pi-goal20-part-h-paired-paths",
+		machine: { hostname: hostname(), machine_instance: hostname() },
 		metrics: {
 			session_pipeline: sessionPipeline,
 			storage_journal: storageJournal,
 			provider_pi_messages: providerPiMessages,
 			provider_mistral: providerMistral,
 		},
-		parameters: { samples: options.samples, warmups: options.warmups, floor_slice: true },
-		provenance: { baseline_directory: baselineDirectory },
+		parameters: {
+			samples: options.samples,
+			warmups: options.warmups,
+			quick: options.quick,
+			floor_slice: true,
+			journal_append_entry_count: JOURNAL_APPEND_ENTRY_COUNT,
+			repetitions: Object.fromEntries(
+				Object.keys(REPETITIONS).map((name) => [name, repetitionsFor(name)]),
+			),
+			transport_stub: "ProviderRequestOptions.fetch returns the SSE fixture; no socket is opened",
+			terminal_sink: "count-only",
+			scrubbed_environment: scrubbedEnvironment,
+		},
+		provenance: {
+			source_revision: revision,
+			source_revision_from: revisionSource,
+			baseline_directory: baselineDirectory,
+			fixture_sha256: fixtureDigests,
+			staged_agent_dir_sha256: stagedDigests,
+		},
 		schema_version: 1,
 	};
 	const payload = `${JSON.stringify(floorReport)}\n`;

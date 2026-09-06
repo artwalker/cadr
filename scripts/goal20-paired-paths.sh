@@ -49,6 +49,13 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
+if [ "${GOAL20_FLOOR_SLICE:-}" = 1 ]; then
+  GATE_ARGUMENTS="$GATE_ARGUMENTS --only-enforce session_pipeline.session_load"
+  GATE_ARGUMENTS="$GATE_ARGUMENTS --only-enforce storage_journal.journal_read"
+  GATE_ARGUMENTS="$GATE_ARGUMENTS --only-enforce provider_pi_messages.stream_roundtrip"
+  GATE_ARGUMENTS="$GATE_ARGUMENTS --only-enforce provider_mistral.stream_roundtrip"
+fi
+
 if ! command -v "$SBCL_COMMAND" >/dev/null 2>&1; then
   echo "goal20 paired paths: SBCL is required." >&2
   exit 2
@@ -102,7 +109,9 @@ python3 "$PROJECT_DIRECTORY/scripts/goal20-paired-paths.py" \
   --pi-journal "$PI_JOURNAL" \
   --summary-json "$OUTPUT_DIRECTORY/summary.json" \
   $GATE_ARGUMENTS
-python3 "$PROJECT_DIRECTORY/scripts/record-paired-paths.py" \
-  --summary "$OUTPUT_DIRECTORY/summary.json" \
-  --cadr-report "$CADR_REPORT" \
-  --history "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json"
+if [ "${GOAL20_FLOOR_SLICE:-}" != 1 ]; then
+  python3 "$PROJECT_DIRECTORY/scripts/record-paired-paths.py" \
+    --summary "$OUTPUT_DIRECTORY/summary.json" \
+    --cadr-report "$CADR_REPORT" \
+    --history "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json"
+fi

@@ -7677,12 +7677,6 @@ KNOWN_EVENT_KIND_DIVERGENCES = {
     "toolcall_delta": {"pi": 6, "cadr": 5},
 }
 
-# pi tags the messages it synthesises from compaction and custom entries with
-# their own roles; cadr materialises both as user messages
-# (session-messages in src/cadr-agent/session/journal.lisp).  Folding pi's
-# spellings compares the message stream rather than the tagging.
-PI_ROLE_FOLD = {"compactionSummary": "user", "custom": "user"}
-
 # cadr's help text is the pi text with the product-identity renames applied,
 # so character counts cannot be equal; they can still be bounded.
 HELP_CHARACTER_TOLERANCE = 0.02
@@ -7817,14 +7811,6 @@ def check_parameters(cadr: dict, pi: dict, failures: list[str], only_enforce: fr
                 )
 
 
-def fold_pi_roles(roles: dict) -> dict:
-    folded: dict[str, int] = {}
-    for role, count in roles.items():
-        key = PI_ROLE_FOLD.get(role, role)
-        folded[key] = folded.get(key, 0) + count
-    return dict(sorted(folded.items()))
-
-
 def observed_table(report: dict, group: str) -> dict:
     groups = report.get("metrics")
     if not isinstance(groups, dict):
@@ -7865,50 +7851,55 @@ def check_observed(cadr: dict, pi: dict, failures: list[str], only_enforce: froz
                 failures,
             )
 
-    cadr_kinds = cadr["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
-    pi_kinds = pi["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
-    check(
-        sorted(cadr_kinds) == sorted(pi_kinds),
-        "provider_stream event kinds differ between the two sides",
-        failures,
+    floor_slice = bool(
+        cadr.get("parameters", {}).get("floor_slice")
+        or pi.get("parameters", {}).get("floor_slice")
     )
-    for kind in sorted(set(cadr_kinds) | set(pi_kinds)):
-        recorded = KNOWN_EVENT_KIND_DIVERGENCES.get(kind)
-        pi_count = pi_kinds.get(kind)
-        cadr_count = cadr_kinds.get(kind)
-        if recorded is None:
-            check(
-                pi_count == cadr_count,
-                f"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}",
-                failures,
-            )
-            continue
+    if not floor_slice:
+        cadr_kinds = cadr["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
+        pi_kinds = pi["metrics"]["provider_stream"]["observed"]["event_kind_counts"]
         check(
-            (pi_count, cadr_count) == (recorded["pi"], recorded["cadr"]),
-            f"recorded {kind} divergence moved: expected pi={recorded['pi']} "
-            f"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}",
+            sorted(cadr_kinds) == sorted(pi_kinds),
+            "provider_stream event kinds differ between the two sides",
             failures,
         )
-        notes.append(f"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}")
+        for kind in sorted(set(cadr_kinds) | set(pi_kinds)):
+            recorded = KNOWN_EVENT_KIND_DIVERGENCES.get(kind)
+            pi_count = pi_kinds.get(kind)
+            cadr_count = cadr_kinds.get(kind)
+            if recorded is None:
+                check(
+                    pi_count == cadr_count,
+                    f"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}",
+                    failures,
+                )
+                continue
+            check(
+                (pi_count, cadr_count) == (recorded["pi"], recorded["cadr"]),
+                f"recorded {kind} divergence moved: expected pi={recorded['pi']} "
+                f"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}",
+                failures,
+            )
+            notes.append(f"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}")
 
     cadr_roles = cadr["metrics"]["session_pipeline"]["observed"]["context_message_roles"]
-    pi_roles = fold_pi_roles(pi["metrics"]["session_pipeline"]["observed"]["context_message_roles"])
+    pi_roles = pi["metrics"]["session_pipeline"]["observed"]["context_message_roles"]
     check(
         cadr_roles == pi_roles,
-        f"context message roles differ after folding pi's synthetic roles: "
-        f"pi={pi_roles!r} cadr={cadr_roles!r}",
+        f"context message roles differ: pi={pi_roles!r} cadr={cadr_roles!r}",
         failures,
     )
 
-    cadr_help = cadr["metrics"]["cli_dispatch"]["observed"]["help_characters"]
-    pi_help = pi["metrics"]["cli_dispatch"]["observed"]["help_characters"]
-    check(
-        abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,
-        f"help text size gap exceeds {HELP_CHARACTER_TOLERANCE:.0%}: "
-        f"pi={pi_help} cadr={cadr_help}",
-        failures,
-    )
-    notes.append(f"help_characters=pi{pi_help}/cadr{cadr_help}")
+    if not floor_slice:
+        cadr_help = cadr["metrics"]["cli_dispatch"]["observed"]["help_characters"]
+        pi_help = pi["metrics"]["cli_dispatch"]["observed"]["help_characters"]
+        check(
+            abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,
+            f"help text size gap exceeds {HELP_CHARACTER_TOLERANCE:.0%}: "
+            f"pi={pi_help} cadr={cadr_help}",
+            failures,
+        )
+        notes.append(f"help_characters=pi{pi_help}/cadr{cadr_help}")
 
     cadr_journal = cadr["metrics"]["storage_journal"]["observed"]
     pi_journal = pi["metrics"]["storage_journal"]["observed"]

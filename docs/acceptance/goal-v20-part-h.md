@@ -13778,7 +13778,7 @@ silently skipped:
 | session header `cwd` | `/tmp/…` | `/tmp/…/` | `canonical-session-cwd` returns a directory namestring. |
 | journal body bytes | 54,771 | 56,723 | +3.6%, the sum of the rows above. |
 | `help_characters` | 9,784 | 9,802 | product-identity renames (`pi`→`cadr`, `PI_*`→`CADR_*`), plus cadr omits pi's `BASETEN_API_KEY` line and one blank line. Bounded at ±2% instead of compared exactly. |
-| context message roles | `compactionSummary`, `custom` roles | folded into `user` | `session-messages` materialises both as user messages. The gate folds pi's spellings and then requires equality. |
+| context message roles | `compactionSummary`, `custom` roles | same AgentMessage roles from context entries | cadr OBS counts `:custom-message` / `:compaction` before `session-messages` projects them to LLM `user`. Raw bags must match. |
 
 With `--cadr-journal` / `--pi-journal` the gate also diffs the two written
 journals leaf by leaf, after dropping the per-run entry ids and timestamps, and

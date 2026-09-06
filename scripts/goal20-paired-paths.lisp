@@ -2521,6 +2521,9 @@
       (error "~A requires a positive integer" option))
     value))
 
+(defun floor-slice-p ()
+  (string= (or (uiop:getenv "GOAL20_FLOOR_SLICE") "") "1"))
+
 (defun parse-options ()
   (let ((arguments (uiop:command-line-arguments)))
     (loop while arguments
@@ -3826,6 +3829,21 @@
     (cadr-ai:tool-result-message "toolResult")
     (cadr-agent::bash-execution-message "bashExecution")))
 
+(defun context-entry-role-name (entry)
+  (case (cadr-agent:session-entry-type entry)
+    (:message
+     (message-role-name (cadr-agent:session-entry-message entry)))
+    (:custom-message "custom")
+    (:compaction "compactionSummary")
+    (:branch-summary "branchSummary")
+    (otherwise nil)))
+
+(defun context-role-counts-json (entries)
+  (count-names-json
+   (loop for entry in entries
+         for name = (context-entry-role-name entry)
+         when name collect name)))
+
 (defun role-counts-json (messages)
   (count-names-json (mapcar #'message-role-name messages)))
 
@@ -3880,7 +3898,7 @@
      (json-object
       "context_entry_count" (length context-entries)
       "context_message_count" (length messages)
-      "context_message_roles" (role-counts-json messages)
+      "context_message_roles" (context-role-counts-json context-entries)
       "context_model" (session-context-model-json context-entries)
       "context_thinking_level"
       (session-context-thinking-level context-entries)
@@ -45226,6 +45244,40 @@
               (let ((codex (measure-provider-codex)))
               (format *error-output* "goal20 cadr paired paths: provider_pi_messages~%")
               (let ((pi-messages (measure-provider-pi-messages)))
+              (when (floor-slice-p)
+                (format *error-output* "goal20 cadr paired paths: floor_slice~%")
+                (return-from run-benchmarks
+                  (json-object
+                   "kind" "cadr-goal20-part-h-paired-paths"
+                   "machine"
+                   (json-object
+                    "lisp" (lisp-implementation-type)
+                    "lisp_version" (lisp-implementation-version)
+                    "machine_instance" (machine-instance)
+                    "machine_type" (machine-type))
+                   "metrics"
+                   (json-object
+                    "session_pipeline" session
+                    "storage_journal" storage
+                    "provider_pi_messages" pi-messages
+                    "provider_mistral" mistral)
+                   "parameters"
+                   (json-object
+                    "floor_slice" t
+                    "journal_append_entry_count" *journal-append-entry-count*
+                    "quick" *quick-p*
+                    "repetitions"
+                    (apply #'json-object
+                           (loop for (name . nil) in *repetitions*
+                                 append (list name (repetitions-for name))))
+                    "samples" *samples*
+                    "scrubbed_environment" scrubbed
+                    "terminal_sink" "count-only"
+                    "transport_stub"
+                    "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
+                    "warmups" *warmups*)
+                   "provenance" (provenance-json staged-digests)
+                   "schema_version" 1)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: agent_conditions~%")
