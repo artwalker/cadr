@@ -1229,20 +1229,92 @@
                                                   (rewind))))))))))))
                    (t
                     (rewind))))))
+           (try-compact-assistant-tail (bag)
+             ;; Pairing-fixture assistant metadata after content: fixed
+             ;; api/provider/model/usage/stopReason/timestamp order.
+             ;; Content still uses parse-content-value. Miss rewinds.
+             ;; Not message-entry-prefix. Not thinking-text envelope.
+             ;; Not toolUse typed emit.
+             (unless (and (session-json-message-role bag)
+                          (string= (session-json-message-role bag)
+                                   "assistant")
+                          (session-json-message-content bag))
+               (return-from try-compact-assistant-tail nil))
+             (let ((saved position))
+               (flet ((rewind ()
+                        (setf position saved)
+                        nil)
+                      (take-prefix (literal)
+                        (let ((n (length literal)))
+                          (declare (type fixnum n))
+                          (when (and (<= (the fixnum (+ position n)) length)
+                                     (key= position
+                                           (the fixnum (+ position n))
+                                           literal))
+                            (incf position n)
+                            t))))
+                 (unless (take-prefix
+                          "\"openai-completions\",\"provider\":\"goal20faux\",\"model\":\"goal20-paired-1\",\"usage\":")
+                   (return-from try-compact-assistant-tail (rewind)))
+                 (let ((usage (try-compact-usage)))
+                   (unless usage
+                     (return-from try-compact-assistant-tail (rewind)))
+                   (flet ((finish (stop-reason)
+                            (let ((timestamp (parse-timestamp-value)))
+                              (if (eql (peek-code) 125)
+                                  (progn
+                                    (take-code)
+                                    (cadr-ai:make-assistant-message
+                                     :content
+                                     (content-blocks-from-json
+                                      (session-json-message-content bag))
+                                     :api :openai-completions
+                                     :provider :goal20faux
+                                     :model "goal20-paired-1"
+                                     :usage usage
+                                     :stop-reason stop-reason
+                                     :timestamp timestamp))
+                                  (rewind)))))
+                     (cond
+                       ((take-prefix ",\"stopReason\":\"stop\",\"timestamp\":")
+                        (finish :stop))
+                       ((take-prefix ",\"stopReason\":\"toolUse\",\"timestamp\":")
+                        (finish :tooluse))
+                       (t
+                        (rewind))))))))
            (parse-message ()
              (or (try-compact-message)
-                 (let ((bag (make-session-json-message)))
+                 (let ((bag (make-session-json-message))
+                       (typed-result nil))
                    (expect-code 123)
                    (skip-space)
                    (unless (eql (peek-code) 125)
                      (loop
+                       (when typed-result
+                         (return))
                        (multiple-value-bind (key-start key-end)
                            (scan-key)
                          (skip-space)
                          (expect-code 58)
                          (skip-space)
                          (if key-start
-                             (put-message-field bag key-start key-end)
+                             (let ((n (- key-end key-start)))
+                               (when (and (= n 3)
+                                          (= (aref octets key-start) 97)
+                                          (= (aref octets (+ key-start 1))
+                                             112)
+                                          (= (aref octets (+ key-start 2))
+                                             105)
+                                          (session-json-message-role bag)
+                                          (string= (session-json-message-role
+                                                    bag)
+                                                   "assistant")
+                                          (session-json-message-content bag))
+                                 (let ((msg (try-compact-assistant-tail bag)))
+                                   (when msg
+                                     (setf typed-result msg))))
+                               (unless typed-result
+                                 (put-message-field bag key-start key-end)))
                              (skip-value)))
                        (skip-space)
                        (let ((code (peek-code)))
@@ -1252,8 +1324,10 @@
                             (skip-space))
                            ((eql code 125) (return))
                            (t (fail "Expected comma or }"))))))
-                   (expect-code 125)
-                   bag)))
+                   (or typed-result
+                       (progn
+                         (expect-code 125)
+                         bag)))))
            (put-entry-field (tag)
              ;; Closed entry keys: scan-key preclassified tag.  One u32
              ;; read in classify-entry-key; no second key= compare.
