@@ -134,18 +134,51 @@ def main() -> int:
         return 0
 
     if args.apply and not args.dry_run:
-        by_target = {(entry["scenario"], entry["checkpoint"]): entry for entry in data.get("entries", [])}
+        by_target = {
+            (entry["scenario"], entry["checkpoint"]): entry
+            for entry in data.get("entries", [])
+        }
         added = 0
+        merged = 0
         for draft in drafts:
             target = (draft["scenario"], draft["checkpoint"])
-            if target in by_target:
+            existing = by_target.get(target)
+            if existing is None:
+                data.setdefault("entries", []).append(draft)
+                by_target[target] = draft
+                added += 1
                 continue
-            data.setdefault("entries", []).append(draft)
-            by_target[target] = draft
-            added += 1
-        if added:
-            args.dispositions.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-        print(f"goal21-render-diff-ensure-skeletons: applied {added} skeleton entries")
+            # Wide-only pins must grow when a new dimension starts differing.
+            screens = existing.setdefault("screenSha256", {})
+            dims = list(existing.get("dimensions") or [])
+            new_dims = [
+                dim
+                for dim in (draft.get("screenSha256") or {})
+                if dim not in screens
+            ]
+            if not new_dims:
+                continue
+            for dim in new_dims:
+                screens[dim] = draft["screenSha256"][dim]
+                dims.append(dim)
+            existing["dimensions"] = sorted(set(dims))
+            classes = set(existing.get("classes") or []) | set(
+                draft.get("classes") or []
+            )
+            existing["classes"] = sorted(classes, key=lambda value: int(value[1:]))
+            note = (existing.get("note") or "").rstrip()
+            existing["note"] = (
+                note + f" Merged dimensions {new_dims} from skeleton sync."
+            )
+            merged += 1
+        if added or merged:
+            args.dispositions.write_text(
+                json.dumps(data, indent=2) + "\n", encoding="utf-8"
+            )
+        print(
+            "goal21-render-diff-ensure-skeletons: "
+            f"applied {added} skeleton entries, merged {merged} dimension sets"
+        )
         return 0
 
     print(f"goal21-render-diff-ensure-skeletons: would add {len(drafts)} skeleton entries (use --apply)")

@@ -98,6 +98,30 @@ def refresh_from_summary(summary: list[dict], entries: list[dict]) -> list[str]:
     return updated
 
 
+def clear_stale_i04_when_all_dims_equal(entries: list[dict]) -> list[str]:
+    """Remove I04 when every pinned dimension is screen-equal."""
+    cleared: list[str] = []
+    for entry in entries:
+        screens = entry.get("screenSha256") or {}
+        dims = entry.get("dimensions") or []
+        if not screens or not dims:
+            continue
+        if any(
+            not isinstance(screens.get(dim), dict)
+            or screens[dim].get("pi") != screens[dim].get("cadr")
+            or not screens[dim].get("pi")
+            for dim in dims
+        ):
+            continue
+        classes = set(entry.get("classes") or [])
+        if "I04" not in classes:
+            continue
+        classes.discard("I04")
+        entry["classes"] = sorted(classes, key=lambda value: int(value[1:]))
+        cleared.append(f"{entry.get('scenario')}/{entry.get('checkpoint')}")
+    return cleared
+
+
 def main() -> int:
     args = parse_args()
     if not args.dispositions.is_file():
@@ -117,6 +141,9 @@ def main() -> int:
         updated.extend(refresh_from_captures(args.analysis, entries))
 
     unique = sorted(set(updated))
+    cleared = clear_stale_i04_when_all_dims_equal(entries)
+    if cleared:
+        unique = sorted(set(unique) | {f"clear-I04:{key}" for key in cleared})
     if not unique:
         print("goal21-gate-refresh-hashes: no hash updates needed")
         return 0
