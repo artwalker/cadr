@@ -1507,7 +1507,7 @@ Load met. Journal still the named leftover. G.17 missing.
 
 ### Invent keep (Friend-MachineD g20-jr-open-slice n=10 interleaved; journal I/O axis)
 
-- Keep: `594d066a4` `read-session-objects` trailing-LF repair skip + `{`-first `line-has-body-p` gate. Not consume-line `{` blank-skip. Not ignore-errors consume-line. Not fill-pointer object accumulator. Not message-entry-prefix. FP_BYTES 38072 EQUAL. journal_read mom **1370.4→1224.5 µs** (−146 µs, 10/10 pairwise). session_load mom **1540.5→1378.5 µs** (−162 µs). G.17 missing.
+- Keep: `594d066a4` `read-session-objects` trailing-LF repair skip + `{`-first `line-has-body-p` gate. Not consume-line `{` blank-skip. Not ignore-errors consume-line. Not fill-pointer object accumulator. Not message-entry-prefix. FP_BYTES 38072 EQUAL. journal_read mom **1370.4→1224.5 µs** (−146 µs, 10/10 pairwise). session_load mom **1540.5→1378.5 µs** (−162 µs). G.17 pending remesure.
 
 ### Remesure25 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; tip `594d066a4` journal I/O keep)
 
@@ -1520,4 +1520,18 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure25`.
 | pi_messages | 595.0 | 907.3 | **0.66× (met)** |
 | mistral | 1488.8 | 1740.3 | **0.86× (met)** |
 
-**Floor exit predicate met** on this booking (all four ≤1.0×). G.17 still `missing`.
+**Floor exit predicate met** on this booking (all four ≤1.0×). Reconfirm remesure26 also all-met. G.17 `met` (adjudications 2026-09-06; §5.2).
+
+### Remesure26 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; tip `594d066a4` / docs `6a1a5c253`; advisor reconfirm)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure26`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1374.7 | 2103.5 | **0.65× (met)** |
+| journal_read | 1208.0 | 1393.6 | **0.87× (met)** |
+| pi_messages | 579.4 | 790.8 | **0.73× (met)** |
+| mistral | 1410.1 | 1847.5 | **0.76× (met)** |
+
+**Reconfirm all-met.** G.17 `met` written with §5.2 disclaimer. Not Goal 20 complete (G.12 `missing`).
+

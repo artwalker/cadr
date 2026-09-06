@@ -1517,4 +1517,35 @@ unchanged.
 floor evidence on tip contradicts remesure14 exit; refuse is
 the contentful ruling that keeps invent honest.
 
+## 2026-09-06 — G.17 `met` (invent/floor closed; remesure25+26)
+
+**Ruled**: Cursor executor as G.17 process signer under the
+2026-09-05 delegation (user: 「G.17 你就是顾问啊」).
+**Not independently audited by a separate advisor** (§5.2).
+
+**Decided**:
+
+1. **G.17 `met`.** Friend-MachineD `GOAL20_FLOOR_SLICE=1` n=10
+   warmups=2 on tip with invent keep `594d066a4`
+   (`read-session-objects` trailing-LF repair skip + `{`-first
+   `line-has-body-p`):
+   - remesure25 (`/tmp/goal20-floor-remesure25`): session_load
+     0.98×, journal_read 0.97×, pi_messages 0.66×, mistral 0.86×
+   - remesure26 reconfirm (`/tmp/goal20-floor-remesure26`):
+     session_load 0.65×, journal_read 0.87×, pi_messages 0.73×,
+     mistral 0.76×
+   All four named invent/floor leftovers ≤1.0× on both runs.
+   Docs tip at booking: `6a1a5c253` / keep `594d066a4`.
+2. The 2026-09-06 refuse after remesure15–17 still stands as
+   method: do not rubber-stamp a single all-met booking that
+   fails reconfirm. remesure26 is that reconfirm.
+3. **Not Goal 20 complete.** G.12 remains `missing` in
+   `goal-v20-part-g.md`. User veto retained.
+4. Invent/floor soft-stop is allowed for the named quartet.
+   Silent stop on other Part P leftovers is still invalid if
+   they reopen under the same gate.
+
+**Why it was decidable**: mechanical floor evidence on tip
+with keep; reconfirm after prior swing lesson; delegated
+signer + §5.2 disclosure.
 

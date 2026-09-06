@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: G.17 `met` after invent keep `594d066a4` and Friend-MachineD
+  remesure25+26 floor reconfirm (all four ≤1.0×). Not independently
+  audited by a separate advisor (§5.2). Not Goal 20 complete (G.12
+  still `missing`).
+
 - Goal 20: `parse-arguments-object` takes object keys from the octet
   window and uses closed `path`/`offset`/`limit` literals. Not
   three-pair compact. Friend-MachineD g20-jr-slice n=10 interleaved
