@@ -1,9 +1,9 @@
 # Executor current (2026-09-06)
 
-**Friend-MachineD n=5 remesure 2026-09-06 (provisional):** load
-**1719.7 / 1510.2 µs = 1.14×** (journal_read 1.07×). OBS
-roles diverge vs pi floor_slice; re-book after same-suite
-EQUAL remesure. Prior ledger 1762 / Part P ~1192. G.17 missing.
+**Friend-MachineD n=5 floor_slice remesure2 2026-09-06:** load
+**2305.7 / 2500.3 µs = 0.92×** (roles EQUAL). journal_read still
+1.14×; pi_messages 0.96× after visitor keep; mistral 1.24×.
+G.17 missing. Goal 20 not complete.
 
 **Kept:** session-list-info streaming list for
 `session-manager-list` / `cli_sdk.session_list`.

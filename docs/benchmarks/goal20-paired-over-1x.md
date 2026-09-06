@@ -8,10 +8,10 @@ not a live queue freeze. G.17 stays `missing`. Not Goal 20 complete.
 
 | metric | cadr µs | pi µs | ratio | ceiling | leftover | disposition |
 |---|---:|---:|---:|---:|---|---|
-| `session_pipeline.session_load` | 1719.7 | 1510.2 | 1.14× (OBS contaminated) | 9.00× | n=5 2026-09-06 full-cadr vs floor_slice-pi; context_message_roles diverge (pi adds custom/compactionSummary). Ratio provisional until same-suite OBS EQUAL remesure | invent pause; 待本质提案；remesure OBS |
-| `storage_journal.journal_read` | 1659.3 | 1556.1 | 1.07× (write OBS diverge) | 8.00× | n=5 2026-09-06; read counts match; written_bytes cadr 56685 vs pi 54924. Ratio provisional | invent pause; 待本质提案；remesure OBS |
-| `provider_pi_messages.stream_roundtrip` | 1113.4 | 762.8 | 1.46× | 1.50× | n=5 2026-09-06; near ceiling; MAD-bound; pi faster than prior ledger — re-roll can breach 1.50 | invent pause; 待本质提案；ceiling risk |
-| `provider_mistral.stream_roundtrip` | 2323.2 | 2011.0 | 1.16× | 3.00× | Friend-MachineD n=5 remesure 2026-09-06 | invent pause; 待本质提案 |
+| `session_pipeline.session_load` | 2305.7 | 2500.3 | 0.92× | 9.00× | Friend-MachineD n=5 floor_slice 2026-09-06 remesure2; context_message_roles EQUAL (custom/compactionSummary). Gate PASS | invent keep path; floor met on this remesure |
+| `storage_journal.journal_read` | 1897.4 | 1658.0 | 1.14× | 8.00× | Friend-MachineD n=5 floor_slice remesure2; roles EQUAL; journal_body_bytes still diverge (+3.2%). Gate PASS | invent pause; 待本质提案 |
+| `provider_pi_messages.stream_roundtrip` | 1163.4 | 1216.2 | 0.96× | 1.50× | Friend-MachineD n=5 floor_slice remesure2 after visitor-decode keep `c100f0f95`; variance gate. Gate PASS | invent keep; floor met on this remesure |
+| `provider_mistral.stream_roundtrip` | 3359.1 | 2702.4 | 1.24× | 3.00× | Friend-MachineD n=5 floor_slice remesure2. Gate PASS | invent pause; 待本质提案 |
 | `session_compact.compact` | 36.7 | 35.3 | 1.04× | 20.00× | near 1.0; uuid-v7 entropy pool already kept | 待 MAD/本质；不开现象刀 |
 | `session_compact.branch_summarize` | 37.3 | 32.5 | 1.15× | 20.00× | measure-only pair 255; collect+generate branch summary | invent pause；地板优化另刀 |
 | `session_discovery.header_probe` | 732.2 (cadr µs invent; prior ledger 1449.6) | 708.6 | pending remesure | 8.00× | buffered read-sequence + parse-session-header-octets | invent keep (cadr µs); pairing ratio remesure later | 708.6 | ~1.03× (cadr µs invent; pi ledger unremeasured) | 8.00× | buffered read-sequence + parse-session-header-octets; prior ledger 1449.6 | invent keep (cadr µs); remesure pairing ratio later |
