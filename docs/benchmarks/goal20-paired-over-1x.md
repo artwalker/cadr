@@ -1238,3 +1238,16 @@ Host variance note: mistral met at remesure5 (0.98×) then 1.42× here; session_
 - Ban: `civil-time-unix-ms` / Hinnant days_from_civil replacing `encode-universal-time` on 24-char timestamps (journal+load mom worse; revert).
 - Ban: mistral `structural-skip-value` chat-chunk walk (~2% slower than parse-json-scratch; revert).
 
+### Remesure8 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip with pool-bump working tree; classify-entry-key may postdate load)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1837.6 | 1726.3 | **1.06× (open)** |
+| journal_read | 1564.5 | 1313.8 | **1.19× (open)** |
+| pi_messages | 892.5 | 898.7 | **0.99× (met)** |
+| mistral | 1678.2 | 2096.0 | **0.80× (met)** |
+
+Keeps after: `00dd01f52` pool 32/8, `eabe3f3a4` classify-entry-key. Remesure9 supersedes if this run predates classify-entry-key.
+
