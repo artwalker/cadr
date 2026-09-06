@@ -1205,28 +1205,45 @@
                                 (let ((text (parse-string-value)))
                                   (if (not (take-prefix "}],\"isError\":"))
                                       (rewind)
-                                      (let ((is-error (parse-generic)))
-                                        (if (not (take-prefix
-                                                  ",\"timestamp\":"))
-                                            (rewind)
-                                            (let ((timestamp
-                                                    (parse-timestamp-value)))
-                                              (if (eql (peek-code) 125)
-                                                  (progn
-                                                    (take-code)
-                                                    (cadr-ai:make-tool-result-message
-                                                     :tool-call-id
-                                                     (or tool-call-id "")
-                                                     :tool-name
-                                                     (or tool-name "")
-                                                     :content
-                                                     (list
-                                                      (cadr-ai:make-text-content
-                                                       :text (or text "")))
-                                                     :is-error
-                                                     (eq t is-error)
-                                                     :timestamp timestamp))
-                                                  (rewind))))))))))))
+                                      (if (take-prefix "false,\"timestamp\":")
+                                          (let ((timestamp (parse-number-value)))
+                                            (if (eql (peek-code) 125)
+                                                (progn
+                                                  (take-code)
+                                                  (cadr-ai:make-tool-result-message
+                                                   :tool-call-id
+                                                   (or tool-call-id "")
+                                                   :tool-name
+                                                   (or tool-name "")
+                                                   :content
+                                                   (list
+                                                    (cadr-ai:make-text-content
+                                                     :text (or text "")))
+                                                   :is-error nil
+                                                   :timestamp timestamp))
+                                                (rewind)))
+                                          (let ((is-error (parse-generic)))
+                                            (if (not (take-prefix
+                                                      ",\"timestamp\":"))
+                                                (rewind)
+                                                (let ((timestamp
+                                                        (parse-timestamp-value)))
+                                                  (if (eql (peek-code) 125)
+                                                      (progn
+                                                        (take-code)
+                                                        (cadr-ai:make-tool-result-message
+                                                         :tool-call-id
+                                                         (or tool-call-id "")
+                                                         :tool-name
+                                                         (or tool-name "")
+                                                         :content
+                                                         (list
+                                                          (cadr-ai:make-text-content
+                                                           :text (or text "")))
+                                                         :is-error
+                                                         (eq t is-error)
+                                                         :timestamp timestamp))
+                                                      (rewind)))))))))))))
                    (t
                     (rewind))))))
            (parse-message ()
