@@ -1504,3 +1504,7 @@ Load met. Journal still the named leftover. G.17 missing.
 - Ban: `parse-copy-string-value` for entry `id`/`parentId` plus redundant `skip-space` removal on `message`/`usage` in `put-entry-field` (n=10×3; jr/load inside host noise; round1 jr +18 µs; revert).
 - Ban: `parse-value-at` eliding leading `skip-space` before argument values in `parse-arguments-object` (n=10×3; jr mom +10/+93/+31 µs; revert).
 - Ban: `parse-copy-string-value` on toolCall `id`/`name` in compact envelopes bundled with path value copy (n=10×3; jr mom +26/+88/−12 µs; load regress; FP EQUAL; revert).
+
+### Invent keep (Friend-MachineD g20-jr-open-slice n=10 interleaved; journal I/O axis)
+
+- Keep: `594d066a4` `read-session-objects` trailing-LF repair skip + `{`-first `line-has-body-p` gate. Not consume-line `{` blank-skip. Not ignore-errors consume-line. Not fill-pointer object accumulator. Not message-entry-prefix. FP_BYTES 38072 EQUAL. journal_read mom **1370.4→1224.5 µs** (−146 µs, 10/10 pairwise). session_load mom **1540.5→1378.5 µs** (−162 µs). G.17 missing. Floor remesure25 pending.
