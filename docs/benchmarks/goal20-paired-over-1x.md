@@ -1328,3 +1328,16 @@ Still open: session_load, journal_read.
 - Ban: `put-block-field` classify-entry-key-style tag/(u32,n) dispatch (journal regress ~+10%; load mixed; revert).
 - Ban: compact-path `parse-number-value` for timestamps instead of `parse-timestamp-value` (WIP left dirty on tip; restored; do not land without measure).
 
+### Remesure14 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `3c8e58ff7` try-compact-assistant-tail; `b6d92703f` two-block landed after measure)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1739.4 | 2197.4 | **0.79× (met)** |
+| journal_read | 1643.4 | 1787.7 | **0.92× (met)** |
+| pi_messages | 680.5 | 1678.5 | **0.41× (met)** |
+| mistral | 1817.8 | 2973.9 | **0.61× (met)** |
+
+**Named Part-P leftovers all ≤1.0×.** Invent/floor exit predicate met on this booking (G.17 still separate).
+
