@@ -1391,8 +1391,8 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure18`.
 | mistral | 1691.3 | 1802.0 | **0.94× (met)** |
 
 Host swing widened load+journal. Invent continues both axes. G.17 missing.
-- Ban: `parse-content-three-block-array` (slice load −12 µs noise, journal −76 µs; not clear keep; revert).
-- Keep: `bc29edb2e` `try-compact-message` assistant role+content gate, then existing `try-compact-assistant-tail`. Hits thinking+text and toolCall. Not thinking-text envelope. Not typed toolUse. Not three-block. Restored after `579b08bd2` reverted `0f209dce6` with no slice countermeasure. Friend-MachineD g20-load-slice n=5x5 session_load mom 1828.811→1737.706 µs (confirm 1681.234→1612.902). FP_BYTES 37832 EQUAL. G.17 missing.
+- Ban: `parse-content-three-block-array` (pairing fixture content arrays only length 1/2; zero 3-object hits; slice “wins” are host noise; revert).
+- Ban / withdrawn: assistant role+content gate (`0f209dce6`/`bc29edb2e`, reverts `579b08bd2`/`43e61a905`). Early slice moms looked like a keep; reconfirm on tip `329ceccc6` load mom 1765.7→1818.9 (+53 µs regress), jr −56 µs. Fixture has no three-block arrays. Do not re-land without fresh clear load win. G.17 missing.
 
 ### Remesure19 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; tip `3fa0b071a`)
 
