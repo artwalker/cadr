@@ -129,3 +129,24 @@ ts	phase	decision	why	evidence	result
 2026-09-06T13:12:00Z	ops	booked post-exit keep 5e6266d99 parse-content-one-block-array in paired-over; wake stays stopped; G.17 missing	docs book\t-\tdone
 2026-09-06T13:13:00Z	ops	booked ignore-errors consume-line ban after journal invent all-revert; wake stays stopped; G.17 missing	docs book\t-\tdone
 2026-09-06T13:15:00Z	invent	reverted scan-key SWAR quote-only (octet-find-quote); reverted handler elide parse-fail block on 456cf0381 base (variance); kept parse-content-one-block-array already at 5e6266d99	g20-jr-slice n=5 mom: quote-only load regress; handler elide split verdict; one-block load 1839→1715 jr 1561→1528 FP 38072 EQUAL	456cf0381→5e6266d99; /tmp/g20-{jr,oneblock}-*.txt	one-block kept; scan-key+handler-elide revert; G.17 missing
+2026-09-06T13:16:00Z	ops	tip 42a888978; re-book ignore-errors consume-line ban locally; wake stays stopped; G.17 missing	docs book\t-\tdone
+2026-09-06T14:20:00Z	advisor	refuse G.17 met; remesure15-17 tip swing; reopen invent on session_load; unpaired denom 297/133594 needs-pair=0 uncovered=0	user delegated signer; prove tip floor	/tmp/goal20-floor-remesure{15,16,17}; docs/adjudications.md 2026-09-06	G.17 missing; floor reopen
+2026-09-06T14:18:10Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:19:15Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:20:19Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:30:00Z	ops	autonomous run armed; exit=floor n>=10 all four <=1.0x then G.17 met (executor signs); G.12 out of this predicate	user: automate and approve	3fa0b071a	running
+2026-09-06T14:31:00Z	ops	fan-out invent A+B + remesure18 in flight	autonomous drain	af33dc0e/f61d3717	running
+2026-09-06T14:21:24Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:22:00Z	remesure	remesure18 n=10 load 1.35 journal 1.42 open; pi_messages+mistral met; continue invent both	prove tip floor	/tmp/goal20-floor-remesure18	OPEN=2; G.17 missing
+2026-09-06T14:22:27Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:23:31Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:24:35Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:25:00Z	invent	reverted parse-content-three-block-array; FP 37832 EQUAL; load tip mom 2149.9 vs knife 2137.8 (-12us noise); jr 1972.0 vs 1895.7 (-76us); not clear keep	Friend-MachineD g20-load-slice n=5x5 interleaved	/tmp/g20-threeblock-*; /tmp/g20-coord-load-wt	reverted; G.17 missing
+2026-09-06T14:25:38Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:27:00Z	invent	reverted one-before-two block order; FP EQUAL; load tip 1648.9 vs knife 1600.1 (-49us); jr 1444.8 vs 1482.7 (+38us regress); not both axes	Friend-MachineD g20-load-slice n=5x5	/tmp/g20-order-*	reverted; G.17 missing
+2026-09-06T14:26:40Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:26:53Z	invent	kept try-compact-message assistant role+content gate then existing assistant-tail; not thinking-text envelope; not typed toolUse; not three-block; not one-before-two	Friend-MachineD g20-load-slice n=5x5 interleaved; FP_BYTES 37832 EQUAL; session_load tip mom 1828.811 to knife mom 1737.706 us; confirm mom 1681.234 to 1612.902; cadr-agent 1495/1495 in 19980 fiveam green; never G.17	3fa0b071a parent; 0f209dce6; /tmp/g20-asst-role-ab; /tmp/g20-asst-role-ab2	kept; pushed pending; G.17 missing
+2026-09-06T14:28:00Z	remesure	remesure19 n=10 load 1.01 journal 1.31 open; invent priority journal	prove tip	/tmp/goal20-floor-remesure19	OPEN=2; G.17 missing
+2026-09-06T14:27:44Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:28:48Z	wake	floor reopen; invent should be running; heartbeat	session_load 1.03x remesure17	3fa0b071a	alive
+2026-09-06T14:28:56Z	invent	restored assistant role+content keep after parallel revert 579b08bd2 of 0f209dce6; new tip SHA bc29edb2e	revert had empty body; slice evidence still FP EQUAL and load mom win; never G.17	579b08bd2; bc29edb2e; /tmp/g20-asst-role-ab;/tmp/g20-asst-role-ab2	kept; G.17 missing

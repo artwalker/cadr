@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `try-compact-message` assistant role+content gate reuses
+  `parse-content-value` and `try-compact-assistant-tail` so assistant
+  rows skip the bag scan-key loop. Friend-MachineD g20-load-slice
+  n=5x5 session_load mom 1828.811→1737.706 µs (confirm
+  1681.234→1612.902). FP_BYTES 37832 EQUAL. G.17 stays `missing`.
+  Not Goal 20 complete.
+
 - Goal 20: `parse-content-one-block-array` structural exactly-one-object
   content array fast path in `parse-content-value`. Friend-MachineD
   g20-jr-slice n=5 session_load mom ~1839→1715 µs, journal_read mom
