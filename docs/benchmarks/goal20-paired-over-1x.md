@@ -1491,3 +1491,8 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure24`.
 
 Load met. Journal still the named leftover. G.17 missing.
 - Ban: first-byte role dispatch after `{"role":"` peek u/t/a (slice −57 µs inside noise / hot outlier; revert).
+- Ban: leftover assistant `content`+tail after the toolCall envelope (g20-load-slice n=10 load mom 1527.401 vs 1527.639; jr −41 µs; pairwise 7/10 5/10; role+content sibling; revert). Small-array `66e961a0d` and toolCall `8f5993958` untouched.
+- Ban: iso-ms YMD midnight cache of `encode-universal-time` (n=10 load +6 µs jr +32 µs; not Hinnant days_from_civil; revert).
+- Ban: shared `{"type":"` prefix in `try-compact-content-block` (n=10 load −21 µs jr +23 µs; revert).
+- Ban: `load-session` skip `coerce` to simple-vector, `dolist` the JSONL cons list (n=10 load −4 µs; revert).
+- Ban: `parse-string-value` skip intern on entry id/parentId (n=10 load −36 µs pairwise 6/10; jr −5 µs; revert).
