@@ -1406,3 +1406,16 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure19`.
 | mistral | 1767.4 | 2230.1 | **0.79× (met)** |
 
 Load near-miss. Journal still open. Invent priority: journal_read.
+
+### Remesure20 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10; tip with assistant role+content `bc29edb2e`)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure20`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1961.7 | 1894.0 | **1.04× (open)** |
+| journal_read | 2102.5 | 1841.3 | **1.14× (open)** |
+| pi_messages | 697.2 | 984.1 | **0.71× (met)** |
+| mistral | 1574.2 | 2177.6 | **0.72× (met)** |
+
+Still open load+journal. Drain continues.
