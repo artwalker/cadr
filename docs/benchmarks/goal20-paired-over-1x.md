@@ -1475,4 +1475,18 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure23`.
 | mistral | 1569.6 | 1639.5 | **0.96× (met)** |
 
 Load met. Journal still open (~1.06×). G.17 missing.
+Note: `/tmp/goal20-floor-remesure23` was later overwritten by a stale run on tip `43070f5d5` (load 1.09× / journal 1.26×). Booking above is the earlier `796b00203` measure. Stale copy: `/tmp/goal20-floor-remesure23-stale-43070`.
 - Ban: assistant-role continue into `parse-message-fields` after `{"role":"` (no rewind; load/journal inside noise; revert).
+
+### Remesure24 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10; tip `cfe0aa49d` after args key windows)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure24`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1542.5 | 2153.6 | **0.72× (met)** |
+| journal_read | 1355.5 | 1257.9 | **1.08× (open)** |
+| pi_messages | 615.8 | 947.7 | **0.65× (met)** |
+| mistral | 1545.2 | 1629.4 | **0.95× (met)** |
+
+Load met. Journal still the named leftover. G.17 missing.
