@@ -1061,16 +1061,17 @@ class RenderDiffGateTest(unittest.TestCase):
         # Goal 18 I7 widened the extractor: chalk color wrappers stay
         # transparent to the literals inside them, and addLoadedSection,
         # addDiagnostic, and LoginDialogComponent's titleOverride became
-        # contracted sinks.  v0.85.1 (d981de122): 526 sites, 1173 branches,
-        # 1110 printable-visible, 63 terminal-protocol, 255 source-inventory
+        # contracted sinks.  v0.85.1 (d981de122) after experimental README
+        # asset classification: 549 sites, 1226 branches, 1163
+        # printable-visible, 63 terminal-protocol, 310 source-inventory
         # entries.
-        self.assertEqual(526, len(inventory["entries"]))
+        self.assertEqual(549, len(inventory["entries"]))
         self.assertEqual(
-            1173,
+            1226,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1110,
+            1163,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -1085,7 +1086,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 if entry["sink"]["channel"] == "terminal-protocol"
             ),
         )
-        self.assertEqual(255, len(inventory["sourceInventory"]))
+        self.assertEqual(310, len(inventory["sourceInventory"]))
         self.assertEqual(
             62,
             sum(
