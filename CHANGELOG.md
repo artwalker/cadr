@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `build-system-prompt` skips default-path and guideline
+  assembly on the custom-prompt branch (matches pi
+  `buildSystemPrompt`). Friend-MachineD build_prompt microbench
+  9.28→3.10 µs. Refresh unpaired-path denominator after invent.
+
 - Goal 20: `decode-base64-bytes` pre-sizes output, skips
   whitespace strip on clean input, optional `max-bytes` stop,
   and uses a decode table (same shape as TUI

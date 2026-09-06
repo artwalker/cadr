@@ -25,52 +25,50 @@
        (readme-path nil readme-path-p)
        (docs-directory nil docs-directory-p)
        (examples-directory nil examples-directory-p))
-  ;; &key defaults re-run every call; resolve paths in the body from the memoized root.
-  (let* ((cli-root (cadr-ai::cadr-cli-source-directory))
-         (readme-path
-           (if readme-path-p
-               readme-path
-               (merge-pathnames "README.md" cli-root)))
-         (docs-directory
-           (if docs-directory-p
-               docs-directory
-               (cadr-ai::cadr-docs-directory)))
-         (examples-directory
-           (if examples-directory-p
-               examples-directory
-               (merge-pathnames "examples/" cli-root)))
-         (selected
-           (if selected-tools-p
-               selected-tools
-               '("read" "bash" "edit" "write")))
-         (described
-           (remove-if-not
-            (lambda (name)
-              (assoc name tool-snippets
-                     :test #'string=))
-            selected))
-         (guidelines
-           (dedupe-prompt-guidelines
-            (append
-             (when
-                 (and
-                  (member "bash" selected
-                          :test #'string=)
-                  (not
-                   (intersection
-                    '("grep" "find" "ls")
-                    selected
-                    :test #'string=)))
-               (list
-                "Use bash for file operations like ls, rg, find"))
-             prompt-guidelines
-             (list
-              "Be concise in your responses"
-              "Show file paths clearly when working with files")))))
+  (let ((selected
+          (if selected-tools-p
+              selected-tools
+              '("read" "bash" "edit" "write"))))
     (with-output-to-string (output)
       (if custom-prompt
           (write-string custom-prompt output)
-          (progn
+          (let* ((cli-root (cadr-ai::cadr-cli-source-directory))
+                 (readme-path
+                   (if readme-path-p
+                       readme-path
+                       (merge-pathnames "README.md" cli-root)))
+                 (docs-directory
+                   (if docs-directory-p
+                       docs-directory
+                       (cadr-ai::cadr-docs-directory)))
+                 (examples-directory
+                   (if examples-directory-p
+                       examples-directory
+                       (merge-pathnames "examples/" cli-root)))
+                 (described
+                   (remove-if-not
+                    (lambda (name)
+                      (assoc name tool-snippets
+                             :test #'string=))
+                    selected))
+                 (guidelines
+                   (dedupe-prompt-guidelines
+                    (append
+                     (when
+                         (and
+                          (member "bash" selected
+                                  :test #'string=)
+                          (not
+                           (intersection
+                            '("grep" "find" "ls")
+                            selected
+                            :test #'string=)))
+                       (list
+                        "Use bash for file operations like ls, rg, find"))
+                     prompt-guidelines
+                     (list
+                      "Be concise in your responses"
+                      "Show file paths clearly when working with files")))))
             (write-string
              "You are an expert coding assistant operating inside cadr, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files."
              output)

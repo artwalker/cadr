@@ -47,7 +47,7 @@ not a live queue freeze. G.17 stays `missing`. Not Goal 20 complete.
 | `provider_registry_defs.definition_ids` | ~70 warm invent micro (prior ledger ~270) | ~5 | pending remesure | 125.00× | invent: ids+digest cache; remount later | invent kept 2026-09-05 |
 
 | `provider_registry_defs.lookup` | 1.03 | 0.23 | 4.44× | 8.00× | measure-only pair `cec8aa391`; catalog count gap booked (40/39); sub-µs variance | invent pause；地板优化另刀 |
-| `skill_prompt_load.build_prompt` | 52.91 | 1.52 | 34.86× | 3000.00× | Friend-MachineD n=5 after ASDF source-dir memoize + `&key` default hoist (`g20-asdf-floor-cache`); was 2196 µs / 1170.57× | floor knife landed; still >1.0× |
+| `skill_prompt_load.build_prompt` | ~3.10 (cadr µs invent; prior ledger 52.91) | 1.52 | pending remesure | 3000.00× | invent: custom-prompt skip default-path/guidelines (Friend-MachineD 9.28→3.10 µs); remount later | floor knife landed; still >1.0× |
 | `ai_support.auth_guidance` | 57.64 | 49.65 | 1.16× | 50.00× | Friend-MachineD n=5 after docs-dir memoize; was 1922 µs / 27.66× | floor knife landed |
 | `cli_bootstrap_sessions.coding_tools` | 11.1 | 4.6 | 2.40× | 8.00× | measure-only pair `e8da8ac48` | invent pause；地板优化另刀 |
 | `ai_runtime_faux.blocks` | 0.27 | 0.15 | 1.76× | 8.00× | measure-only pair `25826109b`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
