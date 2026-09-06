@@ -1273,3 +1273,16 @@ Gate PASS. Roles EQUAL.
 | pi_messages | 689.2 | 1318.0 | **0.52× (met)** |
 | mistral | 1588.7 | 2196.2 | **0.72× (met)** |
 
+### Remesure11 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `eca3832d2` compact-typed-message)
+
+Gate PASS. Roles EQUAL.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1748.1 | 2236.0 | **0.78× (met)** |
+| journal_read | 1413.5 | 1384.2 | **1.02× (open)** |
+| pi_messages | 706.0 | 908.6 | **0.78× (met)** |
+| mistral | 1729.9 | 2381.5 | **0.73× (met)** |
+
+Named leftovers still open: journal_read.
+
