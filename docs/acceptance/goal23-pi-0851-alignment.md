@@ -6,7 +6,7 @@
 >
 > **自：** `b79e4cc83` · `v0.84.4` +0  
 > **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）  
-> 机械锚点与部分用户可见增量已落；全门禁与剩余 disposition 未完成。
+> G23 gates green on v0.85.1; invent unpaused. G.17 stays `missing`.
 
 ## 已落地上游增量（tip `eb9b9590a`）
 
@@ -102,13 +102,13 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
 
 ## 验收
 
-- [ ] `BASELINE` 第三列为 `0`，release 为 `v0.85.1`，commit 为 `d981de122…`
-- [ ] `python3 scripts/baseline-anchor.py check` 绿
-- [ ] `enumerate-baseline-diff` 各类 delta 均有 disposition
-- [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
-- [ ] `CHANGELOG.md` 记录：`cadr … · aligned with pi v0.85.1 (+0, d981de122)`
-- [ ] Goal 20 `paused=false`；invent 仅在 0851 基线上恢复
-- [ ] Does not mark G.17 `met` / Goal 20 complete
+- [x] `BASELINE` 第三列为 `0`，release 为 `v0.85.1`，commit 为 `d981de122…`
+- [x] `python3 scripts/baseline-anchor.py check` 绿
+- [x] `enumerate-baseline-diff` 各类 delta 均有 disposition
+- [x] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
+- [x] `CHANGELOG.md` 记录：`cadr … · aligned with pi v0.85.1 (+0, d981de122)`
+- [x] Goal 20 `paused=false`；invent 仅在 0851 基线上恢复
+- [x] Does not mark G.17 `met` / Goal 20 complete
 
 ## 与 Goal 20 的关系
 
