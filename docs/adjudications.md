@@ -1484,4 +1484,37 @@ gate change and delegated signature authority with
 operating structure; content of Part P / CL ceiling is
 unchanged.
 
+## 2026-09-06 — G.17 stays `missing`; floor reopen after remesure15–17
+
+**Ruled**: Cursor executor as G.17 process signer under the
+2026-09-05 delegation (user this session: 「G.17 你就是顾问啊」).
+**Not independently audited by a separate advisor** (§5.2).
+
+**Decided**:
+
+1. **Refuse G.17 `met`.** remesure14 booked all four named
+   leftovers ≤1.0× (`/tmp/goal20-floor-remesure14`). On tip
+   `42a888978` (`5e6266d99` one-block keep), remesure15–17 on
+   Friend-MachineD do **not** keep all four ≤1.0×:
+   - remesure15 n=5: journal_read **1.13×** open
+   - remesure16 n=5: session_load **1.23×** open
+   - remesure17 n=10: session_load **1.03×** open
+2. Pairing invariants still hold after denom refresh:
+   `needs-pair=0` `uncovered=0` (297 files / 133594 lines).
+   Ratio gate PASS under existing ceilings. That is not a
+   Part P invent/floor close.
+3. **Invent/floor reopens** on `session_pipeline.session_load`
+   until a Friend-MachineD `GOAL20_FLOOR_SLICE=1` remesure
+   (prefer n≥10) shows all four named leftovers ≤1.0× again.
+   Then the executor may write G.17 `met` with the §5.2 line.
+4. Historical advisor vetoes of premature `met` still stand as
+   method. Rubber-stamping remesure14 after tip swing would
+   repeat that failure mode.
+5. Goal 20 remains incomplete. G.12 is still `missing` in
+   `goal-v20-part-g.md` even after a future G.17 `met`.
+
+**Why it was decidable**: user delegated signature; mechanical
+floor evidence on tip contradicts remesure14 exit; refuse is
+the contentful ruling that keeps invent honest.
+
 

@@ -1341,4 +1341,40 @@ Gate PASS. Roles EQUAL.
 **Named Part-P leftovers all ≤1.0×.** Invent/floor exit predicate met on this booking (G.17 still separate).
 - Ban: `scan-key` quote-only SWAR / `octet-find-quote` (paired A/B load+journal regress; revert).
 - Ban: handler elide fail→return-from dropping `handler-bind` on v3 body (load regress; revert).
-- Keep (post-exit invent): `parse-content-one-block-array` — structural exactly-one-object content array; Friend-MachineD g20-jr-slice n=5 load mom ~1839→1715 µs, journal_read mom ~1561→1528 µs; FP_BYTES 38072 EQUAL. Floor still closed.
+- Ban: `ignore-errors` in `consume-line` instead of `block`+`handler-bind` (load+journal worse; revert).
+- Keep (post-exit invent): `5e6266d99` `parse-content-one-block-array` — structural exactly-one-object content array; Friend-MachineD g20-jr-slice n=5 load mom ~1839→1715 µs, journal_read mom ~1561→1528 µs; FP_BYTES 38072 EQUAL. Floor still closed at remesure14.
+
+### Remesure15 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; tip `42a888978` / `5e6266d99` one-block)
+
+Gate PASS. Roles EQUAL. Artifact `/tmp/goal20-floor-remesure15`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1658.4 | 2145.5 | **0.77× (met)** |
+| journal_read | 1580.9 | 1400.7 | **1.13× (open)** |
+| pi_messages | 601.9 | 931.5 | **0.65× (met)** |
+| mistral | 1794.0 | 2010.3 | **0.89× (met)** |
+
+### Remesure16 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=5; same tip)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure16`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1940.7 | 1572.1 | **1.23× (open)** |
+| journal_read | 1584.4 | 1674.9 | **0.95× (met)** |
+| pi_messages | 712.4 | 1019.0 | **0.70× (met)** |
+| mistral | 1865.8 | 2300.1 | **0.81× (met)** |
+
+### Remesure17 (Friend-MachineD, GOAL20_FLOOR_SLICE=1 n=10 warmups=2; same tip)
+
+Gate PASS. Artifact `/tmp/goal20-floor-remesure17`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1681.3 | 1627.2 | **1.03× (open)** |
+| journal_read | 1429.4 | 1910.7 | **0.75× (met)** |
+| pi_messages | 631.0 | 958.1 | **0.66× (met)** |
+| mistral | 1495.9 | 1522.3 | **0.98× (met)** |
+
+**Floor reopen.** remesure14 all-met did not hold on tip under remesure15–17 host swing. Named leftover open: `session_pipeline.session_load` (1.03× on n=10). Invent/floor resumes on load. G.17 stays `missing` (advisor 2026-09-06).
