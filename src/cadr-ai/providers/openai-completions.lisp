@@ -802,7 +802,7 @@
 (defun provider-stream-json-scratch (state)
   (or (provider-stream-state-json-scratch state)
       (setf (provider-stream-state-json-scratch state)
-            (make-json-parse-scratch))))
+            (make-json-parse-scratch :hash-count 32 :array-count 8))))
 
 (defmethod reduce-provider-sse-event
     ((provider openai-completions-provider) state event emit)
