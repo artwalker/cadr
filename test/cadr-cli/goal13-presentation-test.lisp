@@ -804,8 +804,13 @@
              (goal13-note-semantic-probe
               seen :tool-pending-bg pending
               "Semantic pending command" :background-p t)
-             ;; The fullscreen scrollbar paints its thumb through the
-             ;; production cell painter (layout.ts:242-267).
+             ;; The fullscreen scrollbar paints track/thumb through the
+             ;; production cell painter (layout.ts:249-327).
+             (goal13-note-semantic-probe
+              seen :scrollbar-track
+              (cadr-tui::style-alt-scrollbar-cell
+               "semantic-scrollbarXX" 19 20 :scrollbar-track)
+              "X" :background-p t)
              (goal13-note-semantic-probe
               seen :scrollbar-thumb
               (cadr-tui::style-alt-scrollbar-cell
@@ -1013,8 +1018,8 @@
              +goal13-semantic-theme-keys+
              (cadr-tui:terminal-theme-color-keys
               (cadr-tui:current-theme))))
-           (is (= 58 (length +goal13-semantic-theme-keys+)))
-           (is (= 58 (hash-table-count seen)))
+           (is (= 59 (length +goal13-semantic-theme-keys+)))
+           (is (= 59 (hash-table-count seen)))
            (is
             (null
              (set-difference

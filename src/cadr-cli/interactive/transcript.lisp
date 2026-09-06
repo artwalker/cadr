@@ -493,7 +493,8 @@
   (make-hash-table :test #'equal))
 
 (defun tui-syntax-highlight (language source)
-  (let ((key (list language source)))
+  (let ((key
+          (list (cadr-tui:current-theme) language source)))
     (or (gethash key *tui-syntax-highlight-by-key*)
         (setf (gethash key *tui-syntax-highlight-by-key*)
               (simple-syntax-highlight
@@ -540,7 +541,9 @@
                 (tui-entry-text entry)))))))
          (key
            (and (null extension-host)
-                (list blocks width
+                (not (tui-entry-streaming-p entry))
+                (list (cadr-tui:current-theme)
+                      blocks width
                       hide-thinking-block-p
                       hidden-thinking-label
                       mermaid-mode
@@ -604,7 +607,9 @@
 
 (defun theme-message-background-lines
     (lines background-token)
-  (let ((key (cons background-token lines)))
+  (let ((key
+          (list (cadr-tui:current-theme)
+                background-token lines)))
     (or (gethash key *theme-message-background-by-key*)
         (setf (gethash key *theme-message-background-by-key*)
               (loop for line in lines
@@ -632,7 +637,8 @@
   (let* ((type (tui-entry-type entry))
          (expanded-p (tui-entry-expanded-p entry))
          (key
-           (list type expanded-p
+           (list (cadr-tui:current-theme)
+                 type expanded-p
                  (tui-entry-label entry)
                  (tui-entry-text entry)
                  (tui-entry-tokens-before entry)
@@ -859,14 +865,22 @@
 (defun tui-entry-uncached-paint-key
     (entry width hide-thinking-block-p
      hidden-thinking-label mermaid-mode)
-  "Equal-safe content key when extension-host is nil and paint ignores now."
-  (let ((type (tui-entry-type entry)))
+  "Equal-safe content key when extension-host is nil and paint ignores now.
+Theme is part of every cacheable key so a dark paint is never reused under
+light (and vice versa). Streaming and other non-cacheable entries return
+nil so each paint recomputes. Hyperlink capability is included for update
+lines that embed OSC-8."
+  (unless (tui-entry-render-cacheable-p entry)
+    (return-from tui-entry-uncached-paint-key nil))
+  (let ((type (tui-entry-type entry))
+        (theme (cadr-tui:current-theme)))
     (case type
       ((:tool :bash-execution :custom-message :custom-entry
         :auth-url)
        nil)
       (:assistant
-       (list type
+       (list theme
+             type
              (tui-entry-text entry)
              (tui-entry-content-blocks entry)
              width
@@ -877,14 +891,16 @@
              (tui-entry-error-message entry)
              (tui-entry-has-tool-calls-p entry)))
       ((:skill-invocation :branch-summary :compaction-summary)
-       (list type
+       (list theme
+             type
              (tui-entry-expanded-p entry)
              (tui-entry-label entry)
              (tui-entry-text entry)
              (tui-entry-tokens-before entry)
              width))
       ((:user :command-markdown)
-       (list type
+       (list theme
+             type
              (tui-entry-text entry)
              (tui-entry-label entry)
              width
@@ -892,7 +908,8 @@
       ((:notice :status :error :warning
         :project-trust-warning :success :debug-written
         :version-update :package-update)
-       (list type
+       (list theme
+             type
              (tui-entry-text entry)
              (tui-entry-label entry)
              (and (eq type :package-update)
@@ -905,7 +922,8 @@
              (cadr-tui:terminal-capabilities-hyperlinks-p
               (cadr-tui:get-terminal-capabilities))))
       (otherwise
-       (list type
+       (list theme
+             type
              (tui-entry-text entry)
              (tui-entry-label entry)
              width)))))

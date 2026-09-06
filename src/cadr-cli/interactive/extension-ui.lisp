@@ -35,7 +35,8 @@
 
 (defun extension-dialog-chrome
     (title width body-lines body-row body-column footer)
-  (let* ((key (list title width body-lines footer
+  (let* ((key (list (cadr-tui:current-theme)
+                    title width body-lines footer
                     body-row body-column))
          (cached
            (gethash key *extension-dialog-chrome-by-key*)))
@@ -370,6 +371,7 @@
                 (max 0 (ceiling (- deadline now)))))
          (key
            (list
+            (cadr-tui:current-theme)
             (framed-select-state-title state)
             (framed-select-state-message state)
             secs

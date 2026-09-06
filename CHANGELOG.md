@@ -7,6 +7,9 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 23: release identity is
+  `cadr 0.2.0 · aligned with pi v0.85.1 (+0, d981de122)`.
+
 - Goal 23: `session-manager-in-memory` restores external entries into a
   non-persisted session (adopt ids, rebuild leaf/labels/tree, migrate
   only when a header is present). FiveAM mirrors pi

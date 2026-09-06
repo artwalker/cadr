@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1417,
+  "expected_findings": 1418,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -679,6 +679,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  `autocomplete-get-suggestions/apply` vs pi",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.85.1 (+0, d981de122)`.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -10294,7 +10302,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@d981de122 layout.ts:242-267 \u2014 the last-column cell keeps its",
+      "line": "  ;; pi@d981de122 layout.ts:249-327 \u2014 the last-column cell keeps its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10302,7 +10310,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@d981de122 layout.ts:268-303 \u2014 thumb height is the",
+      "line": "  ;; pi@d981de122 layout.ts:309-327 \u2014 paint every track row; thumb",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },

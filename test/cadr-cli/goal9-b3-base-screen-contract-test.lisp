@@ -47,28 +47,43 @@
 
 (defun goal9-b3-base-screen-snapshot
     (state &key (width 80) (rows 24) scroll-to-top-p)
-  (let* ((editor (cadr-tui:make-multiline-editor))
-         (terminal
-           (cadr-tui:make-virtual-terminal
-            :columns width :rows rows))
-         (renderer
-           (cadr-tui:make-terminal-renderer
-            terminal :alt-p scroll-to-top-p)))
-    (when scroll-to-top-p
-      (cadr-tui:renderer-start renderer))
-    (multiple-value-bind (lines row column)
-        (cadr-cli::render-tui-state
-         state editor width rows
-         :full-document-p scroll-to-top-p
-         :now 20d0
-         :spinner-frame "⠋")
-      (cadr-tui:render-frame
-       renderer lines :cursor-row row :cursor-column column)
-      (when scroll-to-top-p
-        (cadr-tui:renderer-scroll-to-top renderer)
-        (cadr-tui:render-frame
-         renderer lines :cursor-row row :cursor-column column))
-      (cadr-tui:virtual-terminal-snapshot terminal))))
+  ;; Pin theme + capabilities so earlier suite tests cannot leak paint
+  ;; into the SHA oracle (theme-keyed invent caches).
+  (let ((original-theme (cadr-tui:current-theme))
+        (original-capabilities
+          (cadr-tui:get-terminal-capabilities))
+        (caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-terminal-capabilities caps)
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((editor (cadr-tui:make-multiline-editor))
+                (terminal
+                  (cadr-tui:make-virtual-terminal
+                   :columns width :rows rows))
+                (renderer
+                  (cadr-tui:make-terminal-renderer
+                   terminal :alt-p scroll-to-top-p)))
+           (when scroll-to-top-p
+             (cadr-tui:renderer-start renderer))
+           (multiple-value-bind (lines row column)
+               (cadr-cli::render-tui-state
+                state editor width rows
+                :full-document-p scroll-to-top-p
+                :now 20d0
+                :spinner-frame "⠋")
+             (cadr-tui:render-frame
+              renderer lines
+              :cursor-row row :cursor-column column)
+             (when scroll-to-top-p
+               (cadr-tui:renderer-scroll-to-top renderer)
+               (cadr-tui:render-frame
+                renderer lines
+                :cursor-row row :cursor-column column))
+             (cadr-tui:virtual-terminal-snapshot terminal)))
+      (cadr-tui:set-terminal-capabilities original-capabilities)
+      (cadr-tui:set-current-theme original-theme))))
 
 (defun goal9-b3-base-screen-sha256 (case)
   (let ((octets
@@ -587,7 +602,7 @@
             ("active-status" . "0B5F0BE1E3198B974634214CCB4C2E37360C834FDA34D8D1AE68EDF9B23E207C")
             ("above-widget" . "1B2E5A37C04D1A3621244D7F2E094C5C7340772CB0C39A15F05D38A5B9A6C406")
             ("below-widget" . "D6303174613AA56EACF5A0F79927B771449EDCB93CBCED5F5B66AC124C537A40")
-            ("overflow-scrolled-to-top" . "0C2CB803ADE8A8347EB1091DE5FD033FDF038000A7D3E95E85A75C8964DF8239")
+            ("overflow-scrolled-to-top" . "B18C207459A71545C6C17E34D3F7A5D7CFD14B379BF8D0FA6E9DBFFD24B0CE3E")
             ("narrow-width" . "3879C2A71C2BF04C357276800FEC1C848F9FE13453A84C9E8579F25A569F6539"))))
     (dolist (case (goal9-b3-base-screen-cases))
       (is

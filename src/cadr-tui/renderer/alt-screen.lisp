@@ -104,9 +104,11 @@
                             at)
                          1.0d0))))))))
 
-(defun style-alt-scrollbar-cell (line column width)
-  ;; pi@d981de122 layout.ts:242-267 — the last-column cell keeps its
-  ;; text and leading SGR; the thumb background wraps only that cell.
+(defun style-alt-scrollbar-cell
+    (line column width &optional (theme-key :scrollbar-thumb))
+  ;; pi@d981de122 layout.ts:249-327 — the last-column cell keeps its
+  ;; text and leading SGR; track/thumb background wraps only that cell
+  ;; (cadr paints theme bg instead of replacing the glyph with │/┃).
   (if (image-line-p line)
       line
       (let* ((before
@@ -136,15 +138,15 @@
                 (max 0 (- width (1+ column))) t)))
         (concatenate
          'string before before-padding target-prefix
-         (theme-background-ansi :scrollbar-thumb :enabled-p t)
+         (theme-background-ansi theme-key :enabled-p t)
          target-text
          (format nil "~C[49m" #\Escape)
          after))))
 
 (defun apply-alt-scrollbar (renderer lines width height)
-  ;; pi@d981de122 layout.ts:268-303 — thumb height is the
-  ;; track-proportional share clamped to [min(2, track), track], the
-  ;; offset maps scrollTop onto the remaining track.
+  ;; pi@d981de122 layout.ts:309-327 — paint every track row; thumb
+  ;; height is track²/content clamped to [min(2, track), track], and
+  ;; the offset maps scrollTop onto the remaining track.
   (let ((content-height
           (terminal-renderer-content-line-count renderer)))
     (if (alt-scrollbar-visible-p renderer content-height height)
@@ -170,14 +172,18 @@
                      (round
                       (* (/ scroll-top max-scroll-top)
                          max-thumb-top))))
-               (column (1- width)))
-          (loop for offset below thumb-height
-                for row = (+ thumb-offset offset)
+               (column (1- width))
+               (thumb-end (+ thumb-offset thumb-height)))
+          (loop for row below track-height
                 when (and (>= row 0) (< row (length lines)))
                   do (setf
                       (nth row lines)
                       (style-alt-scrollbar-cell
-                       (nth row lines) column width)))
+                       (nth row lines) column width
+                       (if (and (>= row thumb-offset)
+                                (< row thumb-end))
+                           :scrollbar-thumb
+                           :scrollbar-track))))
           lines)
         lines)))
 

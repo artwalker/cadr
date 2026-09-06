@@ -831,7 +831,9 @@
     ;; indexes last-document as a vector or list.
     ;; +4 v0.84.4: fullscreen copy-on-select helpers in
     ;; renderer/lifecycle-input.lisp.
-    (is (= 339 definition-count)
+    ;; +6 Goal 23 v0.85.1: alt-wheel / debug-redraw / working-indicator
+    ;; / jump-to-latest owners land in B7 renderer+composition files.
+    (is (= 345 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -1017,7 +1019,9 @@
     ;; +3 Goal 20 export-html splice: split-export-html-template,
     ;; +export-html-css-parts+, +export-html-html-parts+
     ;; (session/export-html.lisp).
-    (is (= 319 definition-count)
+    ;; +7 Goal 23 v0.85.1: mid-convo effort + providerThinkingLevel +
+    ;; inMemory session entry owners land in B8 session/loop files.
+    (is (= 326 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1409,7 +1413,9 @@
               ;; assistant-message-end-turn, make-strict-json-schema,
               ;; get-json-schema-tool-parameters,
               ;; unsupported-strict-json-schema-error.
-              "03bf68bd1b6ad5699dd5f7a96a5b2e81fea72677376bc175126704c62564273d"
+              ;; +1 Goal 23: #:assistant-message-provider-thinking-level
+              ;; (mid-conversation Anthropic thinking effort).
+              "5b3c61e359d2e4f891c88e45ea38651b905139db5ffea833a6ee10e8a88129cd"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

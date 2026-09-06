@@ -154,7 +154,7 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
 
 (defun selector-border-line
     (width &optional (color :border))
-  (let ((key (cons width color)))
+  (let ((key (list (cadr-tui:current-theme) width color)))
     (or (gethash key *selector-border-by-key*)
         (setf (gethash key *selector-border-by-key*)
               (cadr-tui:theme-foreground

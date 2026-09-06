@@ -33,35 +33,50 @@
 
 (defun goal9-b3-overlay-screen-snapshot
     (overlay &key (width 80) (rows 60))
-  (let* ((state
-           (cadr-cli::make-tui-state
-            :model "mock"
-            :messages
-            (list
-             (cadr-ai:make-user-message
-              :content "overlay transcript user")
-             (cadr-ai:make-assistant-message
-              :api :openai-responses
-              :provider :openai
-              :model "mock"
-              :content
-              (list
-               (cadr-ai:make-text-content
-                :text "overlay transcript assistant"))
-              :stop-reason :stop))))
-         (editor (cadr-tui:make-multiline-editor))
-         (terminal
-           (cadr-tui:make-virtual-terminal
-            :columns width :rows rows))
-         (renderer (cadr-tui:make-terminal-renderer terminal)))
-    (cadr-tui:editor-set-text
-     editor "OVERLAY-EDITOR-MUST-BE-HIDDEN")
-    (multiple-value-bind (lines row column)
-        (cadr-cli::render-tui-state
-         state editor width rows :overlay overlay)
-      (cadr-tui:render-frame
-       renderer lines :cursor-row row :cursor-column column)
-      (cadr-tui:virtual-terminal-snapshot terminal))))
+  ;; Pin theme + capabilities so earlier suite tests cannot leak a light
+  ;; theme (or truecolor/hyperlink bits) into the SHA oracle.
+  (let ((original-theme (cadr-tui:current-theme))
+        (original-capabilities
+          (cadr-tui:get-terminal-capabilities))
+        (caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-terminal-capabilities caps)
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((state
+                  (cadr-cli::make-tui-state
+                   :model "mock"
+                   :messages
+                   (list
+                    (cadr-ai:make-user-message
+                     :content "overlay transcript user")
+                    (cadr-ai:make-assistant-message
+                     :api :openai-responses
+                     :provider :openai
+                     :model "mock"
+                     :content
+                     (list
+                      (cadr-ai:make-text-content
+                       :text "overlay transcript assistant"))
+                     :stop-reason :stop))))
+                (editor (cadr-tui:make-multiline-editor))
+                (terminal
+                  (cadr-tui:make-virtual-terminal
+                   :columns width :rows rows))
+                (renderer
+                  (cadr-tui:make-terminal-renderer terminal)))
+           (cadr-tui:editor-set-text
+            editor "OVERLAY-EDITOR-MUST-BE-HIDDEN")
+           (multiple-value-bind (lines row column)
+               (cadr-cli::render-tui-state
+                state editor width rows :overlay overlay)
+             (cadr-tui:render-frame
+              renderer lines
+              :cursor-row row :cursor-column column)
+             (cadr-tui:virtual-terminal-snapshot terminal)))
+      (cadr-tui:set-terminal-capabilities original-capabilities)
+      (cadr-tui:set-current-theme original-theme))))
 
 (defun goal9-b3-overlay-screen-sha256 (overlay)
   (let ((octets
