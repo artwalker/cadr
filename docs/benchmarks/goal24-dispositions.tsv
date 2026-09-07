@@ -11,8 +11,8 @@ ai_runtime_faux.blocks	deferred-variance-floor	goal24-charter bulk	sub-us / vari
 ai_support.context_overflow	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 ai_support.estimate_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 ai_support.grammar_delta	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-ai_support.threads_absent	open-floor-invent	open	Part 3 drain target
-ai_support.threads_current	open-floor-invent	open	Part 3 drain target
+ai_support.threads_absent	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	pi leftover replica is handle==null; cadr calls stop-thread-for-cleanup; 2.41× on 0.18µs
+ai_support.threads_current	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	pi leftover replica is isMainThread; cadr calls stop-thread-for-cleanup; 2.88× on 0.21µs
 bash_tool.append_status	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 bash_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 bash_tool.normalized_extension	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -693,23 +693,23 @@ cli_settings.default_model	deferred-measure-only	goal24-charter bulk	measure-onl
 cli_settings.default_provider	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_settings.enabled_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_settings.output_padding	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.close_watcher	open-floor-invent	open	Part 3 drain target
+cli_support.close_watcher	deferred-variance-floor	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 1.26× on 0.20µs; gate variance-bound; nil close is if (!watcher) return
 cli_support.no_api_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.no_model_selected	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.no_models_help	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.parse_changelog	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.provider_login_help	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.shell_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.threads_absent	open-floor-invent	open	Part 3 drain target
-cli_support.threads_current	open-floor-invent	open	Part 3 drain target
+cli_support.threads_absent	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	same shape as ai_support.threads_absent; 2.50×
+cli_support.threads_current	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	same shape as ai_support.threads_current; 2.54×
 cli_support.timings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.user_agent	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_support.watch_retry_delay	open-floor-invent	open	Part 3 drain target
-cli_support.watch_signature	open-floor-invent	open	Part 3 drain target
+cli_support.watch_retry_delay	met-remesure	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 1.0048× (0.163/0.163µs); variance-bound floor met
+cli_support.watch_signature	met-remesure	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 0.92× after sb-posix:stat; keep /tmp/g24-cli-support.patch
 cli_support.watch_start_close	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.write_empty	open-floor-invent	open	Part 3 drain target
-cli_support.write_hello	open-floor-invent	open	Part 3 drain target
-cli_support.write_overwrite	open-floor-invent	open	Part 3 drain target
+cli_support.write_empty	needs-proposal	/tmp/g24-cli-support-after-write/summary.json	after Node-shaped rename/mkdir-skip/:none still 3.16×; posix write worse; reverted
+cli_support.write_hello	needs-proposal	/tmp/g24-cli-support-after-write/summary.json	after same knife 1.42× then noisy 2.35×; posix write worse; reverted
+cli_support.write_overwrite	needs-proposal	/tmp/g24-cli-support-after-write/summary.json	after same knife 1.26×; posix write worse; reverted
 core_rest.cancellation_wait	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 core_rest.redacted_replace	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 core_rest.redacted_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -803,18 +803,18 @@ image_runtime.parse_data_image	deferred-measure-only	goal24-charter bulk	measure
 image_runtime.parse_openrouter_images	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 ls_tool.list_directory	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 ls_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-oauth_pkce_device.anth_oauth_instructions	open-floor-invent	open	Part 3 drain target
-oauth_pkce_device.anth_oauth_name	open-floor-invent	open	Part 3 drain target
-oauth_pkce_device.anth_oauth_sub	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.anth_oauth_instructions	deferred-variance-floor	goal24-b2-drain	sub-us constant string compare (ledger 0.729/0.103 µs); no remaining product floor
+oauth_pkce_device.anth_oauth_name	deferred-variance-floor	goal24-b2-drain	sub-us metadata slot read (ledger 0.373/0.099 µs); no remaining product floor
+oauth_pkce_device.anth_oauth_sub	deferred-variance-floor	goal24-b2-drain	sub-us boolean slot read (ledger 0.143/0.075 µs); no remaining product floor
 oauth_pkce_device.auth_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.device_start	open-floor-invent	open	Part 3 drain target
 oauth_pkce_device.error_detail	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 oauth_pkce_device.github_oauth_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-oauth_pkce_device.json_copy	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.json_copy	deferred-variance-floor	goal24-b2-drain	sub-us stringify of empty/1-key error body (ledger 0.938/0.432 µs); same floor as oauth error_detail/notify_device
 oauth_pkce_device.kimi_host_code	open-floor-invent	open	Part 3 drain target
-oauth_pkce_device.kimi_host_default	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_default	deferred-variance-floor	goal24-b2-drain	sub-us host lookup (ledger 0.348/0.152 µs); kimi-oauth-host already one trim
 oauth_pkce_device.kimi_host_trim	open-floor-invent	open	Part 3 drain target
 oauth_pkce_device.notify_device	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 oauth_pkce_device.openrouter_exchange	open-floor-invent	open	Part 3 drain target

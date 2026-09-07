@@ -1,5 +1,8 @@
 (in-package #:cadr-cli)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require :sb-posix))
+
 (defparameter +fs-watch-retry-delay-milliseconds+ 5000)
 
 (defstruct (file-watcher (:constructor %make-file-watcher))
@@ -10,12 +13,11 @@
   (waitqueue (sb-thread:make-waitqueue :name "cadr-file-watcher")))
 
 (defun watched-path-signature (path)
-  (let ((file (probe-file path)))
-    (and file (list (file-write-date file)
-                    (ignore-errors
-                      (with-open-file (stream file :direction :input
-                                             :element-type '(unsigned-byte 8))
-                        (file-length stream)))))))
+  (handler-case
+      (let ((st (sb-posix:stat (namestring path))))
+        (list (sb-posix:stat-mtime st) (sb-posix:stat-size st)))
+    (sb-posix:syscall-error ()
+      nil)))
 
 (defun close-watcher (watcher)
   (when watcher

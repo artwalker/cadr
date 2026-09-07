@@ -5556,6 +5556,8 @@ tag/Release step.
 
 ### Fixed
 
+- Faster file-watcher path signature via `sb-posix:stat` (Goal 24 `cli_support.watch_signature`).
+
 - Goal 20 P.13: pair `agent_tool_loop.runtime` (steering/follow-up queue
   enqueue/drain/clear; cadr `agent-steer`/`drain-agent-queue` vs pi
   `PendingMessageQueue`). Friend-MachineD n=5 **6.30×**, ceiling 8.0.
