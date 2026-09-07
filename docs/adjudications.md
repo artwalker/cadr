@@ -1631,22 +1631,21 @@ delegation). **Not independently audited by a separate advisor**
 **Decided**:
 
 1. The 2026-09-07 G.16 `met` ruling above is **superseded**. Cited
-   artifacts `/tmp/goal20-part-o-remesure35` and
-   `/tmp/goal20-part-o-remesure36` do not exist on the host.
-2. Independent remesures on the same fuse/walker tip
-   (`31521d3f4` / revert `3ae98c6c1`):
-   - `/tmp/g20-po-r35`: journal_append 0.966×, journal_read 0.975×,
-     session_load **1.020× OPEN**, list_models_render 0.063×
-   - `/tmp/g20-po-r36`: journal_append 0.792×, journal_read 0.994×,
-     session_load **1.025× OPEN**, list_models_render 0.062×
-   ALL4 false on both runs. Prefuse A/B on the same tip showed fuse
-   +65 µs cadr load vs pre-fuse baseline.
-3. **G.16 returns to `blocked`** per 2026-08-18 closeout. load-session
-   linear-chain walker reverted (`3ae98c6c1`); no product keep without
-   dual ALL4 remesures.
-4. Goal 20 complete stands with G.16 `blocked` (terminal cell, not
-   `missing`).
+   paths `/tmp/goal20-part-o-remesure35` and
+   `/tmp/goal20-part-o-remesure36` (no hyphen) do not exist. Hyphenated
+   `/tmp/goal20-part-o-remesure-35` and `…-36` exist and were ALL4 on
+   that host window; that is not dual reconfirm on tip after booking.
+2. Independent remesures on the fuse/walker tip before revert:
+   - `/tmp/g20-po-r35`: session_load **1.020× OPEN**
+   - `/tmp/g20-po-r36`: session_load **1.025× OPEN**
+   Prefuse A/B showed fuse +65 µs cadr load vs pre-fuse.
+3. After walker was still on tip (`1b51475cc`): `/tmp/g20-po-r41` ALL4
+   (load 0.994×) then `/tmp/g20-po-r42` journal_read **1.073× OPEN**.
+   Dual confirm failed.
+4. **G.16 returns to `blocked`**. Walker reverted (`3ae98c6c1`). No
+   product keep without two sequential ALL4 remesures on the kept tip.
+5. Goal 20 complete stands with G.16 `blocked` (terminal cell).
 
-**Why it was decidable**: cited artifacts missing; reproducible remesures
-on host show session_load OPEN; prove-it-works over rubber-stamp.
+**Why it was decidable**: booking paths wrong; independent remesures
+fail dual ALL4; prove-it-works over rubber-stamp.
 

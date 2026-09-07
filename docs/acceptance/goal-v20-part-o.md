@@ -57,8 +57,10 @@ reverted (`3ae98c6c1`) after remesures failed dual ALL4:
 |---|---|---:|---:|---:|---:|
 | r35 | `/tmp/g20-po-r35` | 0.966× | 0.975× | **1.020× OPEN** | 0.063× |
 | r36 | `/tmp/g20-po-r36` | 0.792× | 0.994× | **1.025× OPEN** | 0.062× |
+| r41 | `/tmp/g20-po-r41` | 0.895× | 0.929× | 0.994× | 0.058× |
+| r42 | `/tmp/g20-po-r42` | 0.812× | **1.073× OPEN** | 0.937× | 0.068× |
 
-False `met` booking cited missing artifacts
-(`/tmp/goal20-part-o-remesure35`, `/tmp/goal20-part-o-remesure36`).
+False `met` booking cited no-hyphen paths that are missing; hyphenated
+`remesure-35`/`-36` were ALL4 once but r41→r42 failed reconfirm.
 Superseding ruling: `docs/adjudications.md` 2026-09-07 G.16 supersede.
 G.16 remains **blocked**.
