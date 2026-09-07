@@ -2261,7 +2261,7 @@
 
 (defun finalize-session-entry
     (entry path line-number by-id
-     &key (decode-message-p t) previous-entry-id)
+     &key (decode-message-p t))
   (let* ((type (session-type-keyword (session-entry-type entry)))
          (id (session-entry-id entry))
          (parent-id
@@ -2310,8 +2310,6 @@
       (session-failure
        path line-number "Duplicate session entry id: ~A" id))
     (when (and parent-id
-               (not (and previous-entry-id
-                         (string= parent-id previous-entry-id)))
                (not (gethash parent-id by-id)))
       (session-failure
        path line-number
@@ -2563,17 +2561,15 @@
       entry)))
 
 (defun record-to-session-entry
-    (object path line-number by-id &key previous-entry-id)
+    (object path line-number by-id)
   (cond
     ((session-entry-p object)
      (finalize-session-entry
-      object path line-number by-id
-      :previous-entry-id previous-entry-id))
+      object path line-number by-id))
     ((hash-table-p object)
      (finalize-session-entry
       (session-entry-from-hash object)
-      path line-number by-id
-      :previous-entry-id previous-entry-id))
+      path line-number by-id))
     (t
      (session-failure
       path line-number
@@ -2744,22 +2740,14 @@
     ;; append. Not a third JSON parser. Not :size. Not intern.
     (let* ((records (coerce (rest objects) 'simple-vector))
            (count (length records))
-           (by-id
-            (make-hash-table :test #'equal :size (max count 16)))
-           (labels (make-hash-table :test #'equal :size 16))
+           (by-id (make-hash-table :test #'equal))
+           (labels (make-hash-table :test #'equal))
            (session-name nil)
            (entries nil)
            (entries-tail nil)
-           (leaf-id nil)
-           (previous-entry-id nil)
-           (line-number 1)
-           (header-timestamp
-             (iso8601-to-milliseconds
-              (session-header-ref header "timestamp")))
-           (modified-timestamp header-timestamp))
+           (line-number 1))
       (declare (type simple-vector records)
-               (type fixnum count line-number)
-               (type integer header-timestamp modified-timestamp))
+               (type fixnum count line-number))
       (loop for index of-type fixnum from 0 below count
             for object = (aref records index)
             do
@@ -2767,8 +2755,7 @@
         (let ((entry
                 (handler-case
                     (record-to-session-entry
-                     object pathname line-number by-id
-                     :previous-entry-id previous-entry-id)
+                     object pathname line-number by-id)
                   (session-error (condition)
                     (error condition))
                   (error (cause)
@@ -2776,13 +2763,6 @@
                      pathname line-number
                      "Invalid session record at line ~D: ~A"
                      line-number cause)))))
-          (setf previous-entry-id (session-entry-id entry))
-          (let ((activity
-                  (or (session-entry-activity-timestamp entry)
-                      header-timestamp)))
-            (when (> activity modified-timestamp)
-              (setf modified-timestamp activity)))
-          (setf leaf-id (session-entry-id entry))
           (when (eq :label (session-entry-type entry))
             (if
                 (and
@@ -2819,9 +2799,24 @@
                       entries-tail cell)
                 (setf entries cell
                       entries-tail cell)))))
+      (let* ((timestamp
+               (iso8601-to-milliseconds
+                (session-header-ref
+                 header "timestamp")))
+             (modified-timestamp
+               (reduce
+                #'max
+                entries
+                :key
+                (lambda (entry)
+                  (or
+                   (session-entry-activity-timestamp
+                    entry)
+                   timestamp))
+                :initial-value timestamp)))
         (%make-session
        :id (session-header-ref header "id")
-       :timestamp header-timestamp
+       :timestamp timestamp
        :cwd (session-header-ref header "cwd")
        :path pathname
        :parent-session
@@ -2835,4 +2830,7 @@
        :by-id by-id
        :persisted-p t
        :modified-timestamp modified-timestamp
-       :leaf-id leaf-id))))
+       :leaf-id
+       (and entries-tail
+            (session-entry-id
+             (car entries-tail))))))))
