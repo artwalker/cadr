@@ -68,7 +68,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 | 1 Classifier inventory | met | `scripts/goal24-invent-pause-classify.py`; `docs/benchmarks/goal24-invent-pause-inventory.tsv` (963 metrics: measure-only-floor 833, variance-floor 69, floor-invent 47, ceiling-or-variance 5, shape-gap 3, needs-proposal 3, keep-pending-remount 3) | Charter cut 2026-09-07 |
 | 2 Disposition coverage | missing | `docs/benchmarks/goal24-dispositions.tsv` seeded; open rows remain | Bulk deferred for measure-only / variance / shape-gap; invent/proposal/ceiling still open |
 | 3 Floor invent drain | missing | | 47 `open-floor-invent` + 3 `open-remount` |
-| 4 Proposal / ceiling / gap close | missing | | 3 needs-proposal + 5 needs-ceiling-ruling (shape-gap bulk-booked) |
+| 4 Proposal / ceiling / gap close | partial | `docs/adjudications.md` 2026-09-07 Part 4 (six `needs-proposal` closed); `docs/benchmarks/goal24-dispositions.tsv` | needs-proposal 0; needs-ceiling-ruling 5 still open (p4-ceilings unit) |
 | 5 binary_bytes history cell | missing | | |
 
 ## Claimed
@@ -81,7 +81,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 |---|---:|
 | open-floor-invent | 47 |
 | open-remount | 3 |
-| needs-proposal | 3 |
+| needs-proposal | 0 |
 | needs-ceiling-ruling | 5 |
 
 ## Commands

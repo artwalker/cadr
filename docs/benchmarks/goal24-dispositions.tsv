@@ -707,9 +707,9 @@ cli_support.user_agent	deferred-variance-floor	goal24-charter bulk	sub-us / vari
 cli_support.watch_retry_delay	met-remesure	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 1.0048× (0.163/0.163µs); variance-bound floor met
 cli_support.watch_signature	met-remesure	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 0.92× after sb-posix:stat; keep /tmp/g24-cli-support.patch
 cli_support.watch_start_close	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.write_empty	needs-proposal	/tmp/g24-cli-support-after-write/summary.json	after Node-shaped rename/mkdir-skip/:none still 3.16×; posix write worse; reverted
-cli_support.write_hello	needs-proposal	/tmp/g24-cli-support-after-write/summary.json	after same knife 1.42× then noisy 2.35×; posix write worse; reverted
-cli_support.write_overwrite	needs-proposal	/tmp/g24-cli-support-after-write/summary.json	after same knife 1.26×; posix write worse; reverted
+cli_support.write_empty	booked-shape-gap	/tmp/g24-cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 3.16× within 15× ceiling
+cli_support.write_hello	booked-shape-gap	/tmp/g24-cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.42× within 8× ceiling
+cli_support.write_overwrite	booked-shape-gap	/tmp/g24-cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.26× within 8× ceiling
 core_rest.cancellation_wait	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 core_rest.redacted_replace	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 core_rest.redacted_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -894,7 +894,7 @@ powershell_tool.utf_ok	deferred-measure-only	goal24-charter bulk	measure-only pa
 powershell_tool.utfx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 powershell_tool.utfxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 powershell_tool.utfxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-provider_mistral.stream_roundtrip	needs-proposal	open	essence proposal required
+provider_mistral.stream_roundtrip	booked-shape-gap	docs/benchmarks/goal20-part-p-mistral-sprof-0084f0703.md	SBCL generic PARSE-JSON-SOURCE vs V8; visitor/ascii-decode/octet-parse banned; 1.24× within 3× ceiling
 provider_pi_messages.stream_roundtrip	open-remount	open	Part 3 remount target
 provider_registry_defs.lookup	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 provider_registry_defs.models_runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -906,7 +906,7 @@ resource_loader.context_from_dir	deferred-measure-only	goal24-charter bulk	measu
 resource_loader.nearest_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 resource_loader.project_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 session_compact.branch_summarize	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-session_compact.compact	needs-proposal	open	essence proposal required
+session_compact.compact	deferred-variance-floor	docs/benchmarks/goal20-paired-over-1x.md	Friend-MachineD remesure2 36.7/35.3µs 1.04×; uuid pool+compact-from-preparation kept; ~1.4µs within MAD floor
 session_discovery.header_probe	open-remount	open	Part 3 remount target
 session_export_html.to_html	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
 session_pipeline.session_load	open-remount	open	Part 3 remount target
@@ -942,7 +942,7 @@ skill_prompt_load.sdk_get_prompts	open-floor-invent	open	Part 3 drain target
 skill_prompt_load.sdk_get_skills	open-floor-invent	open	Part 3 drain target
 skill_prompt_load.sdk_get_themes	open-floor-invent	open	Part 3 drain target
 skill_prompt_load.sdk_prompt_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-storage_journal.journal_read	needs-proposal	open	essence proposal required
+storage_journal.journal_read	booked-shape-gap	docs/benchmarks/goal20-part-p-journal-read-sprof-0084f0703.md	journal_body_bytes +3.2%; JSON codec vs V8; load first-byte/consume-line knives banned; 1.14× within 8× ceiling
 tool_manager.cleanup_quarantine	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 tool_manager.find_binary	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 tool_manager.release_asset	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required

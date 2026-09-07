@@ -1704,3 +1704,67 @@ with openable artifact dirs; prior false booking already withdrawn.
 a goal and solve them; Goal 21 reuse would falsify baseline history;
 Goal 24 encodes a stop that invent alone cannot infinite-loop.
 
+## 2026-09-07 — Goal 24 Part 4: close six `needs-proposal` rows
+
+**Ruled**: Cursor executor under 2026-09-05 delegation. §5.2.
+**Not independently audited by a separate advisor.**
+
+**Decided** (p4-proposals unit; docs-only on tip):
+
+1. **`cli_support.write_hello` / `write_overwrite` / `write_empty`**
+   — **booked-shape-gap**. Pair H pairs cadr
+   `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`)
+   against pi `activateManagedRelease` temp+rename
+   (`packages/coding-agent/src/package-manager-cli.ts`), not
+   Node `fs.writeFileSync`. Goal 24 Part 3 tried Node-shaped
+   rename/mkdir-skip and `sb-posix:write` (Friend-MachineD n=5):
+   write_empty **3.16×→3.24×**, write_hello **1.42×→2.08×**,
+   write_overwrite **1.26×→2.10×** — all reverted. Ratios stay
+   within ceilings (8.0× / 8.0× / 15.0×). Further speedup needs
+   an SBCL-native syscall/rename essence, not Goal 24 floor
+   invent. Evidence:
+   `/tmp/g24-cli-support-after-write/summary.json`,
+   `/tmp/g24-cli-support-after-posix/summary.json`;
+   `docs/acceptance/goal-v20-part-h.md` pairs 871–873.
+
+2. **`session_compact.compact`** — **deferred-variance-floor**.
+   Friend-MachineD floor_slice remesure2 books **36.7 / 35.3 µs
+   (1.04×)** with observed `compacted` / `first_kept` /
+   `summary_chars` exact (`docs/benchmarks/goal20-paired-over-1x.md`).
+   Essence work already landed (`compact-from-preparation` encoding,
+   uuid-v7 entropy pool). Residual **~1.4 µs** is below the Part H
+   variance floor (`pi_median + max(10 µs, 6×run_MAD)` on a ~35 µs
+   operation). No phenomenon knives (`case`/prefix/dispatch) are
+   authorized on this pair (inventory note「不开现象刀」).
+
+3. **`storage_journal.journal_read`** — **booked-shape-gap**.
+   Friend-MachineD floor_slice remesure2: **1897 / 1658 µs
+   (1.14×)**, gate PASS under 8.0× ceiling; roles EQUAL;
+   **`journal_body_bytes` still diverge (+3.2%)** — booked in
+   Part H gate notes. Leftover is SBCL JSON codec vs V8
+   `JSON.parse`, not another load first-byte / `consume-line` /
+   SCAN-KEY / compact-prefix knife (all falsified or banned per
+   `docs/benchmarks/goal20-part-p-journal-read-sprof-0084f0703.md`
+   and 2026-08-21 adjudications). 2026-09-06 terminators /
+   ub32 splat / args compact reverted. Essence reopen requires a
+   named allocation-level JSON parse redesign outside banned
+   classes; Goal 24 closes this row without invent.
+
+4. **`provider_mistral.stream_roundtrip`** — **booked-shape-gap**
+   (runtime parse stack, not OBS divergence). Friend-MachineD
+   floor_slice remesure2: **3359 / 2702 µs (1.24×)**, gate PASS
+   under 3.0× ceiling; stream OBS EQUAL. sprof names generic
+   `PARSE-JSON-SOURCE` on each SSE `data:` payload — same family
+   as pi_messages (`docs/benchmarks/goal20-part-p-mistral-sprof-0084f0703.md`).
+   **Banned redos** (all withdrawn worse): ascii SSE decode, chat
+   visitor, mistral visitor, `sse-event-data-octets` +
+   `parse-json-octets` (mistral **2046→2219 µs**, load
+   **1763→2152 µs**). Essence gap is allocation/representation of
+   streaming JSON in SBCL vs V8; no named non-circling lever
+   remains for Goal 24 invent.
+
+**Why it was decidable**: each row had falsified knives or
+variance-bound residual; Goal 24 stop allows terminal disposition
+with written reason without ≤1.0× remesure
+(`docs/acceptance/goal-v24.md` Part 4).
+
