@@ -120,7 +120,7 @@ cli_interactive_controller.fit_footer_text	deferred-measure-only	goal24-charter 
 cli_interactive_controller.footer_git_paths	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.footer_usage	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.framed_select_state_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_interactive_controller.framed_select_state_handle_raw_input	open-floor-invent	open	Part 3 drain target
+cli_interactive_controller.framed_select_state_handle_raw_input	booked-shape-gap	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 30.982x (65.201/2.104us); collect allocates 5 make-framed-select-state plus handle-raw-input vs V8 leftover; no product knife closes 1.0x
 cli_interactive_controller.framed_select_title	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_interactive_controller.load_tui_theme_file	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.make_entry	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
@@ -135,7 +135,7 @@ cli_interactive_controller.parse_auto_theme	deferred-measure-only	goal24-charter
 cli_interactive_controller.render_assistant_lines	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.render_cacheable	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.render_extension_custom_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_interactive_controller.render_extension_custom_ui	open-floor-invent	open	Part 3 drain target
+cli_interactive_controller.render_extension_custom_ui	booked-shape-gap	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 4.997x (16.982/3.398us) under 40x ceiling; typep plus component-render leftover vs V8; prior chrome invent already kept elsewhere
 cli_interactive_controller.reset_tui_messages	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.resolve_theme	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.runtime_auth_input_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -832,7 +832,7 @@ package_manager.config_fit_line	deferred-measure-only	goal24-charter bulk	measur
 package_manager.delta_resource_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.derived_project_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.enabled_by_patterns	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-package_manager.git_object_id	open-floor-invent	open	Part 3 drain target
+package_manager.git_object_id	booked-shape-gap	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 4.528x (5.443/1.202us); package-update-git-object-id trim/subseq/every vs leftover V8 regex extract; collect also FORMAT newline cases
 package_manager.git_output	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.group_less_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.inherited_enabled	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -899,7 +899,7 @@ provider_pi_messages.stream_roundtrip	met-remesure	/tmp/g24-r1-after-n10/summary
 provider_registry_defs.lookup	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 provider_registry_defs.models_runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 provider_registry_defs.oauth_to_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-provider_registry_defs.protocol_provider	open-floor-invent	open	Part 3 drain target
+provider_registry_defs.protocol_provider	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 1.072x (2.372/2.213us); cadr MAD 0.32us overlaps 0.16us gap; make-protocol-provider leftover constructor vs V8
 provider_registry_defs.provider_options	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 provider_registry_defs.runtime_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 resource_loader.context_from_dir	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -938,9 +938,9 @@ skill_prompt_load.node_read_error	deferred-measure-only	goal24-charter bulk	meas
 skill_prompt_load.prompt_appends	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 skill_prompt_load.resolve_prompt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 skill_prompt_load.sdk_context_files	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-skill_prompt_load.sdk_get_prompts	open-floor-invent	open	Part 3 drain target
-skill_prompt_load.sdk_get_skills	open-floor-invent	open	Part 3 drain target
-skill_prompt_load.sdk_get_themes	open-floor-invent	open	Part 3 drain target
+skill_prompt_load.sdk_get_prompts	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 2.032x (0.310/0.153us); slot accessor leftover vs getPrompts; sub-us floor
+skill_prompt_load.sdk_get_skills	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 1.485x (0.229/0.154us); slot accessor leftover vs getSkills; sub-us floor
+skill_prompt_load.sdk_get_themes	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 1.557x (0.250/0.161us); slot accessor leftover vs getThemes; sub-us floor
 skill_prompt_load.sdk_prompt_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 storage_journal.journal_read	booked-shape-gap	docs/benchmarks/goal20-part-p-journal-read-sprof-0084f0703.md	journal_body_bytes +3.2%; JSON codec vs V8; load first-byte/consume-line knives banned; 1.14× within 8× ceiling
 tool_manager.cleanup_quarantine	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
