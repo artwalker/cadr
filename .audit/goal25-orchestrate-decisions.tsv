@@ -1,2 +1,4 @@
 ts	phase	decision	why	evidence	result
 2026-09-07T10:04:14Z	frame	orchestrate Goal25 install	finite stop open-hillclimb=0; leftover freeze not invent	/root/projects/cadr/.orchestrate/goal25/preferences.md	runtime installed
+2026-09-07T10:06:41Z	scale	spawned 7 hillclimb workers for 9 open-family units	pilot freeze landed; 20 open-hillclimb remain on product/charter paths	orch units in_progress=9 tip dab13937e	wave1 running
+2026-09-07T11:06:22Z	close	Goal25 stop predicate met; all 11 units done	open-hillclimb=0 after selectors freeze	docs/benchmarks/goal25-dispositions.tsv tip a84f18ccb9bbdb6735f1268a78f170edd608f362	orchestrate close
