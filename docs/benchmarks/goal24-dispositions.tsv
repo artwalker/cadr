@@ -162,8 +162,8 @@ cli_print_rpc.close_pending	deferred-measure-only	goal24-charter bulk	measure-on
 cli_print_rpc.cmd_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.cmd_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.command_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_print_rpc.dialog_request	open-floor-invent	open	Part 3 drain target
-cli_print_rpc.dialog_result	open-floor-invent	open	Part 3 drain target
+cli_print_rpc.dialog_request	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD invent remesure 4.16x; dialog request still over 1.0; invent discarded
+cli_print_rpc.dialog_result	booked-shape-gap	/tmp/g24-f1-after/summary.json	sibling of dialog_request; invent path did not close; shape/constructor floor
 cli_print_rpc.handle_bad_json	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_print_rpc.handle_not_object	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.handle_ui_miss	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -380,9 +380,9 @@ cli_selectors.mlsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pai
 cli_selectors.mlsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.mlsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_equal_p	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_selectors.model_selector_active_models	open-floor-invent	open	Part 3 drain target
+cli_selectors.model_selector_active_models	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD 14.3x; constructor-dominated
 cli_selectors.model_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.model_selector_clamp_selected	open-floor-invent	open	Part 3 drain target
+cli_selectors.model_selector_clamp_selected	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD 3.65x after invent; still over 1.0; discarded
 cli_selectors.model_selector_filter_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_finish_refresh	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -392,7 +392,7 @@ cli_selectors.model_selector_keybindings	deferred-measure-only	goal24-charter bu
 cli_selectors.model_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_rebuild_search_text_table	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.model_selector_select_current	open-floor-invent	open	Part 3 drain target
+cli_selectors.model_selector_select_current	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD 30.1x; constructor-dominated selector path
 cli_selectors.model_selector_selected_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_set_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_toggle_scope	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -488,12 +488,12 @@ cli_selectors.rthxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only p
 cli_selectors.rwi_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.sc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.scoped_model_item_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.scoped_model_selector_search_text	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_model_selector_search_text	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD invent remesure 8.10x; constructor/search haystack vs pi leftover; invent patch discarded
 cli_selectors.scoped_models_binding_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.scoped_models_clear_ids	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_models_clear_ids	deferred-variance-floor	goal24-f1-drain	tiny list enable/clear; prior invent made slower; variance/shape floor
 cli_selectors.scoped_models_copy_enabled	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_selectors.scoped_models_enable_ids	open-floor-invent	open	Part 3 drain target
-cli_selectors.scoped_models_enabled_set	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_models_enable_ids	deferred-variance-floor	goal24-f1-drain	tiny list; invent hash-set reverted slower
+cli_selectors.scoped_models_enabled_set	deferred-variance-floor	goal24-f1-drain	tiny list sibling
 cli_selectors.scoped_models_model_by_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.scoped_models_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.scoped_models_selector_cancel	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
