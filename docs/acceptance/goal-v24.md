@@ -81,7 +81,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 | disposition | n |
 |---|---:|
 | open-floor-invent | 47 |
-| open-remount | 3 |
+| open-remount | 0 |
 | needs-proposal | 0 |
 | needs-ceiling-ruling | 0 |
 
