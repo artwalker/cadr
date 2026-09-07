@@ -1,0 +1,12 @@
+ts	phase	decision	why	evidence	result
+2026-09-07T07:47:48Z	frame	Goal24 orchestrate started; open counts floor32 remount3 proposal6 ceiling5	user asked automate Goal24 to stop predicate	/root/projects/cadr/.orchestrate/goal24	store inited; 9 units seeded
+2026-09-07T07:48:59Z	wave0	spawned f1 pilot + p4-proposals + p5-binary-bytes	automate Goal24; pilot invent remesure before floor fan-out	agents c9cb7a65 36b323ba ba3d9562	in_progress
+2026-09-07T07:51:52Z	drain	landed p4-proposals; spawn p4-ceilings	needs-proposal 0 verified	tip 390af41ea	done
+2026-09-07T07:52:06Z	land	direct tip commit 390af41ea for p4-proposals (no PR)	docs-only; no Graphite	https://github.com/artwalker/cadr/commit/390af41ea	landed
+2026-09-07T08:04:59Z	f1	remesure failed under GOAL20_PART_O_SLICE=1; re-ran with unset	part_o early-exit skipped selector timed slots	/tmp/g24-f1-after/summary.json	rerun
+2026-09-07T08:07:46Z	land	Part4 ceilings + Part5 binary_bytes tip fa2f40928271355872c6c62144a5367489a8eed5	needs-ceiling 0; Part5 met	https://github.com/artwalker/cadr/commit/fa2f40928271355872c6c62144a5367489a8eed5	landed
+2026-09-07T08:12:03Z	f1	pi leftover-only collect OK; preserved /tmp/g24-f1-pi-leftover.json	GOAL24_F1_LEFTOVER=1 timed print_rpc+selectors	/tmp/g24-f1-pi-leftover.json	waiting-cadr
+2026-09-07T08:22:18Z	wave1	f1 invent discarded; spawn f2 f3 r1	pilot remesure ratios >>1.0	a80dc50be380756f3b453cb9a03465cba8edcbd4	fan-out
+2026-09-07T08:22:51Z	f1	cadr leftover re-collect OK (n=5)	selectors present; invent already discarded on prior ratios	/tmp/g24-f1-cadr-leftover.json	archived
+2026-09-07T08:54:27Z	close	Goal24 stop predicate met	open-floor=0 open-remount=0 needs-proposal=0 needs-ceiling=0 Part5 binary_bytes booked	docs/benchmarks/goal24-dispositions.tsv docs/acceptance/goal-v24.md tip a318d8d9e	orchestrate close; all 9 units done
+2026-09-07T09:20:41Z	attention	harden Goal24 met claim with durable evidence + gate	stop predicate already met; Attention asked for auditable pointers	scripts/goal24-evidence-gate.py tip pending	remediation landed

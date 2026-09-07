@@ -69,7 +69,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 | 2 Disposition coverage | met | `docs/benchmarks/goal24-dispositions.tsv` (963 rows; no open-/needs- dispositions) | Terminal set: deferred-measure-only / deferred-variance-floor / booked-shape-gap / met-remesure |
 | 3 Floor invent drain | met | Friend-MachineD leftover remesures + terminal dispositions; open-floor=0 open-remount=0 | drained from charter 47+3 opens to 0 |
 | 4 Proposal / ceiling / gap close | met | `docs/adjudications.md` 2026-09-07 Part 4 (six `needs-proposal` + five `needs-ceiling-ruling` closed); `docs/benchmarks/goal24-dispositions.tsv` | needs-proposal 0; needs-ceiling-ruling 0 |
-| 5 binary_bytes history cell | met | `docs/benchmarks/performance-history.json` (`nativeImageBytes` 21343120 at `2026-09-07T07:56:50Z`); `docs/performance.md` `GOAL20_PERF_HISTORY`; `/tmp/g24-p5-verify.log` | Isolated verify `--record` Goal 11 gate on Friend-MachineD; first cell not hand-filled |
+| 5 binary_bytes history cell | met | `docs/benchmarks/performance-history.json` (`nativeImageBytes` 21343120 at `2026-09-07T07:56:50Z`); `docs/performance.md` `GOAL20_PERF_HISTORY`; `docs/benchmarks/goal24-evidence/p5-verify.log` | Isolated verify `--record` Goal 11 gate on Friend-MachineD (`gitHead=isolated-copy` in history cell); first cell not hand-filled |
 
 ## Claimed
 
@@ -86,8 +86,38 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 | needs-proposal | 0 |
 | needs-ceiling-ruling | 0 |
 
+## Scoreboard (read this first)
+
+- **Live open counts** live only in `docs/benchmarks/goal24-dispositions.tsv`.
+- `docs/benchmarks/goal24-invent-pause-inventory.tsv` is the **charter cut** at
+  `5bd734f2d`. Its `floor-invent` / `needs-proposal` bucket counts stay frozen
+  on purpose. Do not treat that file as the current drain scoreboard.
+- Friend-MachineD remesure packs that closed drained rows live under
+  `docs/benchmarks/goal24-evidence/` (not `/tmp`).
+- `python3 scripts/goal24-evidence-gate.py` fails if open counts rise, evidence
+  files go missing, or a disposition points at `/tmp` again.
+
+## Attention follow-ups (2026-09-07)
+
+Cross-review flags after the first `met` claim. Closed by durable evidence +
+written rulings in `docs/adjudications.md` (same date, "Attention remediation"):
+
+1. Part 1 evidence SHA booked (`5bd734f2d`).
+2. Inventory-vs-dispositions scoreboard clarified above.
+3. Charter-bulk shape-gap rows (`harness_storage.open_walk`,
+   `session_export_html.to_html`, `websocket_stream.stream_roundtrip`) stay
+   classifier-accepted without a Goal 24 remesure; see adjudications.
+4. Drained-row evidence moved off `/tmp` into `goal24-evidence/`.
+5. f4/f5 invent-skip and f4 `too_n` pollution recorded; no product knife
+   replay (leftover Lisp vs V8 pattern already falsified on f1–f3).
+6. `session_discovery.header_probe` keep retained under
+   `deferred-variance-floor` explained in adjudications.
+7. Part 5 verify log committed; `gitHead=isolated-copy` called out.
+
 ## Commands
+
 
 ```bash
 python3 scripts/goal24-invent-pause-classify.py
+python3 scripts/goal24-evidence-gate.py
 ```

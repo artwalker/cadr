@@ -11,8 +11,8 @@ ai_runtime_faux.blocks	deferred-variance-floor	goal24-charter bulk	sub-us / vari
 ai_support.context_overflow	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 ai_support.estimate_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 ai_support.grammar_delta	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-ai_support.threads_absent	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	pi leftover replica is handle==null; cadr calls stop-thread-for-cleanup; 2.41× on 0.18µs
-ai_support.threads_current	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	pi leftover replica is isMainThread; cadr calls stop-thread-for-cleanup; 2.88× on 0.21µs
+ai_support.threads_absent	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	pi leftover replica is handle==null; cadr calls stop-thread-for-cleanup; 2.41× on 0.18µs
+ai_support.threads_current	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	pi leftover replica is isMainThread; cadr calls stop-thread-for-cleanup; 2.88× on 0.21µs
 bash_tool.append_status	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 bash_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 bash_tool.normalized_extension	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -24,19 +24,19 @@ bash_tool.truncation_notice	deferred-measure-only	goal24-charter bulk	measure-on
 bash_tool.user_bash_result	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.assistant_tool_call_only	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.coding_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.data_directory	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 4.704× (4.550/0.967µs); path.join-shaped invent 5.068× discarded
+cli_bootstrap_sessions.data_directory	booked-shape-gap	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 4.704× (4.550/0.967µs); path.join-shaped invent 5.068× discarded
 cli_bootstrap_sessions.dpk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.dpkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.dpkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.dpkxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.extensions_doc_url	deferred-variance-floor	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 2.353× (0.420/0.179µs); constant URL leftover flags vs interned JS string
+cli_bootstrap_sessions.extensions_doc_url	deferred-variance-floor	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 2.353× (0.420/0.179µs); constant URL leftover flags vs interned JS string
 cli_bootstrap_sessions.find_session_by_id_or_prefix	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.last_assistant_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.legacy_data_directory	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 3.970× (4.766/1.200µs); join invent 4.813× discarded
+cli_bootstrap_sessions.legacy_data_directory	booked-shape-gap	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 3.970× (4.766/1.200µs); join invent 4.813× discarded
 cli_bootstrap_sessions.legacy_product	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_bootstrap_sessions.managed_binary_names	deferred-variance-floor	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 1.511× (0.352/0.233µs); four FIND on a 4-element constant list
-cli_bootstrap_sessions.manual_migration_command	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 2.466× (5.154/2.090µs); quote-concat invent 1.559× still over 1.0, discarded
-cli_bootstrap_sessions.migration_guide_url	deferred-variance-floor	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 2.376× (0.428/0.180µs); constant URL leftover flags vs interned JS string
+cli_bootstrap_sessions.managed_binary_names	deferred-variance-floor	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 1.511× (0.352/0.233µs); four FIND on a 4-element constant list
+cli_bootstrap_sessions.manual_migration_command	booked-shape-gap	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 2.466× (5.154/2.090µs); quote-concat invent 1.559× still over 1.0, discarded
+cli_bootstrap_sessions.migration_guide_url	deferred-variance-floor	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 2.376× (0.428/0.180µs); constant URL leftover flags vs interned JS string
 cli_bootstrap_sessions.model_scope_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.pbkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.pbkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -44,7 +44,7 @@ cli_bootstrap_sessions.pbkxxx_ok	deferred-measure-only	goal24-charter bulk	measu
 cli_bootstrap_sessions.psb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.response_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_bootstrap_sessions.rst_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.rt_ok	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 1.858× (1.423/0.766µs); skip-FORMAT invent 1.084× still over 1.0, discarded
+cli_bootstrap_sessions.rt_ok	booked-shape-gap	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 1.858× (1.423/0.766µs); skip-FORMAT invent 1.084× still over 1.0, discarded
 cli_bootstrap_sessions.rtk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.rtkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.rtkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -66,14 +66,14 @@ cli_bootstrap_sessions.session_user_messages_for_forking	deferred-measure-only	g
 cli_bootstrap_sessions.validate_cli_session_flags	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.write_hotkeys_command	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.catalog_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.git_path	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 2.198x (1.419/0.646us); SEARCH/SUBSEQ vs leftover indexOf/slice; invent discarded
+cli_extensions_install.git_path	booked-shape-gap	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 2.198x (1.419/0.646us); SEARCH/SUBSEQ vs leftover indexOf/slice; invent discarded
 cli_extensions_install.hp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.http_timeout_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.llama_compact_count	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 3.326x (1.926/0.579us); FORMAT/toFixed leftover; invent discarded
-cli_extensions_install.llama_context_label	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 2.049x (1.867/0.911us); struct+FORMAT vs leftover contextLabel; invent discarded
+cli_extensions_install.llama_compact_count	booked-shape-gap	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 3.326x (1.926/0.579us); FORMAT/toFixed leftover; invent discarded
+cli_extensions_install.llama_context_label	booked-shape-gap	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 2.049x (1.867/0.911us); struct+FORMAT vs leftover contextLabel; invent discarded
 cli_extensions_install.llama_format_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.llama_js_to_fixed	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.llama_model_description	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 1.323x (1.997/1.509us); description join vs leftover modelDescription; invent discarded
+cli_extensions_install.llama_model_description	booked-shape-gap	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 1.323x (1.997/1.509us); description join vs leftover modelDescription; invent discarded
 cli_extensions_install.llama_search_exact	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.llama_search_status	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.llama_view_width	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -81,7 +81,7 @@ cli_extensions_install.loaded_model	deferred-measure-only	goal24-charter bulk	me
 cli_extensions_install.manager_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.output_boundary	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.progress_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.quant_label	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 1.778x (1.307/0.735us); GETF/FORMAT vs leftover option text; invent discarded
+cli_extensions_install.quant_label	booked-shape-gap	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 1.778x (1.307/0.735us); GETF/FORMAT vs leftover option text; invent discarded
 cli_extensions_install.quiet_manager	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.same_source	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.split_path_segments	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -120,7 +120,7 @@ cli_interactive_controller.fit_footer_text	deferred-measure-only	goal24-charter 
 cli_interactive_controller.footer_git_paths	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.footer_usage	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.framed_select_state_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_interactive_controller.framed_select_state_handle_raw_input	booked-shape-gap	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 30.982x (65.201/2.104us); collect allocates 5 make-framed-select-state plus handle-raw-input vs V8 leftover; no product knife closes 1.0x
+cli_interactive_controller.framed_select_state_handle_raw_input	booked-shape-gap	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 30.982x (65.201/2.104us); collect allocates 5 make-framed-select-state plus handle-raw-input vs V8 leftover; no product knife closes 1.0x
 cli_interactive_controller.framed_select_title	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_interactive_controller.load_tui_theme_file	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.make_entry	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
@@ -135,7 +135,7 @@ cli_interactive_controller.parse_auto_theme	deferred-measure-only	goal24-charter
 cli_interactive_controller.render_assistant_lines	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.render_cacheable	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.render_extension_custom_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_interactive_controller.render_extension_custom_ui	booked-shape-gap	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 4.997x (16.982/3.398us) under 40x ceiling; typep plus component-render leftover vs V8; prior chrome invent already kept elsewhere
+cli_interactive_controller.render_extension_custom_ui	booked-shape-gap	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 4.997x (16.982/3.398us) under 40x ceiling; typep plus component-render leftover vs V8; prior chrome invent already kept elsewhere
 cli_interactive_controller.reset_tui_messages	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.resolve_theme	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_interactive_controller.runtime_auth_input_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -162,8 +162,8 @@ cli_print_rpc.close_pending	deferred-measure-only	goal24-charter bulk	measure-on
 cli_print_rpc.cmd_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.cmd_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.command_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_print_rpc.dialog_request	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD n=5 4.128× (1.624/0.393µs); hash-table invent discarded
-cli_print_rpc.dialog_result	booked-shape-gap	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 15.238× (3.245/0.213µs); timed json-object+json-get vs leftover object literals; gate PASS variance-bound; sibling dialog_request booked-shape-gap
+cli_print_rpc.dialog_request	booked-shape-gap	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD n=5 4.128× (1.624/0.393µs); hash-table invent discarded
+cli_print_rpc.dialog_result	booked-shape-gap	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 15.238× (3.245/0.213µs); timed json-object+json-get vs leftover object literals; gate PASS variance-bound; sibling dialog_request booked-shape-gap
 cli_print_rpc.handle_bad_json	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_print_rpc.handle_not_object	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.handle_ui_miss	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -380,9 +380,9 @@ cli_selectors.mlsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pai
 cli_selectors.mlsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.mlsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_equal_p	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_selectors.model_selector_active_models	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD 14.3x; constructor-dominated
+cli_selectors.model_selector_active_models	booked-shape-gap	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD 14.3x; constructor-dominated
 cli_selectors.model_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.model_selector_clamp_selected	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD 3.65x after invent; still over 1.0; discarded
+cli_selectors.model_selector_clamp_selected	booked-shape-gap	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD 3.65x after invent; still over 1.0; discarded
 cli_selectors.model_selector_filter_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_finish_refresh	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -392,7 +392,7 @@ cli_selectors.model_selector_keybindings	deferred-measure-only	goal24-charter bu
 cli_selectors.model_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_rebuild_search_text_table	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.model_selector_select_current	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD n=5 28.932× (18.899/0.653µs); eq fast-path invent discarded
+cli_selectors.model_selector_select_current	booked-shape-gap	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD n=5 28.932× (18.899/0.653µs); eq fast-path invent discarded
 cli_selectors.model_selector_selected_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_set_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.model_selector_toggle_scope	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -488,7 +488,7 @@ cli_selectors.rthxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only p
 cli_selectors.rwi_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.sc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.scoped_model_item_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_selectors.scoped_model_selector_search_text	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD n=5 7.943× (4.366/0.550µs); concatenate invent discarded
+cli_selectors.scoped_model_selector_search_text	booked-shape-gap	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD n=5 7.943× (4.366/0.550µs); concatenate invent discarded
 cli_selectors.scoped_models_binding_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_selectors.scoped_models_clear_ids	deferred-variance-floor	goal24-f1-drain	tiny list enable/clear; prior invent made slower; variance/shape floor
 cli_selectors.scoped_models_copy_enabled	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
@@ -693,23 +693,23 @@ cli_settings.default_model	deferred-measure-only	goal24-charter bulk	measure-onl
 cli_settings.default_provider	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_settings.enabled_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_settings.output_padding	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.close_watcher	deferred-variance-floor	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 1.26× on 0.20µs; gate variance-bound; nil close is if (!watcher) return
+cli_support.close_watcher	deferred-variance-floor	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	Friend-MachineD n=5 1.26× on 0.20µs; gate variance-bound; nil close is if (!watcher) return
 cli_support.no_api_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.no_model_selected	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.no_models_help	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.parse_changelog	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.provider_login_help	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.shell_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.threads_absent	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	same shape as ai_support.threads_absent; 2.50×
-cli_support.threads_current	booked-shape-gap	/tmp/g24-cli-support-after-stat/summary.json	same shape as ai_support.threads_current; 2.54×
+cli_support.threads_absent	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	same shape as ai_support.threads_absent; 2.50×
+cli_support.threads_current	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	same shape as ai_support.threads_current; 2.54×
 cli_support.timings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_support.user_agent	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_support.watch_retry_delay	met-remesure	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 1.0048× (0.163/0.163µs); variance-bound floor met
-cli_support.watch_signature	met-remesure	/tmp/g24-cli-support-after-stat/summary.json	Friend-MachineD n=5 0.92× after sb-posix:stat; keep /tmp/g24-cli-support.patch
+cli_support.watch_retry_delay	met-remesure	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	Friend-MachineD n=5 1.0048× (0.163/0.163µs); variance-bound floor met
+cli_support.watch_signature	met-remesure	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	Friend-MachineD n=5 0.92× after sb-posix:stat; keep docs/benchmarks/goal24-evidence/cli-support-after-stat/ (keep on tip)
 cli_support.watch_start_close	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_support.write_empty	booked-shape-gap	/tmp/g24-cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 3.16× within 15× ceiling
-cli_support.write_hello	booked-shape-gap	/tmp/g24-cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.42× within 8× ceiling
-cli_support.write_overwrite	booked-shape-gap	/tmp/g24-cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.26× within 8× ceiling
+cli_support.write_empty	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 3.16× within 15× ceiling
+cli_support.write_hello	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.42× within 8× ceiling
+cli_support.write_overwrite	booked-shape-gap	docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.26× within 8× ceiling
 core_rest.cancellation_wait	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 core_rest.redacted_replace	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 core_rest.redacted_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -809,15 +809,15 @@ oauth_pkce_device.anth_oauth_sub	deferred-variance-floor	goal24-b2-drain	sub-us 
 oauth_pkce_device.auth_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-oauth_pkce_device.device_start	booked-shape-gap	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 1.384× (18.639/13.465µs); product oauth-flow-post-json vs leftover startOpenAICodexDeviceAuthFromResponse; invent would skip the product HTTP adapter
+oauth_pkce_device.device_start	booked-shape-gap	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 1.384× (18.639/13.465µs); product oauth-flow-post-json vs leftover startOpenAICodexDeviceAuthFromResponse; invent would skip the product HTTP adapter
 oauth_pkce_device.error_detail	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 oauth_pkce_device.github_oauth_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.json_copy	deferred-variance-floor	goal24-b2-drain	sub-us stringify of empty/1-key error body (ledger 0.938/0.432 µs); same floor as oauth error_detail/notify_device
-oauth_pkce_device.kimi_host_code	deferred-variance-floor	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 2.196× (0.694/0.316µs); env assoc+trim vs leftover object lookup; kimi-oauth-host already one trim; same floor as kimi_host_default
+oauth_pkce_device.kimi_host_code	deferred-variance-floor	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 2.196× (0.694/0.316µs); env assoc+trim vs leftover object lookup; kimi-oauth-host already one trim; same floor as kimi_host_default
 oauth_pkce_device.kimi_host_default	deferred-variance-floor	goal24-b2-drain	sub-us host lookup (ledger 0.348/0.152 µs); kimi-oauth-host already one trim
-oauth_pkce_device.kimi_host_trim	deferred-variance-floor	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 2.447× (1.071/0.438µs); string-right-trim vs leftover replace /+$/; same kimi-oauth-host as kimi_host_default
+oauth_pkce_device.kimi_host_trim	deferred-variance-floor	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 2.447× (1.071/0.438µs); string-right-trim vs leftover replace /+$/; same kimi-oauth-host as kimi_host_default
 oauth_pkce_device.notify_device	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-oauth_pkce_device.openrouter_exchange	booked-shape-gap	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 1.653× (16.646/10.070µs); product openrouter-exchange-code vs leftover exchangeAuthorizationCodeFromResponse; invent would skip the product HTTP adapter
+oauth_pkce_device.openrouter_exchange	booked-shape-gap	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 1.653× (16.646/10.070µs); product openrouter-exchange-code vs leftover exchangeAuthorizationCodeFromResponse; invent would skip the product HTTP adapter
 oauth_pkce_device.parse_callback_request	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.parse_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.percent_decode	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -832,7 +832,7 @@ package_manager.config_fit_line	deferred-measure-only	goal24-charter bulk	measur
 package_manager.delta_resource_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.derived_project_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.enabled_by_patterns	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-package_manager.git_object_id	booked-shape-gap	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 4.528x (5.443/1.202us); package-update-git-object-id trim/subseq/every vs leftover V8 regex extract; collect also FORMAT newline cases
+package_manager.git_object_id	booked-shape-gap	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 4.528x (5.443/1.202us); package-update-git-object-id trim/subseq/every vs leftover V8 regex extract; collect also FORMAT newline cases
 package_manager.git_output	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.group_less_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 package_manager.inherited_enabled	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -895,11 +895,11 @@ powershell_tool.utfx_ok	deferred-measure-only	goal24-charter bulk	measure-only p
 powershell_tool.utfxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 powershell_tool.utfxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 provider_mistral.stream_roundtrip	booked-shape-gap	docs/benchmarks/goal20-part-p-mistral-sprof-0084f0703.md	SBCL generic PARSE-JSON-SOURCE vs V8; visitor/ascii-decode/octet-parse banned; 1.24× within 3× ceiling
-provider_pi_messages.stream_roundtrip	met-remesure	/tmp/g24-r1-after-n10/summary.json	Friend-MachineD n=10 668/930µs 0.72×; visitor-decode keep on tip a80dc50be; gate PASS
+provider_pi_messages.stream_roundtrip	met-remesure	docs/benchmarks/goal24-evidence/r1-after-n10/summary.json	Friend-MachineD n=10 668/930µs 0.72×; visitor-decode keep on tip a80dc50be; gate PASS
 provider_registry_defs.lookup	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 provider_registry_defs.models_runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 provider_registry_defs.oauth_to_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-provider_registry_defs.protocol_provider	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 1.072x (2.372/2.213us); cadr MAD 0.32us overlaps 0.16us gap; make-protocol-provider leftover constructor vs V8
+provider_registry_defs.protocol_provider	deferred-variance-floor	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 1.072x (2.372/2.213us); cadr MAD 0.32us overlaps 0.16us gap; make-protocol-provider leftover constructor vs V8
 provider_registry_defs.provider_options	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 provider_registry_defs.runtime_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 resource_loader.context_from_dir	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -907,9 +907,9 @@ resource_loader.nearest_config	deferred-measure-only	goal24-charter bulk	measure
 resource_loader.project_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 session_compact.branch_summarize	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 session_compact.compact	deferred-variance-floor	docs/benchmarks/goal20-paired-over-1x.md	Friend-MachineD remesure2 36.7/35.3µs 1.04×; uuid pool+compact-from-preparation kept; ~1.4µs within MAD floor
-session_discovery.header_probe	deferred-variance-floor	/tmp/g24-r1-after-n10/summary.json	Friend-MachineD n=10 963/845µs 1.14×; buffered read+parse-session-header-octets kept; gate PASS paired_limit_us 6×MAD floor
+session_discovery.header_probe	deferred-variance-floor	docs/benchmarks/goal24-evidence/r1-after-n10/summary.json	Friend-MachineD n=10 963/845µs 1.14×; buffered read+parse-session-header-octets kept; gate PASS paired_limit_us 6×MAD floor
 session_export_html.to_html	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
-session_pipeline.session_load	met-remesure	/tmp/g24-r1-after-n10/summary.json	Friend-MachineD n=10 1589/1763µs 0.90×; load-session keep on tip; context_message_roles EQUAL; gate PASS
+session_pipeline.session_load	met-remesure	docs/benchmarks/goal24-evidence/r1-after-n10/summary.json	Friend-MachineD n=10 1589/1763µs 0.90×; load-session keep on tip; context_message_roles EQUAL; gate PASS
 settings_load.environment_value	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 settings_load.oauth_login_function	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 settings_load.provider_config_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -938,9 +938,9 @@ skill_prompt_load.node_read_error	deferred-measure-only	goal24-charter bulk	meas
 skill_prompt_load.prompt_appends	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 skill_prompt_load.resolve_prompt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 skill_prompt_load.sdk_context_files	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-skill_prompt_load.sdk_get_prompts	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 2.032x (0.310/0.153us); slot accessor leftover vs getPrompts; sub-us floor
-skill_prompt_load.sdk_get_skills	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 1.485x (0.229/0.154us); slot accessor leftover vs getSkills; sub-us floor
-skill_prompt_load.sdk_get_themes	deferred-variance-floor	/tmp/g24-f4-before/summary.json	Friend-MachineD leftover n=5 1.557x (0.250/0.161us); slot accessor leftover vs getThemes; sub-us floor
+skill_prompt_load.sdk_get_prompts	deferred-variance-floor	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 2.032x (0.310/0.153us); slot accessor leftover vs getPrompts; sub-us floor
+skill_prompt_load.sdk_get_skills	deferred-variance-floor	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 1.485x (0.229/0.154us); slot accessor leftover vs getSkills; sub-us floor
+skill_prompt_load.sdk_get_themes	deferred-variance-floor	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 1.557x (0.250/0.161us); slot accessor leftover vs getThemes; sub-us floor
 skill_prompt_load.sdk_prompt_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 storage_journal.journal_read	booked-shape-gap	docs/benchmarks/goal20-part-p-journal-read-sprof-0084f0703.md	journal_body_bytes +3.2%; JSON codec vs V8; load first-byte/consume-line knives banned; 1.14× within 8× ceiling
 tool_manager.cleanup_quarantine	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close

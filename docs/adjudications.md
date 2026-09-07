@@ -1723,8 +1723,8 @@ Goal 24 encodes a stop that invent alone cannot infinite-loop.
    within ceilings (8.0× / 8.0× / 15.0×). Further speedup needs
    an SBCL-native syscall/rename essence, not Goal 24 floor
    invent. Evidence:
-   `/tmp/g24-cli-support-after-write/summary.json`,
-   `/tmp/g24-cli-support-after-posix/summary.json`;
+   `docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json`
+   (posix knife pack was reverted; not promoted);
    `docs/acceptance/goal-v20-part-h.md` pairs 871–873.
 
 2. **`session_compact.compact`** — **deferred-variance-floor**.
@@ -1820,3 +1820,67 @@ floor for every metric; classifier bucket `ceiling-or-variance` only
 flags printed-ratio > ceiling for explicit ruling, not an open invent
 queue.
 
+
+## 2026-09-07 — Goal 24 Attention remediation (evidence durability)
+
+**Ruled**: Cursor executor under 2026-09-05 delegation. §5.2.
+**Not independently audited by a separate advisor.** Cross-model Attention
+scan flagged weak or machine-local evidence after the first `met` claim.
+
+**Decided**:
+
+1. **Durable remesure packs.** Every disposition that pointed at
+   `/tmp/g24-*/summary.json` now points at
+   `docs/benchmarks/goal24-evidence/<pack>/summary.json` (cadr.json /
+   pi.json copied alongside). Gate:
+   `python3 scripts/goal24-evidence-gate.py`.
+
+2. **Charter inventory is not the live scoreboard.**
+   `goal24-invent-pause-inventory.tsv` @ `5bd734f2d` keeps its original
+   bucket counts (`floor-invent` 47, etc.). Live open counts are only in
+   `goal24-dispositions.tsv`. Documented in `goal-v24.md` Scoreboard.
+
+3. **Charter-bulk shape-gap without Goal 24 remesure.** Classifier
+   `shape-gap` rows seeded as `booked-shape-gap` with evidence
+   `goal24-charter bulk` include at least
+   `harness_storage.open_walk`, `session_export_html.to_html`, and
+   `websocket_stream.stream_roundtrip`. Goal 24 does **not** claim a
+   Friend-MachineD remesure for those three. Closing them accepts the
+   Goal 20 size/count/shape gap already booked at charter time.
+
+4. **f4 invent skip + `too_n` pollution.** Unit f4-interactive-misc
+   closed seven leftover metrics after Friend-MachineD leftover remesure
+   (`docs/benchmarks/goal24-evidence/f4-before/`). Gate observed
+   `cli_interactive_controller.too_n` 55 vs 56 (known pollution). No
+   product knife was attempted: leftover collect times Lisp path vs a V8
+   replica, the same pattern falsified on f1–f3. Closures are
+   `booked-shape-gap` / `deferred-variance-floor`, not invent wins.
+   `provider_registry_defs.protocol_provider` at 1.072× is variance-floor.
+
+5. **f5 invent skip.** Unit f5-oauth-selectors-rest closed five leftovers
+   from `docs/benchmarks/goal24-evidence/f5-before/` without a product
+   knife. Skipping `oauth-flow-post-json` would unmeasure the real login
+   path. Closures are shape-gap / variance-floor with written reasons on
+   each disposition row.
+
+6. **`session_discovery.header_probe` keep retained.** Disposition is
+   `deferred-variance-floor` (Friend-MachineD n=10 **1.14×**, gate PASS
+   on `paired_limit_us`; pack `r1-after-n10`). Product keep
+   (buffered read + `parse-session-header-octets` in
+   `src/cadr-agent/session/discovery.lisp`) stays because it is a real
+   product improvement and gate-clean, not because the row is
+   `met-remesure`. Do not read the keep as a ≤1.0× invent win.
+
+7. **Part 5 `gitHead=isolated-copy`.** `performance-history.json` cell
+   `nativeImageBytes=21343120` at `2026-09-07T07:56:50Z` was recorded
+   from an isolated Friend-MachineD verify tree, so `gitHead` is
+   `isolated-copy` rather than a cadr tip SHA. Verify transcript is
+   committed at `docs/benchmarks/goal24-evidence/p5-verify.log`.
+
+**Rejected**: replaying f4/f5 leftover knives or remesuring all
+`goal24-charter bulk` rows inside this remediation. That work would not
+change the stop predicate and repeats falsified levers.
+
+**Why it was decidable**: Attention asked for durable, honest evidence
+pointers and explicit rulings where the first close was thin. Stop
+predicate already held; this section hardens the audit surface.
