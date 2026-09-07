@@ -1,0 +1,72 @@
+# cadr 多 Agent 团队开发平台
+
+> **状态：** Goal 20 pairing + Goal 21 baseline 共用本哲学。  
+> **入口：** `scripts/cadr-team.sh status` · `scripts/cadr-team.sh doctor`
+
+## 原则（完整版，非阉割）
+
+| 原则 | 含义 | 机械 enforcement |
+|------|------|----------------|
+| **单写者合并** | 仅 director 合入 main | `director-merge.sh` + harness lock |
+| **硬隔离** | pairing/impl 永不改 main | dispatch `--workspace` = worktree；doctor 检测 main 绑定 |
+| **幂等任务** | 队列状态可从 git 重建 | `reconcile-in-progress`、peek-merge |
+| **Rebase 集成的 trunk** | 合入前 rebase 到 `cadr-migration`，ff-merge | `director-merge.sh` rebase+ff |
+| **分层 WIP** | 基线 bump 挡 pairing | G21 `goal20Paused` + anchor guard |
+| **快反馈** | merge 前 smoke，gate 前全量 | director 跑 `baseline-anchor`；gate lane 跑 verify |
+| **可观测** | 一条命令看全貌 | `cadr-team.sh status` |
+
+## 反模式（禁止）
+
+- `cursor-agent --workspace $REPO_ROOT` 跑 pairing/impl（**仅 anchor/gate/opt 调度可例外**）
+- director 在 dirty main 上 cherry-pick（应用 anchor guard + operational exclude）
+- merge 失败仍 pop mergeQueue（已改为 peek → 成功才 pop）
+- 手标 task done 无 commit 校验（anchor guard + reconcile）
+
+## 角色
+
+```
+┌─────────────┐   ensure worktree    ┌──────────────┐
+│ Lane agent  │ ──────────────────► │ /tmp/*-wt    │
+│ (a/b/c)     │   --workspace ONLY  │ feature branch│
+└─────────────┘                     └──────┬───────┘
+                                         │ rebase + ff-merge
+                                         ▼
+┌─────────────┐                     ┌──────────────┐
+│  Operator   │ ──tick/dispatch──►  │ cadr-migration│
+│  (5 min)    │                     │ (director)   │
+└─────────────┘                     └──────────────┘
+```
+
+## 命令
+
+```bash
+scripts/cadr-team.sh status    # 队列 + worktree + agent + tmux
+scripts/cadr-team.sh doctor    # 阻断项：anchor、main 绑定、丢分支
+
+scripts/cadr-team-worktree.sh ensure /tmp/g21-3-wt g21-3-thinking-selector cadr-migration
+```
+
+## Goal 专用编排（薄封装）
+
+- Goal 20：`goal20-orchestrator.sh` · `goal20-team-operator.sh`
+- Goal 21：`goal21-orchestrator.sh` · `goal21-team-operator.sh` · `goal21-anchor-guard.sh`
+
+共享：`cadr-team-worktree.sh` · `cadr-team.sh` · `cadr-team-dispatch.sh` · `cadr-team-premerge.sh` · `cadr-team-queue.py`
+
+## 统一队列
+
+- 真相源：`docs/benchmarks/cadr-team-queues.json`（`goals.20` / `goals.21`）
+- 兼容：`goal20-queue.json` / `goal21-queue.json` 镜像同步（`cadr-team-queue.py migrate`）
+- 每次 `save()` 双写 unified + legacy
+
+## Agent 超时
+
+- 默认 `CADR_AGENT_TIMEOUT_SEC=5400`（90 分钟）
+- 超时 → task 回 `pending`，operator 下轮重派
+
+## Merge 前 smoke（本地 CI）
+
+- `cadr-team-premerge.sh` 在 rebase 后、ff-merge 前于 worktree 内跑
+- G20：ledger + unpaired + 可选 `--only-enforce`
+- G21：`baseline-anchor` + `goal21-source-parity-test`（若存在）+ `GOAL21_GATE_MODE=fast`（`goal21-gate-run.sh`）
+- G21 director post-merge：`goal21-director-merge.sh` 在 ff-merge 后再跑 fast gate

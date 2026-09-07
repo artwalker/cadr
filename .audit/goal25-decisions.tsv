@@ -1,0 +1,3 @@
+ts	phase	decision	why	evidence	result
+2026-09-07T10:04:14Z	frame	charter Goal 25 hillclimb cohort from g24 shape-gap+variance-floor	user wants performance wins; g24 stop was disposition not <=1.0x	docs/acceptance/goal-v25.md docs/benchmarks/goal25-inventory.tsv	open; open-hillclimb=cohort size
+2026-09-07T10:04:56Z	pilot	freeze leftover-replica and subus-floor classes	leftover ruler cannot be closed by product invent; subus already variance-bound in g24	docs/benchmarks/goal25-dispositions.tsv docs/benchmarks/goal25-inventory.tsv	open-hillclimb reduced to product-path+charter-shape

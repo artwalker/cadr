@@ -1,0 +1,127 @@
+metric	g24_disposition	class	ratio_hint	g24_evidence	note
+agent_proxy.stream_roundtrip	deferred-variance-floor	subus-floor	1.59	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal20-paired-over-1x.md	printed 1.59× > 1.5 ceiling; gate PASS under paired_limit_us variance floor (~26 µs); no invent
+agent_tool_loop.line_ending	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+ai_runtime_faux.blocks	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+ai_support.estimate_text	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+ai_support.threads_absent	booked-shape-gap	leftover-replica	2.41	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	pi leftover replica is handle==null; cadr calls stop-thread-for-cleanup; 2.41× on 0.18µs
+ai_support.threads_current	booked-shape-gap	leftover-replica	2.88	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	pi leftover replica is isMainThread; cadr calls stop-thread-for-cleanup; 2.88× on 0.21µs
+bash_tool.append_status	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+bash_tool.strip_exit_footer	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_bootstrap_sessions.data_directory	booked-shape-gap	leftover-replica	4.704	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 4.704× (4.550/0.967µs); path.join-shaped invent 5.068× discarded
+cli_bootstrap_sessions.extensions_doc_url	deferred-variance-floor	leftover-replica	2.353	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 2.353× (0.420/0.179µs); constant URL leftover flags vs interned JS string
+cli_bootstrap_sessions.legacy_data_directory	booked-shape-gap	leftover-replica	3.970	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 3.970× (4.766/1.200µs); join invent 4.813× discarded
+cli_bootstrap_sessions.legacy_product	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_bootstrap_sessions.managed_binary_names	deferred-variance-floor	leftover-replica	1.511	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 1.511× (0.352/0.233µs); four FIND on a 4-element constant list
+cli_bootstrap_sessions.manual_migration_command	booked-shape-gap	leftover-replica	2.466	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 2.466× (5.154/2.090µs); quote-concat invent 1.559× still over 1.0, discarded
+cli_bootstrap_sessions.migration_guide_url	deferred-variance-floor	leftover-replica	2.376	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 2.376× (0.428/0.180µs); constant URL leftover flags vs interned JS string
+cli_bootstrap_sessions.response_text	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_bootstrap_sessions.rt_ok	booked-shape-gap	leftover-replica	1.858	docs/benchmarks/goal24-evidence/f2-before/summary.json	Friend-MachineD leftover n=5 1.858× (1.423/0.766µs); skip-FORMAT invent 1.084× still over 1.0, discarded
+cli_extensions_install.git_path	booked-shape-gap	leftover-replica	2.198	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 2.198x (1.419/0.646us); SEARCH/SUBSEQ vs leftover indexOf/slice; invent discarded
+cli_extensions_install.llama_compact_count	booked-shape-gap	leftover-replica	3.326	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 3.326x (1.926/0.579us); FORMAT/toFixed leftover; invent discarded
+cli_extensions_install.llama_context_label	booked-shape-gap	leftover-replica	2.049	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 2.049x (1.867/0.911us); struct+FORMAT vs leftover contextLabel; invent discarded
+cli_extensions_install.llama_model_description	booked-shape-gap	leftover-replica	1.323	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 1.323x (1.997/1.509us); description join vs leftover modelDescription; invent discarded
+cli_extensions_install.quant_label	booked-shape-gap	leftover-replica	1.778	docs/benchmarks/goal24-evidence/f3-after/summary.json	Friend-MachineD n=5 1.778x (1.307/0.735us); GETF/FORMAT vs leftover option text; invent discarded
+cli_extensions_install.unsafe_git	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.append_output	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.auth_type	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.complete_entry	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.decode_entity	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.framed_select_state_handle_raw_input	booked-shape-gap	leftover-replica	30.982	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 30.982x (65.201/2.104us); collect allocates 5 make-framed-select-state plus handle-raw-input vs V8 leftover; no product knife closes 1.0x
+cli_interactive_controller.framed_select_title	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.make_entry	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.render_extension_custom_ui	booked-shape-gap	leftover-replica	4.997	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 4.997x (16.982/3.398us) under 40x ceiling; typep plus component-render leftover vs V8; prior chrome invent already kept elsewhere
+cli_interactive_controller.tool_session_make	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.tool_session_update	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.wayland	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.wrap_transcript	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.bash_result	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.dialog_request	booked-shape-gap	product-path	4.128	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD n=5 4.128× (1.624/0.393µs); hash-table invent discarded
+cli_print_rpc.dialog_result	booked-shape-gap	leftover-replica	15.238	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 15.238× (3.245/0.213µs); timed json-object+json-get vs leftover object literals; gate PASS variance-bound; sibling dialog_request booked-shape-gap
+cli_print_rpc.handle_bad_json	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.jsonl_line	deferred-variance-floor	subus-floor	13.21	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 34	printed 13.21× > 8.0 ceiling; sub-µs path (3.3 / 0.25 µs); gate PASS under 10 µs variance floor; no invent
+cli_print_rpc.rpc_prompt	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_sdk.thinking_level	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.all_known_model_ids_enabled_p	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.countdown_render	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.countdown_seconds	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.countdown_tick	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.model_equal_p	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.model_selector_active_models	booked-shape-gap	product-path	14.3	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD 14.3x; constructor-dominated
+cli_selectors.model_selector_clamp_selected	booked-shape-gap	product-path	3.65	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD 3.65x after invent; still over 1.0; discarded
+cli_selectors.model_selector_select_current	booked-shape-gap	product-path	28.932	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD n=5 28.932× (18.899/0.653µs); eq fast-path invent discarded
+cli_selectors.scoped_model_selector_search_text	booked-shape-gap	product-path	7.943	docs/benchmarks/goal24-evidence/f1-after/summary.json	Friend-MachineD n=5 7.943× (4.366/0.550µs); concatenate invent discarded
+cli_selectors.scoped_models_clear_ids	deferred-variance-floor	product-path		goal24-f1-drain	tiny list enable/clear; prior invent made slower; variance/shape floor
+cli_selectors.scoped_models_copy_enabled	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.scoped_models_enable_ids	deferred-variance-floor	product-path		goal24-f1-drain	tiny list; invent hash-set reverted slower
+cli_selectors.scoped_models_enabled_set	deferred-variance-floor	product-path		goal24-f1-drain	tiny list sibling
+cli_support.close_watcher	deferred-variance-floor	product-path	1.26	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	Friend-MachineD n=5 1.26× on 0.20µs; gate variance-bound; nil close is if (!watcher) return
+cli_support.threads_absent	booked-shape-gap	product-path	2.50	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	same shape as ai_support.threads_absent; 2.50×
+cli_support.threads_current	booked-shape-gap	product-path	2.54	docs/benchmarks/goal24-evidence/cli-support-after-stat/summary.json	same shape as ai_support.threads_current; 2.54×
+cli_support.user_agent	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+cli_support.write_empty	booked-shape-gap	product-path	3.16	docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 3.16× within 15× ceiling
+cli_support.write_hello	booked-shape-gap	product-path	1.42	docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.42× within 8× ceiling
+cli_support.write_overwrite	booked-shape-gap	product-path	1.26	docs/benchmarks/goal24-evidence/cli-support-after-write/summary.json	atomic-write-utf8 vs activateManagedRelease; Node-shape+posix knives reverted; 1.26× within 8× ceiling
+evals_harness.content_text	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.eval_environment	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.eval_result	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.extension_authoring_input	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.group_key	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.json_string	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.last_assistant	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.normalize_step_type	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.output_selector	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.release_extensions	deferred-variance-floor	subus-floor	21.13	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 370	printed 21.13× > 8.0 ceiling; sub-µs path (6.187 / 0.293 µs); gate PASS under variance floor; no invent
+evals_harness.root_observer	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.status_name	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.step_value	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.transcript_event	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+find_tool.gitignore_regex	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+find_tool.glob_regex	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+grep_tool.make_tool	deferred-variance-floor	subus-floor	10.006	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 375	printed 10.006× > 8.0 ceiling; sub-µs path (4.152 / 0.415 µs); gate PASS under 10 µs variance floor; no invent
+harness_events.event_type	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+harness_events.make_bus	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+harness_events.make_end	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+harness_events.make_start	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+harness_storage.open_walk	booked-shape-gap	charter-shape		goal24-charter bulk	size/count/shape gap booked; invent not required
+image_runtime.api_provider	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+image_runtime.lookup	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+oauth_pkce_device.anth_oauth_instructions	deferred-variance-floor	subus-floor		goal24-b2-drain	sub-us constant string compare (ledger 0.729/0.103 µs); no remaining product floor
+oauth_pkce_device.anth_oauth_name	deferred-variance-floor	subus-floor		goal24-b2-drain	sub-us metadata slot read (ledger 0.373/0.099 µs); no remaining product floor
+oauth_pkce_device.anth_oauth_sub	deferred-variance-floor	subus-floor		goal24-b2-drain	sub-us boolean slot read (ledger 0.143/0.075 µs); no remaining product floor
+oauth_pkce_device.device_start	booked-shape-gap	leftover-replica	1.384	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 1.384× (18.639/13.465µs); product oauth-flow-post-json vs leftover startOpenAICodexDeviceAuthFromResponse; invent would skip the product HTTP adapter
+oauth_pkce_device.error_detail	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+oauth_pkce_device.json_copy	deferred-variance-floor	subus-floor		goal24-b2-drain	sub-us stringify of empty/1-key error body (ledger 0.938/0.432 µs); same floor as oauth error_detail/notify_device
+oauth_pkce_device.kimi_host_code	deferred-variance-floor	leftover-replica	2.196	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 2.196× (0.694/0.316µs); env assoc+trim vs leftover object lookup; kimi-oauth-host already one trim; same floor as kimi_host_default
+oauth_pkce_device.kimi_host_default	deferred-variance-floor	subus-floor		goal24-b2-drain	sub-us host lookup (ledger 0.348/0.152 µs); kimi-oauth-host already one trim
+oauth_pkce_device.kimi_host_trim	deferred-variance-floor	leftover-replica	2.447	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 2.447× (1.071/0.438µs); string-right-trim vs leftover replace /+$/; same kimi-oauth-host as kimi_host_default
+oauth_pkce_device.notify_device	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+oauth_pkce_device.openrouter_exchange	booked-shape-gap	leftover-replica	1.653	docs/benchmarks/goal24-evidence/f5-before/summary.json	Friend-MachineD leftover n=5 1.653× (16.646/10.070µs); product openrouter-exchange-code vs leftover exchangeAuthorizationCodeFromResponse; invent would skip the product HTTP adapter
+oauth_pkce_device.radius_gateway	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+package_manager.git_object_id	booked-shape-gap	leftover-replica	4.528	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 4.528x (5.443/1.202us); package-update-git-object-id trim/subseq/every vs leftover V8 regex extract; collect also FORMAT newline cases
+package_manager.type_label	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+package_manager.update_argv	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+powershell_tool.utf8_prefix	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+provider_mistral.stream_roundtrip	booked-shape-gap	product-path	1.24	docs/benchmarks/goal20-part-p-mistral-sprof-0084f0703.md	SBCL generic PARSE-JSON-SOURCE vs V8; visitor/ascii-decode/octet-parse banned; 1.24× within 3× ceiling
+provider_registry_defs.lookup	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+provider_registry_defs.protocol_provider	deferred-variance-floor	leftover-replica	1.072	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 1.072x (2.372/2.213us); cadr MAD 0.32us overlaps 0.16us gap; make-protocol-provider leftover constructor vs V8
+provider_registry_defs.provider_options	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+session_compact.compact	deferred-variance-floor	product-path	1.04	docs/benchmarks/goal20-paired-over-1x.md	Friend-MachineD remesure2 36.7/35.3µs 1.04×; uuid pool+compact-from-preparation kept; ~1.4µs within MAD floor
+session_discovery.header_probe	deferred-variance-floor	subus-floor	1.14	docs/benchmarks/goal24-evidence/r1-after-n10/summary.json	Friend-MachineD n=10 963/845µs 1.14×; buffered read+parse-session-header-octets kept; gate PASS paired_limit_us 6×MAD floor
+session_export_html.to_html	booked-shape-gap	charter-shape		goal24-charter bulk	size/count/shape gap booked; invent not required
+settings_load.provider_symbol	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+skill_prompt_load.sdk_get_prompts	deferred-variance-floor	leftover-replica	2.032	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 2.032x (0.310/0.153us); slot accessor leftover vs getPrompts; sub-us floor
+skill_prompt_load.sdk_get_skills	deferred-variance-floor	leftover-replica	1.485	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 1.485x (0.229/0.154us); slot accessor leftover vs getSkills; sub-us floor
+skill_prompt_load.sdk_get_themes	deferred-variance-floor	leftover-replica	1.557	docs/benchmarks/goal24-evidence/f4-before/summary.json	Friend-MachineD leftover n=5 1.557x (0.250/0.161us); slot accessor leftover vs getThemes; sub-us floor
+storage_journal.journal_read	booked-shape-gap	product-path	1.14	docs/benchmarks/goal20-part-p-journal-read-sprof-0084f0703.md	journal_body_bytes +3.2%; JSON codec vs V8; load first-byte/consume-line knives banned; 1.14× within 8× ceiling
+tool_manager.release_asset	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_native_modifiers.pressed	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.filter	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.loader_frames	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.loader_interval	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.loader_step	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.set_message	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.update_display	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_theme_overlay.parse_hex_color	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_theme_overlay.rgb_to_ansi_256	deferred-variance-floor	subus-floor		goal24-charter bulk	sub-us / variance floor; invent not required
+tui_theme_overlay.theme_foreground_ansi	deferred-variance-floor	subus-floor	14.724	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 321	printed 14.724× > 8.0 ceiling; sub-µs path (5.58 / 0.379 µs); gate PASS under variance floor; no invent
+websocket_stream.stream_roundtrip	booked-shape-gap	charter-shape		goal24-charter bulk	size/count/shape gap booked; invent not required
