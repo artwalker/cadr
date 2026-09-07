@@ -17,7 +17,7 @@ Print mode lets a user send one prompt, get the model reply on stdout, and exit,
 Preconditions:
 
 - Isolated HOME has no `auth.json`.
-- `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, and `CADR_API_KEY` are unset.
+- Provider ambient keys unset in the process (each provider’s `:key-environment` / `environment-names` in `src/cadr-ai/providers/definitions.lisp`). There is no product `CADR_API_KEY`. Prefer relying on `control-cadr`’s default scrub; use `CADR_VERIFY_KEEP_CREDENTIALS=1` only for intentional auth drives.
 - No `--provider` or `--model` on the command line.
 - `control-cadr doctor` passed.
 

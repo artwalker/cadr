@@ -17,7 +17,7 @@ List packages lets a user see which extension sources are installed in user or p
 Preconditions:
 
 - Isolated HOME has no user settings packages.
-- The repository checkout is not treated as a project with extra packages, or `--no-approve` is used if a project `.cadr/settings.json` appears. The default `control-cadr` wrapper already passes `--approve`; an empty project list still prints the empty copy.
+- The repository checkout is not treated as a project with extra packages, or pass `--no-approve` on the `list` argv if `cwd/.cadr/settings.json` appears. Package commands are `argv[0]`; `control-cadr` does **not** prepend `--approve` / `--offline` / `--session-dir` for `list` (see SKILL.md).
 - `control-cadr doctor` passed.
 
 - **Empty list.** Ask which packages are installed. Run `CADR_VERIFY_FEATURE=list-packages .cursor/skills/verify-cadr/bin/control-cadr cli -- list`. Exit code `0`. `stdout.txt` is `No packages installed.` plus a newline.
