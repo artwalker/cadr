@@ -895,7 +895,7 @@ powershell_tool.utfx_ok	deferred-measure-only	goal24-charter bulk	measure-only p
 powershell_tool.utfxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 powershell_tool.utfxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 provider_mistral.stream_roundtrip	booked-shape-gap	docs/benchmarks/goal20-part-p-mistral-sprof-0084f0703.md	SBCL generic PARSE-JSON-SOURCE vs V8; visitor/ascii-decode/octet-parse banned; 1.24× within 3× ceiling
-provider_pi_messages.stream_roundtrip	open-remount	open	Part 3 remount target
+provider_pi_messages.stream_roundtrip	met-remesure	/tmp/g24-r1-after-n10/summary.json	Friend-MachineD n=10 668/930µs 0.72×; visitor-decode keep on tip a80dc50be; gate PASS
 provider_registry_defs.lookup	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 provider_registry_defs.models_runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 provider_registry_defs.oauth_to_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -907,9 +907,9 @@ resource_loader.nearest_config	deferred-measure-only	goal24-charter bulk	measure
 resource_loader.project_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 session_compact.branch_summarize	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 session_compact.compact	deferred-variance-floor	docs/benchmarks/goal20-paired-over-1x.md	Friend-MachineD remesure2 36.7/35.3µs 1.04×; uuid pool+compact-from-preparation kept; ~1.4µs within MAD floor
-session_discovery.header_probe	open-remount	open	Part 3 remount target
+session_discovery.header_probe	deferred-variance-floor	/tmp/g24-r1-after-n10/summary.json	Friend-MachineD n=10 963/845µs 1.14×; buffered read+parse-session-header-octets kept; gate PASS paired_limit_us 6×MAD floor
 session_export_html.to_html	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
-session_pipeline.session_load	open-remount	open	Part 3 remount target
+session_pipeline.session_load	met-remesure	/tmp/g24-r1-after-n10/summary.json	Friend-MachineD n=10 1589/1763µs 0.90×; load-session keep on tip; context_message_roles EQUAL; gate PASS
 settings_load.environment_value	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 settings_load.oauth_login_function	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 settings_load.provider_config_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
