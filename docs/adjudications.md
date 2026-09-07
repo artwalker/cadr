@@ -1679,3 +1679,28 @@ fail dual ALL4; prove-it-works over rubber-stamp.
 **Why it was decidable**: mechanical Part O gate twice on the same tip
 with openable artifact dirs; prior false booking already withdrawn.
 
+## 2026-09-07 — Goal 24 chartered (post–Goal 20 leftover drain)
+
+**Ruled**: Cursor executor under 2026-09-05 delegation. §5.2.
+**Not independently audited by a separate advisor.**
+
+**Decided**:
+
+1. Goal 20 complete stands. Part G stays all `met`. This does **not**
+   reopen Goal 20 or G.17.
+2. **Do not put leftover invent into Goal 21.** Goal 21 is the closed
+   pi `v0.84.3` baseline alignment. Goal 22 / 23 are later baseline
+   bumps. Leftover drain is **Goal 24**
+   (`docs/acceptance/goal-v24.md`).
+3. Goal 24 stop predicate is finite disposition coverage + drain of
+   open invent/remount/proposal/ceiling rows. 「Every paired path
+   ≤ 1.0×」is explicitly **not** the stop.
+4. Part 1 is `met` on classifier inventory (963 metrics). Seeded
+   dispositions defer measure-only / variance-floor / shape-gap in
+   bulk. Open drain starts at 47 floor-invent + 3 remount + 3
+   needs-proposal + 5 ceiling rulings.
+
+**Why it was decidable**: user asked to house non–Goal-20 leftovers in
+a goal and solve them; Goal 21 reuse would falsify baseline history;
+Goal 24 encodes a stop that invent alone cannot infinite-loop.
+

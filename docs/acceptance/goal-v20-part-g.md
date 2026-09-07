@@ -33,8 +33,8 @@ Status: `met` / `missing` / `blocked`.
 
 ## Still not claimed
 
-- 148 new wall-clock pairs (G.12 forbids that reading).
-- 「不劣于 pi」 for files that were historically `pairable-uncovered` at a K booking (tip class is inventory, not that claim).
-- A complete `binary_bytes` history series (G.9 keep is booked; first history cell waits).
-- Paper A/B passing means the three games play.
-- Extra invent below the closed G.17 floor as a Goal 20 reopen.
+- 148 new wall-clock pairs (G.12 forbids that reading). Tracked out of Goal 24 too.
+- 「不劣于 pi」 for files that were historically `pairable-uncovered` at a K booking (tip class is inventory, not that claim). Post–Goal 20 invent lives in **Goal 24**.
+- A complete `binary_bytes` history series (G.9 keep is booked; first history cell waits). **Goal 24 Part 5.**
+- Paper A/B passing means the three games play. Not Goal 20 / not Goal 24.
+- Extra invent below the closed G.17 floor as a Goal 20 reopen. **Forbidden.** Same invent surface is Goal 24 Parts 3–4 instead.

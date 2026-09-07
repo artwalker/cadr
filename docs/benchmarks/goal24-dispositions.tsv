@@ -1,0 +1,964 @@
+metric	disposition	evidence	note
+agent_proxy.stream_roundtrip	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+agent_tool_loop.line_ending	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+agent_tool_loop.runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+agent_tool_loop.tool_path	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_capabilities.deferred_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_capabilities.event_stream	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_crypto.hmac	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_crypto_model_data.manifest	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_runtime_faux.blocks	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+ai_support.context_overflow	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_support.estimate_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+ai_support.grammar_delta	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ai_support.threads_absent	open-floor-invent	open	Part 3 drain target
+ai_support.threads_current	open-floor-invent	open	Part 3 drain target
+bash_tool.append_status	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+bash_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+bash_tool.normalized_extension	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+bash_tool.output_path	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+bash_tool.record_nil	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+bash_tool.strip_exit_footer	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+bash_tool.strip_truncation	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+bash_tool.truncation_notice	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+bash_tool.user_bash_result	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.assistant_tool_call_only	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.coding_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.data_directory	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.dpk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.dpkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.dpkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.dpkxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.extensions_doc_url	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.find_session_by_id_or_prefix	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.last_assistant_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.legacy_data_directory	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.legacy_product	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_bootstrap_sessions.managed_binary_names	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.manual_migration_command	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.migration_guide_url	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.model_scope_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.pbkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.pbkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.pbkxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.psb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.response_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_bootstrap_sessions.rst_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.rt_ok	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.rtk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.rtkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.rtkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.rtkxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_command_stats	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_compaction_display_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_compaction_status	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_display_messages	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_entry_tree_selector_data	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_entry_user_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_export_basename	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_info_style	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_restored_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_tree_label_timestamps	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_tree_selector_data	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_tree_tool_calls	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_usage_breakdown	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.session_user_messages_for_forking	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.validate_cli_session_flags	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_bootstrap_sessions.write_hotkeys_command	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.catalog_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.git_path	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.hp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.http_timeout_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.llama_compact_count	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.llama_context_label	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.llama_format_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.llama_js_to_fixed	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.llama_model_description	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.llama_search_exact	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.llama_search_status	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.llama_view_width	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.loaded_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.manager_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.output_boundary	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.progress_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.quant_label	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.quiet_manager	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.same_source	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.split_path_segments	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.startup_issues	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.string_prefix	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.strip_git_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_extensions_install.unsafe_git	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.accumulate_usage	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.append_output	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.append_user_message	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.apply_tui_theme_summary	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.assistant_has_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.auth_type	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.bash_append_running	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_complete_string	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_end	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_fin	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_go	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_halt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_off	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_run	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bash_stop_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bf_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.bh_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.br_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.cache_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.clipboard_candidates	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.clipboard_copy	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.colorfgbg_index	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.complete_entry	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.decode_entity	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.extension_custom_ui_visible	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.extension_overlay_options	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.extension_render_value_lines	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.fit_footer_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.footer_git_paths	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.footer_usage	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.framed_select_state_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.framed_select_state_handle_raw_input	open-floor-invent	open	Part 3 drain target
+cli_interactive_controller.framed_select_title	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.load_tui_theme_file	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.make_entry	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.make_extension_editor_dialog	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.make_extension_input_dialog	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.make_framed_select_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.make_runtime_auth_input_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.note_component_render_channel	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.osc52_copy	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.pad_str	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.parse_auto_theme	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.render_assistant_lines	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.render_cacheable	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.render_extension_custom_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.render_extension_custom_ui	open-floor-invent	open	Part 3 drain target
+cli_interactive_controller.reset_tui_messages	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.resolve_theme	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.runtime_auth_input_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.sess_make	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.sess_new	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.sess_set	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.sess_upd	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.tool_session_make	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.tool_session_update	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.transcript_summary_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.transcript_summary_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.transform_tui_markdown	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.tui_component_protocol	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.tui_extension_theme_runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.update_notification_border	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_interactive_controller.wayland	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_interactive_controller.wrap_transcript	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.array_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.asst_hit	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.bad_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.bash_js	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.bash_result	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.close_pending	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.cmd_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.cmd_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.command_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.dialog_request	open-floor-invent	open	Part 3 drain target
+cli_print_rpc.dialog_result	open-floor-invent	open	Part 3 drain target
+cli_print_rpc.handle_bad_json	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.handle_not_object	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.handle_ui_miss	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.jsonl_line	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+cli_print_rpc.line_arr	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.line_bad	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.line_ui	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.prompt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_print_rpc.rpc_prompt	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_print_rpc.ui_absent	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_sdk.thinking_level	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.af_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ahe_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ais_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.aisx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.aisxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.aisxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akhe_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akhex_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akhexx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akhexxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.aki_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akix_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akixx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akixxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akixxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.aku_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akux_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akuxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.akuxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.align_left_right	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.all_known_model_ids_enabled_p	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.api_key_input_state_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.armin_row_string	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.aui_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cd_rnd	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cd_sec	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cd_tick	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdr_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdrx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdrxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdrxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cds_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdtx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdtxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cdtxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cet_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cl_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.cmp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.countdown_render	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.countdown_seconds	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.countdown_tick	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.credential_entry_auth_type	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dax_make	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dax_rgb	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dax_tick	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.daxnuts_component_tick	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.daxnuts_dispose	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.daxnuts_image_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.daxnuts_invalidate	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.daxnuts_rgb_at	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dct_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dctx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dctxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dctxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dlg_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dlg_code	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dlg_dev	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dlg_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dlg_make	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dlg_new	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dmc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dmcx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dmcxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dmcxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dn_make	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dn_rgb	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dn_tick	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dra_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.drax_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.draxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.draxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dsc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dscx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dscxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.dscxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.env_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.envx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.envxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.envxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.esp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.evt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.flt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.fltx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.fltxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.fltxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.he_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.hen_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.henx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.henxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.hev_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.hri_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.info_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.kb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.key_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lat_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.latx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.latxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.latxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lbl_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lblx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lblxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lblxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_cmp	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_evt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_info	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_man	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_prmt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_prog	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ld_wait	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldci_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldcix_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldcixx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldcixxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lddt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lddtx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lddtxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldhe_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldhex_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldhexx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldhexxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldi_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldix_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldixx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldixxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldmi_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldmix_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldmixx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldmixxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldpr_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldprx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldprxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldprxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldpx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldpxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldpxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldrd_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldrdx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldrdxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldw_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldwx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldwxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ldwxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lgo_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lgox_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lgoxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lgoxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lgt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lhe_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmh_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmhx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmhxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmhxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lms_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmsu_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lmsxxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_auth_type_route	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_complete_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_device	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_show_info	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_show_manual_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_show_progress	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_show_prompt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.login_dialog_show_waiting	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.logout_provider_options	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lpo_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lpox_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lpoxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lpoxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lpr_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lst_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lstx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lstxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lstxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.lui_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.luix_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.luixx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.luixxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_api_key_input_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_daxnuts_component	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_login_method_selector_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_model_selector_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_models_selector_keybindings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_oauth_selector_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_scoped_models_selector_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.make_trust_selector_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.makis_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.man_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mkbxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mlms_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mls_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mlsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mlsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mlsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_equal_p	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.model_selector_active_models	open-floor-invent	open	Part 3 drain target
+cli_selectors.model_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_clamp_selected	open-floor-invent	open	Part 3 drain target
+cli_selectors.model_selector_filter_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_finish_refresh	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_handle_raw_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_key_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_keybindings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_rebuild_search_text_table	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_select_current	open-floor-invent	open	Part 3 drain target
+cli_selectors.model_selector_selected_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_set_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_toggle_scope	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_ui_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_visible_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.model_selector_visible_slice	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mos_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.moss_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.move_index	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.move_list_item	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mrms_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mrmsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mrmsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mrmsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.msms_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.msmsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.msmsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.msmsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mts_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mtss_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mtsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mtsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.mv_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_ahe	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_ais	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_aki	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_aku	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_cet	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_env	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_esp	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_flt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_hri	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lat	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lbl	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lgo	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lhe	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lin	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lmh	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lms	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lpo	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_lui	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_mls	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_mos	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_ohe	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_osl	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_osr	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_out	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_qry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_rt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_sel	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_sst	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oa_typ	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oas_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oasx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oasxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oasxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_environment_source_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_option_status_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_option_status_rendered	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_selector_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_selector_handle_raw_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_selector_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oauth_selector_selection	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ohe_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.osl_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.osr_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.oss_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ossx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ossxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ossxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.ossxxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.prmt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.prog_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.project_trust_options	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.qry_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.qryx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.qryxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.qryxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.qualified_model_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.raw_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.render_model_selector	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rm_sel	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rms_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rnd2_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rnd_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rte_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rth_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rthx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rthxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rthxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.rwi_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_model_item_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_model_selector_search_text	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_models_binding_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_clear_ids	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_models_copy_enabled	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_selectors.scoped_models_enable_ids	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_models_enabled_set	open-floor-invent	open	Part 3 drain target
+cli_selectors.scoped_models_model_by_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_cancel	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_clamp_selected	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_clear_all	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_counts	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_enable_all	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_finish_refresh	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_handle_raw_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_items	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_key_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_mark_changed	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_notify_change	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_persist	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_provider_count	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_rebuild_items	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_rebuild_models_by_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_refresh_items	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_select_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_selected_item	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_set_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_sorted_ids	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_target_ids	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_toggle_provider	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_toggle_selected	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_selector_visible_items	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.scoped_models_toggle_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sec_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sel_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.session_binding_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.session_named_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.session_quoted_search	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.session_record_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.session_scoped_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.session_shorten_path	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.settings_active_automatic_theme	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.settings_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.settings_automatic_theme_setting	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.settings_cycle	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.settings_display_value	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sl_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.slx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.slxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.slxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sm_st	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sms_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sort_model_selector_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sst_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.sv_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_cl	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_desc	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_ds	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_he	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_kb	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_lbl	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_lst	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_lv	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_mts	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_mv	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_sc	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.th_sel	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thaf_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thafx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thafxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thafxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thcl_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thclx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thclxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhe_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhex_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhexx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhr_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhrx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhrxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thhrxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_level_description_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_level_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_selector_apply_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_selector_handle_raw_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_selector_key_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_selector_keybindings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thinking_selector_set_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thmv_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thmvx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thmvxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thmvxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thsc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thscx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.thscxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tick_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tkb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tlbl_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tll_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tllx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tllxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tllxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tosp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tqry_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tr_he	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tr_mv	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tr_pto	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tr_tdd	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tr_tss	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tr_ui	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_active_path	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_branch_segment_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_cancel_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_confirm_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_copy_selected	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_entry_display_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_entry_map	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_entry_search_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_fold_or_up	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_foldable_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_format_label_timestamp	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_format_tool_call	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_handle_raw_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_help_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_iso_timestamp	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_nearest_visible_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_normalize_display_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_order_entries	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_prioritize_active	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_query_matches	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_rebuild_visible_maps	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_select_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_selected_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_selected_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_shorten_path	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_start_label_edit	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_tool_argument	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_unfold_or_down	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tree_visible_ids	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trmk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trmkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trmkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trmkxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trsv_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trsvx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trsvxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trsvxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_decision_description	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_option_saved_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_selector_handle_event	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_selector_handle_raw_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_selector_move	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_selector_selection	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.trust_selector_ui_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tse_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsex_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsexx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsexxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tskb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tskbx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tskbxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tskbxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsm_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsmx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsmxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsmxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsq_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsqx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsqxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tsqxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tui_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tuix_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tuixx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.tuixxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.typ_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.typx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.typxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.typxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.um_evt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.um_he	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.um_hr	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.um_raw	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umev_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umevx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umevxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrs_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrsx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrsxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrsxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrw_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrwx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrwxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.umrwxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.user_message_handle_raw	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.visible_slice	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_selectors.wait_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_settings.block_images	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_settings.default_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_settings.default_provider	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_settings.enabled_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_settings.output_padding	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.close_watcher	open-floor-invent	open	Part 3 drain target
+cli_support.no_api_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.no_model_selected	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.no_models_help	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.parse_changelog	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.provider_login_help	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.shell_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.threads_absent	open-floor-invent	open	Part 3 drain target
+cli_support.threads_current	open-floor-invent	open	Part 3 drain target
+cli_support.timings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.user_agent	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+cli_support.watch_retry_delay	open-floor-invent	open	Part 3 drain target
+cli_support.watch_signature	open-floor-invent	open	Part 3 drain target
+cli_support.watch_start_close	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+cli_support.write_empty	open-floor-invent	open	Part 3 drain target
+cli_support.write_hello	open-floor-invent	open	Part 3 drain target
+cli_support.write_overwrite	open-floor-invent	open	Part 3 drain target
+core_rest.cancellation_wait	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+core_rest.redacted_replace	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+core_rest.redacted_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+edit_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+edit_tool.normalize_line_endings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+edit_tool.restore_line_endings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.agent_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.art_meta	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.artifact_metadata	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.artifact_reference_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.authoring_harness_table	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.authoring_judge	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.canonical_api	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.case_observation	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.content_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.eval_environment	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.eval_layout	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.eval_paths	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.eval_result	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.eval_result_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.eval_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.exclude_guidelines	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.extension_authoring_input	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.extension_error_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.extension_paths	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.fin_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.format	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.group_key	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.json_string	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.last_assistant	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.legacy_api	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.make_eval_root	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.matching_hello_call	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.meta_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.msg_content	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.msg_txt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.normalize_step_type	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.output_selector	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.paths_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.prepare_default_prompt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.prompt_eval_agent	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.release_extensions	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+evals_harness.reload_shutdown	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.rep_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.reporter_run_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.result_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.root_observer	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.run_coding_agent_eval	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.selected_eval_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.status_name	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.step_value	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.suite_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.tools_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.transcript	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.transcript_event	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+evals_harness.type_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.usage	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.val_ext	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.validate_extension	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+evals_harness.visible_extension_bundles	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.lock	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.make_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.next_ticket	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.pending_count	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.queue_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.state_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.state_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+file_mutation_queue.waitqueue	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.gitignore_regex	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+find_tool.gitignored	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.glob_regex	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+find_tool.glob_regex_body	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.glob_scanner	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.ignored_directory	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.make_glob_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+find_tool.parse_gitignore_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+grep_tool.make_tool	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+harness_events.event_type	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+harness_events.make_bus	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+harness_events.make_end	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+harness_events.make_start	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+harness_storage.open_walk	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
+image_runtime.api_provider	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+image_runtime.dimension_note	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+image_runtime.error_result	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+image_runtime.lookup	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+image_runtime.openrouter_content	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+image_runtime.openrouter_usage	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+image_runtime.parse_data_image	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+image_runtime.parse_openrouter_images	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ls_tool.list_directory	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+ls_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.anth_oauth_instructions	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.anth_oauth_name	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.anth_oauth_sub	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.auth_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.copilot_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.copilot_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.device_start	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.error_detail	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+oauth_pkce_device.github_oauth_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.json_copy	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_code	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_default	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_trim	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.notify_device	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+oauth_pkce_device.openrouter_exchange	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.parse_callback_request	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.parse_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.percent_decode	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.present_auth_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+oauth_pkce_device.radius_gateway	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+oauth_pkce_device.write_http_response	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+output_accumulator.needs_file	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.autoload_disabled	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.candidate_record	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.checkbox	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.config_fit_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.delta_resource_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.derived_project_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.enabled_by_patterns	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.git_object_id	open-floor-invent	open	Part 3 drain target
+package_manager.git_output	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.group_less_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.inherited_enabled	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.item_matches	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.item_source_base	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.next_project_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.override_suffix	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_entry_filter	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_entry_has_filters	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_entry_index	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_override_source	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_resource_pattern	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_setting_record	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.package_setting_records	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.pattern_candidates	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.project_override_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.project_package_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.project_package_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.project_top_level_state	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.records_project_first	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.relative_pattern	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.remote_ref	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.resource_display_name	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.resource_file_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.resource_group_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.resource_group_label	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.resource_item_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.resource_key	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.scope_base	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.selected_entry	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.selector_hint	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.selector_items	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.selector_rebuild	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.settings_array	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.settings_values	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.switch_scope	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.type_label	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+package_manager.update_argv	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+package_manager.update_offline	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+package_manager.update_record_result	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.mt_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.mtb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.mtbx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.mtbxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.mtbxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.pc_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.pfx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.pfxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.pfxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.pfxxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.prefix_command	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.ps_mt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.ps_pc	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.ps_up	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.up_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.utf8_prefix	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+powershell_tool.utf_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.utfx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.utfxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+powershell_tool.utfxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+provider_mistral.stream_roundtrip	needs-proposal	open	essence proposal required
+provider_pi_messages.stream_roundtrip	open-remount	open	Part 3 remount target
+provider_registry_defs.lookup	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+provider_registry_defs.models_runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+provider_registry_defs.oauth_to_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+provider_registry_defs.protocol_provider	open-floor-invent	open	Part 3 drain target
+provider_registry_defs.provider_options	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+provider_registry_defs.runtime_models	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+resource_loader.context_from_dir	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+resource_loader.nearest_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+resource_loader.project_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+session_compact.branch_summarize	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+session_compact.compact	needs-proposal	open	essence proposal required
+session_discovery.header_probe	open-remount	open	Part 3 remount target
+session_export_html.to_html	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
+session_pipeline.session_load	open-remount	open	Part 3 remount target
+settings_load.environment_value	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.oauth_login_function	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.provider_config_secrets	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.provider_settings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.provider_symbol	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+settings_load.read_cli_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.resolve_provider_config	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_apply_overrides	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_boolean	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_compaction_enabled	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_default_model	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_default_provider	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_default_thinking_level	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_effective_object	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_http_idle_timeout	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_model_thinking_level	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_nonempty	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_retry_settings	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_settings_flush	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_settings_reload	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_settings_remove	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_settings_set	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_settings_value	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+settings_load.sdk_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+skill_prompt_load.node_read_error	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+skill_prompt_load.prompt_appends	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+skill_prompt_load.resolve_prompt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+skill_prompt_load.sdk_context_files	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+skill_prompt_load.sdk_get_prompts	open-floor-invent	open	Part 3 drain target
+skill_prompt_load.sdk_get_skills	open-floor-invent	open	Part 3 drain target
+skill_prompt_load.sdk_get_themes	open-floor-invent	open	Part 3 drain target
+skill_prompt_load.sdk_prompt_input	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+storage_journal.journal_read	needs-proposal	open	essence proposal required
+tool_manager.cleanup_quarantine	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+tool_manager.find_binary	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+tool_manager.release_asset	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_autocomplete.suggest_apply	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+tui_latex.normalize_output	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+tui_native_modifiers.pressed	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.filter	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.loader_frames	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.loader_interval	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.loader_step	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.set_message	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_select_settings_loaders.update_display	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_theme_overlay.osc11_bg	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+tui_theme_overlay.parse_hex_color	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_theme_overlay.rgb_to_ansi_256	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
+tui_theme_overlay.theme_foreground_ansi	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+websocket_stream.stream_roundtrip	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
+write_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
+write_tool.write_utf8	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "goal": 24,
+  "paused": false,
+  "title": "post-Goal-20 leftover drain",
+  "acceptance": "docs/acceptance/goal-v24.md",
+  "inventory": "docs/benchmarks/goal24-invent-pause-inventory.tsv",
+  "dispositions": "docs/benchmarks/goal24-dispositions.tsv",
+  "lanes": {
+    "classify": {
+      "role": "inventory",
+      "script": "scripts/goal24-invent-pause-classify.py"
+    },
+    "floor": {
+      "role": "optimization",
+      "bucket": "floor-invent"
+    },
+    "remount": {
+      "role": "remount",
+      "bucket": "keep-pending-remount"
+    },
+    "ruling": {
+      "role": "disposition",
+      "buckets": [
+        "needs-proposal",
+        "ceiling-or-variance",
+        "shape-gap",
+        "variance-floor"
+      ]
+    }
+  },
+  "tasks": []
+}
