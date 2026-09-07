@@ -65,7 +65,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 
 | part | status | evidence | notes |
 |---|---|---|---|
-| 1 Classifier inventory | met | `scripts/goal24-invent-pause-classify.py`; `docs/benchmarks/goal24-invent-pause-inventory.tsv` (963 metrics: measure-only-floor 833, variance-floor 69, floor-invent 47, ceiling-or-variance 5, shape-gap 3, needs-proposal 3, keep-pending-remount 3) | Charter cut 2026-09-07 |
+| 1 Classifier inventory | met | `scripts/goal24-invent-pause-classify.py`; `docs/benchmarks/goal24-invent-pause-inventory.tsv` @ `5bd734f2d` (963 metrics charter cut: measure-only-floor 833, variance-floor 69, floor-invent 47, ceiling-or-variance 5, shape-gap 3, needs-proposal 3, keep-pending-remount 3) | Charter snapshot; live opens live in dispositions.tsv |
 | 2 Disposition coverage | met | `docs/benchmarks/goal24-dispositions.tsv` (963 rows; no open-/needs- dispositions) | Terminal set: deferred-measure-only / deferred-variance-floor / booked-shape-gap / met-remesure |
 | 3 Floor invent drain | met | Friend-MachineD leftover remesures + terminal dispositions; open-floor=0 open-remount=0 | drained from charter 47+3 opens to 0 |
 | 4 Proposal / ceiling / gap close | met | `docs/adjudications.md` 2026-09-07 Part 4 (six `needs-proposal` + five `needs-ceiling-ruling` closed); `docs/benchmarks/goal24-dispositions.tsv` | needs-proposal 0; needs-ceiling-ruling 0 |
