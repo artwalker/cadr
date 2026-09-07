@@ -1035,17 +1035,13 @@
 
 (defun copy-unescaped-json-octets (octets start end)
   ;; UTF-8 only on the value window, not the whole JSONL line.
-  ;; ASCII: one-pass ub32 copy. High bit uses octets-to-string.
+  ;; ASCII: one-pass ub32 copy. High bit uses the same mixed
+  ;; decoder as utf8-string, not SBCL octets-to-string.
   ;; Not FFI. Not intern. Not parse-json-octets.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
            (optimize (speed 3) (safety 1)))
-  (or (copy-ascii-octets-or-nil octets start end)
-      (sb-ext:octets-to-string
-       octets
-       :external-format :utf-8
-       :start start
-       :end end)))
+  (copy-utf8-octets octets start end))
 
 (defun utf8-next-width (octets index end)
   ;; Bytes of the next well-formed UTF-8 scalar, or NIL.
