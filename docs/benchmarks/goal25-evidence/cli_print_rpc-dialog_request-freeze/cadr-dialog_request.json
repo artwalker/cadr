@@ -1,0 +1,20 @@
+{
+  "machine": {
+    "lisp": "SBCL",
+    "lisp_version": "2.6.7",
+    "machine_instance": "Friend-MachineD",
+    "machine_type": "X86-64"
+  },
+  "dialog_request": {
+    "mad_us": 0.05101999999999962,
+    "median_us": 1.7646799999999998,
+    "repetitions": 50,
+    "samples_us": [
+      1.81588,
+      1.8330799999999998,
+      1.7136600000000002,
+      1.7334399999999999,
+      1.7646799999999998
+    ]
+  }
+}
