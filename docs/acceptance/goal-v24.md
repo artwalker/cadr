@@ -1,6 +1,6 @@
 # Goal 24 — post–Goal 20 leftover drain
 
-> **Status:** open (chartered 2026-09-07). Does **not** reopen Goal 20.
+> **Status:** met (2026-09-07). Chartered same day. Does **not** reopen Goal 20.
 > Goal 20 Part G remains terminal `met`.
 
 ## Why this is not Goal 21
@@ -66,14 +66,15 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 | part | status | evidence | notes |
 |---|---|---|---|
 | 1 Classifier inventory | met | `scripts/goal24-invent-pause-classify.py`; `docs/benchmarks/goal24-invent-pause-inventory.tsv` (963 metrics: measure-only-floor 833, variance-floor 69, floor-invent 47, ceiling-or-variance 5, shape-gap 3, needs-proposal 3, keep-pending-remount 3) | Charter cut 2026-09-07 |
-| 2 Disposition coverage | missing | `docs/benchmarks/goal24-dispositions.tsv` seeded; open rows remain | Bulk deferred for measure-only / variance / shape-gap; invent/proposal/ceiling still open |
-| 3 Floor invent drain | met | Friend-MachineD leftover remesures + terminal dispositions; open-floor=0 open-remount=0 | 47 `open-floor-invent` + 3 `open-remount` |
+| 2 Disposition coverage | met | `docs/benchmarks/goal24-dispositions.tsv` (963 rows; no open-/needs- dispositions) | Terminal set: deferred-measure-only / deferred-variance-floor / booked-shape-gap / met-remesure |
+| 3 Floor invent drain | met | Friend-MachineD leftover remesures + terminal dispositions; open-floor=0 open-remount=0 | drained from charter 47+3 opens to 0 |
 | 4 Proposal / ceiling / gap close | met | `docs/adjudications.md` 2026-09-07 Part 4 (six `needs-proposal` + five `needs-ceiling-ruling` closed); `docs/benchmarks/goal24-dispositions.tsv` | needs-proposal 0; needs-ceiling-ruling 0 |
 | 5 binary_bytes history cell | met | `docs/benchmarks/performance-history.json` (`nativeImageBytes` 21343120 at `2026-09-07T07:56:50Z`); `docs/performance.md` `GOAL20_PERF_HISTORY`; `/tmp/g24-p5-verify.log` | Isolated verify `--record` Goal 11 gate on Friend-MachineD; first cell not hand-filled |
 
 ## Claimed
 
 - Part 1 classifier inventory (2026-09-07).
+- Part 2–4 disposition drain complete (2026-09-07); open counts 0.
 - Part 5 `binary_bytes` / `nativeImageBytes` first history cell (2026-09-07).
 
 ## Open drain counts (after Part 1 seed)
