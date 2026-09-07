@@ -66,14 +66,14 @@ cli_bootstrap_sessions.session_user_messages_for_forking	deferred-measure-only	g
 cli_bootstrap_sessions.validate_cli_session_flags	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.write_hotkeys_command	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.catalog_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.git_path	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.git_path	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 2.198x (1.419/0.646us); SEARCH/SUBSEQ vs leftover indexOf/slice; invent discarded
 cli_extensions_install.hp_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.http_timeout_p	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.llama_compact_count	open-floor-invent	open	Part 3 drain target
-cli_extensions_install.llama_context_label	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.llama_compact_count	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 3.326x (1.926/0.579us); FORMAT/toFixed leftover; invent discarded
+cli_extensions_install.llama_context_label	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 2.049x (1.867/0.911us); struct+FORMAT vs leftover contextLabel; invent discarded
 cli_extensions_install.llama_format_context	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.llama_js_to_fixed	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.llama_model_description	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.llama_model_description	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 1.323x (1.997/1.509us); description join vs leftover modelDescription; invent discarded
 cli_extensions_install.llama_search_exact	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.llama_search_status	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.llama_view_width	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -81,7 +81,7 @@ cli_extensions_install.loaded_model	deferred-measure-only	goal24-charter bulk	me
 cli_extensions_install.manager_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.output_boundary	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.progress_notify	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_extensions_install.quant_label	open-floor-invent	open	Part 3 drain target
+cli_extensions_install.quant_label	booked-shape-gap	/tmp/g24-f3-after/summary.json	Friend-MachineD n=5 1.778x (1.307/0.735us); GETF/FORMAT vs leftover option text; invent discarded
 cli_extensions_install.quiet_manager	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.same_source	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_extensions_install.split_path_segments	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
