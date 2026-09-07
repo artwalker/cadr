@@ -17,7 +17,7 @@ Print mode lets a user send one prompt, get the model reply on stdout, and exit,
 Preconditions:
 
 - Isolated HOME has no `auth.json`.
-- `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, and `CADR_API_KEY` are unset.
+- Provider ambient keys unset in the process (each provider’s `:key-environment` / `environment-names` in `src/cadr-ai/providers/definitions.lisp`). There is no product `CADR_API_KEY`. Prefer relying on `control-cadr`’s default scrub; use `CADR_VERIFY_KEEP_CREDENTIALS=1` only for intentional auth drives.
 - No `--provider` or `--model` on the command line.
 - `control-cadr doctor` passed.
 
@@ -30,3 +30,4 @@ Preconditions:
 - Baseline prints this guidance on stderr, not through the red `Error:` CLI wrapper. Assert the plain paragraph.
 - Passing `--provider google` changes the failure to that provider's missing-key text. Stay on the no-`--provider` command in this recipe.
 - `--offline` does not skip this check. Observing the stderr paragraph is the proof that the run did not reach a provider HTTP call.
+- Parent-shell API keys make `--print` succeed. `control-cadr` scrubs them unless `CADR_VERIFY_KEEP_CREDENTIALS=1`.
