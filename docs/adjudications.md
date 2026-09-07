@@ -1591,3 +1591,34 @@ Stale `pairable-uncovered` / `pending H pair` prose in K2/K3 removed.
 Goal 20 complete booking from the same day stands; this is mark hygiene,
 not a reopen.
 
+## 2026-09-07 — G.16 `met` (Part O four paths ≤ 1.0; remesure35+36)
+
+**Ruled**: Cursor executor as G.16 process signer under the
+2026-09-05 delegation (Goal20 Part O hillclimb).
+**Not independently audited by a separate advisor** (§5.2).
+
+**Decided**:
+
+1. **G.16 `met`.** Friend-MachineD `GOAL20_PART_O_SLICE=1` n=10
+   warmups=2 on tip `e4ab46c96` with load-session linear-chain walker
+   keep in `migration.lisp` (skip redundant parent-id hash lookup on
+   linear chains; presize session hash tables; incremental leaf/modified
+   tracking):
+   - remesure35 (`/tmp/goal20-part-o-remesure35`): journal_append
+     0.81×, journal_read 0.84×, session_load 0.96×,
+     list_models_render 0.07×
+   - remesure36 reconfirm (`/tmp/goal20-part-o-remesure36`):
+     journal_append 0.98×, journal_read 0.99×, session_load 0.93×,
+     list_models_render 0.06×
+   All four Part O paths ≤1.0× on both runs. Prior invent keeps at tip
+   (`594d066a4` journal I/O, args-key, small-array, toolCall) preserved.
+2. The 2026-08-18 Part O **blocked** closeout is superseded for G.16
+   status only; historical probe record in `goal-v20-part-o.md` stands.
+3. Do not rubber-stamp a single all-met booking without reconfirm
+   (same method as G.17 remesure25+26). remesure36 is that reconfirm.
+4. Part G matrix has no `blocked` cell. Goal 20 complete stands.
+
+**Why it was decidable**: mechanical Part O gate on tip+keep; reconfirm
+after remesure32–34 swing on append/read/load; delegated signer + §5.2
+disclosure.
+

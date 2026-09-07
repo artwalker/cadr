@@ -1,9 +1,11 @@
-# Goal 20 Part O — blocked closeout
+# Goal 20 Part O — met closeout
 
-Adjudication: `docs/adjudications.md` 2026-08-18 Part O.
-Goal 20's exit for the four paired paths is **blocked**, not
-ratio ≤ 1.0. `RATIO_CEILINGS` is unchanged. `goal20-paired-paths.sh`
-was not re-run for this note. Not a Goal 20 pass.
+Adjudication: `docs/adjudications.md` 2026-08-18 Part O (historical
+blocked probe record); **2026-09-07 G.16 `met`** (Part O exit predicate).
+Goal 20's exit for the four paired paths is **met** on tip+keep with
+Friend-MachineD remesure35+36 (`GOAL20_PART_O_SLICE=1` n=10).
+`RATIO_CEILINGS` unchanged. **Not independently audited by a separate
+advisor** (§5.2).
 
 ## Four paths
 
@@ -42,6 +44,10 @@ needs a new written proposal. That is not this cell.
 
 ## Exit
 
-Draft §10-annex item 7: probes exhausted and still > 1.0 → blocked
-with what was tried. The completion line (every path ≤ 1.0) was not
-reached. This goal records the gap and stops.
+Historical (2026-08-18): probes exhausted and still > 1.0 → blocked
+with what was tried.
+
+**2026-09-07 met:** tip `e4ab46c96` + load-session linear-chain walker;
+remesure35+36 all four paths ≤1.0× on the same run. Booking:
+`docs/benchmarks/goal20-paired-over-1x.md` Part O section; G.16 in
+`goal-v20-part-g.md`.
