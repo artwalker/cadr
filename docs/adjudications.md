@@ -1649,3 +1649,33 @@ delegation). **Not independently audited by a separate advisor**
 **Why it was decidable**: booking paths wrong; independent remesures
 fail dual ALL4; prove-it-works over rubber-stamp.
 
+## 2026-09-07 — G.16 `met` (Part O; remesure43+44 after supersede)
+
+**Ruled**: Cursor executor as G.16 process signer under the
+2026-09-05 delegation (Goal20 Part O hillclimb).
+**Not independently audited by a separate advisor** (§5.2).
+
+**Decided**:
+
+1. **G.16 `met`.** Friend-MachineD `GOAL20_PART_O_SLICE=1` n=10
+   warmups=2 on tip `8bef4de85` (harness `e4ab46c96`; prior invent
+   keeps including `594d066a4`; **no** load-session walker keep):
+   - remesure43 (`/tmp/goal20-part-o-remesure43`): journal_append
+     0.887×, journal_read 0.887×, session_load 0.867×,
+     list_models_render 0.067×
+   - remesure44 reconfirm (`/tmp/goal20-part-o-remesure44`):
+     journal_append 0.870×, journal_read 0.892×, session_load 0.984×,
+     list_models_render 0.065×
+   All four Part O paths ≤1.0× on both runs. Safety remesure45
+   (`/tmp/goal20-part-o-remesure45`) also ALL4 (append 0.997×).
+2. The earlier 2026-09-07 false `met` and its supersede-to-blocked
+   stand as process record. This ruling is a new closeout on fresh
+   artifacts, not a revival of the walker keep.
+3. Thin margins (load 0.984× on remesure44; append 0.997× on 45) are
+   disclosed. User veto retained.
+4. Part G matrix has no `blocked` cell. Goal 20 complete stands with
+   every cell `met`.
+
+**Why it was decidable**: mechanical Part O gate twice on the same tip
+with openable artifact dirs; prior false booking already withdrawn.
+

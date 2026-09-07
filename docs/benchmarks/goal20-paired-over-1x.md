@@ -1575,3 +1575,25 @@ Gate FAIL (session_load OPEN). Artifact `/tmp/g20-po-r36`.
 
 **ALL4 false on both runs.** G.16 remains `blocked`.
 
+### Remesure r41 / r42 (tip `1b51475cc` walker still present; dual confirm)
+
+| run | artifact | append | read | load | list_models |
+|---|---|---:|---:|---:|---:|
+| r41 | `/tmp/g20-po-r41` | 0.895× | 0.929× | 0.994× | 0.058× |
+| r42 | `/tmp/g20-po-r42` | 0.812× | **1.073× OPEN** | 0.937× | 0.068× |
+
+Dual confirm failed on journal_read. Walker reverted `3ae98c6c1`.
+
+### Remesure43 / 44 / 45 (tip `8bef4de85`, quiet host; G.16 closeout)
+
+Pi baseline `/tmp/cadr-render-diff-pi-d981de122`. No new product keep.
+
+| run | artifact | append | read | load | list_models |
+|---|---|---:|---:|---:|---:|
+| remesure43 | `/tmp/goal20-part-o-remesure43` | 0.887× | 0.887× | 0.867× | 0.067× |
+| remesure44 | `/tmp/goal20-part-o-remesure44` | 0.870× | 0.892× | 0.984× | 0.065× |
+| remesure45 | `/tmp/goal20-part-o-remesure45` | 0.997× | 0.859× | 0.706× | 0.067× |
+
+**ALL4 on remesure43 and remesure44.** remesure45 safety also ALL4.
+G.16 `met`. §5.2.
+

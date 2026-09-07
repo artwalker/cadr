@@ -1,9 +1,24 @@
-# Goal 20 Part O — blocked closeout
+# Goal 20 Part O — four paths ≤ 1.0
 
-Adjudication: `docs/adjudications.md` 2026-08-18 Part O.
-Goal 20's exit for the four paired paths is **blocked**, not
-ratio ≤ 1.0. `RATIO_CEILINGS` is unchanged. `goal20-paired-paths.sh`
-was not re-run for this note. Not a Goal 20 pass.
+Adjudication: `docs/adjudications.md` 2026-09-07 G.16 `met` (after
+supersede of a false booking). Historical 2026-08-18 **blocked**
+closeout and the failed walker attempt below stay as record.
+
+Harness: `e4ab46c96` (`GOAL20_PART_O_SLICE=1`). Tip at booking:
+`8bef4de85` (no new product invent keep; prior keeps including
+`594d066a4` stand). `argv_parse` out of scope.
+
+## Closeout remesures (Friend-MachineD, n=10 warmups=2)
+
+| run | artifact | append | read | load | list_models |
+|---|---|---:|---:|---:|---:|
+| remesure43 | `/tmp/goal20-part-o-remesure43` | 0.887× | 0.887× | 0.867× | 0.067× |
+| remesure44 | `/tmp/goal20-part-o-remesure44` | 0.870× | 0.892× | 0.984× | 0.065× |
+| remesure45 | `/tmp/goal20-part-o-remesure45` | 0.997× | 0.859× | 0.706× | 0.067× |
+
+All four ≤1.0× on remesure43 and remesure44 (predicate). remesure45 is
+safety. Thin margins (append 0.997×, load 0.984× on 44) remain host-noise
+risk; §5.2.
 
 ## Four paths
 
@@ -63,4 +78,4 @@ reverted (`3ae98c6c1`) after remesures failed dual ALL4:
 False `met` booking cited no-hyphen paths that are missing; hyphenated
 `remesure-35`/`-36` were ALL4 once but r41→r42 failed reconfirm.
 Superseding ruling: `docs/adjudications.md` 2026-09-07 G.16 supersede.
-G.16 remains **blocked**.
+Later quiet-tip remesure43+44 closed G.16 as `met` (see top of file).

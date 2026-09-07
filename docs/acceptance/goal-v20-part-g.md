@@ -1,7 +1,7 @@
 # Goal 20 Part G — evidence matrix
 
 Inventory for `goal20-draft.md` §十四 items 1–17.
-Part G matrix is terminal (`met` ∪ `blocked`). Goal 20 closeout booked in `docs/adjudications.md` 2026-09-07.
+Part G matrix is terminal (`met`). Goal 20 closeout booked in `docs/adjudications.md` 2026-09-07.
 No new measurements. `met` requires at least one openable SHA or path.
 
 Status: `met` / `missing` / `blocked`.
@@ -23,12 +23,12 @@ Status: `met` / `missing` / `blocked`.
 | 13 Part H pairs and share | met | `docs/acceptance/goal-v20-part-h.md`; `docs/benchmarks/goal20-paired-paths.json`; `docs/benchmarks/goal20-unpaired-paths.json`; tip `--check` 297/133658 paired 80.3% / unpairable 5.7% / callee 14.1% / needs-pair 0 / uncovered 0 | H does not require ratio ≤ 1. Historical first booking SHA `2aea08382` remains. |
 | 14 Part I ledger columns | met | `docs/acceptance/goal-v20-part-i.md`; `docs/code-organization.md` §2; batches `de4c60f95`–`fc0634c4c` | One table, closed states, every `src/**/*.lisp` row, dual file/line progress. I report's initial 293/121105 lock was refreshed on the current identity line. |
 | 15 Part J pilot retro | met | `docs/acceptance/goal-v20-part-j.md`; `8f691682b`; `src/cadr-core/time.lisp` | Report names three process defects (re-asking I, no H cell, ceremony red commit). Not "流程顺利". |
-| 16 Part O four paths ≤ 1.0 | blocked | `e4ab46c96` harness; `docs/acceptance/goal-v20-part-o.md`; failed remesures `/tmp/g20-po-r35` load 1.020×, `/tmp/g20-po-r36` load 1.025×; ruling `docs/adjudications.md` 2026-09-07 supersede | Part O hillclimb: load-session walker reverted (no dual ALL4). Prior false `met` booking invalidated. `argv_parse` out of scope. |
+| 16 Part O four paths ≤ 1.0 | met | harness `e4ab46c96`; tip `8bef4de85` (no new product keep); remesure43+44 Friend-MachineD `GOAL20_PART_O_SLICE=1` n=10 all four ≤1.0× (`/tmp/goal20-part-o-remesure43`, `/tmp/goal20-part-o-remesure44`); safety remesure45 also ALL4; booking `docs/benchmarks/goal20-paired-over-1x.md`; `docs/acceptance/goal-v20-part-o.md`; ruling `docs/adjudications.md` 2026-09-07 G.16 `met` (after supersede) | Dual+safety ALL4 on quiet tip. Prior false `met` and walker keep invalidated. **Not independently audited by a separate advisor** (§5.2). `argv_parse` out of scope. |
 | 17 Part P CL ceiling | met | invent/floor keep `594d066a4`; remesure25 + remesure26 Friend-MachineD `GOAL20_FLOOR_SLICE=1` n=10 all four ≤1.0× (`/tmp/goal20-floor-remesure25`, `/tmp/goal20-floor-remesure26`); booking `docs/benchmarks/goal20-paired-over-1x.md`; draft `docs/acceptance/goal-v20-part-p.md`; rulings `docs/adjudications.md` 2026-09-05 signer + **2026-09-06 `met`** | Invent/floor quartet closed. **Not independently audited by a separate advisor** (§5.2). User veto retained. |
 
 ## Claimed (2026-09-07)
 
-- Goal 20 complete (Part G matrix terminal: every cell `met` or `blocked`).
+- Goal 20 complete (Part G matrix terminal: every cell `met`).
 - Part G matrix terminal.
 
 ## Still not claimed
