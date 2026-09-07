@@ -78,3 +78,15 @@ must stay 680/680.
 
 These three went into `goal20-draft.md` Part K unified
 requirements. That is the process change; no second process doc.
+
+## H class
+
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
+
+- `covered-as-callee` (1): `time.lisp`.
+  On a named paired thunk; no own bench.
+

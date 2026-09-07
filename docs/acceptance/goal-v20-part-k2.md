@@ -13,11 +13,8 @@ No rewrite. Inventing one to look busy would violate the K2
 heading and unified req 7.
 
 
-**Tip inventory (denom 297 / 133658; `--check`):** `needs-pair=0`, `pairable-uncovered=0`. The pairable-uncovered sentence above is historical at the K2 booking; current class is per `goal20-unpaired-paths.json`.
-Part H lists `src/cadr-storage/` as pairable-uncovered (baseline
-`packages/session-backends/sqlite-node`), not unpairable. There is
-no live H cell. Because this close is keep-as-I, req 8's
-single-ref exception is not invoked.
+H class is tip inventory below (both files `paired`). Keep-as-I does
+not invoke req 8's single-ref exception.
 
 Theme index Recount 197 → 198 (P0 added
 `test/cadr-ai/opencode-go-live-test.lisp`; 198/198 paths on disk
@@ -30,3 +27,15 @@ Local `--all` (rider 2) is not a close gate. It failed
 N_i=925) and `/narrow` (933.8 / 915.3 / 1079.0 vs 969). Median
 ~18–22 ms. Same load-sensitive family already on the board.
 Thresholds were not touched. Scratch: `k2-liveness-all.log`.
+
+## H class
+
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
+
+- `paired` (2): `package.lisp`, `sqlite.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
+

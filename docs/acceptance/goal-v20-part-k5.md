@@ -32,14 +32,12 @@ untouched. derive 680/680.
 
 ## H class
 
-**Tip inventory (denom 297 / 133658; `goal20-unpaired-paths.py --check`):** `needs-pair=0`, `pairable-uncovered=0`. Classes below that still say `pending H pair` / `pairable-uncovered` are historical at the K booking; current class is `paired` / `covered-as-callee` / `unpairable` per `docs/benchmarks/goal20-unpaired-paths.json`. Not 148 new benches.
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
 
-Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
-via `scripts/goal20-unpaired-paths.py` `classify` (longest
-prefix; unmatched defaults to `pairable-uncovered`). No new
-unpairable.
+- `paired` (6): `harness-table.lisp`, `harness.lisp`, `main.lisp`, `reporter.lisp`, `suites.lisp`, `summary.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
 
-All six `done` files (`main`, `harness-table`, `harness`,
-`reporter`, `suites`, `summary`) are `pairable-uncovered`.
-Single-ref vs previous cadr (FiveAM), pending H pair. Not
-「不劣于 pi」.

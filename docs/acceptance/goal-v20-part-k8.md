@@ -70,23 +70,14 @@ N_i untouched.
 
 ## H class
 
-**Tip inventory (denom 297 / 133658; `goal20-unpaired-paths.py --check`):** `needs-pair=0`, `pairable-uncovered=0`. Classes below that still say `pending H pair` / `pairable-uncovered` are historical at the K booking; current class is `paired` / `covered-as-callee` / `unpairable` per `docs/benchmarks/goal20-unpaired-paths.json`. Not 148 new benches.
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
 
-Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
-via `classify` (longest prefix). No new unpairable.
+- `paired` (38): `autocomplete.lisp`, `components/image.lisp`, `components/markdown.lisp`, `components/select-list.lisp`, `components/tool-block.lisp`, `composition/loaders.lisp`, `composition/protocol.lisp`, `composition/rich-content.lisp`, `composition/root.lisp`, `composition/settings-list.lisp`, `composition/text-box.lisp`, `editor.lisp`, `fuzzy.lisp`, `input-component.lisp`, `input.lisp`, `keybindings.lisp`, `keys.lisp`, `kill-ring.lisp`, `latex.lisp`, `mermaid/index.lisp`, `mermaid/source-box.lisp`, `mermaid/transform.lisp`, `native-modifiers.lisp`, `overlay.lisp`, `renderer/alt-screen-search.lisp`, `renderer/alt-screen.lisp`, `renderer/lifecycle-input.lisp`, `renderer/main-screen.lisp`, `renderer/terminal-protocol.lisp`, `renderer/virtual-terminal.lisp`, `stdin-buffer.lisp`, `terminal-colors.lisp`, `terminal-image.lisp`, `terminal.lisp`, `theme.lisp`, `undo-stack.lisp`, `unicode.lisp`, `word-navigation.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
+- `covered-as-callee` (12): `components/status.lisp`, `mermaid/ansi.lisp`, `mermaid/canvas.lisp`, `mermaid/graph.lisp`, `mermaid/labels.lisp`, `mermaid/layout-seq.lisp`, `mermaid/layout.lisp`, `mermaid/parse.lisp`, `mermaid/width-data.lisp`, `mermaid/width.lisp`, `package.lisp`, `threads.lisp`.
+  On a named paired thunk; no own bench.
 
-29 `done` files:
-
-- `paired` (14): `components/{image,markdown,tool-block}.lisp`;
-  `composition/{protocol,text-box}.lisp`; `editor.lisp`;
-  `input.lisp`; `keys.lisp`; `renderer/{alt-screen,
-  alt-screen-search,lifecycle-input,main-screen}.lisp`;
-  `terminal.lisp`; `unicode.lisp` (Goal 11 mouse/wheel/
-  continuous or `render_slicing`). Dual-ref: H/Goal 11 vs
-  pi, FiveAM vs previous cadr.
-- `unpairable` (0).
-- `pairable-uncovered` (15): autocomplete, loaders,
-  settings-list, select-list, mermaid/*, overlay,
-  stdin-buffer, terminal-image, theme, word-navigation,
-  latex, input-component. Single-ref vs previous cadr
-  (FiveAM / render-diff), pending H pair. Not 「不劣于 pi」.

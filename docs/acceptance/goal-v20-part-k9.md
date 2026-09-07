@@ -109,21 +109,16 @@ N_i untouched.
 
 ## H class
 
-**Tip inventory (denom 297 / 133658; `goal20-unpaired-paths.py --check`):** `needs-pair=0`, `pairable-uncovered=0`. Classes below that still say `pending H pair` / `pairable-uncovered` are historical at the K booking; current class is `paired` / `covered-as-callee` / `unpairable` per `docs/benchmarks/goal20-unpaired-paths.json`. Not 148 new benches.
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
 
-Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
-via `classify` (longest prefix). No new unpairable.
+- `paired` (110): `arguments.lisp`, `bootstrap/auth.lisp`, `bootstrap/commands.lisp`, `bootstrap/main.lisp`, `bootstrap/sessions.lisp`, `bootstrap/settings.lisp`, `bootstrap/tools.lisp`, `config.lisp`, `extensions/commands.lisp`, `extensions/discovery.lisp`, `extensions/installer.lisp`, `extensions/llama/client.lisp`, `extensions/llama/extension.lisp`, `extensions/llama/huggingface.lisp`, `extensions/llama/provider.lisp`, `extensions/llama/ui.lisp`, `extensions/loader.lisp`, `interactive/autocomplete.lisp`, `interactive/clipboard.lisp`, `interactive/components/announcement.lisp`, `interactive/components/armin.lisp`, `interactive/components/countdown.lisp`, `interactive/components/daxnuts.lisp`, `interactive/components/loaders.lisp`, `interactive/controller.lisp`, `interactive/entries.lisp`, `interactive/extension-ui.lisp`, `interactive/footer.lisp`, `interactive/frame.lisp`, `interactive/images.lisp`, `interactive/selectors/auth.lisp`, `interactive/selectors/common.lisp`, `interactive/selectors/fork.lisp`, `interactive/selectors/login-dialog.lisp`, `interactive/selectors/models.lisp`, `interactive/selectors/sessions.lisp`, `interactive/selectors/settings.lisp`, `interactive/selectors/thinking.lisp`, `interactive/selectors/tree.lisp`, `interactive/selectors/trust.lisp`, `interactive/state.lisp`, `interactive/status.lisp`, `interactive/syntax.lisp`, `interactive/theme.lisp`, `interactive/themes.lisp`, `interactive/tool-render-session.lisp`, `interactive/tool-rendering.lisp`, `interactive/transcript.lisp`, `interactive/user-bash.lisp`, `media.lisp`, `migration.lisp`, `models/credential-print.lisp`, `models/login-selection.lisp`, `models/matching.lisp`, `models/registry.lisp`, `models/store.lisp`, `modes/print.lisp`, `modes/rpc/commands.lisp`, `modes/rpc/jsonl.lisp`, `modes/rpc/mode.lisp`, `modes/rpc/models.lisp`, `modes/rpc/prompt-bash.lisp`, `modes/rpc/sessions.lisp`, `modes/rpc/ui.lisp`, `output-accumulator.lisp`, `packages/commands.lisp`, `packages/config-selector.lisp`, `packages/manifest.lisp`, `packages/settings.lisp`, `packages/source.lisp`, `packages/update-checks.lisp`, `repl.lisp`, `resource-loader.lisp`, `sdk/agent-session.lisp`, `sdk/cache-version.lisp`, `sdk/model-service.lisp`, `sdk/resource-service.lisp`, `sdk/session-manager.lisp`, `sdk/session-runtime.lisp`, `sdk/settings-service.lisp`, `sdk/system-prompt.lisp`, `settings/config-values.lisp`, `settings/manager.lisp`, `settings/trust.lisp`, `support/atomic-write.lisp`, `support/changelog-share.lisp`, `support/event-bus.lisp`, `support/external-editor.lisp`, `support/file-watcher.lisp`, `support/headers.lisp`, `support/html.lisp`, `support/model-help.lisp`, `support/paths.lisp`, `support/resume-version-git.lisp`, `support/shell-process.lisp`, `support/threads.lisp`, `support/timings.lisp`, `system-prompt.lisp`, `tool-manager.lisp`, `tools/bash.lisp`, `tools/edit.lisp`, `tools/find.lisp`, `tools/glob.lisp`, `tools/grep.lisp`, `tools/ls.lisp`, `tools/path.lisp`, `tools/powershell.lisp`, `tools/read.lisp`, `tools/write.lisp`, `truncation.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
+- `covered-as-callee` (3): `interactive/pending-messages.lisp`, `models/auth-storage.lisp`, `package.lisp`.
+  On a named paired thunk; no own bench.
+- `unpairable` (3): `build-support.lisp`, `crash.lisp`, `remote-repl.lisp`.
+  Single-ref vs previous cadr; do not invent a pi pair.
 
-54 `done` files:
-
-- `paired` (7): `arguments.lisp` (`argv_parse`, `help_render`);
-  `models/{registry,store}.lisp` (`list_models_registry`);
-  `interactive/{state,status,tool-rendering,entries}.lisp`
-  (Goal 11). Dual-ref: H/Goal 11 vs pi, FiveAM vs previous
-  cadr.
-- `unpairable` (0) among these `done` files (`remote-repl.lisp`
-  and `build-support.lisp` are booked unpairable but were
-  no-rewrite, not this rewrite set).
-- `pairable-uncovered` (47): the other `done` files. Single-ref
-  vs previous cadr (FiveAM / render-diff), pending H pair.
-  Not 「不劣于 pi」.

@@ -7,6 +7,8 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: rewrite K2–K9 / J H-class lists from tip inventory (G.12 mark hygiene).
+
 - Goal 20 complete: G.12 `met` after H inventory `needs-pair=0` /
   `pairable-uncovered=0` (297 / 133658) and K H-class marks. Part G
   matrix terminal (`met` ∪ `blocked`). Not independently audited by

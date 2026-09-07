@@ -15,10 +15,9 @@ I0: one owner each for encoder limits, frame consume, and optional
 fields. Not "used a struct".
 
 
-**Tip inventory (denom 297 / 133658; `--check`):** `needs-pair=0`, `pairable-uncovered=0`. The pairable-uncovered sentence above is historical at the K3 booking; current class is per `goal20-unpaired-paths.json`.
-No H cell used. These paths are pairable-uncovered; req 8's
-Date.now() exception is not invoked. Existing protocol FiveAM
-is the before/after.
+H class is tip inventory below (`paired` / `covered-as-callee`).
+Req 8's Date.now() exception is not invoked. Existing protocol
+FiveAM is the before/after.
 
 string= on wire command/type/role names stayed — those are the
 byte contract, not internal enums.
@@ -31,3 +30,17 @@ Blocked: 0.
 
 Local `--all` (rider 2) is the same load-sensitive instrument as
 K2. Thresholds were not touched. FiveAM 18683 → 18691.
+
+## H class
+
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
+
+- `paired` (4): `cbor.lisp`, `codec.lisp`, `framing.lisp`, `schema.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
+- `covered-as-callee` (1): `package.lisp`.
+  On a named paired thunk; no own bench.
+

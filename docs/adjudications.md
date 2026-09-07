@@ -1580,3 +1580,14 @@ advisor** (§5.2). User veto retained.
 present; only open Part G cell was G.12; user asked to finish
 Goal 20 autonomously.
 
+## 2026-09-07 — G.12 H-class lists rewritten (honest marks)
+
+**Ruled**: Cursor executor under 2026-09-05 delegation. §5.2.
+
+**Decided**: Agree that disclaimer-only G.12 marks were incomplete.
+K2–K9 and Part J `## H class` lists are rewritten from tip
+`goal20-unpaired-paths.json` (`needs-pair=0`, `pairable-uncovered=0`).
+Stale `pairable-uncovered` / `pending H pair` prose in K2/K3 removed.
+Goal 20 complete booking from the same day stands; this is mark hygiene,
+not a reopen.
+

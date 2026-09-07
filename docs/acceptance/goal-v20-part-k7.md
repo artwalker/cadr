@@ -71,18 +71,16 @@ N_i untouched.
 
 ## H class
 
-**Tip inventory (denom 297 / 133658; `goal20-unpaired-paths.py --check`):** `needs-pair=0`, `pairable-uncovered=0`. Classes below that still say `pending H pair` / `pairable-uncovered` are historical at the K booking; current class is `paired` / `covered-as-callee` / `unpairable` per `docs/benchmarks/goal20-unpaired-paths.json`. Not 148 new benches.
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
 
-Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
-via `classify` (longest prefix). No new unpairable.
+- `paired` (52): `auth.lisp`, `auth/bedrock.lisp`, `auth/device-code.lisp`, `auth/github-copilot.lisp`, `auth/radius-cloudflare.lisp`, `auth/vertex.lisp`, `capabilities/event-stream.lisp`, `capabilities/grammar-tools.lisp`, `capabilities/image-runtime.lisp`, `capabilities/proxy-config.lisp`, `capabilities/session-resources.lisp`, `capabilities/streaming-json.lisp`, `crypto.lisp`, `image-models.generated.lisp`, `images.lisp`, `json.lisp`, `model-data.lisp`, `oauth/callback.lisp`, `oauth/openai-anthropic.lisp`, `oauth/pkce.lisp`, `oauth/providers/anthropic.lisp`, `oauth/providers/github-copilot.lisp`, `oauth/providers/kimi.lisp`, `oauth/providers/openai-device.lisp`, `oauth/providers/openrouter.lisp`, `oauth/providers/radius.lisp`, `oauth/providers/xai.lisp`, `provider.lisp`, `providers/anthropic.lisp`, `providers/azure-openai.lisp`, `providers/bedrock.lisp`, `providers/codex.lisp`, `providers/definitions.lisp`, `providers/google.lisp`, `providers/mistral.lisp`, `providers/openai-completions.lisp`, `providers/openai.lisp`, `providers/pi-messages.lisp`, `providers/registry.lisp`, `providers/runtime-projection.lisp`, `providers/vertex.lisp`, `runtime/faux-provider.lisp`, `sse.lisp`, `support/grammar-coercion.lisp`, `support/overflow.lisp`, `support/release.lisp`, `support/threads.lisp`, `support/token-estimation.lisp`, `support/uuid.lisp`, `transport/aws-event-stream.lisp`, `transport/http.lisp`, `websocket.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
+- `covered-as-callee` (7): `conditions.lisp`, `models.generated.lisp`, `models.lisp`, `package.lisp`, `runtime/models.lisp`, `support/retry.lisp`, `types.lisp`.
+  On a named paired thunk; no own bench.
+- `unpairable` (2): `crash.lisp`, `oauth/page.lisp`.
+  Single-ref vs previous cadr; do not invent a pi pair.
 
-28 `done` files:
-
-- `paired` (1): `providers/openai-completions.lisp`
-  (`provider_stream.stream_roundtrip`). Dual-ref: H cell vs
-  pi, FiveAM vs previous cadr.
-- `unpairable` (2): `oauth/page.lisp` (`oauth_success_page_mark`);
-  `crash.lisp` (`fatal_condition_summary`). Single-ref vs
-  previous cadr; H already marked the path.
-- `pairable-uncovered` (25): the other `done` files. Single-ref
-  vs previous cadr (FiveAM), pending H pair. Not 「不劣于 pi」.

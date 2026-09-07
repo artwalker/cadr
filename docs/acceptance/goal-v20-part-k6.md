@@ -86,21 +86,16 @@ Blocked: 0. FiveAM 18725 → 18738 → 18748. derive 680/680.
 
 ## H class
 
-**Tip inventory (denom 297 / 133658; `goal20-unpaired-paths.py --check`):** `needs-pair=0`, `pairable-uncovered=0`. Classes below that still say `pending H pair` / `pairable-uncovered` are historical at the K booking; current class is `paired` / `covered-as-callee` / `unpairable` per `docs/benchmarks/goal20-unpaired-paths.json`. Not 148 new benches.
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
 
-Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
-via `classify` (longest prefix). No new unpairable.
+- `paired` (28): `branch-summarization.lisp`, `compaction.lisp`, `conditions.lisp`, `execution-env.lisp`, `file-mutation-queue.lisp`, `harness-events.lisp`, `loop/agent-loop.lisp`, `loop/events.lisp`, `loop/tool-execution.lisp`, `loop/turns.lisp`, `messages.lisp`, `proxy.lisp`, `resources.lisp`, `runtime.lisp`, `schema.lisp`, `session/codec.lisp`, `session/discovery.lisp`, `session/export-html.lisp`, `session/journal.lisp`, `session/migration.lisp`, `sqlite-storage.lisp`, `storage/harness.lisp`, `storage/jsonl.lisp`, `storage/memory.lisp`, `storage/protocol.lisp`, `summarization.lisp`, `tool.lisp`, `truncate.lisp`.
+  Dual-ref: H cell vs pi + K FiveAM/render-diff vs previous cadr.
+- `covered-as-callee` (1): `package.lisp`.
+  On a named paired thunk; no own bench.
+- `unpairable` (8): `extensions/api.lisp`, `extensions/commands.lisp`, `extensions/context.lisp`, `extensions/lifecycle.lisp`, `extensions/providers.lisp`, `extensions/registration.lisp`, `extensions/rendering.lisp`, `extensions/snapshot.lisp`.
+  Single-ref vs previous cadr; do not invent a pi pair.
 
-23 `done` files:
-
-- `paired` (3): `session/codec.lisp` (`journal_read`,
-  `journal_append`); `session/journal.lisp` (`context_walk`,
-  `journal_append`); `session/migration.lisp` (`session_load`,
-  `journal_read`). Dual-ref: H cell vs pi, FiveAM vs previous
-  cadr.
-- `unpairable` (4): `extensions/{context,registration,rendering,snapshot}.lisp`
-  — booked prefix `src/cadr-agent/extensions/`
-  (`lisp_extension_host`). Single-ref vs previous cadr; H
-  already marked the path.
-- `pairable-uncovered` (16): the other `done` files. Single-ref
-  vs previous cadr (FiveAM), pending H pair. Not 「不劣于 pi」.

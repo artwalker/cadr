@@ -22,3 +22,15 @@ ipc stringly upgrade sniff left alone (K0.2).
 Blocked: 0. Tests red on old HEAD: the four new `fboundp` /
 upsert-order checks. FiveAM 18691 → 18699. `--all` still the
 known `tools-significant-states` load family; N_i untouched.
+
+## H class
+
+Booked class from tip `docs/benchmarks/goal20-unpaired-paths.json` via
+`scripts/goal20-unpaired-paths.py` (longest prefix). Refreshed 2026-09-07
+against denom 297 / 133658 (`needs-pair=0`, `pairable-uncovered=0`).
+Not 148 wall-clock pairs. Historical K-booking `pairable-uncovered` /
+`pending H pair` sentences are superseded by this list.
+
+- `unpairable` (11): `config.lisp`, `handler.lisp`, `ipc.lisp`, `main.lisp`, `package.lisp`, `protocol.lisp`, `radius.lisp`, `rpc-process.lisp`, `storage.lisp`, `supervisor.lisp`, `types.lisp`.
+  Single-ref vs previous cadr; do not invent a pi pair.
+
