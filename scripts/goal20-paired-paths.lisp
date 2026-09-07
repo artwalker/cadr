@@ -2524,6 +2524,9 @@
 (defun floor-slice-p ()
   (string= (or (uiop:getenv "GOAL20_FLOOR_SLICE") "") "1"))
 
+(defun part-o-slice-p ()
+  (string= (or (uiop:getenv "GOAL20_PART_O_SLICE") "") "1"))
+
 (defun parse-options ()
   (let ((arguments (uiop:command-line-arguments)))
     (loop while arguments
@@ -45214,6 +45217,39 @@
         (let ((session (measure-session-pipeline)))
           (format *error-output* "goal20 cadr paired paths: storage_journal~%")
           (let ((storage (measure-storage-journal)))
+              (when (part-o-slice-p)
+                (format *error-output* "goal20 cadr paired paths: part_o_slice~%")
+                (return-from run-benchmarks
+                  (json-object
+                   "kind" "cadr-goal20-part-h-paired-paths"
+                   "machine"
+                   (json-object
+                    "lisp" (lisp-implementation-type)
+                    "lisp_version" (lisp-implementation-version)
+                    "machine_instance" (machine-instance)
+                    "machine_type" (machine-type))
+                   "metrics"
+                   (json-object
+                    "cli_dispatch" cli
+                    "session_pipeline" session
+                    "storage_journal" storage)
+                   "parameters"
+                   (json-object
+                    "floor_slice" t
+                    "journal_append_entry_count" *journal-append-entry-count*
+                    "quick" *quick-p*
+                    "repetitions"
+                    (apply #'json-object
+                           (loop for (name . nil) in *repetitions*
+                                 append (list name (repetitions-for name))))
+                    "samples" *samples*
+                    "scrubbed_environment" scrubbed
+                    "terminal_sink" "count-only"
+                    "transport_stub"
+                    "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
+                    "warmups" *warmups*)
+                   "provenance" (provenance-json staged-digests)
+                   "schema_version" 1)))
             (format *error-output* "goal20 cadr paired paths: sqlite_session~%")
             (let ((sqlite (measure-sqlite-session)))
             (format *error-output* "goal20 cadr paired paths: text_truncation~%")

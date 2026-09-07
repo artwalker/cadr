@@ -7,6 +7,8 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20: `GOAL20_PART_O_SLICE=1` early-exit harness for Part O four-path remesure.
+
 - Goal 20: rewrite K2–K9 / J H-class lists from tip inventory (G.12 mark hygiene).
 
 - Goal 20 complete: G.12 `met` after H inventory `needs-pair=0` /

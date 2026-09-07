@@ -41569,6 +41569,45 @@ process.stderr.write("goal20 pi paired paths: session_pipeline\n");
 const sessionPipeline = await measureSessionPipeline();
 process.stderr.write("goal20 pi paired paths: storage_journal\n");
 const storageJournal = await measureStorageJournal();
+if (process.env.GOAL20_PART_O_SLICE === "1") {
+	const partOReport = {
+		kind: "pi-goal20-part-h-paired-paths",
+		machine: { hostname: hostname(), machine_instance: hostname() },
+		metrics: {
+			cli_dispatch: cliDispatch,
+			session_pipeline: sessionPipeline,
+			storage_journal: storageJournal,
+		},
+		parameters: {
+			samples: options.samples,
+			warmups: options.warmups,
+			quick: options.quick,
+			floor_slice: true,
+			journal_append_entry_count: JOURNAL_APPEND_ENTRY_COUNT,
+			repetitions: Object.fromEntries(
+				Object.keys(REPETITIONS).map((name) => [name, repetitionsFor(name)]),
+			),
+			terminal_sink: "count-only",
+			scrubbed_environment: scrubbedEnvironment,
+		},
+		provenance: {
+			source_revision: revision,
+			source_revision_from: revisionSource,
+			baseline_directory: baselineDirectory,
+			fixture_sha256: fixtureDigests,
+			staged_agent_dir_sha256: stagedDigests,
+		},
+		schema_version: 1,
+	};
+	const payload = `${JSON.stringify(partOReport)}\n`;
+	if (options.output === "-") process.stdout.write(payload);
+	else {
+		mkdirSync(path.dirname(options.output), { recursive: true });
+		writeFileSync(options.output, payload);
+	}
+	process.stderr.write("goal20 pi paired paths: part_o_slice done\n");
+	process.exit(0);
+}
 process.stderr.write("goal20 pi paired paths: sqlite_session\n");
 const sqliteSession = await measureSqliteSession();
 process.stderr.write("goal20 pi paired paths: text_truncation\n");
