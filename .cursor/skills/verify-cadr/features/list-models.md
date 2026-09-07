@@ -29,3 +29,4 @@ Preconditions:
 - `--list-models` exits `0` even when it prints the no-models guidance. Exit `0` is not "models exist".
 - The no-models paragraph points at `docs/providers.md` and `docs/models.md` using absolute paths from the image. Assert the `Use /login` sentence, not a hardcoded docs pathname.
 - Seeding operator credentials into HOME makes this feature a different path (a table). Do not mix that with the empty-store proof.
+- Parent-shell `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` / … also populate the catalog. Rely on `control-cadr` scrubbing those unless `CADR_VERIFY_KEEP_CREDENTIALS=1`.

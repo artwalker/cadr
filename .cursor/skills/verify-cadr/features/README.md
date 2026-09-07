@@ -7,7 +7,7 @@ This directory is the maintained source for verifying user-facing cadr behavior.
 - Work from the repository root that contains `./cadr` (or set `CADR_VERIFY_BIN`).
 - Run `.cursor/skills/verify-cadr/bin/control-cadr init` so HOME is `.cursor/skills/verify-cadr/.run/home` and sessions are `.cursor/skills/verify-cadr/.run/sessions`.
 - Run `control-cadr doctor` and require the identity string from `control-cadr expected-identity`.
-- Leave provider environment variables unset unless a feature file seeds them. Runtime is `CADR_*` only.
+- Leave provider environment variables unset unless a feature file seeds them. Runtime is `CADR_*` only. `control-cadr` scrubs common `*_API_KEY` values from the parent shell unless `CADR_VERIFY_KEEP_CREDENTIALS=1`.
 - Never drive a cadr that was already running under the login HOME.
 - Put `control-cadr` on `PATH` or invoke the repo-relative path shown in each recipe.
 

@@ -30,3 +30,4 @@ Preconditions:
 - Baseline prints this guidance on stderr, not through the red `Error:` CLI wrapper. Assert the plain paragraph.
 - Passing `--provider google` changes the failure to that provider's missing-key text. Stay on the no-`--provider` command in this recipe.
 - `--offline` does not skip this check. Observing the stderr paragraph is the proof that the run did not reach a provider HTTP call.
+- Parent-shell API keys make `--print` succeed. `control-cadr` scrubs them unless `CADR_VERIFY_KEEP_CREDENTIALS=1`.
