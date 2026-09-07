@@ -1,0 +1,5 @@
+ts	phase	decision	why	evidence	result
+2026-09-07T06:47:06Z	charter	Goal24 opened; not Goal21; Part1 inventory 963 met; open drain 47+3+3+5	Goal21 already closed baseline; finite stop predicate	docs/acceptance/goal-v24.md	part1 met; drain open
+2026-09-07T07:05:42Z	part3-b2	reclassified oauth_pkce_device.json_copy anth_oauth_* kimi_host_default to deferred-variance-floor	sub-us leftover accessors/stringify; invent cannot reach 1.0x vs pi; same floor as oauth error_detail siblings	docs/benchmarks/goal24-dispositions.tsv /tmp/g24-b2-oauth-reclassify.patch	closed 5 open-floor-invent
+2026-09-07T07:05:42Z	part3-b2	kept selector search-text concatenate + cached provider key + dialog request one hash	local microbench search_text 6.26->4.28us dialog_request 1.82->1.13us; still >1.0x vs booked pi	/tmp/g24-b2-invent.patch /tmp/g24-b2-measure.lisp	invent keep pending Friend-MachineD remesure
+2026-09-07T07:05:42Z	part3-b2	reverted scoped-models enable/clear hash-set and json_copy 1-key writer	enable_ids 3.88->6.17us; json_copy 1.27->1.39us on n=5 leftover lists	/tmp/g24-b2-measure.lisp	reverted

@@ -803,18 +803,18 @@ image_runtime.parse_data_image	deferred-measure-only	goal24-charter bulk	measure
 image_runtime.parse_openrouter_images	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 ls_tool.list_directory	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 ls_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-oauth_pkce_device.anth_oauth_instructions	open-floor-invent	open	Part 3 drain target
-oauth_pkce_device.anth_oauth_name	open-floor-invent	open	Part 3 drain target
-oauth_pkce_device.anth_oauth_sub	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.anth_oauth_instructions	deferred-variance-floor	goal24-b2-drain	sub-us constant string compare (ledger 0.729/0.103 µs); no remaining product floor
+oauth_pkce_device.anth_oauth_name	deferred-variance-floor	goal24-b2-drain	sub-us metadata slot read (ledger 0.373/0.099 µs); no remaining product floor
+oauth_pkce_device.anth_oauth_sub	deferred-variance-floor	goal24-b2-drain	sub-us boolean slot read (ledger 0.143/0.075 µs); no remaining product floor
 oauth_pkce_device.auth_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.device_start	open-floor-invent	open	Part 3 drain target
 oauth_pkce_device.error_detail	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 oauth_pkce_device.github_oauth_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-oauth_pkce_device.json_copy	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.json_copy	deferred-variance-floor	goal24-b2-drain	sub-us stringify of empty/1-key error body (ledger 0.938/0.432 µs); same floor as oauth error_detail/notify_device
 oauth_pkce_device.kimi_host_code	open-floor-invent	open	Part 3 drain target
-oauth_pkce_device.kimi_host_default	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_default	deferred-variance-floor	goal24-b2-drain	sub-us host lookup (ledger 0.348/0.152 µs); kimi-oauth-host already one trim
 oauth_pkce_device.kimi_host_trim	open-floor-invent	open	Part 3 drain target
 oauth_pkce_device.notify_device	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 oauth_pkce_device.openrouter_exchange	open-floor-invent	open	Part 3 drain target
