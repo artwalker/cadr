@@ -1,0 +1,18 @@
+2026-09-07T04:55:15Z	g16	part-o harness landed; remesure32 load 1.06 open remesure33 append/read open; invent load running	host swing around 1.0; need margin invent	remesure32/33;/tmp/goal20-part-o-remesure3{2,3}	open; invent 960cafac
+2026-09-07T05:10:29Z	hillclimb	metric=Part O four paths ≤1.0× twice; stop after dual remesure all MET	user asked continuous optimize to Part O target; prove-it-works	playbooks/hillclimb.md; goal-v20-part-g.md G.16	predicate set
+2026-09-07T05:10:29Z	hillclimb	baseline remesure tip e4ab46: append0.837 read1.003 load0.798 list0.059	freeze harness before invent; read barely open	/tmp/g20-po-ab-tip	ALL4 false; read open
+2026-09-07T05:10:29Z	hillclimb	kept fuse load-session index build c058581e7	load margin invent; parent-skip + finalize loop	c058581e7	landed local ahead1
+2026-09-07T05:12:05Z	remesure	remesure35 tip c058581e7: append0.966 read0.975 load1.020 list0.063	first remesure after fuse; load open	/tmp/g20-po-r35	ALL4 false; load open
+2026-09-07T05:14:31Z	remesure	remesure36 fuse: append0.792 read0.994 load1.025 list0.062	second fuse remesure; load still open	/tmp/g20-po-r36	ALL4 false
+2026-09-07T05:14:31Z	invent	A/B pre-fuse e4ab46 ALL4 load0.755 vs post-fuse load1.035	fuse hurts load on sequential same-machine Part O; revert keep	/tmp/g20-po-ab-pre;/tmp/g20-po-ab-post	revert fuse
+2026-09-07T05:14:48Z	invent	revert fuse c058581e7 via git revert	A/B showed cadr load +8pct and ratios open when pi is fast; subtract-before-add	git revert; tip HEAD	reverted
+2026-09-07T05:21:16Z	hillclimb	fuse vs prefuse cadr load 1569.9 vs 1504.4	keep fuse only if improved; invent slim drop parent-skip	c058581e7 vs e4ab46c96	fuse hurts ~4pct cadr us
+2026-09-07T05:21:55Z	invent	tip baseline Part O four paths on c058581e7	freeze harness before sap-u32 knife	/tmp/g20-po-invent-tip-base append0.790 read1.019 load0.761 list0.066 cadr jr 1391.1us	ALL4 false; read open
+2026-09-07T05:23:02Z	remesure	remesure37 after revert: append0.874 read1.032 load0.958 list0.062	read open; load met	/tmp/g20-po-r37	ALL4 false
+2026-09-07T05:23:02Z	remesure	remesure38 discarded: append1.165 read1.052 load1.110	concurrent invent remesures polluted host	/tmp/g20-po-r38	discard noise
+2026-09-07T05:23:07Z	invent	H1 slim-fuse reverted; cadr1581/pi1512 load1.045	not past noise vs fuse 1569	/tmp/g20-po-invent-slim1	reverted
+2026-09-07T05:23:13Z	invent	reverted sap-ref-32 ub32 loads	cadr journal_read +161us pin tax; append/load ratios also worse	/tmp/g20-po-invent-sap-u32 jr 1391->1552	reverted
+2026-09-07T05:24:26Z	audit	claimed remesure35+36 paths MISSING; my r35/r36 ALL4 false load open; G.16 met booking unproven	prove-it-works; do not rubber-stamp	missing /tmp/goal20-part-o-remesure3{5,6}; /tmp/g20-po-r35 r36	invalidate booking
+2026-09-07T05:26:04Z	correction	revert 31521d3f4 via git revert 3ae98c6c1; restore G.16 blocked; superseding adjudication; walker reverted	false met cited missing /tmp/goal20-part-o-remesure3{5,6}; r35 load1.020 r36 load1.025 ALL4 false	git revert 3ae98c6c1; adjudications supersede	G.16 blocked
+2026-09-07T05:25:32Z	invent	H2 handler-bind hoist not kept	cadr1857 vs tip1570 host-hot; append OPEN 1.082	/tmp/g20-po-invent-hbind2	reverted
+2026-09-07T05:25:45Z	invent	reverted unaligned LF/space SWAR	knife remesure invalid: cadr jr +769us and list_models +36us so host not the walker	/tmp/g20-po-invent-unaligned-swar	reverted

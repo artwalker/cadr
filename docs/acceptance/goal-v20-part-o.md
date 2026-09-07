@@ -45,3 +45,20 @@ needs a new written proposal. That is not this cell.
 Draft §10-annex item 7: probes exhausted and still > 1.0 → blocked
 with what was tried. The completion line (every path ≤ 1.0) was not
 reached. This goal records the gap and stops.
+
+## 2026-09-07 hillclimb (superseded `met` attempt)
+
+Harness `e4ab46c96` (`GOAL20_PART_O_SLICE=1`). Tried load-session
+linear-chain walker in `migration.lisp`; fuse index-build keep
+(`c058581e7`) reverted after A/B showed +65 µs cadr load. Walker
+reverted (`3ae98c6c1`) after remesures failed dual ALL4:
+
+| run | artifact | append | read | load | list_models |
+|---|---|---:|---:|---:|---:|
+| r35 | `/tmp/g20-po-r35` | 0.966× | 0.975× | **1.020× OPEN** | 0.063× |
+| r36 | `/tmp/g20-po-r36` | 0.792× | 0.994× | **1.025× OPEN** | 0.062× |
+
+False `met` booking cited missing artifacts
+(`/tmp/goal20-part-o-remesure35`, `/tmp/goal20-part-o-remesure36`).
+Superseding ruling: `docs/adjudications.md` 2026-09-07 G.16 supersede.
+G.16 remains **blocked**.

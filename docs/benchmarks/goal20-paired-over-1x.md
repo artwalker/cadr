@@ -1535,3 +1535,43 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure26`.
 
 **Reconfirm all-met.** G.17 `met` written with §5.2 disclaimer. Not Goal 20 complete (G.12 `missing`).
 
+## Part O (Friend-MachineD, GOAL20_PART_O_SLICE=1)
+
+Part O enforces the four paired paths from `goal20-draft.md` §十四.16:
+`journal_append`, `journal_read`, `session_load`, `list_models_render`.
+Pi baseline: `/tmp/cadr-render-diff-pi-d981de122`. Harness: `e4ab46c96`.
+
+### Ban (Part O hillclimb)
+
+- Ban: defer `finish-output` on `write-session-entry-jsonl` / `write-jsonl-object` (truncates `cadr-journal.jsonl`; gate JSON parse fail; revert).
+- Ban: `classify-arg-key` u32 dispatch in generic args loop (floor ban; unchanged).
+- Ban: pairing-fixture `json-intern` for `goal20faux`/`goal20-paired-1` (floor ban; unchanged).
+
+### Reverted invent (Part O load-session walker)
+
+- Reverted: load-session linear-chain walker in `migration.lisp` (`31521d3f4`, reverted `3ae98c6c1`). No product keep. False `met` booking cited missing artifacts; superseding ruling in `docs/adjudications.md`.
+
+### Remesure r35 (Friend-MachineD, GOAL20_PART_O_SLICE=1 n=10 warmups=2; tip with walker, pre-revert)
+
+Gate FAIL (session_load OPEN). Artifact `/tmp/g20-po-r35`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1586.9 | 1555.4 | **1.020× (OPEN)** |
+| journal_read | 1301.2 | 1334.1 | **0.975× (met)** |
+| journal_append | 1740.6 | 1801.8 | **0.966× (met)** |
+| list_models_render | 93.0 | 1479.1 | **0.063× (met)** |
+
+### Remesure r36 (Friend-MachineD, GOAL20_PART_O_SLICE=1 n=10 warmups=2; reconfirm)
+
+Gate FAIL (session_load OPEN). Artifact `/tmp/g20-po-r36`.
+
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| session_load | 1799.1 | 1756.1 | **1.025× (OPEN)** |
+| journal_read | 1339.3 | 1346.7 | **0.994× (met)** |
+| journal_append | 1907.3 | 2407.3 | **0.792× (met)** |
+| list_models_render | 85.4 | 1385.7 | **0.062× (met)** |
+
+**ALL4 false on both runs.** G.16 remains `blocked`.
+
