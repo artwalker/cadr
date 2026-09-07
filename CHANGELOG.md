@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 20 complete: G.12 `met` after H inventory `needs-pair=0` /
+  `pairable-uncovered=0` (297 / 133658) and K H-class marks. Part G
+  matrix terminal (`met` ∪ `blocked`). Not independently audited by
+  a separate advisor (§5.2).
+
 - Goal 20: G.17 `met` after invent keep `594d066a4` and Friend-MachineD
   remesure25+26 floor reconfirm (all four ≤1.0×). Not independently
   audited by a separate advisor (§5.2). Not Goal 20 complete (G.12

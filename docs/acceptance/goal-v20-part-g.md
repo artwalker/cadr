@@ -1,7 +1,7 @@
 # Goal 20 Part G — evidence matrix
 
 Inventory for `goal20-draft.md` §十四 items 1–17.
-This file is **not** a Part G pass and **not** a Goal 20 closeout.
+Part G matrix is terminal (`met` ∪ `blocked`). Goal 20 closeout booked in `docs/adjudications.md` 2026-09-07.
 No new measurements. `met` requires at least one openable SHA or path.
 
 Status: `met` / `missing` / `blocked`.
@@ -19,19 +19,22 @@ Status: `met` / `missing` / `blocked`.
 | 9 Part C compression | met | keep `46fabd9bb`; volume column `ff2e4f03f` | Keep is decided. History keys are still `coldStartMedianUs` / `frame5000MedianUs` / `frame5000MedianBytes`. The first `binary_bytes` cell waits for the next isolated verify; do not invent a script. |
 | 10 Part E example surfaces | met | `224450447`; `docs/acceptance/goal-v20-part-e-close.md` (79 = 23 pty / 51 suite-lock / 5 blocked) | Paper A/B passed. Live tic-tac-toe defects were P0 (`165edc9c2` steer, `edb9d6dca` overlay bind); this cell does not close them. |
 | 11 Part F ledger hygiene | met | policy `f6ebfb225` (`docs/development-policy.md` §5 includes `source-parity.md` Evidence/reason); families `85410e878` / `ca8025621` / `674ff7212`; `scripts/check-source-parity-cadr-paths.py`; `docs/source-parity.md` §3a `SP-F*` | Header still `examples=99/99/0`. SP-F1/SP-F2 state the current coverage split. |
-| 12 Part K dual-ref and I0 | missing | ledger `docs/code-organization.md` `GOAL20_LISPIFICATION_LEDGER` files=295 lines=122238 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148; J `8f691682b`; K2 `773153d60`; K3 `3bdf12674`; K4 `ba533f87b`; K5 `ae879d4ee`; K6 `abb31e13a`; K7 `f62784937`; K8 `61a5d0283`; K9 `0fd767e87`; G.12 ruling `docs/adjudications.md` 2026-08-18; 10% audit `goal20-state.md` `[done · advisor]` 15/15 | Ledger has no rewrite/unevaluated/in-progress; blocked 0 (under 5%). H class named: K2/K3 `pairable-uncovered`; K4 `unpairable`; J no H pair. K5–K9 **缺标记**, not 缺改写. H `pairable-uncovered` `done` is single-ref pending H — not 「不劣于 pi」, not 148 new benches. Predecessor for that dual-ref gap: H 未覆盖. |
-| 13 Part H pairs and share | met | `docs/acceptance/goal-v20-part-h.md`; `docs/benchmarks/goal20-paired-paths.json`; `docs/benchmarks/goal20-unpaired-paths.json`; `2aea08382` | Four non-TUI pairs. Falsifiable vs baseline 17.0% of lines (35 files). Unpairable 6.1%. pairable-uncovered 76.9%. H does not require ratio ≤ 1. |
+| 12 Part K dual-ref and I0 | met | K2–K9 reports + tip H inventory `needs-pair=0` `pairable-uncovered=0` (297 files / 133658 lines; `goal20-unpaired-paths.py --check`); K5–K9 `## H class` marks + tip inventory notes; G.12 ruling `docs/adjudications.md` 2026-08-18 scoring; close ruling **2026-09-07** | Marks complete (not 148 benches). H unfinished surface closed. Dual-ref per ruling: `paired` falsifiable vs baseline; `unpairable` single-ref; `covered-as-callee` on named thunks. §5.2. |
+| 13 Part H pairs and share | met | `docs/acceptance/goal-v20-part-h.md`; `docs/benchmarks/goal20-paired-paths.json`; `docs/benchmarks/goal20-unpaired-paths.json`; tip `--check` 297/133658 paired 80.3% / unpairable 5.7% / callee 14.1% / needs-pair 0 / uncovered 0 | H does not require ratio ≤ 1. Historical first booking SHA `2aea08382` remains. |
 | 14 Part I ledger columns | met | `docs/acceptance/goal-v20-part-i.md`; `docs/code-organization.md` §2; batches `de4c60f95`–`fc0634c4c` | One table, closed states, every `src/**/*.lisp` row, dual file/line progress. I report's initial 293/121105 lock was refreshed on the current identity line. |
 | 15 Part J pilot retro | met | `docs/acceptance/goal-v20-part-j.md`; `8f691682b`; `src/cadr-core/time.lisp` | Report names three process defects (re-asking I, no H cell, ceremony red commit). Not "流程顺利". |
 | 16 Part O four paths ≤ 1.0 | blocked | `4cd3a510b`; `docs/acceptance/goal-v20-part-o.md`; `docs/performance.md` paired table (append 2.21×, read 3.93×, load 4.28×, list_models_render 3.18×) | O blocked is not a performance close. Next knife is Part P (SBCL/live-image ceiling; floor is pi). Beating pi is not a stop. `argv_parse` is out of scope. |
-| 17 Part P CL ceiling | met | invent/floor keep `594d066a4`; remesure25 + remesure26 Friend-MachineD `GOAL20_FLOOR_SLICE=1` n=10 all four ≤1.0× (`/tmp/goal20-floor-remesure25`, `/tmp/goal20-floor-remesure26`); booking `docs/benchmarks/goal20-paired-over-1x.md`; draft `docs/acceptance/goal-v20-part-p.md`; rulings `docs/adjudications.md` 2026-09-05 signer + **2026-09-06 `met`** | Invent/floor quartet closed. **Not independently audited by a separate advisor** (§5.2). User veto retained. Not Goal 20 complete (G.12 still `missing`). |
+| 17 Part P CL ceiling | met | invent/floor keep `594d066a4`; remesure25 + remesure26 Friend-MachineD `GOAL20_FLOOR_SLICE=1` n=10 all four ≤1.0× (`/tmp/goal20-floor-remesure25`, `/tmp/goal20-floor-remesure26`); booking `docs/benchmarks/goal20-paired-over-1x.md`; draft `docs/acceptance/goal-v20-part-p.md`; rulings `docs/adjudications.md` 2026-09-05 signer + **2026-09-06 `met`** | Invent/floor quartet closed. **Not independently audited by a separate advisor** (§5.2). User veto retained. |
 
-## Not claimed
+## Claimed (2026-09-07)
 
-- Goal 20 complete.
-- Part G passed.
-- 148 new wall-clock pairs.
-- 「不劣于 pi」 for H `pairable-uncovered` `done` files.
+- Goal 20 complete (Part G matrix terminal: every cell `met` or `blocked`).
+- Part G matrix terminal.
+
+## Still not claimed
+
+- 148 new wall-clock pairs (G.12 forbids that reading).
+- 「不劣于 pi」 for files that were historically `pairable-uncovered` at a K booking (tip class is inventory, not that claim).
 - A complete `binary_bytes` history series (G.9 keep is booked; first history cell waits).
 - Paper A/B passing means the three games play.
-- Ratios above 1.0× vs pi mean Part P is done.
+- Extra invent below the closed G.17 floor as a Goal 20 reopen.

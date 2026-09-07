@@ -1549,3 +1549,34 @@ the contentful ruling that keeps invent honest.
 with keep; reconfirm after prior swing lesson; delegated
 signer + §5.2 disclosure.
 
+## 2026-09-07 — G.12 `met`; Goal 20 complete
+
+**Ruled**: Cursor executor as Goal 20 process signer under the
+2026-09-05 delegation. **Not independently audited by a separate
+advisor** (§5.2). User veto retained.
+
+**Decided**:
+
+1. **G.12 `met`.** Tip inventory
+   `python3 scripts/goal20-unpaired-paths.py --check` books
+   `needs-pair=0`, `pairable-uncovered=0` on denominator
+   297 files / 133658 lines. K5–K9 already carried `## H class`
+   marks; tip notes record that historical `pending H pair` /
+   `pairable-uncovered` sentences are stale relative to inventory.
+   Scoring stays the 2026-08-18 G.12 ruling (not 148 wall-clock
+   pairs): `paired` dual-ref via H cell + K FiveAM/render-diff;
+   `unpairable` single-ref vs previous cadr; `covered-as-callee`
+   on named paired thunks.
+2. The former G.12 gap ("H `pairable-uncovered` unfinished
+   surface") is closed by H/P.13 inventory, not by inventing
+   benches.
+3. **Goal 20 complete.** Part G matrix has no `missing` cell.
+   G.16 remains `blocked` (2026-08-18 Part O blocked closeout);
+   that is a terminal cell, not an open leftover.
+4. Invent/floor soft-stop remains valid under G.17 `met`
+   (2026-09-06). Beating pi further is not a Goal 20 reopen.
+
+**Why it was decidable**: mechanical `--check` green; marks
+present; only open Part G cell was G.12; user asked to finish
+Goal 20 autonomously.
+

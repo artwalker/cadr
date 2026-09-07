@@ -12,6 +12,8 @@ not drifted (`wc -l` 19 / 12, same one-sentence owners).
 No rewrite. Inventing one to look busy would violate the K2
 heading and unified req 7.
 
+
+**Tip inventory (denom 297 / 133658; `--check`):** `needs-pair=0`, `pairable-uncovered=0`. The pairable-uncovered sentence above is historical at the K2 booking; current class is per `goal20-unpaired-paths.json`.
 Part H lists `src/cadr-storage/` as pairable-uncovered (baseline
 `packages/session-backends/sqlite-node`), not unpairable. There is
 no live H cell. Because this close is keep-as-I, req 8's

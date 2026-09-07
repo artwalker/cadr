@@ -14,6 +14,8 @@
 I0: one owner each for encoder limits, frame consume, and optional
 fields. Not "used a struct".
 
+
+**Tip inventory (denom 297 / 133658; `--check`):** `needs-pair=0`, `pairable-uncovered=0`. The pairable-uncovered sentence above is historical at the K3 booking; current class is per `goal20-unpaired-paths.json`.
 No H cell used. These paths are pairable-uncovered; req 8's
 Date.now() exception is not invoked. Existing protocol FiveAM
 is the before/after.

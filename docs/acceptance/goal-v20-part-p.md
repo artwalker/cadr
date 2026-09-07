@@ -16,7 +16,7 @@ and vetoed G.17 `blocked` on `7e4ec5201` (historical).
 **2026-09-05 user ruling:** no separate advisor session;
 Cursor executor holds G.17 process signature authority;
 user veto retained (`docs/adjudications.md` 2026-09-05).
-G.17 is `met` (adjudications 2026-09-06 invent/floor remesure25+26; §5.2). This header amendment is the booking, not Goal 20 complete.
+G.17 is `met` (adjudications 2026-09-06 invent/floor remesure25+26; §5.2). G.12 closed 2026-09-07; Goal 20 complete booked in adjudications.
 `blocked` is only for new deps / safety / format / mmap /
 observable SIMD (and FFI-into-callee / intern grow / empty SWAR
 without adjudication). P.8 is `number` after user 2026-08-18 18:09
@@ -78,7 +78,7 @@ Not `parse-json-octets`. Not a G.17 close.
 ## Not claimed
 
 - Goal 20 complete.
-- Goal 20 complete (G.12 still `missing`).
+- Further invent below the G.17 floor as a Goal 20 reopen.
 - Live three-game play (deferred 18:09).
 - P.13 invent/floor named quartet closed on remesure25+26; other Part P leftovers may still exist outside that gate.
 
@@ -89,4 +89,4 @@ Not `parse-json-octets`. Not a G.17 close.
 | P.13 schema | number | `pairable-uncovered` **0%** of 295 files / 127,389 lines (`f0e299523`). `--check` books `covered-as-callee` + `needs-pair`. | `goal20-unpaired-paths.py --check`. Not G.17. |
 | P.13 required holes | number | sqlite / tool_loop / compact / providers / settings / package / skills all have named H metrics (`315a16c1c`). No new pair. No optimize. | inventory vs `pairedMetrics`. |
 | P.13 additional pairs | number | Tip `f13c96603` inventory: `needs-pair=0`, `uncovered=0`, paired lines 104353 / 129374 (`goal20-unpaired-paths.py --check`). Remount leftover open=0 through freeze #631 / gate #632. Historical first-freeze ratios above stay in Part H / over-1× ledger. | remount mill + inventory. Not G.17. |
-| P.13 floor / leftover | number | Remesure25+26 Friend-MachineD `GOAL20_FLOOR_SLICE=1` n=10: all four named leftovers ≤1.0× on tip `594d066a4`. Remesure14→15 swing lesson applied via remesure26 reconfirm. | `docs/benchmarks/goal20-paired-over-1x.md`; adjudications 2026-09-06 G.17 `met` (§5.2). Not Goal 20 complete. |
+| P.13 floor / leftover | number | Remesure25+26 Friend-MachineD `GOAL20_FLOOR_SLICE=1` n=10: all four named leftovers ≤1.0× on tip `594d066a4`. Remesure14→15 swing lesson applied via remesure26 reconfirm. | `docs/benchmarks/goal20-paired-over-1x.md`; adjudications 2026-09-06 G.17 `met` (§5.2). Goal 20 complete 2026-09-07. |

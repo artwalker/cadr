@@ -32,6 +32,8 @@ untouched. derive 680/680.
 
 ## H class
 
+**Tip inventory (denom 297 / 133658; `goal20-unpaired-paths.py --check`):** `needs-pair=0`, `pairable-uncovered=0`. Classes below that still say `pending H pair` / `pairable-uncovered` are historical at the K booking; current class is `paired` / `covered-as-callee` / `unpairable` per `docs/benchmarks/goal20-unpaired-paths.json`. Not 148 new benches.
+
 Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
 via `scripts/goal20-unpaired-paths.py` `classify` (longest
 prefix; unmatched defaults to `pairable-uncovered`). No new
