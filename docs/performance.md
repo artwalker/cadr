@@ -603,8 +603,9 @@ next isolated verify that records history; do not hand-fill.
 | 2026-08-15T16:40:01Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,406.6 | — | 3,964.0 | 360,272 |
 | 2026-08-15T17:51:43Z | verify-isolated | Friend-MachineD | `isolated-copy` | 247,026.9 | — | 0.0 | 360,272 |
 | 2026-08-15T19:09:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 248,317.5 | — | 0.0 | 360,272 |
+| 2026-09-07T07:56:50Z | verify-isolated | Friend-MachineD | `isolated-copy` | 285,323.4 | 21,343,120 | 0.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-15T19:09:32Z) versus `verify-isolated` (2026-08-15T17:51:43Z).
+Latest vs previous: `verify-isolated` (2026-09-07T07:56:50Z) versus `verify-isolated` (2026-08-15T19:09:32Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->
 

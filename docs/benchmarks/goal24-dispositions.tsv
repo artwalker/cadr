@@ -1,5 +1,5 @@
 metric	disposition	evidence	note
-agent_proxy.stream_roundtrip	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+agent_proxy.stream_roundtrip	deferred-variance-floor	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal20-paired-over-1x.md	printed 1.59× > 1.5 ceiling; gate PASS under paired_limit_us variance floor (~26 µs); no invent
 agent_tool_loop.line_ending	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 agent_tool_loop.runtime	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 agent_tool_loop.tool_path	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -167,7 +167,7 @@ cli_print_rpc.dialog_result	open-floor-invent	open	Part 3 drain target
 cli_print_rpc.handle_bad_json	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_print_rpc.handle_not_object	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.handle_ui_miss	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_print_rpc.jsonl_line	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+cli_print_rpc.jsonl_line	deferred-variance-floor	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 34	printed 13.21× > 8.0 ceiling; sub-µs path (3.3 / 0.25 µs); gate PASS under 10 µs variance floor; no invent
 cli_print_rpc.line_arr	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.line_bad	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.line_ui	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -751,7 +751,7 @@ evals_harness.output_selector	deferred-variance-floor	goal24-charter bulk	sub-us
 evals_harness.paths_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 evals_harness.prepare_default_prompt	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 evals_harness.prompt_eval_agent	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-evals_harness.release_extensions	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+evals_harness.release_extensions	deferred-variance-floor	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 370	printed 21.13× > 8.0 ceiling; sub-µs path (6.187 / 0.293 µs); gate PASS under variance floor; no invent
 evals_harness.reload_shutdown	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 evals_harness.rep_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 evals_harness.reporter_run_id	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -787,7 +787,7 @@ find_tool.ignored_directory	deferred-measure-only	goal24-charter bulk	measure-on
 find_tool.make_glob_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 find_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 find_tool.parse_gitignore_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-grep_tool.make_tool	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+grep_tool.make_tool	deferred-variance-floor	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 375	printed 10.006× > 8.0 ceiling; sub-µs path (4.152 / 0.415 µs); gate PASS under 10 µs variance floor; no invent
 harness_events.event_type	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 harness_events.make_bus	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 harness_events.make_end	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
@@ -958,7 +958,7 @@ tui_select_settings_loaders.update_display	deferred-variance-floor	goal24-charte
 tui_theme_overlay.osc11_bg	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 tui_theme_overlay.parse_hex_color	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 tui_theme_overlay.rgb_to_ansi_256	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-tui_theme_overlay.theme_foreground_ansi	needs-ceiling-ruling	open	over ceiling or raise-ceiling path; Part 4 open
+tui_theme_overlay.theme_foreground_ansi	deferred-variance-floor	docs/adjudications.md 2026-09-07 Part 4 ceilings; goal-v20-part-h.md Pair 321	printed 14.724× > 8.0 ceiling; sub-µs path (5.58 / 0.379 µs); gate PASS under variance floor; no invent
 websocket_stream.stream_roundtrip	booked-shape-gap	goal24-charter bulk	size/count/shape gap booked; invent not required
 write_tool.make_tool	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 write_tool.write_utf8	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close

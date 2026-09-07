@@ -1768,3 +1768,55 @@ variance-bound residual; Goal 24 stop allows terminal disposition
 with written reason without ≤1.0× remesure
 (`docs/acceptance/goal-v24.md` Part 4).
 
+## 2026-09-07 — Goal 24 Part 4: close five `needs-ceiling-ruling` rows
+
+**Ruled**: Cursor executor under 2026-09-05 delegation. §5.2.
+**Not independently audited by a separate advisor.**
+
+**Decided** (p4-ceilings unit; docs-only on tip):
+
+All five metrics are **deferred-variance-floor**. Printed ratio exceeds
+the named `RATIO_CEILINGS` entry, but the paired gate already **PASS**es
+because `paired_limit_us` binds on the microsecond variance floor
+(`pi_median + max(10 µs, 6×run_MAD)`), not the ratio term. No ceiling
+raise is required for gate compliance. No Goal 24 invent is authorized
+(measure-only pairs; OBS exact; no named non-circling lever).
+
+1. **`agent_proxy.stream_roundtrip`** — printed **1.59×** vs ceiling
+   **1.50×** (25.4 / 16.0 µs). Part H Pair 29 froze ceiling 1.5 as
+   variance-bound. Absolute margin ~9 µs; limit ~26 µs. Same class as
+   `session_compact.compact` Part 4 close.
+
+2. **`cli_print_rpc.jsonl_line`** — printed **13.21×** vs ceiling **8.0×**
+   (3.3 / 0.25 µs). Part H Pair 34; sub-µs JSONL frame write. Limit
+   ~10.25 µs >> cadr 3.3 µs. Sibling `cli_print_rpc.cmd_n` raised ceiling
+   8→12 during Goal 20 pairing for ledger headroom; gate does not require
+   it here.
+
+3. **`evals_harness.release_extensions`** — printed **21.13×** vs ceiling
+   **8.0×** (6.187 / 0.293 µs). Part H Pair 370; nil-manager +
+   `replace-extension-bundles` no-op. Limit ~10.29 µs. Sibling
+   `evals_harness.val_ext` raised 12→20 for 18.295× during pairing;
+   variance floor still binds.
+
+4. **`grep_tool.make_tool`** — printed **10.006×** vs ceiling **8.0×**
+   (4.152 / 0.415 µs). Part H Pair 375; tool metadata only (not execute).
+   Limit ~10.42 µs. Sibling `evals_harness.tools_n` raised 8→12 for
+   10.111×; same variance-floor class.
+
+5. **`tui_theme_overlay.theme_foreground_ansi`** — printed **14.724×** vs
+   ceiling **8.0×** (5.58 / 0.379 µs). Part H Pair 321; CSI foreground
+   for pinned theme. Limit ~10.38 µs.
+
+**Rejected**: raising `RATIO_CEILINGS` in this docs-only close. Ratchet
+headroom raises remain optional ledger hygiene in a separate commit; they
+must not bundle with a speedup keep (`development-policy.md` /
+Goal 24 charter). Invent to ≤1.0× is not authorized without a named
+allocation-level proposal (none exists for these sub-µs accessors).
+
+**Why it was decidable**: Part H pairing notes and
+`goal20-paired-over-1x.md` ledger rows document gate PASS under variance
+floor for every metric; classifier bucket `ceiling-or-variance` only
+flags printed-ratio > ceiling for explicit ruling, not an open invent
+queue.
+
