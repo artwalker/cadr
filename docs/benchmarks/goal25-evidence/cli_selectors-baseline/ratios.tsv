@@ -1,0 +1,10 @@
+same_machine True
+ratio_gate enforced-only:cli_selectors.model_selector_active_models,cli_selectors.model_selector_clamp_selected,cli_selectors.model_selector_select_current,cli_selectors.scoped_model_selector_search_text,cli_selectors.scoped_models_clear_ids,cli_selectors.scoped_models_enable_ids,cli_selectors.scoped_models_enabled_set
+metric	ratio	cadr_us	pi_us
+cli_selectors.model_selector_active_models	8.002949366268904	27.18874	3.39734
+cli_selectors.model_selector_clamp_selected	4.654639480626288	26.714000000000002	5.73922
+cli_selectors.model_selector_select_current	40.893079141300866	25.52546	0.6242
+cli_selectors.scoped_model_selector_search_text	13.18158567774936	6.39096	0.48484
+cli_selectors.scoped_models_clear_ids	2.3426683122066003	4.06214	1.7339799999999999
+cli_selectors.scoped_models_enable_ids	2.3748804911186028	3.77568	1.5898400000000001
+cli_selectors.scoped_models_enabled_set	4.1009053187476425	4.3486	1.0604

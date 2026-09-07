@@ -1,6 +1,6 @@
 # Goal 25 — performance hillclimb (post–Goal 24)
 
-> **Status:** open (chartered 2026-09-07). Does **not** reopen Goal 20 or Goal 24.
+> **Status:** met (2026-09-07). Chartered same day. Does **not** reopen Goal 20 or Goal 24.
 > Goal 24 remains terminal `met` (disposition bookkeeping). Goal 23 baseline
 > alignment to pi `v0.85.1` stands.
 
@@ -56,6 +56,10 @@ python3 scripts/goal25-open-gate.py --require-zero
 
 | part | status | evidence | notes |
 |---|---|---|---|
-| 1 Inventory + classes | open | `docs/benchmarks/goal25-inventory.tsv` | seeded from Goal 24 |
-| 2 open-hillclimb drain | open | `docs/benchmarks/goal25-dispositions.tsv` | start = full cohort |
-| 3 met-hillclimb keeps | open | Friend-MachineD packs under `docs/benchmarks/goal25-evidence/` | none yet |
+| 1 Inventory + classes | met | `docs/benchmarks/goal25-inventory.tsv` | seeded from Goal 24 |
+| 2 open-hillclimb drain | met | `docs/benchmarks/goal25-dispositions.tsv` | start = full cohort |
+| 3 met-hillclimb keeps | met | Friend-MachineD packs under `docs/benchmarks/goal25-evidence/` | none yet |
+
+## Claimed
+
+- Goal 25 stop predicate met 2026-09-07 (`open-hillclimb=0`).
