@@ -67,7 +67,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 |---|---|---|---|
 | 1 Classifier inventory | met | `scripts/goal24-invent-pause-classify.py`; `docs/benchmarks/goal24-invent-pause-inventory.tsv` (963 metrics: measure-only-floor 833, variance-floor 69, floor-invent 47, ceiling-or-variance 5, shape-gap 3, needs-proposal 3, keep-pending-remount 3) | Charter cut 2026-09-07 |
 | 2 Disposition coverage | missing | `docs/benchmarks/goal24-dispositions.tsv` seeded; open rows remain | Bulk deferred for measure-only / variance / shape-gap; invent/proposal/ceiling still open |
-| 3 Floor invent drain | missing | | 47 `open-floor-invent` + 3 `open-remount` |
+| 3 Floor invent drain | met | Friend-MachineD leftover remesures + terminal dispositions; open-floor=0 open-remount=0 | 47 `open-floor-invent` + 3 `open-remount` |
 | 4 Proposal / ceiling / gap close | met | `docs/adjudications.md` 2026-09-07 Part 4 (six `needs-proposal` + five `needs-ceiling-ruling` closed); `docs/benchmarks/goal24-dispositions.tsv` | needs-proposal 0; needs-ceiling-ruling 0 |
 | 5 binary_bytes history cell | met | `docs/benchmarks/performance-history.json` (`nativeImageBytes` 21343120 at `2026-09-07T07:56:50Z`); `docs/performance.md` `GOAL20_PERF_HISTORY`; `/tmp/g24-p5-verify.log` | Isolated verify `--record` Goal 11 gate on Friend-MachineD; first cell not hand-filled |
 
@@ -80,7 +80,7 @@ OpenSSL-class paths close by disposition, not by impossible invent.
 
 | disposition | n |
 |---|---:|
-| open-floor-invent | 5 |
+| open-floor-invent | 0 |
 | open-remount | 0 |
 | needs-proposal | 0 |
 | needs-ceiling-ruling | 0 |

@@ -163,7 +163,7 @@ cli_print_rpc.cmd_list	deferred-measure-only	goal24-charter bulk	measure-only pa
 cli_print_rpc.cmd_n	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.command_list	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.dialog_request	booked-shape-gap	/tmp/g24-f1-after/summary.json	Friend-MachineD n=5 4.128× (1.624/0.393µs); hash-table invent discarded
-cli_print_rpc.dialog_result	open-floor-invent	open	Part 3 drain target; not in f1 invent remesure set
+cli_print_rpc.dialog_result	booked-shape-gap	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 15.238× (3.245/0.213µs); timed json-object+json-get vs leftover object literals; gate PASS variance-bound; sibling dialog_request booked-shape-gap
 cli_print_rpc.handle_bad_json	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_print_rpc.handle_not_object	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_print_rpc.handle_ui_miss	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -809,15 +809,15 @@ oauth_pkce_device.anth_oauth_sub	deferred-variance-floor	goal24-b2-drain	sub-us 
 oauth_pkce_device.auth_json	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_auth	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.copilot_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-oauth_pkce_device.device_start	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.device_start	booked-shape-gap	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 1.384× (18.639/13.465µs); product oauth-flow-post-json vs leftover startOpenAICodexDeviceAuthFromResponse; invent would skip the product HTTP adapter
 oauth_pkce_device.error_detail	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 oauth_pkce_device.github_oauth_url	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.json_copy	deferred-variance-floor	goal24-b2-drain	sub-us stringify of empty/1-key error body (ledger 0.938/0.432 µs); same floor as oauth error_detail/notify_device
-oauth_pkce_device.kimi_host_code	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_code	deferred-variance-floor	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 2.196× (0.694/0.316µs); env assoc+trim vs leftover object lookup; kimi-oauth-host already one trim; same floor as kimi_host_default
 oauth_pkce_device.kimi_host_default	deferred-variance-floor	goal24-b2-drain	sub-us host lookup (ledger 0.348/0.152 µs); kimi-oauth-host already one trim
-oauth_pkce_device.kimi_host_trim	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.kimi_host_trim	deferred-variance-floor	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 2.447× (1.071/0.438µs); string-right-trim vs leftover replace /+$/; same kimi-oauth-host as kimi_host_default
 oauth_pkce_device.notify_device	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-oauth_pkce_device.openrouter_exchange	open-floor-invent	open	Part 3 drain target
+oauth_pkce_device.openrouter_exchange	booked-shape-gap	/tmp/g24-f5-before/summary.json	Friend-MachineD leftover n=5 1.653× (16.646/10.070µs); product openrouter-exchange-code vs leftover exchangeAuthorizationCodeFromResponse; invent would skip the product HTTP adapter
 oauth_pkce_device.parse_callback_request	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.parse_query	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 oauth_pkce_device.percent_decode	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
