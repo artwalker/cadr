@@ -24,19 +24,19 @@ bash_tool.truncation_notice	deferred-measure-only	goal24-charter bulk	measure-on
 bash_tool.user_bash_result	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.assistant_tool_call_only	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.coding_tools	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.data_directory	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.data_directory	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 4.704× (4.550/0.967µs); path.join-shaped invent 5.068× discarded
 cli_bootstrap_sessions.dpk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.dpkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.dpkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.dpkxxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.extensions_doc_url	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.extensions_doc_url	deferred-variance-floor	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 2.353× (0.420/0.179µs); constant URL leftover flags vs interned JS string
 cli_bootstrap_sessions.find_session_by_id_or_prefix	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.last_assistant_text	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.legacy_data_directory	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.legacy_data_directory	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 3.970× (4.766/1.200µs); join invent 4.813× discarded
 cli_bootstrap_sessions.legacy_product	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
-cli_bootstrap_sessions.managed_binary_names	open-floor-invent	open	Part 3 drain target
-cli_bootstrap_sessions.manual_migration_command	open-floor-invent	open	Part 3 drain target
-cli_bootstrap_sessions.migration_guide_url	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.managed_binary_names	deferred-variance-floor	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 1.511× (0.352/0.233µs); four FIND on a 4-element constant list
+cli_bootstrap_sessions.manual_migration_command	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 2.466× (5.154/2.090µs); quote-concat invent 1.559× still over 1.0, discarded
+cli_bootstrap_sessions.migration_guide_url	deferred-variance-floor	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 2.376× (0.428/0.180µs); constant URL leftover flags vs interned JS string
 cli_bootstrap_sessions.model_scope_line	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.pbkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.pbkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
@@ -44,7 +44,7 @@ cli_bootstrap_sessions.pbkxxx_ok	deferred-measure-only	goal24-charter bulk	measu
 cli_bootstrap_sessions.psb_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.response_text	deferred-variance-floor	goal24-charter bulk	sub-us / variance floor; invent not required
 cli_bootstrap_sessions.rst_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
-cli_bootstrap_sessions.rt_ok	open-floor-invent	open	Part 3 drain target
+cli_bootstrap_sessions.rt_ok	booked-shape-gap	/tmp/g24-f2-before/summary.json	Friend-MachineD leftover n=5 1.858× (1.423/0.766µs); skip-FORMAT invent 1.084× still over 1.0, discarded
 cli_bootstrap_sessions.rtk_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.rtkx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
 cli_bootstrap_sessions.rtkxx_ok	deferred-measure-only	goal24-charter bulk	measure-only pair; invent not required for Goal24 close
