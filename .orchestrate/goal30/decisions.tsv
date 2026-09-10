@@ -3,3 +3,6 @@ ts	phase	decision	why	evidence	result
 2026-09-10T14:58:17Z	binary	rebuilt root cadr with CADR_BUILD_SKIP_TEST_CL=1 after FiveAM already green	stale delivery binary blocked strangers	scripts/check-root-binary.sh	fresh
 2026-09-10T14:58:17Z	docs	Quick Start at README top; smoke in delivery checklist	experience-first stranger path	README.md;docs/delivery-checklist.md	docs-closed
 2026-09-10T14:58:17Z	smoke	smoke-first-run.sh PASS on fresh tip binary	prove-it-works first-run lever	scripts/smoke-first-run.sh	smoke-closed
+2026-09-10T18:36:00Z	verify	clear seven tools-success narrow I04 pins after screens matched; refresh overlays-auth narrow hash	stale unequal I04 pins failed core render gate after cadr caught up	test/fixtures/render-diff/dispositions.json;/tmp/g30-rd-an2.log	analyze-exit-0
+2026-09-10T18:53:36Z	verify	full verify.sh exit 0 with cached core render captures	prove-it-works product-ready gate	/tmp/g30-verify10.log	verify-closed
+2026-09-10T18:54:00Z	close	mark Goal 30 met; all four tracks closed	stranger first-run path + release gate green	docs/acceptance/goal-v30.md	met

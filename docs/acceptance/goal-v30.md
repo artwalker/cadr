@@ -1,6 +1,6 @@
 # Goal 30 — product-ready first-run
 
-> **Status:** open (2026-09-10).
+> **Status:** met (2026-09-10).
 > Does **not** reopen Goal 20–29 as incomplete.
 > Pin stays `d981de1229ef899957bbe968bc8dcda02a21f477` `v0.85.1`.
 > Solo agent. Automate every reversible first-run blocker.
