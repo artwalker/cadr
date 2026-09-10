@@ -1,0 +1,2 @@
+2026-09-07T03:11:59Z	g12	exit predicate: G.12 met on tip after marks; Goal20 complete only if all non-blocked Part G met	user asked autonomous Goal20 completion; invent/floor already EXIT	ee8685c04; goal-v20-part-g.md	open; G.12 missing
+2026-09-07T03:17:48Z	g12	G.12 met; Goal 20 complete; Part G terminal met\cup blocked	H inventory needs-pair=0 uncovered=0; K marks present; user asked finish	3f96d9393; docs/adjudications.md 2026-09-07	EXIT Goal20 complete; §5.2

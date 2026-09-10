@@ -1,0 +1,5 @@
+ts	phase	decision	why	evidence	result
+2026-09-10T14:00:00Z	frame	open Goal 29 with four finite tracks	operator asked to finish every solo-completable leftover from maturity review	docs/acceptance/goal-v29.md	open
+2026-09-10T14:00:42Z	hygiene	landed orch24/25 audits; deleted .pair260-harness-stable; staged goal20 paired-paths scoped fix	tip dirt track	.orchestrate/goal24;goal25	hygiene-closed
+2026-09-10T14:00:42Z	match	promoted 594 fixed goal28 FiveAM rows to match; open=0	pin-behavior evidence already existed as fixed	scripts/goal29-promote-match.py	match=594 open=0
+2026-09-10T14:00:42Z	perf	exhausted write_* as no-keep under G29; dialog out; G27 keeps carried	Friend-MachineD pair invent not available solo; G27 already tried write knives	docs/benchmarks/goal29-dispositions.tsv	perf-track-closed

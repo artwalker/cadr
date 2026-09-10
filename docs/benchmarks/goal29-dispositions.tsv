@@ -1,0 +1,7 @@
+metric	disposition	class	evidence	note
+cli_support.write_overwrite	exhausted-no-keep	product-gap	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	Goal 27 already remesured and reverted; no new semantic-preserving knife without Friend-MachineD pair; solo G29 exhausts
+cli_support.write_hello	exhausted-no-keep	product-gap	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	same write unit; G27 no-keep
+cli_support.write_empty	exhausted-no-keep	product-gap	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	same write unit; G27 no-keep both slower
+cli_print_rpc.dialog_request	out-of-scope	runtime-essence-candidate	docs/acceptance/goal-v27.md	unchanged; no concurrent-safe knife
+cli_selectors.scoped_model_selector_search_text	kept-faster-carried	product-gap	docs/benchmarks/goal27-evidence/search-text/REPORT.md	G27 keep stands; not reopened
+cli_selectors.scoped_models_enabled_set	kept-faster-carried	product-gap	docs/benchmarks/goal27-evidence/enabled-set/REPORT.md	G27 keep stands; not reopened

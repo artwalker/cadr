@@ -1,0 +1,10 @@
+ts	kind	subject	detail	tip	verdict
+2026-09-05T12:35:23Z	open	goal22	user chose B; freeze G20 invent; target v0.85.1 d981de122; G.17 missing	172337bfc	opened
+2026-09-05T12:35:23Z	pause	goal20	goal20-queue paused=true; goal21-queue goal20Paused=true	172337bfc	paused
+2026-09-05T12:35:56Z	commit	g22-open	docs+pause queues landed	b6c927f19	landed
+2026-09-05T12:37:00Z	renumber	goal23	Goal 22 already meant v0.84.4; 0.85.1 bump is Goal 23	b6c927f19	corrected
+2026-09-05T12:37:35Z	anchor	baseline-v0.85.1	set-baseline+model pin; anchor check green; dispositions open	00fb58238	anchored
+2026-09-05T12:44:05Z	keep	catalog-0.85.1	1354 models; gpt-6-astra present; check-model-data valid; scrollbarTrack theme; G.17 missing	867ecbb19	landed
+2026-09-05T12:46:07Z	keep	alt-wheel-5x	FiveAM PASS plain+3 Alt+15; G.17 missing; G23 open	732137420	landed
+2026-09-05T12:49:45Z	keep	jump-to-latest	FiveAM PASS paint+click; G.17 missing; G23 open	fa0d8cc87	landed
+2026-09-05T12:52:54Z	status	g23-progress	still developing; tip e425e367f; BASELINE v0.85.1; G20 paused; working-in-border uncommitted in frame.lisp+editor.lisp; gates not run	e425e367f	open

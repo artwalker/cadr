@@ -1,0 +1,37 @@
+ts	phase	decision	why	evidence	result
+2026-09-05T12:35:23Z	frame	opened Goal 23 for pi v0.85.1 and froze Goal 20 invent	user chose baseline-first over invent-on-stale-pi	b6c927f19 docs open; goal20-queue paused=true	opened
+2026-09-05T12:37:00Z	frame	renumbered the bump to Goal 23	Goal 22 already closed at v0.84.4	4165f9db2	corrected
+2026-09-05T12:37:35Z	anchor	set BASELINE to d981de122 v0.85.1 and pinned pi-ai@0.85.1 model-data	mechanical first so later work measures the right tip	00fb58238; baseline-anchor.py check green	anchored
+2026-09-05T12:44:05Z	catalog	refreshed built-in models to 1354 including GPT-6 Astra and added scrollbarTrack	user-visible catalog and theme token from 0.85.1	867ecbb19; check-model-data valid	landed
+2026-09-05T12:46:07Z	tui	Alt+wheel scrolls five times faster in fullscreen	match pi SGR Alt bit; small isolated unit	732137420; FiveAM alt-screen-alt-wheel PASS	landed
+2026-09-05T12:49:45Z	tui	Jump to latest overlay when scrolled up plus click-to-bottom	match pi fullscreen label	fa0d8cc87; FiveAM jump-to-latest PASS	landed
+2026-09-05T12:50:30Z	docs	wrote landed vs open checklist on Goal 23 acceptance	so the next reader sees remaining work	e425e367f	landed
+2026-09-05T12:52:00Z	tui	working-in-border edit in flight on frame.lisp and editor.lisp	subagent implementing embedded Working indicator	uncommitted working tree	open
+2026-09-05T13:20:14Z	tui	embed Working... in default editor top border	match pi 0.85.1 default editor chrome	974c80866; FiveAM editor-embeds-working-status-in-default-border + goal23 default/custom PASS	landed
+2026-09-05T16:35:50Z	ai	Anthropic mid-convo effort markers + providerThinkingLevel	match pi 4e69b0c28	8dedb33bb; Eight FiveAM mid-convo tests PASS	landed
+2026-09-05T16:40:00Z	agent	session codec round-trips providerThinkingLevel	resume keeps mid-convo markers	a232cf05e; FiveAM session-round-trips-assistant-provider-thinking-level PASS	landed
+2026-09-05T17:37:00Z	docs	committed dangling mid-convo CHANGELOG row	keep Unreleased aligned with tip	b4458976b	landed
+2026-09-05T17:37:30Z	g23	autonomous run started; exit=open items+gates; invent unpause last; G.17 stays missing	user asked automated advance	predicate open	open
+2026-09-05T17:48:00Z	tui	CADR_TUI_DEBUG_REDRAW=1 gates full-redraw log	match pi PI_TUI_DEBUG_REDRAW	8305cd071; FiveAM helper+first-render PASS	landed
+2026-09-05T17:54:00Z	agent	inMemory restores external entries without remint	match pi 2b768ba42	eb9b9590a; Thirteen FiveAM load-entries PASS	landed
+2026-09-05T17:55:00Z	g23	started verify.sh for G23 close gate	implement units done; need gates before invent unpause	/tmp/g23-gates/verify.log	open
+2026-09-05T17:56:30Z	verify	first verify blocked on stray src/*.fasl UTF-8 org gate	deleted local fasl pollution; re-running verify	/tmp/g23-gates/verify.log FAIL org gate; VERIFY_EXIT 0 quirk	open
+2026-09-05T18:05:00Z	verify	scrub CHANGELOG legacy redraw env names; sync identity allowlist 1340→1417	G23 baseline pin drift + provenance; Cursor executor adjudication per policy 5.1; fasls already gone	goal21-sync --apply; identity gate PASS 1417	open
+2026-09-05T18:20:00Z	parity	goal23 source-parity test+verify stage; soften g22 live baseline pin	G22 wrongly failed after ledger advanced to d981de122; fixtures already present	goal22+goal23 FiveAM-style unittest OK	landed
+2026-09-05T18:28:00Z	parity	rewrote 103 drifted source-parity mappings	G23 line drift after mid-convo/inMemory/catalog; mechanized --write	derive --check EXIT 0	landed
+2026-09-05T18:40:00Z	fiveam	catalog 1354 locks + cerebras default + theme 59 + paint-key hyperlinks	verify4 FiveAM failed on stale counts/route IDs and OSC cache	goal17 changelog test PASS after paint-key fix	landed
+2026-09-06T02:28:00Z	g23	theme-key framed-select/border/dialog-chrome; streaming skips uncached paint; scrollbar track paint	suite pollution made import+extension-select SHA drift; root was theme-blind invent caches	fiveam13 still red on those two before framed-select fix	open
+2026-09-06T02:35:00Z	g23	identity docs to v0.85.1; overflow SHA for track paint; theme-key framed-select	Part E docs + CHANGELOG lacked current identity string; scrollbar track changed alt overflow oracle	await fiveam15	open
+2026-09-06T02:45:00Z	g23	refresh constructorSites line pins + theme-keyed invent caches + identity docs	git-verified extract drifted from fixture; framed-select/border theme-blind; overflow SHA for track	render-diff-gate OK	open
+2026-09-06T02:52:00Z	g23	FIXED_BASELINE_ARTIFACT_SHA256 -> 967e2ce8	chore bump rewrote goal-v11-pi-baseline.json without gate constant	goal11-performance-gate-test OK	landed
+2026-09-06T03:00:00Z	g23	FiveAM green 19980; ledger re-recorded	theme-key caches + oracle locks + goal11 SHA	test-cl-fiveam PASS	open-verify
+2026-09-06T03:05:00Z	parity	rewrote 5 mapping drifts after theme-key edits	transcript/extension-ui line shifts	derive --check EXIT 0	landed
+2026-09-06T03:12:00Z	g23	unpaired denominator 131221->133282	theme-cache edits grew src lisp lines; verify fiveam stage runs unpaired --check	--check EXIT 0	landed
+2026-09-06T03:40:00Z	g23	exclude experimental READMEs; regen visible-string inventory	render-diff construction suite failed unclassified asset	inventory sites=549	landed
+---
+2026-09-06T11:41:59+08:00	visible-string-locks	synced gate asserts + C-01 to post-README-exclusion recount 549/1226/1163/310 and 515/829
+2026-09-06T12:55:50+08:00	unmodeled-sink-remap	remapped 10 review sites to post-drift line numbers; validate OK
+2026-09-06T13:49:17+08:00	render-diff-sha-refresh	refreshed dispositions after theme caches; analyze core green; deferred 7 implement + 57 audit
+2026-09-06T14:15:39+08:00	write-success-parity	aligned write tool success text to pi (no byte count)
+2026-09-06T14:47:25+08:00	g23-exit	verify+test-cl green; invent unpaused; G.17 still missing
+2026-09-06T15:00:45+08:00	g17-g20-doc-hygiene	cleared invent-pause banners; G.17 stays missing

@@ -1,0 +1,168 @@
+2026-09-03T09:56:41Z	fix-wire-path+collision	renamed-aware mill reload; path insert uses following path key not collect next
+2026-09-03T10:06:22Z	start-loop4b	MAX=40 after #544; remaining~87
+2026-09-03T10:43:34Z	fix-mjs-multiline-collect	wire accepts compact+multiline await collect for #310+
+2026-09-03T10:44:33Z	resume-supervisor	multiline mjs collect fixed; restart from #310
+2026-09-03T10:54:10Z	supervisor-batch-fail	rc=1 fails=1 open=83
+2026-09-03T10:54:31Z	supervisor-batch-fail	rc=1 fails=2 open=82
+2026-09-03T10:55:41Z	fix-py-metrics-eol	wire METRICS insert when anchor is last in group tuple
+2026-09-03T13:17:39Z	supervisor-batch-fail	rc=1 fails=1 open=82
+2026-09-03T13:18:01Z	supervisor-batch-fail	rc=1 fails=2 open=69
+2026-09-03T13:18:22Z	supervisor-batch-fail	rc=1 fails=3 open=69
+2026-09-03T13:18:46Z	supervisor-batch-fail	rc=1 fails=4 open=69
+2026-09-03T13:19:09Z	supervisor-batch-fail	rc=1 fails=5 open=69
+2026-09-03T13:20:55Z	fix-collect-follow-actual	mjs/lisp collect insert before actual next key not extract next (#325 cd_rnd->dlg_make)
+2026-09-03T13:31:46Z	supervisor-batch-fail	rc=1 fails=1 open=69
+2026-09-03T13:32:03Z	supervisor-batch-fail	rc=1 fails=2 open=68
+2026-09-03T13:32:23Z	supervisor-batch-fail	rc=1 fails=3 open=68
+2026-09-03T13:32:40Z	supervisor-batch-fail	rc=1 fails=4 open=68
+2026-09-03T13:32:59Z	supervisor-batch-fail	rc=1 fails=5 open=68
+2026-09-03T13:33:17Z	supervisor-batch-fail	rc=1 fails=6 open=68
+2026-09-03T13:33:36Z	supervisor-batch-fail	rc=1 fails=7 open=68
+2026-09-03T13:51:03Z	fix-nested-eog-wire	flex lisp indent; mjs before observed; cross-group path; anchor test needle when next=null
+2026-09-03T14:01:09Z	supervisor-batch-fail	rc=1 fails=1 open=68
+2026-09-03T14:11:30Z	supervisor-batch-fail	rc=1 fails=2 open=68
+2026-09-03T14:21:36Z	supervisor-batch-fail	rc=1 fails=3 open=68
+2026-09-03T14:31:00Z	supervisor-batch-fail	rc=1 fails=4 open=68
+2026-09-03T14:40:11Z	supervisor-batch-fail	rc=1 fails=5 open=68
+2026-09-03T14:49:31Z	supervisor-batch-fail	rc=1 fails=6 open=68
+2026-09-03T14:58:44Z	supervisor-batch-fail	rc=1 fails=7 open=68
+2026-09-03T15:07:59Z	supervisor-batch-fail	rc=1 fails=8 open=68
+2026-09-03T15:17:05Z	supervisor-batch-fail	rc=1 fails=9 open=68
+2026-09-03T15:26:24Z	supervisor-batch-fail	rc=1 fails=10 open=68
+2026-09-03T15:35:40Z	supervisor-batch-fail	rc=1 fails=11 open=68
+2026-09-03T15:44:59Z	supervisor-batch-fail	rc=1 fails=12 open=68
+2026-09-03T15:54:14Z	supervisor-batch-fail	rc=1 fails=13 open=68
+2026-09-03T16:03:51Z	supervisor-batch-fail	rc=1 fails=14 open=68
+2026-09-03T16:13:03Z	supervisor-batch-fail	rc=1 fails=15 open=68
+2026-09-03T16:15:29Z	supervisor-batch-fail	rc=1 fails=16 open=
+2026-09-03T16:18:30Z	supervisor-batch-fail	rc=128 fails=17 open=
+2026-09-03T16:27:42Z	supervisor-batch-fail	rc=1 fails=18 open=68
+2026-09-03T16:36:55Z	supervisor-batch-fail	rc=1 fails=19 open=68
+2026-09-03T16:46:05Z	supervisor-batch-fail	rc=1 fails=20 open=68
+2026-09-03T16:55:12Z	supervisor-batch-fail	rc=1 fails=21 open=68
+2026-09-03T17:08:14Z	fix-lisp-eog-peel	end-of-group lisp collect peels closers; no cross-measure insert (#326 powershell)
+2026-09-03T17:39:59Z	resume-healthy	#326 eog peel fixed; mill draining from rem=65 (#329); autowatch on
+2026-09-03T17:56:54Z	continue-healthy	rem=64 on #330; supervisor+autowatch alive; never G.17
+2026-09-03T18:52:49Z	supervisor-batch-fail	rc=1 fails=1 open=68
+2026-09-03T18:54:23Z	fix-py-metrics-group-scope	METRICS insert scoped to group tuple; sc_ok collision cli_extensions vs cli_selectors (#335)
+2026-09-04T01:12:28Z	watchdog-after-orphan-loop	loop still draining rem=21; will relaunch supervisor when loop exits
+2026-09-04T02:17:10Z	continue-rem16	#378 measuring mkbxx/msmsxx/mrmsxx; loop+watchdog alive; never G.17
+2026-09-04T04:18:00Z	progress-rem7	freeze#624 closed #386; mill #388 booking; loop+sup+wd alive; never G.17
+2026-09-04T04:26:00Z	progress-rem7	freeze#624 closed #386; mill #388 booking; loop+sup+wd alive; never G.17
+2026-09-04T05:24:09Z	drain-complete	remount open=0; never G.17
+2026-09-04T05:24:15Z	supervisor-empty	landed=0 fails=0
+2026-09-04T05:24:51Z	autonomous-exit	remount remaining=0; freeze#631 closed #395; nextPairNum=328; needs-pair audit PASS; NEVER mark G.17 / Goal20 complete
+2026-09-04T07:50:27Z	autonomous-resume	tip FF 81b025419→4f92782ca; inventory needs-pair=0 uncovered=0; remount=0; landed #632 skip-untimed; closed #410; NEVER G.17
+2026-09-04T07:50:27Z	exit-predicate-met	needs-pair=0 uncovered=0 remount=0 nextPairNum=328 tip #632; ⚑ raised for G.17/invent; never announce Goal20 complete
+2026-09-04T08:05:30Z	merge-ready-landed	merged #272 #268 #181 #633(#404) #634(#73) #635(#90) #636(P.13); left #63 DIRTY shard; Goal20 invent floor still leftover; never G.17
+2026-09-04T08:44:58Z	asdf-floor-start	memoize cadr-cli source dir; move build-system-prompt ASDF out of &key initforms; never G.17
+2026-09-04T09:10:33Z	asdf-floor-landed	PR#637 build_prompt 1170→35x auth 28→1.16x; never G.17
+2026-09-04T09:27:13Z	glob-schema-discard	make_glob_tool 701→902x worse; reverted; ASDF floor #637 kept
+2026-09-04T09:28:56Z	autonomous-checkpoint	landed #637 ASDF floor (build_prompt 1170→35x, auth 28→1.16x); discarded glob schema + changelog cache (no win); #63 DIRTY deferred; invent pause on load/journal; never G.17; Goal20 not complete
+2026-09-04T11:10:20Z	autonomous-resume	exit: drain floor/invent knives with Friend-MachineD evidence; inventory needs-pair=0 uncovered=0; NEVER G.17/Goal20-complete without advisor	user asked complete Goal20 while away; Never-block + Sequence-verifiable-units	.audit/goal20-decision-trail.tsv	open
+2026-09-04T13:11:32Z	autonomous-resume	message-envelope compact-prefix already in working tree; verify EQUAL + Friend-MachineD keep/revert	usercomplete Goal20; invent with content-compact sibling DS not withdrawn 三连	src/cadr-agent/session/migration.lisp:try-compact-message	open
+2026-09-04T13:23:06Z	invent-keep	message-envelope compact user+toolResult shared role gate; 1546→1192µs Friend-MachineD n=5; FP EQUAL; never G.17	content-compact sibling DS; Prove-it-works; discard user-only 2411µs	docs/benchmarks/goal20-session-load-leftover.md	kept
+2026-09-04T13:25:47Z	landed	#639 message-envelope compact 1546→1192µs; inventory green; never G.17/Goal20-complete	Prove-it-works Friend-MachineD; Sequence-verifiable-units	https://github.com/artwalker/cadr/pull/639	kept-landed
+2026-09-04T13:28:48Z	invent-discard	assistant-thinking envelope 1192→1610µs; restored tip #639; toolCall miss tax	Prove-it-works keep/revert; Laziness discard	/tmp/g20-asst2.out	discarded
+2026-09-04T13:28:48Z	autonomous-checkpoint	landed #639 load 1546→1192µs; inventory green; G.17 missing; Goal20 not complete; invent assistant discarded	Never-block drove invent; No is acceptable on G.17 fake-complete	https://github.com/artwalker/cadr/pull/639	open-G.17
+2026-09-04T13:48:06Z	autonomous-resume	exit: drain invent/floor; inventory green; never G.17; next=assistant type-branch compact	user complete Goal20; Never-block; Prove-it-works	.audit/goal20-decision-trail.tsv	open
+2026-09-04T14:00:05Z	invent-discard	assistant type-branch compact FP_EQUAL; tip~2033 knife~1922µs noise (earlier tip~1133 knife~1138); no keep; restored tip #639	Prove-it-works keep/revert; Laziness discard miss-tax fix without win	/tmp/g20-tip4b-load.out+/tmp/g20-knife4b-load.out	discarded
+2026-09-04T14:07:57Z	invent-keep	discovery header buffered parse-session-header-octets; 1053→732µs (confirm 1187→834); FiveAM 1488; never G.17	Prove-it-works; Model-the-domain load-sibling encoding; Laziness discard assistant type-branch	src/cadr-agent/session/discovery.lisp	kept
+2026-09-04T14:08:38Z	landed	#640 discovery header invent 1053→732µs; inventory green; never G.17/Goal20-complete	Prove-it-works Friend-MachineD; Sequence-verifiable-units	https://github.com/artwalker/cadr/pull/640	kept-landed
+2026-09-04T14:19:33Z	invent-keep	autocomplete dirent table; 87→27µs EQUAL; FiveAM 3658; never G.17	Prove-it-works; Model-the-domain Dirent not UIOP; Fix-root-causes null-alien EOF	src/cadr-tui/autocomplete.lisp	kept
+2026-09-04T14:20:02Z	landed	#641 autocomplete dirent 87→27µs; inventory green; never G.17/Goal20-complete	Prove-it-works; Sequence-verifiable-units	https://github.com/artwalker/cadr/pull/641	kept-landed
+2026-09-04T14:26:23Z	invent-keep	export-html stream-splice; 24770→16335µs HTML_EQUAL; never G.17	Prove-it-works; Subtract-before-add drop replace-all copies	src/cadr-agent/session/export-html.lisp	kept
+2026-09-04T14:26:59Z	landed	#642 export-html stream-splice 24770→16335µs; tip 4527a43e5+#642; never G.17/Goal20-complete	Prove-it-works; Sequence-verifiable-units	https://github.com/artwalker/cadr/pull/642	kept-landed
+2026-09-04T14:26:59Z	autonomous-checkpoint	landed #640 header #641 autocomplete #642 export-html; discarded assistant type-branch; inventory green; G.17 missing; Goal20 not complete; invent floor still open	Never-block; Prove-it-works; No is acceptable on G.17 fake-complete	.audit/goal20-decision-trail.tsv	open-G.17
+2026-09-04T15:47:06Z	invent-discard	list-sessions single-pass load; would admit oversized first-line past header bound; breaks discovery test; restored tip	Prove-it-works; Fix-root-causes keep header gate; Laziness discard	src/cadr-agent/session/discovery.lisp	discarded
+2026-09-04T15:49:18Z	invent-keep	autocomplete command-item bake; 46.9→31.0µs EQUAL; FiveAM 3658; never G.17	Prove-it-works; Model-the-domain bake once; Laziness discard list-sessions single-pass	src/cadr-tui/autocomplete.lisp	kept
+2026-09-04T15:49:48Z	landed	autocomplete command-item bake; never G.17; wake loop armed; no soft-stop	Prove-it-works	https://github.com/artwalker/cadr/pulls?q=command-bake	kept-landed
+2026-09-04T15:50:01Z	stall-fix	root=soft-stop text-only ends (83 vs 5 continue); leftover-drain complete≠Goal20; no /loop wake before; 9 todos=AR steps not product backlog	Encode-lessons: CreateGoal+/loop 8m; never end turn after checkpoint while invent open	.audit/goal20-decision-trail.tsv	fixed
+2026-09-05T04:23:34Z	invent-keep	session-list-info streaming; tip list-sessions~2700-4491µs knife~2156-2790µs EQUAL order; FiveAM agent 1491; goal12 list pass; never G.17	Prove-it-works; Model-the-domain session-list-info; Laziness no load-session on list	src/cadr-agent/session/discovery.lisp	kept
+2026-09-05T04:25:40Z	landed	session-list-info tip 85995ddb6; inventory 129876 needs-pair=0 uncovered=0; never G.17; next invent unit	Prove-it-works; Sequence-verifiable-units; Never-block	cadr-migration@85995ddb6	kept-landed
+2026-09-05T04:26:58Z	invent-keep	continue/resume list-infos then load-one; FiveAM pass; never G.17	Migrate-callers-then-delete-legacy; Prove-it-works; Sequence-verifiable-units	src/cadr-agent/session/discovery.lisp	kept-landed
+2026-09-05T04:37:25Z	invent-keep	resume/TUI list-info+corpus; load on select; inventory 129931; never G.17; Goal20 not complete	Migrate-callers; Prove-it-works; Never-block; Sequence-verifiable-units	bootstrap+selectors+discovery	kept-landed
+2026-09-05T04:38:00Z	autonomous-checkpoint	landed list-info stack 85995ddb6..2f795f94f; inventory green; G.17 missing; Goal20 not complete; wake alive; next invent pending explore	Never soft-stop; Prove-it-works; Never-block on G.17 fake	.audit/goal20-decision-trail.tsv	open-G.17
+2026-09-05T04:43:13Z	hotfix	sessions.lisp paren in update-record-name-by-path cond; tip uncompilable after list-info rename; fixed; explores aborted on Ultra quota	Fix-root-causes; Prove-it-works; Never-block	src/cadr-cli/interactive/selectors/sessions.lisp	fixed
+2026-09-05T05:19:49Z	invent	filter-and-sort early-empty+recent-no-cons	keep Friend-MachineD n=200 empty~20us->0 named~0.20x alpha-recent~0.87x EQUAL FiveAM5/5 G.17 missing
+2026-09-05T05:25:18Z	invent	find-pattern cache+*.ext suffix	keep Friend-MachineD 28.7->3.8us EQUAL G.17 missing
+2026-09-05T05:27:36Z	invent	config-pattern cache+literal+*.ext	keep Friend-MachineD 14.1->5.4us EQUAL G.17 missing
+2026-09-05T05:30:55Z	invent	decode-base64 bound+presize	keep Friend-MachineD 6.1->1.0us EQUAL G.17 missing
+2026-09-05T05:32:33Z	invent	base64url-decode table+presize	keep Friend-MachineD 2.45->1.45us EQUAL G.17 missing
+2026-09-05T05:35:18Z	invent	execution-normalize POSIX+stream	keep Friend-MachineD join 4.44->1.92us EQUAL G.17 missing
+2026-09-05T05:38:24Z	invent	redacted-object-types sorted cache	keep Friend-MachineD 1.38->0.15us EQUAL G.17 missing
+2026-09-05T05:41:43Z	invent	model match unique+single-pass	keep Friend-MachineD 40.4->32.1us EQUAL G.17 missing
+2026-09-05T05:43:14Z	invent	replace-all early-miss	discard Friend-MachineD hit 1.02->1.67us worse
+2026-09-05T05:45:04Z	invent	normalize-path unicode-hash+file skip	keep Friend-MachineD 2.72->1.40us EQUAL G.17 missing
+2026-09-05T05:46:14Z	invent	strip-ansi clean early return	keep Friend-MachineD 0.50->0.44us EQUAL G.17 missing
+2026-09-05T05:47:15Z	invent	account-id two-dot JWT scan	keep Friend-MachineD 3.63->1.98us EQUAL G.17 missing
+2026-09-05T05:50:06Z	invent	provider-definition-ids+digest cache	keep Friend-MachineD list 44->0.02us digest-warm~70us EQUAL G.17 missing
+2026-09-05T05:51:36Z	invent	list-provider-definitions cache	keep Friend-MachineD 1.21->0.07us EQUAL G.17 missing
+2026-09-05T05:53:05Z	invent	write-json-line skip finish-output on string-stream	discard Friend-MachineD 0.409->0.386us noise
+2026-09-05T05:54:03Z	invent	utf16 simple-base-string fast path	discard Friend-MachineD 0.154->0.145us noise
+2026-09-05T05:55:40Z	invent	short-hash stream utf16 units	keep Friend-MachineD n=2000 17.9->14.5us EQUAL G.17 missing
+2026-09-05T05:58:22Z	invent	thread-session-records pi tree	keep Friend-MachineD 75.8->37.2us EQUAL FiveAM4/4 G.17 missing
+2026-09-05T05:59:42Z	invent	selector-modified-cursor octet walk	keep Friend-MachineD 13.8->0.42us EQUAL G.17 missing
+2026-09-05T06:02:31Z	keep	tree_status_labels	Friend-MachineD 0.916→0.626µs EQUAL; format/~@[ → precomputed case strings; G.17 missing
+2026-09-05T06:07:35Z	keep	tree_cycle_filter	Friend-MachineD 2.248→1.295µs EQUAL; case next/prev; G.17 missing
+2026-09-05T06:09:33Z	keep	tree_help_keys	Friend-MachineD 98.1→32.9µs EQUAL; stream compact+arrow walk; G.17 missing
+2026-09-05T06:12:30Z	keep	cloudflare_url	Friend-MachineD 6.013→0.752µs EQUAL flags; brace scan; G.17 missing
+2026-09-05T06:15:10Z	discard	tree_format_tool_call	Friend-MachineD 7.06→6.08µs EQUAL but ~0.86× tip noise; revert
+2026-09-05T06:20:20Z	keep	tree_help_lines	Friend-MachineD 372→168µs EQUAL; chip cache+int pack; G.17 missing
+2026-09-05T06:27:38Z	keep	tree_apply_filter	Friend-MachineD 36.2→26.9µs EQUAL; push/nrev+tokens+short-circuit; G.17 missing
+2026-09-05T06:32:56Z	keep	find_files	Friend-MachineD scaled 33049→23994µs EQUAL; match-during-walk; G.17 missing
+2026-09-05T06:41:35Z	keep	glob_files	Friend-MachineD scaled 22892→17173µs EQUAL; match-during-walk; G.17 missing
+2026-09-05T06:46:24Z	discard	directory_gitignore_cache	Friend-MachineD 7175→7126µs EQUAL ~noise; revert
+2026-09-05T06:47:58Z	keep	tui_latex.render	Friend-MachineD 50.1→31.5µs EQUAL; cached marker scanners; G.17 missing
+2026-09-05T06:54:57Z	discard	parse_changelog	Friend-MachineD 35.9→39.5µs EQUAL slower; I/O floor; revert
+2026-09-05T07:10:20Z	discard	tree_entry_display+theme	Friend-MachineD slower/noise EQUAL; revert
+2026-09-05T08:27:08Z	discard	tree_order_entries	Friend-MachineD 22.8→29.6µs EQUAL slower; revert let*/prioritize; G.17 missing
+2026-09-05T08:35:38Z	discard	align_left_right	Friend-MachineD 17.1→19.5µs EQUAL slower; revert pad cache; G.17 missing
+2026-09-05T08:45:30Z	keep	keybinding_hint	Friend-MachineD 45.5→33.7µs EQUAL; stream keys+ANSI; G.17 missing
+2026-09-05T08:49:22Z	keep	resolve_match	Friend-MachineD 24.5→18.8µs EQUAL; share defs no copy; G.17 missing
+2026-09-05T08:55:22Z	keep	armin_make_grid	Friend-MachineD 30.6→6.6µs EQUAL; baked final grid; G.17 missing
+2026-09-05T08:59:04Z	keep	armin_copy_grid	Friend-MachineD 8.4→2.3µs EQUAL; row-major replace; G.17 missing
+2026-09-05T09:10:48Z	keep	th_draw	Friend-MachineD 276.4→68.9µs EQUAL; chrome+fragment cache+stream rows; G.17 missing	thinking.lisp+/tmp/g20-th-inv.txt	kept; ratio pending remesure
+2026-09-05T09:14:04Z	keep	um_draw	Friend-MachineD 285.3→84.4µs EQUAL; flatten-label+chrome; G.17 missing	fork.lisp+/tmp/g20-um-inv.txt	kept; ratio pending remesure
+2026-09-05T09:18:31Z	discard	model_selector_ui_state	Friend-MachineD 287.7→318.4µs EQUAL slower; chrome/stream invent; revert	models.lisp+/tmp/g20-ms-inv.txt	reverted; G.17 missing
+2026-09-05T09:20:20Z	discard	render_framed_select_state	Friend-MachineD 213→295µs EQUAL slower; border/pad/split invent; revert	extension-ui.lisp+/tmp/g20-fs-inv.txt	reverted; G.17 missing
+2026-09-05T09:23:50Z	keep	login_method_selector_ui_state	Friend-MachineD 388.7→102.6µs EQUAL; title/footer chrome+pointer; G.17 missing	auth.lisp+/tmp/g20-login-inv.txt	kept; ratio pending remesure
+2026-09-05T09:29:07Z	discard	render_version_notification	Friend-MachineD 310.8→371.3µs EQUAL slower; chrome invent; revert	transcript.lisp+/tmp/g20-ver-inv.txt	reverted; G.17 missing
+2026-09-05T09:29:26Z	keep	oauth_selector_ui_state	Friend-MachineD 215.6→179.5µs EQUAL; title/empty chrome+pointer; G.17 missing	auth.lisp+/tmp/g20-oauth-inv.txt	kept; ratio pending remesure
+2026-09-05T09:33:25Z	discard	api_key_input_ui_state	Friend-MachineD 160.045→164.625µs EQUAL slower; chrome+stars invent; revert; G.17 missing	auth.lisp+/tmp/g20-akiui-tip.txt+/tmp/g20-akiui-inv.txt	reverted; G.17 missing
+2026-09-05T09:33:51Z	keep	api_key_input_ui_state	Friend-MachineD 172→67.5µs EQUAL; title/prompt/footer+stars; G.17 missing	auth.lisp+/tmp/g20-akey-inv.txt	kept
+2026-09-05T09:34:34Z	checkpoint	invent-mill	kept th_draw um_draw login oauth api_key; discarded model framed version; wake 180s; G.17 missing	cadr-migration@234c45627	predicate open; needs-pair=0 uncovered=0
+2026-09-05T09:37:19Z	keep	render_trust_selector	Friend-MachineD 662.5→426.5µs EQUAL; chrome+pointer; G.17 missing	trust.lisp+/tmp/g20-trust-inv.txt	kept
+2026-09-05T09:40:29Z	hotfix	restored trust.lisp to tip 4dec79b49 after unmatched-paren title-cache WIP	tip would not compile; Fix-root-causes; not my invent	src/cadr-cli/interactive/selectors/trust.lisp	restored; G.17 missing
+2026-09-05T09:47:39Z	keep	render_login_dialog	Friend-MachineD 99.9→12.0µs EQUAL; FiveAM 9033; chrome caches; G.17 missing	login-dialog.lisp+/tmp/g20-ldlg-inv.txt+/tmp/g20-ldlg-fiveam.txt	kept
+2026-09-05T09:48:11Z	keep	render_login_dialog chrome tables	Friend-MachineD 99.9 to 12.0us EQUAL; FiveAM login-dialog green; B6/B8 count drift pre-existing	3e591f59b+/tmp/g20-ldlg-inv.txt	kept; needs-pair=0 uncovered=0; G.17 missing
+2026-09-05T09:51:58Z	keep	scoped_models_selector_ui_state chrome+row tables	Friend-MachineD 1009.4 to 169.8us EQUAL; Prove-it-works keep	src/cadr-cli/interactive/selectors/models.lisp+/tmp/g20-scms-inv.txt	kept; G.17 missing
+2026-09-05T09:53:42Z	review-followup	scoped_models_fiveam	harden scoped-models keep with cadr-cli FiveAM on tip 89e8b852b; G.17 missing	/tmp/g20-scms-fiveam.txt	running
+2026-09-05T09:57:13Z	review-followup	scoped_models_fiveam	cadr-cli FiveAM on 89e8b852b: 9033 checks; only Goal14 B6/B8 count fails (293/319); selectors invents out of B6 owner set; G.17 missing	/tmp/g20-scms-fiveam.txt	suite ran; B6/B8 pre-existing drift confirmed
+2026-09-05T09:58:25Z	keep	goal14-b6-b8-remesure	B6 290→293 B8 310→319 remesured; focused FiveAM green; G.17 missing	goal14-organization-test.lisp+/tmp/g20-b6b8-count.txt	kept
+2026-09-05T10:00:06Z	discard	render_runtime_auth_input	Friend-MachineD tip 133.3µs invent 182.1µs EQUAL slower; chrome/footer/stars invent; revert	extension-ui.lisp+/tmp/g20-rauth-inv.txt	reverted; G.17 missing
+2026-09-05T10:01:32Z	discard	render_runtime_auth_input	invent measure EXIT 1 undefined RUNTIME-AUTH-CHROME; tip was 133.3µs; tree cleaned	/tmp/g20-rauth-inv.txt	reverted dirty extension-ui; G.17 missing
+2026-09-05T10:02:14Z	discard	render_runtime_auth_input	Friend-MachineD tip 133.3µs invent 181.6µs EQUAL slower after helper restore; revert	/tmp/g20-rauth-inv.txt	reverted; G.17 missing
+2026-09-05T10:04:24Z	keep	render_package_notification	Friend-MachineD 214.9→7.4µs EQUAL OBS; full paint cache; G.17 missing	transcript.lisp+/tmp/g20-pkg-inv.txt	kept
+2026-09-05T10:08:04Z	keep	render_version_notification	tip=395.0 invent=6.5 EQUAL; B6=296; G.17 missing; mill continues	a121cecd6	kept; tip remesure variance vs mill 310.8→10.3 noted
+2026-09-05T10:09:11Z	keep	render_version_notification_landed	a121cecd6+07a4ed9b3 tip~310→10.3 EQUAL; denom 130945; needs-pair=0 uncovered=0; G.17 missing; mill continues	07a4ed9b3	kept; denom booked
+2026-09-05T10:12:31Z	keep	extension_dialog_chrome	tip=10.9 invent=1.18 EQUAL; B6=299; G.17 missing; mill continues	009332c0c	kept
+2026-09-05T10:21:42Z	keep	update_notification_text	Friend-MachineD 77.7→0.1µs EQUAL; B6=300; G.17 missing	009332c0c→tip	kept
+2026-09-05T10:38:03Z	keep	render_transcript_summary	Friend-MachineD 700.7→0.7µs EQUAL; B6=301; G.17 missing	e3d8e1324→tip	kept
+2026-09-05T10:41:24Z	keep	render_assistant_blocks+stop_error	Friend-MachineD 126.5→0.4 / 21.3→0.3 EQUAL; B6=303; G.17 missing	5a360377d→tip	kept
+2026-09-05T10:43:22Z	keep	render_user_lines	Friend-MachineD 64.8→0.1µs EQUAL; B6=304; G.17 missing	4a7446349→tip	kept
+2026-09-05T10:46:24Z	keep	render_framed_select_state	Friend-MachineD 66.9→0.3µs EQUAL full-paint; prior chrome discarded; B6=305; G.17 missing	7f68c15c9→tip	kept
+2026-09-05T11:33:19Z	checkpoint	stall-root-cause	soft-stop after invent checkpoint (status text ends turn); "9 tasks"=autonomous todos not 9 PRs; wake ticks but parent must self-chain tools; G.17 missing	wake pid alive	mill continues
+2026-09-05T11:35:27Z	keep	render_tui_entry_uncached	Friend-MachineD 156→0.4µs EQUAL; B6=308; G.17 missing; mill continues (no soft-stop)	c37fba542→tip	kept
+2026-09-05T11:36:54Z	keep	selector_border_line	Friend-MachineD 4.7→0.1µs EQUAL; entry remesure 0.15; G.17 missing; mill continues	a492e65d9→tip	kept
+2026-09-05T11:40:27Z	keep	render_tui_extension_overlay	Friend-MachineD 273.6→0.9µs EQUAL; B6=310; G.17 missing; mill continues	9c33451b9→tip	kept
+2026-09-05T11:43:01Z	keep	render_runtime_auth_input	Friend-MachineD 43.8→0.2µs EQUAL full-paint; prior chrome discarded; B6=311; G.17 missing; mill continues	463017fdc→tip	kept
+2026-09-05T11:43:01Z	checkpoint	autonomous-run	exit open; invent leftover still has IO/theme/handle-raw; needs-pair=0 uncovered=0; NEVER mark G.17 without advisor; self-chain next turn	463017fdc tip	predicate open
+2026-09-05T11:44:02Z	keep	theme_message_background	Friend-MachineD 2.4→0.04µs EQUAL; framed-handle remesure 12.1; B6=312; G.17 missing; mill continues	ea2ae020e→tip	kept
+2026-09-05T12:12:23Z	checkpoint	user-asked-why-stopped	soft-stop after status reply; resume invent mill immediately; G.17 missing	6cd607bcc	mill continues
+2026-09-05T12:14:04Z	keep	tui_syntax_highlight	Friend-MachineD 73.5→0.1µs EQUAL; B6=313; remesure entries/custom-ui; G.17 missing; mill continues	6cd607bcc→tip	kept
+2026-09-05T12:15:16Z	keep	daxnuts_render	Friend-MachineD 1101.7→0.2µs EQUAL; B6=314; G.17 missing; mill continues	be08fa8d9→tip	kept
+2026-09-05T12:27:24Z	ruling	g17-signer-cursor-executor	user「我认可，你来负责签字吧」; no separate advisor; Cursor executor signs G.17 process; G.17 stays missing; Goal20 not complete	c897ef9d4	recorded
+2026-09-06T12:49:06Z	invent	load-path knives isError-literal + read-args compact both revert; no land	dd913ae39 tip; remesure13 open load 1.09x	revert
+2026-09-06T13:05:00Z	invent	kept try-compact-assistant-tail metadata suffix; load -22.5% mom; journal -6.5% mom; FP EQUAL	456cf0381→f21c28b02; knife assistant-tail	kept
+2026-09-06T13:03:30Z	invent	keep assistant-metadata-slots; reverted assistant-tail fixture-prefix (n=5x5 regress)	Prove-it-works; Model-the-domain slots not extra alist; Laziness discard assistant-tail	c171727ff	kept

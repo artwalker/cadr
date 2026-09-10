@@ -2613,7 +2613,18 @@
     (/ (elapsed-microseconds started-at (monotonic-nanoseconds))
        repetitions)))
 
+(defun collect-only-names ()
+  (let ((raw (uiop:getenv "GOAL20_COLLECT_ONLY")))
+    (when (and raw (plusp (length raw)))
+      (mapcar
+       (lambda (part)
+         (string-trim '(#\Space #\Tab) part))
+       (uiop:split-string raw :separator ",")))))
+
 (defun collect (name prepare)
+  (let ((only (collect-only-names)))
+    (when (and only (not (member name only :test #'string=)))
+      (return-from collect (json-object "skipped" t))))
   (let ((repetitions (repetitions-for name)))
     (dotimes (index *warmups*)
       (declare (ignore index))
@@ -22233,13 +22244,9 @@
 
 
 (defun run-cli-support-close-watcher ()
-  (handler-case
-      (progn
-        (cadr-cli::close-watcher nil)
-        (cadr-cli::close-watcher nil)
-        (list 1 1 1))
-    (error ()
-      (list 0 0 0))))
+  (cadr-cli::close-watcher nil)
+  (cadr-cli::close-watcher nil)
+  '(1 1 1))
 
 
 (defun run-cli-support-watch-signature (missing present)
@@ -22260,7 +22267,6 @@
 (defun run-cli-support-write-hello ()
   ;; Leftover 871: atomic-write-utf8 vs pi activateManagedRelease temp+rename.
   (let ((path (cli-support-atomic-write-path "hello.txt")))
-    (ensure-directories-exist path)
     (cadr-cli::atomic-write-utf8 path "hello")
     (let ((text (uiop:read-file-string path)))
       (list
@@ -22273,7 +22279,6 @@
 (defun run-cli-support-write-overwrite ()
   ;; Leftover 872: second write replaces the first payload.
   (let ((path (cli-support-atomic-write-path "over.txt")))
-    (ensure-directories-exist path)
     (cadr-cli::atomic-write-utf8 path "first")
     (cadr-cli::atomic-write-utf8 path "second")
     (let ((text (uiop:read-file-string path)))
@@ -22287,7 +22292,6 @@
 (defun run-cli-support-write-empty ()
   ;; Leftover 873: empty payload still creates the file.
   (let ((path (cli-support-atomic-write-path "empty.txt")))
-    (ensure-directories-exist path)
     (cadr-cli::atomic-write-utf8 path "")
     (let ((text (uiop:read-file-string path)))
       (list
@@ -22728,7 +22732,8 @@
      (collect "cli_support.close_watcher"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-close-watcher))))
+                  (cadr-cli::close-watcher nil)
+                  (cadr-cli::close-watcher nil))))
      "watch_signature"
      (collect "cli_support.watch_signature"
               (lambda ()
@@ -22743,18 +22748,25 @@
      "write_hello"
      (collect "cli_support.write_hello"
               (lambda ()
-                (lambda ()
-                  (run-cli-support-write-hello))))
+                (let ((path (cli-support-atomic-write-path "hello.txt")))
+                  (ensure-directories-exist path)
+                  (lambda ()
+                    (cadr-cli::atomic-write-utf8 path "hello")))))
      "write_overwrite"
      (collect "cli_support.write_overwrite"
               (lambda ()
-                (lambda ()
-                  (run-cli-support-write-overwrite))))
+                (let ((path (cli-support-atomic-write-path "over.txt")))
+                  (ensure-directories-exist path)
+                  (lambda ()
+                    (cadr-cli::atomic-write-utf8 path "first")
+                    (cadr-cli::atomic-write-utf8 path "second")))))
      "write_empty"
      (collect "cli_support.write_empty"
               (lambda ()
-                (lambda ()
-                  (run-cli-support-write-empty))))
+                (let ((path (cli-support-atomic-write-path "empty.txt")))
+                  (ensure-directories-exist path)
+                  (lambda ()
+                    (cadr-cli::atomic-write-utf8 path "")))))
      "editor_success"
      (collect "cli_support.editor_success"
               (lambda ()
@@ -22774,12 +22786,13 @@
      (collect "cli_support.threads_absent"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-threads-absent))))
+                  (cadr-cli::stop-thread-for-cleanup nil))))
      "threads_current"
      (collect "cli_support.threads_current"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-threads-current))))
+                  (cadr-cli::stop-thread-for-cleanup
+                   sb-thread:*current-thread*))))
      "threads_joined"
      (collect "cli_support.threads_joined"
               (lambda ()
@@ -32960,12 +32973,16 @@
 
 
 (defun encode-scoped-models-enabled-set (enabled)
-  (let ((keys '()))
-    (maphash
-     (lambda (key value)
-       (declare (ignore value))
-       (push key keys))
-     (cadr-cli::scoped-models-enabled-set enabled))
+  (let ((set (cadr-cli::scoped-models-enabled-set enabled))
+        (keys '()))
+    (if (hash-table-p set)
+        (maphash
+         (lambda (key value)
+           (declare (ignore value))
+           (push key keys))
+         set)
+        (dolist (id set)
+          (pushnew id keys :test #'equal)))
     (format nil "~{~a~^,~}" (sort keys #'string<))))
 
 
@@ -33169,6 +33186,208 @@
      (model-selector-select-current-encoded models outsider)
      (model-selector-select-current-encoded models nil)
      (model-selector-select-current-encoded '() (first models)))))
+
+
+;;; Goal 26 fair remeter: constructors live in prepare, timed slot is the
+;;; product function only. Observed still uses the encode wrappers above.
+
+(defun make-model-selector-active-state
+    (models &key scoped-models scope)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :scoped-models scoped-models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (when scope
+      (setf (cadr-cli::model-selector-state-scope state) scope))
+    state))
+
+
+(defun prep-cli-selectors-model-selector-active-models ()
+  (let* ((models (make-model-selector-test-models))
+         (scoped (list (first models) (second models)))
+         (one (list (first models)))
+         (forced
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model (first models)
+            :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models forced) models)
+    (setf (cadr-cli::model-selector-state-scoped-models forced) scoped)
+    (setf (cadr-cli::model-selector-state-scope forced) :scoped)
+    (list
+     (make-model-selector-active-state models)
+     (make-model-selector-active-state models :scoped-models scoped)
+     (make-model-selector-active-state '())
+     (make-model-selector-active-state one)
+     (make-model-selector-active-state
+      models :scoped-models scoped :scope :all)
+     forced)))
+
+
+(defun time-cli-selectors-model-selector-active-models (states)
+  (let ((last nil))
+    (dolist (state states)
+      (setf last (cadr-cli::model-selector-active-models state)))
+    last))
+
+
+(defun make-model-selector-clamp-state (models selected &key query)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (setf (cadr-cli::model-selector-state-query state) (or query ""))
+    (setf (cadr-cli::model-selector-state-filter-query state) "force-refresh")
+    (cadr-cli::model-selector-apply-filter state)
+    (cons state selected)))
+
+
+(defun prep-cli-selectors-model-selector-clamp-selected ()
+  (let ((models (make-model-selector-test-models))
+        (one (list (first (make-model-selector-test-models)))))
+    (list
+     (make-model-selector-clamp-state models 1)
+     (make-model-selector-clamp-state models 99)
+     (make-model-selector-clamp-state '() 7)
+     (make-model-selector-clamp-state one 3)
+     (make-model-selector-clamp-state models 0)
+     (make-model-selector-clamp-state models 4 :query "gpt"))))
+
+
+(defun time-cli-selectors-model-selector-clamp-selected (pairs)
+  (let ((last nil))
+    (dolist (pair pairs)
+      (let ((state (car pair))
+            (selected (cdr pair)))
+        (setf (cadr-cli::model-selector-state-selected state) selected)
+        (cadr-cli::model-selector-clamp-selected state)
+        (setf last (cadr-cli::model-selector-state-selected state))))
+    last))
+
+
+(defun make-model-selector-select-state (models current)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (setf (cadr-cli::model-selector-state-query state) "")
+    (setf (cadr-cli::model-selector-state-filter-query state) "force-refresh")
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-current-model state) current)
+    state))
+
+
+(defun prep-cli-selectors-model-selector-select-current ()
+  (let ((models (make-model-selector-test-models))
+        (outsider
+          (make-model-selector-search-fixture
+           :id "missing-model"
+           :provider :openai
+           :name "Missing")))
+    (list
+     (make-model-selector-select-state models (second models))
+     (make-model-selector-select-state models (first models))
+     (make-model-selector-select-state models (car (last models)))
+     (make-model-selector-select-state models outsider)
+     (make-model-selector-select-state models nil)
+     (make-model-selector-select-state '() (first models)))))
+
+
+(defun time-cli-selectors-model-selector-select-current (states)
+  (let ((last nil))
+    (dolist (state states)
+      (cadr-cli::model-selector-select-current state)
+      (setf last (cadr-cli::model-selector-state-selected state)))
+    last))
+
+
+(defun prep-cli-selectors-scoped-model-selector-search-text ()
+  (list
+   (make-model-selector-search-fixture)
+   (make-model-selector-search-fixture
+    :id "claude-sonnet-4" :provider :anthropic :name "Claude Sonnet 4")
+   (make-model-selector-search-fixture
+    :id "gpt-5" :provider :openai-codex :name "")
+   (make-model-selector-search-fixture
+    :id "openai/gpt-4o" :provider :openrouter :name "GPT-4o")
+   (make-model-selector-search-fixture
+    :id "gemini-2.5-pro" :provider :google :name "")
+   (make-model-selector-search-fixture
+    :id "mimo-v2.5" :provider :opencode-go :name "")))
+
+
+(defun time-cli-selectors-scoped-model-selector-search-text (models)
+  (let ((last nil))
+    (dolist (model models)
+      (setf last (cadr-cli::scoped-model-selector-search-text model)))
+    last))
+
+
+(defun prep-cli-selectors-scoped-models-enable-ids ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (list :all all-ids '("openai/gpt-4o"))
+     (list '() all-ids '("openai/gpt-4o"))
+     (list '("openai/gpt-4o") all-ids all-ids)
+     (list '("openai/gpt-4o") all-ids '("anthropic/claude-sonnet-4"))
+     (list '() all-ids all-ids)
+     (list '("openai/gpt-4o") all-ids '()))))
+
+
+(defun time-cli-selectors-scoped-models-enable-ids (cases)
+  (let ((last nil))
+    (dolist (case cases)
+      (setf last
+            (cadr-cli::scoped-models-enable-ids
+             (first case) (second case) (third case))))
+    last))
+
+
+(defun prep-cli-selectors-scoped-models-clear-ids ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (list :all all-ids '("openai/gpt-4o"))
+     (list '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+           all-ids '("openai/gpt-4o"))
+     (list :all all-ids all-ids)
+     (list '() all-ids '("openai/gpt-4o"))
+     (list '("openai/gpt-4o") all-ids '())
+     (list :all all-ids '()))))
+
+
+(defun time-cli-selectors-scoped-models-clear-ids (cases)
+  (let ((last nil))
+    (dolist (case cases)
+      (setf last
+            (cadr-cli::scoped-models-clear-ids
+             (first case) (second case) (third case))))
+    last))
+
+
+(defun prep-cli-selectors-scoped-models-enabled-set ()
+  (list
+   '()
+   '("openai/gpt-4o")
+   '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+   '("openai/gpt-4o" "openai/gpt-4o")
+   '("b/id" "a/id")
+   '("openai/gpt-4o" "anthropic/claude-sonnet-4" "google/gemini-2.5-pro")))
+
+
+(defun time-cli-selectors-scoped-models-enabled-set (lists)
+  (let ((last nil))
+    (dolist (enabled lists)
+      (setf last (cadr-cli::scoped-models-enabled-set enabled)))
+    last))
 
 
 (defun encode-model-selector-qualified-ids (models)
@@ -36990,18 +37209,21 @@
      "scoped_models_enable_ids"
      (collect "cli_selectors.scoped_models_enable_ids"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-scoped-models-enable-ids))))
+                (let ((cases (prep-cli-selectors-scoped-models-enable-ids)))
+                  (lambda ()
+                    (time-cli-selectors-scoped-models-enable-ids cases)))))
      "scoped_models_clear_ids"
      (collect "cli_selectors.scoped_models_clear_ids"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-scoped-models-clear-ids))))
+                (let ((cases (prep-cli-selectors-scoped-models-clear-ids)))
+                  (lambda ()
+                    (time-cli-selectors-scoped-models-clear-ids cases)))))
      "scoped_models_enabled_set"
      (collect "cli_selectors.scoped_models_enabled_set"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-scoped-models-enabled-set))))
+                (let ((lists (prep-cli-selectors-scoped-models-enabled-set)))
+                  (lambda ()
+                    (time-cli-selectors-scoped-models-enabled-set lists)))))
      "model_equal_p"
      (collect "cli_selectors.model_equal_p"
               (lambda ()
@@ -37010,23 +37232,27 @@
      "scoped_model_selector_search_text"
      (collect "cli_selectors.scoped_model_selector_search_text"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-scoped-model-selector-search-text))))
+                (let ((models (prep-cli-selectors-scoped-model-selector-search-text)))
+                  (lambda ()
+                    (time-cli-selectors-scoped-model-selector-search-text models)))))
      "model_selector_active_models"
      (collect "cli_selectors.model_selector_active_models"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-model-selector-active-models))))
+                (let ((states (prep-cli-selectors-model-selector-active-models)))
+                  (lambda ()
+                    (time-cli-selectors-model-selector-active-models states)))))
      "model_selector_clamp_selected"
      (collect "cli_selectors.model_selector_clamp_selected"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-model-selector-clamp-selected))))
+                (let ((pairs (prep-cli-selectors-model-selector-clamp-selected)))
+                  (lambda ()
+                    (time-cli-selectors-model-selector-clamp-selected pairs)))))
      "model_selector_select_current"
      (collect "cli_selectors.model_selector_select_current"
               (lambda ()
-                (lambda ()
-                  (run-cli-selectors-model-selector-select-current))))
+                (let ((states (prep-cli-selectors-model-selector-select-current)))
+                  (lambda ()
+                    (time-cli-selectors-model-selector-select-current states)))))
      "sort_model_selector_models"
      (collect "cli_selectors.sort_model_selector_models"
               (lambda ()

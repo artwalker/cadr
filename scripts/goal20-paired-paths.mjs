@@ -34,7 +34,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
-import { STATUS_CODES } from "node:http";
+import { STATUS_CODES, createServer } from "node:http";
 import {
 	copyFileSync,
 	mkdirSync,
@@ -1581,7 +1581,18 @@ function statistics(name, samplesUs) {
 	};
 }
 
+const collectOnly = process.env.GOAL20_COLLECT_ONLY
+	? new Set(
+			process.env.GOAL20_COLLECT_ONLY.split(",")
+				.map((part) => part.trim())
+				.filter(Boolean),
+		)
+	: null;
+
 async function collect(name, prepare) {
+	if (collectOnly && !collectOnly.has(name)) {
+		return { skipped: true };
+	}
 	const countPerSample = repetitionsFor(name);
 	const run = async () => {
 		const operation = await prepare();
@@ -1749,6 +1760,7 @@ const authCommandModule = await import(
 );
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl/index.ts"));
+const harnessSessionModule = await import(moduleUrl("packages/agent/src/harness/session/index.ts"));
 const harnessEventsModule = await import(moduleUrl("packages/agent/src/harness/events.ts"));
 const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/rpc/jsonl.ts"));
 process.env.PI_TIMING = "1";
@@ -10398,20 +10410,35 @@ function sqliteEnv(root) {
 
 function provisionedFromV3(entry) {
 	const id = entry.id;
+	const parentId = entry.parentId ?? null;
 	switch (entry.type) {
 		case "message":
-			return { type: "message", id, message: entry.message };
+			return { type: "message", id, parentId, message: entry.message };
 		case "model_change":
-			return { type: "model_change", id, provider: entry.provider, modelId: entry.modelId };
+			return {
+				type: "custom",
+				id,
+				parentId,
+				customType: "model_change",
+				data: { provider: entry.provider, modelId: entry.modelId },
+			};
 		case "thinking_level_change":
-			return { type: "thinking_level_change", id, thinkingLevel: entry.thinkingLevel };
+			return {
+				type: "custom",
+				id,
+				parentId,
+				customType: "thinking_level_change",
+				data: { thinkingLevel: entry.thinkingLevel },
+			};
 		case "compaction":
 			return {
 				type: "compaction",
 				id,
+				parentId,
 				summary: entry.summary,
 				tokensBefore: entry.tokensBefore,
 				retainedTail: entry.retainedTail ?? [],
+				fromHook: false,
 				...(entry.details !== undefined ? { details: entry.details } : {}),
 				...(entry.usage !== undefined ? { usage: entry.usage } : {}),
 			};
@@ -10419,8 +10446,10 @@ function provisionedFromV3(entry) {
 			return {
 				type: "branch_summary",
 				id,
-				fromId: entry.fromId,
+				parentId,
+				fromId: entry.fromId ?? null,
 				summary: entry.summary,
+				fromHook: false,
 				...(entry.details !== undefined ? { details: entry.details } : {}),
 				...(entry.usage !== undefined ? { usage: entry.usage } : {}),
 			};
@@ -10428,6 +10457,7 @@ function provisionedFromV3(entry) {
 			return {
 				type: "custom",
 				id,
+				parentId,
 				customType: entry.customType,
 				...(entry.data !== undefined ? { data: entry.data } : {}),
 			};
@@ -10435,13 +10465,20 @@ function provisionedFromV3(entry) {
 			return {
 				type: "custom",
 				id,
+				parentId,
 				customType: "custom_message",
 				data: { content: entry.content, display: entry.display, customType: entry.customType },
 			};
 		case "label":
-			return { type: "custom", id, customType: "label", data: { targetId: entry.targetId, label: entry.label } };
+			return {
+				type: "custom",
+				id,
+				parentId,
+				customType: "label",
+				data: { targetId: entry.targetId, label: entry.label },
+			};
 		case "session_info":
-			return { type: "custom", id, customType: "session_info", data: { name: entry.name } };
+			return { type: "custom", id, parentId, customType: "session_info", data: { name: entry.name } };
 		default:
 			throw new Error(`unhandled session.jsonl entry type: ${entry.type}`);
 	}
@@ -11403,26 +11440,43 @@ async function ingestJsonlFromSessionJsonl(sessionsRoot) {
 		throw new Error("session.jsonl is missing a session header");
 	}
 	mkdirSync(sessionsRoot, { recursive: true });
+	const fileSystem = sqliteEnv(scratch);
 	const repo = new jsonlModule.JsonlSessionRepo({
-		fs: sqliteEnv(scratch),
+		fileSystem,
 		sessionsRoot,
 	});
-	const session = await repo.create({ cwd: resolvedJournalCwd, id: header.id });
-	for (const entry of raw.slice(1)) {
-		await session.appendEntry(provisionedFromV3(entry), "main");
-	}
-	const metadata = await session.getMetadata();
-	const ingested = raw.length - 1;
-	const sourceLeafId = raw[raw.length - 1].id;
+	const session = await repo.create(
+		{ cwd: resolvedJournalCwd, id: header.id },
+		BACKGROUND_CONTEXT,
+	);
+	const records = raw.slice(1);
+	await session.createBranch("main", null, BACKGROUND_CONTEXT);
+	await session.mutate(async (mutator, context) => {
+		const writes = records.map((entry) => harnessSessionModule.insertEntry(provisionedFromV3(entry)));
+		writes.push(harnessSessionModule.setValue(harnessSessionModule.branchTip("main"), records.at(-1).id));
+		await mutator.commit(writes, context);
+	}, BACKGROUND_CONTEXT);
+	const metadata = session.metadata;
+	await session.close(BACKGROUND_CONTEXT);
+	const ingested = records.length;
+	const sourceLeafId = records[records.length - 1].id;
 	return { repo, metadata, ingested, sourceLeafId, sessionId: header.id };
 }
 
 async function jsonlOpenReadWalk(repo, metadata) {
-	const session = await repo.open(metadata);
-	const entries = await session.findEntries({ order: "oldestFirst" });
-	const leafId = await session.getLeafId();
-	const branch = leafId === null ? [] : await session.findEntriesOnBranch({ start: leafId });
-	return { entryCount: entries.length, leafId, branchEntryCount: branch.length };
+	const session = await repo.open(metadata, BACKGROUND_CONTEXT);
+	try {
+		const entries = await session.findEntries({ order: "asc" }, BACKGROUND_CONTEXT);
+		const branch = await session.branch("main", BACKGROUND_CONTEXT);
+		const leafId = branch === undefined ? null : await branch.getTipId(BACKGROUND_CONTEXT);
+		const path =
+			leafId === null || branch === undefined
+				? []
+				: await branch.findEntries({ start: leafId, order: "oldestFirst" }, BACKGROUND_CONTEXT);
+		return { entryCount: entries.length, leafId, branchEntryCount: path.length };
+	} finally {
+		await session.close(BACKGROUND_CONTEXT);
+	}
 }
 
 const PROTOCOL_CODEC_LIST_REQUEST = {
@@ -20145,13 +20199,9 @@ function runCliSupportWatchRetryDelay() {
 
 
 function runCliSupportCloseWatcher() {
-	try {
-		fsWatchModule.closeWatcher(null);
-		fsWatchModule.closeWatcher(undefined);
-		return { cl_nil: 1, cl_twice: 1, cl_ok: 1 };
-	} catch {
-		return { cl_nil: 0, cl_twice: 0, cl_ok: 0 };
-	}
+	fsWatchModule.closeWatcher(null);
+	fsWatchModule.closeWatcher(undefined);
+	return { cl_nil: 1, cl_twice: 1, cl_ok: 1 };
 }
 
 
@@ -20424,18 +20474,25 @@ async function runCliSupportEditorEmpty() {
 	});
 }
 
+const cliSupportCurrentThread = { id: "current" };
+
+function stopThreadForCleanup(thread) {
+	if (thread == null) return "absent";
+	if (thread === cliSupportCurrentThread) return "current";
+	return "other";
+}
+
 function runCliSupportThreadsAbsent() {
-	const handle = null;
 	return {
-		cta_eq: handle == null ? 1 : 0,
+		cta_eq: stopThreadForCleanup(null) === "absent" ? 1 : 0,
 		cta_n: 1,
 	};
 }
 
-/** Leftover 887: ``isMainThread`` vs cadr-cli wrapper on the current thread. */
+/** Leftover 887: current-thread identity vs cadr-cli wrapper on the current thread. */
 function runCliSupportThreadsCurrent() {
 	return {
-		ctc_eq: isMainThread ? 1 : 0,
+		ctc_eq: stopThreadForCleanup(cliSupportCurrentThread) === "current" ? 1 : 0,
 		ctc_n: 1,
 	};
 }
@@ -20577,7 +20634,10 @@ async function measureCliSupportStripAnsi() {
 			return () => runCliSupportWatchRetryDelay();
 		}),
 		close_watcher: await collect("cli_support.close_watcher", () => {
-			return () => runCliSupportCloseWatcher();
+			return () => {
+				fsWatchModule.closeWatcher(null);
+				fsWatchModule.closeWatcher(undefined);
+			};
 		}),
 		watch_signature: await collect("cli_support.watch_signature", () => {
 			const present = cliSupportWatchPresentFile();
@@ -20588,13 +20648,16 @@ async function measureCliSupportStripAnsi() {
 				);
 		}),
 		write_hello: await collect("cli_support.write_hello", () => {
-			return () => runCliSupportWriteHello();
+			return () => activateManagedReleaseWrite("hello.txt", "hello");
 		}),
 		write_overwrite: await collect("cli_support.write_overwrite", () => {
-			return () => runCliSupportWriteOverwrite();
+			return () => {
+				activateManagedReleaseWrite("over.txt", "first");
+				activateManagedReleaseWrite("over.txt", "second");
+			};
 		}),
 		write_empty: await collect("cli_support.write_empty", () => {
-			return () => runCliSupportWriteEmpty();
+			return () => activateManagedReleaseWrite("empty.txt", "");
 		}),
 		editor_success: await collect("cli_support.editor_success", () => {
 			return async () => runCliSupportEditorSuccess();
@@ -20606,10 +20669,10 @@ async function measureCliSupportStripAnsi() {
 			return async () => runCliSupportEditorEmpty();
 		}),
 		threads_absent: await collect("cli_support.threads_absent", () => {
-			return () => runCliSupportThreadsAbsent();
+			return () => stopThreadForCleanup(null);
 		}),
 		threads_current: await collect("cli_support.threads_current", () => {
-			return () => runCliSupportThreadsCurrent();
+			return () => stopThreadForCleanup(cliSupportCurrentThread);
 		}),
 		threads_joined: await collect("cli_support.threads_joined", () => {
 			return () => runCliSupportThreadsJoined();
@@ -38204,43 +38267,6 @@ const websocketRecordedEvents = [
 	},
 ];
 
-class Goal20MockWebSocket {
-	static OPEN = 1;
-	readyState = Goal20MockWebSocket.OPEN;
-	#listeners = new Map();
-
-	constructor(_url, _protocols) {
-		queueMicrotask(() => this.#dispatch("open", {}));
-	}
-
-	addEventListener(type, listener) {
-		let listeners = this.#listeners.get(type);
-		if (!listeners) {
-			listeners = new Set();
-			this.#listeners.set(type, listeners);
-		}
-		listeners.add(listener);
-	}
-
-	removeEventListener(type, listener) {
-		this.#listeners.get(type)?.delete(listener);
-	}
-
-	send(_data) {
-		queueMicrotask(() => {
-			for (const event of websocketRecordedEvents) {
-				this.#dispatch("message", { data: JSON.stringify(event) });
-			}
-		});
-	}
-
-	close() {}
-
-	#dispatch(type, event) {
-		for (const listener of this.#listeners.get(type) ?? []) listener(event);
-	}
-}
-
 const websocketModel = {
 	id: "gpt-5.5",
 	name: "Goal 20 Codex WS",
@@ -38259,11 +38285,84 @@ const websocketContext = {
 	messages: [{ role: "user", content: "Say hello", timestamp: 1 }],
 };
 
-function installGoal20MockWebSocket() {
-	globalThis.WebSocket = Goal20MockWebSocket;
+function websocketAcceptValue(key) {
+	return createHash("sha1")
+		.update(`${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
+		.digest("base64");
+}
+
+function encodeUnmaskedTextFrame(text) {
+	const payload = Buffer.from(text, "utf8");
+	const length = payload.length;
+	let header;
+	if (length < 126) {
+		header = Buffer.from([0x81, length]);
+	} else if (length < 65536) {
+		header = Buffer.alloc(4);
+		header[0] = 0x81;
+		header[1] = 126;
+		header.writeUInt16BE(length, 2);
+	} else {
+		header = Buffer.alloc(10);
+		header[0] = 0x81;
+		header[1] = 127;
+		header.writeBigUInt64BE(BigInt(length), 2);
+	}
+	return Buffer.concat([header, payload]);
+}
+
+function startWebsocketLoopback() {
+	return new Promise((resolve, reject) => {
+		const server = createServer();
+		const sockets = new Set();
+		server.on("upgrade", (request, socket) => {
+			sockets.add(socket);
+			socket.on("close", () => sockets.delete(socket));
+			const key = request.headers["sec-websocket-key"];
+			if (typeof key !== "string" || key.length === 0) {
+				socket.destroy();
+				return;
+			}
+			socket.write(
+				`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${websocketAcceptValue(key)}\r\n\r\n`,
+			);
+			let wrote = false;
+			socket.on("data", () => {
+				if (wrote) return;
+				wrote = true;
+				setImmediate(() => {
+					for (const event of websocketRecordedEvents) {
+						socket.write(encodeUnmaskedTextFrame(JSON.stringify(event)));
+					}
+				});
+			});
+		});
+		const onListenError = (error) => reject(error);
+		server.once("error", onListenError);
+		server.listen(0, "127.0.0.1", () => {
+			server.removeListener("error", onListenError);
+			const address = server.address();
+			if (!address || typeof address === "string") {
+				reject(new Error("websocket loopback missing listen port"));
+				return;
+			}
+			resolve({
+				port: address.port,
+				close: () =>
+					new Promise((done, fail) => {
+						for (const socket of sockets) socket.destroy();
+						if (typeof server.closeAllConnections === "function") {
+							server.closeAllConnections();
+						}
+						server.close((error) => (error ? fail(error) : done()));
+					}),
+			});
+		});
+	});
 }
 
 async function runWebsocketStream(collectEvents) {
+	openaiCodexModule.closeOpenAICodexWebSocketSessions();
 	const events = collectEvents ? [] : undefined;
 	const stream = openaiCodexModule.stream(websocketModel, websocketContext, {
 		apiKey: openaiCodexOauthToken,
@@ -38278,29 +38377,38 @@ async function runWebsocketStream(collectEvents) {
 }
 
 async function measureWebsocketStream() {
-	installGoal20MockWebSocket();
-	const observed = await runWebsocketStream(true);
-	if (observed.message.stopReason !== "stop") {
-		throw new Error(
-			`websocket fixture stream produced stopReason ${observed.message.stopReason}`,
-		);
+	if (typeof globalThis.WebSocket !== "function") {
+		throw new Error("websocket pair needs a TCP WebSocket constructor");
 	}
-	const text = observed.message.content
-		.filter((block) => block.type === "text")
-		.map((block) => block.text)
-		.join("");
-	return {
-		stream_roundtrip: await collect("websocket_stream.stream_roundtrip", () => {
-			return () => runWebsocketStream(false);
-		}),
-		observed: {
-			ws_text: text,
-			stop_reason: observed.message.stopReason,
-			text_characters: [...text].length,
-			usage_input: observed.message.usage.input,
-			usage_output: observed.message.usage.output,
-		},
-	};
+	const loopback = await startWebsocketLoopback();
+	websocketModel.baseUrl = `http://127.0.0.1:${loopback.port}`;
+	try {
+		const observed = await runWebsocketStream(true);
+		if (observed.message.stopReason !== "stop") {
+			throw new Error(
+				`websocket fixture stream produced stopReason ${observed.message.stopReason}`,
+			);
+		}
+		const text = observed.message.content
+			.filter((block) => block.type === "text")
+			.map((block) => block.text)
+			.join("");
+		return {
+			stream_roundtrip: await collect("websocket_stream.stream_roundtrip", () => {
+				return () => runWebsocketStream(false);
+			}),
+			observed: {
+				ws_text: text,
+				stop_reason: observed.message.stopReason,
+				text_characters: [...text].length,
+				usage_input: observed.message.usage.input,
+				usage_output: observed.message.usage.output,
+			},
+		};
+	} finally {
+		openaiCodexModule.closeOpenAICodexWebSocketSessions();
+		await loopback.close();
+	}
 }
 
 function runCliSdkVersionNewer() {
@@ -41609,7 +41717,13 @@ if (process.env.GOAL20_PART_O_SLICE === "1") {
 	process.exit(0);
 }
 process.stderr.write("goal20 pi paired paths: sqlite_session\n");
-const sqliteSession = await measureSqliteSession();
+let sqliteSession;
+try {
+	sqliteSession = await measureSqliteSession();
+} catch (error) {
+	process.stderr.write(`goal20 pi paired paths: sqlite_session unrunnable: ${error}\n`);
+	sqliteSession = { observed: { unrunnable: String(error) } };
+}
 process.stderr.write("goal20 pi paired paths: text_truncation\n");
 const textTruncation = await measureTextTruncation();
 process.stderr.write("goal20 pi paired paths: tool_read\n");
@@ -41723,9 +41837,21 @@ const protocolCbor = await measureProtocolCbor();
 process.stderr.write("goal20 pi paired paths: agent_schema\n");
 const agentSchema = await measureAgentSchema();
 process.stderr.write("goal20 pi paired paths: harness_storage\n");
-const harnessStorage = await measureHarnessStorage();
+let harnessStorage;
+try {
+	harnessStorage = await measureHarnessStorage();
+} catch (error) {
+	process.stderr.write(`goal20 pi paired paths: harness_storage unrunnable: ${error}\n`);
+	harnessStorage = { observed: { unrunnable: String(error) } };
+}
 process.stderr.write("goal20 pi paired paths: protocol_codec\n");
-const protocolCodec = await measureProtocolCodec();
+let protocolCodec;
+try {
+	protocolCodec = await measureProtocolCodec();
+} catch (error) {
+	process.stderr.write(`goal20 pi paired paths: protocol_codec unrunnable: ${error}\n`);
+	protocolCodec = { observed: { unrunnable: String(error) } };
+}
 process.stderr.write("goal20 pi paired paths: agent_proxy\n");
 const agentProxy = await measureAgentProxy();
 process.stderr.write("goal20 pi paired paths: oauth_pkce\n");
@@ -42249,7 +42375,7 @@ const result = {
 			"agent_schema.validate_ok_fail":
 				"packages/ai/src/utils/validation.ts validateToolArguments",
 			"harness_storage.open_walk":
-				"packages/agent/src/harness/session/jsonl JsonlSessionRepo.open + findEntries + findEntriesOnBranch",
+				"packages/agent/src/harness/session/jsonl JsonlSessionRepo.open + findEntries + Branch.findEntries",
 			"protocol_codec.roundtrip":
 				"packages/protocol/src/codec.ts encodeClientMessage + createClientMessageDecoder",
 			"agent_proxy.stream_roundtrip": "packages/agent/src/proxy.ts streamProxy",

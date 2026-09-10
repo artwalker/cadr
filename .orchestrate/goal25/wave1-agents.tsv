@@ -1,0 +1,10 @@
+unit	agent
+h-cli-selectors	04d8edcc-4d2a-4a4d-8b9c-923cedbeb709
+h-cli-support	7f8a0028-2ae9-47ab-8705-53d20f4e1eea
+h-cli-print-rpc	dd752f45-7ee3-4ff7-8440-7f1f98d69d2d
+h-provider-mistral	cb201343-adb1-4128-af59-519e62c26880
+h-storage-journal	3df12b14-e60b-421c-a727-6b63acd2df10
+h-session-compact	849f46f8-d484-4eb5-9544-5e4b21234a44
+h-harness-storage	d91bb6e3-5a24-48a0-a251-bb62762ae43b
+h-session-export-html	d91bb6e3-5a24-48a0-a251-bb62762ae43b
+h-websocket-stream	d91bb6e3-5a24-48a0-a251-bb62762ae43b

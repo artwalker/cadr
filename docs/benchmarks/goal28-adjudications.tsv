@@ -1,422 +1,422 @@
 class	name	status	evidence	note
 cliFlags	---	intentional-difference	docs/benchmarks/goal28-presence.tsv	extractor noise from flag regex; user still passes real flags
-settingsKeys	branchSummary	fixed	test/cadr-cli/goal28-branch-summary-settings-test.lisp	parent object is the JSON key the child tests load
-settingsKeys	BranchSummary.reserveTokens	fixed	test/cadr-cli/goal28-branch-summary-settings-test.lisp	JSON reserveTokens reaches the existing reserve slot
-settingsKeys	BranchSummary.skipPrompt	fixed	test/cadr-cli/goal28-branch-summary-prompt-test.lisp	skipPrompt gates tree summarize through the existing selector
-settingsKeys	compaction	fixed	test/cadr-cli/goal28-compaction-settings-test.lisp	parent object is the JSON key the keep/reserve test loads
-settingsKeys	Compaction.enabled	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	compaction.enabled default true; false turns auto-compact off
-settingsKeys	Compaction.keepRecentTokens	fixed	test/cadr-cli/goal28-compaction-settings-test.lisp	JSON keepRecentTokens reaches the existing keep slot; 0 falls back
-settingsKeys	Compaction.reserveTokens	fixed	test/cadr-cli/goal28-compaction-settings-test.lisp	JSON reserveTokens reaches the existing reserve slot
-settingsKeys	markdown	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	parent object is the JSON key the mermaid reader loads
-settingsKeys	Markdown.codeBlockIndent	fixed	test/cadr-cli/goal28-markdown-indent-live-test.lisp	live transcript reads the session indent
-settingsKeys	Markdown.mermaid	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	off and final pass through; anything else is streaming
-settingsKeys	ProviderRetry.maxRetries	fixed	test/cadr-cli/goal28-provider-retry-settings-test.lisp	retry.provider.maxRetries rides call-with-provider-retries
-settingsKeys	ProviderRetry.maxRetryDelayMs	fixed	test/cadr-cli/goal28-provider-retry-settings-test.lisp	retry.provider.maxRetryDelayMs rides call-with-provider-retries
-settingsKeys	ProviderRetry.timeoutMs	fixed	test/cadr-cli/goal28-provider-retry-settings-test.lisp	retry.provider.timeoutMs rides call-with-provider-retries
-settingsKeys	retry	fixed	test/cadr-cli/goal28-retry-enabled-test.lisp	parent object is the JSON key the enabled and provider tests load
-settingsKeys	Retry.baseDelayMs	fixed	test/cadr-cli/goal28-retry-enabled-test.lisp	baseDelayMs/1000 reaches agent-auto-retry-base-delay
-settingsKeys	Retry.enabled	fixed	test/cadr-cli/goal28-retry-enabled-test.lisp	retry.enabled reaches agent-auto-retry-p
-settingsKeys	Retry.maxRetries	fixed	test/cadr-cli/goal28-retry-enabled-test.lisp	retry.maxRetries reaches agent-auto-retry-max-attempts
-settingsKeys	Retry.provider	fixed	test/cadr-cli/goal28-provider-retry-settings-test.lisp	retry.provider object rides call-with-provider-retries
-settingsKeys	terminal	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	parent object is the JSON key the terminal readers load
-settingsKeys	Terminal.clearOnShrink	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	explicit clearOnShrink wins over CADR_CLEAR_ON_SHRINK
-settingsKeys	Terminal.hyperlinks	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	terminal.hyperlinks becomes the capability override
-settingsKeys	Terminal.images	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	kitty and iterm2 pass through; none clears the override
-settingsKeys	Terminal.showTerminalProgress	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	showTerminalProgress default false
-settingsKeys	Terminal.trueColor	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	terminal.trueColor becomes the capability override
-settingsKeys	ThinkingBudgets.high	fixed	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	overlay on existing lookup; not modelThinkingLevels
-settingsKeys	ThinkingBudgets.low	fixed	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	overlay on existing lookup
-settingsKeys	ThinkingBudgets.medium	fixed	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	overlay on existing lookup
-settingsKeys	ThinkingBudgets.minimal	fixed	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	overlay on existing lookup
-settingsKeys	images	fixed	test/cadr-cli/goal28-image-settings-test.lisp	parent object is the JSON key the resize and block readers load
-settingsKeys	Image.autoResize	fixed	test/cadr-cli/goal28-image-settings-test.lisp	images.autoResize default true; false turns resize off
-settingsKeys	Image.blockImages	fixed	test/cadr-cli/goal28-image-settings-test.lisp	images.blockImages default false; true blocks
-settingsKeys	extensions	fixed	test/cadr-cli/goal28-extensions-settings-test.lisp	path array feeds the existing manager
-settingsKeys	externalEditor	fixed	test/cadr-cli/goal28-external-editor-key-test.lisp	command resolver plus app.editor.external dispatch
-settingsKeys	httpIdleTimeoutMs	fixed	test/cadr-ai/goal28-http-idle-stream-test.lisp	complete-chat and stream-chat both take read-timeout
-settingsKeys	httpProxy	fixed	test/cadr-cli/goal28-http-proxy-settings-test.lisp	per-session argument; native HTTP overlay is separate and landed
-settingsKeys	lastChangelogVersion	fixed	test/cadr-cli/goal28-last-changelog-version-test.lisp	string watermark on empty-session startup
-settingsKeys	prompts	fixed	test/cadr-cli/goal28-prompts-settings-test.lisp	path array feeds the existing loader
-settingsKeys	sessionDir	fixed	test/cadr-cli/goal28-session-dir-settings-test.lisp	feeds resolve-session-directory; CLI --session-dir still wins
-settingsKeys	shellCommandPrefix	fixed	test/cadr-cli/goal28-shell-settings-test.lisp	shell and RPC bash read the settings prefix
-settingsKeys	shellPath	fixed	test/cadr-cli/goal28-shell-settings-test.lisp	shell and RPC bash read the settings path
-settingsKeys	skills	fixed	test/cadr-cli/goal28-skills-settings-test.lisp	path array feeds the existing loader
-settingsKeys	themes	fixed	test/cadr-cli/goal28-themes-settings-test.lisp	path array feeds the existing loader
-settingsKeys	thinkingBudgets	fixed	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	object overlays existing lookup
-settingsKeys	websocketConnectTimeoutMs	fixed	test/cadr-cli/goal28-websocket-timeout-settings-test.lisp	per-session stream argument; no process-wide special
-settingsKeys	Terminal.imageWidthCells	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	60 80 120 pass through; anything else is 60
-settingsKeys	Terminal.showImages	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	showImages default true
-settingsKeys	autocompleteMaxVisible	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	allowed counts pass through; anything else is 5
-settingsKeys	collapseChangelog	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default false
-settingsKeys	defaultModel	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	non-empty string or absent
-settingsKeys	defaultProjectTrust	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	ask always never; otherwise ask
-settingsKeys	defaultProvider	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	non-empty string or absent
-settingsKeys	defaultThinkingLevel	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	valid level becomes a keyword
-settingsKeys	defaultTools	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	string array copies; anything else is absent
-settingsKeys	doubleEscapeAction	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	tree fork none; otherwise tree
-settingsKeys	editorPaddingX	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	0 through 3; otherwise 0
-settingsKeys	enableAnalytics	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default false
-settingsKeys	enableInstallTelemetry	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default true
-settingsKeys	enableSkillCommands	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default true
-settingsKeys	enabledModels	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	absent is all; a string array copies
-settingsKeys	followUpMode	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	one-at-a-time or all; otherwise one-at-a-time
-settingsKeys	fullscreenCopyOnSelect	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default true
-settingsKeys	fullscreenExitOutput	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	resume-hint or transcript
-settingsKeys	fullscreenScrollbar	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	auto always hidden; otherwise auto
-settingsKeys	hideThinkingBlock	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default false
-settingsKeys	modelThinkingLevels	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	per-model level lookup
-settingsKeys	outputPad	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	0 or 1; otherwise 1
-settingsKeys	quietStartup	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default false
-settingsKeys	showCacheMissNotices	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default false
-settingsKeys	showHardwareCursor	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	default false
-settingsKeys	steeringMode	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	one-at-a-time or all; otherwise one-at-a-time
-settingsKeys	theme	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	absent detects once; a named theme is fixed
-settingsKeys	trackingId	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	absent is nil; a string is returned
-settingsKeys	transport	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	sse websocket websocket-cached auto; otherwise auto
-settingsKeys	treeFilterMode	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	named filters pass through; otherwise default
-settingsKeys	tuiMode	fixed	test/cadr-cli/goal28-cli-settings-readers-test.lisp	fullscreen or regular
-settingsKeys	warnings	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	parent object is the JSON key the warning reader loads
-settingsKeys	Warning.anthropicExtraUsage	fixed	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	warnings.anthropicExtraUsage default true; false turns it off
-settingsKeys	npmCommand	fixed	test/cadr-cli/goal28-npm-command-install-test.lisp	settings-npm-command reaches install-npm-package argv via handle-package-command
-settingsKeys	packages	fixed	test/cadr-cli/goal28-packages-settings-test.lisp	JSON packages array reaches settings-package-entries and configured-package-records
-exitCodes	0	fixed	test/cadr-cli/goal28-exit-and-auth-test.lisp	cli-session-abort status 0 is the clean process exit
-exitCodes	1	fixed	test/cadr-cli/goal28-exit-and-auth-test.lisp	cadr-error maps to process exit 1
-exitCodes	129	fixed	test/cadr-cli/goal28-exit-and-auth-test.lisp	call-with-cli-signal-handlers catch returns 129 for SIGHUP path
-sessionFormatVersions	2	fixed	test/cadr-agent/session-v3-test.lisp	v2 jsonl migrates to version 3 with unknown fields preserved
-sessionFormatVersions	3	fixed	test/cadr-agent/session-v3-test.lisp	create/load path writes and accepts version 3 headers
-errorClasses	AuthCommandError	fixed	test/cadr-cli/goal28-exit-and-auth-test.lisp	parse-auth-command signals auth-command-error with a message
-errorClasses	CredentialSynchronizationError	fixed	test/cadr-cli/goal28-credential-sync-test.lisp	signaled after credential write when refresh fails; TUI still shows the message
-errorClasses	MissingSessionCwdError	fixed	test/cadr-cli/goal28-missing-session-cwd-test.lisp	gone session cwd signals this condition; printed sentence unchanged
-errorClasses	SessionImportFileNotFoundError	fixed	test/cadr-cli/goal28-import-file-not-found-test.lisp	missing import path signals this condition; slash prefix unchanged
+settingsKeys	branchSummary	match	test/cadr-cli/goal28-branch-summary-settings-test.lisp	pin-named behavior asserted in goal28-branch-summary-settings-test.lisp
+settingsKeys	BranchSummary.reserveTokens	match	test/cadr-cli/goal28-branch-summary-settings-test.lisp	pin-named behavior asserted in goal28-branch-summary-settings-test.lisp
+settingsKeys	BranchSummary.skipPrompt	match	test/cadr-cli/goal28-branch-summary-prompt-test.lisp	pin-named behavior asserted in goal28-branch-summary-prompt-test.lisp
+settingsKeys	compaction	match	test/cadr-cli/goal28-compaction-settings-test.lisp	pin-named behavior asserted in goal28-compaction-settings-test.lisp
+settingsKeys	Compaction.enabled	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Compaction.keepRecentTokens	match	test/cadr-cli/goal28-compaction-settings-test.lisp	pin-named behavior asserted in goal28-compaction-settings-test.lisp
+settingsKeys	Compaction.reserveTokens	match	test/cadr-cli/goal28-compaction-settings-test.lisp	pin-named behavior asserted in goal28-compaction-settings-test.lisp
+settingsKeys	markdown	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Markdown.codeBlockIndent	match	test/cadr-cli/goal28-markdown-indent-live-test.lisp	pin-named behavior asserted in goal28-markdown-indent-live-test.lisp
+settingsKeys	Markdown.mermaid	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	ProviderRetry.maxRetries	match	test/cadr-cli/goal28-provider-retry-settings-test.lisp	pin-named behavior asserted in goal28-provider-retry-settings-test.lisp
+settingsKeys	ProviderRetry.maxRetryDelayMs	match	test/cadr-cli/goal28-provider-retry-settings-test.lisp	pin-named behavior asserted in goal28-provider-retry-settings-test.lisp
+settingsKeys	ProviderRetry.timeoutMs	match	test/cadr-cli/goal28-provider-retry-settings-test.lisp	pin-named behavior asserted in goal28-provider-retry-settings-test.lisp
+settingsKeys	retry	match	test/cadr-cli/goal28-retry-enabled-test.lisp	pin-named behavior asserted in goal28-retry-enabled-test.lisp
+settingsKeys	Retry.baseDelayMs	match	test/cadr-cli/goal28-retry-enabled-test.lisp	pin-named behavior asserted in goal28-retry-enabled-test.lisp
+settingsKeys	Retry.enabled	match	test/cadr-cli/goal28-retry-enabled-test.lisp	pin-named behavior asserted in goal28-retry-enabled-test.lisp
+settingsKeys	Retry.maxRetries	match	test/cadr-cli/goal28-retry-enabled-test.lisp	pin-named behavior asserted in goal28-retry-enabled-test.lisp
+settingsKeys	Retry.provider	match	test/cadr-cli/goal28-provider-retry-settings-test.lisp	pin-named behavior asserted in goal28-provider-retry-settings-test.lisp
+settingsKeys	terminal	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Terminal.clearOnShrink	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Terminal.hyperlinks	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Terminal.images	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Terminal.showTerminalProgress	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Terminal.trueColor	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	ThinkingBudgets.high	match	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	pin-named behavior asserted in goal28-thinking-budgets-settings-test.lisp
+settingsKeys	ThinkingBudgets.low	match	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	pin-named behavior asserted in goal28-thinking-budgets-settings-test.lisp
+settingsKeys	ThinkingBudgets.medium	match	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	pin-named behavior asserted in goal28-thinking-budgets-settings-test.lisp
+settingsKeys	ThinkingBudgets.minimal	match	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	pin-named behavior asserted in goal28-thinking-budgets-settings-test.lisp
+settingsKeys	images	match	test/cadr-cli/goal28-image-settings-test.lisp	pin-named behavior asserted in goal28-image-settings-test.lisp
+settingsKeys	Image.autoResize	match	test/cadr-cli/goal28-image-settings-test.lisp	pin-named behavior asserted in goal28-image-settings-test.lisp
+settingsKeys	Image.blockImages	match	test/cadr-cli/goal28-image-settings-test.lisp	pin-named behavior asserted in goal28-image-settings-test.lisp
+settingsKeys	extensions	match	test/cadr-cli/goal28-extensions-settings-test.lisp	pin-named behavior asserted in goal28-extensions-settings-test.lisp
+settingsKeys	externalEditor	match	test/cadr-cli/goal28-external-editor-key-test.lisp	pin-named behavior asserted in goal28-external-editor-key-test.lisp
+settingsKeys	httpIdleTimeoutMs	match	test/cadr-ai/goal28-http-idle-stream-test.lisp	pin-named behavior asserted in goal28-http-idle-stream-test.lisp
+settingsKeys	httpProxy	match	test/cadr-cli/goal28-http-proxy-settings-test.lisp	pin-named behavior asserted in goal28-http-proxy-settings-test.lisp
+settingsKeys	lastChangelogVersion	match	test/cadr-cli/goal28-last-changelog-version-test.lisp	pin-named behavior asserted in goal28-last-changelog-version-test.lisp
+settingsKeys	prompts	match	test/cadr-cli/goal28-prompts-settings-test.lisp	pin-named behavior asserted in goal28-prompts-settings-test.lisp
+settingsKeys	sessionDir	match	test/cadr-cli/goal28-session-dir-settings-test.lisp	pin-named behavior asserted in goal28-session-dir-settings-test.lisp
+settingsKeys	shellCommandPrefix	match	test/cadr-cli/goal28-shell-settings-test.lisp	pin-named behavior asserted in goal28-shell-settings-test.lisp
+settingsKeys	shellPath	match	test/cadr-cli/goal28-shell-settings-test.lisp	pin-named behavior asserted in goal28-shell-settings-test.lisp
+settingsKeys	skills	match	test/cadr-cli/goal28-skills-settings-test.lisp	pin-named behavior asserted in goal28-skills-settings-test.lisp
+settingsKeys	themes	match	test/cadr-cli/goal28-themes-settings-test.lisp	pin-named behavior asserted in goal28-themes-settings-test.lisp
+settingsKeys	thinkingBudgets	match	test/cadr-cli/goal28-thinking-budgets-settings-test.lisp	pin-named behavior asserted in goal28-thinking-budgets-settings-test.lisp
+settingsKeys	websocketConnectTimeoutMs	match	test/cadr-cli/goal28-websocket-timeout-settings-test.lisp	pin-named behavior asserted in goal28-websocket-timeout-settings-test.lisp
+settingsKeys	Terminal.imageWidthCells	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	Terminal.showImages	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	autocompleteMaxVisible	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	collapseChangelog	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	defaultModel	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	defaultProjectTrust	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	defaultProvider	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	defaultThinkingLevel	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	defaultTools	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	doubleEscapeAction	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	editorPaddingX	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	enableAnalytics	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	enableInstallTelemetry	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	enableSkillCommands	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	enabledModels	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	followUpMode	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	fullscreenCopyOnSelect	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	fullscreenExitOutput	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	fullscreenScrollbar	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	hideThinkingBlock	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	modelThinkingLevels	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	outputPad	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	quietStartup	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	showCacheMissNotices	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	showHardwareCursor	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	steeringMode	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	theme	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	trackingId	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	transport	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	treeFilterMode	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	tuiMode	match	test/cadr-cli/goal28-cli-settings-readers-test.lisp	pin-named behavior asserted in goal28-cli-settings-readers-test.lisp
+settingsKeys	warnings	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	Warning.anthropicExtraUsage	match	test/cadr-cli/goal28-terminal-warning-settings-test.lisp	pin-named behavior asserted in goal28-terminal-warning-settings-test.lisp
+settingsKeys	npmCommand	match	test/cadr-cli/goal28-npm-command-install-test.lisp	pin-named behavior asserted in goal28-npm-command-install-test.lisp
+settingsKeys	packages	match	test/cadr-cli/goal28-packages-settings-test.lisp	pin-named behavior asserted in goal28-packages-settings-test.lisp
+exitCodes	0	match	test/cadr-cli/goal28-exit-and-auth-test.lisp	pin-named behavior asserted in goal28-exit-and-auth-test.lisp
+exitCodes	1	match	test/cadr-cli/goal28-exit-and-auth-test.lisp	pin-named behavior asserted in goal28-exit-and-auth-test.lisp
+exitCodes	129	match	test/cadr-cli/goal28-exit-and-auth-test.lisp	pin-named behavior asserted in goal28-exit-and-auth-test.lisp
+sessionFormatVersions	2	match	test/cadr-agent/session-v3-test.lisp	pin-named behavior asserted in session-v3-test.lisp
+sessionFormatVersions	3	match	test/cadr-agent/session-v3-test.lisp	pin-named behavior asserted in session-v3-test.lisp
+errorClasses	AuthCommandError	match	test/cadr-cli/goal28-exit-and-auth-test.lisp	pin-named behavior asserted in goal28-exit-and-auth-test.lisp
+errorClasses	CredentialSynchronizationError	match	test/cadr-cli/goal28-credential-sync-test.lisp	pin-named behavior asserted in goal28-credential-sync-test.lisp
+errorClasses	MissingSessionCwdError	match	test/cadr-cli/goal28-missing-session-cwd-test.lisp	pin-named behavior asserted in goal28-missing-session-cwd-test.lisp
+errorClasses	SessionImportFileNotFoundError	match	test/cadr-cli/goal28-import-file-not-found-test.lisp	pin-named behavior asserted in goal28-import-file-not-found-test.lisp
 errorClasses	SessionPluginSelectionConflictError	intentional-difference	.orchestrate/goal28/decisions.tsv	extractor emitted a name with no pin class; user is not missing a pin error
-extensionEvents	tool_call	fixed	test/cadr-agent/goal28-tool-call-events-test.lisp	alias registers on the existing before hook table
-extensionEvents	tool_result	fixed	test/cadr-agent/goal28-tool-call-events-test.lisp	alias registers on the existing after hook table
+extensionEvents	tool_call	match	test/cadr-agent/goal28-tool-call-events-test.lisp	pin-named behavior asserted in goal28-tool-call-events-test.lisp
+extensionEvents	tool_result	match	test/cadr-agent/goal28-tool-call-events-test.lisp	pin-named behavior asserted in goal28-tool-call-events-test.lisp
 environmentVariables	PI_OFFLINE	intentional-difference	test/cadr-cli/part-b-utilities-test.lisp	Goal 16 keeps CADR_OFFLINE; user still disables network with CADR_OFFLINE and --offline
-cliFlags	--api-key	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--append-system-prompt	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--approve	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--continue	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--exclude-tools	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--export	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--extension	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--fork	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--help	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--list-models	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--mode	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--model	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--models	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--name	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-approve	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-builtin-tools	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-context-files	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-extensions	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-prompt-templates	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-session	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-skills	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-themes	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--no-tools	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--offline	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--print	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--prompt-template	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--provider	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--resume	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--session	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--session-dir	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--session-id	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--skill	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--system-prompt	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--theme	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--thinking	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--tools	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--tui-mode	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--use-theme	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--verbose	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-cliFlags	--version	fixed	test/cadr-cli/goal28-cli-flags-test.lisp	parse-cli-arguments sets the matching cli-arguments slot
-slashCommands	changelog	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	clone	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	compact	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	copy	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	export	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	fork	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	hotkeys	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	import	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	login	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	logout	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	model	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	name	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	new	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	quit	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	reload	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	resume	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	scoped-models	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	session	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	settings	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	share	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	thinking	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	tree	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-slashCommands	trust	fixed	test/cadr-cli/goal28-slash-commands-test.lisp	pin names are on the TUI autocomplete surface; session-family handlers return t
-rpcMethods	abort	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	abort_bash	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	abort_retry	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	bash	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	clear_queue	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	clone	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	compact	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	cycle_model	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	cycle_thinking_level	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	export_html	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	follow_up	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	fork	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_available_models	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_available_thinking_levels	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_commands	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_entries	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_fork_messages	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_last_assistant_text	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_messages	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_session_stats	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_state	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	get_tree	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	new_session	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	prompt	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_auto_compaction	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_auto_retry	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_follow_up_mode	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_model	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_session_name	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_steering_mode	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	set_thinking_level	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	steer	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-rpcMethods	switch_session	fixed	test/cadr-cli/goal28-registries-test.lisp	rpc-handle-command dispatches every pin type string
-exportedComponents	ArminComponent	fixed	test/cadr-cli/goal28-registries-test.lisp	make-armin-component and armin-component-tick are exported and callable
-keybindingActions	app.clear	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.clipboard.pasteImage	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.editor.external	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.exit	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.interrupt	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.message.copy	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.message.dequeue	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.message.followUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.model.cycleBackward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.model.cycleForward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.model.select	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.models.clearAll	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.models.enableAll	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.models.reorderDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.models.reorderUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.models.save	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.models.toggleProvider	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.delete	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.deleteNoninvasive	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.fork	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.new	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.rename	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.resume	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.toggleNamedFilter	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.togglePath	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.toggleSort	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.session.tree	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.suspend	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.thinking.cycle	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.thinking.save	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.thinking.toggle	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tools.expand	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.editLabel	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.all	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.cycleBackward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.cycleForward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.default	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.labeledOnly	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.noTools	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.filter.userOnly	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.foldOrUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.toggleLabelTimestamp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	app.tree.unfoldOrDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.bottom	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.halfPageDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.halfPageUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.lineDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.lineUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.nextPrompt	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.pageDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.pageUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.previousPrompt	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.search	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.searchClose	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.searchNext	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.searchPrevious	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.altScreen.top	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorLeft	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorLineEnd	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorLineStart	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorRight	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorWordLeft	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.cursorWordRight	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.deleteCharBackward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.deleteCharForward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.deleteToLineEnd	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.deleteToLineStart	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.deleteWordBackward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.deleteWordForward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.historyNext	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.historyPrevious	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.jumpBackward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.jumpForward	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.pageDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.pageUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.undo	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.yank	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.editor.yankPop	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.input.copy	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.input.newLine	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.input.submit	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.input.tab	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.select.cancel	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.select.confirm	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.select.down	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.select.pageDown	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.select.pageUp	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-keybindingActions	tui.select.up	fixed	test/cadr-cli/goal28-registries-test.lisp	global and selector keybinding registries name every pin action
-themeTokens	accent	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	bashMode	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	border	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	borderAccent	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	borderMuted	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	customMessageBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	customMessageLabel	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	customMessageText	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	dim	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	error	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdCode	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdCodeBlock	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdCodeBlockBorder	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdHeading	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdHr	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdLink	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdLinkUrl	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdListBullet	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdQuote	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	mdQuoteBorder	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	muted	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	scrollbarThumb	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	scrollbarTrack	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	searchMatchBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	searchMatchText	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	selectedBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	success	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxComment	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxFunction	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxKeyword	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxNumber	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxOperator	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxPunctuation	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxString	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxType	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	syntaxVariable	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	text	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingHigh	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingLow	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingMax	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingMedium	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingMinimal	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingOff	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingText	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	thinkingXhigh	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolDiffAdded	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolDiffContext	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolDiffRemoved	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolErrorBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolOutput	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolPendingBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolSuccessBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	toolTitle	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	userMessageBg	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	userMessageText	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-themeTokens	warning	fixed	test/cadr-cli/goal28-registries-test.lisp	dark theme palette exposes every pin token name
-providers	amazon-bedrock.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	ant-ling.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	anthropic.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	azure-openai-responses.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	baseten.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	cerebras.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	cloudflare-ai-gateway.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	cloudflare-workers-ai.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	deepseek.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	fireworks.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	github-copilot.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	google-vertex.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	google.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	groq.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	huggingface.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	kimi-coding.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	minimax-cn.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	minimax.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	mistral.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	moonshotai-cn.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	moonshotai.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	nvidia.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	openai-codex.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	openai.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	opencode-go.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	opencode.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	openrouter.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	qwen-token-plan-cn.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	qwen-token-plan-individual.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	qwen-token-plan.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	radius.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	together.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	vercel-ai-gateway.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	xai.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	xiaomi-token-plan-ams.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	xiaomi-token-plan-cn.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	xiaomi-token-plan-sgp.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	xiaomi.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	zai-coding-cn.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-providers	zai.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	provider definition id is registered and findable
-extensionEvents	after_provider_response	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	agent_end	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	agent_settled	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	agent_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	before_agent_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	before_provider_headers	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	before_provider_request	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	context	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	input	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	message_end	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	message_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	message_update	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	model_select	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	project_trust	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	resources_discover	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_before_compact	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_before_fork	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_before_switch	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_before_tree	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_compact	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_compact_failed	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_info_changed	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_shutdown	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	session_tree	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	thinking_level_select	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	tool_execution_end	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	tool_execution_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	tool_execution_update	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	turn_end	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	turn_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	ui_prompt_end	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	ui_prompt_start	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-extensionEvents	user_bash	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin event maps onto +extension-hook-events+
-toolFiles	bash.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	edit.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	find.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	grep.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	ls.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	powershell.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	read.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
-toolFiles	write.ts	fixed	test/cadr-cli/goal28-events-providers-tools-test.lisp	make-*-tool constructor is exported and returns a tool
+cliFlags	--api-key	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--append-system-prompt	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--approve	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--continue	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--exclude-tools	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--export	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--extension	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--fork	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--help	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--list-models	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--mode	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--model	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--models	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--name	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-approve	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-builtin-tools	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-context-files	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-extensions	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-prompt-templates	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-session	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-skills	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-themes	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--no-tools	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--offline	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--print	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--prompt-template	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--provider	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--resume	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--session	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--session-dir	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--session-id	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--skill	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--system-prompt	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--theme	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--thinking	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--tools	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--tui-mode	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--use-theme	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--verbose	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+cliFlags	--version	match	test/cadr-cli/goal28-cli-flags-test.lisp	pin-named behavior asserted in goal28-cli-flags-test.lisp
+slashCommands	changelog	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	clone	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	compact	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	copy	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	export	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	fork	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	hotkeys	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	import	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	login	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	logout	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	model	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	name	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	new	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	quit	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	reload	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	resume	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	scoped-models	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	session	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	settings	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	share	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	thinking	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	tree	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+slashCommands	trust	match	test/cadr-cli/goal28-slash-commands-test.lisp	pin-named behavior asserted in goal28-slash-commands-test.lisp
+rpcMethods	abort	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	abort_bash	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	abort_retry	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	bash	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	clear_queue	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	clone	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	compact	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	cycle_model	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	cycle_thinking_level	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	export_html	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	follow_up	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	fork	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_available_models	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_available_thinking_levels	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_commands	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_entries	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_fork_messages	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_last_assistant_text	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_messages	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_session_stats	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_state	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	get_tree	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	new_session	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	prompt	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_auto_compaction	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_auto_retry	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_follow_up_mode	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_model	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_session_name	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_steering_mode	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	set_thinking_level	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	steer	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+rpcMethods	switch_session	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+exportedComponents	ArminComponent	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.clear	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.clipboard.pasteImage	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.editor.external	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.exit	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.interrupt	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.message.copy	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.message.dequeue	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.message.followUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.model.cycleBackward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.model.cycleForward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.model.select	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.models.clearAll	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.models.enableAll	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.models.reorderDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.models.reorderUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.models.save	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.models.toggleProvider	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.delete	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.deleteNoninvasive	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.fork	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.new	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.rename	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.resume	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.toggleNamedFilter	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.togglePath	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.toggleSort	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.session.tree	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.suspend	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.thinking.cycle	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.thinking.save	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.thinking.toggle	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tools.expand	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.editLabel	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.all	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.cycleBackward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.cycleForward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.default	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.labeledOnly	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.noTools	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.filter.userOnly	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.foldOrUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.toggleLabelTimestamp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	app.tree.unfoldOrDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.bottom	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.halfPageDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.halfPageUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.lineDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.lineUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.nextPrompt	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.pageDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.pageUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.previousPrompt	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.search	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.searchClose	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.searchNext	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.searchPrevious	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.altScreen.top	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorLeft	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorLineEnd	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorLineStart	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorRight	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorWordLeft	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.cursorWordRight	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.deleteCharBackward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.deleteCharForward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.deleteToLineEnd	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.deleteToLineStart	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.deleteWordBackward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.deleteWordForward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.historyNext	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.historyPrevious	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.jumpBackward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.jumpForward	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.pageDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.pageUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.undo	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.yank	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.editor.yankPop	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.input.copy	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.input.newLine	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.input.submit	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.input.tab	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.select.cancel	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.select.confirm	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.select.down	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.select.pageDown	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.select.pageUp	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+keybindingActions	tui.select.up	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	accent	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	bashMode	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	border	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	borderAccent	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	borderMuted	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	customMessageBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	customMessageLabel	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	customMessageText	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	dim	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	error	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdCode	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdCodeBlock	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdCodeBlockBorder	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdHeading	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdHr	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdLink	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdLinkUrl	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdListBullet	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdQuote	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	mdQuoteBorder	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	muted	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	scrollbarThumb	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	scrollbarTrack	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	searchMatchBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	searchMatchText	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	selectedBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	success	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxComment	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxFunction	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxKeyword	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxNumber	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxOperator	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxPunctuation	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxString	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxType	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	syntaxVariable	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	text	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingHigh	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingLow	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingMax	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingMedium	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingMinimal	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingOff	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingText	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	thinkingXhigh	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolDiffAdded	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolDiffContext	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolDiffRemoved	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolErrorBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolOutput	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolPendingBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolSuccessBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	toolTitle	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	userMessageBg	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	userMessageText	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+themeTokens	warning	match	test/cadr-cli/goal28-registries-test.lisp	pin-named behavior asserted in goal28-registries-test.lisp
+providers	amazon-bedrock.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	ant-ling.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	anthropic.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	azure-openai-responses.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	baseten.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	cerebras.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	cloudflare-ai-gateway.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	cloudflare-workers-ai.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	deepseek.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	fireworks.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	github-copilot.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	google-vertex.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	google.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	groq.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	huggingface.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	kimi-coding.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	minimax-cn.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	minimax.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	mistral.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	moonshotai-cn.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	moonshotai.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	nvidia.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	openai-codex.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	openai.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	opencode-go.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	opencode.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	openrouter.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	qwen-token-plan-cn.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	qwen-token-plan-individual.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	qwen-token-plan.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	radius.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	together.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	vercel-ai-gateway.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	xai.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	xiaomi-token-plan-ams.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	xiaomi-token-plan-cn.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	xiaomi-token-plan-sgp.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	xiaomi.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	zai-coding-cn.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	zai.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	after_provider_response	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	agent_end	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	agent_settled	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	agent_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	before_agent_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	before_provider_headers	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	before_provider_request	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	context	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	input	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	message_end	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	message_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	message_update	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	model_select	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	project_trust	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	resources_discover	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_before_compact	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_before_fork	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_before_switch	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_before_tree	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_compact	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_compact_failed	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_info_changed	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_shutdown	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	session_tree	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	thinking_level_select	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	tool_execution_end	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	tool_execution_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	tool_execution_update	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	turn_end	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	turn_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	ui_prompt_end	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	ui_prompt_start	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+extensionEvents	user_bash	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	bash.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	edit.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	find.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	grep.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	ls.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	powershell.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	read.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+toolFiles	write.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
 providers	all.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	barrel file; user selects named providers
 providers	cloudflare-auth.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	shared helper for Cloudflare providers; user still uses cloudflare-* providers
 providers	cloudflare-stream.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	shared helper for Cloudflare providers; user still uses cloudflare-* providers
@@ -425,41 +425,41 @@ providers	faux.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	test 
 providers	openrouter-images.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	image helper for openrouter; user still uses openrouter
 providers	radius-config.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	config helper for radius; user still uses radius
 providers	register-builtins.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	registration helper; user still uses named providers
-extensionTypeFields	ExtensionActions.appendEntry	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.getActiveTools	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.getAllTools	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.getCommands	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.getSessionName	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.getThinkingLevel	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.sendMessage	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.sendUserMessage	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.setActiveTools	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.setLabel	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.setModel	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.setSessionName	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionActions.setThinkingLevel	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionAPI.events	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.cwd	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.hasUI	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.mode	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.model	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.scopedModels	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.signal	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContext.thinkingLevel	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.abort	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.compact	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.getContextUsage	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.getModel	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.getScopedModels	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.getSignal	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.getSystemPrompt	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.hasPendingMessages	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.isIdle	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-extensionTypeFields	ExtensionContextActions.shutdown	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	Lisp extension-api/context callable covers this pin field
-toolFiles	truncate.ts	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	truncate-head/tail helpers
-toolFiles	edit-diff.ts	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	edit-diff ranges live in edit.lisp
-toolFiles	file-mutation-queue.ts	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	with-file-mutation-queue macro
-toolFiles	path-utils.ts	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	tools/path.lisp
+extensionTypeFields	ExtensionActions.appendEntry	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.getActiveTools	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.getAllTools	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.getCommands	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.getSessionName	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.getThinkingLevel	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.sendMessage	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.sendUserMessage	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.setActiveTools	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.setLabel	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.setModel	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.setSessionName	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionActions.setThinkingLevel	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionAPI.events	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.cwd	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.hasUI	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.mode	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.model	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.scopedModels	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.signal	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContext.thinkingLevel	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.abort	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.compact	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.getContextUsage	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.getModel	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.getScopedModels	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.getSignal	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.getSystemPrompt	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.hasPendingMessages	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.isIdle	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	ExtensionContextActions.shutdown	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+toolFiles	truncate.ts	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+toolFiles	edit-diff.ts	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+toolFiles	file-mutation-queue.ts	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+toolFiles	path-utils.ts	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
 toolFiles	index.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	barrel; make-glob-tool and makers cover tools
 toolFiles	output-accumulator.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	folded into tool executors; user still gets truncated tool output
 toolFiles	render-utils.ts	intentional-difference	.orchestrate/goal28/decisions.tsv	folded into tool rendering; user still sees tool blocks
@@ -485,64 +485,64 @@ environmentVariables	PI_INSTALLER_API_BASE	intentional-difference	.orchestrate/g
 environmentVariables	PI_MANAGED_INSTALL_ROOT	intentional-difference	.orchestrate/goal28/decisions.tsv	PI_* not used; CADR_* / existing knobs cover the user-facing behavior
 environmentVariables	PI_TUI_DEBUG	intentional-difference	.orchestrate/goal28/decisions.tsv	PI_* not used; CADR_* / existing knobs cover the user-facing behavior
 environmentVariables	PI_TUI_WRITE_LOG	intentional-difference	.orchestrate/goal28/decisions.tsv	PI_* not used; CADR_* / existing knobs cover the user-facing behavior
-environmentVariables	HOME	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	LLAMA_BASE_URL	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	SSH_CLIENT	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	SSH_CONNECTION	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	SSH_TTY	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	STY	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	TERM	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	TERMUX_VERSION	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	TMUX	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	WINDIR	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	WT_SESSION	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-environmentVariables	ZELLIJ	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	uiop:getenv reads this name in production code
-extensionTypeFields	Extension.commands	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.entryRenderers	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.flags	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.handlers	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.hidden	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.markdownTransformer	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.messageRenderers	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.path	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.resolvedPath	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.shortcuts	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.sourceInfo	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	Extension.tools	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionActions.refreshTools	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionCommandContextActions.fork	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionCommandContextActions.navigateTree	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionCommandContextActions.newSession	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionCommandContextActions.reload	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionCommandContextActions.switchSession	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionCommandContextActions.waitForIdle	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionContext.modelRegistry	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionContext.sessionManager	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionContext.ui	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionContextActions.getSystemPromptOptions	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionContextActions.isProjectTrusted	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionFlag.default	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionFlag.description	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionFlag.extensionPath	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionFlag.name	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionFlag.type	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionRuntimeState.assertActive	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionRuntimeState.flagValues	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionRuntimeState.invalidate	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionRuntimeState.registerNativeProvider	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionRuntimeState.registerProvider	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionRuntimeState.trackEventBusSubscription	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionShortcut.description	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionShortcut.extensionPath	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionShortcut.handler	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionShortcut.shortcut	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionUIDialogOptions.signal	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionUIDialogOptions.timeout	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	ExtensionWidgetOptions.placement	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	RegisteredCommand.description	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	RegisteredCommand.handler	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	RegisteredCommand.name	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
-extensionTypeFields	RegisteredCommand.sourceInfo	fixed	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	Lisp extension bundle/API covers this pin field
+environmentVariables	HOME	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	LLAMA_BASE_URL	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	SSH_CLIENT	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	SSH_CONNECTION	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	SSH_TTY	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	STY	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	TERM	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	TERMUX_VERSION	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	TMUX	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WINDIR	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WT_SESSION	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	ZELLIJ	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+extensionTypeFields	Extension.commands	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.entryRenderers	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.flags	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.handlers	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.hidden	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.markdownTransformer	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.messageRenderers	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.path	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.resolvedPath	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.shortcuts	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.sourceInfo	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	Extension.tools	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionActions.refreshTools	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionCommandContextActions.fork	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionCommandContextActions.navigateTree	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionCommandContextActions.newSession	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionCommandContextActions.reload	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionCommandContextActions.switchSession	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionCommandContextActions.waitForIdle	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionContext.modelRegistry	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionContext.sessionManager	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionContext.ui	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionContextActions.getSystemPromptOptions	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionContextActions.isProjectTrusted	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionFlag.default	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionFlag.description	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionFlag.extensionPath	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionFlag.name	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionFlag.type	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionRuntimeState.assertActive	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionRuntimeState.flagValues	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionRuntimeState.invalidate	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionRuntimeState.registerNativeProvider	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionRuntimeState.registerProvider	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionRuntimeState.trackEventBusSubscription	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionShortcut.description	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionShortcut.extensionPath	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionShortcut.handler	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionShortcut.shortcut	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionUIDialogOptions.signal	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionUIDialogOptions.timeout	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	ExtensionWidgetOptions.placement	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	RegisteredCommand.description	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	RegisteredCommand.handler	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	RegisteredCommand.name	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
+extensionTypeFields	RegisteredCommand.sourceInfo	match	test/cadr-cli/goal28-extension-bundle-fields-test.lisp	pin-named behavior asserted in goal28-extension-bundle-fields-test.lisp
 extensionTypeFields	ExtensionError.error	intentional-difference	.orchestrate/goal28/decisions.tsv	condition message; extension-registration/execution-error covers failures
 extensionTypeFields	ExtensionError.event	intentional-difference	.orchestrate/goal28/decisions.tsv	folded into lifecycle hooks; user still sees extension errors
 extensionTypeFields	ExtensionError.extensionPath	intentional-difference	.orchestrate/goal28/decisions.tsv	bundle path on definitions; user still locates the extension
@@ -551,34 +551,34 @@ extensionTypeFields	ExtensionRuntimeState.pendingNativeProviderRegistrations	int
 extensionTypeFields	ExtensionRuntimeState.pendingProviderRegistrations	intentional-difference	.orchestrate/goal28/decisions.tsv	providers register synchronously via extension-context-register-provider
 extensionTypeFields	ExtensionRuntimeState.unregisterProvider	intentional-difference	.orchestrate/goal28/decisions.tsv	provider overlays replace; user still selects providers
 extensionTypeFields	RegisteredCommand.getArgumentCompletions	intentional-difference	.orchestrate/goal28/decisions.tsv	argument-hint on command definition; autocomplete host covers completions
-environmentVariables	AI_AGENT	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	COLORTERM	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	COLUMNS	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	DISPLAY	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	EDITOR	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	GHOSTTY_RESOURCES_DIR	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	HTTP_PROXY	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	HTTPS_PROXY	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	ITERM_SESSION_ID	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	KITTY_WINDOW_ID	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	LINES	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	TERMINAL_EMULATOR	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	TERM_PROGRAM	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	USERPROFILE	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	VISUAL	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	WARP_SESSION_ID	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	WARP_TERMINAL_SESSION_UUID	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	WAYLAND_DISPLAY	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	WEZTERM_PANE	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	WSL_DISTRO_NAME	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
-environmentVariables	WSL_INTEROP	fixed	test/cadr-cli/goal28-remaining-surfaces-test.lisp	production getenv/setenv reader covers this pin env
+environmentVariables	AI_AGENT	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	COLORTERM	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	COLUMNS	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	DISPLAY	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	EDITOR	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	GHOSTTY_RESOURCES_DIR	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	HTTP_PROXY	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	HTTPS_PROXY	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	ITERM_SESSION_ID	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	KITTY_WINDOW_ID	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	LINES	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	TERMINAL_EMULATOR	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	TERM_PROGRAM	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	USERPROFILE	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	VISUAL	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WARP_SESSION_ID	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WARP_TERMINAL_SESSION_UUID	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WAYLAND_DISPLAY	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WEZTERM_PANE	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WSL_DISTRO_NAME	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
+environmentVariables	WSL_INTEROP	match	test/cadr-cli/goal28-remaining-surfaces-test.lisp	pin-named behavior asserted in goal28-remaining-surfaces-test.lisp
 environmentVariables	PNPM_HOME	intentional-difference	.orchestrate/goal28/decisions.tsv	pnpm install uses PATH/npmCommand settings; user still installs packages
 publicApiExports	AgentEndEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
-publicApiExports	AgentSession	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol agent-session
+publicApiExports	AgentSession	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	AgentSessionConfig	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	AgentSessionEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
 publicApiExports	AgentSessionEventListener	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
-publicApiExports	AgentSessionRuntime	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol agent-session-runtime
+publicApiExports	AgentSessionRuntime	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	AgentSessionRuntimeDiagnostic	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	AgentSessionServices	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	AgentSettledEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
@@ -609,7 +609,7 @@ publicApiExports	BranchSummaryEntry	intentional-difference	.orchestrate/goal28/d
 publicApiExports	BranchSummaryMessageComponent	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
 publicApiExports	BranchSummaryResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	BuildSystemPromptOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
-publicApiExports	CONFIG_DIR_NAME	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol +project-config-directory-name+
+publicApiExports	CONFIG_DIR_NAME	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	CURRENT_SESSION_VERSION	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export CURRENT_SESSION_VERSION has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	CollectEntriesResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	CompactOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
@@ -626,7 +626,7 @@ publicApiExports	CreateAgentSessionRuntimeFactory	intentional-difference	.orches
 publicApiExports	CreateAgentSessionRuntimeResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	CreateAgentSessionServicesOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	CreateModelRuntimeOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
-publicApiExports	CredentialSynchronizationError	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol credential-synchronization-error
+publicApiExports	CredentialSynchronizationError	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	CredentialSynchronizationOperation	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	CustomEditor	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
 publicApiExports	CustomEditorOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
@@ -636,11 +636,11 @@ publicApiExports	CustomMessageEntry	intentional-difference	.orchestrate/goal28/d
 publicApiExports	CustomToolCallEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
 publicApiExports	CutPointResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	DEFAULT_COMPACTION_SETTINGS	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export DEFAULT_COMPACTION_SETTINGS has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	DEFAULT_MAX_BYTES	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol +default-max-bytes+
-publicApiExports	DEFAULT_MAX_LINES	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol +default-max-lines+
+publicApiExports	DEFAULT_MAX_BYTES	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	DEFAULT_MAX_LINES	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	DefaultPackageManager	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export DefaultPackageManager has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	DefaultProjectTrust	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
-publicApiExports	DefaultResourceLoader	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol default-resource-loader
+publicApiExports	DefaultResourceLoader	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	DynamicBorder	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
 publicApiExports	EditDiffResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	EditOperations	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
@@ -719,7 +719,7 @@ publicApiExports	MessageUpdateEvent	intentional-difference	.orchestrate/goal28/d
 publicApiExports	ModelChangeEntry	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	ModelCycleResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	ModelInfo	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
-publicApiExports	ModelRegistry	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-model-registry
+publicApiExports	ModelRegistry	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	ModelRuntime	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export ModelRuntime has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	ModelRuntimeAuthOverrides	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	ModelScopeDiagnostic	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
@@ -793,7 +793,7 @@ publicApiExports	SessionHeader	intentional-difference	.orchestrate/goal28/decisi
 publicApiExports	SessionInfo	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	SessionInfoChangedEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
 publicApiExports	SessionInfoEntry	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
-publicApiExports	SessionManager	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol session-manager
+publicApiExports	SessionManager	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	SessionMessageEntry	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	SessionSelectorComponent	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
 publicApiExports	SessionShutdownEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
@@ -803,7 +803,7 @@ publicApiExports	SessionTreeEvent	intentional-difference	.orchestrate/goal28/dec
 publicApiExports	SessionTreeNode	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	SettingsCallbacks	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	SettingsConfig	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
-publicApiExports	SettingsManager	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-settings-manager
+publicApiExports	SettingsManager	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	SettingsManagerCreateOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	SettingsSelectorComponent	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
 publicApiExports	ShowImagesSelectorComponent	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
@@ -844,7 +844,7 @@ publicApiExports	UserBashEvent	intentional-difference	.orchestrate/goal28/decisi
 publicApiExports	UserBashEventResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	UserMessageComponent	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
 publicApiExports	UserMessageSelectorComponent	intentional-difference	.orchestrate/goal28/decisions.tsv	UI component module export; Armin/interactive transcript covers the rendered surface
-publicApiExports	VERSION	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol cadr-version
+publicApiExports	VERSION	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	VisualTruncateResult	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
 publicApiExports	WidgetPlacement	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	WorkingIndicatorOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
@@ -852,55 +852,55 @@ publicApiExports	WriteOperations	intentional-difference	.orchestrate/goal28/deci
 publicApiExports	WriteToolCallEvent	intentional-difference	.orchestrate/goal28/decisions.tsv	TS event type only; runtime hook is proven on extensionEvents (or agent tool-call events)
 publicApiExports	WriteToolInput	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only export; no runtime binding. User capability is the matching CLI/RPC/tool/extension surface
 publicApiExports	WriteToolOptions	intentional-difference	.orchestrate/goal28/decisions.tsv	TS type-only options/result alias; callers use Lisp kwargs / settings / RPC payloads
-publicApiExports	buildContextEntries	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol harness-session-build-context-entries
-publicApiExports	buildSessionContext	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol harness-session-build-context
+publicApiExports	buildContextEntries	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	buildSessionContext	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	calculateContextTokens	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export calculateContextTokens has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	collectEntriesForBranchSummary	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol collect-entries-for-branch-summary
-publicApiExports	compact	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol compact-agent
+publicApiExports	collectEntriesForBranchSummary	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	compact	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	convertToLlm	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export convertToLlm has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	convertToPng	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export convertToPng has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	copyToClipboard	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol copy-to-clipboard
-publicApiExports	createAgentSession	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol create-agent-session
-publicApiExports	createAgentSessionFromServices	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol create-agent-session-from-services
-publicApiExports	createAgentSessionRuntime	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol create-agent-session-runtime
-publicApiExports	createAgentSessionServices	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol create-agent-session-services
-publicApiExports	createBashTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-bash-tool
-publicApiExports	createBashToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-bash-tool
-publicApiExports	createCodingTools	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-coding-tools
-publicApiExports	createEditTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-edit-tool
-publicApiExports	createEditToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-edit-tool
-publicApiExports	createEventBus	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-event-bus
+publicApiExports	copyToClipboard	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createAgentSession	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createAgentSessionFromServices	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createAgentSessionRuntime	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createAgentSessionServices	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createBashTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createBashToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createCodingTools	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createEditTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createEditToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createEventBus	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	createExtensionRuntime	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export createExtensionRuntime has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	createFindTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-find-tool
-publicApiExports	createFindToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-find-tool
-publicApiExports	createGrepTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-grep-tool
-publicApiExports	createGrepToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-grep-tool
+publicApiExports	createFindTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createFindToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createGrepTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createGrepToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	createLocalBashOperations	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
 publicApiExports	createLocalPowerShellOperations	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
-publicApiExports	createLsTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-ls-tool
-publicApiExports	createLsToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-ls-tool
-publicApiExports	createPowerShellTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-powershell-tool
-publicApiExports	createPowerShellToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-powershell-tool
-publicApiExports	createReadOnlyTools	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-coding-tools
-publicApiExports	createReadTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-read-tool
-publicApiExports	createReadToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-read-tool
+publicApiExports	createLsTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createLsToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createPowerShellTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createPowerShellToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createReadOnlyTools	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createReadTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createReadToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	createSyntheticSourceInfo	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export createSyntheticSourceInfo has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	createWriteTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-write-tool
-publicApiExports	createWriteToolDefinition	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol make-write-tool
-publicApiExports	defineTool	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol define-tool
+publicApiExports	createWriteTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	createWriteToolDefinition	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	defineTool	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	detectSupportedImageMimeTypeFromFile	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	estimateTokens	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export estimateTokens has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	findCutPoint	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export findCutPoint has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	findTurnStartIndex	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export findTurnStartIndex has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	formatDimensionNote	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
-publicApiExports	formatSize	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol format-size
-publicApiExports	formatSkillsForPrompt	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol format-skills-for-system-prompt
-publicApiExports	generateBranchSummary	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol generate-branch-summary
+publicApiExports	formatSize	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	formatSkillsForPrompt	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	generateBranchSummary	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	generateDiffString	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export generateDiffString has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	generateSummary	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export generateSummary has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	generateSummaryWithUsage	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export generateSummaryWithUsage has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	generateUnifiedPatch	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export generateUnifiedPatch has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	getAgentDir	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol coding-agent-directory
+publicApiExports	getAgentDir	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	getDocsPath	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	getExamplesPath	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	getLanguageFromPath	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
@@ -908,11 +908,11 @@ publicApiExports	getLastAssistantUsage	intentional-difference	.orchestrate/goal2
 publicApiExports	getLatestCompactionEntry	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	getMarkdownTheme	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	getPackageDir	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
-publicApiExports	getPowerShellConfig	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol get-powershell-config
+publicApiExports	getPowerShellConfig	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	getReadmePath	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	getSelectListTheme	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	getSettingsListTheme	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
-publicApiExports	getShellConfig	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol get-shell-config
+publicApiExports	getShellConfig	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	hasTrustRequiringProjectResources	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	highlightCode	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
 publicApiExports	initTheme	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
@@ -925,34 +925,34 @@ publicApiExports	isPowerShellToolResult	intentional-difference	.orchestrate/goal
 publicApiExports	isReadToolResult	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
 publicApiExports	isToolCallEventType	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
 publicApiExports	isWriteToolResult	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
-publicApiExports	keyHint	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol key-hint
-publicApiExports	keyText	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol key-text
-publicApiExports	loadProjectContextFiles	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol load-project-context-files
-publicApiExports	loadSkills	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol load-skills
-publicApiExports	loadSkillsFromDir	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol load-skills-directory
-publicApiExports	main	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol main
+publicApiExports	keyHint	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	keyText	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	loadProjectContextFiles	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	loadSkills	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	loadSkillsFromDir	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	main	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	migrateSessionEntries	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export migrateSessionEntries has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	parseArgs	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol parse-cli-arguments
+publicApiExports	parseArgs	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	parseFrontmatter	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export parseFrontmatter has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	parseSessionEntries	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export parseSessionEntries has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	parseSkillBlock	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export parseSkillBlock has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	prepareBranchEntries	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol prepare-branch-entries
-publicApiExports	rawKeyHint	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol raw-key-hint
-publicApiExports	readStoredCredential	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol credential-synchronization-error
+publicApiExports	prepareBranchEntries	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	rawKeyHint	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	readStoredCredential	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	renderDiff	intentional-difference	.orchestrate/goal28/decisions.tsv	Library helper export; path/theme/image helpers fold into coding-agent-directory and themeTokens
-publicApiExports	resizeImage	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol resize-image-rgba-to-limits
-publicApiExports	resolveCliModel	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol resolve-model
-publicApiExports	runPrintMode	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol run-print-mode
-publicApiExports	runRpcMode	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol run-rpc-mode
-publicApiExports	serializeConversation	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol serialize-conversation
+publicApiExports	resizeImage	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	resolveCliModel	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	runPrintMode	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	runRpcMode	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	serializeConversation	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	sessionEntryToContextMessages	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export sessionEntryToContextMessages has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	shouldCompact	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export shouldCompact has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
 publicApiExports	stripFrontmatter	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export stripFrontmatter has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	truncateHead	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol truncate-head
-publicApiExports	truncateLine	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol truncate-line
-publicApiExports	truncateTail	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol truncate-tail
+publicApiExports	truncateHead	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	truncateLine	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
+publicApiExports	truncateTail	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	truncateToVisualLines	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export truncateToVisualLines has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces
-publicApiExports	withFileMutationQueue	fixed	test/cadr-cli/goal28-public-api-exports-test.lisp	Lisp symbol with-file-mutation-queue
+publicApiExports	withFileMutationQueue	match	test/cadr-cli/goal28-public-api-exports-test.lisp	pin-named behavior asserted in goal28-public-api-exports-test.lisp
 publicApiExports	wrapRegisteredTool	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
 publicApiExports	wrapRegisteredTools	intentional-difference	.orchestrate/goal28/decisions.tsv	Tool factory/predicate alias; make-*-tool makers are fixed on toolFiles
 publicApiExports	Theme	intentional-difference	.orchestrate/goal28/decisions.tsv	Value export Theme has no direct Lisp binding; user capability is covered by CLI/RPC/session surfaces

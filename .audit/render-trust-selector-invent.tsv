@@ -1,0 +1,6 @@
+ts	phase	decision	why	evidence	result
+2026-09-05T09:38:40Z	baseline	tip-measure render-trust-selector before edits	same once() as harness five paints so later keep/discard is on one ruler	/tmp/g20-trust-tip.txt	US median=301.233 Friend-MachineD EQUAL n/a
+2026-09-05T09:41:55Z	invent	discard title-by-width cache	EQUAL T but 494.830 vs tip 301.233 on already-invented HEAD so slower	/tmp/g20-trust-inv.txt	reverted trust.lisp to 4dec79b49
+2026-09-05T09:41:55Z	keep	kept chrome invent 4dec79b49	cwd/saved/session/footer caches plus interned pointer/check; 662.5 to 426.5 EQUAL	commit 4dec79b49	keep; G.17 missing
+2026-09-05T09:41:55Z	ledger	book leftover same-fn remounts	rtrs_ok trrsxxx_ok trn_ok trrs_ok trrsx_ok trrsxx_ok share render-trust-selector	docs/benchmarks/goal20-paired-over-1x.md	docs pending commit
+2026-09-05T09:42:22Z	ledger	pushed leftover book a0e59dea9	same-fn remount rows now match 426.5 invent tip	https://github.com/artwalker/cadr/commit/a0e59dea9	pushed cadr-migration

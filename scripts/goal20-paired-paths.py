@@ -7890,7 +7890,7 @@ def check_observed(cadr: dict, pi: dict, failures: list[str], only_enforce: froz
         failures,
     )
 
-    if not floor_slice:
+    if not floor_slice and scoped is None:
         cadr_help = cadr["metrics"]["cli_dispatch"]["observed"]["help_characters"]
         pi_help = pi["metrics"]["cli_dispatch"]["observed"]["help_characters"]
         check(
