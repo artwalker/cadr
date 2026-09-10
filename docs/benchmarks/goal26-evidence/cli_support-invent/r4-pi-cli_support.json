@@ -1,0 +1,38 @@
+{
+  "machine": {
+    "hostname": "Friend-MachineD",
+    "node_version": "v22.22.0"
+  },
+  "cli_support": {
+    "write_overwrite": {
+      "median_us": 266.30859999999996,
+      "mad_us": 16.38919999999996,
+      "repetitions": 5
+    },
+    "write_hello": {
+      "median_us": 140.31459999999998,
+      "mad_us": 6.3659999999999854,
+      "repetitions": 5
+    },
+    "write_empty": {
+      "median_us": 42.4346,
+      "mad_us": 0.592800000000004,
+      "repetitions": 5
+    },
+    "threads_current": {
+      "median_us": 0.06428,
+      "mad_us": 0.00238,
+      "repetitions": 50
+    },
+    "threads_absent": {
+      "median_us": 0.061900000000000004,
+      "mad_us": 0.0023999999999999994,
+      "repetitions": 50
+    },
+    "close_watcher": {
+      "median_us": 0.13534000000000002,
+      "mad_us": 0.0034400000000000264,
+      "repetitions": 50
+    }
+  }
+}

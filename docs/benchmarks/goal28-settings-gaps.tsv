@@ -1,0 +1,34 @@
+name	disposition	cadr_path	evidence	status
+BranchSummary.reserveTokens	truly-absent		no branchSummary object in settings-value/nested set; generate-branch-summary uses a Lisp default in src/cadr-agent/branch-summarization.lisp	open
+BranchSummary.skipPrompt	truly-absent		no skipPrompt key on settings; branch summary has no settings-backed skip flag in bootstrap or manager	open
+Compaction.keepRecentTokens	truly-absent		compaction stores only enabled via settings-boolean-value/settings-set-nested in src/cadr-cli/bootstrap/settings.lisp; keepRecentTokens is not read	open
+Compaction.reserveTokens	truly-absent		compaction JSON only has enabled in src/cadr-cli/bootstrap/settings.lisp and src/cadr-cli/sdk/settings-service.lisp; reserveTokens is an agent slot default, not a settings path	open
+Image.autoResize	alias	images.autoResize	settings-value images then json-get autoResize; persist settings-set-nested images autoResize; option id auto-resize-images in src/cadr-cli/bootstrap/settings.lisp	open
+Image.blockImages	alias	images.blockImages	settings-value images then json-get blockImages; persist settings-set-nested images blockImages; option id block-images; settings-block-images-p in src/cadr-cli/settings/manager.lisp	open
+Markdown.codeBlockIndent	truly-absent		markdown nested key in settings is mermaid only (settings-nested-value markdown mermaid) in src/cadr-cli/bootstrap/settings.lisp; no codeBlockIndent	open
+ProviderRetry.maxRetries	alias	retry.provider.maxRetries	sdk-settings-retry-settings reads retry then json-get provider and field maxRetries (merge of retry and retry.provider) in src/cadr-cli/sdk/settings-service.lisp	open
+ProviderRetry.maxRetryDelayMs	alias	retry.provider.maxRetryDelayMs	sdk-settings-retry-settings field maxRetryDelayMs on merged retry/retry.provider in src/cadr-cli/sdk/settings-service.lisp	open
+ProviderRetry.timeoutMs	alias	retry.provider.timeoutMs	sdk-settings-retry-settings field timeoutMs on merged retry/retry.provider in src/cadr-cli/sdk/settings-service.lisp	open
+Retry.provider	alias	retry.provider	sdk-settings-retry-settings json-get retry provider in src/cadr-cli/sdk/settings-service.lisp	open
+Terminal.hyperlinks	alias	terminal.hyperlinks	settings-terminal-capability-overrides json-present-p/json-get terminal hyperlinks in src/cadr-cli/bootstrap/settings.lisp	open
+Terminal.images	alias	terminal.images	settings-terminal-capability-overrides json-get terminal images (kitty/iterm2/none) in src/cadr-cli/bootstrap/settings.lisp, not the top-level images object	open
+Terminal.trueColor	alias	terminal.trueColor	settings-terminal-capability-overrides json-get terminal trueColor in src/cadr-cli/bootstrap/settings.lisp	open
+ThinkingBudgets.high	truly-absent		no thinkingBudgets object in settings; modelThinkingLevels and defaultThinkingLevel are different keys in src/cadr-cli/settings/manager.lisp	open
+ThinkingBudgets.low	truly-absent		no thinkingBudgets.low in settings bootstrap or manager	open
+ThinkingBudgets.medium	truly-absent		no thinkingBudgets.medium in settings bootstrap or manager	open
+ThinkingBudgets.minimal	truly-absent		no thinkingBudgets.minimal in settings bootstrap or manager	open
+Warning.anthropicExtraUsage	alias	warnings.anthropicExtraUsage	settings-boolean-value warnings anthropicExtraUsage; settings-set-nested warnings anthropicExtraUsage; option id anthropic-extra-usage in src/cadr-cli/bootstrap/settings.lisp	open
+branchSummary	truly-absent		no settings-value branchSummary in bootstrap, manager, or settings-service	open
+extensions	truly-absent		settings.json has no extensions array reader; resource loader uses CLI paths and packages, not this key (src/cadr-cli/resource-loader.lisp)	open
+externalEditor	truly-absent		externalEditor in src/cadr-cli/settings/manager.lisp is a keybinding name migration to app.editor.external, not the externalEditor command string setting	open
+httpProxy	truly-absent		apply-http-proxy-setting takes a string in src/cadr-cli/sdk/cache-version.lisp; no settings-value httpProxy	open
+lastChangelogVersion	truly-absent		no lastChangelogVersion in settings bootstrap or manager; collapseChangelog is a different key	open
+npmCommand	truly-absent		package-npm-install-argv takes an npm-command keyword in src/cadr-cli/packages/source.lisp; no settings-value npmCommand	open
+prompts	truly-absent		no settings-value prompts; prompt paths come from CLI and agent-dir, not a settings.json array	open
+sessionDir	truly-absent		session directory is CLI --session-dir / CADR_CODING_AGENT_SESSION_DIR in src/cadr-cli/arguments.lisp; no settings-value sessionDir	open
+shellCommandPrefix	truly-absent		no shellCommandPrefix in settings bootstrap, manager, or settings-service	open
+shellPath	truly-absent		get-shell-config optional path is not loaded from settings; the settings.json mention in src/cadr-cli/support/shell-process.lisp is error text only	open
+skills	truly-absent		no settings-value skills; skill paths come from CLI and agent-dir, not a settings.json array	open
+themes	truly-absent		settings theme is the string key theme; no settings-value themes array for extra theme paths	open
+thinkingBudgets	truly-absent		thinkingBudgets appears as a stream option in src/cadr-agent/proxy.lisp, not as a settings.json key	open
+websocketConnectTimeoutMs	truly-absent		merge-stream-settings copies a plist key in src/cadr-cli/support/headers.lisp; no settings-value websocketConnectTimeoutMs	open

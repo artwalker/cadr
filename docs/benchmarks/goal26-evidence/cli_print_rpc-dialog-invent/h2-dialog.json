@@ -1,0 +1,26 @@
+{
+  "run": "h2",
+  "cadr_us": 0.70054,
+  "pi_us": 0.29444,
+  "ratio": 2.379228365711181,
+  "cadr_samples": [
+    0.75142,
+    1.16744,
+    0.55508,
+    0.59456,
+    0.70054
+  ],
+  "pi_samples": [
+    0.29444,
+    0.29292,
+    0.29746,
+    0.29576,
+    0.29254
+  ],
+  "machine": {
+    "lisp": "SBCL",
+    "lisp_version": "2.6.7",
+    "machine_instance": "Friend-MachineD",
+    "machine_type": "X86-64"
+  }
+}

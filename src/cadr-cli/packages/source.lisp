@@ -255,6 +255,24 @@
            (package-source-host source)
            (package-source-path source))))
 
+(defun package-npm-root-from-packages-root
+    (packages-root)
+  (merge-pathnames
+   "npm/"
+   (uiop:pathname-parent-directory-pathname
+    (uiop:ensure-directory-pathname
+     packages-root))))
+
+(defun package-npm-install-path
+    (source install-root)
+  (unless (eq :npm
+              (package-source-type source))
+    (error "Not an npm package source"))
+  (ensure-package-path-inside-root
+   install-root
+   (format nil "node_modules/~A/"
+           (package-source-name source))))
+
 (defun package-npm-install-argv
     (sources install-root
      &key npm-command

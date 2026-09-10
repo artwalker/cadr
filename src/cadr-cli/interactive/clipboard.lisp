@@ -152,6 +152,8 @@
    (clipboard-environment-value
     environment "WSL_DISTRO_NAME")
    (clipboard-environment-value
+    environment "WSL_INTEROP")
+   (clipboard-environment-value
     environment "WSLENV")
    (ignore-errors
      (search

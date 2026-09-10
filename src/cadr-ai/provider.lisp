@@ -120,7 +120,7 @@
 (defgeneric build-request
     (provider model context
      &key stream-p max-tokens temperature reasoning cache-retention
-       session-id tool-choice metadata))
+       session-id tool-choice metadata thinking-budgets))
 
 (defgeneric parse-complete-response (provider model response))
 
@@ -132,7 +132,8 @@
 
 (defgeneric try-provider-websocket-stream
     (provider model context request state emit
-     &key transport session-id abort-p on-response)
+     &key transport session-id abort-p on-response
+       websocket-connect-timeout-ms http-proxy)
   (:documentation
    "Handle REQUEST over a provider-specific WebSocket transport.
 Return two values: whether the request was handled and, when handled, the
@@ -140,9 +141,11 @@ completed assistant message."))
 
 (defmethod try-provider-websocket-stream
     ((provider provider) model context request state emit
-     &key transport session-id abort-p on-response)
+     &key transport session-id abort-p on-response
+       websocket-connect-timeout-ms http-proxy)
   (declare (ignore provider model context request state emit
-                   transport session-id abort-p on-response))
+                   transport session-id abort-p on-response
+                   websocket-connect-timeout-ms http-proxy))
   (values nil nil))
 
 (defgeneric prepare-provider-sse-request (provider request))
@@ -178,6 +181,21 @@ completed assistant message."))
     (assoc level
            (model-thinking-level-map model)
            :test #'eq))))
+
+(defun thinking-budget-for-level (level &optional custom-budgets)
+  (let* ((mapped
+           (if (member level '(:xhigh :max))
+               :high
+               level))
+         (custom
+           (and custom-budgets
+                (getf custom-budgets mapped))))
+    (or custom
+        (case mapped
+          (:minimal 1024)
+          (:low 2048)
+          (:medium 8192)
+          (otherwise 16384)))))
 
 (defun anthropic-effort-p (value)
   (and (stringp value)
@@ -546,21 +564,35 @@ string. Returns the buffer to store back. Per-delta
       (* *retry-base-delay* (expt 2 retry-index))))
 
 (defun call-with-provider-retries
-    (function &key (retry-allowed-p (constantly t)))
-  (loop for retry-index from 0
-        do
-        (handler-case
-            (return (funcall function))
-          (error (condition)
-            (unless
-                (and (< retry-index *max-provider-retries*)
-                     (typep condition 'cadr-error)
-                     (cadr-error-retryable-p condition)
-                     (funcall retry-allowed-p condition))
-              (error condition))
-            (funcall
-             *retry-sleep-function*
-             (provider-retry-delay condition retry-index))))))
+    (function &key (retry-allowed-p (constantly t))
+                   (max-retries *max-provider-retries*)
+                   max-retry-delay-ms
+                   timeout-ms)
+  (declare (ignore timeout-ms))
+  (let ((limit
+          (if (integerp max-retries)
+              max-retries
+              *max-provider-retries*)))
+    (loop for retry-index from 0
+          do
+          (handler-case
+              (return (funcall function))
+            (error (condition)
+              (unless
+                  (and (< retry-index limit)
+                       (typep condition 'cadr-error)
+                       (cadr-error-retryable-p condition)
+                       (funcall retry-allowed-p condition)
+                       (let ((delay (retry-after-seconds condition)))
+                         (or (null max-retry-delay-ms)
+                             (zerop max-retry-delay-ms)
+                             (null delay)
+                             (<= (* 1000 delay)
+                                 max-retry-delay-ms))))
+                (error condition))
+              (funcall
+               *retry-sleep-function*
+               (provider-retry-delay condition retry-index)))))))
 
 (defun apply-provider-request-callbacks
     (request model on-payload transform-headers)
@@ -600,7 +632,11 @@ string. Returns the buffer to store back. Per-delta
 (defun complete-chat (provider model context
                       &key max-tokens temperature reasoning cache-retention
                         session-id tool-choice metadata abort-p
-                        on-payload transform-headers on-response)
+                        on-payload transform-headers on-response
+                        thinking-budgets
+                        max-retries max-retry-delay-ms timeout-ms
+                        (read-timeout nil read-timeout-supplied-p)
+                      &allow-other-keys)
   (handler-case
       (progn
         (check-abort abort-p)
@@ -612,25 +648,42 @@ string. Returns the buffer to store back. Per-delta
                                        :cache-retention cache-retention
                                        :session-id session-id
                                        :tool-choice tool-choice
-                                       :metadata metadata))
+                                       :metadata metadata
+                                       :thinking-budgets thinking-budgets))
                (_prepared
                  (apply-provider-request-callbacks
                   request model
                   on-payload transform-headers))
+               (timeout-seconds
+                 (and (integerp timeout-ms) (plusp timeout-ms)
+                      (/ timeout-ms 1000)))
                (response
                  (call-with-provider-retries
                   (lambda ()
                     (check-abort abort-p)
-                    (request-json
+                    (apply
+                     #'request-json
                      request
-                     :abort-p abort-p
-                     :environment
-                     (getf (provider-options provider) :environment)
-                     :on-response
-                     (lambda (status headers)
-                       (notify-provider-response
-                        on-response
-                        status headers model)))))))
+                     (append
+                      (list
+                       :abort-p abort-p
+                       :environment
+                       (getf (provider-options provider) :environment)
+                       :on-response
+                       (lambda (status headers)
+                         (notify-provider-response
+                          on-response
+                          status headers model)))
+                      (when timeout-seconds
+                        (list :connect-timeout timeout-seconds))
+                      (cond
+                        (read-timeout-supplied-p
+                         (list :read-timeout read-timeout))
+                        (timeout-seconds
+                         (list :read-timeout timeout-seconds))))))
+                  :max-retries max-retries
+                  :max-retry-delay-ms max-retry-delay-ms
+                  :timeout-ms timeout-ms)))
           (declare (ignore _prepared))
           (check-abort abort-p)
           (let ((message
@@ -645,11 +698,19 @@ string. Returns the buffer to store back. Per-delta
 (defun stream-chat (provider model context on-event
                     &key max-tokens temperature reasoning cache-retention
                       session-id tool-choice metadata abort-p
-                      on-payload transform-headers on-response transport)
+                      on-payload transform-headers on-response transport
+                      websocket-connect-timeout-ms http-proxy
+                      thinking-budgets
+                      max-retries max-retry-delay-ms timeout-ms
+                      (read-timeout nil read-timeout-supplied-p)
+                    &allow-other-keys)
   (let* ((message (empty-assistant-message model reasoning))
          (state (make-provider-stream-state :message message))
          (saw-provider-event-p nil)
-         (response-request-id nil))
+         (response-request-id nil)
+         (timeout-seconds
+           (and (integerp timeout-ms) (plusp timeout-ms)
+                (/ timeout-ms 1000))))
     (handler-case
         (progn
           (check-abort abort-p)
@@ -661,7 +722,8 @@ string. Returns the buffer to store back. Per-delta
                                         :cache-retention cache-retention
                                         :session-id session-id
                                         :tool-choice tool-choice
-                                        :metadata metadata)))
+                                        :metadata metadata
+                                        :thinking-budgets thinking-budgets)))
             (apply-provider-request-callbacks
              request model
              on-payload transform-headers)
@@ -671,14 +733,18 @@ string. Returns the buffer to store back. Per-delta
                  :transport transport
                  :session-id session-id
                  :abort-p abort-p
-                 :on-response on-response)
+                 :on-response on-response
+                 :websocket-connect-timeout-ms
+                 websocket-connect-timeout-ms
+                 :http-proxy http-proxy)
               (when handled-p
                 (return-from stream-chat websocket-message)))
             (emit-event on-event :start message)
             (call-with-provider-retries
              (lambda ()
                (check-abort abort-p)
-               (request-provider-events
+               (apply
+                #'request-provider-events
                 (prepare-provider-sse-request provider request)
                 (lambda (event)
                   (setf saw-provider-event-p t)
@@ -686,26 +752,37 @@ string. Returns the buffer to store back. Per-delta
                   (reduce-provider-sse-event
                    provider state event on-event)
                   (check-abort abort-p))
-                :abort-p abort-p
-                :environment
-                (getf (provider-options provider) :environment)
-                :on-response
-                (lambda (status headers)
-                  (when (typep provider 'bedrock-provider)
-                    (setf response-request-id
-                          (normalize-bedrock-diagnostic-value
-                           (or
-                            (header-value
-                             headers "x-amzn-requestid")
-                            (header-value
-                             headers "x-amz-request-id")))))
-                  (notify-provider-response
-                   on-response status headers
-                   model))))
+                (append
+                 (list
+                  :abort-p abort-p
+                  :environment
+                  (environment-with-http-proxy
+                   (getf (provider-options provider) :environment)
+                   http-proxy)
+                  :on-response
+                  (lambda (status headers)
+                    (when (typep provider 'bedrock-provider)
+                      (setf response-request-id
+                            (normalize-bedrock-diagnostic-value
+                             (or
+                              (header-value
+                               headers "x-amzn-requestid")
+                              (header-value
+                               headers "x-amz-request-id")))))
+                    (notify-provider-response
+                     on-response status headers
+                     model)))
+                 (when timeout-seconds
+                   (list :connect-timeout timeout-seconds))
+                 (when read-timeout-supplied-p
+                   (list :read-timeout read-timeout)))))
              :retry-allowed-p
              (lambda (condition)
                (declare (ignore condition))
-               (not saw-provider-event-p))))
+               (not saw-provider-event-p))
+             :max-retries max-retries
+             :max-retry-delay-ms max-retry-delay-ms
+             :timeout-ms timeout-ms))
           (finalize-provider-stream
            provider model state on-event)
           (unless (provider-stream-state-terminal-p state)

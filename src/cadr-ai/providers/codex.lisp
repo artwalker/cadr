@@ -3,7 +3,8 @@
 (defmethod build-request
     ((provider openai-codex-provider) model context
      &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata)
+       cache-retention session-id tool-choice metadata
+       thinking-budgets)
   (let ((token (provider-oauth-access-token provider)))
     (unless (non-empty-string-p token)
       (error 'authentication-error
@@ -23,7 +24,8 @@
              :cache-retention cache-retention
              :session-id session-id
              :tool-choice tool-choice
-             :metadata metadata)))
+             :metadata metadata
+             :thinking-budgets thinking-budgets)))
       (unless reasoning
         (remhash "reasoning"
                  (request-spec-payload request)))

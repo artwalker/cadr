@@ -117,20 +117,27 @@
          "Session header metadata must be an object")))
     header))
 
+(defun jsonl-header-metadata (header)
+  (if (session-file-header-p header)
+      (loop for (key value)
+              on (session-file-header-extra header)
+            by #'cddr
+            when (string= key "metadata")
+              return value)
+      (cadr-ai::json-get header "metadata")))
+
 (defun header-to-session-metadata
     (header path)
-  (let ((data
-          (cadr-ai::json-get
-           header "metadata")))
+  (let ((data (jsonl-header-metadata header)))
     (make-session-metadata
-     :id (cadr-ai::json-get header "id")
+     :id (session-header-ref header "id")
      :created-at
-     (cadr-ai::json-get header "timestamp")
-     :cwd (cadr-ai::json-get header "cwd")
+     (session-header-ref header "timestamp")
+     :cwd (session-header-ref header "cwd")
      :path (pathname path)
      :parent-session-path
      (json-null-to-nil
-      (cadr-ai::json-get
+      (session-header-ref
        header "parentSession"))
      :data
      (and
@@ -206,29 +213,14 @@
     (environment path)
   (let* ((absolute
            (execution-path environment path))
-         (text
-           (execution-value-or-session-error
-            (lambda ()
-              (execution-env-read-text-file
-               environment absolute))
-            "Cannot read JSONL session"
-            absolute))
-         (lines
-           (remove-if
-            (lambda (line)
-              (zerop
-               (length
-                (string-trim
-                 '(#\Space #\Tab #\Return)
-                 line))))
-            (uiop:split-string
-             text :separator '(#\Newline)))))
-    (unless lines
+         (objects
+           (read-session-objects
+            absolute
+            :strict-p t)))
+    (unless objects
       (session-failure
        absolute 1 "Missing session header"))
-    (let* ((header
-             (parse-jsonl-header
-              (first lines) absolute))
+    (let* ((header (first objects))
            (storage
              (make-instance
               'jsonl-session-storage
@@ -237,25 +229,34 @@
                header absolute)
               :environment environment
               :file-path absolute))
-           (line-number 1))
-      (dolist (line (rest lines))
+           (line-number 1)
+           (by-id
+             (memory-storage-by-id storage)))
+      (validate-session-header header absolute)
+      (unless
+          (= 3
+             (or
+              (session-header-ref
+               header "version" 0)
+              0))
+        (session-failure
+         absolute 1 "Unsupported session version"))
+      (let ((metadata
+              (jsonl-header-metadata header)))
+        (when
+            (and metadata
+                 (not
+                  (cadr-ai::json-null-p metadata))
+                 (not (hash-table-p metadata)))
+          (session-failure
+           absolute 1
+           "Session header metadata must be an object")))
+      (dolist (object (rest objects))
         (incf line-number)
-        (let ((object
-                (handler-case
-                    (cadr-ai::parse-json line)
-                  (error (cause)
-                    (session-failure
-                     absolute line-number
-                     "Invalid JSONL session entry: ~A"
-                     cause)))))
-          (let ((entry
-                  (record-to-session-entry
-                   object absolute line-number
-                   (memory-storage-by-id
-                    storage))))
-            (commit-memory-storage-entry
-             storage entry))))
-      (repair-unterminated-session-file absolute)
+        (commit-memory-storage-entry
+         storage
+         (record-to-session-entry
+          object absolute line-number by-id)))
       storage)))
 
 (defmethod session-storage-append-entry

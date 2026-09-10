@@ -329,12 +329,36 @@ NIL means that the caller must send the original, uncompressed body."
      (concatenate 'string "http://" (subseq url 5)))
     (t url)))
 
-(defun connect-codex-websocket (request abort-p environment)
+(defun websocket-connect-timeout-seconds (&optional timeout-ms)
+  (if (and (integerp timeout-ms) (plusp timeout-ms))
+      (/ timeout-ms 1000)
+      10))
+
+(defun environment-with-http-proxy (environment http-proxy)
+  (let ((trimmed
+          (and (stringp http-proxy)
+               (string-trim
+                '(#\Space #\Tab #\Newline #\Return)
+                http-proxy))))
+    (if (and trimmed (plusp (length trimmed)))
+        (let ((env (copy-list environment)))
+          (dolist (name '("HTTP_PROXY" "HTTPS_PROXY") env)
+            (unless (assoc name env :test #'string-equal)
+              (push (cons name trimmed) env))))
+        environment)))
+
+(defun connect-codex-websocket (request abort-p environment
+                                &optional timeout-ms http-proxy)
   (let* ((url (websocket-url-as-http-url (request-spec-url request)))
          (target (parse-http-url url))
-         (proxy (resolve-http-proxy-url-for-target url environment)))
+         (proxy (resolve-http-proxy-url-for-target
+                 url
+                 (environment-with-http-proxy environment http-proxy))))
     (multiple-value-bind (stream socket request-target)
-        (connect-native-http-stream target url proxy 10 nil abort-p)
+        (connect-native-http-stream
+         target url proxy
+         (websocket-connect-timeout-seconds timeout-ms)
+         nil abort-p)
       (handler-case
           (let* ((key (standard-base64-encode (secure-random-bytes 16)))
                  (headers
@@ -381,7 +405,8 @@ NIL means that the caller must send the original, uncompressed body."
         (> (- now (codex-websocket-created-at connection))
            +codex-websocket-max-age-seconds+))))
 
-(defun acquire-codex-websocket (session-id request abort-p environment cached-p)
+(defun acquire-codex-websocket (session-id request abort-p environment cached-p
+                                &optional timeout-ms http-proxy)
   (let ((reused-p nil) (old nil) (entry nil))
     (when cached-p
       (sb-thread:with-mutex (*codex-websocket-cache-lock*)
@@ -400,7 +425,8 @@ NIL means that the caller must send the original, uncompressed body."
     (when old (close-codex-websocket old))
     (unless entry
       (let ((connection
-              (connect-codex-websocket request abort-p environment)))
+              (connect-codex-websocket
+               request abort-p environment timeout-ms http-proxy)))
         (setf entry (make-codex-websocket-cache-entry :connection connection
                                                       :busy-p cached-p))
         (when cached-p
@@ -540,7 +566,8 @@ NIL means that the caller must send the original, uncompressed body."
 
 (defmethod try-provider-websocket-stream
     ((provider openai-codex-provider) model context request state emit
-     &key transport session-id abort-p on-response)
+     &key transport session-id abort-p on-response
+       websocket-connect-timeout-ms http-proxy)
   (declare (ignore context))
   (let* ((mode (or transport :auto))
          (cached-p (member mode '(:auto :websocket-cached)))
@@ -559,7 +586,9 @@ NIL means that the caller must send the original, uncompressed body."
             (acquire-codex-websocket
              session-key request abort-p
              (getf (provider-options provider) :environment)
-             cached-p)
+             cached-p
+             websocket-connect-timeout-ms
+             http-proxy)
           (setf entry acquired-entry)
           (let* ((original (copy-json-value (request-spec-payload request)))
                  (payload

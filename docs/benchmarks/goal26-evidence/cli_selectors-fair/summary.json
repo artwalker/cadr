@@ -1,0 +1,29 @@
+{
+  "same_machine": true,
+  "ratio_gate": "enforced-only:cli_selectors.model_selector_active_models,cli_selectors.model_selector_clamp_selected,cli_selectors.model_selector_select_current,cli_selectors.scoped_model_selector_search_text,cli_selectors.scoped_models_clear_ids,cli_selectors.scoped_models_enable_ids,cli_selectors.scoped_models_enabled_set",
+  "only_enforce": [
+    "cli_selectors.model_selector_active_models",
+    "cli_selectors.model_selector_clamp_selected",
+    "cli_selectors.model_selector_select_current",
+    "cli_selectors.scoped_model_selector_search_text",
+    "cli_selectors.scoped_models_clear_ids",
+    "cli_selectors.scoped_models_enable_ids",
+    "cli_selectors.scoped_models_enabled_set"
+  ],
+  "failures": [],
+  "observed_scope": "seven-metric keys only (msa_/msc_/msel_/smsst_/smei_/smci_/smes_); full cli_selectors observed includes unrelated theme ANSI and smce_copy",
+  "ratios": {
+    "cli_selectors.model_selector_active_models": 0.04696611982161955,
+    "cli_selectors.model_selector_clamp_selected": 0.00834754313783771,
+    "cli_selectors.model_selector_select_current": 0.4561992594466548,
+    "cli_selectors.scoped_model_selector_search_text": 5.48226130804094,
+    "cli_selectors.scoped_models_clear_ids": 0.09431191319913783,
+    "cli_selectors.scoped_models_enable_ids": 0.21890612273343005,
+    "cli_selectors.scoped_models_enabled_set": 1.610023957190516
+  },
+  "notes": [
+    "Friend-MachineD n=5 warmups=1 slices unset",
+    "GOAL20_COLLECT_ONLY limited timed slots to the seven metrics",
+    "official goal20-paired-paths.py --only-enforce still checks every cli_selectors observed key"
+  ]
+}

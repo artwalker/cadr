@@ -1074,7 +1074,8 @@
 (defun markdown-line
     (line in-code-p ansi-theme-p
      capabilities available-width
-     &optional default-style-function)
+     &optional default-style-function
+     (code-block-indent "  "))
   (cond
     ((string-prefix-p "```" line)
      (values
@@ -1086,7 +1087,7 @@
      (values
       (theme-foreground
        :md-code-block
-       (concatenate 'string "  " line)
+       (concatenate 'string code-block-indent line)
        :enabled-p ansi-theme-p)
       in-code-p nil))
     ((markdown-horizontal-rule-p line)
@@ -1145,6 +1146,7 @@
                      (preserve-list-markers-p nil)
                      (padding-x 0)
                      (padding-y 0)
+                     (code-block-indent "  ")
                      (capabilities
                        (get-terminal-capabilities)))
   (let* ((available-width
@@ -1235,7 +1237,7 @@
                               result
                               (wrap-text
                                (concatenate
-                                'string "  "
+                                'string code-block-indent
                                 (if (stringp highlighted)
                                     code-line
                                     (theme-foreground
@@ -1450,7 +1452,8 @@
                      (markdown-line
                       line in-code-p ansi-theme-p
                       capabilities available-width
-                      default-style-function)
+                      default-style-function
+                      code-block-indent)
                    (setf in-code-p next-code-p)
                    (unless skip-p
                      (setf result

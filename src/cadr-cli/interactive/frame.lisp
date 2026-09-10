@@ -214,7 +214,9 @@
               :hidden-thinking-label
               (tui-state-hidden-thinking-label state)
               :mermaid-mode
-              (tui-state-mermaid-mode state)))
+              (tui-state-mermaid-mode state)
+              :code-block-indent
+              (tui-state-code-block-indent state)))
            (startup-lines
              (if
                  (tui-state-tools-expanded-p state)

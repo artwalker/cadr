@@ -67,19 +67,27 @@
   (or (gethash model (model-selector-state-search-text-table state))
       (model-selector-search-text model)))
 
+(defparameter *scoped-model-selector-search-text-cache*
+  (make-hash-table :test #'eq :weakness :key))
+
 (defun scoped-model-selector-search-text
     (model)
-  (format nil "~A ~(~A~) ~A ~(~A~) ~A~@[ ~A~]"
-          (cadr-ai:model-id model)
-          (cadr-ai:model-provider model)
-          (qualified-model-id model)
-          (cadr-ai:model-provider model)
-          (cadr-ai:model-id model)
-          (let ((name
-                  (cadr-ai::model-name model)))
-            (and (stringp name)
-                 (plusp (length name))
-                 name))))
+  (multiple-value-bind (cached present-p)
+      (gethash model *scoped-model-selector-search-text-cache*)
+    (if present-p
+        cached
+        (setf (gethash model *scoped-model-selector-search-text-cache*)
+              (format nil "~A ~(~A~) ~A ~(~A~) ~A~@[ ~A~]"
+                      (cadr-ai:model-id model)
+                      (cadr-ai:model-provider model)
+                      (qualified-model-id model)
+                      (cadr-ai:model-provider model)
+                      (cadr-ai:model-id model)
+                      (let ((name
+                              (cadr-ai::model-name model)))
+                        (and (stringp name)
+                             (plusp (length name))
+                             name)))))))
 
 (defun model-equal-p (left right)
   (and left right
@@ -550,10 +558,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
       (copy-list enabled)))
 
 (defun scoped-models-enabled-set (enabled)
-  (let ((set (make-hash-table :test #'equal)))
-    (dolist (id enabled)
-      (setf (gethash id set) t))
-    set))
+  enabled)
 
 (defun scoped-models-selector-rebuild-models-by-id
     (state)
@@ -599,7 +604,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
            (copy-list enabled)
            (loop
              for id in all
-             unless (gethash id enabled-set)
+             unless (member id enabled-set :test #'equal)
                collect id))))))
 
 (defun scoped-models-selector-rebuild-items (state)
@@ -624,7 +629,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
         :id id
         :model model
         :enabled-p
-        (or all-enabled-p (gethash id enabled-set))
+        (or all-enabled-p (member id enabled-set :test #'equal))
         :search-text
         (if model
             (scoped-model-selector-search-text model)

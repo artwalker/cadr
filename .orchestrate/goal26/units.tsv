@@ -1,0 +1,13 @@
+id	track	state	branch	pr	sha	brief
+c0-charter	R	done				.orchestrate/goal26/briefs/c0-charter.md
+r-websocket-fair	R	done			219a3edd0	.orchestrate/goal26/briefs/r-websocket-fair.md
+h-websocket	H	done				.orchestrate/goal26/briefs/h-websocket.md
+r-harness-storage-fair	R	done				.orchestrate/goal26/briefs/r-harness-storage-fair.md
+r-cli-selectors-fair	R	done				.orchestrate/goal26/briefs/r-cli-selectors-fair.md
+h-session-export-html	H	done				.orchestrate/goal26/briefs/h-session-export-html.md
+h-cli-support	H	done				.orchestrate/goal26/briefs/h-cli-support.md
+h-dialog-request	H	done				.orchestrate/goal26/briefs/h-dialog-request.md
+h-cli-selectors-leftover	H	done				.orchestrate/goal26/briefs/h-cli-selectors-leftover.md
+h-harness-storage	H	done				.orchestrate/goal26/briefs/h-harness-storage.md
+h-cli-support-writes	H	done				.orchestrate/goal26/briefs/h-cli-support-writes.md
+h-cli-support-writes-slot	H	done				.orchestrate/goal26/briefs/h-cli-support-writes-slot.md

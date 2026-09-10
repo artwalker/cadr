@@ -221,49 +221,51 @@
   ;; every registered extension flag (main.ts:804-809).
   (let* ((cwd (uiop:getcwd))
          (agent-directory (default-agent-directory))
+         (trust-store
+           (make-project-trust-store
+            (merge-pathnames "trust.json" agent-directory)))
+         (trusted-p
+           (resolve-project-trusted
+            trust-store cwd
+            :override
+            (cli-arguments-project-trust-override command)
+            :override-supplied-p
+            (cli-arguments-project-trust-override-supplied-p
+             command)
+            :has-ui-p nil))
+         (settings-manager
+           (make-settings-manager
+            :global-path
+            (merge-pathnames "settings.json" agent-directory)
+            :project-path
+            (merge-pathnames
+             "settings.json"
+             (cadr-core:project-config-directory cwd))
+            :project-trusted-p trusted-p))
          (manager
            (make-cli-extension-manager
             :cwd cwd
             :output (make-broadcast-stream)
             :mode :repl
             :explicit-paths
-            (cli-arguments-extensions command)
+            (append
+             (cli-arguments-extensions command)
+             (settings-extension-paths settings-manager))
             :no-discovery-p
             (cli-arguments-no-extensions-p command))))
     (unless (cli-arguments-no-extensions-p command)
-      (let* ((trust-store
-               (make-project-trust-store
-                (merge-pathnames "trust.json" agent-directory)))
-             (trusted-p
-               (resolve-project-trusted
-                trust-store cwd
-                :override
-                (cli-arguments-project-trust-override command)
-                :override-supplied-p
-                (cli-arguments-project-trust-override-supplied-p
-                 command)
-                :has-ui-p nil))
-             (settings-manager
-               (make-settings-manager
-                :global-path
-                (merge-pathnames "settings.json" agent-directory)
-                :project-path
-                (merge-pathnames
-                 "settings.json"
+      (let ((package-records
+              (package-resource-paths
+               (materialize-package-records
+                (configured-package-records
+                 settings-manager
+                 :global-base agent-directory
+                 :project-base
                  (cadr-core:project-config-directory cwd))
-                :project-trusted-p trusted-p))
-             (package-records
-               (package-resource-paths
-                (materialize-package-records
-                 (configured-package-records
-                  settings-manager
-                  :global-base agent-directory
-                  :project-base
-                  (cadr-core:project-config-directory cwd))
-                 (merge-pathnames "packages/" agent-directory)
-                 (merge-pathnames
-                  "packages/"
-                  (cadr-core:project-config-directory cwd))))))
+                (merge-pathnames "packages/" agent-directory)
+                (merge-pathnames
+                 "packages/"
+                 (cadr-core:project-config-directory cwd))))))
         (setf
          (cli-extension-manager-configured-package-paths manager)
          (append
@@ -323,16 +325,23 @@
                    *error-output*)))
          (startup-cwd (uiop:getcwd))
          (session-directory
-           (if
-               (cli-arguments-session-directory
-                command)
-               (uiop:ensure-directory-pathname
-                (merge-pathnames
-                 (pathname
-                  (cli-arguments-session-directory
-                   command))
-                 startup-cwd))
-               (cadr-agent:default-session-directory)))
+           (resolve-session-directory
+            :cli-directory
+            (cli-arguments-session-directory
+             command)
+            :settings-directory
+            (settings-session-dir
+             (make-settings-manager
+              :global-path
+              (merge-pathnames
+               "settings.json"
+               (default-agent-directory))
+              :project-path
+              (merge-pathnames
+               "settings.json"
+               (cadr-core:project-config-directory
+                startup-cwd))))
+            :cwd startup-cwd))
          (session
           (resolve-cli-session
            :continue-p
@@ -384,7 +393,14 @@
             :output frontend-output
             :mode mode
             :explicit-paths
-            (cli-arguments-extensions command)
+            (append
+             (cli-arguments-extensions command)
+             (settings-extension-paths
+              (make-settings-manager
+               :global-path
+               (merge-pathnames
+                "settings.json"
+                (default-agent-directory)))))
             :no-discovery-p
             (cli-arguments-no-extensions-p command)
             :secret-function
@@ -460,15 +476,8 @@
                 (normalize-tool-result-images
                  content
                  :auto-resize-p
-                 (let ((images
-                         (settings-value
-                          settings-manager "images"
-                          (empty-json-object))))
-                   (if (hash-table-p images)
-                       (eq t
-                           (cadr-ai::json-get
-                            images "autoResize" t))
-                       t)))))
+                 (settings-auto-resize-images-p
+                  settings-manager))))
              t))
          (available-models
            (model-registry-available-models
@@ -675,11 +684,20 @@
             :no-themes-p
             (cli-arguments-no-themes-p command)
             :explicit-skill-paths
-            (cli-arguments-skills command)
+            (append
+             (cli-arguments-skills command)
+             (settings-skill-paths
+              settings-manager))
             :explicit-prompt-paths
-            (cli-arguments-prompt-templates command)
+            (append
+             (cli-arguments-prompt-templates command)
+             (settings-prompt-paths
+              settings-manager))
             :explicit-theme-paths
-            (cli-arguments-themes command)
+            (append
+             (cli-arguments-themes command)
+             (settings-theme-paths
+              settings-manager))
             :package-global-skill-paths
             (getf package-resources
                   :global-skills)
@@ -704,7 +722,12 @@
          (resources
            (reload-resources resource-loader))
          (baseline-tools
-           (make-all-coding-tools cwd))
+           (make-all-coding-tools
+            cwd
+            :command-prefix
+            (settings-shell-command-prefix settings-manager)
+            :shell-path
+            (settings-shell-path settings-manager)))
          (builtin-names
            +builtin-coding-tool-names+)
          (tool-filter
@@ -747,6 +770,8 @@
             (resolve-cli-system-prompt
              command resources
              selected-baseline-tools cwd)))
+         (retry-settings
+           (settings-retry-settings settings-manager))
         (agent
           (cadr-agent:make-agent
            :provider (provider-config-provider config)
@@ -764,14 +789,38 @@
             (cli-extension-manager-host
              extension-manager)
             :stream-function
-            (make-extension-aware-stream-function
-             (cli-extension-manager-host
-              extension-manager)
-             :session-id
-             (and session
-                  (cadr-agent:session-id
-                   session)))
+            (stream-function-with-provider-retry
+             (stream-function-with-http-proxy
+              (stream-function-with-http-idle-timeout
+               (stream-function-with-websocket-connect-timeout
+                (stream-function-with-thinking-budgets
+                (make-extension-aware-stream-function
+                 (cli-extension-manager-host
+                  extension-manager)
+                 :session-id
+                 (and session
+                      (cadr-agent:session-id
+                       session)))
+                (lambda ()
+                  (settings-thinking-budgets
+                   settings-manager)))
+               (lambda ()
+                 (settings-websocket-connect-timeout-ms
+                  settings-manager)))
+               (lambda ()
+                 (settings-http-idle-timeout-ms
+                  settings-manager)))
+              (lambda ()
+                (settings-http-proxy settings-manager)))
+             (lambda ()
+               (settings-retry-settings settings-manager)))
             :session session
+            :auto-retry-p
+            (getf retry-settings :enabled-p)
+            :auto-retry-max-attempts
+            (getf retry-settings :max-retries)
+            :auto-retry-base-delay
+            (/ (getf retry-settings :base-delay-ms) 1000)
             :auto-compact-p
             (settings-boolean-value
              settings-manager
@@ -1187,13 +1236,23 @@
                    (cli-extension-manager-host extension-manager)
                    cwd command
                    :exclude-from-context-p exclude-p
-                   :abort-p (lambda () abort-requested-p))))
+                   :abort-p (lambda () abort-requested-p)
+                   :command-prefix
+                   (settings-shell-command-prefix
+                    settings-manager)
+                   :custom-shell-path
+                   (settings-shell-path settings-manager))))
                (multiple-value-bind (content details)
                    (execute-user-bash
                     (cli-extension-manager-host extension-manager)
                     cwd command
                     :exclude-from-context-p exclude-p
-                    :abort-p (lambda () abort-requested-p))
+                    :abort-p (lambda () abort-requested-p)
+                    :command-prefix
+                    (settings-shell-command-prefix
+                     settings-manager)
+                    :custom-shell-path
+                    (settings-shell-path settings-manager))
                  (record-user-bash-result
                   agent
                   (make-user-bash-result-from-execution
@@ -1865,13 +1924,25 @@
          (current-session-tree ()
            (session-tree-selector-data
             (cadr-agent:agent-session agent)))
-         (select-tree-entry (entry-id)
+         (select-tree-entry (entry-id &optional chooser)
            (multiple-value-bind
-                 (messages cancelled-p)
-               (cadr-agent:agent-navigate-tree
-                agent entry-id)
-             (unless cancelled-p
-               messages)))
+                 (summarize-p prompt-cancelled-p)
+               (branch-summary-tree-summarize-p
+                settings-manager
+                :chooser chooser)
+             (when prompt-cancelled-p
+               (return-from select-tree-entry
+                 (values nil t)))
+             (multiple-value-bind
+                   (messages cancelled-p)
+                 (cadr-agent:agent-navigate-tree
+                  agent entry-id
+                  :summarize-p summarize-p
+                  :reserve-tokens
+                  (settings-branch-summary-reserve-tokens
+                   settings-manager))
+               (unless cancelled-p
+                 messages))))
          (set-tree-label (entry-id label)
            (let ((session
                    (cadr-agent:agent-session agent)))
@@ -2130,6 +2201,12 @@
                      (cli-extension-manager-startup-issues
                       extension-manager))
                     (values nil nil))
+              (setf
+               startup-compact
+               (apply-changelog-to-startup-compact-lines
+                startup-compact
+                settings-manager
+                (cadr-agent:agent-messages agent)))
               (cadr-tui:set-capability-overrides
                (settings-terminal-capability-overrides
                 settings-manager))
@@ -2384,6 +2461,14 @@
            (lambda ()
              (settings-mermaid-rendering-mode
               settings-manager))
+           :code-block-indent-function
+           (lambda ()
+             (settings-markdown-code-block-indent
+              settings-manager))
+           :external-editor-command-function
+           (lambda ()
+             (settings-external-editor-command
+              settings-manager))
            :extension-host
            (cli-extension-manager-host
             extension-manager)
@@ -2395,30 +2480,38 @@
            #'current-session-tree
            :api-key-login-function
            (lambda (provider key)
-             (if
-                 (model-registry-native-provider-p
-                  model-registry provider)
-                 (model-registry-login-native-provider
-                  model-registry provider
-                  (runtime-auth-interaction
-                   :supplied-value key)
-                  :auth-type :api-key)
-                 (model-registry-login-api-key
-                  model-registry provider key))
-             ;; Report the selection outcome and the credential path so
-             ;; the caller can render the baseline completion text.
-             (values
-              (refresh-auth provider :login)
-              (namestring
-               (if (typep
-                    (model-registry-credentials model-registry)
-                    'file-auth-storage)
-                   (file-auth-storage-path
-                    (model-registry-credentials model-registry))
-                   (default-auth-path)))
-              ;; pi@d981de122 model-runtime.ts:532 — non-nil when the
-              ;; credential saved but the local snapshot did not sync.
-              (model-registry-error model-registry)))
+             (flet ((auth-path ()
+                      (namestring
+                       (if (typep
+                            (model-registry-credentials
+                             model-registry)
+                            'file-auth-storage)
+                           (file-auth-storage-path
+                            (model-registry-credentials
+                             model-registry))
+                           (default-auth-path)))))
+               (handler-case
+                   (progn
+                     (if
+                         (model-registry-native-provider-p
+                          model-registry provider)
+                         (model-registry-login-native-provider
+                          model-registry provider
+                          (runtime-auth-interaction
+                           :supplied-value key)
+                          :auth-type :api-key)
+                         (model-registry-login-api-key
+                          model-registry provider key))
+                     (values
+                      (refresh-auth provider :login)
+                      (auth-path)
+                      (model-registry-error model-registry)))
+                 (credential-synchronization-error (condition)
+                   (values
+                    nil
+                    (auth-path)
+                    (credential-synchronization-error-message
+                     condition))))))
            :auth-status-function #'authentication-status
            :logout-options-function #'stored-logout-options
            :on-model-selected
@@ -2658,4 +2751,10 @@
                 agent extension-manager
                 :input *standard-input*
                 :output *standard-output*
-                :error-output *error-output*))))))))))
+                :error-output *error-output*
+                :shell-command-prefix
+                (settings-shell-command-prefix
+                 settings-manager)
+                :shell-path
+                (settings-shell-path
+                 settings-manager)))))))))))

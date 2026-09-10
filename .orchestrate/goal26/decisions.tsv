@@ -1,0 +1,4 @@
+ts	phase	decision	why	evidence	result
+2026-09-07T11:43:00Z	frame	chartered Goal 26 as fair parity then beat; cohort=17 g25 unreachable; out=subus+measure-only	user wants beat preferred parity minimum; g25 freezes were ruler/essence not done	docs/acceptance/goal-v26.md	open-parity=17
+2026-09-07T11:44:00Z	frame	tracks R then H; no silent frozen-unreachable; accepted-runtime-gap only via gates.md	fix-root-causes + prove-it-works; leftover wins banned	.orchestrate/goal26/preferences.md	standing orders set
+2026-09-07T12:52:00Z	pilot	landed r-websocket-fair remeter on tip; websocket still open-parity at 14.47× fair; NODELAY 3.05× reverted	pilot falsified brief; invent continues as h-websocket	/tmp/g26-websocket-fair.patch	landed-open-parity

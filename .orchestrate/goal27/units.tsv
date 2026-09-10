@@ -1,0 +1,5 @@
+id	track	state	branch	pr	sha	brief
+c0-charter	R	done				docs/acceptance/goal-v27.md
+h-search-text	H	done				.orchestrate/goal27/briefs/h-search-text.md
+h-enabled-set	H	done				.orchestrate/goal27/briefs/h-enabled-set.md
+h-atomic-write	H	done				.orchestrate/goal27/briefs/h-atomic-write.md

@@ -1,5 +1,27 @@
 (in-package #:cadr-cli)
 
+(defun make-external-editor-runner (command)
+  (lambda (path)
+    (let ((tokens
+            (remove
+             ""
+             (uiop:split-string command)
+             :test #'string=)))
+      (if (null tokens)
+          1
+          (handler-case
+              (nth-value
+               2
+               (uiop:run-program
+                (append
+                 tokens
+                 (list (uiop:native-namestring path)))
+                :ignore-error-status t
+                :input t
+                :output t
+                :error-output t))
+            (error () 1))))))
+
 (defun edit-in-external-editor (content runner)
   (uiop:with-temporary-file
       (:pathname path

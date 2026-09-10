@@ -148,7 +148,8 @@
 (defun agent-navigate-tree
     (agent entry-id
      &key summarize-p custom-instructions
-       replace-instructions-p label)
+       replace-instructions-p label
+       (reserve-tokens 16384))
   (call-with-agent-operation
    agent
    (lambda ()
@@ -209,7 +210,8 @@
                       :replace-instructions-p
                       (if (member :replace-instructions-p before)
                           (getf before :replace-instructions-p)
-                          replace-instructions-p))))
+                          replace-instructions-p)
+                      :reserve-tokens reserve-tokens)))
                (unless result
                  (return-from agent-navigate-tree
                    (values nil t nil nil)))

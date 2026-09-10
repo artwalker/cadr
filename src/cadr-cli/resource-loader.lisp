@@ -119,6 +119,135 @@ Returns the deduped list and a list of collision records
   (load-resources-at-paths
    paths #'cadr-agent::load-prompt-templates))
 
+(defun default-resource-loader-theme-search-paths
+    (loader &optional extension-paths)
+  (let* ((agent
+           (uiop:ensure-directory-pathname
+            (default-resource-loader-agent-directory
+             loader)))
+         (configs
+           (if
+               (default-resource-loader-project-trusted-p
+                loader)
+               (project-config-directories
+                (default-resource-loader-cwd loader))
+               nil))
+         (no-themes-p
+           (default-resource-loader-no-themes-p loader)))
+    (append
+     (unless no-themes-p
+       (append
+        (list
+         (merge-pathnames "themes/" agent))
+        (default-resource-loader-package-global-theme-paths
+         loader)
+        (mapcar
+         (lambda (config)
+           (merge-pathnames "themes/" config))
+         configs)
+        (default-resource-loader-package-project-theme-paths
+         loader)
+        (mapcar
+         #'pathname
+         (getf extension-paths :theme-paths))))
+     (mapcar
+      #'pathname
+      (default-resource-loader-explicit-theme-paths
+       loader)))))
+
+(defun default-resource-loader-skill-path-lists
+    (loader &optional extension-paths)
+  (let* ((agent
+           (uiop:ensure-directory-pathname
+            (default-resource-loader-agent-directory
+             loader)))
+         (configs
+           (if
+               (default-resource-loader-project-trusted-p
+                loader)
+               (project-config-directories
+                (default-resource-loader-cwd loader))
+               nil))
+         (no-skills-p
+           (default-resource-loader-no-skills-p loader)))
+    (values
+     (append
+      (unless no-skills-p
+        (list
+         (merge-pathnames "skills/" agent)))
+      (unless no-skills-p
+        (default-resource-loader-package-global-skill-paths
+         loader))
+      (mapcar
+       #'explicit-resource-directory
+       (default-resource-loader-explicit-skill-paths
+        loader)))
+     (unless no-skills-p
+       (append
+        (mapcar
+         (lambda (config)
+           (merge-pathnames "skills/" config))
+         configs)
+        (default-resource-loader-package-project-skill-paths
+         loader)
+        (mapcar
+         #'pathname
+         (getf extension-paths :skill-paths)))))))
+
+(defun default-resource-loader-skill-search-paths
+    (loader &optional extension-paths)
+  (multiple-value-bind (global project)
+      (default-resource-loader-skill-path-lists
+       loader extension-paths)
+    (append global project)))
+
+(defun default-resource-loader-prompt-path-lists
+    (loader &optional extension-paths)
+  (let* ((agent
+           (uiop:ensure-directory-pathname
+            (default-resource-loader-agent-directory
+             loader)))
+         (configs
+           (if
+               (default-resource-loader-project-trusted-p
+                loader)
+               (project-config-directories
+                (default-resource-loader-cwd loader))
+               nil))
+         (no-prompts-p
+           (default-resource-loader-no-prompts-p loader)))
+    (values
+     (append
+      (unless no-prompts-p
+        (list
+         (merge-pathnames "prompts/" agent)))
+      (unless no-prompts-p
+        (default-resource-loader-package-global-prompt-paths
+         loader))
+      (mapcar
+       #'explicit-resource-directory
+       (default-resource-loader-explicit-prompt-paths
+        loader)))
+     (unless no-prompts-p
+       (append
+        (mapcar
+         (lambda (config)
+           (merge-pathnames "prompts/" config))
+         configs)
+        (default-resource-loader-package-project-prompt-paths
+         loader)
+        (mapcar
+         #'pathname
+         (getf extension-paths
+               :prompt-paths)))))))
+
+(defun default-resource-loader-prompt-search-paths
+    (loader &optional extension-paths)
+  (multiple-value-bind (global project)
+      (default-resource-loader-prompt-path-lists
+       loader extension-paths)
+    (append global project)))
+
 (defun load-themes-at-paths (paths)
   (let ((items nil))
     (dolist (raw paths)
@@ -216,10 +345,6 @@ Returns the deduped list and a list of collision records
                       loader)
                      :reload :startup)))
                nil))
-         (agent
-           (uiop:ensure-directory-pathname
-            (default-resource-loader-agent-directory
-             loader)))
          (configs
            (if
                (default-resource-loader-project-trusted-p
@@ -227,84 +352,21 @@ Returns the deduped list and a list of collision records
                (project-config-directories
                 (default-resource-loader-cwd loader))
                nil))
-         (no-skills-p
-           (default-resource-loader-no-skills-p loader))
-         (no-prompts-p
-           (default-resource-loader-no-prompts-p loader))
-         (no-themes-p
-           (default-resource-loader-no-themes-p loader))
-         (global-skill-paths
-           (append
-            (unless no-skills-p
-              (list
-               (merge-pathnames "skills/" agent)))
-            (unless no-skills-p
-              (default-resource-loader-package-global-skill-paths
-               loader))
-            (mapcar
-             #'explicit-resource-directory
-             (default-resource-loader-explicit-skill-paths
-              loader))))
-         (project-skill-paths
-           (unless no-skills-p
-             (append
-              (mapcar
-               (lambda (config)
-                 (merge-pathnames "skills/" config))
-               configs)
-              (default-resource-loader-package-project-skill-paths
-               loader)
-              (mapcar
-               #'pathname
-               (getf extension-paths
-                     :skill-paths)))))
-         (global-prompt-paths
-           (append
-            (unless no-prompts-p
-              (list
-               (merge-pathnames "prompts/" agent)))
-            (unless no-prompts-p
-              (default-resource-loader-package-global-prompt-paths
-               loader))
-            (mapcar
-             #'explicit-resource-directory
-             (default-resource-loader-explicit-prompt-paths
-              loader))))
-         (project-prompt-paths
-           (unless no-prompts-p
-             (append
-              (mapcar
-               (lambda (config)
-                 (merge-pathnames "prompts/" config))
-               configs)
-              (default-resource-loader-package-project-prompt-paths
-               loader)
-              (mapcar
-               #'pathname
-               (getf extension-paths
-                     :prompt-paths)))))
+         (skill-path-lists
+           (multiple-value-list
+            (default-resource-loader-skill-path-lists
+             loader extension-paths)))
+         (global-skill-paths (first skill-path-lists))
+         (project-skill-paths (second skill-path-lists))
+         (prompt-path-lists
+           (multiple-value-list
+            (default-resource-loader-prompt-path-lists
+             loader extension-paths)))
+         (global-prompt-paths (first prompt-path-lists))
+         (project-prompt-paths (second prompt-path-lists))
          (theme-paths
-           (append
-            (unless no-themes-p
-              (append
-              (list
-               (merge-pathnames "themes/" agent))
-              (default-resource-loader-package-global-theme-paths
-               loader)
-              (mapcar
-               (lambda (config)
-                 (merge-pathnames "themes/" config))
-               configs)
-              (default-resource-loader-package-project-theme-paths
-               loader)
-              (mapcar
-               #'pathname
-               (getf extension-paths
-                     :theme-paths))))
-            (mapcar
-             #'pathname
-             (default-resource-loader-explicit-theme-paths
-              loader)))))
+           (default-resource-loader-theme-search-paths
+            loader extension-paths)))
     (multiple-value-bind
           (global-skills global-skill-warnings)
         (load-skills-at-paths global-skill-paths)

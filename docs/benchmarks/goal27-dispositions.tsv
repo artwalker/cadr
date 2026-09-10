@@ -1,0 +1,7 @@
+metric	disposition	class	evidence	note
+cli_print_rpc.dialog_request	out-of-scope	runtime-essence-candidate	docs/acceptance/goal-v27.md	no semantic-preserving knife; struct missed; recycle not concurrent-safe
+cli_selectors.scoped_model_selector_search_text	kept-faster	product-gap	docs/benchmarks/goal27-evidence/search-text/REPORT.md	eq weak cache; 2.170x (1.553/0.715us) vs HEAD 7.439x; smsst strings match; not 1.0x
+cli_selectors.scoped_models_enabled_set	kept-faster	product-gap	docs/benchmarks/goal27-evidence/enabled-set/REPORT.md	list membership; 0.0367x (0.078/2.137us) vs HEAD 1.040x; member equal; encode accepts list
+cli_support.write_overwrite	no-keep	product-gap	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	h1 3.251x h2 3.311x vs HEAD 3.329x; empty miss; revert; bytes match
+cli_support.write_hello	no-keep	product-gap	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	h1 4.394x h2 4.977x vs HEAD 5.760x; not kept alone
+cli_support.write_empty	no-keep	product-gap	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	h1 12.248x h2 11.298x vs HEAD 10.994x; both slower; all-three bar failed

@@ -519,7 +519,8 @@
 (defun render-assistant-blocks
     (entry width extension-host
      &key hide-thinking-block-p hidden-thinking-label
-          (mermaid-mode "streaming"))
+          (mermaid-mode "streaming")
+          (code-block-indent "  "))
   (let* ((available-width
            (max 1 (- width 2)))
          (blocks
@@ -547,6 +548,7 @@
                       hide-thinking-block-p
                       hidden-thinking-label
                       mermaid-mode
+                      code-block-indent
                       (tui-entry-stop-reason entry)
                       (tui-entry-error-message entry)
                       (tui-entry-has-tool-calls-p entry)))))
@@ -571,6 +573,7 @@
                         transformed width
                         :padding-x 1
                         :ansi-theme-p t
+                        :code-block-indent code-block-indent
                         :default-style-function
                         (and
                          (eq message-type
@@ -864,7 +867,8 @@
 
 (defun tui-entry-uncached-paint-key
     (entry width hide-thinking-block-p
-     hidden-thinking-label mermaid-mode)
+     hidden-thinking-label mermaid-mode
+     code-block-indent)
   "Equal-safe content key when extension-host is nil and paint ignores now.
 Theme is part of every cacheable key so a dark paint is never reused under
 light (and vice versa). Streaming and other non-cacheable entries return
@@ -887,6 +891,7 @@ lines that embed OSC-8."
              hide-thinking-block-p
              hidden-thinking-label
              mermaid-mode
+             code-block-indent
              (tui-entry-stop-reason entry)
              (tui-entry-error-message entry)
              (tui-entry-has-tool-calls-p entry)))
@@ -904,7 +909,8 @@ lines that embed OSC-8."
              (tui-entry-text entry)
              (tui-entry-label entry)
              width
-             mermaid-mode))
+             mermaid-mode
+             code-block-indent))
       ((:notice :status :error :warning
         :project-trust-warning :success :debug-written
         :version-update :package-update)
@@ -932,14 +938,16 @@ lines that embed OSC-8."
     (entry width &key extension-host now
                       hide-thinking-block-p
                       hidden-thinking-label
-                      (mermaid-mode "streaming"))
+                      (mermaid-mode "streaming")
+                      (code-block-indent "  "))
   (let* ((key
            (and (null extension-host)
                 (tui-entry-uncached-paint-key
                  entry width
                  hide-thinking-block-p
                  hidden-thinking-label
-                 mermaid-mode)))
+                 mermaid-mode
+                 code-block-indent)))
          (cached
            (and key
                 (gethash key *tui-entry-uncached-by-key*))))
@@ -951,7 +959,8 @@ lines that embed OSC-8."
                  :now now
                  :hide-thinking-block-p hide-thinking-block-p
                  :hidden-thinking-label hidden-thinking-label
-                 :mermaid-mode mermaid-mode)))
+                 :mermaid-mode mermaid-mode
+                 :code-block-indent code-block-indent)))
           (when key
             (setf (gethash key *tui-entry-uncached-by-key*)
                   lines))
@@ -961,7 +970,8 @@ lines that embed OSC-8."
     (entry width &key extension-host now
                       hide-thinking-block-p
                       hidden-thinking-label
-                      (mermaid-mode "streaming"))
+                      (mermaid-mode "streaming")
+                      (code-block-indent "  "))
   (case (tui-entry-type entry)
     (:user
      (let ((lines
@@ -978,6 +988,7 @@ lines that embed OSC-8."
                :padding-x 1
                :padding-y 1
                :ansi-theme-p t
+               :code-block-indent code-block-indent
                :default-style-function
                (lambda (text)
                  (cadr-tui:theme-foreground
@@ -994,7 +1005,8 @@ lines that embed OSC-8."
               entry width extension-host
               :hide-thinking-block-p hide-thinking-block-p
               :hidden-thinking-label hidden-thinking-label
-              :mermaid-mode mermaid-mode)))
+              :mermaid-mode mermaid-mode
+              :code-block-indent code-block-indent)))
        (when
            (and
             lines
@@ -1141,6 +1153,7 @@ lines that embed OSC-8."
        :padding-x 1
        :padding-y 1
        :ansi-theme-p t
+       :code-block-indent code-block-indent
        :syntax-highlight-function
        #'tui-syntax-highlight)
       (list (selector-border-line width))))
@@ -1173,7 +1186,8 @@ lines that embed OSC-8."
     (entry width &key extension-host now
                       hide-thinking-block-p
                       hidden-thinking-label
-                      (mermaid-mode "streaming"))
+                      (mermaid-mode "streaming")
+                      (code-block-indent "  "))
   (let* ((cacheable-p
            (tui-entry-render-cacheable-p entry))
          (theme
@@ -1199,6 +1213,9 @@ lines that embed OSC-8."
            entry))
          (equal mermaid-mode
                 (tui-entry-render-cache-mermaid-mode
+                 entry))
+         (equal code-block-indent
+                (tui-entry-render-cache-code-block-indent
                  entry)))
         (tui-entry-render-cache-lines entry)
         (let ((lines
@@ -1208,7 +1225,8 @@ lines that embed OSC-8."
                  :now now
                  :hide-thinking-block-p hide-thinking-block-p
                  :hidden-thinking-label hidden-thinking-label
-                 :mermaid-mode mermaid-mode)))
+                 :mermaid-mode mermaid-mode
+                 :code-block-indent code-block-indent)))
           (when cacheable-p
             (setf
              (tui-entry-render-cache-valid-p entry) t
@@ -1219,6 +1237,8 @@ lines that embed OSC-8."
              snapshot
              (tui-entry-render-cache-mermaid-mode entry)
              mermaid-mode
+             (tui-entry-render-cache-code-block-indent entry)
+             code-block-indent
              (tui-entry-render-cache-lines entry) lines))
           lines))))
 
@@ -1226,7 +1246,8 @@ lines that embed OSC-8."
     (entries width &key extension-host now
                         hide-thinking-block-p
                         hidden-thinking-label
-                        (mermaid-mode "streaming"))
+                        (mermaid-mode "streaming")
+                        (code-block-indent "  "))
   (loop
     for entry in entries
     for index from 0
@@ -1237,7 +1258,8 @@ lines that embed OSC-8."
        :now now
        :hide-thinking-block-p hide-thinking-block-p
        :hidden-thinking-label hidden-thinking-label
-       :mermaid-mode mermaid-mode)
+       :mermaid-mode mermaid-mode
+       :code-block-indent code-block-indent)
     append
       (if
           (and

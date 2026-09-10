@@ -93,6 +93,7 @@
     ("app.message.followUp" . :follow-up)
     ("app.message.dequeue" . :dequeue)
     ("app.message.copy" . :copy)
+    ("app.editor.external" . :external-editor)
     ("app.session.new" . :session-new)
     ("app.session.tree" . :session-tree)
     ("app.session.fork" . :session-fork)

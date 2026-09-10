@@ -1,0 +1,34 @@
+diff --git a/src/cadr-cli/interactive/selectors/models.lisp b/src/cadr-cli/interactive/selectors/models.lisp
+index d730c7747..baa8d9e68 100644
+--- a/src/cadr-cli/interactive/selectors/models.lisp
++++ b/src/cadr-cli/interactive/selectors/models.lisp
+@@ -550,10 +550,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
+       (copy-list enabled)))
+ 
+ (defun scoped-models-enabled-set (enabled)
+-  (let ((set (make-hash-table :test #'equal)))
+-    (dolist (id enabled)
+-      (setf (gethash id set) t))
+-    set))
++  enabled)
+ 
+ (defun scoped-models-selector-rebuild-models-by-id
+     (state)
+@@ -599,7 +596,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
+            (copy-list enabled)
+            (loop
+              for id in all
+-             unless (gethash id enabled-set)
++             unless (member id enabled-set :test #'equal)
+                collect id))))))
+ 
+ (defun scoped-models-selector-rebuild-items (state)
+@@ -624,7 +621,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
+         :id id
+         :model model
+         :enabled-p
+-        (or all-enabled-p (gethash id enabled-set))
++        (or all-enabled-p (member id enabled-set :test #'equal))
+         :search-text
+         (if model
+             (scoped-model-selector-search-text model)

@@ -1,0 +1,18 @@
+metric	g25_disposition	class	ratio_hint	g25_evidence	note
+websocket_stream.stream_roundtrip	frozen-unreachable	product-gap	14.47	docs/benchmarks/goal26-evidence/websocket_stream-fair/	fair remeter landed; invent to ≤1.0× (NODELAY alone 3.05×)
+harness_storage.open_walk	frozen-unreachable	product-gap	0.984	docs/benchmarks/goal26-evidence/harness_storage-invent/	met-beat invent; octet+schema fallback; branch gap remains booked
+session_export_html.to_html	frozen-unreachable	product-gap	0.670	docs/benchmarks/goal26-evidence/session_export_html-invent/	met-beat invent; octet/base64/stream JSON; html_chars gap remains booked
+cli_print_rpc.dialog_request	frozen-unreachable	runtime-essence-candidate		docs/benchmarks/goal25-evidence/cli_print_rpc-dialog_request-freeze/essence.md	hash-table vs V8; invent then gate if exhausts
+cli_selectors.model_selector_active_models	frozen-unreachable	product-gap	0.047	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter beat; constructors out of timed slot
+cli_selectors.model_selector_clamp_selected	frozen-unreachable	product-gap	0.008	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter beat; constructors out of timed slot
+cli_selectors.model_selector_select_current	frozen-unreachable	product-gap	0.456	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter beat; constructors out of timed slot
+cli_selectors.scoped_model_selector_search_text	frozen-unreachable	product-gap	5.482	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter 5.482×; format vs getModelSearchText; invent next
+cli_selectors.scoped_models_clear_ids	frozen-unreachable	product-gap	0.094	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter beat; constructors out of timed slot
+cli_selectors.scoped_models_enable_ids	frozen-unreachable	product-gap	0.219	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter beat; constructors out of timed slot
+cli_selectors.scoped_models_enabled_set	frozen-unreachable	product-gap	1.610	docs/benchmarks/goal26-evidence/cli_selectors-fair/	fair remeter 1.610×; hash-table vs Set; invent next
+cli_support.write_overwrite	frozen-unreachable	product-gap		docs/benchmarks/goal25-dispositions.tsv	write path; fair remesure then invent
+cli_support.write_hello	frozen-unreachable	product-gap		docs/benchmarks/goal25-dispositions.tsv	write path; fair remesure then invent
+cli_support.write_empty	frozen-unreachable	product-gap		docs/benchmarks/goal25-dispositions.tsv	write path; fair remesure then invent
+cli_support.threads_current	frozen-unreachable	product-gap		docs/benchmarks/goal25-dispositions.tsv	thread semantics; fair remesure then invent
+cli_support.threads_absent	frozen-unreachable	product-gap		docs/benchmarks/goal25-dispositions.tsv	thread semantics; fair remesure then invent
+cli_support.close_watcher	frozen-unreachable	product-gap		docs/benchmarks/goal25-dispositions.tsv	close path; fair remesure then invent

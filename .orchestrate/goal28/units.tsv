@@ -1,0 +1,47 @@
+id	track	state	branch	pr	sha	brief
+r-inventory	R	done			219a3edd0	.orchestrate/goal28/briefs/r-inventory.md
+r-presence	R	done			219a3edd0	.orchestrate/goal28/briefs/r-presence.md
+r-presence-rest	R	done			219a3edd0	.orchestrate/goal28/briefs/r-presence-rest.md
+r-settings-alias	R	done			219a3edd0	.orchestrate/goal28/briefs/r-settings-alias.md
+h-compaction-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-compaction-settings.md
+h-branch-summary-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-branch-summary-settings.md
+h-shell-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-shell-settings.md
+h-session-dir-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-session-dir-settings.md
+h-websocket-timeout	H	done			219a3edd0	.orchestrate/goal28/briefs/h-websocket-timeout.md
+h-websocket-timeout-arg	H	done			219a3edd0	.orchestrate/goal28/briefs/h-websocket-timeout-arg.md
+h-http-proxy	H	done			219a3edd0	.orchestrate/goal28/briefs/h-http-proxy.md
+h-thinking-budgets	H	done			219a3edd0	.orchestrate/goal28/briefs/h-thinking-budgets.md
+h-themes-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-themes-settings.md
+h-skills-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-skills-settings.md
+h-prompts-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-prompts-settings.md
+h-extensions-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-extensions-settings.md
+h-markdown-indent	H	done			219a3edd0	.orchestrate/goal28/briefs/h-markdown-indent.md
+h-markdown-indent-live	H	done			219a3edd0	.orchestrate/goal28/briefs/h-markdown-indent-live.md
+h-last-changelog-version	H	done			219a3edd0	.orchestrate/goal28/briefs/h-last-changelog-version.md
+h-external-editor	H	done			219a3edd0	.orchestrate/goal28/briefs/h-external-editor.md
+h-external-editor-key	H	done			219a3edd0	.orchestrate/goal28/briefs/h-external-editor-key.md
+h-npm-command	H	done			219a3edd0	.orchestrate/goal28/briefs/h-npm-command.md
+h-rpc-bash-settings	H	done			219a3edd0	.orchestrate/goal28/briefs/h-rpc-bash-settings.md
+h-native-http-proxy	H	done			219a3edd0	.orchestrate/goal28/briefs/h-native-http-proxy.md
+h-branch-summary-prompt	H	done			219a3edd0	.orchestrate/goal28/briefs/h-branch-summary-prompt.md
+h-provider-retry	H	done			219a3edd0	.orchestrate/goal28/briefs/h-provider-retry.md
+h-retry-enabled	H	done			219a3edd0	.orchestrate/goal28/briefs/h-retry-enabled.md
+h-pi-offline	H	done			219a3edd0	.orchestrate/goal28/briefs/h-pi-offline.md
+h-tool-call-events	H	done			219a3edd0	.orchestrate/goal28/briefs/h-tool-call-events.md
+h-import-file-not-found	H	done			219a3edd0	.orchestrate/goal28/briefs/h-import-file-not-found.md
+h-missing-session-cwd	H	done			219a3edd0	.orchestrate/goal28/briefs/h-missing-session-cwd.md
+h-credential-sync	H	done			219a3edd0	.orchestrate/goal28/briefs/h-credential-sync.md
+h-http-idle-timeout	H	done			219a3edd0	.orchestrate/goal28/briefs/h-http-idle-timeout.md
+h-http-idle-stream	H	done			219a3edd0	.orchestrate/goal28/briefs/h-http-idle-stream.md
+h-adjudication-overlay	H	done				docs/benchmarks/goal28-adjudications.tsv
+h-image-settings	H	done				.orchestrate/goal28/briefs/h-image-settings.md
+h-terminal-warning-settings	H	done				test/cadr-cli/goal28-terminal-warning-settings-test.lisp
+h-packages-settings	H	done				.orchestrate/goal28/briefs/h-packages-settings.md
+h-npm-command-install	H	done				test/cadr-cli/goal28-npm-command-install-test.lisp
+h-exit-and-auth	H	done				test/cadr-cli/goal28-exit-and-auth-test.lisp
+h-session-format-versions	H	done				test/cadr-agent/session-v3-test.lisp
+h-cli-flags	H	done				test/cadr-cli/goal28-cli-flags-test.lisp
+h-slash-commands	H	done				test/cadr-cli/goal28-slash-commands-test.lisp
+h-registries	H	done				test/cadr-cli/goal28-registries-test.lisp
+h-events-providers-tools	H	done				test/cadr-cli/goal28-events-providers-tools-test.lisp
+h-remaining-surfaces-close	done	open-capability=0	extension+env+publicApi

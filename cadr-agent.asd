@@ -94,6 +94,7 @@
                              (:file "truncate-test")
                              (:file "execution-env-test")
                              (:file "extensions-test")
+                             (:file "goal28-tool-call-events-test")
                              (:file "extensions-wave2-test")
                              (:file "extensions-wave3-test")
                              (:file "goal12-extension-api-test")

@@ -1,0 +1,27 @@
+n-times 200, no full GC (internal-real-time):
+utf8 hello 128.960 us leftover 140
+string hello 147.380 us leftover 140
+string hello durability none 147.380 us leftover 140
+utf8 overwrite (two writes) 331.600 us leftover 266
+string overwrite durability none 294.760 us leftover 266
+utf8 empty 73.690 us leftover 42
+string empty durability none 55.270 us leftover 42
+ensure-directories-exist existing 0.000 us
+probe-file parent 0.000 us
+
+harness-faithful (full GC, 5 reps, CLOCK_MONOTONIC, median of 5):
+utf8 hello 326.752 us leftover 140
+string hello flush 222.352 us leftover 140
+string hello none 249.836 us leftover 140
+no-mkdir hello flush 249.334 us leftover 140
+no-mkdir hello none 231.721 us leftover 140
+utf8 overwrite 372.874 us leftover 266
+string overwrite none 462.355 us leftover 266
+no-mkdir overwrite none 399.998 us leftover 266
+utf8 empty 110.035 us leftover 42
+string empty none 101.867 us leftover 42
+no-mkdir empty none 99.229 us leftover 42
+
+paired HEAD (prior unit remesure7): hello 808.253 overwrite 886.632 empty 466.509
+paired h2 posix (reverted, not this unit): hello 249.367 overwrite 422.005 empty 56.917
+paired leftover: hello 140.315 overwrite 266.309 empty 42.435

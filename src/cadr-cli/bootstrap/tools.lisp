@@ -6,18 +6,33 @@
 (defparameter +builtin-coding-tool-names+
   '("read" "bash" "powershell" "edit" "write" "grep" "find" "ls"))
 
-(defun make-baseline-coding-tools (cwd &key context)
+(defun make-baseline-coding-tools
+    (cwd &key context command-prefix shell-path)
   (list (make-read-tool cwd :context context)
-        (make-bash-tool cwd :context context)
+        (make-bash-tool
+         cwd
+         :context context
+         :command-prefix command-prefix
+         :shell-path shell-path)
         (make-edit-tool cwd :context context)
         (make-write-tool cwd :context context)))
 
-(defun make-coding-tools (cwd &key context)
-  (make-baseline-coding-tools cwd :context context))
+(defun make-coding-tools
+    (cwd &key context command-prefix shell-path)
+  (make-baseline-coding-tools
+   cwd
+   :context context
+   :command-prefix command-prefix
+   :shell-path shell-path))
 
-(defun make-all-coding-tools (cwd &key context)
+(defun make-all-coding-tools
+    (cwd &key context command-prefix shell-path)
   (append
-   (make-baseline-coding-tools cwd :context context)
+   (make-baseline-coding-tools
+    cwd
+    :context context
+    :command-prefix command-prefix
+    :shell-path shell-path)
    (list
     (make-powershell-tool cwd :context context)
     (make-grep-tool cwd)

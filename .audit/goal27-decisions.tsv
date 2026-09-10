@@ -1,0 +1,18 @@
+2026-09-08T08:43:00Z	open	Goal 27 same-result speedup	search-text, enabled-set, atomic-write; dialog out	docs/acceptance/goal-v27.md	open
+ts	phase	decision	why	evidence	result
+2026-09-08T00:47:20Z	frame	lock metric scoped_model_selector_search_text; keep only if strictly faster than HEAD and smsst string= HEAD; prefer <=1.0x	Goal 27 one-hypothesis unit; leftover-only win banned	/root/projects/cadr/.orchestrate/goal27/briefs/h-search-text.md	open
+2026-09-08T00:47:20Z	how	timed path is format plus nested qualified-model-id on six fixture models reused after warmup	workload size is six models not history; pi is one template in getModelSearchText	/tmp/cadr-g27-search-text/src/cadr-cli/interactive/selectors/models.lisp	grounded
+2026-09-08T00:47:20Z	harness	freeze remesure n=5 warmups=1 COLLECT_ONLY search-text slices unset SYNC_TIP_PY Friend-MachineD	ruler already separated format from template at Goal 26 5.482x	/tmp/g27-search-text-remesure.sh	frozen
+2026-09-08T00:49:39Z	baseline	HEAD search-text 5.322us / 0.715us = 7.439x Friend-MachineD n=5	before any product change; pair python still fails theme ANSI in cli_selectors group	/tmp/g27-search-text-baseline/summary.json	7.439x
+2026-09-08T00:49:39Z	h1	eq cache of the HEAD format string keyed by model; warmup fills; timed path is gethash	charter knife; not Goal 26 fragment concatenate	/tmp/cadr-g27-search-text/src/cadr-cli/interactive/selectors/models.lisp	measuring
+2026-09-08T00:51:30Z	h1	keep eq cache; 1.553us / 0.715us = 2.170x vs HEAD 7.439x; smsst string= HEAD including empty name	strictly faster than HEAD on fair Friend-MachineD; preferred 1.0x not met; Goal 27 keep bar is faster than HEAD	/tmp/g27-search-text-h1/ratios.tsv	kept-faster
+2026-09-08T00:51:30Z	stop	one hypothesis done; patch at /tmp/g27-search-text.patch; parent lands; no PR	unit is one knife remesure keep-or-revert	/tmp/g27-search-text-REPORT.md	kept-faster
+2026-09-08T08:52:00Z	land	h-search-text eq cache kept 2.170x	strings match HEAD; other g27 units still running	docs/benchmarks/goal27-evidence/search-text/REPORT.md	kept-faster
+ts	phase	decision	why	evidence	result
+2026-09-08T00:53:39Z	ground	metric is scoped_models_enabled_set, lower cadr median, keep if strictly faster than HEAD and membership/order match	Goal 27 one-hypothesis unit. Fair Friend-MachineD, slices unset.	/root/projects/cadr/.orchestrate/goal27/briefs/h-enabled-set.md	stop predicate fixed
+2026-09-08T00:53:39Z	harness	froze /tmp/g27-enabled-set-remesure.sh with SYNC_TIP_PY and --only-enforce cli_selectors.scoped_models_enabled_set	same lever as Goal 26 selectors remesure. Official py still fails theme ANSI and smce_copy.	/tmp/g27-enabled-set-remesure.sh	HEAD mill 2.22286us vs pi 2.13684us = 1.040x
+2026-09-08T00:53:39Z	h1	replaced EQUAL hash-table with the enabled list and member equal at both gethash sites	lists are length 0-3. No :size. No shared empty table.	/tmp/cadr-g27-enabled-set/src/cadr-cli/interactive/selectors/models.lisp	kept 0.07844us / 2.13684us = 0.0367x, smes match, behavior match
+2026-09-08T00:53:39Z	plateau	stop after one keep	worker is one hypothesis. Predicate met.	/tmp/g27-enabled-set-after/summary.json	kept
+2026-09-08T08:54:00Z	land	h-enabled-set list membership kept 0.0367x	encode dual-typed; atomic-write still running	docs/benchmarks/goal27-evidence/enabled-set/REPORT.md	kept-faster
+2026-09-08T01:15:00Z	close	h-atomic-write no-keep	h1 empty 12.248x h2 empty 11.298x both slower than HEAD 10.994x; all-three bar failed; bytes match; product restored	docs/benchmarks/goal27-evidence/atomic-write/REPORT.md	no-keep
+2026-09-08T01:15:00Z	met	Goal 27 closed	2 kept-faster, 3 no-keep, dialog out-of-scope; no result change	docs/acceptance/goal-v27.md	met

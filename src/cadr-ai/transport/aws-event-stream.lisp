@@ -171,6 +171,7 @@
 (defun request-aws-event-stream
     (request consumer
      &key (connect-timeout 10)
+       (read-timeout nil)
        abort-p
        environment
        on-response)
@@ -179,7 +180,8 @@
         (apply #'invoke-http-request
                request
                (append
-                (list :connect-timeout connect-timeout :read-timeout nil)
+                (list :connect-timeout connect-timeout
+                      :read-timeout read-timeout)
                 (when environment (list :environment environment))
                 (list :want-stream t :force-binary t))))
     (unwind-protect
@@ -203,6 +205,7 @@
 (defun request-provider-events
     (request consumer
      &key (connect-timeout 10)
+       (read-timeout nil)
        abort-p
        environment
        on-response)
@@ -210,6 +213,7 @@
     (:sse
      (request-sse request consumer
                   :connect-timeout connect-timeout
+                  :read-timeout read-timeout
                   :abort-p abort-p
                   :environment environment
                   :on-response on-response))
@@ -217,6 +221,7 @@
      (request-aws-event-stream
       request consumer
       :connect-timeout connect-timeout
+      :read-timeout read-timeout
       :abort-p abort-p
       :environment environment
       :on-response on-response))))

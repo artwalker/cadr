@@ -1,0 +1,14 @@
+metric	ratio
+cli_dispatch.argv_parse	0.756424823416846
+cli_dispatch.help_render	0.03254831471113113
+cli_dispatch.list_models_registry	0.4579083693984178
+cli_dispatch.list_models_render	0.053079714819425965
+provider_stream.stream_roundtrip	0.2856529513220581
+session_export_html.to_html	0.6699025247011359
+session_pipeline.context_walk	0.026509969528973464
+session_pipeline.session_leaf_id	0.6064268867924528
+session_pipeline.session_load	0.6669211926486223
+storage_journal.journal_append	0.7677138429866375
+storage_journal.journal_entry_count	0.07007000228544343
+storage_journal.journal_read	0.46536354064449587
+websocket_stream.stream_roundtrip	225.66485146010425

@@ -426,15 +426,19 @@
         :remaining 0
         :abort-function abort-function)))))
 
+(defun resolve-tcp-ipv4-address (host)
+  (handler-case
+      (sb-bsd-sockets:make-inet-address host)
+    (error ()
+      (sb-bsd-sockets:host-ent-address
+       (sb-bsd-sockets:get-host-by-name host)))))
+
 (defun connect-http-stream
     (parsed connect-timeout read-timeout &optional abort-p)
   (let* ((host
            (parsed-url-host parsed))
-         (entry
-           (sb-bsd-sockets:get-host-by-name host))
          (address
-           (sb-bsd-sockets:host-ent-address
-            entry))
+           (resolve-tcp-ipv4-address host))
          (socket
            (make-instance
             'sb-bsd-sockets:inet-socket
@@ -453,6 +457,7 @@
                (sb-bsd-sockets:socket-connect
                 socket address
                 (parsed-url-port parsed)))
+           (setf (sb-bsd-sockets:sockopt-tcp-nodelay socket) t)
            (let ((plain
                    (sb-bsd-sockets:socket-make-stream
                     socket
@@ -634,11 +639,14 @@
            want-stream
            force-string
            force-binary
-           environment)
+           environment
+           http-proxy)
   (declare (ignore force-binary))
   (let* ((parsed (parse-http-url url))
          (proxy-url
-           (resolve-http-proxy-url-for-target url environment)))
+           (resolve-http-proxy-url-for-target
+            url
+            (environment-with-http-proxy environment http-proxy))))
     (multiple-value-bind (stream socket request-target)
         (connect-native-http-stream
          parsed url proxy-url connect-timeout
@@ -826,6 +834,7 @@
 (defun request-sse
     (request consumer
      &key (connect-timeout 10)
+       (read-timeout nil)
        abort-p
        environment
        on-response)
@@ -836,7 +845,7 @@
                (append
                 (list :connect-timeout connect-timeout
                       ;; SSE may remain silent during model thinking.
-                      :read-timeout nil)
+                      :read-timeout read-timeout)
                 (when environment (list :environment environment))
                 (list :want-stream t :force-binary t))))
     (unwind-protect

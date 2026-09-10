@@ -1234,7 +1234,7 @@
     "[\\n\\t]" (or text "") " ")))
 
 (defun tree-selector-shorten-path (path)
-  (let ((home (or (uiop:getenv "HOME") "")))
+  (let ((home (or (uiop:getenv "HOME") (uiop:getenv "USERPROFILE") "")))
     (if
         (and
          (plusp (length home))

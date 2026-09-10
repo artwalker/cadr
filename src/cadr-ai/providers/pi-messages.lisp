@@ -82,7 +82,8 @@
 (defmethod build-request
     ((provider pi-messages-provider) model context
      &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata)
+       cache-retention session-id tool-choice metadata
+       &allow-other-keys)
   (let ((key
           (or (provider-oauth-access-token provider)
               (provider-api-key provider))))

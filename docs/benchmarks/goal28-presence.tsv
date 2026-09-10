@@ -1,0 +1,114 @@
+class	name	presence	status	note
+cliFlags	---	extractor-noise	open	flag regex in enumerate-baseline-diff.py matched --- skip in arguments.lisp
+cliFlags	--api-key	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--append-system-prompt	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--approve	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--continue	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--exclude-tools	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--export	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--extension	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--fork	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--help	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--list-models	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--mode	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--model	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--models	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--name	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-approve	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-builtin-tools	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-context-files	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-extensions	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-prompt-templates	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-session	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-skills	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-themes	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--no-tools	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--offline	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--print	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--prompt-template	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--provider	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--resume	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--session	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--session-dir	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--session-id	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--skill	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--system-prompt	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--theme	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--thinking	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--tools	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--tui-mode	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--use-theme	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--verbose	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+cliFlags	--version	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+slashCommands	changelog	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	clone	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	compact	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	copy	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	export	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	fork	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	hotkeys	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	import	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	login	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	logout	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	model	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	name	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	new	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	quit	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	reload	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	resume	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	scoped-models	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	session	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	settings	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	share	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	thinking	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	tree	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+slashCommands	trust	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
+rpcMethods	abort	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	abort_bash	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	abort_retry	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	bash	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	clear_queue	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	clone	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	compact	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	cycle_model	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	cycle_thinking_level	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	export_html	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	follow_up	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	fork	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_available_models	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_available_thinking_levels	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_commands	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_entries	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_fork_messages	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_last_assistant_text	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_messages	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_session_stats	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_state	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	get_tree	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	new_session	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	prompt	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_auto_compaction	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_auto_retry	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_follow_up_mode	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_model	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_session_name	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_steering_mode	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	set_thinking_level	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	steer	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+rpcMethods	switch_session	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
+toolFiles	bash.ts	name-present	open	+builtin-coding-tool-names+ 'bash' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	edit-diff.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	edit.ts	name-present	open	+builtin-coding-tool-names+ 'edit' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	file-mutation-queue.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	find.ts	name-present	open	+builtin-coding-tool-names+ 'find' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	grep.ts	name-present	open	+builtin-coding-tool-names+ 'grep' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	index.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	ls.ts	name-present	open	+builtin-coding-tool-names+ 'ls' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	output-accumulator.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	path-utils.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	powershell.ts	name-present	open	+builtin-coding-tool-names+ 'powershell' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	read.ts	name-present	open	+builtin-coding-tool-names+ 'read' in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	render-utils.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	tool-definition-wrapper.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	truncate.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at d981de1229ef899957bbe968bc8dcda02a21f477; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	write.ts	name-present	open	+builtin-coding-tool-names+ 'write' in src/cadr-cli/bootstrap/tools.lisp

@@ -368,7 +368,8 @@
 (defmethod build-request ((provider anthropic-provider)
                           model context
                           &key stream-p max-tokens temperature reasoning
-                            cache-retention session-id tool-choice metadata)
+                            cache-retention session-id tool-choice metadata
+                            &allow-other-keys)
   (ensure-supported-content model context)
   (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))

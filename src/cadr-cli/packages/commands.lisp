@@ -362,21 +362,79 @@
          :if-does-not-exist
          :ignore)))))
 
+(defun ensure-npm-project (install-root)
+  (let ((root
+          (uiop:ensure-directory-pathname
+           install-root)))
+    (ensure-directories-exist root)
+    (let ((package-json
+            (merge-pathnames "package.json" root))
+          (gitignore
+            (merge-pathnames ".gitignore" root)))
+      (unless (probe-file package-json)
+        (with-open-file
+            (stream package-json
+             :direction :output
+             :if-exists :error
+             :if-does-not-exist :create)
+          (write-string
+           "{\"name\":\"cadr-extensions\",\"private\":true}"
+           stream)))
+      (unless (probe-file gitignore)
+        (with-open-file
+            (stream gitignore
+             :direction :output
+             :if-exists :error
+             :if-does-not-exist :create)
+          (write-string
+           (format nil "*~%!.gitignore~%")
+           stream))))
+    root))
+
+(defun install-npm-package
+    (source install-root
+     &key npm-command
+       (runner #'default-git-clone-runner))
+  (let* ((root (ensure-npm-project install-root))
+         (destination
+           (package-npm-install-path
+            source root))
+         (argv
+           (package-npm-install-argv
+            (list (package-source-spec source))
+            root
+            :npm-command npm-command)))
+    (funcall runner argv)
+    (unless
+        (package-root-has-resources-p
+         destination)
+      (error
+       'cadr-ai:configuration-error
+       :message
+       "Installed package has no Lisp extension, skill, prompt, or theme resources"))
+    destination))
+
 (defun package-record-install-path
     (record global-install-root
      project-install-root)
   (or
    (getf record :path)
-   (let ((parsed
-           (getf record :parsed)))
-     (when (eq :git
-               (package-source-type parsed))
-       (package-git-install-path
-        parsed
-        (if (eq :project
-                (getf record :scope))
-            project-install-root
-            global-install-root))))))
+   (let* ((parsed
+            (getf record :parsed))
+          (packages-root
+            (if (eq :project
+                    (getf record :scope))
+                project-install-root
+                global-install-root)))
+     (case (package-source-type parsed)
+       (:git
+        (package-git-install-path
+         parsed packages-root))
+       (:npm
+        (package-npm-install-path
+         parsed
+         (package-npm-root-from-packages-root
+          packages-root)))))))
 
 (defun print-configured-packages
     (records &optional
@@ -568,6 +626,12 @@
            (project-install-root
              (merge-pathnames
               "packages/" project-config))
+           (global-npm-root
+             (package-npm-root-from-packages-root
+              global-install-root))
+           (project-npm-root
+             (package-npm-root-from-packages-root
+              project-install-root))
            (offline-p offline-p))
       (when
           (and
@@ -589,10 +653,19 @@
            (case
              (package-source-type source)
              (:npm
-              (error
-               'cadr-ai:configuration-error
-               :message
-               "npm packages are unavailable in the Common Lisp build; install a Lisp local or Git package"))
+              (when offline-p
+                (error
+                 'cadr-ai:configuration-error
+                 :message
+                 "Cannot install a missing npm package while offline"))
+              (install-npm-package
+               source
+               (if (eq scope :project)
+                   project-npm-root
+                   global-npm-root)
+               :npm-command
+               (settings-npm-command settings)
+               :runner runner))
              (:local
               (let ((path
                       (uiop:ensure-absolute-pathname

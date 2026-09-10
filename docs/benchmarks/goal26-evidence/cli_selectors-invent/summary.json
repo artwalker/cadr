@@ -1,0 +1,24 @@
+{
+  "kind": "goal26-cli-selectors-invent",
+  "machine": {
+    "lisp": "SBCL",
+    "lisp_version": "2.6.7",
+    "machine_instance": "Friend-MachineD",
+    "machine_type": "X86-64"
+  },
+  "note": "Do not overwrite cli_selectors-fair/summary.json. Product reverted. Ratios from this invent remesure.",
+  "ratios": {
+    "cli_selectors.scoped_model_selector_search_text": 1.6337005132514932,
+    "cli_selectors.scoped_models_enabled_set": 1.4062870832680294
+  },
+  "medians_us": {
+    "cli_selectors.scoped_model_selector_search_text": {
+      "cadr": 2.1772,
+      "pi": 1.33268
+    },
+    "cli_selectors.scoped_models_enabled_set": {
+      "cadr": 2.5123599999999997,
+      "pi": 1.7865199999999999
+    }
+  }
+}

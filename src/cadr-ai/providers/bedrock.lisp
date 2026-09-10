@@ -102,18 +102,10 @@
            "output_config"
            (json-object
             "effort" (bedrock-effort model reasoning)))
-          (let* ((level
-                   (if (member reasoning '(:xhigh :max))
-                       :high reasoning))
-                 (custom (getf (getf options :thinking-budgets)
-                               level))
-                 (budget
-                   (or custom
-                       (case reasoning
-                         (:minimal 1024)
-                         (:low 2048)
-                         (:medium 8192)
-                         (otherwise 16384))))
+          (let* ((budget
+                   (thinking-budget-for-level
+                    reasoning
+                    (getf options :thinking-budgets)))
                  (thinking
                    (apply #'json-object
                           (append
@@ -500,7 +492,8 @@
 (defmethod build-request
     ((provider bedrock-provider) model context
      &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata)
+       cache-retention session-id tool-choice metadata
+       thinking-budgets)
   (declare (ignore session-id))
   (ensure-supported-content model context)
   (let* ((options (provider-options provider))
@@ -586,7 +579,11 @@
                  model (context-tools context) tool-choice)))
     (let ((thinking
             (bedrock-thinking-fields
-             model reasoning region options)))
+             model reasoning region
+             (if thinking-budgets
+                 (list* :thinking-budgets thinking-budgets
+                        options)
+                 options))))
       (when thinking
         (json-put payload
                   "additionalModelRequestFields"

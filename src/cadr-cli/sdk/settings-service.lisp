@@ -144,6 +144,92 @@
   (sdk-settings-boolean
    manager "compaction" t "enabled"))
 
+(defun sdk-settings-positive-integer
+    (manager key nested-key default)
+  (let ((value (sdk-settings-value manager key :missing)))
+    (when (and nested-key (hash-table-p value))
+      (setf value
+            (cadr-ai::json-get
+             value nested-key :missing)))
+    (if (and (integerp value) (plusp value))
+        value
+        default)))
+
+(defun sdk-settings-compaction-keep-recent-tokens
+    (manager)
+  (sdk-settings-positive-integer
+   manager "compaction" "keepRecentTokens" 20000))
+
+(defun sdk-settings-compaction-reserve-tokens
+    (manager)
+  (sdk-settings-positive-integer
+   manager "compaction" "reserveTokens" 16384))
+
+(defun sdk-settings-branch-summary-reserve-tokens
+    (manager)
+  (sdk-settings-positive-integer
+   manager "branchSummary" "reserveTokens" 16384))
+
+(defun sdk-settings-branch-summary-skip-prompt-p
+    (manager)
+  (sdk-settings-boolean
+   manager "branchSummary" nil "skipPrompt"))
+
+(defun sdk-settings-shell-path (manager)
+  (let ((value
+          (sdk-nonempty-setting-string
+           manager "shellPath")))
+    (and value (normalize-path-input value))))
+
+(defun sdk-settings-shell-command-prefix (manager)
+  (sdk-nonempty-setting-string
+   manager "shellCommandPrefix"))
+
+(defun sdk-settings-session-dir (manager)
+  (let ((value
+          (sdk-nonempty-setting-string
+           manager "sessionDir")))
+    (and value (normalize-path-input value))))
+
+(defun sdk-settings-websocket-connect-timeout-ms (manager)
+  (sdk-settings-positive-integer
+   manager "websocketConnectTimeoutMs" nil nil))
+
+(defun sdk-settings-http-proxy (manager)
+  (sdk-nonempty-setting-string manager "httpProxy"))
+
+(defun sdk-settings-thinking-budgets (manager)
+  (thinking-budgets-from-json
+   (sdk-settings-value manager "thinkingBudgets" :missing)))
+
+(defun sdk-settings-theme-paths (manager)
+  (let ((value
+          (sdk-settings-value manager "themes" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun sdk-settings-skill-paths (manager)
+  (let ((value
+          (sdk-settings-value manager "skills" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun sdk-settings-prompt-paths (manager)
+  (let ((value
+          (sdk-settings-value manager "prompts" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun sdk-settings-extension-paths (manager)
+  (let ((value
+          (sdk-settings-value manager "extensions" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
 (defun sdk-settings-enabled-tools (manager)
   (let ((value
           (sdk-settings-value manager "tools" nil)))

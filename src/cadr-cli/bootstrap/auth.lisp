@@ -89,13 +89,17 @@
             (and built-in-definition
                  (cadr-ai:provider-definition-name built-in-definition))
             (string-downcase (symbol-name provider))))
-         (report-login (action-label)
+         (report-login (action-label &optional login)
            ;; Baseline completeProviderAuthentication: the status line
            ;; carries the selection outcome; a provider without a
            ;; default model adds the caveat as an error.
-           (let ((selection
-                   (and on-change
-                        (funcall on-change provider :login))))
+           (handler-case
+               (progn
+                 (when login
+                   (funcall login))
+                 (let ((selection
+                         (and on-change
+                              (funcall on-change provider :login))))
              ;; pi@d981de122 interactive-mode.ts:5548,5662 — when the
              ;; credential saved but the local model/auth snapshot could
              ;; not be synchronized, the synchronization error replaces
@@ -134,32 +138,45 @@
                          :no-default-model
                          nil)))))
              (finish-output output)
-             t))))
+             t)))
+             (credential-synchronization-error (sync-condition)
+               (format output "~A ~A, but ~A~%"
+                       action-label
+                       (provider-display-name)
+                       sync-condition)
+               (finish-output output)
+               t))))
       (cond
         ((and definition
               (string= command "/login")
               (cadr-ai:runtime-provider-oauth-login-function
                definition))
-         (model-registry-login-native-provider
-          registry provider interaction :auth-type :oauth)
-         (report-login "Logged in to"))
+         (report-login
+          "Logged in to"
+          (lambda ()
+            (model-registry-login-native-provider
+             registry provider interaction :auth-type :oauth))))
         ((and built-in-definition
               (string= command "/login")
               (member :oauth
                       (cadr-ai:provider-definition-auth-types
                        built-in-definition)))
-         (model-registry-login-built-in-provider
-          registry provider interaction)
-         (report-login "Logged in to"))
+         (report-login
+          "Logged in to"
+          (lambda ()
+            (model-registry-login-built-in-provider
+             registry provider interaction))))
         ((and definition
               (string= command "/login")
               (cadr-ai:runtime-provider-api-key-login-function
                definition))
          ;; Structured API key flows (Bedrock, Vertex) run through the
          ;; auth interaction like the baseline ApiKeyAuth.login.
-         (model-registry-login-native-provider
-          registry provider interaction :auth-type :api-key)
-         (report-login "Saved API key for"))
+         (report-login
+          "Saved API key for"
+          (lambda ()
+            (model-registry-login-native-provider
+             registry provider interaction :auth-type :api-key))))
       ((and definition
             (string= command "/logout"))
        (auth-storage-delete

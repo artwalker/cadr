@@ -93,6 +93,7 @@
    (tui-entry-render-cache-extension-snapshot entry)
    nil
    (tui-entry-render-cache-mermaid-mode entry) nil
+   (tui-entry-render-cache-code-block-indent entry) nil
    (tui-entry-render-cache-lines entry) nil)
   entry)
 
@@ -252,7 +253,7 @@ first (\"a\".localeCompare(\"A\") < 0)."
 
 (defun startup-home-abbreviated (path)
   "Baseline formatDisplayPath: replace the $HOME prefix with ~."
-  (let ((home (uiop:getenv "HOME")))
+  (let ((home (or (uiop:getenv "HOME") (uiop:getenv "USERPROFILE"))))
     (if (and
          home
          (plusp (length home))

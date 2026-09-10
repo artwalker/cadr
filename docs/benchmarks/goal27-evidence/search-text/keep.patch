@@ -1,0 +1,43 @@
+diff --git a/src/cadr-cli/interactive/selectors/models.lisp b/src/cadr-cli/interactive/selectors/models.lisp
+index d730c7747..bd897c37c 100644
+--- a/src/cadr-cli/interactive/selectors/models.lisp
++++ b/src/cadr-cli/interactive/selectors/models.lisp
+@@ -67,19 +67,27 @@
+   (or (gethash model (model-selector-state-search-text-table state))
+       (model-selector-search-text model)))
+ 
++(defparameter *scoped-model-selector-search-text-cache*
++  (make-hash-table :test #'eq :weakness :key))
++
+ (defun scoped-model-selector-search-text
+     (model)
+-  (format nil "~A ~(~A~) ~A ~(~A~) ~A~@[ ~A~]"
+-          (cadr-ai:model-id model)
+-          (cadr-ai:model-provider model)
+-          (qualified-model-id model)
+-          (cadr-ai:model-provider model)
+-          (cadr-ai:model-id model)
+-          (let ((name
+-                  (cadr-ai::model-name model)))
+-            (and (stringp name)
+-                 (plusp (length name))
+-                 name))))
++  (multiple-value-bind (cached present-p)
++      (gethash model *scoped-model-selector-search-text-cache*)
++    (if present-p
++        cached
++        (setf (gethash model *scoped-model-selector-search-text-cache*)
++              (format nil "~A ~(~A~) ~A ~(~A~) ~A~@[ ~A~]"
++                      (cadr-ai:model-id model)
++                      (cadr-ai:model-provider model)
++                      (qualified-model-id model)
++                      (cadr-ai:model-provider model)
++                      (cadr-ai:model-id model)
++                      (let ((name
++                              (cadr-ai::model-name model)))
++                        (and (stringp name)
++                             (plusp (length name))
++                             name)))))))
+ 
+ (defun model-equal-p (left right)
+   (and left right

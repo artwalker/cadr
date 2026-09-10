@@ -16,7 +16,8 @@
 (defmethod build-request
     ((provider vertex-provider) model context
      &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata)
+       cache-retention session-id tool-choice metadata
+       &allow-other-keys)
   (declare (ignore cache-retention session-id metadata))
   (ensure-supported-content model context)
   (let* ((environment

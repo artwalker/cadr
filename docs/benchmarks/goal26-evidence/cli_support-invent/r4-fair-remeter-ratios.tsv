@@ -1,0 +1,7 @@
+metric	ratio
+cli_support.write_overwrite	1.5304042002398723
+cli_support.write_hello	1.9850436091468744
+cli_support.write_empty	1.4273870850673742
+cli_support.threads_current	0.6400124455507156
+cli_support.threads_absent	0.6352180936995153
+cli_support.close_watcher	0.3013152061474804

@@ -125,13 +125,16 @@
 
 (defun execute-user-bash-for-tui
     (extension-host cwd command
-     &key exclude-from-context-p timeout abort-p)
+     &key exclude-from-context-p timeout abort-p
+       command-prefix custom-shell-path)
   (handler-case
       (multiple-value-bind (content details)
           (execute-user-bash
            extension-host cwd command
            :exclude-from-context-p exclude-from-context-p
-           :timeout timeout :abort-p abort-p)
+           :timeout timeout :abort-p abort-p
+           :command-prefix command-prefix
+           :custom-shell-path custom-shell-path)
         (make-user-bash-result-from-execution
          command exclude-from-context-p content details))
     (user-bash-aborted (condition)
@@ -257,16 +260,30 @@
       (cadr-core:stop-thread-for-cleanup reader))
     forced-p))
 
+(defun bash-command-with-prefix (prefix command)
+  (if (and (stringp prefix) (plusp (length prefix)))
+      (format nil "~A~%~A" prefix command)
+      command))
+
 (defun run-bash-command
     (cwd command timeout
      &key
        (abort-p
-         #'cadr-agent::current-tool-aborted-p))
+         #'cadr-agent::current-tool-aborted-p)
+       command-prefix
+       custom-shell-path)
   (when (and timeout (<= timeout 0))
     (error "timeout must be positive"))
   (when (and abort-p (funcall abort-p))
     (error "Command aborted"))
-  (let* ((output-path (bash-output-path))
+  (let* ((command
+           (bash-command-with-prefix command-prefix command))
+         (shell
+           (if custom-shell-path
+               (shell-config-shell
+                (get-shell-config custom-shell-path))
+               "/bin/bash"))
+         (output-path (bash-output-path))
          (group-path
            (pathname
             (format nil "~A.pgid" (namestring output-path))))
@@ -275,10 +292,11 @@
             (list
              "/usr/bin/setsid" "--fork" "--wait"
              "/bin/sh" "-c"
-             "printf '%s' \"$$\" > \"$1\"; exec /usr/bin/env --default-signal=PIPE /bin/bash -lc \"$2\" 2>&1"
+             "printf '%s' \"$$\" > \"$1\"; exec /usr/bin/env --default-signal=PIPE \"$3\" -lc \"$2\" 2>&1"
              "cadr-bash-wrapper"
              (namestring group-path)
-             command)
+             command
+             shell)
             :directory cwd
             :input nil
             :output :stream
@@ -451,9 +469,14 @@
       (when (probe-file group-path)
         (delete-file group-path)))))
 
-(defun execute-bash-tool-command (cwd command timeout)
+(defun execute-bash-tool-command
+    (cwd command timeout
+     &key command-prefix custom-shell-path)
   (multiple-value-bind (content details)
-      (run-bash-command cwd command timeout)
+      (run-bash-command
+       cwd command timeout
+       :command-prefix command-prefix
+       :custom-shell-path custom-shell-path)
     (let* ((exit-code (getf details :exit-code))
            (text
              (bash-strip-exit-footer
@@ -530,7 +553,8 @@
 
 (defun execute-user-bash
     (extension-host cwd command
-     &key exclude-from-context-p timeout abort-p)
+     &key exclude-from-context-p timeout abort-p
+       command-prefix custom-shell-path)
   (let ((interception
           (and extension-host
                (cadr-agent::run-extension-lifecycle-hooks
@@ -563,9 +587,13 @@
              (values result details))))
       (t
        (run-bash-command
-        cwd command timeout :abort-p abort-p)))))
+        cwd command timeout
+        :abort-p abort-p
+        :command-prefix command-prefix
+        :custom-shell-path custom-shell-path)))))
 
-(defun make-bash-tool (cwd &key context)
+(defun make-bash-tool
+    (cwd &key context command-prefix shell-path)
   (cadr-ai:make-tool
    :name "bash"
    :description
@@ -587,5 +615,10 @@
            (timeout (cadr-ai::json-get arguments "timeout")))
        (if context
            (execute-bash-tool-command-with-context
-            context cwd command timeout)
-           (execute-bash-tool-command cwd command timeout))))))
+            context cwd
+            (bash-command-with-prefix command-prefix command)
+            timeout)
+           (execute-bash-tool-command
+            cwd command timeout
+            :command-prefix command-prefix
+            :custom-shell-path shell-path))))))

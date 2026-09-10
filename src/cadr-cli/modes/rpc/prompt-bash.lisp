@@ -230,7 +230,12 @@
                     (null
                      (cadr-ai::json-get
                       object
-                      "excludeFromContext"))))
+                      "excludeFromContext")))
+                   :command-prefix
+                   (rpc-state-shell-command-prefix
+                    state)
+                   :custom-shell-path
+                   (rpc-state-shell-path state))
                 (when (rpc-claim-bash state token)
                   (rpc-write-object
                    state

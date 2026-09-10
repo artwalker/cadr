@@ -703,3 +703,57 @@
       (cdr
        (assoc "User-Agent" headers
               :test #'string-equal))))))
+
+(test native-http-resolves-dotted-ipv4-without-dns
+  (is
+   (equalp
+    (sb-bsd-sockets:make-inet-address "127.0.0.1")
+    (cadr-ai::resolve-tcp-ipv4-address "127.0.0.1"))))
+
+(test goal28-native-http-proxy-reaches-existing-request
+  (let ((url "https://api.example.com/v1")
+        (env-proxy-url "http://env-proxy.example:8080")
+        (session-proxy-url "http://session-proxy.example:3128")
+        (seen nil)
+        (original
+          (fdefinition 'cadr-ai::connect-native-http-stream)))
+    (flet ((capture-proxy (&rest args)
+             (setf seen (third args))
+             (error "goal28-native-http-proxy-no-socket")))
+      (unwind-protect
+           (progn
+             (setf (fdefinition 'cadr-ai::connect-native-http-stream)
+                   #'capture-proxy)
+             (handler-case
+                 (cadr-ai::native-http-request
+                  url
+                  :environment
+                  `(("HTTPS_PROXY" . ,env-proxy-url)))
+               (error ()))
+             (is (string= "http://env-proxy.example:8080" seen))
+             (handler-case
+                 (cadr-ai::native-http-request
+                  url
+                  :http-proxy session-proxy-url)
+               (error ()))
+             (is (string= "http://session-proxy.example:3128" seen)))
+        (setf (fdefinition 'cadr-ai::connect-native-http-stream)
+              original))))
+  (multiple-value-bind (provider model)
+      (provider-case :anthropic)
+    (let ((seen-environment nil))
+      (let ((*http-request-function*
+              (lambda (request-url &rest arguments)
+                (declare (ignore request-url))
+                (setf seen-environment (getf arguments :environment))
+                (error "goal28-native-http-proxy-no-socket"))))
+        (stream-chat
+         provider model (sample-context)
+         (lambda (event) (declare (ignore event)))
+         :http-proxy "http://session-proxy.example:3128"))
+      (is
+       (string=
+        "http://session-proxy.example:3128"
+        (cadr-ai:resolve-http-proxy-url-for-target
+         "https://api.example.com/v1"
+         seen-environment))))))

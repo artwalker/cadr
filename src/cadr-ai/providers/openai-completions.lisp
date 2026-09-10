@@ -446,7 +446,8 @@
 (defmethod build-request ((provider openai-completions-provider)
                           model context
                           &key stream-p max-tokens temperature reasoning
-                            cache-retention session-id tool-choice metadata)
+                            cache-retention session-id tool-choice metadata
+                            thinking-budgets)
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
@@ -502,15 +503,9 @@
                 model :supports-thinking-token-budget nil)
                reasoning
                (model-reasoning-p model))
-      (let* ((level
-               (if (member reasoning '(:xhigh :max))
-                   :high reasoning))
-             (budget
-               (case level
-                 (:minimal 1024)
-                 (:low 2048)
-                 (:medium 8192)
-                 (otherwise 16384)))
+      (let* ((budget
+               (thinking-budget-for-level
+                reasoning thinking-budgets))
              (ceiling
                (or max-tokens
                    (model-max-tokens model)))

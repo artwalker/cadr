@@ -1,11 +1,22 @@
 (in-package #:cadr-core)
 
-(defun stop-thread-for-cleanup
-    (thread &key (timeout 0.5d0) (terminate-p t))
-  "Bound a cleanup wait and optionally terminate a worker that ignores it."
+(defun stop-thread-for-cleanup (thread &rest args)
+  (declare (dynamic-extent args))
   (cond
     ((null thread) :absent)
     ((eq thread sb-thread:*current-thread*) :current)
+    (t
+     (let ((timeout 0.5d0)
+           (terminate-p t))
+       (loop for (key value) on args by #'cddr
+             do (case key
+                  (:timeout (setf timeout value))
+                  (:terminate-p (setf terminate-p value))))
+       (stop-thread-for-cleanup-rest thread timeout terminate-p)))))
+
+(defun stop-thread-for-cleanup-rest (thread timeout terminate-p)
+  "Bound a cleanup wait and optionally terminate a worker that ignores it."
+  (cond
     ((not (sb-thread:thread-alive-p thread))
      (ignore-errors
        (sb-thread:join-thread thread :timeout timeout :default nil))

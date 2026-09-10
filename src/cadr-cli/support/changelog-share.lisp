@@ -248,6 +248,42 @@
           (nreverse entries)))
     (condition () nil)))
 
+(defun changelog-version-triplet (version)
+  (flet ((part (piece)
+           (or (ignore-errors
+                 (parse-integer piece :junk-allowed t))
+               0)))
+    (let ((parts
+            (uiop:split-string
+             (or version "")
+             :separator '(#\.))))
+      (values
+       (part (or (first parts) "0"))
+       (part (or (second parts) "0"))
+       (part (or (third parts) "0"))))))
+
+(defun changelog-version> (left right)
+  (multiple-value-bind (left-major left-minor left-patch)
+      (changelog-version-triplet left)
+    (multiple-value-bind
+          (right-major right-minor right-patch)
+        (changelog-version-triplet right)
+      (cond
+        ((/= left-major right-major)
+         (> left-major right-major))
+        ((/= left-minor right-minor)
+         (> left-minor right-minor))
+        (t
+         (> left-patch right-patch))))))
+
+(defun get-new-changelog-entries (entries last-version)
+  (remove-if-not
+   (lambda (entry)
+     (changelog-version>
+      (getf entry :version)
+      last-version))
+   entries))
+
 (defun default-share-command-runner (argv)
   (uiop:run-program
    argv

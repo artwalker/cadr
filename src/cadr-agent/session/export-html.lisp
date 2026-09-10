@@ -69,8 +69,29 @@
      "{{HIGHLIGHT_JS}}"
      "{{JS}}")))
 
+(defun export-html-utf8-octets (text)
+  (sb-ext:string-to-octets text :external-format :utf-8))
+
+(defparameter +export-html-css-part-octets+
+  (mapcar #'export-html-utf8-octets +export-html-css-parts+))
+(defparameter +export-html-html-part-octets+
+  (mapcar #'export-html-utf8-octets +export-html-html-parts+))
+(defparameter +export-html-marked-js-octets+
+  (export-html-utf8-octets +export-html-marked-js+))
+(defparameter +export-html-highlight-js-octets+
+  (export-html-utf8-octets +export-html-highlight-js+))
+(defparameter +export-html-template-js-octets+
+  (export-html-utf8-octets +export-html-template-js+))
+
 (defparameter +export-html-base64-alphabet+
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+(defparameter +export-html-base64-alphabet-codes+
+  (let ((codes (make-array 64 :element-type '(unsigned-byte 8))))
+    (dotimes (index 64)
+      (setf (aref codes index)
+            (char-code
+             (char +export-html-base64-alphabet+ index))))
+    codes))
 
 (defparameter +export-html-dark-colors+
   '(("accent" . "#8abeb7")
@@ -180,39 +201,58 @@
     ("thinkingMax" . "#af005f")
     ("bashMode" . "#588458")))
 
-(defun encode-export-html-base64 (octets)
-  (with-output-to-string (output)
-    (loop for position from 0 below (length octets) by 3
-          for remaining = (- (length octets) position)
-          for first = (aref octets position)
-          for second = (if (> remaining 1)
-                           (aref octets (1+ position)) 0)
-          for third = (if (> remaining 2)
-                          (aref octets (+ position 2)) 0)
-          for bits = (logior (ash first 16)
-                             (ash second 8)
-                             third)
+(defun encode-export-html-base64-octets (octets)
+  (let* ((bytes
+           (if (typep octets '(simple-array (unsigned-byte 8) (*)))
+               octets
+               (let ((copy
+                       (make-array
+                        (length octets)
+                        :element-type '(unsigned-byte 8))))
+                 (replace copy octets)
+                 copy)))
+         (length (length bytes))
+         (encoded
+           (make-array
+            (* 4 (ceiling length 3))
+            :element-type '(unsigned-byte 8)))
+         (codes +export-html-base64-alphabet-codes+)
+         (out 0))
+    (declare (optimize (speed 3) (safety 1))
+             (type (simple-array (unsigned-byte 8) (*)) bytes encoded)
+             (type (simple-array (unsigned-byte 8) (*)) codes)
+             (type fixnum length out))
+    (loop for position of-type fixnum from 0 below length by 3
+          for remaining of-type fixnum = (- length position)
+          for first of-type fixnum = (aref bytes position)
+          for second of-type fixnum = (if (> remaining 1)
+                                          (aref bytes (1+ position))
+                                          0)
+          for third of-type fixnum = (if (> remaining 2)
+                                         (aref bytes (+ position 2))
+                                         0)
+          for bits of-type fixnum = (logior (ash first 16)
+                                            (ash second 8)
+                                            third)
           do
-          (write-char
-           (char +export-html-base64-alphabet+
-                 (ldb (byte 6 18) bits))
-           output)
-          (write-char
-           (char +export-html-base64-alphabet+
-                 (ldb (byte 6 12) bits))
-           output)
-          (write-char
-           (if (> remaining 1)
-               (char +export-html-base64-alphabet+
-                     (ldb (byte 6 6) bits))
-               #\=)
-           output)
-          (write-char
-           (if (> remaining 2)
-               (char +export-html-base64-alphabet+
-                     (ldb (byte 6 0) bits))
-               #\=)
-           output))))
+          (setf (aref encoded out)
+                (aref codes (ldb (byte 6 18) bits)))
+          (setf (aref encoded (the fixnum (1+ out)))
+                (aref codes (ldb (byte 6 12) bits)))
+          (setf (aref encoded (the fixnum (+ out 2)))
+                (if (> remaining 1)
+                    (aref codes (ldb (byte 6 6) bits))
+                    61))
+          (setf (aref encoded (the fixnum (+ out 3)))
+                (if (> remaining 2)
+                    (aref codes (ldb (byte 6 0) bits))
+                    61))
+          (incf out 4))
+    encoded))
+
+(defun encode-export-html-base64 (octets)
+  (cadr-ai::utf8-string
+   (encode-export-html-base64-octets octets)))
 
 (defun export-html-ansi-color (index)
   (when (<= 0 index 255)
@@ -436,6 +476,228 @@
         (session-%entries session))
    "leafId" (or (session-leaf-id session) 'null)))
 
+(defun write-export-json-content-block (stream block)
+  (cond
+    ((typep block 'cadr-ai:text-content)
+     (write-string "{\"type\":\"text\",\"text\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:text-content-text block) stream)
+     (when (cadr-ai:text-content-signature block)
+       (write-string ",\"signature\":" stream)
+       (cadr-ai::write-json-string
+        (cadr-ai:text-content-signature block) stream))
+     (write-char #\} stream))
+    ((typep block 'cadr-ai:thinking-content)
+     (write-string "{\"type\":\"thinking\",\"thinking\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:thinking-content-thinking block) stream)
+     (write-string ",\"redacted\":" stream)
+     (cadr-ai::write-json-value
+      (cadr-ai:thinking-content-redacted-p block) stream)
+     (when (cadr-ai:thinking-content-signature block)
+       (write-string ",\"signature\":" stream)
+       (cadr-ai::write-json-string
+        (cadr-ai:thinking-content-signature block) stream))
+     (write-char #\} stream))
+    ((typep block 'cadr-ai:image-content)
+     (write-string "{\"type\":\"image\",\"mimeType\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:image-content-mime-type block) stream)
+     (write-string ",\"data\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:image-content-data block) stream)
+     (write-char #\} stream))
+    ((typep block 'cadr-ai:tool-call)
+     (write-string "{\"type\":\"toolCall\",\"id\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:tool-call-id block) stream)
+     (write-string ",\"name\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:tool-call-name block) stream)
+     (write-string ",\"arguments\":" stream)
+     (cadr-ai::write-json-value
+      (json-safe-value (cadr-ai:tool-call-arguments block))
+      stream)
+     (when (cadr-ai:tool-call-thought-signature block)
+       (write-string ",\"thoughtSignature\":" stream)
+       (cadr-ai::write-json-string
+        (cadr-ai:tool-call-thought-signature block) stream))
+     (write-char #\} stream))
+    (t
+     (cadr-ai::write-json-value
+      (content-block-to-json block) stream))))
+
+(defun write-export-json-content (stream content)
+  (if (stringp content)
+      (cadr-ai::write-json-string content stream)
+      (progn
+        (write-char #\[ stream)
+        (loop for block across (coerce content 'vector)
+              for first-p = t then nil
+              do
+              (unless first-p (write-char #\, stream))
+              (write-export-json-content-block stream block))
+        (write-char #\] stream))))
+
+(defun write-export-json-usage (stream usage)
+  (let ((cost (cadr-ai:usage-cost usage)))
+    (write-string "{\"input\":" stream)
+    (princ (cadr-ai:usage-input usage) stream)
+    (write-string ",\"output\":" stream)
+    (princ (cadr-ai:usage-output usage) stream)
+    (write-string ",\"cacheRead\":" stream)
+    (princ (cadr-ai:usage-cache-read usage) stream)
+    (write-string ",\"cacheWrite\":" stream)
+    (princ (cadr-ai:usage-cache-write usage) stream)
+    (write-string ",\"total\":" stream)
+    (princ (cadr-ai:usage-total usage) stream)
+    (write-string ",\"cost\":{\"input\":" stream)
+    (princ (cadr-ai:cost-input cost) stream)
+    (write-string ",\"output\":" stream)
+    (princ (cadr-ai:cost-output cost) stream)
+    (write-string ",\"cacheRead\":" stream)
+    (princ (cadr-ai:cost-cache-read cost) stream)
+    (write-string ",\"cacheWrite\":" stream)
+    (princ (cadr-ai:cost-cache-write cost) stream)
+    (write-string ",\"total\":" stream)
+    (princ (cadr-ai:cost-total cost) stream)
+    (write-char #\} stream)
+    (when (cadr-ai:usage-reasoning usage)
+      (write-string ",\"reasoning\":" stream)
+      (cadr-ai::write-json-value
+       (cadr-ai:usage-reasoning usage) stream))
+    (write-char #\} stream)))
+
+(defun write-export-json-message (stream message)
+  (cond
+    ((typep message 'cadr-ai:user-message)
+     (write-string "{\"role\":\"user\",\"content\":" stream)
+     (write-export-json-content
+      stream (cadr-ai:user-message-content message))
+     (write-string ",\"timestamp\":" stream)
+     (cadr-ai::write-json-value
+      (cadr-ai:user-message-timestamp message) stream)
+     (write-char #\} stream))
+    ((typep message 'cadr-ai:assistant-message)
+     (write-string "{\"role\":\"assistant\",\"content\":" stream)
+     (write-export-json-content
+      stream (cadr-ai:assistant-message-content message))
+     (write-string ",\"api\":" stream)
+     (cadr-ai::write-json-string
+      (symbol-json-name (cadr-ai:assistant-message-api message))
+      stream)
+     (write-string ",\"provider\":" stream)
+     (cadr-ai::write-json-string
+      (symbol-json-name
+       (cadr-ai:assistant-message-provider message))
+      stream)
+     (write-string ",\"model\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:assistant-message-model message) stream)
+     (write-string ",\"usage\":" stream)
+     (write-export-json-usage
+      stream (cadr-ai:assistant-message-usage message))
+     (write-string ",\"stopReason\":" stream)
+     (cadr-ai::write-json-string
+      (symbol-json-name
+       (cadr-ai:assistant-message-stop-reason message))
+      stream)
+     (write-string ",\"timestamp\":" stream)
+     (cadr-ai::write-json-value
+      (cadr-ai:assistant-message-timestamp message) stream)
+     (when (cadr-ai:assistant-message-response-id message)
+       (write-string ",\"responseId\":" stream)
+       (cadr-ai::write-json-string
+        (cadr-ai:assistant-message-response-id message) stream))
+     (when (cadr-ai:assistant-message-error-message message)
+       (write-string ",\"errorMessage\":" stream)
+       (cadr-ai::write-json-string
+        (cadr-ai:assistant-message-error-message message) stream))
+     (when (cadr-ai:assistant-message-raw-stop-reason message)
+       (write-string ",\"rawStopReason\":" stream)
+       (cadr-ai::write-json-string
+        (cadr-ai:assistant-message-raw-stop-reason message)
+        stream))
+     (when (cadr-ai:assistant-message-diagnostics message)
+       (write-string ",\"diagnostics\":" stream)
+       (cadr-ai::write-json-value
+        (map 'vector
+             #'assistant-diagnostic-to-json
+             (cadr-ai:assistant-message-diagnostics message))
+        stream))
+     (when (cadr-ai:assistant-message-provider-thinking-level
+            message)
+       (write-string ",\"providerThinkingLevel\":" stream)
+       (cadr-ai::write-json-value
+        (cadr-ai:assistant-message-provider-thinking-level
+         message)
+        stream))
+     (write-char #\} stream))
+    ((typep message 'cadr-ai:tool-result-message)
+     (write-string "{\"role\":\"toolResult\",\"toolCallId\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:tool-result-message-tool-call-id message) stream)
+     (write-string ",\"toolName\":" stream)
+     (cadr-ai::write-json-string
+      (cadr-ai:tool-result-message-tool-name message) stream)
+     (write-string ",\"content\":" stream)
+     (write-export-json-content
+      stream (cadr-ai:tool-result-message-content message))
+     (write-string ",\"details\":" stream)
+     (cadr-ai::write-json-value
+      (json-safe-value
+       (cadr-ai:tool-result-message-details message))
+      stream)
+     (write-string ",\"isError\":" stream)
+     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-is-error message) stream)
+     (write-string ",\"timestamp\":" stream)
+     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-timestamp message) stream)
+     (write-char #\} stream))
+    (t
+     (cadr-ai::write-json-value
+      (message-to-json message) stream))))
+
+(defun write-export-json-entry (stream entry)
+  (if (eq :message (session-entry-type entry))
+      (progn
+        (write-string "{\"type\":\"message\",\"id\":" stream)
+        (cadr-ai::write-json-string (session-entry-id entry) stream)
+        (write-string ",\"parentId\":" stream)
+        (cadr-ai::write-json-value
+         (or (session-entry-parent-id entry) 'null) stream)
+        (write-string ",\"timestamp\":" stream)
+        (cadr-ai::write-json-string
+         (session-timestamp-json
+          (session-entry-timestamp entry))
+         stream)
+        (write-string ",\"message\":" stream)
+        (write-export-json-message
+         stream (session-entry-message entry))
+        (write-char #\} stream))
+      (cadr-ai::write-json-value
+       (session-entry-to-json entry) stream)))
+
+(defun stringify-export-html-session (session)
+  (let ((cadr-ai::*json-sort-object-keys* nil))
+    (with-output-to-string (stream)
+      (write-string "{\"header\":" stream)
+      (cadr-ai::write-json-value
+       (session-header-to-json session) stream)
+      (write-string ",\"entries\":[" stream)
+      (let ((first-p t))
+        (map nil
+             (lambda (entry)
+               (unless first-p (write-char #\, stream))
+               (setf first-p nil)
+               (write-export-json-entry stream entry))
+             (session-%entries session)))
+      (write-string "],\"leafId\":" stream)
+      (cadr-ai::write-json-value
+       (or (session-leaf-id session) 'null) stream)
+      (write-char #\} stream))))
+
 (defun export-session-html
     (session path
      &key (theme-name "dark") theme-object)
@@ -446,39 +708,37 @@
          card-background info-background)
       (export-html-theme-data
        theme-name theme-object)
-    (let* ((session-data
-             (cadr-ai::stringify-json
-              (export-html-session-data session)))
+    (let* ((session-data (stringify-export-html-session session))
            (encoded-data
-             (encode-export-html-base64
+             (encode-export-html-base64-octets
               (cadr-ai::utf8-octets
                session-data)))
-           (css-parts +export-html-css-parts+)
-           (html-parts +export-html-html-parts+))
+           (css-parts +export-html-css-part-octets+)
+           (html-parts +export-html-html-part-octets+))
       (ensure-directories-exist path)
       (with-open-file
           (stream path
                   :direction :output
                   :if-exists :supersede
                   :if-does-not-exist :create
-                  :external-format :utf-8)
-        (write-string (first html-parts) stream)
-        (write-string (first css-parts) stream)
-        (write-string theme-vars stream)
-        (write-string (second css-parts) stream)
-        (write-string page-background stream)
-        (write-string (third css-parts) stream)
-        (write-string card-background stream)
-        (write-string (fourth css-parts) stream)
-        (write-string info-background stream)
-        (write-string (fifth css-parts) stream)
-        (write-string (second html-parts) stream)
-        (write-string encoded-data stream)
-        (write-string (third html-parts) stream)
-        (write-string +export-html-marked-js+ stream)
-        (write-string (fourth html-parts) stream)
-        (write-string +export-html-highlight-js+ stream)
-        (write-string (fifth html-parts) stream)
-        (write-string +export-html-template-js+ stream)
-        (write-string (sixth html-parts) stream))
+                  :element-type '(unsigned-byte 8))
+        (write-sequence (first html-parts) stream)
+        (write-sequence (first css-parts) stream)
+        (write-sequence (export-html-utf8-octets theme-vars) stream)
+        (write-sequence (second css-parts) stream)
+        (write-sequence (export-html-utf8-octets page-background) stream)
+        (write-sequence (third css-parts) stream)
+        (write-sequence (export-html-utf8-octets card-background) stream)
+        (write-sequence (fourth css-parts) stream)
+        (write-sequence (export-html-utf8-octets info-background) stream)
+        (write-sequence (fifth css-parts) stream)
+        (write-sequence (second html-parts) stream)
+        (write-sequence encoded-data stream)
+        (write-sequence (third html-parts) stream)
+        (write-sequence +export-html-marked-js-octets+ stream)
+        (write-sequence (fourth html-parts) stream)
+        (write-sequence +export-html-highlight-js-octets+ stream)
+        (write-sequence (fifth html-parts) stream)
+        (write-sequence +export-html-template-js-octets+ stream)
+        (write-sequence (sixth html-parts) stream))
       (pathname path))))

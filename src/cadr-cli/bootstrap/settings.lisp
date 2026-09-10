@@ -57,6 +57,223 @@
         default
         (eq value t))))
 
+(defun settings-positive-integer-value
+    (manager key nested-key default)
+  (let ((value
+          (settings-nested-value
+           manager key nested-key :missing)))
+    (if (and (integerp value) (plusp value))
+        value
+        default)))
+
+(defun settings-compaction-keep-recent-tokens
+    (manager)
+  (settings-positive-integer-value
+   manager "compaction" "keepRecentTokens" 20000))
+
+(defun settings-compaction-reserve-tokens
+    (manager)
+  (settings-positive-integer-value
+   manager "compaction" "reserveTokens" 16384))
+
+(defun settings-branch-summary-reserve-tokens
+    (manager)
+  (settings-positive-integer-value
+   manager "branchSummary" "reserveTokens" 16384))
+
+(defun settings-branch-summary-skip-prompt-p
+    (manager)
+  (settings-boolean-value
+   manager "branchSummary" nil "skipPrompt"))
+
+(defun branch-summary-tree-summarize-p
+    (manager &key chooser)
+  (when (settings-branch-summary-skip-prompt-p manager)
+    (return-from branch-summary-tree-summarize-p
+      (values nil nil)))
+  (let ((choice
+          (and chooser
+               (funcall
+                chooser
+                "Summarize branch?"
+                '("No summary"
+                  "Summarize"
+                  "Summarize with custom prompt")))))
+    (cond
+      ((null choice)
+       (values nil t))
+      ((string= choice "No summary")
+       (values nil nil))
+      (t
+       (values t nil)))))
+
+(defun settings-optional-nonempty-string
+    (manager key)
+  (let ((value (settings-value manager key :missing)))
+    (and (stringp value)
+         (plusp (length value))
+         value)))
+
+(defun settings-shell-path (manager)
+  (let ((value
+          (settings-optional-nonempty-string
+           manager "shellPath")))
+    (and value (normalize-path-input value))))
+
+(defun settings-shell-command-prefix (manager)
+  (settings-optional-nonempty-string
+   manager "shellCommandPrefix"))
+
+(defun settings-session-dir (manager)
+  (let ((value
+          (settings-optional-nonempty-string
+           manager "sessionDir")))
+    (and value (normalize-path-input value))))
+
+(defun settings-websocket-connect-timeout-ms (manager)
+  (let ((value
+          (settings-value
+           manager "websocketConnectTimeoutMs"
+           :missing)))
+    (and (integerp value) (plusp value) value)))
+
+(defun settings-http-proxy (manager)
+  (settings-optional-nonempty-string
+   manager "httpProxy"))
+
+(defun thinking-budgets-from-json (value)
+  (unless (hash-table-p value)
+    (return-from thinking-budgets-from-json nil))
+  (loop for json-key in '("minimal" "low" "medium" "high")
+        for level in '(:minimal :low :medium :high)
+        for tokens = (cadr-ai::json-get value json-key :missing)
+        when (and (integerp tokens) (plusp tokens))
+        append (list level tokens)))
+
+(defun settings-thinking-budgets (manager)
+  (thinking-budgets-from-json
+   (settings-value manager "thinkingBudgets" :missing)))
+
+(defun settings-theme-paths (manager)
+  (let ((value (settings-value manager "themes" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun settings-skill-paths (manager)
+  (let ((value (settings-value manager "skills" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun settings-prompt-paths (manager)
+  (let ((value (settings-value manager "prompts" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun settings-extension-paths (manager)
+  (let ((value (settings-value manager "extensions" :missing)))
+    (and (vectorp value)
+         (every #'stringp value)
+         (coerce value 'list))))
+
+(defun stream-function-with-thinking-budgets
+    (stream-function thinking-budgets-function)
+  (lambda (provider model context on-event &rest options)
+    (let ((request-options (copy-list options)))
+      (unless (member :thinking-budgets request-options :test #'eq)
+        (setf (getf request-options :thinking-budgets)
+              (funcall thinking-budgets-function)))
+      (apply stream-function
+             provider model context on-event request-options))))
+
+(defun stream-function-with-websocket-connect-timeout
+    (stream-function timeout-ms-function)
+  (lambda (provider model context on-event &rest options)
+    (let ((request-options (copy-list options)))
+      (unless (member :websocket-connect-timeout-ms request-options
+                      :test #'eq)
+        (setf (getf request-options :websocket-connect-timeout-ms)
+              (funcall timeout-ms-function)))
+      (apply stream-function
+             provider model context on-event request-options))))
+
+(defun stream-function-with-http-proxy
+    (stream-function http-proxy-function)
+  (lambda (provider model context on-event &rest options)
+    (let ((request-options (copy-list options)))
+      (unless (member :http-proxy request-options :test #'eq)
+        (setf (getf request-options :http-proxy)
+              (funcall http-proxy-function)))
+      (apply stream-function
+             provider model context on-event request-options))))
+
+(defun stream-function-with-http-idle-timeout
+    (stream-function timeout-ms-function)
+  (lambda (provider model context on-event &rest options)
+    (let ((request-options (copy-list options)))
+      (unless (member :read-timeout request-options :test #'eq)
+        (let ((timeout-ms (funcall timeout-ms-function)))
+          (setf (getf request-options :read-timeout)
+                (and (integerp timeout-ms)
+                     (plusp timeout-ms)
+                     (/ timeout-ms 1000)))))
+      (apply stream-function
+             provider model context on-event request-options))))
+
+(defun settings-retry-settings (manager)
+  (let* ((retry
+           (settings-value
+            manager "retry" (empty-json-object)))
+         (provider
+           (and (hash-table-p retry)
+                (cadr-ai::json-get
+                 retry "provider"
+                 (empty-json-object))))
+         (source
+           (if (hash-table-p provider)
+               (merge-json-objects retry provider)
+               retry)))
+    (flet ((field (key default)
+             (if (hash-table-p source)
+                 (cadr-ai::json-get source key default)
+                 default)))
+      (list
+       :enabled-p
+       (eq t (field "enabled" t))
+       :max-retries (field "maxRetries" 3)
+       :base-delay-ms (field "baseDelayMs" 2000)
+       :max-retry-delay-ms
+       (field "maxRetryDelayMs" 60000)
+       :timeout-ms (field "timeoutMs" nil)))))
+
+(defun stream-function-with-provider-retry
+    (stream-function retry-settings-function)
+  (lambda (provider model context on-event &rest options)
+    (let ((request-options (copy-list options))
+          (settings (funcall retry-settings-function)))
+      (unless (member :max-retries request-options :test #'eq)
+        (setf (getf request-options :max-retries)
+              (getf settings :max-retries)))
+      (unless (member :max-retry-delay-ms request-options :test #'eq)
+        (setf (getf request-options :max-retry-delay-ms)
+              (getf settings :max-retry-delay-ms)))
+      (unless (member :timeout-ms request-options :test #'eq)
+        (setf (getf request-options :timeout-ms)
+              (getf settings :timeout-ms)))
+      (apply stream-function
+             provider model context on-event request-options))))
+
+(defun resolve-session-directory
+    (&key cli-directory settings-directory
+          (cwd (uiop:getcwd)))
+  (let ((chosen (or cli-directory settings-directory)))
+    (if chosen
+        (uiop:ensure-directory-pathname
+         (merge-pathnames (pathname chosen) cwd))
+        (cadr-agent:default-session-directory))))
+
 (defun settings-show-terminal-progress-p (manager)
   (let ((terminal-settings
           (settings-value
@@ -69,6 +286,29 @@
           terminal-settings
           "showTerminalProgress"
          nil)))))
+
+(defun settings-show-terminal-images-p (manager)
+  (let ((terminal
+          (settings-value
+           manager "terminal"
+           (empty-json-object))))
+    (if (hash-table-p terminal)
+        (eq t
+            (cadr-ai::json-get
+             terminal "showImages" t))
+        t)))
+
+(defun settings-terminal-image-width-cells (manager)
+  (let* ((terminal
+           (settings-value
+            manager "terminal"
+            (empty-json-object)))
+         (value
+           (and
+            (hash-table-p terminal)
+            (cadr-ai::json-get
+             terminal "imageWidthCells" 60))))
+    (if (member value '(60 80 120)) value 60)))
 
 (defun settings-clear-on-shrink-p (manager)
   ;; pi@d981de122 settings-manager.ts:1093-1099 gives an explicit setting
@@ -173,6 +413,51 @@
         mode
         "streaming")))
 
+(defun settings-markdown-code-block-indent (manager)
+  (let ((value
+          (settings-nested-value
+           manager "markdown" "codeBlockIndent" :missing)))
+    (if (stringp value)
+        value
+        "  ")))
+
+(defun settings-last-changelog-version (manager)
+  (let ((value
+          (settings-value
+           manager "lastChangelogVersion" :missing)))
+    (and (stringp value) value)))
+
+(defun settings-external-editor-command
+    (manager &optional (environment-function #'uiop:getenv))
+  (let ((configured
+          (settings-value manager "externalEditor" :missing)))
+    (if (and (stringp configured)
+             (plusp
+              (length
+               (string-trim
+                '(#\Space #\Tab #\Newline #\Return)
+                configured))))
+        configured
+        (or (let ((visual
+                    (funcall environment-function "VISUAL")))
+              (and (stringp visual)
+                   (plusp (length visual))
+                   visual))
+            (let ((editor
+                    (funcall environment-function "EDITOR")))
+              (and (stringp editor)
+                   (plusp (length editor))
+                   editor))
+            "nano"))))
+
+(defun settings-npm-command (manager)
+  (let ((value (settings-value manager "npmCommand" :missing)))
+    (and (vectorp value)
+         (plusp (length value))
+         (every #'stringp value)
+         (plusp (length (aref value 0)))
+         (coerce value 'list))))
+
 (defun http-idle-timeout-label (timeout-ms)
   (or
    (cdr
@@ -248,6 +533,14 @@
    (settings-boolean-value
     settings-manager
     "compaction" t "enabled")
+   (cadr-agent::agent-compaction-keep-recent-tokens
+    agent)
+   (settings-compaction-keep-recent-tokens
+    settings-manager)
+   (cadr-agent::agent-compaction-reserve-tokens
+    agent)
+   (settings-compaction-reserve-tokens
+    settings-manager)
    (cadr-agent:agent-steering-mode agent)
    (if
        (string=
@@ -323,11 +616,6 @@
             settings-manager
             "terminal"
             (empty-json-object)))
-         (images
-           (settings-value
-            settings-manager
-            "images"
-            (empty-json-object)))
          (theme-names
            (remove-duplicates
             (append
@@ -387,11 +675,8 @@
              :description
              "Resize large images to 2000x2000 max for better model compatibility"
              :value
-             (if (hash-table-p images)
-                 (eq t
-                     (cadr-ai::json-get
-                      images "autoResize" t))
-                 t)
+             (settings-auto-resize-images-p
+              settings-manager)
              :values (list t nil))
             (make-settings-option
              :id "block-images"
@@ -399,11 +684,8 @@
              :description
              "Prevent images from being sent to LLM providers"
              :value
-             (if (hash-table-p images)
-                 (eq t
-                     (cadr-ai::json-get
-                      images "blockImages" nil))
-                 nil)
+             (settings-block-images-p
+              settings-manager)
              :values (list t nil))
             (make-settings-option
              :id "skill-commands"
@@ -734,11 +1016,8 @@
                 :label "Show images"
                 :description "Render images inline in terminal"
                 :value
-                (if (hash-table-p terminal)
-                    (eq t
-                        (cadr-ai::json-get
-                         terminal "showImages" t))
-                    t)
+                (settings-show-terminal-images-p
+                 settings-manager)
                 :values (list t nil))
                (make-settings-option
                 :id "image-width-cells"
@@ -746,12 +1025,8 @@
                 :description
                 "Preferred inline image width in terminal cells"
                 :value
-                (let ((value
-                        (and
-                         (hash-table-p terminal)
-                         (cadr-ai::json-get
-                          terminal "imageWidthCells" 60))))
-                  (if (member value '(60 80 120)) value 60))
+                (settings-terminal-image-width-cells
+                 settings-manager)
                 :values '(60 80 120))))
             rest-options)))
       (make-settings-selector-state

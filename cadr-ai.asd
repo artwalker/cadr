@@ -108,6 +108,7 @@
                              (:file "json-test")
                              (:file "sse-test")
                              (:file "http-test")
+                             (:file "goal28-http-idle-stream-test")
                              (:file "provider-payloads-test")
                              (:file "provider-compat-test")
                              (:file "anthropic-mid-conversation-effort-test")

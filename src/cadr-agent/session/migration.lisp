@@ -1996,12 +1996,15 @@
           (write-byte 10 stream)))))
   path)
 
-(defun read-session-objects (path)
+(defun read-session-objects (path &key strict-p hash-records-p)
   ;; Pairing counterpart of Node 1MiB readSync: one octet
   ;; READ-SEQUENCE per chunk, then split on LF.  Files that
   ;; fit the cap are one exact-size read.  ASCII lines reuse
   ;; one simple-base-string and parse a START/END window.
   ;; JSONL newlines are UTF-8 boundaries.  Not intern.  Not 7b.
+  ;; STRICT-P fails the load on a bad body line instead of skipping it.
+  ;; HASH-RECORDS-P keeps body lines on the general octet JSON parser
+  ;; so harness JSONL round-trips that the schema walker does not cover.
   (let ((objects nil)
         (line-number 0)
         (header nil)
@@ -2023,34 +2026,56 @@
            (and (< start end)
                 (or (= (aref octets start) 123)
                     (not (blank-octets-p octets start end)))))
+         (parse-line (octets start end)
+           (if (null header)
+               (parse-session-header-octets
+                octets start end)
+               (parse-session-line
+                octets path line-number
+                :raw-hash-p raw-hash-p
+                :start start
+                :end end
+                :octet-p t)))
          (consume-line (octets start end)
            (incf line-number)
            (when (line-has-body-p octets start end)
              (let ((object
-                     (block consume-parse
-                       (handler-bind
-                           ((error
-                             #'(lambda (cause)
-                                 (declare (ignore cause))
-                                 (return-from consume-parse nil))))
-                         (if (null header)
-                             (parse-session-header-octets
-                              octets start end)
-                             (parse-session-line
-                              octets path line-number
-                              :raw-hash-p raw-hash-p
-                              :start start
-                              :end end
-                              :octet-p t))))))
+                     (if strict-p
+                         (handler-case
+                             (parse-line octets start end)
+                           (session-error (condition)
+                             (error condition))
+                           (error (cause)
+                             (if header
+                                 (handler-case
+                                     (cadr-ai::parse-json-octets
+                                      octets nil nil start end)
+                                   (error ()
+                                     (session-failure
+                                      path line-number
+                                      "Invalid JSONL session entry: ~A"
+                                      cause)))
+                                 (session-failure
+                                  path line-number
+                                  "Invalid JSONL session entry: ~A"
+                                  cause))))
+                         (block consume-parse
+                           (handler-bind
+                               ((error
+                                 #'(lambda (cause)
+                                     (declare (ignore cause))
+                                     (return-from consume-parse nil))))
+                             (parse-line octets start end))))))
                (when object
                  (unless header
                    (setf header object)
                    (setf raw-hash-p
-                         (let ((version
-                                 (session-header-ref
-                                  object "version" 1)))
-                           (or (not (integerp version))
-                               (< version 3)))))
+                         (or hash-records-p
+                             (let ((version
+                                     (session-header-ref
+                                      object "version" 1)))
+                               (or (not (integerp version))
+                                   (< version 3))))))
                  (push object objects)))))
          (scan-buffer (buffer count pending)
            (let ((start 0))

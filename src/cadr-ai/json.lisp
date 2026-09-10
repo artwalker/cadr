@@ -1883,6 +1883,8 @@
                        (< split digit-length))
               (write-string digits out :start split))))))))
 
+(defvar *json-sort-object-keys* t)
+
 (defun write-json-value (value stream)
   (cond
     ((eq value 'null) (write-string "null" stream))
@@ -1909,36 +1911,54 @@
         stream)))
     ((hash-table-p value)
      (write-char #\{ stream)
-     (loop for key in
-           (sort
-            (loop for key being
-                  the hash-keys of value
-                  collect key)
-            #'string<)
-           for first-p = t then nil
-           do
-           (unless first-p (write-char #\, stream))
-           (write-json-string key stream)
-           (write-char #\: stream)
-           (write-json-value
-            (gethash key value)
-            stream))
+     (if *json-sort-object-keys*
+         (loop for key in
+               (sort
+                (loop for key being
+                      the hash-keys of value
+                      collect key)
+                #'string<)
+               for first-p = t then nil
+               do
+               (unless first-p (write-char #\, stream))
+               (write-json-string key stream)
+               (write-char #\: stream)
+               (write-json-value
+                (gethash key value)
+                stream))
+         (let ((first-p t))
+           (maphash
+            (lambda (key item)
+              (unless first-p (write-char #\, stream))
+              (setf first-p nil)
+              (write-json-string key stream)
+              (write-char #\: stream)
+              (write-json-value item stream))
+            value)))
      (write-char #\} stream))
     ((json-object-pairs-p value)
      (write-char #\{ stream)
-     (loop for key in
-           (sort
-            (loop for (pair-key) on (cdr value) by #'cddr
-                  collect pair-key)
-            #'string<)
-           for first-p = t then nil
-           do
-           (unless first-p (write-char #\, stream))
-           (write-json-string key stream)
-           (write-char #\: stream)
-           (write-json-value
-            (json-get value key)
-            stream))
+     (if *json-sort-object-keys*
+         (loop for key in
+               (sort
+                (loop for (pair-key) on (cdr value) by #'cddr
+                      collect pair-key)
+                #'string<)
+               for first-p = t then nil
+               do
+               (unless first-p (write-char #\, stream))
+               (write-json-string key stream)
+               (write-char #\: stream)
+               (write-json-value
+                (json-get value key)
+                stream))
+         (loop for (pair-key pair-value) on (cdr value) by #'cddr
+               for first-p = t then nil
+               do
+               (unless first-p (write-char #\, stream))
+               (write-json-string pair-key stream)
+               (write-char #\: stream)
+               (write-json-value pair-value stream)))
      (write-char #\} stream))
     ((or (vectorp value) (listp value))
      (write-char #\[ stream)

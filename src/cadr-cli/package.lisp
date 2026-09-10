@@ -216,6 +216,20 @@
    #:sdk-settings-default-model
    #:sdk-settings-default-thinking-level
    #:sdk-settings-compaction-enabled-p
+   #:sdk-settings-compaction-keep-recent-tokens
+   #:sdk-settings-compaction-reserve-tokens
+   #:sdk-settings-branch-summary-reserve-tokens
+   #:sdk-settings-branch-summary-skip-prompt-p
+   #:sdk-settings-shell-path
+   #:sdk-settings-shell-command-prefix
+   #:sdk-settings-session-dir
+   #:sdk-settings-websocket-connect-timeout-ms
+   #:sdk-settings-http-proxy
+   #:sdk-settings-thinking-budgets
+   #:sdk-settings-theme-paths
+   #:sdk-settings-skill-paths
+   #:sdk-settings-prompt-paths
+   #:sdk-settings-extension-paths
    #:sdk-settings-enabled-tools
    #:sdk-settings-retry-settings
    #:sdk-settings-http-idle-timeout-ms

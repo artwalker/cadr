@@ -302,6 +302,9 @@ interactive-mode.ts:5956-5960).")
        trust-selector-function
        settings-selector-function
        mermaid-mode-function
+       code-block-indent-function
+       external-editor-command-function
+       external-editor-runner-function
        extension-host
        fork-items-function
        session-items-function
@@ -405,6 +408,10 @@ interactive-mode.ts:5956-5960).")
             (if mermaid-mode-function
                 (or (funcall mermaid-mode-function) "streaming")
                 "streaming")
+            :code-block-indent
+            (if code-block-indent-function
+                (or (funcall code-block-indent-function) "  ")
+                "  ")
             :session session
             ;; Seed after managed-tool ensure so offline fd/rg warnings
             ;; sit above restored session messages (interactive-mode.ts).
@@ -2343,14 +2350,20 @@ interactive-mode.ts:5956-5960).")
                            "Forked to new session")))))
                    (:tree
                     (when on-tree-selected
-                      (let ((selected-messages
-                              (funcall
-                               on-tree-selected
-                               value)))
-                        (when selected-messages
-                          (reset-tui-messages
-                           state
-                           selected-messages)))))
+                      (multiple-value-bind
+                            (selected-messages
+                             prompt-cancelled-p)
+                          (funcall
+                           on-tree-selected
+                           value
+                           #'show-extension-selection)
+                        (cond
+                          (prompt-cancelled-p
+                           (open-tree-selector))
+                          (selected-messages
+                           (reset-tui-messages
+                            state
+                            selected-messages))))))
                    (:extension-custom
                     (finish-custom-ui value)))
                (error (condition)
@@ -2676,6 +2689,28 @@ interactive-mode.ts:5956-5960).")
                  (:dequeue
                   (restore-queued-messages :notify-p t)
                   (request-render))
+                 (:external-editor
+                  (let* ((command
+                           (and
+                            external-editor-command-function
+                            (funcall
+                             external-editor-command-function)))
+                         (runner
+                           (or
+                            external-editor-runner-function
+                            (and
+                             (stringp command)
+                             (plusp (length command))
+                             (make-external-editor-runner
+                              command)))))
+                    (when runner
+                      (tui-editor-component-set-text
+                       (current-editor)
+                       (edit-in-external-editor
+                        (tui-editor-component-text
+                         (current-editor))
+                        runner)))
+                    (request-render)))
                  (:copy
                   (cond
                     ((and alt-p

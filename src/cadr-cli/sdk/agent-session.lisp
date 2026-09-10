@@ -280,6 +280,14 @@
   (setf
    (cadr-agent::agent-auto-compact-p agent)
    (sdk-settings-compaction-enabled-p settings)
+   (cadr-agent::agent-compaction-keep-recent-tokens
+    agent)
+   (sdk-settings-compaction-keep-recent-tokens
+    settings)
+   (cadr-agent::agent-compaction-reserve-tokens
+    agent)
+   (sdk-settings-compaction-reserve-tokens
+    settings)
    (cadr-agent:agent-steering-mode agent)
    (if (string=
         "all"
@@ -349,7 +357,12 @@
                  "models.json" resolved-agent))))
          (manager
            (or session-manager
-               (session-manager-create resolved-cwd)))
+               (session-manager-create
+                resolved-cwd
+                (resolve-session-directory
+                 :settings-directory
+                 (sdk-settings-session-dir settings)
+                 :cwd resolved-cwd))))
          (persistent
            (session-manager-resolve manager))
          (loader
@@ -374,7 +387,14 @@
                   (sdk-settings-value settings "defaultTools")))))
          (base-tools
            (append
-            (make-all-coding-tools resolved-cwd)
+            (make-all-coding-tools
+             resolved-cwd
+             :command-prefix
+             (and settings
+                  (sdk-settings-shell-command-prefix settings))
+             :shell-path
+             (and settings
+                  (sdk-settings-shell-path settings)))
             (copy-list custom-tools)))
          (selected-tools
            (funcall tool-filter base-tools))
@@ -412,6 +432,8 @@
              (multiple-value-list
               (sdk-build-agent-system-prompt
                loader selected-tools resolved-cwd)))
+           (retry-settings
+             (sdk-settings-retry-settings settings))
            (agent
              (cadr-agent:make-agent
               :provider
@@ -429,9 +451,32 @@
               :extension-host extension-host
               :session persistent
               :stream-function
-              (or stream-function
-                  (sdk-model-runtime-stream-function
-                   runtime))
+              (stream-function-with-provider-retry
+               (stream-function-with-http-proxy
+                (stream-function-with-http-idle-timeout
+                 (stream-function-with-websocket-connect-timeout
+                  (stream-function-with-thinking-budgets
+                  (or stream-function
+                      (sdk-model-runtime-stream-function
+                       runtime))
+                  (lambda ()
+                    (sdk-settings-thinking-budgets settings)))
+                 (lambda ()
+                   (sdk-settings-websocket-connect-timeout-ms
+                    settings)))
+                 (lambda ()
+                   (sdk-settings-http-idle-timeout-ms
+                    settings)))
+                (lambda ()
+                  (sdk-settings-http-proxy settings)))
+               (lambda ()
+                 (sdk-settings-retry-settings settings)))
+              :auto-retry-p
+              (getf retry-settings :enabled-p)
+              :auto-retry-max-attempts
+              (getf retry-settings :max-retries)
+              :auto-retry-base-delay
+              (/ (getf retry-settings :base-delay-ms) 1000)
               :on-event
               (lambda (event)
                 (sdk-agent-session-dispatch

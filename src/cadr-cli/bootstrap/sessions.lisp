@@ -1533,6 +1533,54 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      (condition () nil))
    #p"CHANGELOG.md"))
 
+(defun changelog-for-display
+    (settings-manager messages
+     &key
+       (changelog-path (default-changelog-path))
+       (current-version (cadr-ai::cadr-version)))
+  (when (plusp (length messages))
+    (return-from changelog-for-display nil))
+  (let ((last-version
+          (settings-last-changelog-version
+           settings-manager))
+        (entries (parse-changelog changelog-path)))
+    (unless last-version
+      (settings-set
+       settings-manager
+       "lastChangelogVersion"
+       current-version)
+      (return-from changelog-for-display nil))
+    (let ((new-entries
+            (get-new-changelog-entries
+             entries last-version)))
+      (when new-entries
+        (settings-set
+         settings-manager
+         "lastChangelogVersion"
+         current-version)
+        (format
+         nil "~{~A~^~%~%~}"
+         (mapcar
+          (lambda (entry)
+            (normalize-changelog-links
+             (getf entry :content)
+             (getf entry :version)))
+          new-entries))))))
+
+(defun apply-changelog-to-startup-compact-lines
+    (lines settings-manager messages
+     &key
+       (changelog-path (default-changelog-path))
+       (current-version (cadr-ai::cadr-version)))
+  (let ((text
+          (changelog-for-display
+           settings-manager messages
+           :changelog-path changelog-path
+           :current-version current-version)))
+    (if text
+        (append lines (list text))
+        lines)))
+
 (defparameter +interactive-hotkey-definitions+
   '(("escape" . "Cancel or abort")
     ("ctrl+c" . "Clear editor; press again to exit")
@@ -1639,15 +1687,38 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
     (namestring (truename left))
     (namestring (truename right)))))
 
+(define-condition session-import-file-not-found-error (error)
+  ((file-path
+    :initarg :file-path
+    :reader session-import-file-not-found-error-file-path))
+  (:report
+   (lambda (condition stream)
+     (format
+      stream
+      "File not found: ~A"
+      (namestring
+       (session-import-file-not-found-error-file-path
+        condition))))))
+
+(define-condition missing-session-cwd-error (error)
+  ((session-cwd
+    :initarg :session-cwd
+    :reader missing-session-cwd-error-session-cwd))
+  (:report
+   (lambda (condition stream)
+     (format
+      stream
+      "Session working directory does not exist: ~A"
+      (missing-session-cwd-error-session-cwd condition)))))
+
 (defun import-agent-session
     (agent input directory cwd)
   (let* ((source
            (resolve-general-path input cwd)))
     (unless (probe-file source)
-      (return-from import-agent-session
-        (values nil
-                (format nil "File not found: ~A"
-                        (namestring source)))))
+      (error
+       'session-import-file-not-found-error
+       :file-path source))
     (let* ((session-directory
              (uiop:ensure-directory-pathname
               directory))
@@ -1688,7 +1759,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                   (cadr-agent:session-cwd
                    imported)))
               (error
-               "Session working directory does not exist: ~A"
+               'missing-session-cwd-error
+               :session-cwd
                (cadr-agent:session-cwd imported)))
             (run-session-lifecycle
              agent :session-shutdown
@@ -1950,24 +2022,31 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                     path)))
                  (format output
                          "Import cancelled~%")
-                 (multiple-value-bind
-                       (imported error-message)
-                     (import-agent-session
-                      agent path directory cwd)
-                   (cond
-                     ((eq imported :cancelled)
-                      (format output
-                              "Import cancelled~%"))
-                     (imported
-                      (format
-                       output
-                       "Session imported from: ~A~%"
-                       path))
-                     (t
-                      (format
-                       output
-                       "Failed to import session: ~A~%"
-                       error-message)))))))
+                 (handler-case
+                     (multiple-value-bind
+                           (imported error-message)
+                         (import-agent-session
+                          agent path directory cwd)
+                       (cond
+                         ((eq imported :cancelled)
+                          (format output
+                                  "Import cancelled~%"))
+                         (imported
+                          (format
+                           output
+                           "Session imported from: ~A~%"
+                           path))
+                         (t
+                          (format
+                           output
+                           "Failed to import session: ~A~%"
+                           error-message))))
+                   (session-import-file-not-found-error
+                       (condition)
+                     (format
+                      output
+                      "Failed to import session: ~A~%"
+                      condition))))))
        (finish-output output)
        t)
       ((string= command "/export")

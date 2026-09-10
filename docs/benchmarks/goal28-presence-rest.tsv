@@ -1,0 +1,462 @@
+class	name	presence	status	note
+exitCodes	0	name-present	open	CLI exit status 0 in src/cadr-cli/bootstrap/sessions.lisp
+exitCodes	1	name-present	open	CLI exit status 1 in src/cadr-cli/bootstrap/main.lisp
+exitCodes	129	name-present	open	CLI exit status 129 in src/cadr-cli/bootstrap/commands.lisp
+settingsKeys	BranchSummary.reserveTokens	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	BranchSummary.skipPrompt	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Compaction.enabled	name-present	open	settings nested JSON path in src/cadr-cli/bootstrap/commands.lisp
+settingsKeys	Compaction.keepRecentTokens	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Compaction.reserveTokens	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Image.autoResize	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Image.blockImages	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Markdown.codeBlockIndent	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Markdown.mermaid	name-present	open	settings nested JSON path in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	ProviderRetry.maxRetries	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	ProviderRetry.maxRetryDelayMs	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	ProviderRetry.timeoutMs	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Retry.baseDelayMs	name-present	open	settings nested JSON path in src/cadr-cli/sdk/settings-service.lisp
+settingsKeys	Retry.enabled	name-present	open	settings nested JSON path in src/cadr-cli/sdk/settings-service.lisp
+settingsKeys	Retry.maxRetries	name-present	open	settings nested JSON path in src/cadr-cli/sdk/settings-service.lisp
+settingsKeys	Retry.provider	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Terminal.clearOnShrink	name-present	open	settings nested JSON path in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	Terminal.hyperlinks	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Terminal.imageWidthCells	name-present	open	settings nested JSON path in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	Terminal.images	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Terminal.showImages	name-present	open	settings nested JSON path in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	Terminal.showTerminalProgress	name-present	open	settings nested JSON path in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	Terminal.trueColor	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	ThinkingBudgets.high	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	ThinkingBudgets.low	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	ThinkingBudgets.medium	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	ThinkingBudgets.minimal	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	Warning.anthropicExtraUsage	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	autocompleteMaxVisible	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	branchSummary	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	collapseChangelog	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	compaction	name-present	open	settings JSON key in src/cadr-cli/bootstrap/commands.lisp
+settingsKeys	defaultModel	name-present	open	settings JSON key in src/cadr-cli/settings/manager.lisp
+settingsKeys	defaultProjectTrust	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	defaultProvider	name-present	open	settings JSON key in src/cadr-cli/settings/manager.lisp
+settingsKeys	defaultThinkingLevel	name-present	open	settings JSON key in src/cadr-cli/bootstrap/commands.lisp
+settingsKeys	defaultTools	name-present	open	settings JSON key in src/cadr-cli/sdk/agent-session.lisp
+settingsKeys	doubleEscapeAction	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	editorPaddingX	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	enableAnalytics	name-present	open	settings JSON key in src/cadr-cli/sdk/cache-version.lisp
+settingsKeys	enableInstallTelemetry	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	enableSkillCommands	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	enabledModels	name-present	open	settings JSON key in src/cadr-cli/settings/manager.lisp
+settingsKeys	extensions	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	externalEditor	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	followUpMode	name-present	open	settings JSON key in src/cadr-cli/sdk/agent-session.lisp
+settingsKeys	fullscreenCopyOnSelect	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	fullscreenExitOutput	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	fullscreenScrollbar	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	hideThinkingBlock	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	httpIdleTimeoutMs	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	httpProxy	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	images	name-present	open	settings JSON key in src/cadr-cli/bootstrap/commands.lisp
+settingsKeys	lastChangelogVersion	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	markdown	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	modelThinkingLevels	name-present	open	settings JSON key in src/cadr-cli/sdk/settings-service.lisp
+settingsKeys	npmCommand	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	outputPad	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	packages	name-present	open	settings JSON key in src/cadr-cli/packages/settings.lisp
+settingsKeys	prompts	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	quietStartup	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	retry	name-present	open	settings JSON key in src/cadr-cli/sdk/settings-service.lisp
+settingsKeys	sessionDir	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	shellCommandPrefix	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	shellPath	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	showCacheMissNotices	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	showHardwareCursor	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	skills	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	steeringMode	name-present	open	settings JSON key in src/cadr-cli/sdk/agent-session.lisp
+settingsKeys	terminal	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	theme	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	themes	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	thinkingBudgets	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+settingsKeys	trackingId	name-present	open	settings JSON key in src/cadr-cli/sdk/cache-version.lisp
+settingsKeys	transport	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	treeFilterMode	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	tuiMode	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	warnings	name-present	open	settings JSON key in src/cadr-cli/bootstrap/settings.lisp
+settingsKeys	websocketConnectTimeoutMs	missing	open	not in settings-value/nested keys (src/cadr-cli/bootstrap/settings.lisp, src/cadr-cli/settings/manager.lisp, src/cadr-cli/sdk/settings-service.lisp)
+sessionFormatVersions	2	name-present	open	session format version 2 in src/cadr-agent/session/migration.lisp
+sessionFormatVersions	3	name-present	open	session format version 3 in src/cadr-agent/session/migration.lisp
+providers	all.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	amazon-bedrock.ts	name-present	open	*built-in-provider-definition-rows* :amazon-bedrock in src/cadr-ai/providers/definitions.lisp
+providers	ant-ling.ts	name-present	open	*built-in-provider-definition-rows* :ant-ling in src/cadr-ai/providers/definitions.lisp
+providers	anthropic.ts	name-present	open	*built-in-provider-definition-rows* :anthropic in src/cadr-ai/providers/definitions.lisp
+providers	azure-openai-responses.ts	name-present	open	*built-in-provider-definition-rows* :azure-openai-responses in src/cadr-ai/providers/definitions.lisp
+providers	baseten.ts	name-present	open	*built-in-provider-definition-rows* :baseten in src/cadr-ai/providers/definitions.lisp
+providers	cerebras.ts	name-present	open	*built-in-provider-definition-rows* :cerebras in src/cadr-ai/providers/definitions.lisp
+providers	cloudflare-ai-gateway.ts	name-present	open	*built-in-provider-definition-rows* :cloudflare-ai-gateway in src/cadr-ai/providers/definitions.lisp
+providers	cloudflare-auth.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	cloudflare-stream.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	cloudflare-workers-ai.ts	name-present	open	*built-in-provider-definition-rows* :cloudflare-workers-ai in src/cadr-ai/providers/definitions.lisp
+providers	data-json.d.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	deepseek.ts	name-present	open	*built-in-provider-definition-rows* :deepseek in src/cadr-ai/providers/definitions.lisp
+providers	faux.ts	name-present	open	faux provider in src/cadr-ai/runtime/faux-provider.lisp
+providers	fireworks.ts	name-present	open	*built-in-provider-definition-rows* :fireworks in src/cadr-ai/providers/definitions.lisp
+providers	github-copilot.ts	name-present	open	*built-in-provider-definition-rows* :github-copilot in src/cadr-ai/providers/definitions.lisp
+providers	google-vertex.ts	name-present	open	*built-in-provider-definition-rows* :google-vertex in src/cadr-ai/providers/definitions.lisp
+providers	google.ts	name-present	open	*built-in-provider-definition-rows* :google in src/cadr-ai/providers/definitions.lisp
+providers	groq.ts	name-present	open	*built-in-provider-definition-rows* :groq in src/cadr-ai/providers/definitions.lisp
+providers	huggingface.ts	name-present	open	*built-in-provider-definition-rows* :huggingface in src/cadr-ai/providers/definitions.lisp
+providers	kimi-coding.ts	name-present	open	*built-in-provider-definition-rows* :kimi-coding in src/cadr-ai/providers/definitions.lisp
+providers	minimax-cn.ts	name-present	open	*built-in-provider-definition-rows* :minimax-cn in src/cadr-ai/providers/definitions.lisp
+providers	minimax.ts	name-present	open	*built-in-provider-definition-rows* :minimax in src/cadr-ai/providers/definitions.lisp
+providers	mistral.ts	name-present	open	*built-in-provider-definition-rows* :mistral in src/cadr-ai/providers/definitions.lisp
+providers	moonshotai-cn.ts	name-present	open	*built-in-provider-definition-rows* :moonshotai-cn in src/cadr-ai/providers/definitions.lisp
+providers	moonshotai.ts	name-present	open	*built-in-provider-definition-rows* :moonshotai in src/cadr-ai/providers/definitions.lisp
+providers	nvidia.ts	name-present	open	*built-in-provider-definition-rows* :nvidia in src/cadr-ai/providers/definitions.lisp
+providers	openai-codex.ts	name-present	open	*built-in-provider-definition-rows* :openai-codex in src/cadr-ai/providers/definitions.lisp
+providers	openai.ts	name-present	open	*built-in-provider-definition-rows* :openai in src/cadr-ai/providers/definitions.lisp
+providers	opencode-go.ts	name-present	open	*built-in-provider-definition-rows* :opencode-go in src/cadr-ai/providers/definitions.lisp
+providers	opencode.ts	name-present	open	*built-in-provider-definition-rows* :opencode in src/cadr-ai/providers/definitions.lisp
+providers	openrouter-images.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	openrouter.ts	name-present	open	*built-in-provider-definition-rows* :openrouter in src/cadr-ai/providers/definitions.lisp
+providers	qwen-token-plan-cn.ts	name-present	open	*built-in-provider-definition-rows* :qwen-token-plan-cn in src/cadr-ai/providers/definitions.lisp
+providers	qwen-token-plan-individual.ts	name-present	open	*built-in-provider-definition-rows* :qwen-token-plan-individual in src/cadr-ai/providers/definitions.lisp
+providers	qwen-token-plan.ts	name-present	open	*built-in-provider-definition-rows* :qwen-token-plan in src/cadr-ai/providers/definitions.lisp
+providers	radius-config.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	radius.ts	name-present	open	*built-in-provider-definition-rows* :radius in src/cadr-ai/providers/definitions.lisp
+providers	register-builtins.ts	extractor-noise	open	helper module, not a *built-in-provider-definition-rows* id (src/cadr-ai/providers/definitions.lisp)
+providers	together.ts	name-present	open	*built-in-provider-definition-rows* :together in src/cadr-ai/providers/definitions.lisp
+providers	vercel-ai-gateway.ts	name-present	open	*built-in-provider-definition-rows* :vercel-ai-gateway in src/cadr-ai/providers/definitions.lisp
+providers	xai.ts	name-present	open	*built-in-provider-definition-rows* :xai in src/cadr-ai/providers/definitions.lisp
+providers	xiaomi-token-plan-ams.ts	name-present	open	*built-in-provider-definition-rows* :xiaomi-token-plan-ams in src/cadr-ai/providers/definitions.lisp
+providers	xiaomi-token-plan-cn.ts	name-present	open	*built-in-provider-definition-rows* :xiaomi-token-plan-cn in src/cadr-ai/providers/definitions.lisp
+providers	xiaomi-token-plan-sgp.ts	name-present	open	*built-in-provider-definition-rows* :xiaomi-token-plan-sgp in src/cadr-ai/providers/definitions.lisp
+providers	xiaomi.ts	name-present	open	*built-in-provider-definition-rows* :xiaomi in src/cadr-ai/providers/definitions.lisp
+providers	zai-coding-cn.ts	name-present	open	*built-in-provider-definition-rows* :zai-coding-cn in src/cadr-ai/providers/definitions.lisp
+providers	zai.ts	name-present	open	*built-in-provider-definition-rows* :zai in src/cadr-ai/providers/definitions.lisp
+errorClasses	AuthCommandError	name-present	open	define-condition in src/cadr-cli/models/credential-print.lisp
+errorClasses	CredentialSynchronizationError	missing	open	no define-condition matching CredentialSynchronizationError (src/cadr-cli/models/credential-print.lisp, src/cadr-agent/conditions.lisp)
+errorClasses	MissingSessionCwdError	missing	open	no define-condition matching MissingSessionCwdError (src/cadr-cli/models/credential-print.lisp, src/cadr-agent/conditions.lisp)
+errorClasses	SessionImportFileNotFoundError	missing	open	no define-condition matching SessionImportFileNotFoundError (src/cadr-cli/models/credential-print.lisp, src/cadr-agent/conditions.lisp)
+errorClasses	SessionPluginSelectionConflictError	missing	open	no define-condition matching SessionPluginSelectionConflictError (src/cadr-cli/models/credential-print.lisp, src/cadr-agent/conditions.lisp)
+extensionEvents	after_provider_response	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	agent_end	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	agent_settled	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	agent_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	before_agent_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	before_provider_headers	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	before_provider_request	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	context	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	input	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	message_end	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	message_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	message_update	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	model_select	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	project_trust	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	resources_discover	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_before_compact	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_before_fork	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_before_switch	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_before_tree	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_compact	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_compact_failed	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_info_changed	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_shutdown	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	session_tree	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	thinking_level_select	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	tool_call	missing	open	not in +extension-hook-events+ (src/cadr-agent/extensions/registration.lisp)
+extensionEvents	tool_execution_end	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	tool_execution_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	tool_execution_update	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	tool_result	missing	open	not in +extension-hook-events+ (src/cadr-agent/extensions/registration.lisp)
+extensionEvents	turn_end	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	turn_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	ui_prompt_end	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	ui_prompt_start	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionEvents	user_bash	name-present	open	+extension-hook-events+ in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.commands	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.entryRenderers	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.flags	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.handlers	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	Extension.hidden	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.markdownTransformer	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.messageRenderers	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.path	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.resolvedPath	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	Extension.shortcuts	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	Extension.sourceInfo	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	Extension.tools	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionAPI.events	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.appendEntry	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.getActiveTools	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.getAllTools	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.getCommands	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.getSessionName	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.getThinkingLevel	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.refreshTools	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionActions.sendMessage	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.sendUserMessage	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.setActiveTools	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.setLabel	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.setModel	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionActions.setSessionName	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionActions.setThinkingLevel	name-present	open	extension struct/function in src/cadr-agent/extensions/api.lisp
+extensionTypeFields	ExtensionCommandContextActions.fork	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionCommandContextActions.navigateTree	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionCommandContextActions.newSession	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionCommandContextActions.reload	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionCommandContextActions.switchSession	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionCommandContextActions.waitForIdle	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.cwd	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.hasUI	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.mode	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.model	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.modelRegistry	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.scopedModels	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.sessionManager	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionContext.signal	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.thinkingLevel	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContext.ui	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionContextActions.abort	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.compact	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.getContextUsage	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.getModel	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.getScopedModels	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.getSignal	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.getSystemPrompt	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.getSystemPromptOptions	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.hasPendingMessages	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.isIdle	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionContextActions.isProjectTrusted	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionContextActions.shutdown	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionError.error	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionError.event	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionError.extensionPath	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionError.stack	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionFlag.default	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionFlag.description	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionFlag.extensionPath	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionFlag.name	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionFlag.type	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionRuntimeState.assertActive	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionRuntimeState.flagValues	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionRuntimeState.invalidate	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionRuntimeState.pendingNativeProviderRegistrations	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionRuntimeState.pendingProviderRegistrations	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionRuntimeState.registerNativeProvider	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionRuntimeState.registerProvider	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionRuntimeState.trackEventBusSubscription	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionRuntimeState.unregisterProvider	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionShortcut.description	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionShortcut.extensionPath	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionShortcut.handler	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	ExtensionShortcut.shortcut	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	ExtensionUIDialogOptions.signal	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionUIDialogOptions.timeout	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	ExtensionWidgetOptions.placement	name-present	open	extension struct/function in src/cadr-agent/extensions/context.lisp
+extensionTypeFields	RegisteredCommand.description	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	RegisteredCommand.getArgumentCompletions	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+extensionTypeFields	RegisteredCommand.handler	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	RegisteredCommand.name	name-present	open	extension struct/function in src/cadr-agent/extensions/registration.lisp
+extensionTypeFields	RegisteredCommand.sourceInfo	missing	open	not in extension defstruct/API (src/cadr-agent/extensions/registration.lisp, src/cadr-agent/extensions/api.lisp, src/cadr-agent/extensions/context.lisp)
+exportedComponents	ArminComponent	name-present	open	armin-component class export in src/cadr-cli/interactive/components/armin.lisp / src/cadr-cli/package.lisp
+keybindingActions	app.clear	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.clipboard.pasteImage	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.editor.external	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.exit	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.interrupt	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.message.copy	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.message.dequeue	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.message.followUp	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.model.cycleBackward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.model.cycleForward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.model.select	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.models.clearAll	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	app.models.enableAll	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	app.models.reorderDown	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	app.models.reorderUp	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	app.models.save	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	app.models.toggleProvider	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	app.session.delete	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/sessions.lisp
+keybindingActions	app.session.deleteNoninvasive	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/sessions.lisp
+keybindingActions	app.session.fork	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.session.new	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.session.rename	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/sessions.lisp
+keybindingActions	app.session.resume	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.session.toggleNamedFilter	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/sessions.lisp
+keybindingActions	app.session.togglePath	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/sessions.lisp
+keybindingActions	app.session.toggleSort	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/sessions.lisp
+keybindingActions	app.session.tree	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.suspend	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.thinking.cycle	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/thinking.lisp
+keybindingActions	app.thinking.save	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/thinking.lisp
+keybindingActions	app.thinking.toggle	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.tools.expand	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	app.tree.editLabel	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.all	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.cycleBackward	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.cycleForward	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.default	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.labeledOnly	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.noTools	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.filter.userOnly	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.foldOrUp	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.toggleLabelTimestamp	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	app.tree.unfoldOrDown	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	tui.altScreen.bottom	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.halfPageDown	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.halfPageUp	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.lineDown	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.lineUp	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.nextPrompt	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.pageDown	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.pageUp	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.previousPrompt	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.search	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.searchClose	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.searchNext	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.searchPrevious	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.altScreen.top	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.cursorDown	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.cursorLeft	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	tui.editor.cursorLineEnd	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.cursorLineStart	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.cursorRight	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	tui.editor.cursorUp	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.cursorWordLeft	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.cursorWordRight	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.deleteCharBackward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.deleteCharForward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.deleteToLineEnd	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.deleteToLineStart	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.deleteWordBackward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.deleteWordForward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.historyNext	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.historyPrevious	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.jumpBackward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.jumpForward	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.pageDown	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.pageUp	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.undo	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.yank	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.editor.yankPop	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.input.copy	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.input.newLine	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.input.submit	name-present	open	keybinding definition in src/cadr-tui/keybindings.lisp
+keybindingActions	tui.input.tab	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/models.lisp
+keybindingActions	tui.select.cancel	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	tui.select.confirm	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	tui.select.down	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+keybindingActions	tui.select.pageDown	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/thinking.lisp
+keybindingActions	tui.select.pageUp	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/thinking.lisp
+keybindingActions	tui.select.up	name-present	open	keybinding definition in src/cadr-cli/interactive/selectors/tree.lisp
+themeTokens	accent	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	bashMode	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	border	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	borderAccent	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	borderMuted	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	customMessageBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	customMessageLabel	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	customMessageText	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	dim	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	error	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdCode	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdCodeBlock	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdCodeBlockBorder	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdHeading	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdHr	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdLink	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdLinkUrl	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdListBullet	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdQuote	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	mdQuoteBorder	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	muted	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	scrollbarThumb	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	scrollbarTrack	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	searchMatchBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	searchMatchText	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	selectedBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	success	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxComment	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxFunction	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxKeyword	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxNumber	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxOperator	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxPunctuation	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxString	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxType	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	syntaxVariable	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	text	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingHigh	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingLow	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingMax	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingMedium	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingMinimal	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingOff	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingText	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	thinkingXhigh	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolDiffAdded	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolDiffContext	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolDiffRemoved	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolErrorBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolOutput	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolPendingBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolSuccessBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	toolTitle	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	userMessageBg	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	userMessageText	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+themeTokens	warning	name-present	open	+tui-theme-json-color-map+ / export map in src/cadr-cli/interactive/themes.lisp
+environmentVariables	AI_AGENT	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	COLORTERM	name-present	open	uiop:getenv 'COLORTERM' in src/cadr-tui/terminal-image.lisp
+environmentVariables	COLUMNS	name-present	open	uiop:getenv 'COLUMNS' in src/cadr-tui/terminal.lisp
+environmentVariables	DISPLAY	name-present	open	uiop:getenv 'DISPLAY' in src/cadr-cli/bootstrap/sessions.lisp
+environmentVariables	EDITOR	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	GHOSTTY_RESOURCES_DIR	name-present	open	uiop:getenv 'GHOSTTY_RESOURCES_DIR' in src/cadr-tui/terminal-image.lisp
+environmentVariables	HOME	name-present	open	uiop:getenv 'HOME' in src/cadr-cli/interactive/selectors/tree.lisp
+environmentVariables	HTTPS_PROXY	name-present	open	uiop:getenv 'HTTPS_PROXY' in src/cadr-cli/sdk/cache-version.lisp
+environmentVariables	HTTP_PROXY	name-present	open	uiop:getenv 'HTTP_PROXY' in src/cadr-cli/sdk/cache-version.lisp
+environmentVariables	ITERM_SESSION_ID	name-present	open	uiop:getenv 'ITERM_SESSION_ID' in src/cadr-tui/terminal-image.lisp
+environmentVariables	KITTY_WINDOW_ID	name-present	open	uiop:getenv 'KITTY_WINDOW_ID' in src/cadr-tui/terminal-image.lisp
+environmentVariables	LINES	name-present	open	uiop:getenv 'LINES' in src/cadr-tui/terminal.lisp
+environmentVariables	LLAMA_BASE_URL	name-present	open	uiop:getenv 'LLAMA_BASE_URL' in src/cadr-cli/extensions/llama/provider.lisp
+environmentVariables	PI_CLEAR_ON_SHRINK	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_CODING_AGENT	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_EVAL_ARTIFACT_DIR	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_EXPERIMENTAL	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_HARDWARE_CURSOR	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_HYPERLINKS	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_IMAGE_PROTOCOL	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_INSTALLER_API_BASE	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_MANAGED_INSTALL_ROOT	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_MODEL	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_OFFLINE	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_PACKAGE_DIR	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_PROVIDER	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_SHARE_VIEWER_URL	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_SKIP_VERSION_CHECK	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_STARTUP_BENCHMARK	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_TELEMETRY	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_TIMING	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_TRUE_COLOR	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_TUI_DEBUG	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_TUI_DEBUG_REDRAW	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PI_TUI_WRITE_LOG	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	PNPM_HOME	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	SSH_CLIENT	name-present	open	uiop:getenv 'SSH_CLIENT' in src/cadr-tui/keys.lisp
+environmentVariables	SSH_CONNECTION	name-present	open	uiop:getenv 'SSH_CONNECTION' in src/cadr-tui/terminal.lisp
+environmentVariables	SSH_TTY	name-present	open	uiop:getenv 'SSH_TTY' in src/cadr-tui/terminal.lisp
+environmentVariables	STY	name-present	open	uiop:getenv 'STY' in src/cadr-tui/renderer/lifecycle-input.lisp
+environmentVariables	TERM	name-present	open	uiop:getenv 'TERM' in src/cadr-tui/renderer/lifecycle-input.lisp
+environmentVariables	TERMINAL_EMULATOR	name-present	open	uiop:getenv 'TERMINAL_EMULATOR' in src/cadr-tui/terminal-image.lisp
+environmentVariables	TERMUX_VERSION	name-present	open	uiop:getenv 'TERMUX_VERSION' in src/cadr-tui/renderer/main-screen.lisp
+environmentVariables	TERM_PROGRAM	name-present	open	uiop:getenv 'TERM_PROGRAM' in src/cadr-tui/terminal-image.lisp
+environmentVariables	TMUX	name-present	open	uiop:getenv 'TMUX' in src/cadr-tui/renderer/lifecycle-input.lisp
+environmentVariables	USERPROFILE	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	VISUAL	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	WARP_SESSION_ID	name-present	open	uiop:getenv 'WARP_SESSION_ID' in src/cadr-tui/terminal-image.lisp
+environmentVariables	WARP_TERMINAL_SESSION_UUID	name-present	open	uiop:getenv 'WARP_TERMINAL_SESSION_UUID' in src/cadr-tui/terminal-image.lisp
+environmentVariables	WAYLAND_DISPLAY	name-present	open	uiop:getenv 'WAYLAND_DISPLAY' in src/cadr-cli/bootstrap/sessions.lisp
+environmentVariables	WEZTERM_PANE	name-present	open	uiop:getenv 'WEZTERM_PANE' in src/cadr-tui/terminal-image.lisp
+environmentVariables	WINDIR	name-present	open	uiop:getenv 'WINDIR' in src/cadr-cli/tool-manager.lisp
+environmentVariables	WSL_DISTRO_NAME	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	WSL_INTEROP	missing	open	no uiop:getenv literal for this name under src/
+environmentVariables	WT_SESSION	name-present	open	uiop:getenv 'WT_SESSION' in src/cadr-tui/terminal-image.lisp
+environmentVariables	ZELLIJ	name-present	open	uiop:getenv 'ZELLIJ' in src/cadr-tui/renderer/lifecycle-input.lisp

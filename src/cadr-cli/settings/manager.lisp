@@ -306,6 +306,17 @@
           (settings-value manager "outputPad" 1)))
     (if (member value '(0 1)) value 1)))
 
+(defun settings-auto-resize-images-p (manager)
+  (let ((images
+          (settings-value
+           manager "images"
+           (empty-json-object))))
+    (if (hash-table-p images)
+        (eq t
+            (cadr-ai::json-get
+             images "autoResize" t))
+        t)))
+
 (defun settings-block-images-p (manager)
   (eq t
       (cadr-ai::json-get

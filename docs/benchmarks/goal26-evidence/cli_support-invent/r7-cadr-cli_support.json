@@ -1,0 +1,40 @@
+{
+  "machine": {
+    "lisp": "SBCL",
+    "lisp_version": "2.6.7",
+    "machine_instance": "Friend-MachineD",
+    "machine_type": "X86-64"
+  },
+  "cli_support": {
+    "write_overwrite": {
+      "median_us": 886.6324000000001,
+      "mad_us": 92.37160000000006,
+      "repetitions": 5
+    },
+    "write_hello": {
+      "median_us": 808.2532,
+      "mad_us": 64.92779999999993,
+      "repetitions": 5
+    },
+    "write_empty": {
+      "median_us": 466.50919999999996,
+      "mad_us": 24.76339999999999,
+      "repetitions": 5
+    },
+    "threads_current": {
+      "median_us": 0.02826,
+      "mad_us": 0.005460000000000003,
+      "repetitions": 50
+    },
+    "threads_absent": {
+      "median_us": 0.03976,
+      "mad_us": 0.00528,
+      "repetitions": 50
+    },
+    "close_watcher": {
+      "median_us": 0.04026,
+      "mad_us": 0.007339999999999999,
+      "repetitions": 50
+    }
+  }
+}

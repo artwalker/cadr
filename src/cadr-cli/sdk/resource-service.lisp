@@ -123,7 +123,9 @@
             (merge-pathnames
              "extensions/" resolved-agent)
             :explicit-paths
-            additional-extension-paths
+            (append
+             additional-extension-paths
+             (sdk-settings-extension-paths settings))
             :extension-factories extension-factories
             :no-discovery-p no-extensions-p
             :output output
@@ -138,11 +140,17 @@
             :no-prompts-p no-prompts-p
             :no-themes-p no-themes-p
             :explicit-skill-paths
-            additional-skill-paths
+            (append
+             additional-skill-paths
+             (sdk-settings-skill-paths settings))
             :explicit-prompt-paths
-            additional-prompt-paths
+            (append
+             additional-prompt-paths
+             (sdk-settings-prompt-paths settings))
             :explicit-theme-paths
-            additional-theme-paths
+            (append
+             additional-theme-paths
+             (sdk-settings-theme-paths settings))
             :extension-host
             (cli-extension-manager-host
              extension-manager))))

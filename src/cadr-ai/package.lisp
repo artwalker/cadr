@@ -267,6 +267,7 @@
    #:calculate-usage-cost
    #:supported-thinking-levels
    #:clamp-thinking-level
+   #:thinking-budget-for-level
    #:models-equal-p
    #:content-text
    #:sanitize-surrogates

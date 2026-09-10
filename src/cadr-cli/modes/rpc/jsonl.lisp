@@ -20,6 +20,8 @@
   bash-thread
   bash-token
   bash-request-id
+  shell-command-prefix
+  shell-path
   (closing-p nil :type boolean)
   (id-counter 0 :type (integer 0 *)))
 

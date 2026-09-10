@@ -384,7 +384,8 @@
 (defmethod build-request ((provider openai-provider)
                           model context
                           &key stream-p max-tokens temperature reasoning
-                            cache-retention session-id tool-choice metadata)
+                            cache-retention session-id tool-choice metadata
+                            &allow-other-keys)
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((oauth-token (provider-oauth-access-token provider))

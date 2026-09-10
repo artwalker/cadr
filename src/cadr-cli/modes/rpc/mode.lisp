@@ -60,14 +60,18 @@
      &key
        (input *standard-input*)
        (output *standard-output*)
-       (error-output *error-output*))
+       (error-output *error-output*)
+       shell-command-prefix
+       shell-path)
   (let ((state
           (%make-rpc-state
            :agent agent
            :extension-manager extension-manager
            :input input
            :output output
-           :error-output error-output)))
+           :error-output error-output
+           :shell-command-prefix shell-command-prefix
+           :shell-path shell-path)))
     (setf
      (cadr-agent::extension-host-ui-function
       (cli-extension-manager-host

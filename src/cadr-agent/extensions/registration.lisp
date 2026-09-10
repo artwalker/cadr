@@ -371,9 +371,30 @@
     :ui-prompt-start
     :ui-prompt-end))
 
+(defparameter +extension-hook-event-aliases+
+  '(("tool_call" . :tool-call-before)
+    ("tool-call" . :tool-call-before)
+    ("tool_result" . :tool-call-after)
+    ("tool-result" . :tool-call-after)))
+
+(defun normalize-extension-hook-event (event)
+  (let ((name
+          (cond
+            ((stringp event) event)
+            ((symbolp event)
+             (string-downcase (symbol-name event))))))
+    (if name
+        (or
+         (cdr
+          (assoc name +extension-hook-event-aliases+
+                 :test #'string=))
+         event)
+        event)))
+
 (defun register-extension-hook
     (event &key (priority 0) handler)
-  (let ((bundle (require-extension-registration-bundle)))
+  (let ((bundle (require-extension-registration-bundle))
+        (event (normalize-extension-hook-event event)))
     (unless (member event +extension-hook-events+)
       (error
        'extension-registration-error

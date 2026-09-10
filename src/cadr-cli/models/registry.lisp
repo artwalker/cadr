@@ -186,6 +186,23 @@
          credential))
       credential)))
 
+(define-condition credential-synchronization-error (error)
+  ((provider-id
+    :initarg :provider-id
+    :reader credential-synchronization-error-provider-id)
+   (operation
+    :initarg :operation
+    :reader credential-synchronization-error-operation)
+   (message
+    :initarg :message
+    :reader credential-synchronization-error-message))
+  (:report
+   (lambda (condition stream)
+     (format stream
+             "local model state could not be synchronized: ~A"
+             (credential-synchronization-error-message
+              condition)))))
+
 (defun model-registry-login-api-key
     (registry provider-id key)
   (unless (cadr-ai::non-empty-string-p key)
@@ -208,6 +225,12 @@
          (declare (ignore current))
          credential))
       (refresh-model-registry registry)
+      (let ((sync-error (model-registry-error registry)))
+        (when sync-error
+          (error 'credential-synchronization-error
+                 :provider-id provider-id
+                 :operation "login"
+                 :message sync-error)))
       credential)))
 
 (defun built-in-models ()
