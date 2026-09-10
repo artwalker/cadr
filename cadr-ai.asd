@@ -22,7 +22,8 @@
                                            (:file "token-estimation")
                                            (:file "overflow")
                                            (:file "grammar-coercion")
-                                           (:file "uuid")))
+                                           (:file "uuid")
+                                           (:file "attribution")))
                              (:module "capabilities"
                               :serial t
                               :components ((:file "streaming-json")

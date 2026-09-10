@@ -476,6 +476,10 @@
                          (model-compat-value
                           model :send-session-affinity-headers nil))
                 `(("x-session-affinity" . ,session-id)))
+              (opencode-request-headers
+               :provider (model-provider model)
+               :base-url (model-base-url model)
+               :session-id session-id)
               (model-headers model))))
        (if (eq (model-provider model) :kimi-coding)
            (progn
