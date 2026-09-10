@@ -141,7 +141,7 @@
           "cadr": "feba35d6b2d083a509ae688247286aece75030a66acd5c25d823354a16ea1240"
         }
       },
-      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '✓ Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '\u2713 Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "slash-debug",
@@ -3804,7 +3804,7 @@
           "cadr": "c8f4169779c35dc967bbd88b8172cb4104659d8514277338417b102c6f33c284"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.85.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.85.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -4794,7 +4794,7 @@
           "cadr": "f386742c7c85cafeccc4bfe37198ee54c259f54c57c1767c20a084a6be514cdb"
         }
       },
-      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries • Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries \u2022 Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-dynamic-tools",
@@ -6072,7 +6072,7 @@
         },
         "narrow": {
           "pi": "3e5e215eb84f826964c17e43e8b1edcdd0604060d4abf0fd965778e65c02a933",
-          "cadr": "3211762d92614aeffe763380d81ec3b913bd372017a078f10fd663c50907ac63"
+          "cadr": "ecaf9a62bf5c0d77331cd90b8a9261e2856329238299b0c0735e8be9467a5ab2"
         }
       },
       "note": "At overlays-auth-manual-code-complete/login-manual-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
@@ -6737,16 +6737,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "d5f996247d668c896ad170bff3ad32dc49a2cff5a29f702f4d5441d42be8a893",
-          "cadr": "a83e379f37dfde4d3a222746bc1f243697e4cc59001782e99368b35738d503eb"
+          "cadr": "d5f996247d668c896ad170bff3ad32dc49a2cff5a29f702f4d5441d42be8a893"
         }
       },
-      "note": "At tools-success/find [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/find [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/find [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "tools-success",
@@ -6772,16 +6771,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "a458ecfc11a382bbbd9aa605ee24d994026dfca5fe3bb38864a4bc3284414d14",
-          "cadr": "eef5442b65c60a93f2b4e38591d0f3f2d683892b1aa02ec2b2c42bfa54f064e4"
+          "cadr": "a458ecfc11a382bbbd9aa605ee24d994026dfca5fe3bb38864a4bc3284414d14"
         }
       },
-      "note": "At tools-success/find-default-path [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/find-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/find-default-path [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "tools-success",
@@ -6807,16 +6805,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "c5d34eb24187dd557f82dfd7920c52ee2fd65c5776b4631ade7b7f35063dec76",
-          "cadr": "7f87c9bd068226fc4f7a506234c3d21aacac47ea9da704d4a3939c04ec4bf81a"
+          "cadr": "c5d34eb24187dd557f82dfd7920c52ee2fd65c5776b4631ade7b7f35063dec76"
         }
       },
-      "note": "At tools-success/grep-default-path [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/grep-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/grep-default-path [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "tools-success",
@@ -6842,16 +6839,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8",
-          "cadr": "0696d606ad739a364ec7a2dc67d749d18ac3d42e08854e79084421b3a0f258b4"
+          "cadr": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8"
         }
       },
-      "note": "At tools-success/ls [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/ls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/ls [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "tools-success",
@@ -6877,16 +6873,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "6e8fba75307e25271292bb97ef63f27316d1ff49b1474e55fdb65c975deeaa7d",
-          "cadr": "fc0043639e5d99208d4534baf79c1d0a31cae78f8bf23044ca517a345f92c020"
+          "cadr": "6e8fba75307e25271292bb97ef63f27316d1ff49b1474e55fdb65c975deeaa7d"
         }
       },
-      "note": "At tools-success/process-exit [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/process-exit [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "tools-success",
@@ -6947,7 +6942,7 @@
           "cadr": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At conversation-content/markdown-code-thinking needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At conversation-content/markdown-code-thinking [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At conversation-content/markdown-code-thinking needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "conversation-content",
@@ -6964,7 +6959,7 @@
           "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [wide] At conversation-content/markdown-code-thinking needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At conversation-content/markdown-code-thinking [wide] At conversation-content/markdown-code-thinking needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "tools-success",
@@ -6990,15 +6985,15 @@
         "narrow"
       ],
       "classes": [
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "0b9cf0f49b0b7c16aa7881f0176b703bfda42f8e965d888e425492c743be465c",
-          "cadr": "dfed24bc9676e28ebe341291b553e54c436c2ae6f58242432a40e7070836ca50"
+          "cadr": "0b9cf0f49b0b7c16aa7881f0176b703bfda42f8e965d888e425492c743be465c"
         }
       },
-      "note": "At tools-success/edit [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/edit needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At tools-success/edit [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "tools-success",
@@ -7024,15 +7019,15 @@
         "narrow"
       ],
       "classes": [
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "365b243051365572aa1f29ad9ba7d3bc259c4ccb933f666814dbb38fdf90a446",
-          "cadr": "20d4568241cd6adf375aabf1ec2de8bceacdc74cd4decffeebdaeb01214c5f1b"
+          "cadr": "365b243051365572aa1f29ad9ba7d3bc259c4ccb933f666814dbb38fdf90a446"
         }
       },
-      "note": "At tools-success/grep [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/grep needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At tools-success/grep [narrow] semantic screens now match under product-identity placeholders (I04 cleared); raw ANSI update segmentation and teardown still differ (I01). Wide matched earlier and remains on a separate I01 pin."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7054,7 +7049,7 @@
           "cadr": "fdeb8ad9c2576088fe9db47e2acf76a7f41a8bcfa3b7f7d7abec75acac9c4395"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-first-screen needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-first-screen needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7076,7 +7071,7 @@
           "cadr": "a8e1a9927637b0c63eda2ffe4bebad6d836926e1ae67b165c66fb1e20120a08f"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-head-01 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-head-01 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7098,7 +7093,7 @@
           "cadr": "c4cd20743d9071c5cb0e761aefee7ec8f7026ee522e69664344d25a5bd3aba55"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-head-02 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-head-02 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7120,7 +7115,7 @@
           "cadr": "c77623960a432dbf8a348cbe8deca192d7ca0501e6b97c7823ee579f82fefec1"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-01 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-01 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7142,7 +7137,7 @@
           "cadr": "c74c4487b89ba9529ef74bf3b411f8a360741ff0923d2462a782cf5b8ea74d43"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-02 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-02 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7164,7 +7159,7 @@
           "cadr": "4e94b25d73c001f71969ec47422f5b80b5efae828709d4d4537bae68313c860c"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-03 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-03 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7186,7 +7181,7 @@
           "cadr": "455349bb2da745d4c772186a5c315daef9b61919e2e6ea1442f6e2b4068ed498"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-04 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-04 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7208,7 +7203,7 @@
           "cadr": "1bd9a69ef776cb4aff4bc15cc601b621ff6f8df998185a48532c8287343f0c1f"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-05 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-05 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7230,7 +7225,7 @@
           "cadr": "1731d9623ae69cec2ebb66060d29f824a10f6fc186f5e4c77a06e29939d731be"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-06 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-06 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7252,7 +7247,7 @@
           "cadr": "48631f99229f9bd646bfff23e89104d96732060576c70e1edbbac66e79e23f88"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-07 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-07 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7274,7 +7269,7 @@
           "cadr": "5b773d2f6ea9b54c5bb966547d4164e5f32c6a470453210399053a161c7cccdf"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-08 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-08 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7296,7 +7291,7 @@
           "cadr": "acac648a83089f20f4b07e558f423dfc28815c13903214684b1eab24114a625f"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-09 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-09 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7318,7 +7313,7 @@
           "cadr": "9c2b0b2a93178b3e999b1a95db09d3122c15d5f9446e68b2e62327206e917265"
         }
       },
-      "note": "At selector-scoped-state-sweep/scoped-tail-10 needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/scoped-tail-10 needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -7340,7 +7335,7 @@
           "cadr": "267d5cce0b9c28a79cbbcaa3ddf7783d92bb0e4ea06cad0ecb07dc86c5f0b08f"
         }
       },
-      "note": "At selector-scoped-state-sweep/process-exit needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At selector-scoped-state-sweep/process-exit needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7362,7 +7357,7 @@
           "cadr": "e50452a2a263172b67782a96ca96eb4110830a43245a3cc7ce2a91965ff9ac13"
         }
       },
-      "note": "At overlays-core/overlay-scoped-models needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-scoped-models needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7379,7 +7374,7 @@
           "cadr": "6a3e79fa9e3dd1c9e13f14ab3d78406542908c602f1b4212ce0dd5d0116a84d7"
         }
       },
-      "note": "At overlays-core/overlay-session [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7396,7 +7391,7 @@
           "cadr": "1defc1d250ba2c3cdf500a9c576263eb2a7f88e742b7806e8334990db85add0a"
         }
       },
-      "note": "At overlays-core/overlay-session [wide] At overlays-core/overlay-session needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session [wide] At overlays-core/overlay-session needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7413,7 +7408,7 @@
           "cadr": "ead33a0ea1467874d16499876a9350a7e4f0f8d9d762fb51d889aa663da68d01"
         }
       },
-      "note": "At overlays-core/overlay-session-rename [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session-rename needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session-rename [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session-rename needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7430,7 +7425,7 @@
           "cadr": "bfcf8569b741d313c628b86694e420202e1b236fa994935b2253f5da5134d020"
         }
       },
-      "note": "At overlays-core/overlay-session-rename [wide] At overlays-core/overlay-session-rename needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session-rename [wide] At overlays-core/overlay-session-rename needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7447,7 +7442,7 @@
           "cadr": "6a04e3423c5bfc5f3d90f8b0f1013dfd89322501f2d9b72298701eec0c7b4d6e"
         }
       },
-      "note": "At overlays-core/overlay-session-delete [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session-delete needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session-delete [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session-delete needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7464,7 +7459,7 @@
           "cadr": "0b297a968be1293c102270bfc8ff87a95fa8ab572e622cd4d666f156c1132aa8"
         }
       },
-      "note": "At overlays-core/overlay-session-delete [wide] At overlays-core/overlay-session-delete needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session-delete [wide] At overlays-core/overlay-session-delete needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7481,7 +7476,7 @@
           "cadr": "a732c9bd15b008cf323a4d36485f584b393772d236a9ef2b403313fe185fab95"
         }
       },
-      "note": "At overlays-core/overlay-fork [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-fork needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-fork [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-fork needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7498,7 +7493,7 @@
           "cadr": "45ab225cedec1f76534a2909386c2fd36705b55809e5de7d96a6ebc0e52a8395"
         }
       },
-      "note": "At overlays-core/overlay-fork [wide] At overlays-core/overlay-fork needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-fork [wide] At overlays-core/overlay-fork needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7515,7 +7510,7 @@
           "cadr": "8c314c29760a6bcca5b87e38ab4b8f27bed31486f00b85aa27f2e3e9b90f94d7"
         }
       },
-      "note": "At overlays-core/overlay-tree [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-tree needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-tree [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-tree needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7532,7 +7527,7 @@
           "cadr": "8d62c77775cbf8946f8c3269242cca6729111bed964e9da2fc03fdde4f7a38e6"
         }
       },
-      "note": "At overlays-core/overlay-tree [wide] At overlays-core/overlay-tree needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-tree [wide] At overlays-core/overlay-tree needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7549,7 +7544,7 @@
           "cadr": "3dc26741eee80bf3ee6d6ddb9d2c0be2b6659693cb47cff6106b68ef3134ee91"
         }
       },
-      "note": "At overlays-core/overlay-tree-label [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-tree-label needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-tree-label [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-tree-label needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7566,7 +7561,7 @@
           "cadr": "e15661bf791f5c7bb513015ad7999cd5196e41798a007be2696cd338f0ffa696"
         }
       },
-      "note": "At overlays-core/overlay-tree-label [wide] At overlays-core/overlay-tree-label needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-tree-label [wide] At overlays-core/overlay-tree-label needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "overlays-core",
@@ -7588,7 +7583,7 @@
           "cadr": "681a58eb6a488dc2a56a681a7fa101195201605972b881cef038efeab6340521"
         }
       },
-      "note": "At overlays-core/overlay-trust needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-trust needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "conversation-content",
