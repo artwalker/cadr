@@ -340,16 +340,18 @@
                 (cadr-ai::json-get data "header"))))
           (is (string=
                (cadr-ai::stringify-json
-                (cadr-ai::json-object
-                 "header"
-                 (cadr-agent::session-header-to-json newer)
-                 "entries"
-                 (map 'vector
-                      #'cadr-agent::session-entry-to-json
-                      (cadr-agent:session-entries newer))
-                 "leafId"
-                 (cadr-agent:session-leaf-id newer)))
-               (exported-session-json html))))))))
+                (cadr-ai::parse-json
+                 (cadr-ai::stringify-json
+                  (cadr-ai::json-object
+                   "header"
+                   (cadr-agent::session-header-to-json newer)
+                   "entries"
+                   (map 'vector
+                        #'cadr-agent::session-entry-to-json
+                        (cadr-agent:session-entries newer))
+                   "leafId"
+                   (cadr-agent:session-leaf-id newer)))))
+               (cadr-ai::stringify-json data))))))))
 
 (test session-html-export-renders-skill-wrapper-as-visible-sibling-blocks
   (with-session-directories (sessions cwd other-cwd)
