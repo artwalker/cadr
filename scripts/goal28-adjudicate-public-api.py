@@ -13,7 +13,13 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "d981de1229ef899957bbe968bc8dcda02a21f477"
+
+
+def pin_sha():
+    return ROOT.joinpath("BASELINE").read_text(encoding="utf-8").split()[0]
+
+
+PIN = pin_sha()
 INDEX = "packages/coding-agent/src/index.ts"
 CAPS = ROOT / "docs/benchmarks/goal28-capabilities.tsv"
 ADJ = ROOT / "docs/benchmarks/goal28-adjudications.tsv"

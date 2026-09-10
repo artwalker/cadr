@@ -362,7 +362,10 @@
              :provider :cloudflare-workers-ai :telemetry-p t))
           (opencode
             (cadr-cli::provider-attribution-headers
-             :provider :opencode :session-id "session")))
+             :provider :opencode :session-id "session"))
+          (opencode-go-ephemeral
+            (cadr-cli::provider-attribution-headers
+             :provider :opencode-go)))
       (is (string= "https://github.com/artwalker/cadr"
                    (header "HTTP-Referer" openrouter)))
       (is (string= "cadr"
@@ -372,7 +375,19 @@
       (is (string= "cadr-coding-agent"
                    (header "User-Agent" cloudflare)))
       (is (string= "cadr"
-                   (header "x-opencode-client" opencode)))))
+                   (header "x-opencode-client" opencode)))
+      (is (string= "session"
+                   (header "x-opencode-session" opencode)))
+      (is (stringp
+           (header "x-opencode-session"
+                   opencode-go-ephemeral)))
+      (is (plusp
+           (length
+            (header "x-opencode-session"
+                    opencode-go-ephemeral))))
+      (is (string= "cadr"
+                   (header "x-opencode-client"
+                           opencode-go-ephemeral)))))
   (let ((headers
           (cadr-cli::provider-attribution-headers
            :provider :openrouter
