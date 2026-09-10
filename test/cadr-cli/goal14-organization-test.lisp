@@ -1365,7 +1365,8 @@
     ;; +1 Goal 21 v0.84.3: faux-tool-json-object (runtime/faux-provider.lisp).
     ;; +2 Goal 20 floor: *cadr-cli-source-directory* + cadr-cli-source-directory
     ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
-    (is (= 278 definition-count)
+    ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
+    (is (= 279 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1402,7 +1403,7 @@
         "B10 thread compatibility entry point bypasses the B3 owner")
     (is (and http
              (search "(cadr-core:cancellation-predicate-aborted-p" http)
-             (search ":read-timeout nil" http)
+             (search "(read-timeout nil)" http)
              (search ":message \"fetch failed\"" http))
         "B10 transport changed cancellation, SSE timeout, or diagnostic policy")
     (is (and models
@@ -1419,7 +1420,8 @@
               ;; unsupported-strict-json-schema-error.
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
-              "5b3c61e359d2e4f891c88e45ea38651b905139db5ffea833a6ee10e8a88129cd"
+              ;; +1 Goal 28/29: package exports for settings/npm invents.
+              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
