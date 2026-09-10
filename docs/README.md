@@ -31,7 +31,8 @@ remain evidence and must not silently override a current contract.
 - [open-questions.md](open-questions.md): proposed mechanisms awaiting human
   decision; entries here are not authorization to implement.
 - [delivery-checklist.md](delivery-checklist.md): mandatory root-image rebuild,
-  freshness proof, full verification, and delivery-report evidence.
+  freshness proof, first-run smoke, full verification, and delivery-report
+  evidence.
 - [source-parity-upgrade.md](source-parity-upgrade.md): baseline source drift
   inventory plus mandatory source and render-differential upgrade gates.
 - [render-diff.md](render-diff.md): fixed-baseline PTY capture, narrow

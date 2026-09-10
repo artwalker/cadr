@@ -1,0 +1,5 @@
+ts	phase	decision	why	evidence	result
+2026-09-10T14:50:00Z	frame	open Goal 30 product-ready first-run	operator wants mature handoff not just gate closure	docs/acceptance/goal-v30.md	open
+2026-09-10T14:58:17Z	binary	rebuilt root cadr with CADR_BUILD_SKIP_TEST_CL=1 after FiveAM already green	stale delivery binary blocked strangers	scripts/check-root-binary.sh	fresh
+2026-09-10T14:58:17Z	docs	Quick Start at README top; smoke in delivery checklist	experience-first stranger path	README.md;docs/delivery-checklist.md	docs-closed
+2026-09-10T14:58:17Z	smoke	smoke-first-run.sh PASS on fresh tip binary	prove-it-works first-run lever	scripts/smoke-first-run.sh	smoke-closed

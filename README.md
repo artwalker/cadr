@@ -9,6 +9,35 @@ The name has two meanings: `cadr` selects the second element of a list, and
 this project is a second implementation of pi; it also pays tribute to the MIT
 CADR Lisp Machine.
 
+## Quick Start
+
+Requirements: Linux x64, SBCL 2.4+, Quicklisp, system OpenSSL and SQLite libraries.
+
+```bash
+QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build.sh
+./cadr --version
+```
+
+Set a provider key (DeepSeek example):
+
+```bash
+export DEEPSEEK_API_KEY=sk-...
+export CADR_PROVIDER=deepseek
+export CADR_MODEL=deepseek-v4-flash
+```
+
+One-shot prompt, then interactive:
+
+```bash
+./cadr -p "Say exactly: ok"
+./cadr
+```
+
+If a key is missing, CADR prints where to look next (`docs/providers.md`,
+`docs/models.md`). Re-run `scripts/smoke-first-run.sh` after every tip delivery
+to confirm version, help, offline no-key copy, print-mode, and a fresh root
+binary.
+
 ## Relationship to pi
 
 Behavior is pinned to

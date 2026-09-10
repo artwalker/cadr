@@ -9,10 +9,12 @@ tested through the root `./cadr` executable.
    image produced inside `verify.sh`; the user runs the root image.
 3. Run `./scripts/check-root-binary.sh`. It must report `root cadr binary is
    fresh` and exit zero.
-4. Run `./scripts/verify.sh`. If a root image exists, its first deterministic
+4. Run `./scripts/smoke-first-run.sh`. It must exit zero (version, help,
+   offline no-key copy, one `-p` prompt when keys are present, freshness).
+5. Run `./scripts/verify.sh`. If a root image exists, its first deterministic
    stage repeats the freshness check and stops the remaining gate when stale.
-5. If `src/` is edited or committed after step 2, restart at step 2.
-6. Include the checker's `binary build time`, `latest src commit`, and `binary
+6. If `src/` is edited or committed after step 2, restart at step 2.
+7. Include the checker's `binary build time`, `latest src commit`, and `binary
    version` lines in the delivery report. A completion claim without this
    evidence is invalid.
 
