@@ -112,7 +112,8 @@
             (cadr-tui:make-keybindings-manager
              :user-bindings
              '(("app.model.cycleForward" . ("ctrl+g"))
-               ("app.model.cycleBackward" . nil))))
+               ("app.model.cycleBackward" . nil)
+               ("app.editor.external" . nil))))
            (is
             (equal
              '(:model-cycle-forward)
