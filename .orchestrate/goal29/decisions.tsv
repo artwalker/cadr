@@ -3,3 +3,5 @@ ts	phase	decision	why	evidence	result
 2026-09-10T14:00:42Z	hygiene	landed orch24/25 audits; deleted .pair260-harness-stable; staged goal20 paired-paths scoped fix	tip dirt track	.orchestrate/goal24;goal25	hygiene-closed
 2026-09-10T14:00:42Z	match	promoted 594 fixed goal28 FiveAM rows to match; open=0	pin-behavior evidence already existed as fixed	scripts/goal29-promote-match.py	match=594 open=0
 2026-09-10T14:00:42Z	perf	exhausted write_* as no-keep under G29; dialog out; G27 keeps carried	Friend-MachineD pair invent not available solo; G27 already tried write knives	docs/benchmarks/goal29-dispositions.tsv	perf-track-closed
+2026-09-10T14:37:01Z	test	FiveAM green after HTML float fix, keybinding test, Goal14 freezes, sibling-helper unclash	H-test stop	scripts/test-cl-fiveam.sh --record	checks=21102 fail=0
+2026-09-10T14:37:01Z	close	Goal 29 Status met; all four tracks closed	operator finite stop	docs/acceptance/goal-v29.md	met
