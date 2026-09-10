@@ -6717,8 +6717,24 @@
       "scenario": "tools-success",
       "checkpoint": "find",
       "dimensions": [
-        "narrow",
         "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6374b4e7d22f2f2404759eda73dc4942d869a4be30f64197e61aed499b5fc674",
+          "cadr": "6374b4e7d22f2f2404759eda73dc4942d869a4be30f64197e61aed499b5fc674"
+        }
+      },
+      "note": "At tools-success/find [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "find",
+      "dimensions": [
+        "narrow"
       ],
       "classes": [
         "I01",
@@ -6728,20 +6744,32 @@
         "narrow": {
           "pi": "d5f996247d668c896ad170bff3ad32dc49a2cff5a29f702f4d5441d42be8a893",
           "cadr": "a83e379f37dfde4d3a222746bc1f243697e4cc59001782e99368b35738d503eb"
-        },
-        "wide": {
-          "pi": "6374b4e7d22f2f2404759eda73dc4942d869a4be30f64197e61aed499b5fc674",
-          "cadr": "6374b4e7d22f2f2404759eda73dc4942d869a4be30f64197e61aed499b5fc674"
         }
       },
-      "note": "At tools-success/find [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/find [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/find [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
       "checkpoint": "find-default-path",
       "dimensions": [
-        "narrow",
         "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "97a3cfcabcf76fedc18d9ff6dc0397de816e265ef7758889105c680d788531ee",
+          "cadr": "97a3cfcabcf76fedc18d9ff6dc0397de816e265ef7758889105c680d788531ee"
+        }
+      },
+      "note": "At tools-success/find-default-path [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "find-default-path",
+      "dimensions": [
+        "narrow"
       ],
       "classes": [
         "I01",
@@ -6751,20 +6779,32 @@
         "narrow": {
           "pi": "a458ecfc11a382bbbd9aa605ee24d994026dfca5fe3bb38864a4bc3284414d14",
           "cadr": "eef5442b65c60a93f2b4e38591d0f3f2d683892b1aa02ec2b2c42bfa54f064e4"
-        },
-        "wide": {
-          "pi": "97a3cfcabcf76fedc18d9ff6dc0397de816e265ef7758889105c680d788531ee",
-          "cadr": "97a3cfcabcf76fedc18d9ff6dc0397de816e265ef7758889105c680d788531ee"
         }
       },
-      "note": "At tools-success/find-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/find-default-path [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/find-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
       "checkpoint": "grep-default-path",
       "dimensions": [
-        "narrow",
         "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "32503eee777137565f8fc38230fe2f35d877a4d228ae5033bd19f0d093965e8e",
+          "cadr": "32503eee777137565f8fc38230fe2f35d877a4d228ae5033bd19f0d093965e8e"
+        }
+      },
+      "note": "At tools-success/grep-default-path [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "grep-default-path",
+      "dimensions": [
+        "narrow"
       ],
       "classes": [
         "I01",
@@ -6774,20 +6814,32 @@
         "narrow": {
           "pi": "c5d34eb24187dd557f82dfd7920c52ee2fd65c5776b4631ade7b7f35063dec76",
           "cadr": "7f87c9bd068226fc4f7a506234c3d21aacac47ea9da704d4a3939c04ec4bf81a"
-        },
-        "wide": {
-          "pi": "32503eee777137565f8fc38230fe2f35d877a4d228ae5033bd19f0d093965e8e",
-          "cadr": "32503eee777137565f8fc38230fe2f35d877a4d228ae5033bd19f0d093965e8e"
         }
       },
-      "note": "At tools-success/grep-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/grep-default-path [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/grep-default-path [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
       "checkpoint": "ls",
       "dimensions": [
-        "narrow",
         "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c",
+          "cadr": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c"
+        }
+      },
+      "note": "At tools-success/ls [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "ls",
+      "dimensions": [
+        "narrow"
       ],
       "classes": [
         "I01",
@@ -6797,20 +6849,32 @@
         "narrow": {
           "pi": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8",
           "cadr": "0696d606ad739a364ec7a2dc67d749d18ac3d42e08854e79084421b3a0f258b4"
-        },
-        "wide": {
-          "pi": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c",
-          "cadr": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c"
         }
       },
-      "note": "At tools-success/ls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/ls [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/ls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
       "checkpoint": "process-exit",
       "dimensions": [
-        "narrow",
         "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f1b544a1387f2a83bcd04c1e72ab9aa182b648cc4f47ffbd26a8969b03330632",
+          "cadr": "f1b544a1387f2a83bcd04c1e72ab9aa182b648cc4f47ffbd26a8969b03330632"
+        }
+      },
+      "note": "At tools-success/process-exit [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
       ],
       "classes": [
         "I01",
@@ -6820,13 +6884,9 @@
         "narrow": {
           "pi": "6e8fba75307e25271292bb97ef63f27316d1ff49b1474e55fdb65c975deeaa7d",
           "cadr": "fc0043639e5d99208d4534baf79c1d0a31cae78f8bf23044ca517a345f92c020"
-        },
-        "wide": {
-          "pi": "f1b544a1387f2a83bcd04c1e72ab9aa182b648cc4f47ffbd26a8969b03330632",
-          "cadr": "f1b544a1387f2a83bcd04c1e72ab9aa182b648cc4f47ffbd26a8969b03330632"
         }
       },
-      "note": "At tools-success/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/process-exit [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6910,45 +6970,69 @@
       "scenario": "tools-success",
       "checkpoint": "edit",
       "dimensions": [
-        "narrow",
         "wide"
       ],
       "classes": [
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "wide": {
           "pi": "509a94764f3382d456c07c236860b7fe9b9c5ab8b850c21883a8aa7ed4a2922b",
           "cadr": "509a94764f3382d456c07c236860b7fe9b9c5ab8b850c21883a8aa7ed4a2922b"
-        },
-        "narrow": {
-          "pi": "0b9cf0f49b0b7c16aa7881f0176b703bfda42f8e965d888e425492c743be465c",
-          "cadr": "dfed24bc9676e28ebe341291b553e54c436c2ae6f58242432a40e7070836ca50"
         }
       },
-      "note": "At tools-success/edit needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At tools-success/edit [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
     },
     {
       "scenario": "tools-success",
-      "checkpoint": "grep",
+      "checkpoint": "edit",
       "dimensions": [
-        "narrow",
-        "wide"
+        "narrow"
       ],
       "classes": [
         "I04"
       ],
       "screenSha256": {
+        "narrow": {
+          "pi": "0b9cf0f49b0b7c16aa7881f0176b703bfda42f8e965d888e425492c743be465c",
+          "cadr": "dfed24bc9676e28ebe341291b553e54c436c2ae6f58242432a40e7070836ca50"
+        }
+      },
+      "note": "At tools-success/edit [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/edit needs review — skeleton from manifest sync (visible text/geometry differs)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "grep",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
         "wide": {
           "pi": "a084834878e80bddb699aa292a42f40b3050269ab9d61c1d0ab9c1a073744219",
           "cadr": "a084834878e80bddb699aa292a42f40b3050269ab9d61c1d0ab9c1a073744219"
-        },
+        }
+      },
+      "note": "At tools-success/grep [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "grep",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I04"
+      ],
+      "screenSha256": {
         "narrow": {
           "pi": "365b243051365572aa1f29ad9ba7d3bc259c4ccb933f666814dbb38fdf90a446",
           "cadr": "20d4568241cd6adf375aabf1ec2de8bceacdc74cd4decffeebdaeb01214c5f1b"
         }
       },
-      "note": "At tools-success/grep needs review — skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At tools-success/grep [narrow] residual semantic screen pair remains under I04; wide matched and was split to an I01 pin. Prior: At tools-success/grep needs review — skeleton from manifest sync (visible text/geometry differs)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
