@@ -27,13 +27,14 @@ migration ledgers, not a quick start. There is no rerunnable first-run smoke.
 
 ## Tracks
 
-| track | stop |
-|---|---|
-| **P-binary** | `check-root-binary.sh` fresh |
-| **P-docs** | Quick Start at top of README |
-| **P-smoke** | `smoke-first-run.sh` exits 0 |
-| **P-verify** | `verify.sh` exits 0 or failures fixed |
+| track | stop | result |
+|---|---|---|
+| **P-binary** | `check-root-binary.sh` fresh | closed (fresh tip binary) |
+| **P-docs** | Quick Start at top of README | closed |
+| **P-smoke** | `smoke-first-run.sh` exits 0 | closed |
+| **P-verify** | `verify.sh` exits 0 or failures fixed | closed (`verify.sh` exit 0; render I04 pins cleared) |
 
 ## Claimed
 
 - Open 2026-09-10. Solo execution toward product-ready first-run.
+- Met 2026-09-10. Four tracks closed. Stranger path is build → key → `-p` → interactive.
