@@ -31,6 +31,10 @@
       "reason": "Single coding-session command and workflow owner whose import, fork, resume, export, and storage transitions share session invariants."
     },
     {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "reason": "Single settings-resolution owner for agent directories, trust, resource paths, runtime reload, and Goal 28 settings readers; shared fallback keys and manager contracts make a split duplicate observable policy."
+    },
+    {
       "path": "src/cadr-cli/interactive/controller.lisp",
       "reason": "Thin but broad TUI lifecycle and input-routing controller after all independently nameable state, rendering, selector, and service owners were extracted."
     },
