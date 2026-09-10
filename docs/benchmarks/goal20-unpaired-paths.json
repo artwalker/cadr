@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 297,
-    "lines": 133658
+    "files": 298,
+    "lines": 135154
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -2215,6 +2215,13 @@
       "class": "covered-as-callee",
       "metrics": [
         "cli_dispatch.list_models_registry"
+      ]
+    },
+    {
+      "prefix": "src/cadr-ai/support/attribution.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "provider_stream.stream_roundtrip"
       ]
     },
     {
