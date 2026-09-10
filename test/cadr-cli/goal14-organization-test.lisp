@@ -432,7 +432,8 @@
     ;; model-thinking-overrides-summary (bootstrap/settings.lisp).
     ;; +2 v0.84.4: settings-fullscreen-copy-on-select-p and
     ;; settings-terminal-capability-overrides (bootstrap/settings.lisp).
-    (is (= 138 definition-count)
+    ;; +35 Goal 28: settings readers and CLI/RPC helpers in B5 owners.
+    (is (= 173 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -1021,7 +1022,9 @@
     ;; (session/export-html.lisp).
     ;; +7 Goal 23 v0.85.1: mid-convo effort + providerThinkingLevel +
     ;; inMemory session entry owners land in B8 session/loop files.
-    (is (= 326 definition-count)
+    ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
+    ;; adjacent session/codec helpers landed in B8 owners.
+    (is (= 341 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1180,7 +1183,8 @@
     ;; assert-extension-deliver-as, render-extension-named.
     ;; +5 v0.84.4: ui prompt events (context.lisp) and custom-message
     ;; flush helpers (providers.lisp).
-    (is (= 258 definition-count)
+    ;; +2 Goal 28: extension host helpers added in B9 owners.
+    (is (= 260 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))

@@ -22,7 +22,7 @@
          (concatenate 'string command "-edited"))
         0)))))
 
-(defun goal28-assert-sibling-settings-readers (manager)
+(defun goal28-external-editor-assert-sibling-settings-readers (manager)
   (is (null
        (cadr-cli::settings-last-changelog-version manager)))
   (is (string=
@@ -56,7 +56,7 @@
          (goal28-external-editor-env))
       (is (string= "nano" command))
       (is (string= "nano-edited" result)))
-    (goal28-assert-sibling-settings-readers manager))
+    (goal28-external-editor-assert-sibling-settings-readers manager))
   (with-test-directory (root)
     (let* ((global (merge-pathnames "settings.json" root))
            (_

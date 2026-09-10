@@ -1,7 +1,7 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
-(defun goal28-assert-sibling-settings-readers (manager)
+(defun goal28-last-changelog-assert-sibling-settings-readers (manager)
   (is (string=
        "  "
        (cadr-cli::settings-markdown-code-block-indent
@@ -59,7 +59,7 @@
              '("banner")
              (cadr-cli::tui-state-startup-compact-lines
               absent-state)))
-        (goal28-assert-sibling-settings-readers manager)))
+        (goal28-last-changelog-assert-sibling-settings-readers manager)))
     (with-test-directory (root)
       (let* ((global (merge-pathnames "settings.json" root))
              (changelog

@@ -1,7 +1,7 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
-(defun goal28-assert-sibling-settings-readers (manager)
+(defun goal28-websocket-assert-sibling-settings-readers (manager)
   (is (eq t (cadr-cli::settings-boolean-value
              manager "compaction" t "enabled")))
   (is (= 20000
@@ -34,7 +34,7 @@
            (cadr-ai::websocket-connect-timeout-seconds 0)))
     (is (= 10
            (cadr-ai::websocket-connect-timeout-seconds -5)))
-    (goal28-assert-sibling-settings-readers manager))
+    (goal28-websocket-assert-sibling-settings-readers manager))
   (with-test-directory (root)
     (let* ((global (merge-pathnames "settings.json" root))
            (_

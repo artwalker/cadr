@@ -153,10 +153,8 @@
          '("update" "--models" "--all"))))))
 
 (test goal18-npm-package-source-is-a-fixed-intentional-difference
-  ;; Adjudicated intentional difference: the baseline installs npm:
-  ;; package sources through npm; the Common Lisp build has no npm
-  ;; egress and rejects the source with a fixed message before any
-  ;; filesystem or network work.
+  ;; Offline install still rejects missing npm packages before network
+  ;; work. Online npm: install is a Goal 28 product invent.
   (with-test-directory (root)
     (let* ((agent (merge-pathnames "agent/" root))
            (output (make-string-output-stream))
@@ -175,7 +173,7 @@
         (cadr-ai:configuration-error (condition)
           (is
            (string=
-            "npm packages are unavailable in the Common Lisp build; install a Lisp local or Git package"
+            "Cannot install a missing npm package while offline"
             (cadr-ai:cadr-error-message condition)))))
       (is (string= "" (get-output-stream-string output))))))
 
