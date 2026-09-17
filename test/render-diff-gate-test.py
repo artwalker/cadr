@@ -1058,20 +1058,17 @@ class RenderDiffGateTest(unittest.TestCase):
         RENDER_DIFF.validate_visible_string_inventory(
             inventory, manifest["baselineCommit"]
         )
-        # Goal 18 I7 widened the extractor: chalk color wrappers stay
-        # transparent to the literals inside them, and addLoadedSection,
-        # addDiagnostic, and LoginDialogComponent's titleOverride became
-        # contracted sinks.  v0.85.1 (d981de122) after experimental README
-        # asset classification: 549 sites, 1226 branches, 1163
-        # printable-visible, 63 terminal-protocol, 310 source-inventory
-        # entries.
-        self.assertEqual(549, len(inventory["entries"]))
+        # Locked to tip baseline-visible-strings.json after Goal30 /
+        # experimental-README universe shrink. Recount from the fixture:
+        # 527 sites, 1182 branches, 1119 printable-visible, 63
+        # terminal-protocol, 258 source-inventory entries.
+        self.assertEqual(527, len(inventory["entries"]))
         self.assertEqual(
-            1226,
+            1182,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1163,
+            1119,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -1086,7 +1083,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 if entry["sink"]["channel"] == "terminal-protocol"
             ),
         )
-        self.assertEqual(310, len(inventory["sourceInventory"]))
+        self.assertEqual(258, len(inventory["sourceInventory"]))
         self.assertEqual(
             62,
             sum(
