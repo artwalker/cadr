@@ -1777,10 +1777,7 @@ if (instrumentRoot) {
 				`${signature}\tif (process.env.RENDER_DIFF_FORCE_NO_SESSION === "1") return null;\n`,
 			);
 		}
-		if (
-			relativePath === "packages/coding-agent/src/modes/interactive/interactive-mode.ts" &&
-			text.includes("handleShareCommand")
-		) {
+		if (relativePath === "packages/coding-agent/src/modes/interactive/session-share.ts") {
 			const ghProbe = `\t\ttry {\n\t\t\tconst authResult = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });`;
 			if (!text.includes(ghProbe)) throw new Error("fixed-baseline share gh probe changed");
 			text = text.replace(

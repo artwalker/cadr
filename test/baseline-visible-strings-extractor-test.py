@@ -166,7 +166,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             ).lstrip(),
             encoding="utf-8",
         )
-        main_screen = self.root / "packages/tui/src/TuiMainScreen.ts"
+        main_screen = self.root / "packages/tui/src/tui-main-screen.ts"
         main_screen.write_text(
             textwrap.dedent(
                 r'''
@@ -183,7 +183,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             ).lstrip(),
             encoding="utf-8",
         )
-        alt_screen = self.root / "packages/tui/src/TuiAltScreen.ts"
+        alt_screen = self.root / "packages/tui/src/tui-alt-screen.ts"
         alt_screen.write_text(
             'const terminal = { write: (_value: string) => undefined };\n'
             'class TuiAltScreen { beforeTerminalStart(): void {\n'
@@ -207,8 +207,8 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             if entry["sink"]["channel"] == "terminal-protocol"
         }
         self.assertIn("packages/tui/src/terminal.ts", protocol_paths, json.dumps(inventory, indent=2))
-        self.assertIn("packages/tui/src/TuiMainScreen.ts", protocol_paths)
-        self.assertIn("packages/tui/src/TuiAltScreen.ts", protocol_paths)
+        self.assertIn("packages/tui/src/tui-main-screen.ts", protocol_paths)
+        self.assertIn("packages/tui/src/tui-alt-screen.ts", protocol_paths)
         self.assertIn("packages/coding-agent/src/utils/clipboard.ts", protocol_paths)
 
     def test_block_scoped_loop_binding_does_not_inherit_an_earlier_same_name(self) -> None:
@@ -318,16 +318,15 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             "}\n",
             encoding="utf-8",
         )
-        interactive = self.root / "packages/coding-agent/src/modes/interactive/interactive-mode.ts"
-        interactive.write_text(
+        share = self.root / "packages/coding-agent/src/modes/interactive/session-share.ts"
+        share.parent.mkdir(parents=True, exist_ok=True)
+        share.write_text(
             "const spawnSync = (..._args: unknown[]) => ({ status: 0 });\n"
-            "class InteractiveMode {\n"
-            "\tprivate handleShareCommand(): void {\n"
+            "export async function shareSession(): Promise<void> {\n"
             "\t\ttry {\n"
             '\t\t\tconst authResult = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });\n'
             "\t\t\tvoid authResult;\n"
             "\t\t} catch {}\n"
-            "  }\n"
             "}\n",
             encoding="utf-8",
         )
@@ -344,7 +343,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         )
         self.assertIn(
             'process.env.RENDER_DIFF_FORCE_GH_PROBE_THROW === "1"',
-            (destination / interactive.relative_to(self.root)).read_text(encoding="utf-8"),
+            (destination / share.relative_to(self.root)).read_text(encoding="utf-8"),
         )
 
     def test_instrumentation_is_local_zero_width_and_opt_in(self) -> None:
