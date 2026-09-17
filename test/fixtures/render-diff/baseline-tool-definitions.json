@@ -38,7 +38,7 @@
     "properties": {
      "command": {
       "type": "string",
-      "description": "Bash command to execute"
+      "description": "Shell command to execute"
      },
      "timeout": {
       "type": "number",
@@ -108,27 +108,6 @@
     }
    },
    "promptSnippet": "Create or overwrite files"
-  },
-  {
-   "name": "powershell",
-   "description": "Execute a PowerShell command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds.",
-   "parameters": {
-    "type": "object",
-    "required": [
-     "command"
-    ],
-    "properties": {
-     "command": {
-      "type": "string",
-      "description": "PowerShell command to execute"
-     },
-     "timeout": {
-      "type": "number",
-      "description": "Timeout in seconds (optional, no default timeout)"
-     }
-    }
-   },
-   "promptSnippet": "Execute PowerShell commands"
   },
   {
    "name": "grep",

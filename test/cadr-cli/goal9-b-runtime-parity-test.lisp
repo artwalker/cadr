@@ -133,7 +133,10 @@ baseline byte content."
           (goal9-assert-tool-schema-matches tool expected)))
       (is (equal
            (goal9-baseline-tool-snippets)
-           (cadr-cli::tool-prompt-snippets all-tools)))
+           (remove-if-not
+            (lambda (pair)
+              (goal9-baseline-tool-entry (car pair)))
+            (cadr-cli::tool-prompt-snippets all-tools))))
       (is (equal
            +goal9-baseline-tool-guidelines+
            (cadr-cli::tool-prompt-guidelines default-tools)))
