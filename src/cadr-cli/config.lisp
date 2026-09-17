@@ -113,8 +113,6 @@
 (defparameter +oauth-login-providers+
   '((:openai-codex . cadr-ai:refresh-openai-oauth-credential)
     (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)
-    (:github-copilot
-     . cadr-ai::refresh-github-copilot-oauth-credential)
     (:openrouter . cadr-ai::refresh-openrouter-oauth-credential)
     (:xai . cadr-ai::refresh-xai-oauth-credential)))
 
