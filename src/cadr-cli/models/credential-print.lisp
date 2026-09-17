@@ -162,22 +162,12 @@
     (values provider model)))
 
 (defun auth-command-oauth-refresh-function (provider)
-  ;; The OAuth refresh flow for PROVIDER when one is wired for the
-  ;; one-shot CLI context; NIL otherwise.  The :kimi and :radius
-  ;; strategies need the runtime environment/gateway, which this
-  ;; context does not have.
-  (let ((definition
-          (cadr-ai:find-provider-definition provider)))
-    (when definition
-      (case (cadr-ai::provider-definition-oauth-refresh-strategy
-             definition)
-        (:anthropic #'cadr-ai:refresh-anthropic-oauth-credential)
-        (:github-copilot
-         #'cadr-ai::refresh-github-copilot-oauth-credential)
-        (:openai-device #'cadr-ai:refresh-openai-oauth-credential)
-        (:openrouter #'cadr-ai::refresh-openrouter-oauth-credential)
-        (:xai #'cadr-ai::refresh-xai-oauth-credential)
-        (otherwise nil)))))
+  ;; Same CLI refresh table as resolve-stored-credential.  Kimi/Radius
+  ;; use the wrappers that default host/gateway when env is absent.
+  (cdr
+   (assoc
+    (provider-symbol-from-key provider)
+    +oauth-login-providers+)))
 
 (defun credential-for-print
     (storage provider kind

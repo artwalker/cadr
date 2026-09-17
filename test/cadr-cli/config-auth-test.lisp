@@ -354,6 +354,22 @@
         (is (eq :oauth
                 (cadr-cli:provider-config-auth-source config)))))))
 
+(test auth-command-refresh-matches-resolve-table-for-kimi-and-radius
+  (is (eq
+       'cadr-cli::refresh-kimi-coding-oauth-for-cli
+       (cadr-cli::auth-command-oauth-refresh-function
+        :kimi-coding)))
+  (is (eq
+       'cadr-cli::refresh-radius-oauth-for-cli
+       (cadr-cli::auth-command-oauth-refresh-function
+        :radius)))
+  (is (eq
+       'cadr-ai::refresh-xai-oauth-credential
+       (cadr-cli::auth-command-oauth-refresh-function :xai)))
+  (is (null
+       (cadr-cli::auth-command-oauth-refresh-function
+        :openai))))
+
 (test misidentified-openai-oauth-does-not-block-login-recovery
   (with-test-directory (directory)
     (let ((auth-path
