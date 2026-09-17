@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1466,
+  "expected_findings": 1467,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -10841,6 +10841,14 @@
       "line": "  ;; pi@d981de122 terminal-image.ts:179-189 \u2014 skip work when the three",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/config.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       \"https://radius.pi.dev\")",
+      "occurrences": 1,
+      "reason": "CLI OAuth refresh default Radius gateway URL matches the Radius pi.dev service endpoint."
     }
   ],
   "opaque_files": [
