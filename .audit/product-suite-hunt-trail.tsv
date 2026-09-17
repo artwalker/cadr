@@ -5,3 +5,4 @@ ts	phase	decision	why	evidence	result
 2026-09-17T15:31:09Z	u2	C-01 ledger 493/803	goal18 recount from baseline-visible-strings.json	docs/presentation-parity.md	VERIFIED via GOAL18 FiveAM 1/1
 2026-09-17T15:31:09Z	u3	bash command description -> Bash	pi bash.ts parity; pin fixture matched	src/cadr-cli/tools/bash.lisp	VERIFIED via GOAL9-B3 FiveAM 9/9
 2026-09-17T15:33:25Z	u5	cadr-cli-suite 10200/10200 green	ledger sync closed known reds	/tmp/cadr-suite-after-ledger.log	VERIFIED
+2026-09-17T15:40:23Z	u5b	re-record GOAL20_TEST_CHECKS 21110->21133	all nine systems pass; anchor only drifted	docs/test-matrix.md	recorded
