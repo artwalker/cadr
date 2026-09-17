@@ -248,6 +248,47 @@
                  (cadr-ai:request-spec-headers request)
                  :test #'string-equal)))))))))
 
+(test stored-xai-oauth-resolves-for-grok-chat
+  (with-test-directory (directory)
+    (let ((auth-path (merge-pathnames "auth.json" directory))
+          (cadr-cli::*environment-function*
+            (lambda (name)
+              (and (string= name "XAI_API_KEY")
+                   "must-not-win"))))
+      (cadr-ai:write-auth-credential
+       auth-path
+       (cadr-ai:make-oauth-credential
+        :provider :xai
+        :access "xai-oauth-access"
+        :refresh "xai-oauth-refresh"
+        :expires (+ (cadr-ai::unix-milliseconds) 3600000)))
+      (let ((config
+              (cadr-cli:resolve-provider-config
+               :provider "xai"
+               :model "grok-4.5"
+               :config-path #P"/definitely/missing/config.json"
+               :auth-path auth-path)))
+        (is (eq :oauth
+                (cadr-cli:provider-config-auth-source config)))
+        (is (string= "grok-4.5"
+                     (cadr-ai:model-id
+                      (cadr-cli:provider-config-model config))))
+        (let ((request
+                (cadr-ai:build-request
+                 (cadr-cli:provider-config-provider config)
+                 (cadr-cli:provider-config-model config)
+                 (cadr-ai:make-context
+                  :messages
+                  (list
+                   (cadr-ai:make-user-message :content "hello")))
+                 :stream-p t)))
+          (is (string=
+               "Bearer xai-oauth-access"
+               (cdr
+                (assoc
+                 "authorization"
+                 (cadr-ai:request-spec-headers request)
+                 :test #'string-equal)))))))))
 (test misidentified-openai-oauth-does-not-block-login-recovery
   (with-test-directory (directory)
     (let ((auth-path
