@@ -93,9 +93,13 @@ const modelSelector = new ModelSelectorComponent(
 	[{ model, thinkingLevel: "high" }],
 	() => {},
 	() => {},
+	undefined,
+	undefined,
+	{ provider: model.provider, id: model.id },
 );
 (modelSelector as any).errorMessage = "catalog failure";
 (modelSelector as any).updateList();
+(modelSelector as any).render(80);
 
 const originalPlatform = Object.getOwnPropertyDescriptor(process, "platform");
 Object.defineProperty(process, "platform", { value: "darwin" });
@@ -686,6 +690,55 @@ writeFileSync(packageSettingsPath, packageSettingsBefore);
 	else process.env.PI_PACKAGE_DIR = originalPackageDir;
 }
 
+{
+	// package-manager-cli.ts:1027/1042/1045 — managed-install self-update arms.
+	const managedRoot = mkdtempSync(join(tmpdir(), "pi-visible-managed-"));
+	const releasesDir = join(managedRoot, "releases");
+	const managedVersion = "99.0.0";
+	const managedReleaseDir = join(releasesDir, managedVersion);
+	const managedPackageDir = join(
+		managedReleaseDir,
+		"node_modules",
+		"@earendil-works",
+		"pi-coding-agent",
+	);
+	mkdirSync(managedPackageDir, { recursive: true });
+	writeFileSync(
+		join(managedRoot, "managed-install.json"),
+		JSON.stringify({
+			kind: "pi-managed-install",
+			schemaVersion: 1,
+			layout: "releases-v1",
+		}),
+	);
+	const savedManagedRoot = process.env.PI_MANAGED_INSTALL_ROOT;
+	const savedPackageDirManaged = process.env.PI_PACKAGE_DIR;
+	const savedFetchManaged = globalThis.fetch;
+	process.env.PI_MANAGED_INSTALL_ROOT = managedRoot;
+	process.env.PI_PACKAGE_DIR = managedPackageDir;
+	globalThis.fetch = async (input) => {
+		const url = String(input);
+		if (url.endsWith(`/${managedVersion}/package.json`) || url.endsWith(`/${managedVersion}/package-lock.json`)) {
+			throw null;
+		}
+		return new Response(JSON.stringify({ version: managedVersion }), {
+			status: 200,
+			headers: { "content-type": "application/json" },
+		});
+	};
+	await handlePackageCommand(["update", "--self", "--force"]);
+	process.exitCode = 0;
+	process.env.RENDER_DIFF_FORCE_MANAGED_UPDATE_THROW = "1";
+	await handlePackageCommand(["update", "--self"]);
+	delete process.env.RENDER_DIFF_FORCE_MANAGED_UPDATE_THROW;
+	process.exitCode = 0;
+	globalThis.fetch = savedFetchManaged;
+	if (savedManagedRoot === undefined) delete process.env.PI_MANAGED_INSTALL_ROOT;
+	else process.env.PI_MANAGED_INSTALL_ROOT = savedManagedRoot;
+	if (savedPackageDirManaged === undefined) delete process.env.PI_PACKAGE_DIR;
+	else process.env.PI_PACKAGE_DIR = savedPackageDirManaged;
+}
+
 const toolFixture = mkdtempSync(join(tmpdir(), "pi-visible-tool-"));
 const archiveRoot = join(toolFixture, "archive");
 const toolPath = join(archiveRoot, "fd");
@@ -721,12 +774,15 @@ const warnings: string[] = [];
 const errors: string[] = [];
 const fakeSettingsManager = new Proxy({
 	getCollapseChangelog: () => true,
+	getShowCacheMissNotices: () => true,
 	setHideThinkingBlock() {},
 	getTreeFilterMode: () => "all",
 	getBranchSummarySkipPrompt: () => false,
 	getEnabledModels: () => undefined,
 	getHttpIdleTimeoutMs: () => 0,
 	getWarnings: () => ({}),
+	getDefaultProvider: () => model.provider,
+	getDefaultModel: () => model.id,
 }, {
 	get(target, property) {
 		if (property in target) return target[property];
@@ -738,6 +794,8 @@ let fakeLeafId = "leaf";
 let fakeEntries: any[] = [{ type: "compaction" }, { type: "compaction" }];
 const fakeSessionManager = {
 	buildContextEntries: () => [],
+	getSessionId: () => "visible-construction-session",
+	getBranch: () => [],
 	getEntries: () => fakeEntries,
 	getSessionName: () => "normalized",
 	getTree: () => fakeTree,
@@ -749,12 +807,14 @@ const fakeSessionManager = {
 };
 const fakeSession = {
 	sessionManager: fakeSessionManager,
+	state: { systemPrompt: "", tools: [] },
 	agent: { signal: new AbortController().signal },
 	model,
 	modelRuntime,
 	promptTemplates: [],
 	scopedModels: [],
 	thinkingLevel: "off",
+	setThinkingLevel() {},
 	autoCompactionEnabled: true,
 	steeringMode: "one-at-a-time",
 	followUpMode: "one-at-a-time",
@@ -820,9 +880,20 @@ Object.assign(interactive, {
 	startupNoticesShown: false,
 	changelogMarkdown: "## [9.9.9]\n\n- change",
 	version: "9.9.8",
-	showStatus: (value: string) => statuses.push(value),
-	showWarning: (value: string) => warnings.push(value),
-	showError: (value: string) => errors.push(value),
+	showStatus(value: string) {
+		statuses.push(value);
+		console.log(value);
+		InteractiveMode.prototype["showStatus"].call(this, value);
+	},
+	showWarning(value: string) {
+		warnings.push(value);
+		InteractiveMode.prototype["showWarning"].call(this, value);
+	},
+	showError(value: string) {
+		errors.push(value);
+		console.error(value);
+		InteractiveMode.prototype["showError"].call(this, value);
+	},
 	rebuildChatFromMessages() {},
 	renderSessionEntries() {},
 	renderProjectTrustWarningIfNeeded() {},
@@ -886,6 +957,7 @@ Object.assign(interactive, {
 	options: { alt: false },
 	keybindings: { getEffectiveConfig: () => ({}) },
 	themeController: { getTerminalTheme: () => "dark", getThemeSelection: () => "dark" },
+	applyRuntimeSettings() {},
 });
 
 const invoke = (name: string, ...args: unknown[]) => InteractiveMode.prototype[name].apply(interactive, args);
@@ -1160,6 +1232,48 @@ chmodSync(fakeGh, 0o755);
 const sharePath = process.env.PATH;
 process.env.PATH = `${shareFixture}:${sharePath ?? ""}`;
 fakeSession.exportToHtml = async (path: string) => writeFileSync(path, "fixture html");
+const savedShareFetch = globalThis.fetch;
+modelRuntime.getProvider = (providerId: string) => (providerId === "radius" ? { id: "radius" } : undefined);
+modelRuntime.getAuth = async () => ({ auth: { apiKey: "construction-radius-token" } });
+globalThis.fetch = async (input) => {
+	const url = String(input);
+	if (url.includes("/v1/artifacts")) {
+		return new Response(JSON.stringify({ error: "fixture radius upload failure" }), { status: 500 });
+	}
+	return savedShareFetch(input);
+};
+await invoke("handleShareCommand");
+let releaseRadiusFetch: (() => void) | undefined;
+let radiusFetchParked: () => void = () => {};
+globalThis.fetch = async (input) => {
+	const url = String(input);
+	if (url.includes("/v1/artifacts")) {
+		await new Promise<void>((resolve) => {
+			releaseRadiusFetch = resolve;
+			radiusFetchParked();
+		});
+		return new Response(JSON.stringify({ artifact: { canonical_url: "https://example.invalid/share" } }), {
+			status: 200,
+		});
+	}
+	return savedShareFetch(input);
+};
+const findShareLoader = () =>
+	(interactive.editorContainer as any).children.findLast(
+		(component: { constructor?: { name?: string }; handleInput?: (data: string) => void }) =>
+			component?.constructor?.name === "BorderedLoader" && typeof component.handleInput === "function",
+	) as { handleInput?: (data: string) => void } | undefined;
+const radiusFetchReady = new Promise<void>((resolve) => {
+	radiusFetchParked = resolve;
+});
+const radiusCancelShare = invoke("handleShareCommand");
+await radiusFetchReady;
+findShareLoader()?.handleInput?.("\x1b");
+releaseRadiusFetch?.();
+await radiusCancelShare;
+globalThis.fetch = savedShareFetch;
+modelRuntime.getProvider = () => undefined;
+delete modelRuntime.getAuth;
 process.env.GH_VISIBLE_MODE = "not-logged-in";
 await invoke("handleShareCommand");
 process.env.GH_VISIBLE_MODE = "failure";
@@ -1168,9 +1282,11 @@ process.env.GH_VISIBLE_MODE = "empty";
 await invoke("handleShareCommand");
 process.env.GH_VISIBLE_MODE = "cancel";
 const cancelledShare = invoke("handleShareCommand");
-await new Promise((resolve) => setTimeout(resolve, 20));
-const shareLoader = (interactive.editorContainer as any).children.at(-1);
-shareLoader.handleInput("\x1b");
+for (let attempt = 0; attempt < 50; attempt++) {
+	await new Promise((resolve) => setTimeout(resolve, 10));
+	if (findShareLoader()?.handleInput) break;
+}
+findShareLoader()?.handleInput?.("\x1b");
 await cancelledShare;
 delete process.env.GH_VISIBLE_MODE;
 process.env.PATH = sharePath;
@@ -1186,6 +1302,7 @@ interactive.options = {
 	initialMessage: "first",
 	initialMessages: ["second"],
 };
+interactive.session.modelRuntime.getError = () => "models.json is not valid JSON (construction drive)";
 fakeSession.prompt = async () => { throw 42; };
 try {
 	await invoke("run");
@@ -1240,6 +1357,73 @@ await invoke("flushCompactionQueue", { willRetry: true });
 invoke("showSettingsSelector");
 invoke("showModelSelector");
 
+const billedUsage = {
+	input: 100,
+	output: 50,
+	cacheRead: 25,
+	cacheWrite: 0,
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0.05 },
+};
+invoke("addCompactionCostNotice", { kind: "compaction", usage: billedUsage });
+invoke("addCompactionCostNotice", { kind: "branch_summary", usage: billedUsage });
+
+invoke("maybeShowAssistantDiagnostics", {
+	role: "assistant",
+	content: [{ type: "text", text: "assistant" }],
+	api: "responses",
+	provider: "anthropic",
+	model: "model-one",
+	usage: {
+		input: 0,
+		output: 0,
+		cacheRead: 0,
+		cacheWrite: 0,
+		totalTokens: 0,
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+	},
+	stopReason: "stop",
+	timestamp: 0,
+	diagnostics: [{
+		type: "anthropic_input_transformations",
+		details: {
+			transformations: [{ type: "thinking_dropped", reason: "over limit", path: "/messages/0" }],
+		},
+	}],
+});
+invoke("maybeShowAssistantDiagnostics", {
+	role: "assistant",
+	content: [{ type: "text", text: "assistant" }],
+	api: "responses",
+	provider: "anthropic",
+	model: "model-one",
+	usage: {
+		input: 0,
+		output: 0,
+		cacheRead: 0,
+		cacheWrite: 0,
+		totalTokens: 0,
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+	},
+	stopReason: "stop",
+	timestamp: 0,
+	diagnostics: [{
+		type: "anthropic_input_transformations",
+		details: {
+			transformations: [
+				{ type: "thinking_dropped", reason: "first", path: "/messages/0" },
+				{ type: "thinking_dropped", reason: "second", path: "/messages/1" },
+			],
+		},
+	}],
+});
+
+invoke("handleThinkingCommand", "bogus-level");
+invoke("selectThinkingLevel", "high", true);
+invoke("selectThinkingLevel", "off", true);
+invoke("showModelSelector");
+await (constructedSelectors.findLast((component) => component.constructor.name === "ModelSelectorComponent") as any)
+	.onSelectAsDefaultCallback(model);
+
 interactive.isInitialized = true;
 interactive.clearStatusIndicator = () => {};
 interactive.showStatusIndicator = () => {};
@@ -1259,8 +1443,18 @@ await invoke("handleBashCommand", "false");
 interactive.resetExtensionUI = () => {};
 interactive.session.reload = async () => { throw new Error("reload failure"); };
 await invoke("handleReloadCommand");
-interactive.session.reload = async ({ beforeSessionStart }: { beforeSessionStart: () => void }) => beforeSessionStart();
-interactive.session.resourceLoader = { getThemes: () => ({ themes: [] }) };
+interactive.session.reload = async ({ beforeSessionStart }: { beforeSessionStart: () => void }) => {
+	beforeSessionStart();
+};
+interactive.session.resourceLoader = {
+	getThemes: () => ({ themes: [] }),
+	getSystemPromptSource: () => undefined,
+	getAppendSystemPromptSources: () => [],
+	getAgentsFiles: () => ({ agentsFiles: [] }),
+	getSkills: () => ({ skills: [], diagnostics: [] }),
+	getPrompts: () => ({ prompts: [], diagnostics: [] }),
+	getExtensions: () => ({ extensions: [], errors: [] }),
+};
 interactive.keybindings.reload = () => {};
 interactive.themeController.applyFromSettings = async () => {};
 interactive.themeController.getTerminalTheme = () => "dark";
@@ -1270,7 +1464,7 @@ interactive.ui.setShowHardwareCursor = () => {};
 interactive.ui.setClearOnShrink = () => {};
 interactive.showLoadedResources = () => {};
 interactive.maybeSaveImplicitProjectTrustAfterReload = () => true;
-interactive.session.modelRuntime.getError = () => "catalog failure";
+interactive.session.modelRuntime.getError = () => undefined;
 await invoke("handleReloadCommand");
 
 // v0.84.2 credential-store and catalog-refresh failure arms.

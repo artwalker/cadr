@@ -982,21 +982,20 @@
                      compaction
                      (position compaction entries
                                :test #'eq))))
-             ;; Baseline footer.ts:109-112 — with no model the context
-             ;; window falls back to 0 and a fresh session still reads
-             ;; 0.0%; only a post-compaction unknown maps to "?".
-             (when (null model)
+             ;; Baseline getContextUsage + footer.ts:108-111 — no model
+             ;; or a non-positive window yields undefined usage, which the
+             ;; footer coalesces to 0.0%. Only an explicit post-compaction
+             ;; null percent maps to "?".
+             (when (or (null model) (not (plusp (or window 0))))
                (return-from current-context-percent 0d0))
             (when
-                (and
-                 (plusp window)
-                  (or
-                   (null compaction)
-                   (find-if
-                    #'valid-context-assistant-entry-p
-                    entries
-                    :start
-                    (1+ compaction-position))))
+                (or
+                 (null compaction)
+                 (find-if
+                  #'valid-context-assistant-entry-p
+                  entries
+                  :start
+                  (1+ compaction-position)))
                (let ((estimate
                        (cadr-agent::context-estimated-tokens
                         (cadr-agent:agent-messages agent))))

@@ -89,6 +89,8 @@ def reverse_scan_unmodeled_sink_candidates(
     ).stdout.splitlines()
     candidates: list[str] = []
     for path in listing:
+        if "/experimental/" in f"/{path}/":
+            continue
         if not path.endswith((".ts", ".tsx", ".cts", ".mts")):
             continue
         source = git_blob(repo, commit, path)
@@ -1392,6 +1394,7 @@ def _run_visible_string_construction_suite_once(
             forced_environment = environment.copy()
             forced_environment["RENDER_DIFF_FORCE_BUN_BINARY"] = "1"
             forced_environment["RENDER_DIFF_FORCE_GH_PROBE_THROW"] = "1"
+            forced_environment["RENDER_DIFF_FORCE_MANAGED_UPDATE_THROW"] = "1"
             result = _run_construction_subprocess(
                 [
                     str(baseline / "node_modules/.bin/tsx"),

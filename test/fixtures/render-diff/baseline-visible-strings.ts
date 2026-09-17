@@ -168,8 +168,10 @@ function walkFiles(directory: string): string[] {
 	const files: string[] = [];
 	for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
 		const entryPath = path.join(directory, entry.name);
-		if (entry.isDirectory()) files.push(...walkFiles(entryPath));
-		else if (entry.isFile()) files.push(entryPath);
+		if (entry.isDirectory()) {
+			if (entry.name === "experimental") continue;
+			files.push(...walkFiles(entryPath));
+		} else if (entry.isFile()) files.push(entryPath);
 	}
 	return files;
 }
@@ -1783,6 +1785,14 @@ if (instrumentRoot) {
 			text = text.replace(
 				ghProbe,
 				`\t\ttry {\n\t\t\tif (process.env.RENDER_DIFF_FORCE_GH_PROBE_THROW === "1") throw new Error("forced missing gh");\n\t\t\tconst authResult = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });`,
+			);
+		}
+		if (relativePath === "packages/coding-agent/src/package-manager-cli.ts") {
+			const managedUpdate = "\t\t\t\t\t\tawait runManagedSelfUpdate(managedInstallRoot, selfUpdatePlan.version);";
+			if (!text.includes(managedUpdate)) throw new Error("fixed-baseline managed self-update call changed");
+			text = text.replace(
+				managedUpdate,
+				`\t\t\t\t\t\tif (process.env.RENDER_DIFF_FORCE_MANAGED_UPDATE_THROW === "1") throw null;\n${managedUpdate}`,
 			);
 		}
 		const destination = path.join(instrumentRoot, relativePath);

@@ -413,8 +413,8 @@ interactive-mode.ts:5956-5960).")
                 (or (funcall code-block-indent-function) "  ")
                 "  ")
             :session session
-            ;; Seed after managed-tool ensure so offline fd/rg warnings
-            ;; sit above restored session messages (interactive-mode.ts).
+            ;; Messages seed after managed-tool ensure (interactive-mode.ts
+            ;; ensureTool then rebindCurrentSession / renderInitialMessages).
             :messages nil))
          (editor
            (let ((editor
@@ -489,11 +489,6 @@ interactive-mode.ts:5956-5960).")
          (last-terminal-title nil)
          (pending-work-render-p nil))
     (declare (ignore active-theme))
-    (when project-trust-warning
-      (add-tui-project-trust-warning
-       state project-trust-warning))
-    (dolist (text initial-notices)
-      (add-tui-warning state text))
     (dolist (text initial-statuses)
       (add-tui-status state text))
     (labels
@@ -2810,6 +2805,15 @@ interactive-mode.ts:5956-5960).")
           (condition () nil)))
       (dolist (message messages)
         (seed-tui-message state message))
+      ;; Baseline interactive-mode.ts: rebind/renderInitialMessages first,
+      ;; then modelFallbackMessage via showWarning (appends after transcript).
+      ;; Trust warning is also appended after session entries.
+      (when project-trust-warning
+        (add-tui-project-trust-warning
+         state project-trust-warning))
+      (dolist (text initial-notices)
+        (add-tui-warning state text))
+      (refresh-footer-state)
       (when version-update-check-function
         (handler-case
             (show-version-update

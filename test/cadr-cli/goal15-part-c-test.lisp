@@ -792,3 +792,13 @@
      (cadr-cli::call-with-fatal-condition-boundary
       (lambda () (values 'alpha 'beta 'gamma))
       :exit-function #'identity)))))
+
+(test goal30-footer-context-keeps-zero-percent-distinct-from-unknown
+  ;; footer.ts:110-111 — undefined usage coalesces to 0.0%; only an explicit
+  ;; null percent (post-compaction) renders "?".
+  (let ((zero
+          (cadr-tui::footer-context-text 0d0 0 t nil))
+        (unknown
+          (cadr-tui::footer-context-text nil 0 t nil)))
+    (is (string= "0.0%/0 (auto)" zero))
+    (is (string= "?/0 (auto)" unknown))))

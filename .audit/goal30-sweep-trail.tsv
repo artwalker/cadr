@@ -1,0 +1,21 @@
+ts	phase	decision	why	evidence	result
+2026-09-10T19:06:25Z	frame	exit predicate: TUI smokes + verify-release green + local junk gone; do not rewrite presence/settings-gaps open (gate requires open); do not invent 320 publicApiExports; do not arm release tag	user asked no tails; sweep only reversible finite work	docs/delivery-checklist.md;scripts/goal28-settings-alias.py	predicate-set
+2026-09-10T19:06:25Z	hygiene	removed ignored pair/g21/pytest/cache junk	working tree hygiene; secrets .env kept	git clean -ndX sample	junk-cleared
+2026-09-10T19:06:44Z	tui	goal5 + live TUI smokes on tip binary	close hand-TUI evidence gap from prior session	/tmp/g30-goal5-tui.log;/tmp/g30-live-tui.log	pending-parse
+2026-09-10T19:06:55Z	release-gate	started verify-release.sh with cached core render captures	delivery checklist pre-tag evidence; tag itself not armed	/tmp/g30-verify-release.log	running
+2026-09-10T19:07:06Z	tui	goal5 + live TUI smokes PASS on tip	hand-ran same surface as delivery checklist	/tmp/g30-goal5-tui.log;/tmp/g30-live-tui.log	PASS
+2026-09-17T07:06:23Z	resume	resume sweep; tip still has uncommitted session-share ghProbe retarget; verify-release died on old probe path	user again asked no tails	git status; /tmp/g30-verify-release.log	resumed
+2026-09-17T07:06:23Z	fix	retarget FORCE_GH_PROBE to session-share.ts for pin v0.85.1	Fix Root Causes: handleShareCommand no longer embeds spawnSync gh	test/fixtures/render-diff/baseline-visible-strings.ts	unit-pending-commit
+2026-09-17T07:06:23Z	frame	predicate: extractor unit PASS + commit/push + verify-release exit 0; no release tag; presence open stays by design	Never Block; Prove It Works on real release gate	docs/delivery-checklist.md	predicate-set
+2026-09-17T07:08:47Z	fix	landed session-share ghProbe + kebab-case protocol unit paths	unblocks verify-release full inventory; Fix Root Causes	32ba4218d	committed
+2026-09-17T07:08:47Z	release-gate	started verify-release.sh after extractor fix	delivery checklist pre-tag	/tmp/g30-verify-release2.log	running
+2026-09-17T07:28:19Z	release-gate	verify deterministic PASS; live OpenCode FAIL Insufficient balance on opencode.ai billing; full inventory not reached because CADR_RELEASE_GATE aborts	env/billing not product code; Fix Root Causes	/tmp/g30-verify-release2.log	blocked-billing
+2026-09-17T07:28:19Z	release-gate	started test-render-diff-full.sh alone to prove ghProbe fix	delivery checklist full inventory half	/tmp/g30-full-render.log	running
+2026-09-17T07:51:48Z	fix	regenerated tool-def fixture; bash Shell command; goal9 snippet filter	full render failed on fixture drift after ghProbe fixed	ada2fc36e	committed
+2026-09-17T08:15:22Z	fix	ModelSelectorComponent ctor arg order for construction driver	getAvailableSnapshot not a function on wrong 3rd arg	ada2fc36e	committed
+2026-09-17T08:15:55Z	fix	ModelSelectorComponent ctor arg order for construction driver	getAvailableSnapshot not a function on wrong 3rd arg	a34a703d4	committed
+2026-09-17T08:41:46Z	fix	stub setWorkingStatusIndicator on construction editor mocks	construction suite TypeError after ModelSelector fix	a34a703d4	committed
+2026-09-17T09:09:29Z	fix	environment construction calls shareSession not handleShareCommand	pin moved gh probe; Fix Root Causes	90a454242	committed
+2026-09-17T11:45:00Z	inventory	exclude packages/coding-agent/src/experimental/ in walkFiles; regen baseline-visible-strings.json	Goal 18 no experimental CLI; Encode Lessons in Structure	7c819e9a2 lineage	committed-pending
+2026-09-17T11:45:00Z	construction	expand visible construction for managed update, compaction cost, thinking/reload/share	cancelled-share via BorderedLoader.onAbort; console+TUI showStatus/showError	/tmp/cadr-render-diff-full-g30i-an8 analyze exit 0	805+9/803 branches
+2026-09-17T11:45:00Z	gate	full-tier visible-string coverage green on g30i captures	missing 50→0 printable; disposition analyze unchanged 607 adjudicated	render-diff analyze --tier full exit 0	pass

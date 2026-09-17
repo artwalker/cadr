@@ -5477,3 +5477,71 @@
       (is (search "↑1.3k" screen))
       (is (search "↓14" screen))
       (is (search "W1.3k" screen)))))
+
+(test goal30-resume-warning-appends-after-seeded-transcript
+  ;; interactive-mode.ts: rebind/renderInitialMessages then showWarning(modelFallback).
+  (let ((screen nil)
+        (previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager))
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model nil
+            :context-window 0
+            :messages
+            (list
+             (cadr-ai:make-user-message
+              :content "beta session question")
+             (cadr-ai:make-assistant-message
+              :api :openai-completions
+              :provider :unknown
+              :model "unknown"
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text "beta session answer"))
+              :stop-reason :stop))
+            :initial-notices
+            (list
+             (cadr-ai::no-models-available-message))
+            :footer-state-function
+            (lambda ()
+              (list
+               :model nil
+               :context-window 0
+               :context-percent 0d0
+               :auto-compact-p t))
+            :terminal
+            (make-instance
+             'footer-sync-test-terminal
+             :columns 100 :rows 24
+             :inputs
+             (list
+              (footer-sync-wait-for-screen-text
+               "beta session answer")
+              (footer-sync-wait-for-screen-text
+               "Warning: No models available")
+              (lambda (terminal)
+                (setf
+                 screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot
+                    terminal))))
+                t)
+              (footer-sync-submit-input "/quit"))))
+           (let ((answer
+                   (search "beta session answer" screen))
+                 (warning
+                   (search "Warning: No models available" screen))
+                 (meter (search "0.0%/0 (auto)" screen)))
+             (is (not (null answer)))
+             (is (not (null warning)))
+             (is (not (null meter)))
+             (when (and answer warning)
+               (is (< answer warning)))))
+      (cadr-tui:set-keybindings previous))))
