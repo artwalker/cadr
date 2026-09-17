@@ -856,8 +856,8 @@ Object.assign(interactive, {
 		setAvailableProviderCount() {},
 		setCwd() {},
 	},
-	editor: { addToHistory() {}, setText() {}, getText: () => "", borderColor: "" },
-	defaultEditor: { onEscape: undefined, onExtensionShortcut: undefined, setAutocompleteProvider() {} },
+	editor: { addToHistory() {}, setText() {}, getText: () => "", borderColor: "", setWorkingStatusIndicator() {} },
+	defaultEditor: { onEscape: undefined, onExtensionShortcut: undefined, setAutocompleteProvider() {}, setWorkingStatusIndicator() {} },
 	ui: {
 		requestRender() {},
 		hideOverlay() {},
