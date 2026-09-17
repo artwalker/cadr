@@ -289,6 +289,32 @@
                  "authorization"
                  (cadr-ai:request-spec-headers request)
                  :test #'string-equal)))))))))
+
+(test stored-github-copilot-oauth-uses-proxy-ep-base-url
+  (with-test-directory (directory)
+    (let ((auth-path (merge-pathnames "auth.json" directory))
+          (cadr-cli::*environment-function* (constantly nil))
+          (access
+            "tid=x;proxy-ep=proxy.enterprise.example;exp=1"))
+      (cadr-ai:write-auth-credential
+       auth-path
+       (cadr-ai:make-oauth-credential
+        :provider :github-copilot
+        :access access
+        :refresh "copilot-refresh"
+        :expires (+ (cadr-ai::unix-milliseconds) 3600000)
+        :metadata '(("enterpriseUrl" . "github.example"))))
+      (let ((config
+              (cadr-cli:resolve-provider-config
+               :provider "github-copilot"
+               :config-path #P"/definitely/missing/config.json"
+               :auth-path auth-path)))
+        (is (eq :oauth
+                (cadr-cli:provider-config-auth-source config)))
+        (is (string=
+             "https://api.enterprise.example"
+             (cadr-ai:model-base-url
+              (cadr-cli:provider-config-model config))))))))
 (test misidentified-openai-oauth-does-not-block-login-recovery
   (with-test-directory (directory)
     (let ((auth-path

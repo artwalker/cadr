@@ -113,6 +113,8 @@
 (defparameter +oauth-login-providers+
   '((:openai-codex . cadr-ai:refresh-openai-oauth-credential)
     (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)
+    (:github-copilot
+     . cadr-ai::refresh-github-copilot-oauth-credential)
     (:openrouter . cadr-ai::refresh-openrouter-oauth-credential)
     (:xai . cadr-ai::refresh-xai-oauth-credential)))
 
@@ -201,6 +203,13 @@
                         (eq provider-id
                             :openai-codex)
                         "https://chatgpt.com/backend-api")
+                   (and oauth-p
+                        (eq provider-id :github-copilot)
+                        (cadr-ai:github-copilot-base-url
+                         (cadr-ai:oauth-credential-access
+                          credential)
+                         (cadr-ai::github-copilot-metadata-value
+                          credential "enterpriseUrl")))
                    (cadr-ai:provider-definition-base-url definition))))
         (when (and (eq auth-source :none)
                    (cadr-ai::non-empty-string-p
