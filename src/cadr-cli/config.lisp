@@ -115,8 +115,19 @@
     (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)
     (:github-copilot
      . cadr-ai::refresh-github-copilot-oauth-credential)
+    (:kimi-coding . refresh-kimi-coding-oauth-for-cli)
     (:openrouter . cadr-ai::refresh-openrouter-oauth-credential)
+    (:radius . refresh-radius-oauth-for-cli)
     (:xai . cadr-ai::refresh-xai-oauth-credential)))
+
+(defun refresh-kimi-coding-oauth-for-cli (credential)
+  (cadr-ai::refresh-kimi-oauth-credential credential nil))
+
+(defun refresh-radius-oauth-for-cli (credential)
+  (cadr-ai::refresh-radius-oauth-credential
+   (or (environment-value "RADIUS_GATEWAY_URL")
+       "https://radius.pi.dev")
+   credential))
 
 (defun oauth-refresh-function (provider)
   (or (cdr (assoc provider +oauth-login-providers+))
