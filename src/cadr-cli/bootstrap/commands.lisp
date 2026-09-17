@@ -380,7 +380,7 @@
          (config
            (resolve-provider-config
             :provider
-            (or (cli-arguments-provider command) "openai")
+            (cli-arguments-provider command)
             :model (cli-arguments-model command)
             :reasoning (cli-arguments-thinking command)
             :base-url (cli-arguments-base-url command)
