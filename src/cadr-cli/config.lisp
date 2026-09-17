@@ -112,7 +112,11 @@
 
 (defparameter +oauth-login-providers+
   '((:openai-codex . cadr-ai:refresh-openai-oauth-credential)
-    (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)))
+    (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)
+    (:github-copilot
+     . cadr-ai::refresh-github-copilot-oauth-credential)
+    (:openrouter . cadr-ai::refresh-openrouter-oauth-credential)
+    (:xai . cadr-ai::refresh-xai-oauth-credential)))
 
 (defun oauth-refresh-function (provider)
   (or (cdr (assoc provider +oauth-login-providers+))
@@ -129,15 +133,14 @@
                (cadr-ai:read-auth-credential path provider))))
     (cond
       ((typep credential 'cadr-ai:oauth-credential)
-       (if
-           (member provider
-                   '(:openai-codex :anthropic))
-           (values
-            (cadr-ai:resolve-oauth-credential
-             path provider
-             (oauth-refresh-function provider))
-            :oauth)
-           (values nil :none)))
+       (let ((refresh
+               (cdr (assoc provider +oauth-login-providers+))))
+         (if refresh
+             (values
+              (cadr-ai:resolve-oauth-credential
+               path provider refresh)
+              :oauth)
+             (values nil :none))))
       ((typep credential 'cadr-ai:api-key-credential)
        (values credential :stored-api-key))
       (t
