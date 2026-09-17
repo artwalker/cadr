@@ -370,6 +370,42 @@
        (cadr-cli::auth-command-oauth-refresh-function
         :openai))))
 
+(test openai-alias-uses-stored-openai-codex-oauth
+  (with-test-directory (directory)
+    (let ((auth-path (merge-pathnames "auth.json" directory))
+          (cadr-cli::*environment-function* (constantly nil)))
+      (cadr-ai:write-auth-credential
+       auth-path
+       (cadr-ai:make-oauth-credential
+        :provider :openai-codex
+        :access "codex-access"
+        :refresh "codex-refresh"
+        :expires (+ (cadr-ai::unix-milliseconds) 3600000)
+        :account-id "acct"))
+      (dolist (provider '(nil "openai" "openai-codex"))
+        (let ((config
+                (apply
+                 #'cadr-cli:resolve-provider-config
+                 (append
+                  (list
+                   :config-path
+                   #P"/definitely/missing/config.json"
+                   :auth-path auth-path
+                   :allow-missing-auth-p t)
+                  (when provider
+                    (list :provider provider))))))
+          (is (string=
+               "openai-codex"
+               (cadr-cli:provider-config-name config)))
+          (is (eq :oauth
+                  (cadr-cli:provider-config-auth-source
+                   config)))
+          (is (eq
+               :openai-codex
+               (cadr-ai:model-provider
+                (cadr-cli:provider-config-model
+                 config)))))))))
+
 (test misidentified-openai-oauth-does-not-block-login-recovery
   (with-test-directory (directory)
     (let ((auth-path

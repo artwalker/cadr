@@ -67,7 +67,15 @@
         collect (environment-value environment))
       (stored-auth-secrets)))))
 
-(defun configured-provider-name (explicit)
+(defun openai-codex-oauth-credential (auth-path)
+  (and (probe-file auth-path)
+       (let ((credential
+               (cadr-ai:read-auth-credential auth-path :openai-codex)))
+         (and (typep credential 'cadr-ai:oauth-credential)
+              credential))))
+
+(defun configured-provider-name
+    (explicit &key (auth-path (default-auth-path)))
   (or explicit
       (environment-value "CADR_PROVIDER")
       (cond
@@ -75,6 +83,12 @@
         ((environment-value "OPENAI_API_KEY") "openai")
         ((environment-value "GEMINI_API_KEY") "google")
         ((environment-value "DEEPSEEK_API_KEY") "deepseek")
+        ((openai-codex-oauth-credential auth-path) "openai-codex")
+        ((and (probe-file auth-path)
+              (typep
+               (cadr-ai:read-auth-credential auth-path :anthropic)
+               'cadr-ai:oauth-credential))
+         "anthropic")
         (t nil))))
 
 (defun provider-symbol (name)
@@ -162,7 +176,9 @@
           (config-path (default-config-path))
           (auth-path (default-auth-path))
           allow-missing-auth-p)
-  (let* ((name (configured-provider-name provider)))
+  (let* ((name
+           (configured-provider-name
+            provider :auth-path auth-path)))
     (unless name
       (if allow-missing-auth-p
           ;; Defer to the send path, whose missing-key failure carries
@@ -172,8 +188,18 @@
                  :message
                  (cadr-ai::no-api-key-found-message "unknown"))))
     (setf name (string-downcase name))
-    (let* ((provider-id (provider-symbol name))
-           (definition
+    (let* ((provider-id (provider-symbol name)))
+      ;; /login openai stores under openai-codex. Prefer that OAuth over
+      ;; an empty openai API-key provider when the caller said openai
+      ;; or left the provider unset.
+      (when
+          (and (eq provider-id :openai)
+               (null api-key)
+               (null (environment-value "OPENAI_API_KEY"))
+               (openai-codex-oauth-credential auth-path))
+        (setf name "openai-codex"
+              provider-id :openai-codex))
+      (let* ((definition
              (cadr-ai:find-provider-definition provider-id))
            (config (read-cli-config config-path))
            (settings (provider-settings config name))
@@ -244,7 +270,7 @@
            :name name
            :provider provider-object
            :model model-object
-           :auth-source auth-source))))))
+           :auth-source auth-source)))))))
 
 (defun split-command-line (line)
   (remove ""
