@@ -1,0 +1,10 @@
+ts	phase	decision	why	evidence	result
+2026-09-17T15:29:48Z	frame	predicate=cadr-cli-suite known reds green then keep hunting product bugs	user widened scope to whole product not auth-only	user_query	framed
+2026-09-17T15:29:48Z	frame	scope=3 ledger/parity fixes then suite triage then hunt	rigor high on verify low on mechanical number sync	investigation+fixture recount	open
+2026-09-17T15:31:09Z	u1	lock inventory asserts to 527/1182/1119/258	fixture is source of truth after Goal30 shrink	test/render-diff-gate-test.py	VERIFIED via GOAL15 FiveAM 3/3
+2026-09-17T15:31:09Z	u2	C-01 ledger 493/803	goal18 recount from baseline-visible-strings.json	docs/presentation-parity.md	VERIFIED via GOAL18 FiveAM 1/1
+2026-09-17T15:31:09Z	u3	bash command description -> Bash	pi bash.ts parity; pin fixture matched	src/cadr-cli/tools/bash.lisp	VERIFIED via GOAL9-B3 FiveAM 9/9
+2026-09-17T15:33:25Z	u5	cadr-cli-suite 10200/10200 green	ledger sync closed known reds	/tmp/cadr-suite-after-ledger.log	VERIFIED
+2026-09-17T15:40:23Z	u5b	re-record GOAL20_TEST_CHECKS 21110->21133	all nine systems pass; anchor only drifted	docs/test-matrix.md	recorded
+2026-09-17T15:43:41Z	u5c	test-cl-fiveam PASS at 21133	nine systems green after anchor re-record	/tmp/fiveam-verify-anchor.log	VERIFIED
+2026-09-17T15:43:41Z	ship	independent PASS+NOTES on PR651 then squash merge	shipping requires non-author verdict	agent 960f60fc	merging

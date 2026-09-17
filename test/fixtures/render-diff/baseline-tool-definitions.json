@@ -38,7 +38,7 @@
     "properties": {
      "command": {
       "type": "string",
-      "description": "Shell command to execute"
+      "description": "Bash command to execute"
      },
      "timeout": {
       "type": "number",
