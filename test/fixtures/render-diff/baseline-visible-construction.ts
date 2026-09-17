@@ -89,7 +89,6 @@ const modelRuntime = {
 const modelSelector = new ModelSelectorComponent(
 	tui,
 	model,
-	{ setDefaultModelAndProvider() {} },
 	modelRuntime,
 	[{ model, thinkingLevel: "high" }],
 	() => {},
