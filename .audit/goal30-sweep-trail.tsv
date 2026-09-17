@@ -19,3 +19,6 @@ ts	phase	decision	why	evidence	result
 2026-09-17T11:45:00Z	inventory	exclude packages/coding-agent/src/experimental/ in walkFiles; regen baseline-visible-strings.json	Goal 18 no experimental CLI; Encode Lessons in Structure	7c819e9a2 lineage	committed-pending
 2026-09-17T11:45:00Z	construction	expand visible construction for managed update, compaction cost, thinking/reload/share	cancelled-share via BorderedLoader.onAbort; console+TUI showStatus/showError	/tmp/cadr-render-diff-full-g30i-an8 analyze exit 0	805+9/803 branches
 2026-09-17T11:45:00Z	gate	full-tier visible-string coverage green on g30i captures	missing 50→0 printable; disposition analyze unchanged 607 adjudicated	render-diff analyze --tier full exit 0	pass
+2026-09-17T12:04:22Z	fix	zero-window footer 0.0%; seed transcript before no-models warning	resume picker I04 pin drift; Experience First + Fix Root Causes	f5ca2a05b	wip
+2026-09-17T12:04:22Z	fix	exclude experimental/ from visible inventory walk + unmodeled scan	7c819e9a2 pulled experimental TS into obligations; Encode Lessons	f5ca2a05b	wip
+2026-09-17T12:04:22Z	fix	construction: getBranch; share escape cancel; managed throw seam	24 then 6 uncaptured product branches; Prove It Works analyze exit 0	f5ca2a05b	wip
