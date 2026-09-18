@@ -425,3 +425,95 @@
            :key (lambda (entry)
                   (getf entry :ratio))
            :test #'=)))))
+
+(test llama-extension-entry-gated-approval-and-argument-split-match-baseline
+  (is (string=
+       "Manual approval is required"
+       (cadr-cli::llama-gated-approval-text :manual)))
+  (is (string=
+       "Accept the access terms"
+       (cadr-cli::llama-gated-approval-text :auto)))
+  (is (string=
+       "Accept the access terms"
+       (cadr-cli::llama-gated-approval-text nil)))
+  (multiple-value-bind (action target)
+      (cadr-cli::split-llama-command-arguments "  Load  foo/bar  ")
+    (is (string= "load" action))
+    (is (string= "foo/bar" target)))
+  (multiple-value-bind (action target)
+      (cadr-cli::split-llama-command-arguments "login")
+    (is (string= "login" action))
+    (is (string= "" target)))
+  (is (cadr-cli::llama-loaded-model-p
+       (cadr-cli::make-llama-model-info :id "m" :status :loaded)))
+  (is (cadr-cli::llama-loaded-model-p
+       (cadr-cli::make-llama-model-info :id "m" :status :sleeping)))
+  (is (not
+       (cadr-cli::llama-loaded-model-p
+        (cadr-cli::make-llama-model-info :id "m" :status :unloaded))))
+  (is (string=
+       "Q4_K_M · recommended"
+       (cadr-cli::llama-quantization-option-label
+        (list :name "Q4_K_M"))))
+  (is (string=
+       "Q5_K_M · 1.00 GiB"
+       (cadr-cli::llama-quantization-option-label
+        (list :name "Q5_K_M" :size 1073741824)))))
+
+(test llama-extension-entry-ensure-auth-requires-registry-and-reuses-stored-credential
+  (signals cadr-agent:extension-execution-error
+    (let ((cadr-cli::*active-native-model-registry* nil)
+          (bundle
+            (cadr-agent::make-extension-bundle
+             :id "llama-entry"
+             :path "/tmp/llama-entry/")))
+      (cadr-cli::ensure-llama-auth
+       (cadr-agent::%make-extension-context
+        :host (cadr-agent::make-extension-host :cwd #P"/tmp/" :mode :print)
+        :bundle bundle
+        :kind :command
+        :source-path #P"/tmp/llama-entry/")
+       nil)))
+  (let* ((credentials (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-models-runtime
+            :credential-store credentials
+            :model-store (make-hash-table)))
+         (registry
+           (cadr-cli::%make-model-registry
+            :path nil
+            :credentials credentials
+            :native-runtime runtime))
+         (bundle
+           (cadr-agent::make-extension-bundle
+            :id "llama-entry"
+            :path "/tmp/llama-entry/"))
+         (context
+           (cadr-agent::%make-extension-context
+            :host
+            (cadr-agent::make-extension-host
+             :cwd #P"/tmp/" :mode :print)
+            :bundle bundle
+            :kind :command
+            :source-path #P"/tmp/llama-entry/"))
+         (provider
+           (cadr-cli::llama-provider-controller-provider
+            (cadr-cli::make-llama-provider-controller))))
+    (cadr-ai:models-runtime-set-provider runtime provider)
+    (cadr-ai:credential-store-modify
+     credentials cadr-cli::+llama-provider-id+
+     (lambda (old)
+       (declare (ignore old))
+       (cadr-ai:make-api-key-credential
+        :provider cadr-cli::+llama-provider-id+
+        :key "local"
+        :environment
+        '(("LLAMA_BASE_URL" . "http://127.0.0.1:8080")))))
+    (let ((cadr-cli::*active-native-model-registry* registry))
+      (is (cadr-ai:models-runtime-check-auth
+           runtime cadr-cli::+llama-provider-id+))
+      (let ((auth (cadr-cli::ensure-llama-auth context nil)))
+        (is (typep auth 'cadr-ai:runtime-auth-result))
+        (is (string=
+             "http://127.0.0.1:8080/v1"
+             (cadr-ai:runtime-auth-result-base-url auth)))))))

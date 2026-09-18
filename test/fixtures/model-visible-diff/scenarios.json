@@ -1,0 +1,25 @@
+{
+  "denominator": {
+    "scenarios": ["skills-block-default"],
+    "providers": ["openai-completions-stub"],
+    "branches": ["default-system-prompt"],
+    "captures": ["skills-block-after-format"],
+    "does_not_cover": [
+      "full provider HTTP body after extension request hooks",
+      "compaction or branch-summary sub-contexts",
+      "custom system prompt branch",
+      "tool-result synthesis strings"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "skills-block-default",
+      "description": "OQ-G20-MODEL-VISIBLE-TEXT-GATE first slice. Diff the skills block cadr and pinned pi emit for one visible skill.",
+      "skill": {
+        "name": "demo",
+        "description": "Demo skill",
+        "filePath": "/skills/demo/SKILL.md"
+      }
+    }
+  ]
+}

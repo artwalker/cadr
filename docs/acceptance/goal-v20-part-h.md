@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **298 files / 135,154 lines**
+Denominator: **298 files / 135,194 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 108,703 | 80.4% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 108,743 | 80.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,582 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,869 | 14.0% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13934,12 +13934,12 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/websocket.lisp` | 657 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/auth.lisp` | 189 | `cli_bootstrap_sessions.bootstrap_auth` |
-| `src/cadr-cli/bootstrap/commands.lisp` | 2,760 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
+| `src/cadr-cli/bootstrap/commands.lisp` | 2,759 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/sessions.lisp` | 2,078 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 1,232 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 106 | `cli_bootstrap_sessions.coding_tools` |
-| `src/cadr-cli/config.lisp` | 284 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
+| `src/cadr-cli/config.lisp` | 331 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
 | `src/cadr-cli/extensions/commands.lisp` | 56 | `cli_extensions_install.handle_plain`, `cli_extensions_install.handle_unknown`, `cli_extensions_install.split_command` |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
 | `src/cadr-cli/extensions/installer.lisp` | 209 | `cli_extensions_install.unsafe_git`, `cli_extensions_install.git_path`, `cli_extensions_install.normalize_git`, `cli_extensions_install.string_prefix`, `cli_extensions_install.split_path_segments`, `cli_extensions_install.strip_git_query` |
@@ -13956,7 +13956,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_dispose`, `cli_selectors.countdown_render`, `cli_selectors.countdown_seconds`, `cli_selectors.countdown_start_guard`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_unstarted` |
 | `src/cadr-cli/interactive/components/daxnuts.lisp` | 194 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_dispose`, `cli_selectors.daxnuts_invalidate`, `cli_selectors.daxnuts_render`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 197 | `cli_selectors.key_text` |
-| `src/cadr-cli/interactive/controller.lisp` | 3,055 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
+| `src/cadr-cli/interactive/controller.lisp` | 3,059 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
 | `src/cadr-cli/interactive/entries.lisp` | 919 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/extension-ui.lisp` | 879 | `cli_interactive_controller.extension_custom_ui_handle_event`, `cli_interactive_controller.extension_dialog_chrome`, `cli_interactive_controller.extension_host_turn`, `cli_interactive_controller.extension_render_value_lines`, `cli_interactive_controller.framed_select_state_handle_event`, `cli_interactive_controller.framed_select_state_handle_raw_input`, `cli_interactive_controller.make_extension_editor_dialog`, `cli_interactive_controller.make_extension_input_dialog`, `cli_interactive_controller.make_framed_select_state`, `cli_interactive_controller.make_runtime_auth_input_state`, `cli_interactive_controller.note_component_render_channel`, `cli_interactive_controller.render_extension_custom_entry`, `cli_interactive_controller.render_extension_custom_ui`, `cli_interactive_controller.render_framed_select_state`, `cli_interactive_controller.render_runtime_auth_input`, `cli_interactive_controller.render_tui_extension_overlay`, `cli_interactive_controller.runtime_auth_input_handle_event`, `cli_interactive_controller.tui_component_protocol`, `cli_interactive_controller.tui_extension_theme_runtime`, `cli_interactive_controller.tui_input_thread`, `cli_interactive_controller.wrap_extension_host_turn` |
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
@@ -13983,7 +13983,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/user-bash.lisp` | 213 | `cli_interactive_controller.append_output`, `cli_interactive_controller.bash_append_running`, `cli_interactive_controller.bash_complete_string`, `cli_interactive_controller.bash_stop_entry`, `cli_interactive_controller.complete_entry`, `cli_interactive_controller.make_entry` |
 | `src/cadr-cli/media.lisp` | 1,331 | `image_runtime.mime_type` |
 | `src/cadr-cli/migration.lisp` | 512 | `cli_bootstrap_sessions.data_directory`, `cli_bootstrap_sessions.legacy_data_directory`, `cli_bootstrap_sessions.manual_migration_command`, `cli_bootstrap_sessions.managed_binary_names`, `cli_bootstrap_sessions.migration_guide_url`, `cli_bootstrap_sessions.extensions_doc_url` |
-| `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
+| `src/cadr-cli/models/credential-print.lisp` | 613 | `cli_models_rest.auth_command` |
 | `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
 | `src/cadr-cli/models/matching.lisp` | 396 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 869 | `cli_dispatch.list_models_registry` |
