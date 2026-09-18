@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **298 files / 135,194 lines**
+Denominator: **298 files / 135,202 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 108,743 | 80.4% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 108,751 | 80.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,582 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,869 | 14.0% | on a named paired thunk; no own bench |
 | `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
@@ -13864,7 +13864,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/loop/turns.lisp` | 401 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
-| `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
+| `src/cadr-agent/resources.lisp` | 746 | `resource_loader.reload` |
 | `src/cadr-agent/runtime.lisp` | 421 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,188 | `storage_journal.journal_read`, `storage_journal.journal_append` |
@@ -14012,7 +14012,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-manager.lisp` | 133 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/settings-service.lisp` | 281 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled`, `settings_load.sdk_make_manager`, `settings_load.sdk_make_memory`, `settings_load.sdk_effective_thinking_level` |
-| `src/cadr-cli/sdk/system-prompt.lisp` | 223 | `skill_prompt_load.build_prompt` |
+| `src/cadr-cli/sdk/system-prompt.lisp` | 224 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 643 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
