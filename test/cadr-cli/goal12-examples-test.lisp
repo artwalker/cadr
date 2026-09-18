@@ -176,14 +176,14 @@
     (is (search "| **Total** | **686** | **514** | **169** | **3** |" ledger))
     (is (search "Implemented; not measurable on this platform" ledger))
     (is (search "all 99" readme :test #'char-equal))
-    ;; Goal 20 Part F adjudication (2026-08-14): the load/behavior gap for
-    ;; the 14 gate-less example ports is recorded on the behavior axis as
-    ;; EXAMPLES-LOAD-GAP; the evidence row must carry that qualification
-    ;; instead of an unqualified "0 gaps".
+    ;; Goal 20 Part F: EXAMPLES-LOAD-GAP closed 2026-09-18 by
+    ;; goal12-ungated-example-ports-load-without-error. Keep the ID for
+    ;; ledger continuity; the row must read closed, not open coverage.
     (is (search
-         "99 functionally equivalent Lisp ports; 0 source-axis gaps, with load/behavior coverage open for 14 ports"
+         "99 functionally equivalent Lisp ports; 0 source-axis gaps; EXAMPLES-LOAD-GAP closed"
          parity-map))
     (is (search "EXAMPLES-LOAD-GAP" parity-map))
+    (is (search "**closed** (2026-09-18)" parity-map))
     (is (search
          "| Goal 12 runnable examples | complete | fixed-baseline 99-file extension/SDK example surface |"
          parity-map))
@@ -296,6 +296,21 @@
             (is (plusp
                  (goal12-extension-bundle-registration-count bundle)))
             (is (string= "" (get-output-stream-string output)))))))))
+
+(test goal12-ungated-example-ports-load-without-error
+  "Load the 14 SP-F2 ports that EXAMPLES-LOAD-GAP used to leave ungated."
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (ports
+           (loop for row in (goal12-example-manifest)
+                 for relative = (getf row :lisp)
+                 when (and (eq :ported (getf row :status))
+                           (or (uiop:string-prefix-p "examples/sdk/" relative)
+                               (string= "examples/rpc-extension-ui.lisp"
+                                        relative)))
+                   collect relative)))
+    (is (= 14 (length ports)))
+    (dolist (relative ports)
+      (finishes (load (merge-pathnames relative root))))))
 
 (defparameter *goal12-example-registrations*
   '(("packages/coding-agent/examples/extensions/auto-commit-on-exit.ts"

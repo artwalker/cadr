@@ -19,3 +19,5 @@ ts	phase	decision	why	evidence	result
 2026-09-18T01:48:18Z	ship	verify deterministic ALL PASS; OpenCode live FAIL=billing N/A	PASS+NOTES tip 9e702b459	/tmp/verify-653d.log	PASS+NOTES
 2026-09-18T01:49:00Z	u3	EXAMPLES-AGENT-DRIVEN-REDRAW-GAP locked open	Part F 6.5 adjudication required; product locks already in FiveAM	docs/parity-map.md:439	blocked-adjudicated
 2026-09-18T01:48:51Z	land	#653 squash-merged to cadr-migration	f6e32e2f5	https://github.com/artwalker/cadr/pull/653	MERGED
+2026-09-18T15:50:00Z	frame	predicate=no closable product defects in inventory; EXAMPLES-LOAD-GAP closed if loadable; redraw/billing/Goal30 stay blocked; OQ wire next slice if cheap	user continuous hunt until no bugs; close intentional opens when solvable	parity-map+OQ	framed
+2026-09-18T16:10:00Z	u1	EXAMPLES-LOAD-GAP closed via goal12-ungated-example-ports-load-without-error	14 sdk+rpc ports load; cadr-cli 10232/10232	test/cadr-cli/goal12-examples-test.lisp	VERIFIED
