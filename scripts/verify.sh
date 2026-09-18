@@ -481,12 +481,21 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "model-visible skills-block differential" \
+    python3 -u test/model-visible-diff-gate-test.py || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "model-visible skills-block differential" \
+    "product identity gate failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "Part L visible-string reachability and origin" \
     run_part_l_visible_string_gates || DETERMINISTIC_READY=0
 else
   skip_deterministic \
     "Part L visible-string reachability and origin" \
-    "product identity gate failed"
+    "model-visible skills-block differential failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

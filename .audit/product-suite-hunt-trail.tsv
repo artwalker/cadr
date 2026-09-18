@@ -11,3 +11,7 @@ ts	phase	decision	why	evidence	result
 2026-09-17T15:51:01Z	u6a	allowlist config.lisp radius.pi.dev; expected 1467	#648 left unapproved pi-token; identity gate red	docs/product-identity-allowlist.json	VERIFIED identity gate green
 2026-09-17T15:51:01Z	u6b	README ASDF gate row 21133/1467	stale Goal16 14827/274 misled strangers	README.md	updated
 2026-09-17T15:51:01Z	u6c	settings-gaps regenerator no-op	hunt claimed stale open keys; scanner still truly-absent correctly	scripts/goal28-settings-alias.py --check	no diff
+2026-09-18T00:34:13Z	frame	predicate=llama entry tested + wire-diff MVP green with validity proof; redraw gap stays adjudicated-blocked	user asked complete all remaining; redraw changes gate unit	parity-map.md:439	framed
+2026-09-18T00:39:59Z	u1	llama entry FiveAM + close LLAMA-EXTENSION-ENTRY-GAP	entry auth/split/gated locked	test/cadr-cli/llama-extension-test.lisp	VERIFIED
+2026-09-18T00:39:59Z	u2	model-visible-diff skills-block MVP + validity proof	OQ first slice; harness wording is the red proof	scripts/model-visible-diff.py	VERIFIED gate-test OK
+2026-09-18T00:39:59Z	u3	EXAMPLES-AGENT-DRIVEN-REDRAW-GAP stays open	changing render-diff obligation unit needs adjudication	docs/parity-map.md	blocked

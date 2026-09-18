@@ -59,6 +59,16 @@ Items awaiting adjudication:
   sub-contexts all visible in one place, and it removes the
   self-snapshot problem because the expectation comes from pi.
 
+  **Implementation status (2026-09-18):** first slice landed as
+  `scripts/model-visible-diff.py` + `test/model-visible-diff-gate-test.py`
+  with denominator in `test/fixtures/model-visible-diff/scenarios.json`.
+  It diffs the skills block cadr formats against
+  `packages/coding-agent/src/core/skills.ts` `formatSkillsForPrompt`, and
+  proves the gate would catch the pre-fix harness wording
+  ("Read the full skill file…"). Full wire capture after provider
+  serialisation and extension request hooks remains open under the same
+  OQ.
+
   **Implementation requirements, binding:**
 
   - **Gate-validity proof first**: revert the skills-block fix
