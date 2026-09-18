@@ -25,29 +25,6 @@ FIXTURES = ROOT / "test/fixtures/model-visible-diff"
 SCENARIOS = FIXTURES / "scenarios.json"
 
 
-def read_baseline_commit() -> str:
-    text = (ROOT / "BASELINE").read_text(encoding="utf-8").strip()
-    return text.split()[0]
-
-
-def baseline_cache_path() -> Path:
-    sha = read_baseline_commit()
-    return Path(f"/tmp/cadr-render-diff-pi-{sha[:9]}")
-
-
-def ensure_baseline_cache(cache: Path) -> Path:
-    if (cache / "packages/coding-agent/src/core/skills.ts").is_file():
-        return cache
-    # Prefer sibling checkout when already at pin, else fail with guidance.
-    sibling = Path("/root/projects/pi-mono")
-    skills = sibling / "packages/coding-agent/src/core/skills.ts"
-    if skills.is_file():
-        return sibling
-    raise SystemExit(
-        f"model-visible-diff: baseline skills.ts not found in {cache} or {sibling}"
-    )
-
-
 def escape_xml(value: str) -> str:
     return xml.sax.saxutils.escape(value, {'"': "&quot;", "'": "&apos;"})
 
@@ -152,23 +129,24 @@ def run_gate(artifacts: Path) -> int:
     (artifacts / "denominator.json").write_text(
         json.dumps(doc["denominator"], indent=2) + "\n", encoding="utf-8"
     )
-    ensure_baseline_cache(baseline_cache_path())
     failures = []
     for scenario in doc["scenarios"]:
         skill = scenario["skill"]
         cadr_text = capture_cadr_skills_block(skill)
-        pi_text = format_skills_coding_agent(skill)
+        baseline_text = format_skills_coding_agent(skill)
         broken = format_skills_harness_variant(skill)
         case_dir = artifacts / scenario["id"]
         case_dir.mkdir(parents=True, exist_ok=True)
         (case_dir / "cadr.skills.txt").write_text(cadr_text, encoding="utf-8")
-        (case_dir / "pi.skills.txt").write_text(pi_text, encoding="utf-8")
+        (case_dir / "baseline.skills.txt").write_text(baseline_text, encoding="utf-8")
         (case_dir / "broken-harness.skills.txt").write_text(broken, encoding="utf-8")
-        if cadr_text != pi_text:
-            failures.append(f"{scenario['id']}: cadr skills block != pinned coding-agent formatter")
-        if broken == pi_text:
+        if cadr_text != baseline_text:
             failures.append(
-                f"{scenario['id']}: validity proof collapsed; harness variant matches pi"
+                f"{scenario['id']}: cadr skills block != pinned coding-agent formatter"
+            )
+        if broken == baseline_text:
+            failures.append(
+                f"{scenario['id']}: validity proof collapsed; harness variant matches baseline"
             )
         if broken == cadr_text:
             failures.append(
