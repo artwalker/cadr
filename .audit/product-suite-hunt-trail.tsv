@@ -15,3 +15,4 @@ ts	phase	decision	why	evidence	result
 2026-09-18T00:39:59Z	u1	llama entry FiveAM + close LLAMA-EXTENSION-ENTRY-GAP	entry auth/split/gated locked	test/cadr-cli/llama-extension-test.lisp	VERIFIED
 2026-09-18T00:39:59Z	u2	model-visible-diff skills-block MVP + validity proof	OQ first slice; harness wording is the red proof	scripts/model-visible-diff.py	VERIFIED gate-test OK
 2026-09-18T00:39:59Z	u3	EXAMPLES-AGENT-DRIVEN-REDRAW-GAP stays open	changing render-diff obligation unit needs adjudication	docs/parity-map.md	blocked
+2026-09-18T01:10:00Z	ship	identity+mapping+unpaired denom fixed on #653	OpenCode live FAIL is billing N/A	verify deterministic path	in-progress
