@@ -18,3 +18,4 @@ ts	phase	decision	why	evidence	result
 2026-09-18T01:10:00Z	ship	identity+mapping+unpaired denom fixed on #653	OpenCode live FAIL is billing N/A	verify deterministic path	in-progress
 2026-09-18T01:48:18Z	ship	verify deterministic ALL PASS; OpenCode live FAIL=billing N/A	PASS+NOTES tip 9e702b459	/tmp/verify-653d.log	PASS+NOTES
 2026-09-18T01:49:00Z	u3	EXAMPLES-AGENT-DRIVEN-REDRAW-GAP locked open	Part F 6.5 adjudication required; product locks already in FiveAM	docs/parity-map.md:439	blocked-adjudicated
+2026-09-18T01:48:51Z	land	#653 squash-merged to cadr-migration	f6e32e2f5	https://github.com/artwalker/cadr/pull/653	MERGED
