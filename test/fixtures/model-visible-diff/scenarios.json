@@ -1,6 +1,6 @@
 {
   "denominator": {
-    "scenarios": ["skills-block-default"],
+    "scenarios": ["skills-block-default", "skills-block-bash"],
     "providers": ["openai-completions-stub"],
     "branches": ["default-system-prompt"],
     "captures": ["skills-block-after-format"],
@@ -14,7 +14,18 @@
   "scenarios": [
     {
       "id": "skills-block-default",
-      "description": "OQ-G20-MODEL-VISIBLE-TEXT-GATE first slice. Diff the skills block cadr and pinned pi emit for one visible skill.",
+      "description": "OQ-G20-MODEL-VISIBLE-TEXT-GATE first slice. Diff the skills block cadr and pinned pi emit for one visible skill (read tool wording).",
+      "fileReadTool": "read",
+      "skill": {
+        "name": "demo",
+        "description": "Demo skill",
+        "filePath": "/skills/demo/SKILL.md"
+      }
+    },
+    {
+      "id": "skills-block-bash",
+      "description": "Bash-only tool selection uses the bash load wording (baseline system-prompt.ts skillFileReadTool).",
+      "fileReadTool": "bash",
       "skill": {
         "name": "demo",
         "description": "Demo skill",

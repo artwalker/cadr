@@ -21,3 +21,4 @@ ts	phase	decision	why	evidence	result
 2026-09-18T01:48:51Z	land	#653 squash-merged to cadr-migration	f6e32e2f5	https://github.com/artwalker/cadr/pull/653	MERGED
 2026-09-18T15:50:00Z	frame	predicate=no closable product defects in inventory; EXAMPLES-LOAD-GAP closed if loadable; redraw/billing/Goal30 stay blocked; OQ wire next slice if cheap	user continuous hunt until no bugs; close intentional opens when solvable	parity-map+OQ	framed
 2026-09-18T16:10:00Z	u1	EXAMPLES-LOAD-GAP closed via goal12-ungated-example-ports-load-without-error	14 sdk+rpc ports load; cadr-cli 10232/10232	test/cadr-cli/goal12-examples-test.lisp	VERIFIED
+2026-09-18T16:20:00Z	u2	fix SKILLS-BASH-ONLY-PROMPT + wire scenario skills-block-bash	baseline system-prompt.ts:45-67; FiveAM+model-visible green	src/cadr-cli/sdk/system-prompt.lisp	VERIFIED
