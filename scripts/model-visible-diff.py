@@ -29,13 +29,18 @@ def escape_xml(value: str) -> str:
     return xml.sax.saxutils.escape(value, {'"': "&quot;", "'": "&apos;"})
 
 
-def format_skills_coding_agent(skill: dict) -> str:
+def format_skills_coding_agent(skill: dict, file_read_tool: str = "read") -> str:
     """Mirror packages/coding-agent/src/core/skills.ts formatSkillsForPrompt."""
+    load_line = (
+        "Use the read tool to load a skill's file when the task matches its description."
+        if file_read_tool == "read"
+        else "Use bash to load a skill's file when the task matches its description."
+    )
     lines = [
         "",
         "",
         "The following skills provide specialized instructions for specific tasks.",
-        "Use the read tool to load a skill's file when the task matches its description.",
+        load_line,
         "When a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.",
         "",
         "<available_skills>",
@@ -67,7 +72,8 @@ def format_skills_harness_variant(skill: dict) -> str:
     return "\n".join(lines)
 
 
-def capture_cadr_skills_block(skill: dict) -> str:
+def capture_cadr_skills_block(skill: dict, file_read_tool: str = "read") -> str:
+    tool_arg = ":read" if file_read_tool == "read" else ":bash"
     lisp = f"""
 (asdf:load-asd (truename "{ROOT}/cadr-core.asd"))
 (asdf:load-asd (truename "{ROOT}/cadr-ai.asd"))
@@ -80,7 +86,8 @@ def capture_cadr_skills_block(skill: dict) -> str:
                :description {json.dumps(skill['description'])}
                :content "x"
                :file-path {json.dumps(skill['filePath'])}))
-       (formatted (cadr-agent::format-skills-for-system-prompt (list skill))))
+       (formatted (cadr-agent::format-skills-for-system-prompt
+                   (list skill) {tool_arg})))
   (write-string "<<<CADR-SKILLS-BEGIN>>>")
   (write-string formatted)
   (write-string "<<<CADR-SKILLS-END>>>")
@@ -132,8 +139,9 @@ def run_gate(artifacts: Path) -> int:
     failures = []
     for scenario in doc["scenarios"]:
         skill = scenario["skill"]
-        cadr_text = capture_cadr_skills_block(skill)
-        baseline_text = format_skills_coding_agent(skill)
+        file_read_tool = scenario.get("fileReadTool", "read")
+        cadr_text = capture_cadr_skills_block(skill, file_read_tool)
+        baseline_text = format_skills_coding_agent(skill, file_read_tool)
         broken = format_skills_harness_variant(skill)
         case_dir = artifacts / scenario["id"]
         case_dir.mkdir(parents=True, exist_ok=True)

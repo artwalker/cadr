@@ -177,6 +177,36 @@ baseline byte content."
                      (namestring directory))
              prompt))))))
 
+(test build-system-prompt-includes-skills-for-bash-only-tools
+  ;; Baseline system-prompt.ts:45-67 — skillFileReadTool is the first of
+  ;; read|bash present in selectedTools; bash-only still gets the block.
+  (let* ((skill
+           (cadr-agent::make-skill
+            :name "demo"
+            :description "Demo skill"
+            :content "x"
+            :file-path "/skills/demo/SKILL.md"))
+         (prompt
+           (cadr-cli:build-system-prompt
+            :selected-tools '("bash")
+            :skills (list skill)
+            :cwd "/tmp/project")))
+    (is (search "<available_skills>" prompt))
+    (is (search "Use bash to load a skill's file" prompt))
+    (is (not (search "Use the read tool to load a skill's file" prompt))))
+  (let* ((skill
+           (cadr-agent::make-skill
+            :name "demo"
+            :description "Demo skill"
+            :content "x"
+            :file-path "/skills/demo/SKILL.md"))
+         (prompt
+           (cadr-cli:build-system-prompt
+            :selected-tools '("write")
+            :skills (list skill)
+            :cwd "/tmp/project")))
+    (is (not (search "<available_skills>" prompt)))))
+
 (test goal9-streamed-multiline-assistant-output-stays-line-oriented-every-frame
   (let* ((width 32)
          (rows 12)

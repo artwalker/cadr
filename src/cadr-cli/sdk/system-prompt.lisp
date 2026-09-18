@@ -119,15 +119,16 @@
              "<project_instructions path=\"~A\">~%~A~%</project_instructions>~%~%"
              path content)))
         (format output "</project_context>~%"))
-      (when
-          (and
-           (member "read" selected
-                   :test #'string=)
-           skills)
-        (write-string
-         (cadr-agent:format-skills-for-system-prompt
-          skills)
-         output))
+      (let ((skill-file-read-tool
+              (cond
+                ((member "read" selected :test #'string=) :read)
+                ((member "bash" selected :test #'string=) :bash)
+                (t nil))))
+        (when (and skill-file-read-tool skills)
+          (write-string
+           (cadr-agent:format-skills-for-system-prompt
+            skills skill-file-read-tool)
+           output)))
       (format output
               ;; Baseline v0.84.2 system-prompt.ts: the custom-prompt
               ;; branch (:69) ends the cwd line with a trailing newline;

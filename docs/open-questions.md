@@ -65,7 +65,8 @@ Items awaiting adjudication:
   It diffs the skills block cadr formats against
   `packages/coding-agent/src/core/skills.ts` `formatSkillsForPrompt`, and
   proves the gate would catch the pre-fix harness wording
-  ("Read the full skill file…"). Full wire capture after provider
+  ("Read the full skill file…"). A second scenario (`skills-block-bash`)
+  locks the bash-only load wording. Full wire capture after provider
   serialisation and extension request hooks remains open under the same
   OQ.
 
