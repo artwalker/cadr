@@ -16,3 +16,5 @@ ts	phase	decision	why	evidence	result
 2026-09-18T00:39:59Z	u2	model-visible-diff skills-block MVP + validity proof	OQ first slice; harness wording is the red proof	scripts/model-visible-diff.py	VERIFIED gate-test OK
 2026-09-18T00:39:59Z	u3	EXAMPLES-AGENT-DRIVEN-REDRAW-GAP stays open	changing render-diff obligation unit needs adjudication	docs/parity-map.md	blocked
 2026-09-18T01:10:00Z	ship	identity+mapping+unpaired denom fixed on #653	OpenCode live FAIL is billing N/A	verify deterministic path	in-progress
+2026-09-18T01:48:18Z	ship	verify deterministic ALL PASS; OpenCode live FAIL=billing N/A	PASS+NOTES tip 9e702b459	/tmp/verify-653d.log	PASS+NOTES
+2026-09-18T01:49:00Z	u3	EXAMPLES-AGENT-DRIVEN-REDRAW-GAP locked open	Part F 6.5 adjudication required; product locks already in FiveAM	docs/parity-map.md:439	blocked-adjudicated
