@@ -69,6 +69,13 @@
    (cons "uplus" "⊎")
    (cons "sqcap" "⊓")
    (cons "sqcup" "⊔")
+   (cons "bowtie" "⋈")
+   (cons "Join" "⋈")
+   (cons "ltimes" "⋉")
+   (cons "rtimes" "⋊")
+   (cons "leftouterjoin" "⟕")
+   (cons "rightouterjoin" "⟖")
+   (cons "fullouterjoin" "⟗")
    (cons "triangleleft" "◁")
    (cons "triangleright" "▷")
    (cons "wr" "≀")
@@ -443,12 +450,15 @@
    "Longleftrightarrow"
    "Longrightarrow"
    "Rightarrow"
+   "Join"
    "Vdash"
    "Vvdash"
    "approx"
    "asymp"
+   "bowtie"
    "cong"
    "dashv"
+   "fullouterjoin"
    "doteq"
    "downarrow"
    "equiv"
@@ -469,6 +479,7 @@
    "leftharpoonup"
    "leftrightarrow"
    "leftrightharpoons"
+   "leftouterjoin"
    "leq"
    "leqslant"
    "ll"
@@ -476,6 +487,7 @@
    "longleftrightarrow"
    "longmapsto"
    "longrightarrow"
+   "ltimes"
    "mapsto"
    "mid"
    "models"
@@ -495,8 +507,10 @@
    "rightharpoondown"
    "rightharpoonup"
    "rightleftharpoons"
+   "rightouterjoin"
    "rightarrow"
    "rightsquigarrow"
+   "rtimes"
    "searrow"
    "sim"
    "simeq"
