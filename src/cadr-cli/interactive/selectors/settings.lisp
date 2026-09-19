@@ -18,6 +18,7 @@
   (selected 0 :type (integer 0 *))
   (mode :main :type symbol)
   (submenu-selected 0 :type (integer 0 *))
+  (submenu-query "" :type string)
   (theme-names nil :type list)
   (available-models nil :type list)
   (model-thinking-key nil :type (or null string))
@@ -293,8 +294,17 @@
             (:xhigh . "Extra-high reasoning (~32k tokens)")
             (:max . "Maximum reasoning")))))
 
+(defun settings-selector-searchable-submenu-p (state)
+  (eq (settings-selector-state-mode state) :model-thinking))
+
+(defun settings-selector-reset-submenu-query (state)
+  (setf (settings-selector-state-submenu-query state) ""
+        (settings-selector-state-submenu-selected state) 0)
+  state)
+
 (defun settings-selector-open-submenu (state option)
-  (setf (settings-selector-state-submenu-selected state) 0)
+  (setf (settings-selector-state-submenu-selected state) 0
+        (settings-selector-state-submenu-query state) "")
   (case (settings-option-submenu option)
     (:warnings
      (setf (settings-selector-state-mode state) :warnings))
@@ -393,7 +403,16 @@
                     t)
          :values (list t nil)))))
     (:model-thinking
-     (settings-model-thinking-model-options state))
+     (let ((options (settings-model-thinking-model-options state))
+           (query (settings-selector-state-submenu-query state)))
+       (if (plusp (length query))
+           (selector-fuzzy-filter
+            options query
+            (lambda (option)
+              (format nil "~A ~A"
+                      (or (settings-option-label option) "")
+                      (or (settings-option-description option) ""))))
+           options)))
     (:model-thinking-level
      (settings-model-thinking-level-options state))
     (:theme-single
@@ -483,9 +502,8 @@
              (setf (settings-selector-state-model-thinking-key state)
                    (settings-option-value option)
                    (settings-selector-state-mode state)
-                   :model-thinking-level
-                   (settings-selector-state-submenu-selected state)
-                   0)))
+                   :model-thinking-level)
+             (settings-selector-reset-submenu-query state)))
           (:model-thinking-level
            (let* ((model-key
                     (settings-selector-state-model-thinking-key state))
@@ -509,8 +527,8 @@
                             (list (cons model-key level)))))
                  (setf (getf value :overrides) overrides
                        (settings-option-value main) value)))
-             (setf (settings-selector-state-mode state) :model-thinking
-                   (settings-selector-state-submenu-selected state) 0)))
+             (setf (settings-selector-state-mode state) :model-thinking)
+             (settings-selector-reset-submenu-query state)))
           (:theme-single
            (if (string= (settings-option-value option) "/")
                (progn
@@ -606,52 +624,83 @@
                (declare (ignore updated))
                (return-from settings-selector-handle-event
                  (values :changed change)))))
-      (case (cadr-tui:input-event-kind event)
-        (:up
-         (unwrap (lambda ()
-                   (settings-selector-submenu-move state -1))))
-        (:down
-         (unwrap (lambda ()
-                   (settings-selector-submenu-move state 1))))
-        (:page-up
-         (unwrap (lambda ()
-                   (settings-selector-submenu-move state -10))))
-        (:page-down
-         (unwrap (lambda ()
-                   (settings-selector-submenu-move state 10))))
-        ((:enter :submit)
-         (unwrap (lambda ()
-                   (settings-selector-activate-submenu state))))
-        (:text
-         (when (string= (or (cadr-tui:input-event-text event) "")
-                        " ")
+      (return-from settings-selector-handle-event
+        (case (cadr-tui:input-event-kind event)
+          (:up
            (unwrap (lambda ()
-                     (settings-selector-activate-submenu state)))))
-        ((:escape :cancel)
-         (let ((mode (settings-selector-state-mode state))
-               (change nil))
-           (if (member mode '(:theme-light :theme-dark))
+                     (settings-selector-submenu-move state -1))))
+          (:down
+           (unwrap (lambda ()
+                     (settings-selector-submenu-move state 1))))
+          (:page-up
+           (unwrap (lambda ()
+                     (settings-selector-submenu-move state -10))))
+          (:page-down
+           (unwrap (lambda ()
+                     (settings-selector-submenu-move state 10))))
+          ((:enter :submit)
+           (unwrap (lambda ()
+                     (settings-selector-activate-submenu state))))
+          (:backspace
+           (if (settings-selector-searchable-submenu-p state)
                (progn
-                 (setf (settings-selector-state-mode state)
-                       :theme-automatic)
-                 (setf change
-                       (list
-                        :id "theme-preview"
-                        :value
-                        (settings-selector-automatic-theme-setting
-                         state))))
-               (progn
-                 (when (member mode
-                               '(:theme-single :theme-automatic))
-                   (setf change
-                         (list
-                          :id "theme-preview"
-                          :value
-                          (settings-selector-state-original-theme
-                           state))))
-                 (settings-selector-close-submenu state)))
-           (return-from settings-selector-handle-event
-             (values :changed change)))))))
+                 (setf (settings-selector-state-submenu-query state)
+                       (selector-delete-query-character
+                        (settings-selector-state-submenu-query state))
+                       (settings-selector-state-submenu-selected state)
+                       0)
+                 (values :changed nil))
+               (values nil nil)))
+          (:text
+           (let ((text
+                   (or (cadr-tui:input-event-text event) "")))
+             (cond
+               ((settings-selector-searchable-submenu-p state)
+                (when (plusp (length text))
+                  (setf (settings-selector-state-submenu-query state)
+                        (concatenate
+                         'string
+                         (settings-selector-state-submenu-query state)
+                         text)
+                        (settings-selector-state-submenu-selected state)
+                        0))
+                (values :changed nil))
+               ((string= text " ")
+                (unwrap (lambda ()
+                          (settings-selector-activate-submenu state))))
+               (t (values nil nil)))))
+          ((:escape :cancel)
+           (let ((mode (settings-selector-state-mode state))
+                 (change nil))
+             (cond
+               ((eq mode :model-thinking-level)
+                (setf (settings-selector-state-mode state)
+                      :model-thinking)
+                (settings-selector-reset-submenu-query state)
+                (values :changed nil))
+               ((member mode '(:theme-light :theme-dark))
+                (setf (settings-selector-state-mode state)
+                      :theme-automatic)
+                (setf change
+                      (list
+                       :id "theme-preview"
+                       :value
+                       (settings-selector-automatic-theme-setting
+                        state)))
+                (values :changed change))
+               (t
+                (when (member mode
+                              '(:theme-single :theme-automatic))
+                  (setf change
+                        (list
+                         :id "theme-preview"
+                         :value
+                         (settings-selector-state-original-theme
+                          state))))
+                (settings-selector-close-submenu state)
+                (settings-selector-reset-submenu-query state)
+                (values :changed change)))))
+          (otherwise (values nil nil))))))
   (case (cadr-tui:input-event-kind event)
     (:up
      (settings-selector-move state -1)
@@ -848,7 +897,7 @@
          width))))))
 
 (defun render-settings-select-submenu
-    (state width title description)
+    (state width title description &key searchable)
   (let* ((options (settings-selector-submenu-options state))
          (selected (settings-selector-state-submenu-selected state)))
     (append
@@ -921,7 +970,10 @@
      (list "")
      (component-text-lines
       (cadr-tui:theme-foreground
-       :dim "  Enter to select · Esc to go back")
+       :dim
+       (if searchable
+           "  Type to filter · Enter to select · Esc to go back"
+           "  Enter to select · Esc to go back"))
       width :padding-x 0))))
 
 (defun render-settings-automatic-theme-chrome (width body)
@@ -994,7 +1046,8 @@
         (:model-thinking
          (render-settings-select-submenu
           state width "Per-Model Thinking Level"
-          "Select a model to configure"))
+          "Step 1/2 · Select a model to configure"
+          :searchable t))
         (:model-thinking-level
          (let* ((model-key
                   (settings-selector-state-model-thinking-key state))
@@ -1013,7 +1066,7 @@
                 (format nil "Thinking Level for ~A"
                         (settings-model-thinking-item-label model))
                 "Thinking Level")
-            "Select default thinking level for this model")))
+            "Step 2/2 · Select default thinking level for this model")))
         (:theme-single
          (render-settings-select-submenu
           state width "Theme"

@@ -188,3 +188,66 @@
     (is (eq gamma (first sorted)))
     (is (eq beta (second sorted)))
     (is (eq alpha (third sorted)))))
+
+(test model-thinking-submenu-filters-and-escapes-one-step
+  (let* ((alpha
+           (cadr-ai:make-model
+            :provider :openai
+            :id "alpha-model"
+            :context-window 128000
+            :reasoning-p t))
+         (beta
+           (cadr-ai:make-model
+            :provider :openai
+            :id "beta-model"
+            :context-window 128000
+            :reasoning-p t))
+         (state
+           (cadr-cli::make-settings-selector-state
+            :available-models (list alpha beta)
+            :options
+            (list
+             (cadr-cli::make-settings-option
+              :id "model-thinking"
+              :label "Default thinking level per model"
+              :value (list :overrides nil
+                           :global-default :low
+                           :current-model alpha)
+              :submenu :model-thinking)))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is (eq :model-thinking
+            (cadr-cli::settings-selector-state-mode state)))
+    (let ((rendered
+            (format nil "~{~A~%~}"
+                    (cadr-cli::render-settings-selector state 80))))
+      (is (search "Step 1/2 · Select a model to configure" rendered))
+      (is (search "Type to filter · Enter to select · Esc to go back"
+                  rendered)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :text :text "beta"))
+    (is (string= "" (cadr-cli::settings-selector-state-query state)))
+    (is (string= "beta"
+                 (cadr-cli::settings-selector-state-submenu-query state)))
+    (let ((options (cadr-cli::settings-selector-submenu-options state)))
+      (is (= 1 (length options)))
+      (is (search "beta-model"
+                  (cadr-cli::settings-option-label (first options)))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is (eq :model-thinking-level
+            (cadr-cli::settings-selector-state-mode state)))
+    (let ((rendered
+            (format nil "~{~A~%~}"
+                    (cadr-cli::render-settings-selector state 100))))
+      (is (search
+           "Step 2/2 · Select default thinking level for this model"
+           rendered))
+      (is (not (search "Type to filter" rendered))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :escape))
+    (is (eq :model-thinking
+            (cadr-cli::settings-selector-state-mode state)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :escape))
+    (is (eq :main (cadr-cli::settings-selector-state-mode state)))))
