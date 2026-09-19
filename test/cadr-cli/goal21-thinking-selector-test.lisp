@@ -385,3 +385,49 @@
       (is (string= "hello"
                    (cadr-cli::thinking-selector-state-query state)))
       (is (= 2 (cadr-cli::thinking-selector-state-query-cursor state))))))
+
+(test settings-submenu-search-press-inserts-at-the-cursor
+  (let* ((alpha
+           (cadr-ai:make-model
+            :provider :openai
+            :id "alpha-model"
+            :context-window 128000
+            :reasoning-p t))
+         (state
+           (cadr-cli::make-settings-selector-state
+            :available-models (list alpha)
+            :options
+            (list
+             (cadr-cli::make-settings-option
+              :id "model-thinking"
+              :label "Default thinking level per model"
+              :value (list :overrides nil
+                           :global-default :low
+                           :current-model alpha)
+              :submenu :model-thinking)))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (cadr-cli::settings-selector-edit-submenu-query state "hello" 5)
+    (cadr-cli::render-settings-selector state 80)
+    (let ((origin
+            (cadr-cli::settings-selector-state-submenu-input-origin state)))
+      (is (integerp origin))
+      (is (< origin
+             (cadr-cli::settings-selector-state-list-origin state)))
+      (is (null
+           (cadr-cli::settings-selector-handle-mouse
+            state (list :type :press :button :left :x 4) 0)))
+      (is (= 5 (cadr-cli::settings-selector-state-submenu-query-cursor state)))
+      (is (cadr-cli::settings-selector-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-cli::settings-selector-state-submenu-query-cursor state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-cli::settings-selector-state-submenu-query state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :backspace))
+      (is (string= "hello"
+                   (cadr-cli::settings-selector-state-submenu-query state)))
+      (is (= 2
+             (cadr-cli::settings-selector-state-submenu-query-cursor state))))))
