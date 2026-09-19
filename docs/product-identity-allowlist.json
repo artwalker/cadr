@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1467,
+  "expected_findings": 1468,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -10121,6 +10121,14 @@
       "line": "  ;; pi@d981de122 agent-session.ts _addPersistedDefaultToNonEmptyScope:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        \"customType\" \"pi.share\"",
+      "occurrences": 1,
+      "reason": "Session share writes the baseline customType pi.share. That token is the artifact schema, not the product name."
     },
     {
       "path": "src/cadr-cli/support/changelog-share.lisp",
