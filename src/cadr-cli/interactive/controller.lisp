@@ -516,6 +516,15 @@ interactive-mode.ts:5956-5960).")
              (append-live-component
               (make-daxnuts-component
                (extension-runtime)))))
+         (confirm-missing-session-cwd (session-cwd fallback-cwd)
+           (eq t
+               (show-extension-overlay
+                (make-framed-select-state
+                 "Session cwd not found"
+                 '("Yes" "No") '(t nil)
+                 :message
+                 (missing-session-cwd-prompt
+                  session-cwd fallback-cwd)))))
          (extension-theme-runtime ()
            (tui-extension-theme-runtime))
          (dispose-component (component)
@@ -2337,23 +2346,68 @@ interactive-mode.ts:5956-5960).")
                     (if
                         (getf value :confirmed-p)
                         (when on-import-confirmed
-                          (funcall
-                           on-import-confirmed
-                           (getf value :line)))
+                          (let ((line (getf value :line)))
+                            (sb-thread:make-thread
+                             (lambda ()
+                               (handler-case
+                                   (funcall
+                                    on-import-confirmed line
+                                    :cwd-confirm
+                                    (lambda (session-cwd fallback)
+                                      (when
+                                          (confirm-missing-session-cwd
+                                           session-cwd fallback)
+                                        fallback)))
+                                 (error (condition)
+                                   (status
+                                    (princ-to-string condition)))))
+                             :name "cadr-import-session")))
                         (status "Import cancelled")))
                    (:session
                     (when on-session-selected
-                      (multiple-value-bind
-                            (selected-session
-                             selected-messages
-                             selected-path)
-                          (funcall
-                           on-session-selected
-                           value)
-                        (replace-session-state
-                         selected-session
-                         selected-messages
-                         selected-path))))
+                      (let ((candidate value))
+                        (multiple-value-bind
+                              (selected-session
+                               selected-messages
+                               selected-path
+                               issue)
+                            (funcall
+                             on-session-selected candidate)
+                          (if issue
+                              (sb-thread:make-thread
+                               (lambda ()
+                                 (handler-case
+                                     (if
+                                         (confirm-missing-session-cwd
+                                          (getf issue :session-cwd)
+                                          (getf issue :fallback-cwd))
+                                         (multiple-value-bind
+                                               (resumed-session
+                                                resumed-messages
+                                                resumed-path)
+                                             (funcall
+                                              on-session-selected
+                                              candidate
+                                              :cwd-override
+                                              (getf issue :fallback-cwd))
+                                           (when resumed-session
+                                             (sb-thread:with-mutex (lock)
+                                               (replace-session-state
+                                                resumed-session
+                                                resumed-messages
+                                                resumed-path))
+                                             (status
+                                              "Resumed session in current cwd")))
+                                         (status "Resume cancelled"))
+                                   (error (condition)
+                                     (status
+                                      (princ-to-string condition)))))
+                               :name "cadr-resume-session")
+                              (when selected-session
+                                (replace-session-state
+                                 selected-session
+                                 selected-messages
+                                 selected-path)))))))
                    (:fork
                     (when on-fork-selected
                       (multiple-value-bind

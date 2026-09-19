@@ -433,7 +433,9 @@
     ;; +2 v0.84.4: settings-fullscreen-copy-on-select-p and
     ;; settings-terminal-capability-overrides (bootstrap/settings.lisp).
     ;; +35 Goal 28: settings readers and CLI/RPC helpers in B5 owners.
-    (is (= 173 definition-count)
+    ;; +2 missing session cwd prompt: missing-session-cwd-issue and
+    ;; missing-session-cwd-prompt (bootstrap/sessions.lisp).
+    (is (= 175 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
