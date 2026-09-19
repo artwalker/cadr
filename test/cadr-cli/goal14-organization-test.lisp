@@ -1196,7 +1196,8 @@
     ;; flush helpers (providers.lisp).
     ;; +2 Goal 28: extension host helpers added in B9 owners.
     ;; +2 duplicate command invocation names.
-    (is (= 262 definition-count)
+    ;; +1 extension resource source labels.
+    (is (= 263 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))

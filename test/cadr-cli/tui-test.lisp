@@ -1436,6 +1436,35 @@
                provider '("/ship a") 0 7)))))
       (is (equal '("alpha" "alpine") values)))))
 
+(test extension-contributed-skills-keep-the-extension-source-tag
+  (let* ((agent (uiop:ensure-directory-pathname #P"/tmp/cadr-agent/"))
+         (loader
+           (cadr-cli::make-default-resource-loader
+            :cwd #P"/tmp/cadr-proj/"
+            :agent-directory agent))
+         (skill-file
+           (merge-pathnames "skills/example/SKILL.md" agent)))
+    (cadr-cli::note-loader-extension-sources
+     loader
+     (list
+      (list :path (merge-pathnames "skills/" agent)
+            :source "extension:bundled.lisp"
+            :scope "temporary")))
+    (cadr-cli::note-loader-package-sources
+     loader
+     (list
+      (list :path (merge-pathnames "skills/" agent)
+            :source "npm:@foo/bar"
+            :scope "user")))
+    (multiple-value-bind (source scope)
+        (cadr-cli::resource-path-source-info loader skill-file)
+      (is (equal '("extension:bundled.lisp" "temporary")
+                 (list source scope))))
+    (is (string=
+         "[t] Example skill"
+         (cadr-cli::prefix-autocomplete-description
+          "Example skill" "extension:bundled.lisp" "temporary")))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))

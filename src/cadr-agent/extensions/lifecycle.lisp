@@ -552,7 +552,8 @@
      (list
       :skill-paths nil
       :prompt-paths nil
-      :theme-paths nil))
+      :theme-paths nil
+      :extension-resource-sources nil))
     (:before-provider-request
      (list :payload (getf payload :payload)))
     (:before-provider-headers
@@ -685,7 +686,10 @@
       :prompt-paths
       (copy-list (getf state :prompt-paths))
       :theme-paths
-      (copy-list (getf state :theme-paths))))
+      (copy-list (getf state :theme-paths))
+      :extension-resource-sources
+      (copy-list
+       (getf state :extension-resource-sources))))
     (:before-provider-request
      (getf state :payload))
     (:before-provider-headers
@@ -747,6 +751,32 @@
                     (merge-lifecycle-result
                      event state result))
                    (when
+                       (and
+                        (eq event :resources-discover)
+                        result)
+                     (let ((origin
+                             (extension-definition-origin
+                              definition)))
+                       (dolist
+                           (key
+                            '(:skill-paths
+                              :prompt-paths
+                              :theme-paths))
+                         (dolist (path (getf result key))
+                           (setf
+                            (getf state
+                                  :extension-resource-sources)
+                            (nconc
+                             (getf state
+                                   :extension-resource-sources)
+                             (list
+                              (list
+                               :path path
+                               :source
+                               (extension-resource-source-label
+                                origin)
+                               :scope "temporary"))))))))
+                   (when
                        (or
                         (and
                          (member
@@ -780,3 +810,23 @@
       (release-acquired-extension-snapshot host held))
     (finalize-lifecycle-state
      event state last-result)))
+
+(defun extension-resource-source-label (extension-path)
+  (let ((text
+          (if (pathnamep extension-path)
+              (namestring extension-path)
+              (or extension-path ""))))
+    (if (and (plusp (length text))
+             (char= (char text 0) #\<))
+        (format nil "extension:~A"
+                (remove-if
+                 (lambda (character)
+                   (or (char= character #\<)
+                       (char= character #\>)))
+                 text))
+        (let ((base (file-namestring text)))
+          (format nil "extension:~A"
+                  (if (or (uiop:string-suffix-p base ".ts")
+                          (uiop:string-suffix-p base ".js"))
+                      (subseq base 0 (- (length base) 3))
+                      base))))))

@@ -564,7 +564,25 @@
          (getf result :prompt-paths)))
     (is (equal
          '("/two/themes")
-         (getf result :theme-paths)))))
+         (getf result :theme-paths)))
+    (is (equal
+         "extension:resources.lisp"
+         (getf
+          (first (getf result :extension-resource-sources))
+          :source)))
+    (is (equal
+         "temporary"
+         (getf
+          (first (getf result :extension-resource-sources))
+          :scope)))
+    (is (string=
+         "extension:foo"
+         (cadr-agent::extension-resource-source-label
+          "/tmp/foo.ts")))
+    (is (string=
+         "extension:inline"
+         (cadr-agent::extension-resource-source-label
+          "<inline>")))))
 
 (test provider-hooks-chain-mutate-and-observe
   (let ((response-seen nil))
