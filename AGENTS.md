@@ -228,7 +228,12 @@ the working set.
   would add, goes in `docs/open-questions.md` and waits for the user.
 - Product identity has one owner:
   `src/cadr-ai/support/release.lisp`. Runtime environment is `CADR_*` only.
-  `PI_*` is not a fallback.
+  `PI_*` is not a fallback. Fallback OpenAI message ids stay `msg_cadr_*`
+  in `src/cadr-ai/providers/openai.lisp`. Do not rewrite them to `msg_pi_*`.
+- Executor live probes use xAI. The OpenCode account is unfunded (user,
+  2026-09-19). An OpenCode `Insufficient balance` failure is billing, not
+  a product defect. Do not add a skip needle for that string. OpenCode
+  tests stay in the suite.
 - Human-judgement exits (dispositions, exemptions, allowlists, N/A rows,
   live skips, "Lisp-native is better") need: a concrete statement of the
   actual difference, a class whose summary covers that difference

@@ -1884,3 +1884,52 @@ change the stop predicate and repeats falsified levers.
 **Why it was decidable**: Attention asked for durable, honest evidence
 pointers and explicit rulings where the first close was thin. Stop
 predicate already held; this section hardens the audit surface.
+
+---
+
+## 2026-09-19 — Redraw gate, docs ledger, live provider, message ids
+
+**Ruled**: user, in the Cursor session that asked to merge what should
+merge and then answer the remaining calls. **Recorded in**:
+[`parity-map.md`](parity-map.md) `EXAMPLES-AGENT-DRIVEN-REDRAW-GAP`,
+[`open-questions.md`](open-questions.md) `OQ-G20-DOCS-CONTENT-PARITY`
+and `OQ-G20-UNDO-STACK-CAP`, [`AGENTS.md`](../AGENTS.md).
+
+**Decided**:
+
+1. Do not add agent-driven scenarios to render-diff. The obligation
+   unit stays user keystrokes. The tic-tac-toe repaint lock stays in
+   FiveAM (`goal20-ttt-agent-action-repaints-the-live-overlay`). The
+   differential blind spot stays open.
+2. User-doc content is not a parity obligation. Do not add a
+   docs-content ledger for the 11 user docs. The source ledger still
+   counts only `packages/**/*.ts`.
+3. Do not name an undo byte budget yet. The 2026-08-16 option (c)
+   ruling still stands, and the measurement below is the required
+   sample, not a limit. No cap ships from this ruling.
+4. The OpenCode account is not funded. Executor live probes use xAI.
+   Do not treat `Insufficient balance` as a product defect, and do not
+   add a skip needle for that string. OpenCode tests stay in the suite.
+5. Fabricated fallback message ids stay `msg_cadr_*`. The baseline
+   emits `msg_pi_*` at
+   `packages/ai/src/api/openai-responses-shared.ts`. `msg_pi_*` is not
+   a fallback. This does not add an intentional-difference class.
+6. Goal 28 presence and settings TSV rows stay `status=open`. The
+   scanners reject any other status. Do not rewrite those cells.
+
+**Why it was decidable**: the redraw and docs items change what a gate
+promises, so they needed a user ruling rather than an executor guess.
+The message-id question is the same identity rule already in
+`development-policy.md` §4, applied to one format string. The undo
+sample is the distribution the 2026-08-16 ruling required before any
+number. Sessions do not store undo entries. The walk covered 140 files
+under `~/.cadr/agent/sessions/*.jsonl` and 384 string user messages.
+Character lengths: min 1, p50 14, p90 170, p99 6694, max 6711. UTF-8
+bytes of the same strings: min 2, p50 27, p90 189, p99 12654, max
+12703. Six messages are at least 4096 characters. None reach 16384.
+Stack depth is unmeasured.
+
+**Standing consequence**: the next executor does not re-ask these six.
+A later cap still needs a trigger condition and a gate-validity proof.
+A later identity class for `msg_cadr_*` still needs its own proposal,
+and may not close a score in the same commit.
