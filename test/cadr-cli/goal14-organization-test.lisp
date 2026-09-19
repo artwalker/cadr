@@ -638,7 +638,11 @@
     ;; *daxnuts-render-by-key* (interactive/components/daxnuts.lisp).
     ;; +1 easter-egg trigger: daxnuts-easter-egg-p
     ;; (interactive/components/daxnuts.lisp).
-    (is (= 315 definition-count)
+    ;; +3 slash discovery: resource-slash-commands,
+    ;; tui-builtin-slash-command-p, and
+    ;; replace-extra-autocomplete-commands
+    ;; (interactive/autocomplete.lisp).
+    (is (= 318 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

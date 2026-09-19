@@ -307,6 +307,7 @@
          (event-consumer nil)
          (notice-consumer nil)
          (status-consumer nil)
+         (slash-command-refresher nil)
          (warning-consumer nil)
          (auth-url-consumer nil)
          (auth-prompt-consumer nil)
@@ -1432,7 +1433,9 @@
                     ;; Baseline interactive-mode.ts:5885 — a reload
                     ;; recomputes the shortcut conflict diagnostics.
                     (refresh-extension-shortcut-diagnostics
-                     extension-manager))
+                     extension-manager)
+                    (when slash-command-refresher
+                      (funcall slash-command-refresher)))
                   t)
                 (handle-extension-command
                  line extension-manager))))
@@ -2236,6 +2239,19 @@
            :command-function #'handle-command
            :template-function #'expand-template
            :bash-function #'run-user-bash
+           :slash-commands-function
+           (lambda ()
+             (resource-slash-commands
+              (and resources
+                   (resource-snapshot-skills resources))
+              (and resources
+                   (resource-snapshot-prompts resources))
+              (settings-boolean-value
+               settings-manager
+               "enableSkillCommands" t)))
+           :set-slash-command-refresher
+           (lambda (refresher)
+             (setf slash-command-refresher refresher))
            :set-event-consumer
            (lambda (consumer)
              (setf event-consumer consumer))
