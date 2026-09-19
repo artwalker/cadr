@@ -431,3 +431,38 @@
                    (cadr-cli::settings-selector-state-submenu-query state)))
       (is (= 2
              (cadr-cli::settings-selector-state-submenu-query-cursor state))))))
+
+(test settings-search-press-inserts-at-the-cursor
+  (let ((state
+          (cadr-cli::make-settings-selector-state
+           :options
+           (list
+            (cadr-cli::make-settings-option
+             :id "theme" :label "Theme" :value "dark"
+             :values '("dark" "light"))))))
+    (cadr-cli::settings-selector-edit-query state "hello" 5)
+    (cadr-cli::render-settings-selector state 40)
+    (let ((origin (cadr-cli::settings-selector-state-search-origin state)))
+      (is (integerp origin))
+      (is (< origin
+             (cadr-cli::settings-selector-state-list-origin state)))
+      (is (null
+           (cadr-cli::settings-selector-handle-mouse
+            state (list :type :press :button :left :x 4) 0)))
+      (is (= 5 (cadr-cli::settings-selector-state-query-cursor state)))
+      (is (cadr-cli::settings-selector-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-cli::settings-selector-state-query-cursor state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-cli::settings-selector-state-query state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :text :text " "))
+      (is (string= "heX llo"
+                   (cadr-cli::settings-selector-state-query state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :backspace))
+      (is (string= "heXllo"
+                   (cadr-cli::settings-selector-state-query state)))
+      (is (= 3 (cadr-cli::settings-selector-state-query-cursor state))))))

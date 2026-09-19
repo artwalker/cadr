@@ -15,6 +15,9 @@
   (options nil :type list)
   (filtered-options nil :type list)
   (query "" :type string)
+  (query-cursor 0 :type (integer 0 *))
+  (search-origin nil)
+  (search-width 80 :type (integer 1 *))
   (selected 0 :type (integer 0 *))
   (list-origin nil)
   (list-limit 10 :type (integer 1 *))
@@ -108,6 +111,14 @@
        (settings-option-value option))
       (settings-display-value
        (settings-option-value option))))
+
+(defun settings-selector-edit-query (state query cursor)
+  (let ((query (or query "")))
+    (setf (settings-selector-state-query state) query
+          (settings-selector-state-query-cursor state)
+          (max 0 (min cursor (length query))))
+    (settings-selector-apply-filter state))
+  state)
 
 (defun settings-selector-visible-options (state)
   (settings-selector-state-filtered-options state))
@@ -770,17 +781,31 @@
     ((:escape :cancel)
      (values :cancel nil))
     (:backspace
-     (setf (settings-selector-state-query state)
-           (selector-delete-query-character
-            (settings-selector-state-query state)))
-     (settings-selector-apply-filter state)
+     (let* ((query (settings-selector-state-query state))
+            (cursor
+              (min
+               (settings-selector-state-query-cursor state)
+               (length query)))
+            (start
+              (if (zerop cursor)
+                  0
+                  (cadr-tui::previous-cluster-boundary
+                   query cursor))))
+       (unless (= start cursor)
+         (settings-selector-edit-query
+          state
+          (concatenate
+           'string
+           (subseq query 0 start)
+           (subseq query cursor))
+          start)))
      (values :changed nil))
     (:text
      (let* ((text
               (or (cadr-tui:input-event-text event) ""))
-            (sanitized
-              (remove #\Space text)))
-       (if (string= text " ")
+            (query (settings-selector-state-query state)))
+       (if (and (string= text " ")
+                (zerop (length query)))
            (let ((option (settings-selector-selected-option state)))
              (cond
                ((and option (settings-option-submenu option))
@@ -791,14 +816,23 @@
                   (if change
                       (values :changed change)
                       (values nil nil))))))
-           (progn
+           (let* ((cursor
+                    (min
+                     (settings-selector-state-query-cursor state)
+                     (length query)))
+                  (sanitized
+                    (if (string= text " ")
+                        " "
+                        (remove #\Space text))))
              (when (plusp (length sanitized))
-               (setf (settings-selector-state-query state)
-                     (concatenate
-                      'string
-                      (settings-selector-state-query state)
-                      sanitized))
-               (settings-selector-apply-filter state))
+               (settings-selector-edit-query
+                state
+                (concatenate
+                 'string
+                 (subseq query 0 cursor)
+                 sanitized
+                 (subseq query cursor))
+                (+ cursor (length sanitized))))
              (values :changed nil)))))
     (otherwise
      (values nil nil))))
@@ -856,29 +890,43 @@
       (t (values nil nil nil)))))
 
 (defun settings-selector-handle-mouse (state gesture local-y)
-  (let ((origin (settings-selector-state-submenu-input-origin state))
+  (let ((origin
+          (if (eq :main (settings-selector-state-mode state))
+              (settings-selector-state-search-origin state)
+              (settings-selector-state-submenu-input-origin state)))
         (x (getf gesture :x)))
-    (when (and (settings-selector-searchable-submenu-p state)
-               (integerp origin)
+    (when (and (integerp origin)
                (eql local-y origin)
                (eq (getf gesture :type) :press)
                (eq (getf gesture :button) :left)
-               (integerp x))
-      (let* ((query (settings-selector-state-submenu-query state))
+               (integerp x)
+               (or (eq :main (settings-selector-state-mode state))
+                   (settings-selector-searchable-submenu-p state)))
+      (let* ((query
+               (if (eq :main (settings-selector-state-mode state))
+                   (settings-selector-state-query state)
+                   (settings-selector-state-submenu-query state)))
+             (cursor
+               (if (eq :main (settings-selector-state-mode state))
+                   (settings-selector-state-query-cursor state)
+                   (settings-selector-state-submenu-query-cursor state)))
+             (width
+               (if (eq :main (settings-selector-state-mode state))
+                   (settings-selector-state-search-width state)
+                   (settings-selector-state-submenu-input-width state)))
              (input
                (cadr-tui:make-single-line-input
                 :value query :prompt "> ")))
         (setf (cadr-tui::single-line-input-cursor input)
-              (min
-               (settings-selector-state-submenu-query-cursor state)
-               (length query)))
-        (cadr-tui:render-single-line-input
-         input
-         (settings-selector-state-submenu-input-width state))
+              (min cursor (length query)))
+        (cadr-tui:render-single-line-input input width)
         (when (cadr-tui:single-line-input-handle-mouse
                input :type :press :button :left :x x :y 0)
-          (setf (settings-selector-state-submenu-query-cursor state)
-                (cadr-tui::single-line-input-cursor input))
+          (if (eq :main (settings-selector-state-mode state))
+              (setf (settings-selector-state-query-cursor state)
+                    (cadr-tui::single-line-input-cursor input))
+              (setf (settings-selector-state-submenu-query-cursor state)
+                    (cadr-tui::single-line-input-cursor input)))
           (return-from settings-selector-handle-mouse t)))))
   (unless (and (integerp (settings-selector-state-list-origin state))
                (integerp local-y))
@@ -1149,15 +1197,21 @@
 
 (defun render-settings-selector
     (state width)
-  (setf (settings-selector-state-submenu-input-origin state) nil)
+  (setf (settings-selector-state-submenu-input-origin state) nil
+        (settings-selector-state-search-origin state) nil)
     (when (eq :main (settings-selector-state-mode state))
     (multiple-value-bind (input-lines input-row input-column)
         (selector-input-rendering
-         (settings-selector-state-query state) width)
+         (settings-selector-state-query state)
+         width
+         :cursor
+         (settings-selector-state-query-cursor state))
       (setf (settings-selector-state-list-origin state)
             (+ 1 (length input-lines) 1)
             (settings-selector-state-list-limit state)
-            10)
+            10
+            (settings-selector-state-search-width state)
+            (max 1 width))
       (return-from render-settings-selector
         (multiple-value-bind (lines cursor-row cursor-column)
             (render-selector-frame
@@ -1180,7 +1234,8 @@
                  :include-input-p nil))
                :border))
              width)
-          (declare (ignore cursor-row cursor-column))
+          (declare (ignore cursor-column))
+          (setf (settings-selector-state-search-origin state) cursor-row)
           (values lines nil nil)))))
   (render-selector-frame
    (make-selector-frame
