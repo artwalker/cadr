@@ -397,6 +397,82 @@ def run_compaction_prompts_scenario(
     )
 
 
+def format_tool_result_truncation(text: str, max_chars: int = 2000) -> str:
+    """Mirror packages/coding-agent/src/core/compaction/utils.ts truncateForSummary."""
+    if len(text) <= max_chars:
+        return text
+    truncated = len(text) - max_chars
+    return f"{text[:max_chars]}\n\n[... {truncated} more characters truncated]"
+
+
+def format_serialized_tool_result(text: str) -> str:
+    """Mirror serializeConversation's toolResult branch."""
+    truncated = format_tool_result_truncation(text)
+    if not truncated:
+        return ""
+    return f"[Tool result]: {truncated}"
+
+
+def capture_cadr_tool_result_serialization(text: str) -> str:
+    lisp = f"""
+(asdf:load-asd (truename "{ROOT}/cadr-core.asd"))
+(asdf:load-asd (truename "{ROOT}/cadr-ai.asd"))
+(asdf:load-asd (truename "{ROOT}/cadr-agent.asd"))
+(let ((*standard-output* (make-broadcast-stream))
+      (*error-output* (make-broadcast-stream)))
+  (asdf:load-system "cadr-agent"))
+(let ((serialized
+        (cadr-agent::serialize-conversation
+         (list
+          (cadr-ai:make-tool-result-message
+           :tool-call-id "1"
+           :tool-name "read"
+           :content
+           (list
+            (cadr-ai:make-text-content
+             :text {json.dumps(text)})))))))
+  (write-string "<<<CADR-TOOL-BEGIN>>>")
+  (write-string serialized)
+  (write-string "<<<CADR-TOOL-END>>>")
+  (terpri))
+"""
+    return _extract_marker(
+        _run_lisp(lisp), "<<<CADR-TOOL-BEGIN>>>", "<<<CADR-TOOL-END>>>"
+    )
+
+
+def run_tool_result_scenario(
+    scenario: dict, case_dir: Path, failures: list[str]
+) -> None:
+    text = scenario["text"]
+    if text == "long-a":
+        text = "a" * 2500
+    cadr_text = capture_cadr_tool_result_serialization(text)
+    baseline_text = format_serialized_tool_result(text)
+    broken = baseline_text.replace(
+        "more characters truncated]",
+        "more characters truncated!]",
+        1,
+    )
+    (case_dir / "cadr.tool-result.txt").write_text(cadr_text, encoding="utf-8")
+    (case_dir / "baseline.tool-result.txt").write_text(
+        baseline_text, encoding="utf-8"
+    )
+    (case_dir / "broken.tool-result.txt").write_text(broken, encoding="utf-8")
+    if cadr_text != baseline_text:
+        failures.append(
+            f"{scenario['id']}: cadr tool-result serialization != pinned baseline"
+        )
+    if broken == baseline_text:
+        failures.append(
+            f"{scenario['id']}: validity proof collapsed; broken matches baseline"
+        )
+    if broken == cadr_text:
+        failures.append(
+            f"{scenario['id']}: validity proof collapsed; cadr matches broken"
+        )
+
+
 def run_gate(artifacts: Path) -> int:
     doc = json.loads(SCENARIOS.read_text(encoding="utf-8"))
     artifacts.mkdir(parents=True, exist_ok=True)
@@ -416,6 +492,8 @@ def run_gate(artifacts: Path) -> int:
             run_compaction_prompts_scenario(scenario, case_dir, failures)
         elif kind == "template-fixtures":
             run_template_fixtures_scenario(scenario, case_dir, failures)
+        elif kind == "tool-result-serialization":
+            run_tool_result_scenario(scenario, case_dir, failures)
         else:
             failures.append(f"{scenario['id']}: unknown kind {kind!r}")
     report = {"failures": failures, "ok": not failures}

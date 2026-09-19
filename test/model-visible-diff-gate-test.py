@@ -69,6 +69,20 @@ class ModelVisibleDiffGateTest(unittest.TestCase):
         self.assertIn("Keep each section concise.", baseline["prompt"])
         self.assertIn("Keep each section concise.", baseline["update"])
 
+    def test_tool_result_truncation_matches_baseline_marker(self) -> None:
+        text = "a" * 2500
+        got = self.mod.format_serialized_tool_result(text)
+        self.assertTrue(got.startswith("[Tool result]: "))
+        self.assertIn("\n\n[... 500 more characters truncated]", got)
+        self.assertNotEqual(
+            got,
+            got.replace(
+                "more characters truncated]",
+                "more characters truncated!]",
+                1,
+            ),
+        )
+
     def test_gate_passes_against_cadr_formatter(self) -> None:
         with tempfile.TemporaryDirectory(prefix="cadr-mvd-") as temporary:
             code = self.mod.run_gate(Path(temporary))
