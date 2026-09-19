@@ -324,9 +324,11 @@
           (return-from apply-agent-input-hooks
             (values nil t)))
         (let ((final-text
-                (if (eq action :transform)
-                    (getf result :text)
-                    text))
+                (expand-agent-catalog-text
+                 agent
+                 (if (eq action :transform)
+                     (getf result :text)
+                     text)))
               (final-images
                 (if (eq action :transform)
                     (getf result :images)

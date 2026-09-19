@@ -1045,3 +1045,53 @@
         (is (= 1 (length (getf report :errors))))
         (is (search "missing-goal12-system" message))
         (is (search "broken-deps" message))))))
+
+(test slash-skill-and-file-prompt-reach-the-prompt
+  (with-test-directory (root)
+    (let* ((manager
+             (make-test-extension-manager
+              (merge-pathnames "project/" root)
+              (merge-pathnames "global/" root)
+              (make-string-output-stream)))
+           (skill
+             (cadr-agent::make-skill
+              :name "example"
+              :description "Example skill"
+              :content "Use this skill."
+              :file-path "/tmp/skills/example/SKILL.md"))
+           (template
+             (cadr-agent::make-prompt-template
+              :name "review"
+              :description "Review files"
+              :content "Review $1"
+              :file-path "/tmp/prompts/review.md"))
+           (sent nil))
+      (flet ((send (line)
+               (cadr-cli::dispatch-user-input
+                line
+                (lambda (text)
+                  (setf sent text)
+                  text)
+                :command-function (constantly nil)
+                :template-function
+                (lambda (text)
+                  (cadr-cli::expand-cli-slash-prompt
+                   manager text
+                   (list skill)
+                   (list template))))))
+        (multiple-value-bind (kind result)
+            (send "/skill:example Check errors.")
+          (declare (ignore result))
+          (is (eq kind :prompt))
+          (is (search "Check errors." sent))
+          (is (search "<skill name=\"example\"" sent)))
+        (multiple-value-bind (kind result)
+            (send "/review a.ts")
+          (declare (ignore result))
+          (is (eq kind :prompt))
+          (is (string= "Review a.ts" sent)))
+        (multiple-value-bind (kind result)
+            (send "/missing")
+          (declare (ignore result))
+          (is (eq kind :prompt))
+          (is (string= "/missing" sent)))))))

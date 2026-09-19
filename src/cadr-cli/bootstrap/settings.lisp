@@ -596,6 +596,11 @@
           (funcall system-prompt-function resources)
         (cadr-agent::replace-agent-system-prompt
          agent prompt options)))
+    (when (typep resources 'resource-snapshot)
+      (cadr-agent::replace-agent-prompt-catalogs
+       agent
+       (resource-snapshot-skills resources)
+       (resource-snapshot-prompts resources)))
     (when model-refresh-function
       (funcall model-refresh-function))
     (when keybindings-reload-function

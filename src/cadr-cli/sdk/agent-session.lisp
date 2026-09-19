@@ -497,6 +497,10 @@
                 resolved-cwd)
              (cadr-agent::replace-agent-system-prompt
               agent prompt options))
+           (cadr-agent::replace-agent-prompt-catalogs
+            agent
+            (sdk-resource-loader-skills loader)
+            (sdk-resource-loader-prompts loader))
            (sdk-resource-loader-extensions loader))))
       (setf wrapper
             (make-instance
@@ -518,6 +522,10 @@
          (sdk-agent-session-dispatch
           event on-event listener-lock wrapper
           #'agent-session-listeners)))
+      (cadr-agent::replace-agent-prompt-catalogs
+       agent
+       (sdk-resource-loader-skills loader)
+       (sdk-resource-loader-prompts loader))
       (sdk-apply-agent-settings agent settings)
       (values
        wrapper
