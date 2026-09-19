@@ -1011,3 +1011,22 @@
                 editor (+ origin y) :type :move :button :none)))
           (is (equal before (cadr-tui:render-editor editor 80))))
         (is (= 6 (cadr-tui::multiline-editor-autocomplete-selected editor)))))))
+
+(test editor-click-moves-the-cursor
+  (let ((editor
+          (cadr-tui:make-multiline-editor :text "hello" :prompt "")))
+    (cadr-tui:render-editor editor 20)
+    (is (null
+         (cadr-tui::editor-handle-mouse
+          editor 1 :type :press :button :left :x 2)))
+    (is (= 5 (cadr-tui::multiline-editor-cursor editor)))
+    (is (cadr-tui::editor-handle-mouse
+         editor 1 :type :click :button :left :x 2))
+    (is (= 2 (cadr-tui::multiline-editor-cursor editor)))
+    (is (null
+         (cadr-tui::editor-handle-mouse
+          editor 1 :type :move :button :none :x 0)))
+    (is (= 2 (cadr-tui::multiline-editor-cursor editor)))
+    (is (cadr-tui::editor-handle-mouse
+         editor 0 :type :click :button :left :x 0))
+    (is (= 2 (cadr-tui::multiline-editor-cursor editor)))))

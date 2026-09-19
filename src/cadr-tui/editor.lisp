@@ -67,6 +67,7 @@
   (embed-working-status-p t :type boolean)
   (last-render-width 80 :type (integer 1 *))
   (scroll-offset 0 :type (integer 0 *))
+  (visible-line-count 0 :type (integer 0 *))
   last-yank-start
   last-yank-end)
 
@@ -2082,8 +2083,10 @@
                      (length layout-lines))
                 (min
                  (length layout-lines)
-                 (+ scroll-offset maximum-visible))))
-             (top-border
+                 (+ scroll-offset maximum-visible)))))
+        (setf (multiline-editor-visible-line-count editor)
+              (length visible-layout-lines))
+        (let* ((top-border
                (editor-render-top-border
                 editor width scroll-offset
                 :working-message working-message
@@ -2152,7 +2155,7 @@
       (values
        result
        (+ 1 (- cursor-row scroll-offset))
-       (or cursor-column prompt-width))))))
+       (or cursor-column prompt-width)))))))
 
 (defun editor-autocomplete-handle-mouse
     (editor local-y &key type button wheel-delta)
@@ -2182,3 +2185,40 @@
          (editor-apply-autocomplete editor)
          t)
         (t nil)))))
+
+(defun editor-handle-mouse
+    (editor local-y &key type button x wheel-delta)
+  (when (editor-autocomplete-handle-mouse
+         editor local-y
+         :type type :button button :wheel-delta wheel-delta)
+    (return-from editor-handle-mouse t))
+  (unless (and (eq type :click)
+               (eq button :left)
+               (integerp local-y)
+               (integerp x))
+    (return-from editor-handle-mouse nil))
+  (let ((visible (multiline-editor-visible-line-count editor)))
+    (when (or (<= local-y 0) (> local-y visible))
+      (return-from editor-handle-mouse t))
+    (let* ((spans (editor-visual-line-spans editor))
+           (span
+             (nth (+ (multiline-editor-scroll-offset editor)
+                     (1- local-y))
+                  spans)))
+      (unless span
+        (return-from editor-handle-mouse t))
+      (let ((column
+              (max 0
+                   (- x
+                      (visible-width
+                       (multiline-editor-prompt editor))))))
+        (setf (multiline-editor-cursor editor)
+              (position-at-column
+               (multiline-editor-text editor)
+               (editor-span-start span)
+               (editor-span-end span)
+               column)
+              (multiline-editor-last-action editor) nil
+              (multiline-editor-preferred-column editor) nil)
+        (editor-exit-history editor)
+        t))))
