@@ -299,3 +299,59 @@
                 (length
                  (autocomplete-provider-commands"
           source)))))
+
+(test at-file-keeps-shallow-match-when-recursive-fd-is-flooded
+  (let* ((root
+           (merge-pathnames
+            (format nil "cadr-at-flood-~36R/"
+                    (random (expt 36 8)))
+            (uiop:temporary-directory)))
+         (fd (merge-pathnames "fake-fd.sh" root)))
+    (unwind-protect
+         (progn
+           (ensure-directories-exist
+            (merge-pathnames "scope/" root))
+           (with-open-file (stream fd
+                                   :direction :output
+                                   :if-exists :supersede
+                                   :if-does-not-exist :create)
+             (write-string
+              "#!/bin/sh
+depth=0
+prev=
+for arg in \"$@\"; do
+  if [ \"$prev\" = \"--max-depth\" ]; then
+    depth=\"$arg\"
+  fi
+  prev=\"$arg\"
+done
+if [ \"$depth\" = \"1\" ]; then
+  printf '%s\\n' 'projects/'
+else
+  i=1
+  while [ \"$i\" -le 100 ]; do
+    printf 'a%03d/venv/profile/\\n' \"$i\"
+    i=$((i + 1))
+  done
+fi
+" stream))
+           (uiop:run-program
+            (list "chmod" "+x" (namestring fd)))
+           (let* ((provider
+                    (cadr-tui:make-autocomplete-provider
+                     :base-path root :fd-path fd))
+                  (suggestions
+                    (cadr-tui:autocomplete-get-suggestions
+                     provider '("@scope/pro") 0 10))
+                  (values
+                    (mapcar
+                     #'cadr-tui:autocomplete-item-value
+                     (cadr-tui:autocomplete-suggestions-items
+                      suggestions))))
+             (is (string= "@scope/projects/" (first values)))
+             (is (find-if
+                  (lambda (value)
+                    (search "/profile/" value))
+                  values))))
+      (uiop:delete-directory-tree
+       root :validate t :if-does-not-exist :ignore))))
