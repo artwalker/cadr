@@ -326,3 +326,34 @@
       (is (string=
            "beta"
            (cadr-cli::settings-selector-state-single-theme state))))))
+
+(test thinking-selector-click-selects-the-level
+  (let ((state
+          (cadr-cli::make-thinking-selector-state
+           :levels '(:off :low :high)
+           :current-level :off)))
+    (let* ((lines (cadr-cli::render-thinking-selector state 80))
+           (row
+             (position-if
+              (lambda (line) (search "high" line))
+              lines)))
+      (is (integerp
+           (cadr-cli::thinking-selector-state-list-origin state)))
+      (is (integerp row))
+      (is (null
+           (cadr-cli::thinking-selector-handle-mouse
+            state (list :type :move :button :none) row)))
+      (is (eq :off (cadr-cli::thinking-selector-selected-level state)))
+      (is (null
+           (cadr-cli::thinking-selector-handle-mouse
+            state (list :type :press :button :left) 0)))
+      (is (eq :off (cadr-cli::thinking-selector-selected-level state)))
+      (is (cadr-cli::thinking-selector-handle-mouse
+           state (list :type :press :button :left) row))
+      (is (eq :high (cadr-cli::thinking-selector-selected-level state)))
+      (multiple-value-bind (handled action value)
+          (cadr-cli::thinking-selector-handle-mouse
+           state (list :type :click :button :left) row)
+        (is (not (null handled)))
+        (is (eq :select action))
+        (is (eq :high value))))))
