@@ -295,6 +295,7 @@ interactive-mode.ts:5956-5960).")
        dequeue-function
        cycle-model-function
        model-items-function
+       thinking-levels-function
        login-options-function
        model-selector-function
        thinking-selector-function
@@ -428,6 +429,8 @@ interactive-mode.ts:5956-5960).")
                       :base-path cwd
                       :model-items-function
                       model-items-function
+                      :thinking-levels-function
+                      thinking-levels-function
                       :login-options-function
                       (or
                        login-options-function

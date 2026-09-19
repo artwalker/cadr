@@ -643,7 +643,9 @@
     ;; replace-extra-autocomplete-commands
     ;; (interactive/autocomplete.lisp).
     ;; +1 autocomplete source tags: prefix-autocomplete-description.
-    (is (= 319 definition-count)
+    ;; +2 argument completions: tui-thinking-autocomplete-items
+    ;; and extension-argument-autocomplete-items.
+    (is (= 321 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
