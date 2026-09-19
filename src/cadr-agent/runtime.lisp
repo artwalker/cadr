@@ -47,6 +47,7 @@
                                  :type (integer 1 *))
   abort-p
   (abort-requested-p nil :type boolean)
+  compaction-cancellation
   (busy-p nil :type boolean)
   (shutdown-p nil :type boolean)
   (operation-count 0 :type (integer 0 *))
@@ -359,9 +360,21 @@
    (let ((predicate (agent-abort-p agent)))
      (and predicate (funcall predicate)))))
 
+(defun agent-abort-compaction (agent)
+  ;; Baseline agent-session.ts abortCompaction: wake waiters on the
+  ;; in-flight compaction cancellation signal (#8920).
+  (let ((signal
+          (sb-thread:with-mutex
+              ((agent-state-lock agent))
+            (agent-compaction-cancellation agent))))
+    (when signal
+      (abort-extension-cancellation-signal signal)))
+  agent)
+
 (defun agent-abort (agent)
   (assert-agent-not-shutdown agent)
   (agent-abort-retry agent)
+  (agent-abort-compaction agent)
   (sb-thread:with-mutex
       ((agent-state-lock agent))
     (setf (agent-abort-requested-p agent) t))

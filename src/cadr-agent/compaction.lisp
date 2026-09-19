@@ -754,10 +754,16 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                   (session-entry-type
                    (car (last entries))))
             (return-from %compact-agent nil))
-          (emit-agent-event
+          (sb-thread:with-mutex
+              ((agent-state-lock agent))
+            (setf (agent-compaction-cancellation agent)
+                  signal))
+          (unwind-protect
+               (progn
+                 (emit-agent-event
            agent :compaction-start
            :reason reason)
-          (let ((from-extension-p nil))
+                 (let ((from-extension-p nil))
             (handler-case
                 (let* ((before
                          (run-compaction-lifecycle
@@ -900,7 +906,13 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                    :aborted nil
                    :will-retry-p nil
                    :from-extension-p from-extension-p)
-                  nil)))))))))
+                  nil)))))
+            (sb-thread:with-mutex
+                ((agent-state-lock agent))
+              (when (eq (agent-compaction-cancellation agent)
+                        signal)
+                (setf (agent-compaction-cancellation agent)
+                      nil)))))))))
 
 (defun compact-agent
     (agent &key force-p custom-instructions

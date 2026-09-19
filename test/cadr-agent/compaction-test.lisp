@@ -1727,3 +1727,85 @@
         (is (string= "SUMMARY" summary))
         (is (string= "e3" (getf preparation :first-kept-entry-id)))
         (is (= 7 (cadr-agent::utf16-code-unit-length summary)))))))
+
+(test agent-abort-cancels-in-progress-manual-compaction
+  ;; Baseline #8920 agent-session-compaction.test.ts: abort wakes the
+  ;; in-flight compaction cancellation signal and leaves the session idle.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((started (sb-thread:make-semaphore :count 0))
+           (events nil)
+           (bundle
+             (make-test-extension-bundle
+              "abort-waits-for-compaction"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let* ((signal
+                            (getf
+                             (cadr-agent:extension-event-payload event)
+                             :signal))
+                          (state
+                            (cadr-agent::%extension-cancellation-signal-state
+                             signal)))
+                     (sb-thread:signal-semaphore started)
+                     (is
+                      (eq :aborted
+                          (cadr-core:wait-for-cancellation
+                           state :timeout 5.0d0)))
+                     '(:cancel-p t)))))))
+           (host (make-test-extension-host (list bundle)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "abort-during-compact"))
+           (agent nil)
+           (compact-result :unset))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content (make-string 80 :initial-element #\a)))
+      (cadr-agent:session-append-message
+       session
+       (compaction-test-response
+        (make-string 80 :initial-element #\b) :stop))
+      (cadr-agent:session-append-message
+       session (cadr-ai:make-user-message :content "keep"))
+      (setf agent
+            (cadr-agent:make-agent
+             :provider :mock
+             :model (compaction-test-model)
+             :session session
+             :extension-host host
+             :compaction-keep-recent-tokens 1
+             :on-event (lambda (event) (push event events))
+             :stream-function
+             (lambda (&rest arguments)
+               (declare (ignore arguments))
+               (error "aborted compaction must not summarize"))))
+      (let ((thread
+              (sb-thread:make-thread
+               (lambda ()
+                 (setf compact-result
+                       (cadr-agent:compact-agent
+                        agent :force-p t)))
+               :name "compact")))
+        (sb-thread:wait-on-semaphore started :timeout 5)
+        (cadr-agent:agent-abort agent)
+        (sb-thread:join-thread thread :timeout 5))
+      (is-false compact-result)
+      (is
+       (zerop
+        (count :compaction
+               (cadr-agent:session-entries session)
+               :key #'cadr-agent:session-entry-type)))
+      (let ((end
+              (find :compaction-end events
+                    :key #'cadr-agent:agent-event-type)))
+        (is (not (null end)))
+        (is-true (cadr-agent:agent-event-aborted end)))
+      (is (zerop (cadr-agent::agent-operation-count agent)))
+      (is (null (cadr-agent::agent-compaction-cancellation agent))))))
