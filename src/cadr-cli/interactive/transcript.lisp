@@ -1063,6 +1063,11 @@ lines that embed OSC-8."
     ((:custom-message :custom-entry)
      (render-extension-custom-entry
       entry width extension-host))
+    (:live-component
+     (let ((component (tui-entry-custom-component entry)))
+       (cons ""
+             (and component
+                  (cadr-tui:component-render component width)))))
     ((:skill-invocation :branch-summary :compaction-summary)
      (render-transcript-summary-entry entry width))
     (:notice
@@ -1169,6 +1174,7 @@ lines that embed OSC-8."
 
 (defun tui-entry-render-cacheable-p (entry)
   (and
+   (not (eq (tui-entry-type entry) :live-component))
    (not (tui-entry-streaming-p entry))
    (or
     (not (eq (tui-entry-type entry) :tool))

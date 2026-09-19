@@ -634,7 +634,9 @@
     ;; *tui-syntax-highlight-by-key* (interactive/transcript.lisp).
     ;; +1 Goal 20 daxnuts-render invent:
     ;; *daxnuts-render-by-key* (interactive/components/daxnuts.lisp).
-    (is (= 314 definition-count)
+    ;; +1 easter-egg trigger: daxnuts-easter-egg-p
+    ;; (interactive/components/daxnuts.lisp).
+    (is (= 315 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

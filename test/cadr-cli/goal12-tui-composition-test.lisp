@@ -251,6 +251,29 @@
     (cadr-tui:component-dispose armin)
     (cadr-tui:component-dispose dax)))
 
+(test goal12-easter-egg-commands-reach-the-chat-entry
+  (is-true (cadr-cli::daxnuts-easter-egg-p :opencode "kimi-k2.5"))
+  (is-true (cadr-cli::daxnuts-easter-egg-p
+            "opencode" "vendor/kimi-k2.5-fast"))
+  (is (null (cadr-cli::daxnuts-easter-egg-p :opencode-go "kimi-k2.5")))
+  (is (null (cadr-cli::daxnuts-easter-egg-p :opencode "kimi-k2.6")))
+  (let* ((ui (cadr-tui:make-tui-root
+              :render-function
+              (lambda (lines) (declare (ignore lines)))))
+         (entry
+           (cadr-cli::make-tui-entry
+            :type :live-component
+            :custom-component
+            (cadr-cli:make-armin-component
+             ui :effect :scanline :start-p nil)))
+         (lines (cadr-cli::render-tui-entry entry 40))
+         (plain (cadr-tui:strip-terminal-sequences
+                 (car (last lines)))))
+    (is (equal "" (first lines)))
+    (is-true (search "ARMIN SAYS HI" plain))
+    (cadr-tui:component-dispose
+     (cadr-cli::tui-entry-custom-component entry))))
+
 (test goal12-coding-agent-earendil-announcement-and-component-barrel-are-complete
   (let* ((announcement
            (cadr-cli:make-earendil-announcement-component))

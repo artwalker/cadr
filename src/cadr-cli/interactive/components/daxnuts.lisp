@@ -68,6 +68,16 @@
     :initial-element #\Space)
    line))
 
+(defun daxnuts-easter-egg-p (provider id)
+  (and (string= "opencode"
+                (string-downcase
+                 (etypecase provider
+                   (symbol (symbol-name provider))
+                   (string provider)
+                   (null ""))))
+       (search "kimi-k2.5"
+               (string-downcase (or id "")))))
+
 (defun make-daxnuts-component (ui &key (start-p t))
   (let ((component
           (make-instance 'daxnuts-component :ui ui)))
