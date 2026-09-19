@@ -7,7 +7,8 @@
       "compaction-summarization-prompts",
       "branch-summary-prompts",
       "turn-prefix-summarization-prompt",
-      "summary-message-wrappers"
+      "summary-message-wrappers",
+      "tool-result-truncation"
     ],
     "providers": ["openai-completions-stub"],
     "branches": [
@@ -15,7 +16,8 @@
       "custom-system-prompt",
       "compaction-summarization",
       "branch-summary",
-      "turn-prefix-summarization"
+      "turn-prefix-summarization",
+      "tool-result-serialization"
     ],
     "captures": [
       "skills-block-after-format",
@@ -23,12 +25,12 @@
       "compaction-summarization-templates",
       "branch-summary-templates",
       "turn-prefix-template",
-      "summary-message-wrapper-templates"
+      "summary-message-wrapper-templates",
+      "tool-result-truncation"
     ],
     "does_not_cover": [
       "full provider HTTP body after extension request hooks",
-      "default system prompt product-identity wording",
-      "tool-result synthesis strings"
+      "default system prompt product-identity wording"
     ]
   },
   "scenarios": [
@@ -157,6 +159,12 @@
           "validityReplacement": "</summary!>"
         }
       ]
+    },
+    {
+      "id": "tool-result-truncation",
+      "kind": "tool-result-serialization",
+      "description": "serializeConversation toolResult truncation matches packages/coding-agent/src/core/compaction/utils.ts.",
+      "text": "long-a"
     }
   ]
 }

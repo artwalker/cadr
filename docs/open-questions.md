@@ -83,6 +83,8 @@ Items awaiting adjudication:
   branch-summary templates, the turn-prefix prompt, and the
   compaction/branch summary message wrappers. Those catches also cover
   the Common Lisp string bug where `\n` is the letter n, not a newline.
+  A later scenario locks tool-result truncation text in
+  `serializeConversation`.
 
   **Implementation requirements, binding:**
 
