@@ -223,7 +223,12 @@
                     (cadr-cli::render-settings-selector state 80))))
       (is (search "Step 1/2 · Select a model to configure" rendered))
       (is (search "Type to filter · Enter to select · Esc to go back"
-                  rendered)))
+                  rendered))
+      (is (find-if
+           (lambda (line)
+             (and (plusp (length line))
+                  (char= #\> (char line 0))))
+           (cadr-cli::render-settings-selector state 80))))
     (cadr-cli::settings-selector-handle-event
      state (cadr-tui:make-input-event :kind :text :text "beta"))
     (is (string= "" (cadr-cli::settings-selector-state-query state)))

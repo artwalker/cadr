@@ -475,6 +475,8 @@
        (goal9-b3-full-width-line
         "Step 1/2 · Select a model to configure" width)
        ""
+       (goal9-b3-full-width-input-line "" width)
+       ""
        "→ No models available  Log in to a provider or configure an API key first"
        ""
        (goal9-b3-full-width-line

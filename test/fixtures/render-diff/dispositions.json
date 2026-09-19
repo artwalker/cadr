@@ -828,8 +828,7 @@
       "scenario": "overlays-secondary",
       "checkpoint": "settings-thinking",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -838,14 +837,27 @@
       "screenSha256": {
         "wide": {
           "pi": "421b8c6d89307d1e48698f3d6131ff5384fb088423489bd07fee32213c22a1c9",
-          "cadr": "e64353191821b20c9d73d38b62fab11c4ed0539d33ae5b4591fa90b653d51ddc"
-        },
-        "narrow": {
-          "pi": "41788fd23a3011e71fd689dda5be404a57f50e3e57af5d43086738573815cff9",
-          "cadr": "2769132680197654d244d880273810d2cf48a61e687a93ca14c5dba235cf1a15"
+          "cadr": "c6d36e98557e4731c436db8b4d9396ba81226eb1c7bd272d8fe87b8d3d6afa55"
         }
       },
-      "note": "At overlays-secondary/settings-thinking [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At overlays-secondary/settings-thinking [wide] the per-model list, filter input, and step copy match pi. Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-thinking",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "41788fd23a3011e71fd689dda5be404a57f50e3e57af5d43086738573815cff9",
+          "cadr": "41788fd23a3011e71fd689dda5be404a57f50e3e57af5d43086738573815cff9"
+        }
+      },
+      "note": "At overlays-secondary/settings-thinking [narrow] semantic screens match; raw ANSI update segmentation and teardown differ (I01)."
     },
     {
       "scenario": "settings-state-sweep",

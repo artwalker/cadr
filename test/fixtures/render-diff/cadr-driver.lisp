@@ -1863,6 +1863,9 @@ render loopback login received
            (lambda ()
              (cadr-cli::make-cli-settings-selector-state
               settings-manager agent resources
+              :available-models
+              (when (comparison-providers-enabled-p scenario)
+                (render-models scenario))
               :supports-images-p
               (not
                (null
