@@ -1933,3 +1933,29 @@ Stack depth is unmeasured.
 A later cap still needs a trigger condition and a gate-validity proof.
 A later identity class for `msg_cadr_*` still needs its own proposal,
 and may not close a score in the same commit.
+
+---
+
+## 2026-09-19 — Agent-driven redraw is no longer a parked gap
+
+**Ruled**: user, overriding the same-day item that declined new
+render-diff scenarios. **Recorded in**:
+[`parity-map.md`](parity-map.md) `EXAMPLES-AGENT-DRIVEN-REDRAW-GAP`.
+
+**Decided**: if the overlay can miss a repaint, fix it. Do not leave the
+row open as paperwork. The product lock
+`goal20-ttt-agent-action-repaints-the-live-overlay` already stood. The
+missing piece was a differential checkpoint after the agent tool.
+
+**What was added**: scenario `example-tic-tac-toe-agent`. The pi driver
+now includes `tic_tac_toe` in the example tool list, which is why the
+first capture reported `Tool tic_tac_toe not found`. After that, both
+screens show O at top-left and X at center. Residuals are the existing
+footer path, session-start counters, and the one-row chrome offset.
+No new disposition class.
+
+**Standing consequence**: item 1 of the earlier 2026-09-19 entry is
+superseded for this gap. Do not re-open it because the older
+`example-tic-tac-toe` scenario still has an empty faux queue.
+The gray `Working` status rule is canonicalized in
+`scripts/render-diff.py` so a spinner frame cannot fail the gate.

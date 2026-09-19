@@ -300,6 +300,7 @@ function exampleExtensionToolNames(names: readonly string[]): string[] {
 		hello: ["hello"],
 		todo: ["todo"],
 		"reload-runtime": ["reload_runtime"],
+		"tic-tac-toe": ["tic_tac_toe", "tic_tac_toe_see_board"],
 	};
 	return names.flatMap((name) => [...(toolsByExample[name] ?? [])]);
 }

@@ -4144,8 +4144,7 @@
       "scenario": "example-tic-tac-toe",
       "checkpoint": "ttt-played",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -4153,15 +4152,28 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f2b8686c687e7ba9b20d05d955d28d9550e37c153cfa8a44513287555fb69880",
+          "pi": "8559dc9753aef12a3267c8627887f8b8f9425aa66b692662cd57a7144b6938ce",
           "cadr": "50daec9b45b9b87d1f56a07c4f12b7fb2504b621bf14cff1b3f0cf46cb014f31"
-        },
+        }
+      },
+      "note": "At example-tic-tac-toe/ttt-played [wide] both overlays show X in the center cell, Turn: O (Agent), Agent is thinking, the empty-faux-queue error, and the same 1.7k footer. The semantic residual is the startup-chrome scroll offset (I04 surfaces): pi's top row is the tic-tac-toe.ts extension line and the Player X separator, while cadr still shows the tail of the user-move prompt. I01 raw segmentation remains."
+    },
+    {
+      "scenario": "example-tic-tac-toe",
+      "checkpoint": "ttt-played",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
         "narrow": {
-          "pi": "144dab0a0479e2d9b33fdcfbebe7d4f7a0f2fb8068c16c82499747845f40bcbd",
+          "pi": "dad5f996c27f716a020c0f0cab7ce4160c4223913f875f3cdea71b1af73b1e98",
           "cadr": "dad5f996c27f716a020c0f0cab7ce4160c4223913f875f3cdea71b1af73b1e98"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-played Player X occupies top-center and the overlay shows the agent-turn status and dim Agent is thinking... footer, matching the baseline. Residuals, itemized: (a) footer counters differ - cadr 1.5k/1.5k CH0.0% vs pi 1.3k/1.3k 0.1%/128k - because cadr's driver fires session-start on UI attach (adjudicated with Part E, unchanged by this fix); (b) wide only, cadr's transcript shows the played-move tool-result board summary rows that have scrolled off on pi (one screen-height layout difference from the startup-block height, I04 surfaces); (c) the empty-faux-queue error line sits on-screen for cadr in narrow while pi's copy has scrolled off - same layout offset; (d) I01 raw segmentation."
+      "note": "At example-tic-tac-toe/ttt-played [narrow] the semantic screens match, including the center X, the agent-turn status, Agent is thinking, and the empty-faux-queue error. Only raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "example-space-invaders",
@@ -4205,6 +4217,52 @@
       "note": "At example-snake/process-exit both sides have left /snake. Residuals: the same startup banner vs [Extensions] scrollback difference (I04 surfaces), cadr's cursor record differs with its one-row-taller scrollback, and I01 ANSI teardown in the raw stream."
     },
     {
+      "scenario": "example-tic-tac-toe-agent",
+      "checkpoint": "ttt-agent-repaint",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "42dac7c4e8ea199c622a5c024380bc1d1377da8a5db45c7bba27915468a7152c",
+          "cadr": "27a2a949a409c87f79dba712c0a4f42090947cf41657258fdfa7fa3bcfc05165"
+        },
+        "narrow": {
+          "pi": "3ec561910d0dd16a64388f9a1bc00b54626216520a343879020c03c81103c674",
+          "cadr": "65eaa269511d2356b182368ca01edf491216b326a89e3f35b75e910e23e8a32a"
+        }
+      },
+      "note": "At example-tic-tac-toe-agent/ttt-agent-repaint both overlays show O at top-left and X at center, and the status is back to Turn: X (You), after the tic_tac_toe play tool rather than after the keystroke. Residuals, itemized: (a) wide only, cadr still shows the tail of the user-move prompt on the top row while pi has scrolled that row off, the same one-row startup-chrome offset as ttt-played (I04 surfaces); (b) the footer path is pi00/workspace on pi and cadr/workspace on cadr (I04); (c) footer counters are pi R130 CH3.9% versus cadr R184 CH5.5% because cadr's driver fires session-start on UI attach, the same Part E difference already recorded on ttt-played; (d) I01 raw segmentation. Narrow hides the scroll offset."
+    },
+    {
+      "scenario": "example-tic-tac-toe-agent",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "034b5fa66d5efce43484bab5b0bc5673444c4e285cba5d771fd9c9a1f60d637f",
+          "cadr": "6c95a9ce5d696c7606c26afeb001d7a1b95c2c04cb967f2305f9674bff24756c"
+        },
+        "narrow": {
+          "pi": "47259631e774c2a2b3dfcae172d5ca26b3fc099f7170158d8ec00f9f4f8d7b6c",
+          "cadr": "bd1cb8e300a11ef7ef88adfe8cde20a45a4074053f62eaa4ff58282bda357607"
+        }
+      },
+      "note": "At example-tic-tac-toe-agent/process-exit the session has exited. Residuals are the ttt-agent-repaint set: wide still has the one-row prompt-tail scroll offset (I04 surfaces), the footer path is pi00 versus cadr (I04), footer counters remain pi R130 CH3.9% versus cadr R184 CH5.5% from session-start on UI attach, and I01 teardown."
+    },
+    {
       "scenario": "example-tic-tac-toe",
       "checkpoint": "process-exit",
       "dimensions": [
@@ -4217,15 +4275,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "55e471dc9ab6192a435dd9d36e1e543a1b1e4597a1bbf45289637ec545eb813b",
+          "pi": "5995212eb4a1d167b0fb5df5d25b11116d7d296b40d39fb90e296a31713311d8",
           "cadr": "a9f64bbc9945c85c9bdd631e129bae26e522774ad4a29ee76af53ba6f19b551c"
         },
         "narrow": {
-          "pi": "88018b9f7922816e72e1bcb1ee2b259670fe43a975190a543316badc0a2d1871",
+          "pi": "f7868164e8c41a7752883ae51b7604a07344d7d0a51e3b935cf9dcf2a64beeee",
           "cadr": "310fd0c3b2bcbdc427b95c14db61cfc1ae44e8408f6f6dfbc04e7a84eabb445f"
         }
       },
-      "note": "At example-tic-tac-toe/process-exit the overlay is gone. Residuals, itemized: scrollback content differs by the same one-block layout offset - cadr retains the played-move message and text board summary where pi retains the startup help residue and [Extensions] line (I04 surfaces) - plus I01 ANSI teardown."
+      "note": "At example-tic-tac-toe/process-exit the overlay is gone and both sides show the empty-faux-queue error with matching 1.7k footers. The residual is the startup-chrome scroll offset (I04 surfaces): wide, pi's top row is the tic-tac-toe.ts line plus the Player X separator while cadr still shows the user-move prompt tail; narrow, pi retains the startup help and [Extensions] line while cadr retains the text board summary and the same prompt. I01 teardown remains."
     },
     {
       "scenario": "example-bookmark",
@@ -6568,15 +6626,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "82242890635be2228e98e26791ab52872889901695580f8681f6a26ed51b2f9d",
-          "cadr": "b3a98baac3359e7236c3b3186026f94752dd51c7483baa817ef52095bcbf9d38"
+          "pi": "386c93f3e5e7307103865f3408cc63c3d2c8ba0120c83148ec9d56b4b530a0ad",
+          "cadr": "03c7b1023b27eb9d2032cb5ca26c92cadab96d4ea858f33f7e3f8d5fa4d9f382"
         },
         "narrow": {
-          "pi": "b7ab9d23b3a52c20cd707ac3c65f2013e80bc279af6a17b6cce493e3f91bfd2b",
-          "cadr": "d7c3e9775a0eace3cff8859a8704a3dcda31708f12f7cc2833ef176d7f756c2b"
+          "pi": "6283fb11564b3936b7c14c891a37262ac9b23879e016baf5d8a72d3875fd5556",
+          "cadr": "0d43e2297d5721f7c4fa9904e467b617715cd551d4a6f844c8b907d10200f2c2"
         }
       },
-      "note": "At stream-interrupt-queue/busy-queue [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At stream-interrupt-queue/busy-queue [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.85.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). The gray Working status rule is canonicalized to one spinner frame and one ellipsis, so that animation is not a residual. Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "stream-interrupt-queue",
