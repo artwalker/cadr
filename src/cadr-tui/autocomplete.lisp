@@ -323,8 +323,12 @@
                     left-dir-p)))))))
 
 (defun run-fd-autocomplete
-    (provider query)
-  (let ((fd (autocomplete-provider-fd-path provider)))
+    (provider query &key base max-depth)
+  (let ((fd (autocomplete-provider-fd-path provider))
+        (directory
+          (or base
+              (autocomplete-provider-base-path
+               provider))))
     (unless fd
       (return-from run-fd-autocomplete nil))
     (handler-case
@@ -335,12 +339,14 @@
                    "--base-directory"
                    (namestring
                     (uiop:ensure-directory-pathname
-                     (autocomplete-provider-base-path
-                      provider)))
+                     directory))
                    "--max-results" "100"
                    "--type" "f" "--type" "d"
                    "--follow" "--hidden"
                    "--exclude" ".git")
+                  (when max-depth
+                    (list "--max-depth"
+                          (princ-to-string max-depth)))
                   (when (find #\/ query)
                     '("--full-path"))
                   (when (plusp (length query))
@@ -360,6 +366,29 @@
            (uiop:split-string
             output :separator '(#\Newline #\Return))))
       (condition () nil))))
+
+(defun autocomplete-scoped-fuzzy-query (provider query)
+  (let* ((normalized (autocomplete-display-path query))
+         (slash (autocomplete-last-slash normalized)))
+    (unless slash
+      (return-from autocomplete-scoped-fuzzy-query nil))
+    (let* ((display-base (subseq normalized 0 (1+ slash)))
+           (scoped-query (subseq normalized (1+ slash)))
+           (base-dir
+             (autocomplete-directory-pathname
+              (autocomplete-provider-base-path provider)
+              display-base)))
+      (when (uiop:directory-exists-p base-dir)
+        (values base-dir scoped-query display-base)))))
+
+(defun autocomplete-merge-fd-paths (direct recursive)
+  (let ((seen (make-hash-table :test #'equal)))
+    (dolist (path direct)
+      (setf (gethash path seen) t))
+    (append
+     direct
+     (remove-if (lambda (path) (gethash path seen))
+                recursive))))
 
 (defun autocomplete-entry-score
     (path query directory-p)
@@ -386,22 +415,33 @@
   (multiple-value-bind (query at-prefix-p quoted-p)
       (parse-autocomplete-path-prefix prefix)
     (declare (ignore at-prefix-p))
-    (let ((items nil))
-      (dolist (path
-               (run-fd-autocomplete provider query))
-        (let* ((directory-p
-                 (string-suffix-p "/" path))
-               (score
-                 (autocomplete-entry-score
-                  path query directory-p)))
-          (when (plusp score)
-            (let* ((display
-                     (autocomplete-display-path path))
-                   (label
-                     (concatenate
-                      'string
-                      (autocomplete-basename display)
-                      (if directory-p "/" ""))))
+    (multiple-value-bind (scoped-base scoped-query display-base)
+        (autocomplete-scoped-fuzzy-query provider query)
+      (let* ((fd-query (or scoped-query query))
+             (paths
+               (autocomplete-merge-fd-paths
+                (run-fd-autocomplete
+                 provider fd-query
+                 :base scoped-base
+                 :max-depth 1)
+                (run-fd-autocomplete
+                 provider fd-query
+                 :base scoped-base)))
+             (items nil))
+        (dolist (path paths)
+          (let* ((directory-p
+                   (string-suffix-p "/" path))
+                 (score
+                   (autocomplete-entry-score
+                    path fd-query directory-p))
+                 (display
+                   (if display-base
+                       (concatenate
+                        'string
+                        (autocomplete-display-path display-base)
+                        (autocomplete-display-path path))
+                       (autocomplete-display-path path))))
+            (when (plusp score)
               (push
                (list
                 score
@@ -409,7 +449,11 @@
                  :value
                  (autocomplete-quote-value
                   display t quoted-p)
-                 :label label
+                 :label
+                 (concatenate
+                  'string
+                  (autocomplete-basename display)
+                  (if directory-p "/" ""))
                  :description
                  (let ((directory
                          (autocomplete-dirname
@@ -417,41 +461,46 @@
                            "/" display))))
                    (unless (string= directory ".")
                      directory))))
-               items)))))
-      (mapcar
-       #'second
-       (subseq
-        (stable-sort
-         items
-         (lambda (left right)
-           (let ((score-left (first left))
-                 (score-right (first right)))
-             (cond
-               ((/= score-left score-right)
-                (> score-left score-right))
-               (t
-                (let* ((item-left (second left))
-                       (item-right (second right))
-                       (path-left
-                         (or
-                          (autocomplete-item-description item-left)
-                          ""))
-                       (path-right
-                         (or
-                          (autocomplete-item-description item-right)
-                          ""))
-                       (depth-left (count #\/ path-left))
-                       (depth-right (count #\/ path-right)))
-                  (cond
-                    ((/= depth-left depth-right)
-                     (< depth-left depth-right))
-                    ((/= (length path-left) (length path-right))
-                     (< (length path-left) (length path-right)))
-                    (t
-                     (string-lessp
-                      (autocomplete-item-label item-left)
-                      (autocomplete-item-label item-right))))))))))
-        0 (min 20 (length items)))))))
+               items))))
+        (mapcar
+         #'second
+         (subseq
+          (stable-sort
+           items
+           (lambda (left right)
+             (let ((score-left (first left))
+                   (score-right (first right)))
+               (cond
+                 ((/= score-left score-right)
+                  (> score-left score-right))
+                 (t
+                  (let* ((item-left (second left))
+                         (item-right (second right))
+                         (path-left
+                           (or
+                            (autocomplete-item-description
+                             item-left)
+                            ""))
+                         (path-right
+                           (or
+                            (autocomplete-item-description
+                             item-right)
+                            ""))
+                         (depth-left (count #\/ path-left))
+                         (depth-right (count #\/ path-right)))
+                    (cond
+                      ((/= depth-left depth-right)
+                       (< depth-left depth-right))
+                      ((/= (length path-left)
+                           (length path-right))
+                       (< (length path-left)
+                          (length path-right)))
+                      (t
+                       (string-lessp
+                        (autocomplete-item-label item-left)
+                        (autocomplete-item-label
+                         item-right))))))))))
+          0 (min 20 (length items))))))))
 
 (defun command-autocomplete-item (command)
   (make-autocomplete-item
