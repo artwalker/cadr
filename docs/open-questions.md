@@ -76,7 +76,10 @@ Items awaiting adjudication:
   cwd newline) against `packages/coding-agent/src/core/system-prompt.ts`.
   Full wire capture after provider serialisation and extension request
   hooks remains open under the same OQ. The default-prompt product name
-  wording stays out of this denominator (I04).
+  wording stays out of this denominator (I04). A fourth scenario
+  (`compaction-summarization-prompts`) locks the compaction
+  summarization system prompt and the first/update user templates
+  against the pinned baseline fixtures.
 
   **Implementation requirements, binding:**
 

@@ -52,6 +52,23 @@ class ModelVisibleDiffGateTest(unittest.TestCase):
         self.assertTrue(broken.endswith("Current working directory: /tmp/project"))
         self.assertNotEqual(good, broken)
 
+    def test_compaction_prompt_validity_mutates_each_template(self) -> None:
+        baseline = {
+            "system": (
+                self.mod.FIXTURES / "baseline-compaction-system-prompt.txt"
+            ).read_text(encoding="utf-8"),
+            "prompt": (
+                self.mod.FIXTURES
+                / "baseline-compaction-summarization-prompt.txt"
+            ).read_text(encoding="utf-8"),
+            "update": (
+                self.mod.FIXTURES / "baseline-compaction-update-prompt.txt"
+            ).read_text(encoding="utf-8"),
+        }
+        self.assertIn("ONLY output the structured summary.", baseline["system"])
+        self.assertIn("Keep each section concise.", baseline["prompt"])
+        self.assertIn("Keep each section concise.", baseline["update"])
+
     def test_gate_passes_against_cadr_formatter(self) -> None:
         with tempfile.TemporaryDirectory(prefix="cadr-mvd-") as temporary:
             code = self.mod.run_gate(Path(temporary))

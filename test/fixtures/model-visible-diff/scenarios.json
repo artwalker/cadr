@@ -3,19 +3,26 @@
     "scenarios": [
       "skills-block-default",
       "skills-block-bash",
-      "custom-prompt-with-context-and-skills"
+      "custom-prompt-with-context-and-skills",
+      "compaction-summarization-prompts"
     ],
     "providers": ["openai-completions-stub"],
-    "branches": ["default-system-prompt", "custom-system-prompt"],
+    "branches": [
+      "default-system-prompt",
+      "custom-system-prompt",
+      "compaction-summarization"
+    ],
     "captures": [
       "skills-block-after-format",
-      "custom-system-prompt-after-composition"
+      "custom-system-prompt-after-composition",
+      "compaction-summarization-templates"
     ],
     "does_not_cover": [
       "full provider HTTP body after extension request hooks",
-      "compaction or branch-summary sub-contexts",
+      "branch-summary sub-contexts",
       "default system prompt product-identity wording",
-      "tool-result synthesis strings"
+      "tool-result synthesis strings",
+      "compaction turn-prefix summarization prompt"
     ]
   },
   "scenarios": [
@@ -62,6 +69,11 @@
           "filePath": "/skills/demo/SKILL.md"
         }
       ]
+    },
+    {
+      "id": "compaction-summarization-prompts",
+      "kind": "compaction-prompts",
+      "description": "Compaction summarization system and user prompt templates match packages/coding-agent/src/core/compaction."
     }
   ]
 }
