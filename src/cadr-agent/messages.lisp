@@ -1,10 +1,18 @@
 (in-package #:cadr-agent)
 
 (defparameter +compaction-summary-prefix+
-  "The conversation history before this point was compacted into the following summary:\n\n<summary>\n")
-(defparameter +compaction-summary-suffix+ "\n</summary>")
+  "The conversation history before this point was compacted into the following summary:
+
+<summary>
+")
+(defparameter +compaction-summary-suffix+
+  "
+</summary>")
 (defparameter +branch-summary-prefix+
-  "The following is a summary of a branch that this conversation came back from:\n\n<summary>\n")
+  "The following is a summary of a branch that this conversation came back from:
+
+<summary>
+")
 (defparameter +branch-summary-suffix+ "</summary>")
 
 (defstruct bash-execution-message
@@ -43,7 +51,7 @@
         (write-string "(no output)" output))
     (cond
       ((bash-execution-message-cancelled-p message)
-       (write-string "\n\n(command cancelled)" output))
+       (format output "~%~%(command cancelled)"))
       ((and (integerp (bash-execution-message-exit-code message))
             (not (zerop (bash-execution-message-exit-code message))))
        (format output "~%~%Command exited with code ~D"

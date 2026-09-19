@@ -291,7 +291,10 @@ def run_custom_prompt_scenario(
         )
 
 
-def capture_cadr_compaction_prompts() -> dict[str, str]:
+def capture_cadr_template_strings(entries: list[dict]) -> dict[str, str]:
+    pair_forms = " ".join(
+        f'(list {json.dumps(entry["id"])} {entry["symbol"]})' for entry in entries
+    )
     lisp = f"""
 (asdf:load-asd (truename "{ROOT}/cadr-core.asd"))
 (asdf:load-asd (truename "{ROOT}/cadr-ai.asd"))
@@ -299,71 +302,99 @@ def capture_cadr_compaction_prompts() -> dict[str, str]:
 (let ((*standard-output* (make-broadcast-stream))
       (*error-output* (make-broadcast-stream)))
   (asdf:load-system "cadr-agent"))
-(dolist (pair
-         (list
-          (list "system" cadr-agent::+compaction-summarization-system-prompt+)
-          (list "prompt" cadr-agent::+compaction-summarization-prompt+)
-          (list "update" cadr-agent::+compaction-update-summarization-prompt+)))
+(dolist (pair (list {pair_forms}))
   (destructuring-bind (label text) pair
     (format t "<<<~A-BEGIN>>>~A<<<~A-END>>>~%" label text label)))
 """
     stdout = _run_lisp(lisp)
     return {
-        label: _extract_marker(stdout, f"<<<{label}-BEGIN>>>", f"<<<{label}-END>>>")
-        for label in ("system", "prompt", "update")
+        entry["id"]: _extract_marker(
+            stdout, f"<<<{entry['id']}-BEGIN>>>", f"<<<{entry['id']}-END>>>"
+        )
+        for entry in entries
     }
+
+
+def run_template_fixtures_scenario(
+    scenario: dict, case_dir: Path, failures: list[str]
+) -> None:
+    entries = scenario["templates"]
+    cadr = capture_cadr_template_strings(entries)
+    for entry in entries:
+        key = entry["id"]
+        baseline = (FIXTURES / entry["fixture"]).read_text(encoding="utf-8")
+        needle = entry["validityNeedle"]
+        replacement = entry["validityReplacement"]
+        broken = baseline.replace(needle, replacement, 1)
+        (case_dir / f"cadr.{key}.txt").write_text(cadr[key], encoding="utf-8")
+        (case_dir / f"baseline.{key}.txt").write_text(baseline, encoding="utf-8")
+        (case_dir / f"broken.{key}.txt").write_text(broken, encoding="utf-8")
+        if cadr[key] != baseline:
+            failures.append(
+                f"{scenario['id']}: cadr {key} != pinned baseline fixture"
+            )
+        if broken == baseline:
+            failures.append(
+                f"{scenario['id']}: validity proof collapsed; broken {key} matches baseline"
+            )
+        if broken == cadr[key]:
+            failures.append(
+                f"{scenario['id']}: validity proof collapsed; cadr {key} matches broken"
+            )
+
+
+def capture_cadr_compaction_prompts() -> dict[str, str]:
+    return capture_cadr_template_strings(
+        [
+            {
+                "id": "system",
+                "symbol": "cadr-agent::+compaction-summarization-system-prompt+",
+            },
+            {
+                "id": "prompt",
+                "symbol": "cadr-agent::+compaction-summarization-prompt+",
+            },
+            {
+                "id": "update",
+                "symbol": "cadr-agent::+compaction-update-summarization-prompt+",
+            },
+        ]
+    )
 
 
 def run_compaction_prompts_scenario(
     scenario: dict, case_dir: Path, failures: list[str]
 ) -> None:
-    cadr = capture_cadr_compaction_prompts()
-    baseline = {
-        "system": (FIXTURES / "baseline-compaction-system-prompt.txt").read_text(
-            encoding="utf-8"
-        ),
-        "prompt": (
-            FIXTURES / "baseline-compaction-summarization-prompt.txt"
-        ).read_text(encoding="utf-8"),
-        "update": (FIXTURES / "baseline-compaction-update-prompt.txt").read_text(
-            encoding="utf-8"
-        ),
-    }
-    broken = {
-        "system": baseline["system"].replace(
-            "ONLY output the structured summary.",
-            "ONLY output the structured summary!",
-            1,
-        ),
-        "prompt": baseline["prompt"].replace(
-            "Keep each section concise.",
-            "Keep each section concise!",
-            1,
-        ),
-        "update": baseline["update"].replace(
-            "Keep each section concise.",
-            "Keep each section concise!",
-            1,
-        ),
-    }
-    for key in ("system", "prompt", "update"):
-        (case_dir / f"cadr.{key}.txt").write_text(cadr[key], encoding="utf-8")
-        (case_dir / f"baseline.{key}.txt").write_text(
-            baseline[key], encoding="utf-8"
-        )
-        (case_dir / f"broken.{key}.txt").write_text(broken[key], encoding="utf-8")
-        if cadr[key] != baseline[key]:
-            failures.append(
-                f"{scenario['id']}: cadr compaction {key} != pinned baseline fixture"
-            )
-        if broken[key] == baseline[key]:
-            failures.append(
-                f"{scenario['id']}: validity proof collapsed; broken {key} matches baseline"
-            )
-        if broken[key] == cadr[key]:
-            failures.append(
-                f"{scenario['id']}: validity proof collapsed; cadr {key} matches broken"
-            )
+    run_template_fixtures_scenario(
+        {
+            "id": scenario["id"],
+            "templates": [
+                {
+                    "id": "system",
+                    "symbol": "cadr-agent::+compaction-summarization-system-prompt+",
+                    "fixture": "baseline-compaction-system-prompt.txt",
+                    "validityNeedle": "ONLY output the structured summary.",
+                    "validityReplacement": "ONLY output the structured summary!",
+                },
+                {
+                    "id": "prompt",
+                    "symbol": "cadr-agent::+compaction-summarization-prompt+",
+                    "fixture": "baseline-compaction-summarization-prompt.txt",
+                    "validityNeedle": "Keep each section concise.",
+                    "validityReplacement": "Keep each section concise!",
+                },
+                {
+                    "id": "update",
+                    "symbol": "cadr-agent::+compaction-update-summarization-prompt+",
+                    "fixture": "baseline-compaction-update-prompt.txt",
+                    "validityNeedle": "Keep each section concise.",
+                    "validityReplacement": "Keep each section concise!",
+                },
+            ],
+        },
+        case_dir,
+        failures,
+    )
 
 
 def run_gate(artifacts: Path) -> int:
@@ -383,6 +414,8 @@ def run_gate(artifacts: Path) -> int:
             run_custom_prompt_scenario(scenario, case_dir, failures)
         elif kind == "compaction-prompts":
             run_compaction_prompts_scenario(scenario, case_dir, failures)
+        elif kind == "template-fixtures":
+            run_template_fixtures_scenario(scenario, case_dir, failures)
         else:
             failures.append(f"{scenario['id']}: unknown kind {kind!r}")
     report = {"failures": failures, "ok": not failures}

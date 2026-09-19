@@ -79,7 +79,10 @@ Items awaiting adjudication:
   wording stays out of this denominator (I04). A fourth scenario
   (`compaction-summarization-prompts`) locks the compaction
   summarization system prompt and the first/update user templates
-  against the pinned baseline fixtures.
+  against the pinned baseline fixtures. Later scenarios lock
+  branch-summary templates, the turn-prefix prompt, and the
+  compaction/branch summary message wrappers. Those catches also cover
+  the Common Lisp string bug where `\n` is the letter n, not a newline.
 
   **Implementation requirements, binding:**
 

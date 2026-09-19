@@ -36,6 +36,15 @@
           (cadr-agent:make-bash-execution-message
            :command "false" :output "bad" :exit-code 7
            :truncated-p t :full-output-path "/tmp/full"))))
+    (is (string=
+         (format nil "Ran `true`~%(no output)~%~%(command cancelled)")
+         (cadr-agent:bash-execution-to-text
+          (cadr-agent:make-bash-execution-message
+           :command "true" :output "" :cancelled-p t))))
+    (is (find #\Newline cadr-agent::+branch-summary-preamble+))
+    (is (search
+         (format nil "~%<summary>~%")
+         cadr-agent::+compaction-summary-prefix+))
     (is (null
          (cadr-agent:convert-agent-messages-to-llm
           (list
