@@ -504,6 +504,18 @@ interactive-mode.ts:5956-5960).")
                  (lambda (lines)
                    (declare (ignore lines))
                    (request-render))))))
+         (append-live-component (component)
+           (append-tui-entry
+            state
+            (make-tui-entry
+             :type :live-component
+             :custom-component component))
+           (request-render))
+         (maybe-show-daxnuts (provider id)
+           (when (daxnuts-easter-egg-p provider id)
+             (append-live-component
+              (make-daxnuts-component
+               (extension-runtime)))))
          (extension-theme-runtime ()
            (tui-extension-theme-runtime))
          (dispose-component (component)
@@ -1962,6 +1974,12 @@ interactive-mode.ts:5956-5960).")
                                 matched)
                                (tui-state-model
                                 state))))
+                           (let ((selected
+                                   (tui-state-model state)))
+                             (when (cadr-ai::model-p selected)
+                               (maybe-show-daxnuts
+                                (cadr-ai:model-provider selected)
+                                (cadr-ai:model-id selected))))
                            (refresh-footer-state)
                            (request-render)
                            t)))
@@ -2035,6 +2053,13 @@ interactive-mode.ts:5956-5960).")
                 (setf done-p t))
                ((string= trimmed "/debug")
                 (handle-debug-command))
+               ((string= trimmed "/arminsayshi")
+                (append-live-component
+                 (make-armin-component
+                  (extension-runtime))))
+               ((string= trimmed "/dementedelves")
+                (append-live-component
+                 (make-earendil-announcement-component)))
                ((string= trimmed "/trust")
                 (open-trust-selector))
                ((string= trimmed "/settings")
@@ -2199,7 +2224,12 @@ interactive-mode.ts:5956-5960).")
                          value
                          (when persist '(:persist t)))
                         (tui-state-model
-                         state)))))
+                         state))))
+                    (let ((selected (tui-state-model state)))
+                      (when (cadr-ai::model-p selected)
+                        (maybe-show-daxnuts
+                         (cadr-ai:model-provider selected)
+                         (cadr-ai:model-id selected)))))
                    (:thinking
                     (when on-thinking-selected
                       (funcall
@@ -2295,7 +2325,10 @@ interactive-mode.ts:5956-5960).")
                                   (oauth-selector-option-name option)
                                   provider
                                   :no-default-model
-                                  nil))))))))
+                                  nil)))
+                              (when (stringp selection)
+                                (maybe-show-daxnuts
+                                 provider selection)))))))
                    (:trust
                     (when on-trust-selected
                       (funcall
