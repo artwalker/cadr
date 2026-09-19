@@ -1813,7 +1813,7 @@
                    "trusted"
                    "untrusted"))))
            (getf selection :trusted-p))
-         (confirm-import (line)
+         (confirm-import (line &key cwd-confirm)
            (handle-session-command
             line agent
             :directory session-directory
@@ -1822,7 +1822,8 @@
             :confirm-function
             (lambda (title message)
               (declare (ignore title message))
-              t)))
+              t)
+            :cwd-confirm-function cwd-confirm))
          (fork-items ()
            (loop
              for item in
@@ -1903,7 +1904,7 @@
                    (cadr-agent:agent-session
                     agent)))
              (session-compaction-display-state current)))
-         (select-session (candidate)
+         (select-session (candidate &key cwd-override)
            (let ((session
                    (cond
                      ((typep candidate 'cadr-agent:session)
@@ -1915,6 +1916,17 @@
                         candidate)))
                      (t
                       (cadr-agent:load-session candidate)))))
+             (let ((issue
+                     (and (null cwd-override)
+                          (missing-session-cwd-issue
+                           session cwd))))
+               (when issue
+                 (return-from select-session
+                   (values nil nil nil issue))))
+             (when cwd-override
+               (setf (cadr-agent:session-cwd session)
+                     (cadr-agent::canonical-session-cwd
+                      cwd-override)))
              (switch-agent-session agent session)
              (values
               (cadr-agent:session-id session)

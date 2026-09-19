@@ -1711,8 +1711,26 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
       "Session working directory does not exist: ~A"
       (missing-session-cwd-error-session-cwd condition)))))
 
+(defun missing-session-cwd-issue (session fallback-cwd)
+  (let ((stored (cadr-agent:session-cwd session)))
+    (when (and stored
+               (not
+                (probe-file
+                 (uiop:ensure-directory-pathname stored))))
+      (list :session-cwd (namestring stored)
+            :fallback-cwd (namestring fallback-cwd)
+            :session-file
+            (and (cadr-agent:session-path session)
+                 (namestring
+                  (cadr-agent:session-path session)))))))
+
+(defun missing-session-cwd-prompt (session-cwd fallback-cwd)
+  (format nil
+          "cwd from session file does not exist~%~A~%~%continue in current cwd~%~A"
+          session-cwd fallback-cwd))
+
 (defun import-agent-session
-    (agent input directory cwd)
+    (agent input directory cwd &key cwd-override)
   (let* ((source
            (resolve-general-path input cwd)))
     (unless (probe-file source)
@@ -1754,14 +1772,19 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                    (cadr-agent:load-session
                     destination)))
             (unless
-                (probe-file
-                 (uiop:ensure-directory-pathname
-                  (cadr-agent:session-cwd
-                   imported)))
+                (or cwd-override
+                    (probe-file
+                     (uiop:ensure-directory-pathname
+                      (cadr-agent:session-cwd
+                       imported))))
               (error
                'missing-session-cwd-error
                :session-cwd
                (cadr-agent:session-cwd imported)))
+            (when cwd-override
+              (setf (cadr-agent:session-cwd imported)
+                    (cadr-agent::canonical-session-cwd
+                     cwd-override)))
             (run-session-lifecycle
              agent :session-shutdown
              :reason :resume
@@ -1777,7 +1800,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
         (condition (condition)
           (values
            nil
-           (format nil "~A" condition)))))))
+           (format nil "~A" condition)
+           (and (typep condition 'missing-session-cwd-error)
+                condition)))))))
 
 (defun switch-agent-session (agent session)
   (let ((host
@@ -1823,7 +1848,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        (confirm-function
          (lambda (title message)
            (declare (ignore title message))
-           t)))
+           t))
+       cwd-confirm-function)
   (multiple-value-bind (command argument)
       (split-command line)
     (cond
@@ -2025,9 +2051,23 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                          "Import cancelled~%")
                  (handler-case
                      (multiple-value-bind
-                           (imported error-message)
+                           (imported error-message missing)
                          (import-agent-session
                           agent path directory cwd)
+                       (when (and (null imported) missing
+                                  cwd-confirm-function)
+                         (let ((override
+                                 (funcall
+                                  cwd-confirm-function
+                                  (missing-session-cwd-error-session-cwd
+                                   missing)
+                                  cwd)))
+                           (when override
+                             (multiple-value-setq
+                                 (imported error-message missing)
+                               (import-agent-session
+                                agent path directory cwd
+                                :cwd-override override)))))
                        (cond
                          ((eq imported :cancelled)
                           (format output
@@ -2037,6 +2077,15 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                            output
                            "Session imported from: ~A~%"
                            path))
+                         ((and missing
+                               (null cwd-confirm-function))
+                          (format
+                           output
+                           "Failed to import session: ~A~%"
+                           error-message))
+                         ((and missing (null imported))
+                          (format output
+                                  "Import cancelled~%"))
                          (t
                           (format
                            output
