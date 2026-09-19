@@ -219,6 +219,7 @@
                              (:file "goal28-provider-retry-settings-test")
                              (:file "goal28-retry-enabled-test")
                              (:file "goal28-import-file-not-found-test")
+                             (:file "goal28-import-collision-test")
                              (:file "goal28-missing-session-cwd-test")
                              (:file "goal28-credential-sync-test")
                              (:file "goal28-http-idle-timeout-test")

@@ -435,7 +435,9 @@
     ;; +35 Goal 28: settings readers and CLI/RPC helpers in B5 owners.
     ;; +2 missing session cwd prompt: missing-session-cwd-issue and
     ;; missing-session-cwd-prompt (bootstrap/sessions.lisp).
-    (is (= 175 definition-count)
+    ;; +1 import collision: unique-import-session-path
+    ;; (bootstrap/sessions.lisp, baseline importFromJsonl).
+    (is (= 176 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
