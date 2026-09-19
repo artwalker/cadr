@@ -166,7 +166,9 @@
             (:constructor
                 %make-api-key-input-state))
   option
-  input)
+  input
+  (input-origin nil)
+  (input-width 80 :type (integer 1 *)))
 
 (cadr-core:define-redacted-print-object
     (api-key-input-state value stream)
@@ -274,7 +276,8 @@
     (multiple-value-bind (input-lines row column)
         (cadr-tui:render-single-line-input
          masked width)
-      (render-selector-frame
+      (multiple-value-bind (lines row column)
+          (render-selector-frame
        (make-selector-frame
         :sections
         (list
@@ -294,7 +297,17 @@
           :lines
           (api-key-input-footer-lines width))
          (list :border :border)))
-       width))))
+       width)
+        (setf (api-key-input-state-input-origin state) row
+              (api-key-input-state-input-width state) (max 1 width))
+        (values lines row column)))))
+
+(defun api-key-input-handle-mouse (state gesture local-y)
+  (selector-masked-input-press
+   (api-key-input-state-input state)
+   (api-key-input-state-input-origin state)
+   (api-key-input-state-input-width state)
+   gesture local-y))
 
 (defstruct (oauth-selector-state
             (:constructor

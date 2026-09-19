@@ -10,7 +10,9 @@
   (provider-name "" :type string)
   (sections nil :type list)
   input
-  cancel-function)
+  cancel-function
+  (input-origin nil)
+  (input-width 80 :type (integer 1 *)))
 
 (cadr-core:define-redacted-print-object
     (login-dialog-state value stream)
@@ -293,7 +295,8 @@
                     (login-dialog-hint-lines
                      (getf section :kind)
                      width)))))))
-        (render-selector-frame
+        (multiple-value-bind (lines row column)
+            (render-selector-frame
          (make-selector-frame
           :sections
           (append
@@ -307,4 +310,16 @@
            (mapcan #'frame-section
                    (login-dialog-state-sections state))
            (list (list :border :border))))
-         width)))))
+         width)
+          (setf (login-dialog-state-input-origin state)
+                (and input row)
+                (login-dialog-state-input-width state)
+                (max 1 width))
+          (values lines row column))))))
+
+(defun login-dialog-handle-mouse (state gesture local-y)
+  (selector-input-press
+   (login-dialog-state-input state)
+   (login-dialog-state-input-origin state)
+   (login-dialog-state-input-width state)
+   gesture local-y))

@@ -15,7 +15,13 @@
     :reader extension-input-dialog-title)
    (input
     :initarg :input
-    :reader extension-input-dialog-input)))
+    :reader extension-input-dialog-input)
+   (input-origin
+    :initform nil
+    :accessor extension-input-dialog-input-origin)
+   (input-width
+    :initform 80
+    :accessor extension-input-dialog-input-width)))
 
 (defun make-extension-input-dialog (title)
   (make-instance
@@ -71,17 +77,21 @@
       (cadr-tui:render-single-line-input
        (extension-input-dialog-input dialog)
        width)
-    (extension-dialog-chrome
-     (extension-input-dialog-title dialog)
-     width input-lines input-row input-column
-     (format
-      nil "~A  ~A"
-      (selector-keybinding-hint
-       (cadr-tui:get-keybindings)
-       "tui.select.confirm" "submit")
-      (selector-keybinding-hint
-       (cadr-tui:get-keybindings)
-       "tui.select.cancel" "cancel")))))
+    (multiple-value-bind (lines row column)
+        (extension-dialog-chrome
+         (extension-input-dialog-title dialog)
+         width input-lines input-row input-column
+         (format
+          nil "~A  ~A"
+          (selector-keybinding-hint
+           (cadr-tui:get-keybindings)
+           "tui.select.confirm" "submit")
+          (selector-keybinding-hint
+           (cadr-tui:get-keybindings)
+           "tui.select.cancel" "cancel")))
+      (setf (extension-input-dialog-input-origin dialog) row
+            (extension-input-dialog-input-width dialog) (max 1 width))
+      (values lines row column))))
 
 (defmethod cadr-tui:component-handle-event
     ((dialog extension-input-dialog) event)
@@ -93,6 +103,13 @@
            (extension-input-dialog-input dialog) event)
         (values (if (eq action :submit) :select action)
                 value))))
+
+(defun extension-input-dialog-handle-mouse (dialog gesture local-y)
+  (selector-input-press
+   (extension-input-dialog-input dialog)
+   (extension-input-dialog-input-origin dialog)
+   (extension-input-dialog-input-width dialog)
+   gesture local-y))
 
 (defclass extension-editor-dialog (cadr-tui:component)
   ((title
@@ -145,7 +162,9 @@
 (defstruct (runtime-auth-input-state
             (:constructor %make-runtime-auth-input-state))
   prompt
-  input)
+  input
+  (input-origin nil)
+  (input-width 80 :type (integer 1 *)))
 
 (cadr-core:define-redacted-print-object
     (runtime-auth-input-state value stream)
@@ -180,6 +199,20 @@
          (if (eq action :submit) :select action)
          value))))
 
+(defun runtime-auth-input-handle-mouse (state gesture local-y)
+  (if (eq :secret
+          (getf (runtime-auth-input-state-prompt state) :type))
+      (selector-masked-input-press
+       (runtime-auth-input-state-input state)
+       (runtime-auth-input-state-input-origin state)
+       (runtime-auth-input-state-input-width state)
+       gesture local-y)
+      (selector-input-press
+       (runtime-auth-input-state-input state)
+       (runtime-auth-input-state-input-origin state)
+       (runtime-auth-input-state-input-width state)
+       gesture local-y)))
+
 (defparameter *runtime-auth-input-paint-by-key*
   (make-hash-table :test #'equal))
 
@@ -200,7 +233,12 @@
                  cursor))
          (cached (gethash key *runtime-auth-input-paint-by-key*)))
     (if cached
-        (values-list cached)
+        (progn
+          (setf (runtime-auth-input-state-input-origin state)
+                (second cached)
+                (runtime-auth-input-state-input-width state)
+                (max 1 width))
+          (values-list cached))
         (let* ((secret-p (eq :secret (getf prompt :type)))
                (manual-code-p
                  (eq :manual-code (getf prompt :type)))
@@ -307,7 +345,11 @@
                            (+ (length prefix) row)
                            column)))))))
           (setf (gethash key *runtime-auth-input-paint-by-key*)
-                result)
+                result
+                (runtime-auth-input-state-input-origin state)
+                (second result)
+                (runtime-auth-input-state-input-width state)
+                (max 1 width))
           (values-list result)))))
 
 (defstruct (framed-select-state

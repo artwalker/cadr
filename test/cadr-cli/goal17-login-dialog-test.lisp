@@ -98,3 +98,70 @@
         (is (null value))))
     (is (= 1 cancelled)
         "escape during the device-code wait cancels the flow")))
+
+(test overlay-input-press-moves-the-cursor
+  (let ((state (cadr-cli::make-login-dialog-state "xAI")))
+    (cadr-cli::login-dialog-show-prompt state "Paste the code" nil nil)
+    (let ((input (cadr-cli::login-dialog-state-input state)))
+      (setf (cadr-tui::single-line-input-value input) "hello"
+            (cadr-tui::single-line-input-cursor input) 5)
+      (cadr-cli::render-login-dialog-state state 40)
+      (let ((origin (cadr-cli::login-dialog-state-input-origin state)))
+        (is (integerp origin))
+        (is (null
+             (cadr-cli::login-dialog-handle-mouse
+              state (list :type :press :button :left :x 4) 0)))
+        (is (cadr-cli::login-dialog-handle-mouse
+             state (list :type :press :button :left :x 4) origin))
+        (is (= 2 (cadr-tui::single-line-input-cursor input)))
+        (cadr-cli::login-dialog-state-handle-event
+         state (cadr-tui:make-input-event :kind :text :text "X"))
+        (is (string= "heXllo"
+                     (cadr-tui:single-line-input-value input))))))
+  (let* ((state
+           (cadr-cli::make-api-key-input-state
+            (cadr-cli::make-oauth-selector-option
+             :id :anthropic :name "Anthropic" :auth-type :api-key)))
+         (input (cadr-cli::api-key-input-state-input state)))
+    (setf (cadr-tui::single-line-input-value input) "hello"
+          (cadr-tui::single-line-input-cursor input) 5)
+    (cadr-cli::render-api-key-input-state state 40)
+    (let ((origin (cadr-cli::api-key-input-state-input-origin state)))
+      (is (integerp origin))
+      (is (cadr-cli::api-key-input-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-tui::single-line-input-cursor input)))
+      (cadr-cli::api-key-input-state-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-tui:single-line-input-value input)))))
+  (let* ((dialog (cadr-cli::make-extension-input-dialog "Name"))
+         (input (cadr-cli::extension-input-dialog-input dialog)))
+    (setf (cadr-tui::single-line-input-value input) "hello"
+          (cadr-tui::single-line-input-cursor input) 5)
+    (cadr-tui:component-render dialog 40)
+    (let ((origin (cadr-cli::extension-input-dialog-input-origin dialog)))
+      (is (integerp origin))
+      (is (cadr-cli::extension-input-dialog-handle-mouse
+           dialog (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-tui::single-line-input-cursor input)))
+      (cadr-tui:component-handle-event
+       dialog (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-tui:single-line-input-value input)))))
+  (let* ((state
+           (cadr-cli::make-runtime-auth-input-state
+            (list :type :secret :message "Enter the key")))
+         (input (cadr-cli::runtime-auth-input-state-input state)))
+    (setf (cadr-tui::single-line-input-value input) "hello"
+          (cadr-tui::single-line-input-cursor input) 5)
+    (cadr-cli::render-runtime-auth-input-state state 40)
+    (let ((origin (cadr-cli::runtime-auth-input-state-input-origin state)))
+      (is (integerp origin))
+      (is (cadr-cli::runtime-auth-input-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-tui::single-line-input-cursor input)))
+      (cadr-cli::runtime-auth-input-state-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-tui:single-line-input-value input))))))
