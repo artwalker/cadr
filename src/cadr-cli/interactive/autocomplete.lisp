@@ -51,25 +51,45 @@
     ("quit" "Quit cadr" nil)))
 
 (defun resource-slash-commands
-    (skills prompts skill-commands-p)
-  (nconc
-   (loop for template in prompts
-         collect
-         (cadr-tui:make-autocomplete-command
-          :name
-          (cadr-agent:prompt-template-name template)
-          :description
-          (cadr-agent:prompt-template-description
-           template)))
-   (when skill-commands-p
-     (loop for skill in skills
+    (skills prompts skill-commands-p
+     &optional extension-commands)
+  (flet ((builtin-name-p (name)
+           (member name
+                   +tui-autocomplete-command-specifications+
+                   :key #'first
+                   :test #'string=)))
+    (nconc
+     (loop for template in prompts
            collect
            (cadr-tui:make-autocomplete-command
             :name
-            (format nil "skill:~A"
-                    (cadr-agent:skill-name skill))
+            (cadr-agent:prompt-template-name template)
             :description
-            (cadr-agent:skill-description skill))))))
+            (cadr-agent:prompt-template-description
+             template)))
+     (loop for command in extension-commands
+           for name =
+             (cadr-agent::extension-command-definition-name
+              command)
+           unless (builtin-name-p name)
+             collect
+             (cadr-tui:make-autocomplete-command
+              :name name
+              :description
+              (cadr-agent::extension-command-definition-description
+               command)
+              :argument-hint
+              (cadr-agent::extension-command-definition-argument-hint
+               command)))
+     (when skill-commands-p
+       (loop for skill in skills
+             collect
+             (cadr-tui:make-autocomplete-command
+              :name
+              (format nil "skill:~A"
+                      (cadr-agent:skill-name skill))
+              :description
+              (cadr-agent:skill-description skill)))))))
 
 (defun tui-builtin-slash-command-p (command)
   (member
