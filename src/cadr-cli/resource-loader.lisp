@@ -344,8 +344,11 @@ Returns the deduped list and a list of collision records
                      (default-resource-loader-snapshot
                       loader)
                      :reload :startup)))
-               nil))
-         (configs
+               nil)))
+    (note-loader-extension-sources
+     loader
+     (getf extension-paths :extension-resource-sources))
+    (let* ((configs
            (if
                (default-resource-loader-project-trusted-p
                 loader)
@@ -435,7 +438,7 @@ Returns the deduped list and a list of collision records
               (setf
                (default-resource-loader-snapshot loader)
                snapshot)
-              snapshot)))))))))
+              snapshot))))))))))
 
 (defvar *loader-package-sources*
   (make-hash-table :test #'eq :weakness :key))
@@ -448,6 +451,17 @@ Returns the deduped list and a list of collision records
 (defun loader-package-sources (loader)
   (copy-list (gethash loader *loader-package-sources*)))
 
+(defvar *loader-extension-sources*
+  (make-hash-table :test #'eq :weakness :key))
+
+(defun note-loader-extension-sources (loader sources)
+  (setf (gethash loader *loader-extension-sources*)
+        (copy-list sources))
+  loader)
+
+(defun loader-extension-sources (loader)
+  (copy-list (gethash loader *loader-extension-sources*)))
+
 (defun resource-path-under-p (file directory)
   (let ((dir
           (namestring
@@ -456,10 +470,20 @@ Returns the deduped list and a list of collision records
     (and (plusp (length dir))
          (uiop:string-prefix-p dir name))))
 
+(defun resource-path-matches-source-p (file source-path)
+  (or (string= (namestring file) (namestring source-path))
+      (resource-path-under-p file source-path)))
+
 (defun resource-path-source-info (loader path)
   (when (or (null loader) (null path))
     (return-from resource-path-source-info
       (values nil nil)))
+  (dolist (entry (loader-extension-sources loader))
+    (when (resource-path-matches-source-p
+           path (getf entry :path))
+      (return-from resource-path-source-info
+        (values (getf entry :source)
+                (getf entry :scope)))))
   (dolist (entry (loader-package-sources loader))
     (when (resource-path-under-p path (getf entry :path))
       (return-from resource-path-source-info
