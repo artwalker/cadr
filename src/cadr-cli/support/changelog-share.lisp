@@ -433,23 +433,29 @@
          (map 'vector #'share-tool-record tools))))))
   path)
 
-(defun radius-share-token (auth-path)
-  (let ((credential
-          (cadr-ai:read-auth-credential
-           (or auth-path (cadr-core:agent-auth-path))
-           :radius)))
+(defun radius-share-refresh (credential)
+  (cadr-ai::refresh-radius-oauth-credential
+   (let ((configured (uiop:getenv "RADIUS_GATEWAY_URL")))
+     (if (and configured (plusp (length configured)))
+         configured
+         (default-radius-gateway)))
+   credential))
+
+(defun radius-share-token
+    (auth-path &key (refresh #'radius-share-refresh))
+  (let* ((path (or auth-path (cadr-core:agent-auth-path)))
+         (credential
+           (cadr-ai:read-auth-credential path :radius)))
     (cond
       ((typep credential 'cadr-ai:oauth-credential)
-       (let ((access
-               (cadr-ai:oauth-credential-access credential))
-             (expires
-               (cadr-ai:oauth-credential-expires credential)))
-         (when (and (stringp access)
-                    (plusp (length access))
-                    (or (not (plusp expires))
-                        (> expires
-                           (+ (cadr-core:unix-milliseconds)
-                              (* 5 60 1000)))))
+       (let* ((resolved
+                (cadr-ai:resolve-oauth-credential
+                 path :radius refresh
+                 :minimum-validity-milliseconds
+                 (* 5 60 1000)))
+              (access
+                (cadr-ai:oauth-credential-access resolved)))
+         (when (and (stringp access) (plusp (length access)))
            access)))
       ((typep credential 'cadr-ai:api-key-credential)
        (let ((key
@@ -485,13 +491,16 @@
             (handler-case
                 (funcall http request)
               (error (condition)
-                (error "Failed to share via Radius: ~A"
+                (error "Failed to upload Radius artifact: ~A"
                        condition)))))
-      (let ((url
-              (cadr-ai::json-get response "canonical_url")))
+      (let* ((artifact
+               (cadr-ai::json-get response "artifact"))
+             (url
+               (and artifact
+                    (cadr-ai::json-get artifact "canonical_url"))))
         (unless (and (stringp url) (plusp (length url)))
           (error
-           "Failed to share via Radius: response has no canonical_url"))
+           "Failed to upload Radius artifact: response has no canonical_url"))
         url))))
 
 (defun share-session
@@ -503,11 +512,12 @@
        (auth-path nil auth-path-p)
        radius-token
        radius-gateway
+       (refresh #'radius-share-refresh)
        (http #'cadr-ai:request-json))
   (let* ((token
            (or radius-token
                (and (not (and auth-path-p (null auth-path)))
-                    (radius-share-token auth-path))))
+                    (radius-share-token auth-path :refresh refresh))))
          (directory
            (merge-pathnames
             (format nil "cadr-share-~A/" (cadr-ai:uuid-v7))
