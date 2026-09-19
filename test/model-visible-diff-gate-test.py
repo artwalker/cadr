@@ -38,6 +38,20 @@ class ModelVisibleDiffGateTest(unittest.TestCase):
         self.assertIn("Use the read tool", good)
         self.assertIn("Read the full skill file", broken)
 
+    def test_custom_prompt_branch_keeps_the_trailing_cwd_newline(self) -> None:
+        scenario = {
+            "customPrompt": "Custom",
+            "cwd": "/tmp/project",
+            "selectedTools": ["read"],
+            "skills": [],
+            "contextFiles": [],
+        }
+        good = self.mod.format_custom_system_prompt(scenario)
+        broken = self.mod.format_custom_system_prompt_broken(scenario)
+        self.assertTrue(good.endswith("Current working directory: /tmp/project\n"))
+        self.assertTrue(broken.endswith("Current working directory: /tmp/project"))
+        self.assertNotEqual(good, broken)
+
     def test_gate_passes_against_cadr_formatter(self) -> None:
         with tempfile.TemporaryDirectory(prefix="cadr-mvd-") as temporary:
             code = self.mod.run_gate(Path(temporary))
