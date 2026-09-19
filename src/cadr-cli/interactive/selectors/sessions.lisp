@@ -333,6 +333,8 @@
   (mode :list)
   (rename-input "" :type string)
   (rename-cursor 0 :type (integer 0 *))
+  (rename-origin nil)
+  (rename-width 80 :type (integer 1 *))
   rename-target-path
   confirming-delete-path
   current-session-path
@@ -982,6 +984,33 @@
     (otherwise
      (values nil nil))))
 
+(defun session-selector-handle-mouse (selector gesture local-y)
+  (let ((origin (session-selector-state-rename-origin selector))
+        (x (getf gesture :x)))
+    (unless (and (eq :rename (session-selector-state-mode selector))
+                 (integerp origin)
+                 (eql local-y origin)
+                 (eq (getf gesture :type) :press)
+                 (eq (getf gesture :button) :left)
+                 (integerp x))
+      (return-from session-selector-handle-mouse nil))
+    (let* ((value (session-selector-state-rename-input selector))
+           (input
+             (cadr-tui:make-single-line-input
+              :value value :prompt "> ")))
+      (setf (cadr-tui::single-line-input-cursor input)
+            (min
+             (session-selector-state-rename-cursor selector)
+             (length value)))
+      (cadr-tui:render-single-line-input
+       input
+       (session-selector-state-rename-width selector))
+      (when (cadr-tui:single-line-input-handle-mouse
+             input :type :press :button :left :x x :y 0)
+        (setf (session-selector-state-rename-cursor selector)
+              (cadr-tui::single-line-input-cursor input))
+        t))))
+
 (defun session-selector-handle-event (selector event)
   (when
       (eq :rename
@@ -1202,8 +1231,11 @@
       (multiple-value-bind (input-lines input-row input-column)
           (selector-input-rendering
            (session-selector-state-rename-input selector)
-           width)
-        (render-selector-frame
+           width
+           :cursor
+           (session-selector-state-rename-cursor selector))
+        (multiple-value-bind (lines cursor-row cursor-column)
+            (render-selector-frame
          (make-selector-frame
           :sections
           (list
@@ -1227,7 +1259,12 @@
             :muted)
            :blank
            (list :border :accent)))
-         width))))
+         width)
+          (setf (session-selector-state-rename-origin selector)
+                cursor-row
+                (session-selector-state-rename-width selector)
+                (max 1 width))
+          (values lines cursor-row cursor-column)))))
   (let* ((scope
            (session-selector-state-scope selector))
          (sort

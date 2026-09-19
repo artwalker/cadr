@@ -1797,3 +1797,28 @@
       :all-models (list one two))
      #'cadr-cli::scoped-models-selector-handle-event
      #'cadr-cli::scoped-models-selector-state-selected 1)))
+
+(test session-rename-press-inserts-at-the-cursor
+  (let ((state (cadr-cli::make-session-selector-state)))
+    (setf (cadr-cli::session-selector-state-mode state) :rename
+          (cadr-cli::session-selector-state-rename-input state) "hello"
+          (cadr-cli::session-selector-state-rename-cursor state) 5)
+    (cadr-cli::render-session-selector state 40)
+    (let ((origin (cadr-cli::session-selector-state-rename-origin state)))
+      (is (= 5 origin))
+      (is (null
+           (cadr-cli::session-selector-handle-mouse
+            state (list :type :press :button :left :x 4) 0)))
+      (is (= 5 (cadr-cli::session-selector-state-rename-cursor state)))
+      (is (cadr-cli::session-selector-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-cli::session-selector-state-rename-cursor state)))
+      (cadr-cli::session-selector-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-cli::session-selector-state-rename-input state)))
+      (cadr-cli::session-selector-handle-event
+       state (cadr-tui:make-input-event :kind :backspace))
+      (is (string= "hello"
+                   (cadr-cli::session-selector-state-rename-input state)))
+      (is (= 2 (cadr-cli::session-selector-state-rename-cursor state))))))

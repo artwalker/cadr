@@ -616,7 +616,7 @@
                #'cadr-tui:strip-terminal-sequences
                lines)))
         (is (= 5 row))
-        (is (= 9 column))
+        (is (= 2 column))
         (is (string= "> Renamed"
                      (string-right-trim
                       '(#\Space) (nth row plain))))
