@@ -1465,6 +1465,73 @@
          (cadr-cli::prefix-autocomplete-description
           "Example skill" "extension:bundled.lisp" "temporary")))))
 
+(test builtin-command-conflicts-name-the-available-invocation
+  (let* ((first
+           (cadr-agent::make-extension-bundle
+            :id "one" :path "/tmp/ext-one.lisp"))
+         (second
+           (cadr-agent::make-extension-bundle
+            :id "two" :path "/tmp/ext-two.lisp"))
+         (manager
+           (cadr-cli::make-cli-extension-manager
+            :cwd "/tmp" :no-discovery-p t))
+         (host
+           (cadr-cli::cli-extension-manager-host manager)))
+    (cadr-agent::call-with-extension-registration
+     first
+     (lambda ()
+       (cadr-agent:define-command
+        "settings"
+        :handler
+        (lambda (arguments context)
+          (declare (ignore arguments context))))))
+    (cadr-agent::replace-extension-bundles host (list first))
+    (setf
+     (cadr-cli::cli-extension-manager-startup-issues manager)
+     (list
+      (list :type :warning
+            :source :command-conflict
+            :path "/old"
+            :message "stale")
+      (list :type :warning
+            :source :shortcut
+            :path "/keep"
+            :message "keep shortcut")))
+    (cadr-cli::refresh-extension-command-conflict-diagnostics
+     manager)
+    (is (equal
+         '("keep shortcut"
+           "Extension command '/settings' conflicts with built-in interactive command. Skipping in autocomplete.")
+         (mapcar
+          (lambda (issue) (getf issue :message))
+          (cadr-cli::cli-extension-manager-startup-issues
+           manager))))
+    (cadr-agent::call-with-extension-registration
+     second
+     (lambda ()
+       (cadr-agent:define-command
+        "settings"
+        :handler
+        (lambda (arguments context)
+          (declare (ignore arguments context))))
+       (cadr-agent:define-command
+        "ship"
+        :handler
+        (lambda (arguments context)
+          (declare (ignore arguments context))))))
+    (cadr-agent::replace-extension-bundles
+     host (list first second))
+    (cadr-cli::refresh-extension-command-conflict-diagnostics
+     manager)
+    (is (equal
+         '("keep shortcut"
+           "Extension command '/settings' conflicts with built-in interactive command. Available as '/settings:1'."
+           "Extension command '/settings' conflicts with built-in interactive command. Available as '/settings:2'.")
+         (mapcar
+          (lambda (issue) (getf issue :message))
+          (cadr-cli::cli-extension-manager-startup-issues
+           manager))))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))
