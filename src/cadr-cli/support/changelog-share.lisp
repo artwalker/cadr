@@ -304,16 +304,89 @@
          (cadr-ai::cadr-default-share-viewer-url))
      gist-id)))
 
+(defvar *call-with-share-loader* nil
+  "When bound, a function of (message upload). upload receives an abort predicate. Nil outside the interactive TUI.")
+
+(defun share-phase-message (token)
+  (if token
+      "Uploading to Radius..."
+      "Creating gist..."))
+
+(defun share-aborted-p (abort-p)
+  (cadr-core:cancellation-predicate-aborted-p abort-p))
+
+(defun signal-share-aborted ()
+  (error 'cadr-ai:request-aborted :message "Request was aborted"))
+
+(defun ensure-share-not-aborted (abort-p)
+  (when (share-aborted-p abort-p)
+    (signal-share-aborted)))
+
+(defun run-abortable-share-command (argv abort-p)
+  (ensure-share-not-aborted abort-p)
+  (let ((process
+          (uiop:launch-program
+           argv
+           :input nil
+           :output :stream
+           :error-output :stream
+           :ignore-error-status t)))
+    (unwind-protect
+         (progn
+           (loop while (uiop:process-alive-p process)
+                 do (when (share-aborted-p abort-p)
+                      (uiop:terminate-process process :urgent t)
+                      (signal-share-aborted))
+                    (sleep 0.05d0))
+           (let ((status (or (uiop:wait-process process) 1)))
+             (values
+              (or (ignore-errors
+                    (uiop:slurp-stream-string
+                     (uiop:process-info-output process)))
+                  "")
+              (or (ignore-errors
+                    (uiop:slurp-stream-string
+                     (uiop:process-info-error-output process)))
+                  "")
+              status)))
+      (when (uiop:process-alive-p process)
+        (ignore-errors
+          (uiop:terminate-process process :urgent t))
+        (ignore-errors
+          (uiop:wait-process process))))))
+
+(defun call-share-runner (runner argv abort-p)
+  (ensure-share-not-aborted abort-p)
+  (if (and abort-p
+           (eq runner #'default-share-command-runner))
+      (run-abortable-share-command argv abort-p)
+      (funcall runner argv)))
+
+(defun invoke-share-http (http request abort-p)
+  (ensure-share-not-aborted abort-p)
+  (handler-case
+      (if (eq http #'cadr-ai:request-json)
+          (cadr-ai:request-json request :abort-p abort-p)
+          (funcall http request))
+    (cadr-ai:request-aborted (condition)
+      (error condition))
+    (error (condition)
+      (error "Failed to upload Radius artifact: ~A"
+             condition))))
+
 (defun share-session-as-gist
     (session
      &key
        (runner #'default-share-command-runner)
-       viewer-base-url)
+       viewer-base-url
+       abort-p)
   (handler-case
       (multiple-value-bind
             (ignored error-output status)
-          (funcall runner
-                   '("gh" "auth" "status"))
+          (call-share-runner
+           runner
+           '("gh" "auth" "status")
+           abort-p)
         (declare (ignore ignored error-output))
         (unless (and (integerp status)
                      (zerop status))
@@ -334,12 +407,13 @@
             session temporary)
            (multiple-value-bind
                  (stdout stderr status)
-               (funcall
+               (call-share-runner
                 runner
                 (list
                  "gh" "gist" "create"
                  "--public=false"
-                 (namestring temporary)))
+                 (namestring temporary))
+                abort-p)
              (unless
                  (and (integerp status)
                       (zerop status))
@@ -467,7 +541,7 @@
   (cadr-ai:provider-definition-base-url
    (cadr-ai:find-provider-definition :radius)))
 
-(defun share-via-radius (jsonl-path token gateway http)
+(defun share-via-radius (jsonl-path token gateway http &key abort-p)
   (let* ((body (uiop:read-file-string jsonl-path))
          (title
            (format nil "~A session"
@@ -487,12 +561,8 @@
                    (format nil "Bearer ~A" token))
              (cons "Content-Type" "application/x-ndjson"))
             :raw-body body)))
-    (let ((response
-            (handler-case
-                (funcall http request)
-              (error (condition)
-                (error "Failed to upload Radius artifact: ~A"
-                       condition)))))
+    (let ((response (invoke-share-http http request abort-p)))
+      (ensure-share-not-aborted abort-p)
       (let* ((artifact
                (cadr-ai::json-get response "artifact"))
              (url
@@ -535,17 +605,29 @@
             :tools
             (and agent
                  (cadr-agent::merged-agent-tools agent)))
-           (if token
-               (values
-                (share-via-radius
-                 jsonl token
-                 (or radius-gateway (default-radius-gateway))
-                 http)
-                nil)
-               (share-session-as-gist
-                session
-                :runner runner
-                :viewer-base-url viewer-base-url)))
+           (flet ((upload (abort-p)
+                    (handler-case
+                        (if token
+                            (values
+                             (share-via-radius
+                              jsonl token
+                              (or radius-gateway
+                                  (default-radius-gateway))
+                              http
+                              :abort-p abort-p)
+                             nil)
+                            (share-session-as-gist
+                             session
+                             :runner runner
+                             :viewer-base-url viewer-base-url
+                             :abort-p abort-p))
+                      (cadr-ai:request-aborted ()
+                        (values nil :cancelled)))))
+             (if *call-with-share-loader*
+                 (funcall *call-with-share-loader*
+                          (share-phase-message token)
+                          #'upload)
+                 (upload nil))))
       (when (probe-file directory)
         (uiop:delete-directory-tree
          directory

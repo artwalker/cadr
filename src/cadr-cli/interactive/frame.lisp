@@ -33,6 +33,8 @@
     ((framed-select-state-p overlay)
      (render-framed-select-state
       overlay width :now now))
+    ((typep overlay 'bordered-loader-component)
+     (cadr-tui:component-render overlay width))
     (t
      (cadr-tui:render-select-list overlay width))))
 

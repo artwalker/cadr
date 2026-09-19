@@ -378,6 +378,121 @@
                   :message "radius down"))))
       (is (null calls)))))
 
+(test share-loader-abort-skips-radius-and-gist
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "loader" "SHARE-LOADER"))
+          (messages nil)
+          (http-calls 0)
+          (gist-calls 0))
+      (let ((cadr-cli::*call-with-share-loader*
+              (lambda (message upload)
+                (push message messages)
+                (let* ((ui (cadr-tui:make-tui-root))
+                       (loader
+                         (cadr-cli:make-bordered-loader-component
+                          ui message
+                          :cancellable-p t
+                          :start-p nil)))
+                  (unwind-protect
+                       (progn
+                         (cadr-tui:component-handle-event
+                          loader
+                          (cadr-tui:make-input-event :kind :escape))
+                         (funcall
+                          upload
+                          (lambda ()
+                            (cadr-tui:cancellation-token-aborted-p
+                             (cadr-cli:bordered-loader-signal loader)))))
+                    (cadr-tui:component-dispose loader))))))
+        (multiple-value-bind (viewer gist)
+            (cadr-cli::share-session
+             session
+             :auth-path nil
+             :radius-token "radius-test-token"
+             :runner
+             (lambda (argv)
+               (declare (ignore argv))
+               (incf gist-calls)
+               (values "" "" 0))
+             :http
+             (lambda (request)
+               (declare (ignore request))
+               (incf http-calls)
+               nil))
+          (is (null viewer))
+          (is (eq :cancelled gist))
+          (is (equal '("Uploading to Radius...") messages))
+          (is (= 0 http-calls))
+          (is (= 0 gist-calls)))))))
+
+(test share-loader-gist-phase-abort-skips-the-runner
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "loader-gist" "SHARE-GIST"))
+          (messages nil)
+          (gist-calls 0))
+      (let ((cadr-cli::*call-with-share-loader*
+              (lambda (message upload)
+                (push message messages)
+                (funcall upload (lambda () t)))))
+        (multiple-value-bind (viewer gist)
+            (cadr-cli::share-session
+             session
+             :auth-path nil
+             :runner
+             (lambda (argv)
+               (declare (ignore argv))
+               (incf gist-calls)
+               (values "https://gist.github.com/x" "" 0)))
+          (is (null viewer))
+          (is (eq :cancelled gist))
+          (is (equal '("Creating gist...") messages))
+          (is (= 0 gist-calls)))))))
+
+(test radius-share-abort-is-not-an-upload-failure
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "abort" "SHARE-ABORT"))
+          (calls nil))
+      (multiple-value-bind (viewer gist)
+          (cadr-cli::share-session
+           session
+           :radius-token "radius-test-token"
+           :runner
+           (lambda (argv)
+             (push argv calls)
+             (values "" "" 0))
+           :http
+           (lambda (request)
+             (declare (ignore request))
+             (error 'cadr-ai:request-aborted
+                    :message "Request was aborted")))
+        (is (null viewer))
+        (is (eq :cancelled gist))
+        (is (null calls))))))
+
+(test share-loader-overlay-renders-the-upload-message
+  (let* ((ui (cadr-tui:make-tui-root))
+         (loader
+           (cadr-cli:make-bordered-loader-component
+            ui "Uploading to Radius..."
+            :cancellable-p t
+            :start-p nil))
+         (plain
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-cli::render-tui-overlay-lines loader 40 nil))))
+    (is (find-if
+         (lambda (line)
+           (search "Uploading to Radius..." line))
+         plain))
+    (is (find-if
+         (lambda (line)
+           (search "cancel" line))
+         plain))
+    (cadr-tui:component-dispose loader)))
+
 (test radius-share-keeps-a-token-that-outlasts-five-minutes
   (with-test-directory (root)
     (let ((path (merge-pathnames "auth.json" root))

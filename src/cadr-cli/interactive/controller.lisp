@@ -2610,6 +2610,9 @@ interactive-mode.ts:5956-5960).")
                              ((framed-select-state-p overlay)
                               (framed-select-state-handle-event
                                overlay event))
+                             ((typep overlay 'bordered-loader-component)
+                              (cadr-tui:component-handle-event
+                               overlay event))
                              (t
                               (cadr-tui:select-list-handle-event
                                overlay event)))))
@@ -2757,6 +2760,31 @@ interactive-mode.ts:5956-5960).")
           footer-provider
           #'refresh-footer-state)))
       (refresh-footer-state)
+      (let ((share-ui (extension-runtime)))
+        (setf *call-with-share-loader*
+              (lambda (message upload)
+                (let ((loader
+                        (make-bordered-loader-component
+                         share-ui message
+                         :cancellable-p t)))
+                  (bordered-loader-set-on-abort
+                   loader
+                   (lambda ()
+                     (status "Share cancelled")))
+                  (sb-thread:with-mutex (lock)
+                    (setf overlay loader))
+                  (request-render)
+                  (unwind-protect
+                       (funcall
+                        upload
+                        (lambda ()
+                          (cadr-tui:cancellation-token-aborted-p
+                           (bordered-loader-signal loader))))
+                    (sb-thread:with-mutex (lock)
+                      (when (eq overlay loader)
+                        (setf overlay nil))
+                      (dispose-component loader))
+                    (request-render))))))
       (when set-event-consumer
         (funcall set-event-consumer
                  #'consume-event))
@@ -3002,7 +3030,8 @@ interactive-mode.ts:5956-5960).")
                renderer))))
         (setf *tui-mode-switch-hook* nil
               *fullscreen-copy-on-select-hook* nil
-              *alt-screen-flash-function* nil)
+              *alt-screen-flash-function* nil
+              *call-with-share-loader* nil)
         (finish-custom-ui nil)
         (when unwrap-tui-turn-dispatch
           (funcall unwrap-tui-turn-dispatch))
