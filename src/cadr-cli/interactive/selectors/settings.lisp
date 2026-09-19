@@ -178,9 +178,14 @@
         :test #'string=))
 
 (defun settings-model-thinking-item-label (model)
-  (format nil "~A [~(~A~)]"
-          (cadr-ai:model-id model)
-          (cadr-ai:model-provider model)))
+  (concatenate
+   'string
+   (cadr-ai:model-id model)
+   " "
+   (cadr-tui:theme-foreground
+    :muted
+    (format nil "[~(~A~)]"
+            (cadr-ai:model-provider model)))))
 
 (defun settings-model-thinking-sort-models (models current-model default-provider default-model)
   (stable-sort
@@ -911,7 +916,17 @@
      (component-text-lines
       (cadr-tui:theme-foreground :muted description)
       width :padding-x 0)
-     (list "")
+     (if searchable
+         (append
+          (list "")
+          (multiple-value-bind (lines row column)
+              (selector-input-rendering
+               (settings-selector-state-submenu-query state)
+               width)
+            (declare (ignore row column))
+            lines)
+          (list ""))
+         (list ""))
      (multiple-value-bind (visible start end total)
          (settings-selector-visible-slice options selected 10)
        (let ((primary-width
