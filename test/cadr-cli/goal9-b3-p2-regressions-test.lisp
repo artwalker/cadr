@@ -473,12 +473,12 @@
       (list
        border (goal9-b3-full-width-line "Per-Model Thinking Level" width) ""
        (goal9-b3-full-width-line
-        "Select a model to configure" width)
+        "Step 1/2 · Select a model to configure" width)
        ""
        "→ No models available  Log in to a provider or configure an API key first"
        ""
        (goal9-b3-full-width-line
-        "  Enter to select · Esc to go back" width)
+        "  Type to filter · Enter to select · Esc to go back" width)
        border)
       (goal9-b3-plain-lines
        (cadr-cli::render-settings-selector state width))))
