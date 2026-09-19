@@ -603,6 +603,67 @@
            (length
             (cadr-agent::extension-host-conflicts host))))))
 
+(test duplicate-extension-commands-use-invocation-names
+  (let ((seen nil))
+    (let* ((first
+             (make-test-extension-bundle
+              "first-ship"
+              (lambda ()
+                (cadr-agent:define-command
+                 "review"
+                 :handler
+                 (lambda (arguments context)
+                   (declare (ignore arguments context))
+                   (push :review seen)))
+                (cadr-agent:define-command
+                 "ship"
+                 :handler
+                 (lambda (arguments context)
+                   (declare (ignore arguments context))
+                   (push :first seen))))))
+           (taken
+             (make-test-extension-bundle
+              "taken-ship"
+              (lambda ()
+                (cadr-agent:define-command
+                 "ship:1"
+                 :handler
+                 (lambda (arguments context)
+                   (declare (ignore arguments context))
+                   (push :taken seen))))))
+           (second
+             (make-test-extension-bundle
+              "second-ship"
+              (lambda ()
+                (cadr-agent:define-command
+                 "ship"
+                 :handler
+                 (lambda (arguments context)
+                   (declare (ignore arguments context))
+                   (push :second seen))))))
+           (host
+             (make-test-extension-host
+              (list first taken second)))
+           (names
+             (mapcar
+              #'cadr-agent::extension-command-lookup-name
+              (cadr-agent::extension-snapshot-commands
+               (cadr-agent::extension-host-current-snapshot
+                host)))))
+      (is (equal '("review" "ship:1" "ship:1:2" "ship:2")
+                 names))
+      (is (null
+           (cadr-agent::invoke-extension-command
+            host "ship" nil)))
+      (is (cadr-agent::invoke-extension-command
+           host "ship:2" nil))
+      (is (equal '(:second) seen))
+      (is (cadr-agent::invoke-extension-command
+           host "review" nil))
+      (is (equal '(:review :second) seen))
+      (is (null
+           (cadr-agent::extension-host-conflicts host))))))
+
 (test tool-hooks-affect-real-execution-and-revalidate-rewritten-arguments
   (let ((executed nil)
         (seen nil)

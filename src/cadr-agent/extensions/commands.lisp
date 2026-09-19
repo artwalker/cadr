@@ -2,10 +2,41 @@
 
 ;;; Commands and prompt templates
 
+(defun extension-command-lookup-name (definition)
+  (or (extension-command-definition-invocation-name definition)
+      (extension-command-definition-name definition)))
+
+(defun assign-extension-command-invocations (commands)
+  (let ((counts (make-hash-table :test #'equal))
+        (seen (make-hash-table :test #'equal))
+        (taken (make-hash-table :test #'equal)))
+    (dolist (command commands)
+      (let ((name (extension-command-definition-name command)))
+        (setf (gethash name counts)
+              (1+ (or (gethash name counts) 0)))))
+    (dolist (command commands)
+      (let* ((name (extension-command-definition-name command))
+             (occurrence (1+ (or (gethash name seen) 0)))
+             (invocation name)
+             (suffix occurrence))
+        (setf (gethash name seen) occurrence)
+        (when (> (gethash name counts) 1)
+          (setf invocation
+                (format nil "~A:~D" name occurrence)))
+        (loop while (gethash invocation taken)
+              do (incf suffix)
+                 (setf invocation
+                       (format nil "~A:~D" name suffix)))
+        (setf (gethash invocation taken) t)
+        (setf (extension-command-definition-invocation-name
+               command)
+              invocation)))
+    commands))
+
 (defun find-extension-command (snapshot name)
   (find name
         (extension-snapshot-commands snapshot)
-        :key #'extension-command-definition-name
+        :key #'extension-command-lookup-name
         :test #'string=))
 
 (defun invoke-extension-command

@@ -32,7 +32,7 @@
       (push
        (cadr-ai::json-object
         "name"
-        (cadr-agent::extension-command-definition-name
+        (cadr-agent::extension-command-lookup-name
          definition)
         "description"
         (or

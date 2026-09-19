@@ -43,6 +43,7 @@
 
 (defstruct extension-command-definition
   name
+  invocation-name
   description
   argument-hint
   handler
