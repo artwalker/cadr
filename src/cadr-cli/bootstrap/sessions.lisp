@@ -1687,6 +1687,31 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
     (namestring (truename left))
     (namestring (truename right)))))
 
+(defun unique-import-session-path (source session-directory)
+  ;; Baseline agent-session-runtime.ts importFromJsonl: keep the
+  ;; basename when free, else name-1.ext, name-2.ext, ...
+  (let* ((session-directory
+           (uiop:ensure-directory-pathname session-directory))
+         (destination
+           (merge-pathnames
+            (file-namestring source)
+            session-directory)))
+    (when (same-session-file-p source destination)
+      (return-from unique-import-session-path destination))
+    (let* ((name (pathname-name destination))
+           (type (pathname-type destination))
+           (suffix 1))
+      (loop while (probe-file destination)
+            do (setf destination
+                     (merge-pathnames
+                      (make-pathname
+                       :name (format nil "~A-~D" name suffix)
+                       :type type
+                       :defaults destination)
+                      session-directory)
+                     suffix (1+ suffix)))
+      destination)))
+
 (define-condition session-import-file-not-found-error (error)
   ((file-path
     :initarg :file-path
@@ -1741,9 +1766,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
              (uiop:ensure-directory-pathname
               directory))
            (destination
-             (merge-pathnames
-              (file-namestring source)
-              session-directory)))
+             (unique-import-session-path
+              source session-directory)))
       (ensure-directories-exist
        (merge-pathnames "anchor"
                         session-directory))
