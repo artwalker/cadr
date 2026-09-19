@@ -856,6 +856,10 @@
             "Hint: Start without extensions using \"cadr -ne\"."))
           (finish-output *error-output*))
         (return-from cli-handler 1)))
+    (cadr-agent::replace-agent-prompt-catalogs
+     agent
+     (resource-snapshot-skills resources)
+     (resource-snapshot-prompts resources))
     (sync-agent-settings-from-manager
      agent settings-manager)
     (cadr-tui:set-keybindings
@@ -1433,8 +1437,12 @@
                 (handle-extension-command
                  line extension-manager))))
          (expand-template (line)
-           (expand-cli-extension-prompt
-            extension-manager line))
+           (expand-cli-slash-prompt
+            extension-manager line
+            (and resources
+                 (resource-snapshot-skills resources))
+            (and resources
+                 (resource-snapshot-prompts resources))))
          (model-items ()
            (loop
              for model in available-models

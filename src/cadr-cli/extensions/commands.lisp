@@ -53,4 +53,24 @@
    (cli-extension-manager-host manager)
    text))
 
+(defun expand-cli-slash-prompt
+    (manager text skills prompts)
+  (multiple-value-bind (expanded found-p)
+      (expand-cli-extension-prompt manager text)
+    (when found-p
+      (return-from expand-cli-slash-prompt
+        (values expanded t)))
+    (multiple-value-bind (skill-text skill-p)
+        (cadr-agent::expand-skill-command-text
+         text skills)
+      (when skill-p
+        (return-from expand-cli-slash-prompt
+          (values skill-text t)))
+      (multiple-value-bind (prompt-text prompt-p)
+          (cadr-agent::expand-prompt-template-text
+           text prompts)
+        (if prompt-p
+            (values prompt-text t)
+            (values text t))))))
+
 ;;; Git package installation

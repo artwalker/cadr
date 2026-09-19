@@ -221,3 +221,65 @@
             "~%~%The following skills provide specialized instructions for specific tasks.~%Use bash to load a skill's file when the task matches its description.~%When a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.~%~%<available_skills>~%  <skill>~%    <name>demo</name>~%    <description>Demo skill</description>~%    <location>/skills/demo/SKILL.md</location>~%  </skill>~%</available_skills>")))
     (is (string= expected formatted))
     (is (string= bash-expected bash-formatted))))
+
+(test slash-skill-and-file-prompt-expand-before-the-model
+  (let* ((skill
+           (cadr-agent::make-skill
+            :name "example"
+            :description "Example skill"
+            :content "Use this skill."
+            :file-path "/tmp/skills/example/SKILL.md"))
+         (template
+           (cadr-agent::make-prompt-template
+            :name "review"
+            :description "Review files"
+            :content "Review $1 with $2"
+            :file-path "/tmp/prompts/review.md"))
+         (agent (cadr-agent:make-agent)))
+    (cadr-agent::replace-agent-prompt-catalogs
+     agent (list skill) (list template))
+    (multiple-value-bind (expanded found-p)
+        (cadr-agent::expand-skill-command-text
+         "/skill:example Check errors."
+         (list skill))
+      (is-true found-p)
+      (is (string=
+           (cadr-agent::format-skill-invocation
+            skill "Check errors.")
+           expanded)))
+    (multiple-value-bind (expanded found-p)
+        (cadr-agent::expand-skill-command-text
+         "/skill:missing" (list skill))
+      (is (not found-p))
+      (is (string= "/skill:missing" expanded)))
+    (multiple-value-bind (expanded found-p)
+        (cadr-agent::expand-prompt-template-text
+         "/review \"a.ts\" care"
+         (list template))
+      (is-true found-p)
+      (is (string= "Review a.ts with care" expanded)))
+    (multiple-value-bind (expanded found-p)
+        (cadr-agent::expand-prompt-template-text
+         "/missing" (list template))
+      (is (not found-p))
+      (is (string= "/missing" expanded)))
+    (let ((skill-message
+            (cadr-agent::apply-agent-input-hooks
+             agent "/skill:example Check errors."
+             :interactive))
+          (prompt-message
+            (cadr-agent::apply-agent-input-hooks
+             agent "/review a.ts now" :interactive))
+          (plain-message
+            (cadr-agent::apply-agent-input-hooks
+             agent "/missing" :interactive)))
+      (is (string=
+           (cadr-agent::format-skill-invocation
+            skill "Check errors.")
+           (cadr-ai:user-message-content skill-message)))
+      (is (string=
+           "Review a.ts with now"
+           (cadr-ai:user-message-content prompt-message)))
+      (is (string=
+           "/missing"
+           (cadr-ai:user-message-content plain-message))))))

@@ -744,3 +744,132 @@
               (skill-file-path skill))))
           (write-string
            "</available_skills>" stream)))))
+
+(defvar *agent-prompt-catalogs*
+  (make-hash-table :test #'eq :weakness :key))
+
+(defun command-arg-whitespace-p (character)
+  (member character
+          '(#\Space #\Tab #\Newline #\Return #\Page #\Vt)))
+
+(defun parse-command-args (text)
+  (let ((arguments nil)
+        (current
+          (make-array
+           16 :element-type 'character
+           :adjustable t :fill-pointer 0))
+        (quote nil))
+    (loop for character across (or text "")
+          do
+          (cond
+            (quote
+             (if (char= character quote)
+                 (setf quote nil)
+                 (vector-push-extend character current)))
+            ((or (char= character #\")
+                 (char= character #\'))
+             (setf quote character))
+            ((command-arg-whitespace-p character)
+             (when (plusp (fill-pointer current))
+               (push (copy-seq current) arguments)
+               (setf (fill-pointer current) 0)))
+            (t
+             (vector-push-extend character current))))
+    (when (plusp (fill-pointer current))
+      (push (copy-seq current) arguments))
+    (nreverse arguments)))
+
+(defun expand-prompt-template-text (text templates)
+  (unless
+      (and (stringp text)
+           (plusp (length text))
+           (char= (char text 0) #\/))
+    (return-from expand-prompt-template-text
+      (values text nil)))
+  (let* ((body (subseq text 1))
+         (split
+           (position-if
+            #'command-arg-whitespace-p body)))
+    (when
+        (or (zerop (length body))
+            (and split (zerop split)))
+      (return-from expand-prompt-template-text
+        (values text nil)))
+    (let* ((name
+             (if split
+                 (subseq body 0 split)
+                 body))
+           (argument-text
+             (if split
+                 (string-left-trim
+                  '(#\Space #\Tab #\Newline
+                    #\Return #\Page #\Vt)
+                  (subseq body split))
+                 ""))
+           (template
+             (find name templates
+                   :key #'prompt-template-name
+                   :test #'string=)))
+      (unless template
+        (return-from expand-prompt-template-text
+          (values text nil)))
+      (values
+       (substitute-prompt-arguments
+        (prompt-template-content template)
+        (parse-command-args argument-text))
+       t))))
+
+(defun expand-skill-command-text (text skills)
+  (unless
+      (and (stringp text)
+           (>= (length text) 7)
+           (string= "/skill:" text :end2 7))
+    (return-from expand-skill-command-text
+      (values text nil)))
+  (let* ((space (position #\Space text))
+         (name
+           (if space
+               (subseq text 7 space)
+               (subseq text 7)))
+         (arguments
+           (if space
+               (string-trim
+                '(#\Space #\Tab #\Newline
+                  #\Return #\Page #\Vt)
+                (subseq text (1+ space)))
+               ""))
+         (skill
+           (and (plusp (length name))
+                (find name skills
+                      :key #'skill-name
+                      :test #'string=))))
+    (unless skill
+      (return-from expand-skill-command-text
+        (values text nil)))
+    (values
+     (format-skill-invocation
+      skill
+      (and (plusp (length arguments))
+           arguments))
+     t)))
+
+(defun replace-agent-prompt-catalogs
+    (agent skills prompts)
+  (setf
+   (gethash agent *agent-prompt-catalogs*)
+   (cons (copy-list skills)
+         (copy-list prompts)))
+  agent)
+
+(defun expand-agent-catalog-text (agent text)
+  (let ((catalog
+          (gethash agent *agent-prompt-catalogs*)))
+    (unless (and catalog (stringp text))
+      (return-from expand-agent-catalog-text text))
+    (multiple-value-bind (skill-text skill-p)
+        (expand-skill-command-text
+         text (car catalog))
+      (declare (ignore skill-p))
+      (values
+       (expand-prompt-template-text
+        skill-text (cdr catalog))))))
