@@ -1278,16 +1278,20 @@ word-navigation character classes, then join word runs across '-' and
                 (gesture :wheel :none
                          (if (zerop direction) -1 1))))))
           (release-p
-           (let ((clicked
-                   (and press
-                        (not (terminal-renderer-component-mouse-moved-p
-                              renderer))
-                        (= x (car press))
-                        (= y (cdr press))
-                        (deliver (gesture :click decoded nil)))))
-             (setf (terminal-renderer-component-mouse-press renderer) nil
-                   (terminal-renderer-component-mouse-moved-p renderer) nil)
-             clicked))
+             (let ((clicked
+                     (and press
+                          (not (terminal-renderer-component-mouse-moved-p
+                                renderer))
+                          (= x (car press))
+                          (= y (cdr press))
+                          (deliver (gesture :click decoded nil)))))
+               (when clicked
+                 (setf (terminal-renderer-selection-anchor renderer) nil
+                       (terminal-renderer-selection-focus renderer) nil
+                       (terminal-renderer-selection-dragged-p renderer) nil))
+               (setf (terminal-renderer-component-mouse-press renderer) nil
+                     (terminal-renderer-component-mouse-moved-p renderer) nil)
+               clicked))
           (motion-p
            (deliver
             (gesture (if (eq decoded :none) :move :drag) decoded nil)))

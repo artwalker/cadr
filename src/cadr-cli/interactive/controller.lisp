@@ -3037,10 +3037,11 @@ interactive-mode.ts:5956-5960).")
                      ((and (null overlay)
                            (typep (current-editor)
                                   'cadr-tui:multiline-editor))
-                      (cadr-tui::editor-autocomplete-handle-mouse
+                      (cadr-tui::editor-handle-mouse
                        (current-editor) local
                        :type (getf gesture :type)
                        :button (getf gesture :button)
+                       :x (getf gesture :x)
                        :wheel-delta (getf gesture :wheel-delta)))
                      (t nil)))))
               (loop until done-p
