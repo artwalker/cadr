@@ -336,9 +336,11 @@
            :http
            (lambda (request)
              (setf seen request)
-             (let ((table (make-hash-table :test #'equal)))
-               (setf (gethash "canonical_url" table)
+             (let ((artifact (make-hash-table :test #'equal))
+                   (table (make-hash-table :test #'equal)))
+               (setf (gethash "canonical_url" artifact)
                      "https://radius.invalid/artifact/1")
+               (setf (gethash "artifact" table) artifact)
                table)))
         (is (string= "https://radius.invalid/artifact/1" viewer))
         (is (null gist))
@@ -374,6 +376,99 @@
                   :provider :radius
                   :status 500
                   :message "radius down"))))
+      (is (null calls)))))
+
+(test radius-share-keeps-a-token-that-outlasts-five-minutes
+  (with-test-directory (root)
+    (let ((path (merge-pathnames "auth.json" root))
+          (called nil))
+      (cadr-ai:write-auth-credential
+       path
+       (cadr-ai:make-oauth-credential
+        :provider :radius
+        :access "still-valid-token"
+        :refresh "refresh-token"
+        :expires (+ (cadr-core:unix-milliseconds)
+                    (* 60 60 1000))))
+      (is (string=
+           "still-valid-token"
+           (cadr-cli::radius-share-token
+            path
+            :refresh
+            (lambda (credential)
+              (setf called t)
+              credential))))
+      (is (null called)))))
+
+(test radius-share-refreshes-a-token-inside-five-minutes
+  (with-test-directory (root)
+    (let ((path (merge-pathnames "auth.json" root))
+          (session
+            (share-test-session root "refresh" "SHARE-REFRESH"))
+          (seen nil))
+      (cadr-ai:write-auth-credential
+       path
+       (cadr-ai:make-oauth-credential
+        :provider :radius
+        :access "old-token"
+        :refresh "refresh-token"
+        :expires (+ (cadr-core:unix-milliseconds) 1000)))
+      (cadr-cli::share-session
+       session
+       :auth-path path
+       :radius-gateway "https://radius.invalid"
+       :refresh
+       (lambda (credential)
+         (declare (ignore credential))
+         (cadr-ai:make-oauth-credential
+          :provider :radius
+          :access "refreshed-share-token"
+          :refresh "refresh-token"
+          :expires (+ (cadr-core:unix-milliseconds)
+                      (* 60 60 1000))))
+       :http
+       (lambda (request)
+         (setf seen request)
+         (let ((artifact (make-hash-table :test #'equal))
+               (table (make-hash-table :test #'equal)))
+           (setf (gethash "canonical_url" artifact)
+                 "https://radius.invalid/artifact/2")
+           (setf (gethash "artifact" table) artifact)
+           table)))
+      (is (equal "Bearer refreshed-share-token"
+                 (cdr (assoc "Authorization"
+                             (cadr-ai::request-spec-headers seen)
+                             :test #'string=))))
+      (is (string=
+           "refreshed-share-token"
+           (cadr-ai:oauth-credential-access
+            (cadr-ai:read-auth-credential path :radius)))))))
+
+(test radius-share-refresh-failure-does-not-fall-through-to-gist
+  (with-test-directory (root)
+    (let ((path (merge-pathnames "auth.json" root))
+          (session
+            (share-test-session root "refresh-fail" "SHARE-REFRESH-FAIL"))
+          (calls nil))
+      (cadr-ai:write-auth-credential
+       path
+       (cadr-ai:make-oauth-credential
+        :provider :radius
+        :access "old-token"
+        :refresh "refresh-token"
+        :expires (+ (cadr-core:unix-milliseconds) 1000)))
+      (signals cadr-ai:authentication-error
+        (cadr-cli::share-session
+         session
+         :auth-path path
+         :refresh
+         (lambda (credential)
+           (declare (ignore credential))
+           (error "refresh failed"))
+         :runner
+         (lambda (argv)
+           (push argv calls)
+           (values "" "" 0))))
       (is (null calls)))))
 
 (test html-export-escapes-attributes-and-sanitizes-urls
