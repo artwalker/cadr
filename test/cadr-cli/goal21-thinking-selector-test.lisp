@@ -256,3 +256,73 @@
     (cadr-cli::settings-selector-handle-event
      state (cadr-tui:make-input-event :kind :escape))
     (is (eq :main (cadr-cli::settings-selector-state-mode state)))))
+
+(test settings-submenu-click-selects-the-row
+  (let* ((alpha
+           (cadr-ai:make-model
+            :provider :openai
+            :id "alpha-model"
+            :context-window 128000
+            :reasoning-p t))
+         (beta
+           (cadr-ai:make-model
+            :provider :openai
+            :id "beta-model"
+            :context-window 128000
+            :reasoning-p t))
+         (state
+           (cadr-cli::make-settings-selector-state
+            :available-models (list alpha beta)
+            :theme-names '("alpha" "beta")
+            :current-theme "alpha"
+            :options
+            (list
+             (cadr-cli::make-settings-option
+              :id "model-thinking"
+              :label "Default thinking level per model"
+              :value (list :overrides nil
+                           :global-default :low
+                           :current-model alpha)
+              :submenu :model-thinking)))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (let* ((lines (cadr-cli::render-settings-selector state 80))
+           (row
+             (position-if
+              (lambda (line) (search "beta-model" line))
+              lines)))
+      (is (integerp (cadr-cli::settings-selector-state-list-origin state)))
+      (is (integerp row))
+      (is (null
+           (cadr-cli::settings-selector-handle-mouse
+            state (list :type :move :button :none) row)))
+      (is (zerop
+           (cadr-cli::settings-selector-state-submenu-selected state)))
+      (is (cadr-cli::settings-selector-handle-mouse
+           state (list :type :press :button :left) row))
+      (is (search
+           "beta-model"
+           (cadr-cli::settings-option-label
+            (nth
+             (cadr-cli::settings-selector-state-submenu-selected state)
+             (cadr-cli::settings-selector-submenu-options state)))))
+      (is (cadr-cli::settings-selector-handle-mouse
+           state (list :type :click :button :left) row))
+      (is (eq :model-thinking-level
+              (cadr-cli::settings-selector-state-mode state))))
+    (setf (cadr-cli::settings-selector-state-mode state) :theme-single
+          (cadr-cli::settings-selector-state-submenu-selected state) 0)
+    (let* ((lines (cadr-cli::render-settings-selector state 80))
+           (row
+             (position-if
+              (lambda (line) (search "beta" line))
+              lines)))
+      (is (integerp row))
+      (is (cadr-cli::settings-selector-handle-mouse
+           state (list :type :press :button :left) row))
+      (is (cadr-cli::settings-selector-handle-mouse
+           state (list :type :click :button :left) row))
+      (is (eq :main (cadr-cli::settings-selector-state-mode state)))
+      (is (string=
+           "beta"
+           (cadr-cli::settings-selector-state-single-theme state))))))

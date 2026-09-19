@@ -17,6 +17,7 @@
   (query "" :type string)
   (selected 0 :type (integer 0 *))
   (list-origin nil)
+  (list-limit 10 :type (integer 1 *))
   (mouse-pressed nil)
   (mode :main :type symbol)
   (submenu-selected 0 :type (integer 0 *))
@@ -821,39 +822,52 @@
       (t (values nil nil nil)))))
 
 (defun settings-selector-handle-mouse (state gesture local-y)
-  (unless (and (eq :main (settings-selector-state-mode state))
-               (integerp (settings-selector-state-list-origin state))
+  (unless (and (integerp (settings-selector-state-list-origin state))
                (integerp local-y))
     (return-from settings-selector-handle-mouse nil))
-  (let ((y (- local-y (settings-selector-state-list-origin state)))
-        (options (settings-selector-visible-options state)))
+  (let* ((submenu-p
+           (not (eq :main (settings-selector-state-mode state))))
+         (y (- local-y (settings-selector-state-list-origin state)))
+         (options
+           (if submenu-p
+               (settings-selector-submenu-options state)
+               (settings-selector-visible-options state))))
     (when (minusp y)
       (return-from settings-selector-handle-mouse nil))
     (multiple-value-bind (next action)
         (cadr-tui:centered-list-mouse
          (length options)
-         (settings-selector-state-selected state)
-         10 y
+         (if submenu-p
+             (settings-selector-state-submenu-selected state)
+             (settings-selector-state-selected state))
+         (settings-selector-state-list-limit state)
+         y
          (getf gesture :type)
          (getf gesture :button)
          (getf gesture :wheel-delta)
          :pressed (settings-selector-state-mouse-pressed state))
-      (case action
-        (:wheel
-         (setf (settings-selector-state-selected state) next)
-         (values t nil nil))
-        (:press
-         (setf (settings-selector-state-mouse-pressed state) next
-               (settings-selector-state-selected state) next)
-         (values t nil nil))
-        (:click
-         (setf (settings-selector-state-selected state) next
-               (settings-selector-state-mouse-pressed state) nil)
-         (multiple-value-bind (kind value)
-             (settings-selector-handle-event
-              state (cadr-tui:make-input-event :kind :enter))
-           (values t kind value)))
-        (t nil)))))
+      (flet ((select (index)
+               (if submenu-p
+                   (setf (settings-selector-state-submenu-selected state)
+                         index)
+                   (setf (settings-selector-state-selected state)
+                         index))))
+        (case action
+          (:wheel
+           (select next)
+           (values t nil nil))
+          (:press
+           (setf (settings-selector-state-mouse-pressed state) next)
+           (select next)
+           (values t nil nil))
+          (:click
+           (setf (settings-selector-state-mouse-pressed state) nil)
+           (select next)
+           (multiple-value-bind (kind value)
+               (settings-selector-handle-event
+                state (cadr-tui:make-input-event :kind :enter))
+             (values t kind value)))
+          (t nil))))))
 
 (defun settings-selector-visible-slice
     (options selected maximum)
@@ -941,29 +955,33 @@
 (defun render-settings-select-submenu
     (state width title description &key searchable)
   (let* ((options (settings-selector-submenu-options state))
-         (selected (settings-selector-state-submenu-selected state)))
-    (append
-     (list
-      (selector-component-text-line
-       (cadr-tui:theme-foreground
-        :accent
-        (cadr-tui:theme-bold title))
-       width :padding-x 0)
-      "")
-     (component-text-lines
-      (cadr-tui:theme-foreground :muted description)
-      width :padding-x 0)
-     (if searchable
-         (append
-          (list "")
-          (multiple-value-bind (lines row column)
-              (selector-input-rendering
-               (settings-selector-state-submenu-query state)
-               width)
-            (declare (ignore row column))
-            lines)
-          (list ""))
-         (list ""))
+         (selected (settings-selector-state-submenu-selected state))
+         (header
+           (append
+            (list
+             (selector-component-text-line
+              (cadr-tui:theme-foreground
+               :accent
+               (cadr-tui:theme-bold title))
+              width :padding-x 0)
+             "")
+            (component-text-lines
+             (cadr-tui:theme-foreground :muted description)
+             width :padding-x 0)
+            (if searchable
+                (append
+                 (list "")
+                 (multiple-value-bind (lines row column)
+                     (selector-input-rendering
+                      (settings-selector-state-submenu-query state)
+                      width)
+                   (declare (ignore row column))
+                   lines)
+                 (list ""))
+                (list "")))))
+    (values
+     (append
+      header
      (multiple-value-bind (visible start end total)
          (settings-selector-visible-slice options selected 10)
        (let ((primary-width
@@ -1026,7 +1044,8 @@
        (if searchable
            "  Type to filter · Enter to select · Esc to go back"
            "  Enter to select · Esc to go back"))
-      width :padding-x 0))))
+      width :padding-x 0))
+     (length header))))
 
 (defun render-settings-automatic-theme-chrome (width body)
   (append
@@ -1051,6 +1070,13 @@
     "")
    body))
 
+(defun settings-selector-place-list (state lines prefix limit)
+  (setf (settings-selector-state-list-origin state)
+        (+ 1 prefix)
+        (settings-selector-state-list-limit state)
+        limit)
+  lines)
+
 (defun render-settings-selector
     (state width)
     (when (eq :main (settings-selector-state-mode state))
@@ -1058,7 +1084,9 @@
         (selector-input-rendering
          (settings-selector-state-query state) width)
       (setf (settings-selector-state-list-origin state)
-            (+ 1 (length input-lines) 1))
+            (+ 1 (length input-lines) 1)
+            (settings-selector-state-list-limit state)
+            10)
       (return-from render-settings-selector
         (multiple-value-bind (lines cursor-row cursor-column)
             (render-selector-frame
@@ -1083,7 +1111,6 @@
              width)
           (declare (ignore cursor-row cursor-column))
           (values lines nil nil)))))
-  (setf (settings-selector-state-list-origin state) nil)
   (render-selector-frame
    (make-selector-frame
     :sections
@@ -1093,16 +1120,21 @@
       :lines
       (case (settings-selector-state-mode state)
         (:warnings
-         (render-settings-option-list
-          (settings-selector-submenu-options state)
-          (settings-selector-submenu-options state)
-          (settings-selector-state-submenu-selected state)
-          width 1))
+         (settings-selector-place-list
+          state
+          (render-settings-option-list
+           (settings-selector-submenu-options state)
+           (settings-selector-submenu-options state)
+           (settings-selector-state-submenu-selected state)
+           width 1)
+          0 1))
         (:model-thinking
-         (render-settings-select-submenu
-          state width "Per-Model Thinking Level"
-          "Step 1/2 · Select a model to configure"
-          :searchable t))
+         (multiple-value-bind (lines start)
+             (render-settings-select-submenu
+              state width "Per-Model Thinking Level"
+              "Step 1/2 · Select a model to configure"
+              :searchable t)
+           (settings-selector-place-list state lines start 10)))
         (:model-thinking-level
          (let* ((model-key
                   (settings-selector-state-model-thinking-key state))
@@ -1115,37 +1147,58 @@
                            (cadr-ai:model-provider candidate)
                            (cadr-ai:model-id candidate)))
                         :test #'string=)))
-           (render-settings-select-submenu
-            state width
-            (if model
-                (format nil "Thinking Level for ~A"
-                        (settings-model-thinking-item-label model))
-                "Thinking Level")
-            "Step 2/2 · Select default thinking level for this model")))
+           (multiple-value-bind (lines start)
+               (render-settings-select-submenu
+                state width
+                (if model
+                    (format nil "Thinking Level for ~A"
+                            (settings-model-thinking-item-label model))
+                    "Thinking Level")
+                "Step 2/2 · Select default thinking level for this model")
+             (settings-selector-place-list state lines start 10))))
         (:theme-single
-         (render-settings-select-submenu
-          state width "Theme"
-          "Select a theme, or choose Automatic to follow terminal appearance."))
+         (multiple-value-bind (lines start)
+             (render-settings-select-submenu
+              state width "Theme"
+              "Select a theme, or choose Automatic to follow terminal appearance.")
+           (settings-selector-place-list state lines start 10)))
         (:theme-light
-         (render-settings-automatic-theme-chrome
-          width
-          (render-settings-select-submenu
-           state width "Light Theme"
-           "Select the theme to use for light terminal appearance")))
+         (multiple-value-bind (lines start)
+             (render-settings-select-submenu
+              state width "Light Theme"
+              "Select the theme to use for light terminal appearance")
+           (let ((wrapped
+                   (render-settings-automatic-theme-chrome width lines)))
+             (settings-selector-place-list
+              state wrapped
+              (+ (- (length wrapped) (length lines)) start)
+              10))))
         (:theme-dark
-         (render-settings-automatic-theme-chrome
-          width
-          (render-settings-select-submenu
-           state width "Dark Theme"
-           "Select the theme to use for dark terminal appearance")))
+         (multiple-value-bind (lines start)
+             (render-settings-select-submenu
+              state width "Dark Theme"
+              "Select the theme to use for dark terminal appearance")
+           (let ((wrapped
+                   (render-settings-automatic-theme-chrome width lines)))
+             (settings-selector-place-list
+              state wrapped
+              (+ (- (length wrapped) (length lines)) start)
+              10))))
         (:theme-automatic
-         (render-settings-automatic-theme-chrome
-          width
-          (render-settings-option-list
-           (settings-selector-submenu-options state)
-           (settings-selector-submenu-options state)
-           (settings-selector-state-submenu-selected state)
-           width 4)))
-        (otherwise nil)))
+         (let* ((lines
+                  (render-settings-option-list
+                   (settings-selector-submenu-options state)
+                   (settings-selector-submenu-options state)
+                   (settings-selector-state-submenu-selected state)
+                   width 4))
+                (wrapped
+                  (render-settings-automatic-theme-chrome width lines)))
+           (settings-selector-place-list
+            state wrapped
+            (- (length wrapped) (length lines))
+            4)))
+        (otherwise
+         (setf (settings-selector-state-list-origin state) nil)
+         nil)))
      :border))
    width))
