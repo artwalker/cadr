@@ -3044,6 +3044,9 @@ interactive-mode.ts:5956-5960).")
                      ((model-selector-state-p overlay)
                       (model-selector-handle-mouse
                        overlay gesture local))
+                     ((session-selector-state-p overlay)
+                      (session-selector-handle-mouse
+                       overlay gesture local))
                      ((and (null overlay)
                            (typep (current-editor)
                                   'cadr-tui:multiline-editor))
