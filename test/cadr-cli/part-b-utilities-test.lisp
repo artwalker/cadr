@@ -226,6 +226,156 @@
                  "Gist: https://gist.github.com/me/abc123"
                  rendered))))))))
 
+(defun share-test-session (root id text)
+  (let ((session
+          (cadr-agent:create-session
+           :directory (merge-pathnames "sessions/" root)
+           :cwd root
+           :id id)))
+    (cadr-agent:session-append-message
+     session
+     (cadr-ai:make-assistant-message
+      :content (list (cadr-ai:make-text-content :text text))
+      :api :openai-responses
+      :provider :openai
+      :model "mock"
+      :stop-reason :stop))
+    session))
+
+(test export-session-for-share-writes-the-branch-and-share-record
+  (with-test-directory (root)
+    (let* ((session
+             (share-test-session root "share-export" "SHARE-BODY"))
+           (path
+             (merge-pathnames "session.jsonl" root))
+           (tool
+             (cadr-ai:make-tool
+              :name "read"
+              :description "Read a file"
+              :parameters
+              (cadr-ai::json-object "type" "object"))))
+      (cadr-cli::export-session-for-share
+       session path
+       :system-prompt "PROMPT-SHARE"
+       :tools (list tool))
+      (let ((body (uiop:read-file-string path)))
+        (is (search "\"customType\":\"pi.share\"" body))
+        (is (search "PROMPT-SHARE" body))
+        (is (search "\"name\":\"read\"" body))
+        (is (search "SHARE-BODY" body))
+        (is (search "\"id\":\"share-export\"" body))))))
+
+(test concurrent-gist-shares-upload-isolated-bodies
+  (with-test-directory (root)
+    (let ((uploads nil)
+          (lock (sb-thread:make-mutex :name "share uploads"))
+          (a (share-test-session root "A" "SHARE-BODY-A"))
+          (b (share-test-session root "B" "SHARE-BODY-B")))
+      (flet ((runner (argv)
+               (cond
+                 ((equal argv '("gh" "auth" "status"))
+                  (values "" "" 0))
+                 ((string= "gh" (first argv))
+                  (let ((body
+                          (uiop:read-file-string
+                           (car (last argv)))))
+                    (sb-thread:with-mutex (lock)
+                      (push body uploads)))
+                  (values
+                   "https://gist.github.com/me/isolated"
+                   "" 0))
+                 (t (values "" "unexpected argv" 1))))
+             (payload (session)
+               (cadr-agent::encode-export-html-base64
+                (cadr-ai::utf8-octets
+                 (cadr-agent::stringify-export-html-session
+                  session)))))
+        (let ((payload-a (payload a))
+              (payload-b (payload b))
+              (left
+                (sb-thread:make-thread
+                 (lambda ()
+                   (cadr-cli::share-session
+                    a :auth-path nil :runner #'runner))
+                 :name "share-a"))
+              (right
+                (sb-thread:make-thread
+                 (lambda ()
+                   (cadr-cli::share-session
+                    b :auth-path nil :runner #'runner))
+                 :name "share-b")))
+          (sb-thread:join-thread left)
+          (sb-thread:join-thread right)
+          (is (= 2 (length uploads)))
+          (is-true (find-if (lambda (body) (search payload-a body))
+                            uploads))
+          (is-true (find-if (lambda (body) (search payload-b body))
+                            uploads))
+          (is-false
+           (find-if
+            (lambda (body)
+              (and (search payload-a body)
+                   (search payload-b body)))
+            uploads)))))))
+
+(test radius-share-posts-the-jsonl-and-skips-gist
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "radius" "SHARE-RADIUS"))
+          (calls nil)
+          (seen nil))
+      (multiple-value-bind (viewer gist)
+          (cadr-cli::share-session
+           session
+           :radius-token "radius-test-token"
+           :radius-gateway "https://radius.invalid"
+           :runner
+           (lambda (argv)
+             (push argv calls)
+             (values "" "" 0))
+           :http
+           (lambda (request)
+             (setf seen request)
+             (let ((table (make-hash-table :test #'equal)))
+               (setf (gethash "canonical_url" table)
+                     "https://radius.invalid/artifact/1")
+               table)))
+        (is (string= "https://radius.invalid/artifact/1" viewer))
+        (is (null gist))
+        (is (null calls))
+        (is (search "/v1/artifacts?visibility=organization&title=Cadr%20session"
+                    (cadr-ai::request-spec-url seen)))
+        (is (search "\"customType\":\"pi.share\""
+                    (cadr-ai::request-spec-raw-body seen)))
+        (is (search "SHARE-RADIUS"
+                    (cadr-ai::request-spec-raw-body seen)))
+        (is (equal "Bearer radius-test-token"
+                   (cdr (assoc "Authorization"
+                               (cadr-ai::request-spec-headers seen)
+                               :test #'string=))))))))
+
+(test radius-share-failure-does-not-fall-through-to-gist
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "radius-fail" "SHARE-FAIL"))
+          (calls nil))
+      (signals error
+        (cadr-cli::share-session
+         session
+         :radius-token "radius-test-token"
+         :runner
+         (lambda (argv)
+           (push argv calls)
+           (values "" "" 0))
+         :http
+         (lambda (request)
+           (declare (ignore request))
+           (error 'cadr-ai:api-error
+                  :provider :radius
+                  :status 500
+                  :message "radius down"))))
+      (is (null calls)))))
+
 (test html-export-escapes-attributes-and-sanitizes-urls
   (is (string=
        "&lt;&quot;&amp;&#39;&gt;"
