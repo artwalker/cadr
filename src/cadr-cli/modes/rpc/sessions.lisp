@@ -143,6 +143,7 @@
       (when (getf before :cancel-p)
         (return-from rpc-fork-session
           (values nil t))))
+    (cadr-agent:agent-abort-and-idle agent)
     (let* ((leaf-id
              (if (eq position :before)
                  (cadr-agent:session-entry-parent-id

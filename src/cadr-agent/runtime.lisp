@@ -48,6 +48,7 @@
   abort-p
   (abort-requested-p nil :type boolean)
   compaction-cancellation
+  (tool-cancellations nil :type list)
   (busy-p nil :type boolean)
   (shutdown-p nil :type boolean)
   (operation-count 0 :type (integer 0 *))
@@ -371,6 +372,34 @@
       (abort-extension-cancellation-signal signal)))
   agent)
 
+(defun note-tool-cancellation (agent signal)
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (push signal (agent-tool-cancellations agent)))
+  signal)
+
+(defun forget-tool-cancellation (agent signal)
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (setf
+     (agent-tool-cancellations agent)
+     (delete
+      signal (agent-tool-cancellations agent)
+      :count 1 :test #'eq)))
+  nil)
+
+(defun agent-abort-tools (agent)
+  ;; The predicate on the signal is not enough. wait-for-cancellation
+  ;; stays asleep until the state itself is aborted (#8724).
+  (let ((signals
+          (sb-thread:with-mutex
+              ((agent-state-lock agent))
+            (copy-list (agent-tool-cancellations agent)))))
+    (dolist (signal signals)
+      (cadr-core:abort-cancellation
+       (%extension-cancellation-signal-state signal))))
+  agent)
+
 (defun agent-abort (agent)
   (assert-agent-not-shutdown agent)
   (agent-abort-retry agent)
@@ -378,7 +407,23 @@
   (sb-thread:with-mutex
       ((agent-state-lock agent))
     (setf (agent-abort-requested-p agent) t))
+  (agent-abort-tools agent)
   (clear-live-agent-queues agent))
+
+(defun agent-abort-and-idle (agent)
+  ;; Session replacement must let the aborted turn finish writing on
+  ;; the outgoing session. Waiting on the turn's own thread deadlocks.
+  (agent-abort agent)
+  (let ((from-operation-p
+          (sb-thread:with-mutex
+              ((agent-state-lock agent))
+            (member
+             sb-thread:*current-thread*
+             (agent-operation-threads agent)
+             :test #'eq))))
+    (unless from-operation-p
+      (agent-wait-for-idle agent)))
+  agent)
 
 (defun agent-abort-retry (agent)
   (sb-thread:with-mutex

@@ -770,3 +770,141 @@
      (find
       " │ !!                    │ Run bash command (excluded from context) │"
       plain :test #'string=))))
+
+(test fork-during-active-tool-leaves-replacement-empty
+  ;; Baseline #8724: fork while a tool is running settles that turn on
+  ;; the outgoing session. The replacement starts empty, and the next
+  ;; prompt sees only the new user message.
+  (with-test-directory (directory)
+    (let* ((started (sb-thread:make-semaphore :count 0))
+           (captured nil)
+           (responses
+             (list
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text "first response"))
+               :api :openai-responses
+               :provider :openai
+               :model "mock"
+               :stop-reason :stop)
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-tool-call
+                 :id "block-1"
+                 :name "block"
+                 :arguments (cadr-ai::json-object)))
+               :api :openai-responses
+               :provider :openai
+               :model "mock"
+               :stop-reason :tool-use)
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text "next response"))
+               :api :openai-responses
+               :provider :openai
+               :model "mock"
+               :stop-reason :stop)))
+           (tool
+             (cadr-ai:make-tool
+              :name "block"
+              :description "Wait until aborted"
+              :parameters
+              (cadr-ai::json-object "type" "object")
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (sb-thread:signal-semaphore started)
+                (cadr-core:wait-for-cancellation
+                 (cadr-agent::%extension-cancellation-signal-state
+                  (cadr-agent::current-tool-cancellation-signal))
+                 :timeout 5.0d0)
+                (values
+                 (list
+                  (cadr-ai:make-text-content
+                   :text "tool aborted"))
+                 nil))))
+           (source
+             (cadr-agent:create-session
+              :directory directory
+              :cwd directory
+              :id "fork-during-tool"))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session source
+              :auto-compact-p nil
+              :auto-retry-p nil
+              :tools (list tool)
+              :stream-function
+              (lambda (provider model context on-event
+                       &key abort-p &allow-other-keys)
+                (declare (ignore provider model))
+                (push
+                 (mapcar
+                  (lambda (message)
+                    (typecase message
+                      (cadr-ai:user-message :user)
+                      (cadr-ai:assistant-message :assistant)
+                      (cadr-ai:tool-result-message :tool)
+                      (t :other)))
+                  (cadr-ai:context-messages context))
+                 captured)
+                (let ((message
+                        (if (and abort-p (funcall abort-p))
+                            (cadr-ai:make-assistant-message
+                             :content nil
+                             :api :openai-responses
+                             :provider :openai
+                             :model "mock"
+                             :stop-reason :error
+                             :error-message
+                             "This operation was aborted")
+                            (pop responses))))
+                  (funcall
+                   on-event
+                   (cadr-ai:make-stream-event
+                    :type :start :message message))
+                  message)))))
+      (unwind-protect
+           (progn
+             (cadr-agent:agent-prompt agent "first prompt")
+             (let* ((entry-id
+                      (getf
+                       (first
+                        (cadr-cli::session-user-messages-for-forking
+                         source))
+                       :entry-id))
+                    (thread
+                      (sb-thread:make-thread
+                       (lambda ()
+                         (cadr-agent:agent-prompt
+                          agent "start blocking tool"))
+                       :name "fork-during-tool")))
+               (is-true
+                (sb-thread:wait-on-semaphore
+                 started :timeout 5))
+               (multiple-value-bind (fork text)
+                   (cadr-cli::fork-agent-session
+                    agent entry-id directory)
+                 (sb-thread:join-thread thread)
+                 (is (string= "first prompt" text))
+                 (is (eq fork
+                         (cadr-agent:agent-session agent)))
+                 (is (null
+                      (cadr-agent:session-messages fork)))
+                 (is
+                  (find-if
+                   (lambda (message)
+                     (typep
+                      message
+                      'cadr-ai:tool-result-message))
+                   (cadr-agent:session-messages source)))
+                 (cadr-agent:agent-prompt agent "next prompt")
+                 (is (equal '(:user) (first captured))))))
+        (cadr-agent:agent-shutdown agent)))))

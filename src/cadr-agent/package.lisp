@@ -15,6 +15,7 @@
    #:agent-follow-up
    #:agent-next-turn
    #:agent-abort
+   #:agent-abort-and-idle
    #:agent-abort-compaction
    #:agent-shutdown
    #:agent-shutdown-p
