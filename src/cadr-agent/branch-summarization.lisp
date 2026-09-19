@@ -115,13 +115,45 @@
      :total-tokens total)))
 
 (defparameter +branch-summary-preamble+
-  "The user explored a different conversation branch before returning here.\nSummary of that exploration:\n\n")
+  "The user explored a different conversation branch before returning here.
+Summary of that exploration:
+
+")
 
 (defparameter +branch-summary-prompt+
-  "Create a structured summary of this conversation branch for context when returning later.\n\nUse this EXACT format:\n\n## Goal\n[What was the user trying to accomplish in this branch?]\n\n## Constraints & Preferences\n- [Any constraints, preferences, or requirements mentioned]\n- [Or \"(none)\" if none were mentioned]\n\n## Progress\n### Done\n- [x] [Completed tasks/changes]\n\n### In Progress\n- [ ] [Work that was started but not finished]\n\n### Blocked\n- [Issues preventing progress, if any]\n\n## Key Decisions\n- **[Decision]**: [Brief rationale]\n\n## Next Steps\n1. [What should happen next to continue this work]\n\nKeep each section concise. Preserve exact file paths, function names, and error messages.")
+  "Create a structured summary of this conversation branch for context when returning later.
+
+Use this EXACT format:
+
+## Goal
+[What was the user trying to accomplish in this branch?]
+
+## Constraints & Preferences
+- [Any constraints, preferences, or requirements mentioned]
+- [Or \"(none)\" if none were mentioned]
+
+## Progress
+### Done
+- [x] [Completed tasks/changes]
+
+### In Progress
+- [ ] [Work that was started but not finished]
+
+### Blocked
+- [Issues preventing progress, if any]
+
+## Key Decisions
+- **[Decision]**: [Brief rationale]
+
+## Next Steps
+1. [What should happen next to continue this work]
+
+Keep each section concise. Preserve exact file paths, function names, and error messages.")
 
 (defparameter +summarization-system-prompt+
-  "You are a context summarization assistant. Your task is to read a conversation between a user and an AI assistant, then produce a structured summary following the exact format specified.\n\nDo NOT continue the conversation. Do NOT respond to any questions in the conversation. ONLY output the structured summary.")
+  "You are a context summarization assistant. Your task is to read a conversation between a user and an AI assistant, then produce a structured summary following the exact format specified.
+
+Do NOT continue the conversation. Do NOT respond to any questions in the conversation. ONLY output the structured summary.")
 
 (defun generate-branch-summary
     (agent entries &key custom-instructions replace-instructions-p

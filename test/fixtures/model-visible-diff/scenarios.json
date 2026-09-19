@@ -4,25 +4,31 @@
       "skills-block-default",
       "skills-block-bash",
       "custom-prompt-with-context-and-skills",
-      "compaction-summarization-prompts"
+      "compaction-summarization-prompts",
+      "branch-summary-prompts",
+      "turn-prefix-summarization-prompt",
+      "summary-message-wrappers"
     ],
     "providers": ["openai-completions-stub"],
     "branches": [
       "default-system-prompt",
       "custom-system-prompt",
-      "compaction-summarization"
+      "compaction-summarization",
+      "branch-summary",
+      "turn-prefix-summarization"
     ],
     "captures": [
       "skills-block-after-format",
       "custom-system-prompt-after-composition",
-      "compaction-summarization-templates"
+      "compaction-summarization-templates",
+      "branch-summary-templates",
+      "turn-prefix-template",
+      "summary-message-wrapper-templates"
     ],
     "does_not_cover": [
       "full provider HTTP body after extension request hooks",
-      "branch-summary sub-contexts",
       "default system prompt product-identity wording",
-      "tool-result synthesis strings",
-      "compaction turn-prefix summarization prompt"
+      "tool-result synthesis strings"
     ]
   },
   "scenarios": [
@@ -74,6 +80,83 @@
       "id": "compaction-summarization-prompts",
       "kind": "compaction-prompts",
       "description": "Compaction summarization system and user prompt templates match packages/coding-agent/src/core/compaction."
+    },
+    {
+      "id": "branch-summary-prompts",
+      "kind": "template-fixtures",
+      "description": "Branch-summary preamble, prompt, and shared system prompt match baseline branch-summarization.ts (and catch CL \\n string-escape bugs).",
+      "templates": [
+        {
+          "id": "preamble",
+          "symbol": "cadr-agent::+branch-summary-preamble+",
+          "fixture": "baseline-branch-summary-preamble.txt",
+          "validityNeedle": "Summary of that exploration:",
+          "validityReplacement": "Summary of that exploration!"
+        },
+        {
+          "id": "prompt",
+          "symbol": "cadr-agent::+branch-summary-prompt+",
+          "fixture": "baseline-branch-summary-prompt.txt",
+          "validityNeedle": "Keep each section concise.",
+          "validityReplacement": "Keep each section concise!"
+        },
+        {
+          "id": "system",
+          "symbol": "cadr-agent::+summarization-system-prompt+",
+          "fixture": "baseline-compaction-system-prompt.txt",
+          "validityNeedle": "ONLY output the structured summary.",
+          "validityReplacement": "ONLY output the structured summary!"
+        }
+      ]
+    },
+    {
+      "id": "turn-prefix-summarization-prompt",
+      "kind": "template-fixtures",
+      "description": "Turn-prefix summarization prompt matches baseline compaction.ts.",
+      "templates": [
+        {
+          "id": "turn",
+          "symbol": "cadr-agent::+turn-prefix-summarization-prompt+",
+          "fixture": "baseline-turn-prefix-prompt.txt",
+          "validityNeedle": "Be concise. Focus on what's needed to understand the kept suffix.",
+          "validityReplacement": "Be concise. Focus on what's needed to understand the kept suffix!"
+        }
+      ]
+    },
+    {
+      "id": "summary-message-wrappers",
+      "kind": "template-fixtures",
+      "description": "Compaction and branch summary message wrappers match baseline messages.ts.",
+      "templates": [
+        {
+          "id": "compaction-prefix",
+          "symbol": "cadr-agent::+compaction-summary-prefix+",
+          "fixture": "baseline-compaction-summary-prefix.txt",
+          "validityNeedle": "<summary>",
+          "validityReplacement": "<summary!> "
+        },
+        {
+          "id": "compaction-suffix",
+          "symbol": "cadr-agent::+compaction-summary-suffix+",
+          "fixture": "baseline-compaction-summary-suffix.txt",
+          "validityNeedle": "</summary>",
+          "validityReplacement": "</summary!>"
+        },
+        {
+          "id": "branch-prefix",
+          "symbol": "cadr-agent::+branch-summary-prefix+",
+          "fixture": "baseline-branch-summary-message-prefix.txt",
+          "validityNeedle": "<summary>",
+          "validityReplacement": "<summary!> "
+        },
+        {
+          "id": "branch-suffix",
+          "symbol": "cadr-agent::+branch-summary-suffix+",
+          "fixture": "baseline-branch-summary-message-suffix.txt",
+          "validityNeedle": "</summary>",
+          "validityReplacement": "</summary!>"
+        }
+      ]
     }
   ]
 }
