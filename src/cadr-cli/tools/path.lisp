@@ -331,3 +331,7 @@
 
 (defmacro with-file-mutation-queue ((path) &body body)
   `(cadr-agent:with-file-mutation-queue (,path) ,@body))
+
+(defun effective-tool-cwd (cwd)
+  ;; Baseline tools/*.ts execute: ctx?.cwd || cwd (#8627).
+  (or cadr-agent:*tool-call-cwd* cwd))

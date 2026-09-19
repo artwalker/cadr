@@ -615,10 +615,10 @@
            (timeout (cadr-ai::json-get arguments "timeout")))
        (if context
            (execute-bash-tool-command-with-context
-            context cwd
+            context (effective-tool-cwd cwd)
             (bash-command-with-prefix command-prefix command)
             timeout)
            (execute-bash-tool-command
-            cwd command timeout
+            (effective-tool-cwd cwd) command timeout
             :command-prefix command-prefix
             :custom-shell-path shell-path))))))

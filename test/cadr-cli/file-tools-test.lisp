@@ -286,3 +286,83 @@
                (vector
                 (args "oldText" "abcd" "newText" "x")
                 (args "oldText" "bc" "newText" "y"))))))))
+
+(test coding-tools-honor-call-cwd
+  ;; Baseline tools.test.ts #8627: execute uses the call cwd, not the
+  ;; directory captured when the tool was built.
+  (with-test-directory (directory)
+    (let ((captured "/"))
+      (write-text
+       (merge-pathnames "ctx-cwd-read.txt" directory)
+       "hello from ctx.cwd")
+      (is (search
+           "hello from ctx.cwd"
+           (result-text
+            (invoke-tool
+             (make-read-tool captured)
+             (args "path" "ctx-cwd-read.txt")
+             directory))))
+      (invoke-tool
+       (make-write-tool captured)
+       (args "path" "ctx-cwd-write.txt"
+             "content" "written via ctx.cwd")
+       directory)
+      (is (string=
+           "written via ctx.cwd"
+           (read-text
+            (merge-pathnames "ctx-cwd-write.txt" directory))))
+      (write-text
+       (merge-pathnames "ctx-cwd-edit.txt" directory)
+       "old text")
+      (invoke-tool
+       (make-edit-tool captured)
+       (args "path" "ctx-cwd-edit.txt"
+             "edits"
+             (vector
+              (args "oldText" "old text" "newText" "new text")))
+       directory)
+      (is (string=
+           "new text"
+           (read-text
+            (merge-pathnames "ctx-cwd-edit.txt" directory))))
+      (write-text
+       (merge-pathnames "ctx-cwd-grep.txt" directory)
+       "match in ctx.cwd")
+      (is (search
+           "ctx-cwd-grep.txt"
+           (result-text
+            (invoke-tool
+             (make-grep-tool captured)
+             (args "pattern" "match")
+             directory))))
+      (write-text
+       (merge-pathnames "ctx-cwd-find.txt" directory)
+       "find me")
+      (is (search
+           "ctx-cwd-find.txt"
+           (result-text
+            (invoke-tool
+             (cadr-cli:make-find-tool captured)
+             (args "pattern" "ctx-cwd-find.txt")
+             directory))))
+      (write-text
+       (merge-pathnames "ctx-cwd-ls.txt" directory)
+       "list me")
+      (is (search
+           "ctx-cwd-ls.txt"
+           (result-text
+            (invoke-tool
+             (cadr-cli:make-ls-tool captured)
+             (args "path" ".")
+             directory))))
+      (let ((pwd
+              (string-right-trim
+               '(#\Newline #\Return)
+               (result-text
+                (invoke-tool
+                 (make-bash-tool captured)
+                 (args "command" "pwd")
+                 directory)))))
+        (is (equal
+             (truename directory)
+             (truename pwd)))))))

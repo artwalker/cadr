@@ -168,4 +168,4 @@ metacharacters, return the \".EXT\" suffix. Else NIL."
              (optional-string arguments "path" ".")))
        (call-with-normalized-file-operation
         :find display-path
-        (lambda () (find-files cwd arguments)))))))
+        (lambda () (find-files (effective-tool-cwd cwd) arguments)))))))

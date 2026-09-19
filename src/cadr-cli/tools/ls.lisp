@@ -97,4 +97,4 @@
              (optional-string arguments "path" ".")))
        (call-with-normalized-file-operation
         :ls display-path
-        (lambda () (list-directory cwd arguments)))))))
+        (lambda () (list-directory (effective-tool-cwd cwd) arguments)))))))

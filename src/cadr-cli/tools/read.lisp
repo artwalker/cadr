@@ -186,7 +186,8 @@
         :read display-path
         (lambda ()
           (read-tool-file
-           cwd arguments :context context))
+           (effective-tool-cwd cwd) arguments :context context))
         :resolved-path
         (unless context
-          (resolve-readable-tool-path cwd display-path)))))))
+          (resolve-readable-tool-path
+           (effective-tool-cwd cwd) display-path)))))))
