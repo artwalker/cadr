@@ -335,22 +335,26 @@ pipeline lives.")
                        (agent-aborted-p agent))
                      :abort-function
                      (lambda ()
-                       (agent-abort agent))))
-                  (*tool-abort-p*
-                    (lambda ()
-                      (agent-aborted-p agent))))
-             (execute-prepared-tool
-              entry
-              :cancellation-signal signal
-              :execution-cwd
-              (let ((session (agent-session agent)))
-                (and session (session-cwd session)))
-              :on-update
-              (lambda (partial-result)
-                (emit-tool-update
-                 agent
-                 (prepared-tool-call-call entry)
-                 partial-result))))))
+                       (agent-abort agent)))))
+             (note-tool-cancellation agent signal)
+             (unwind-protect
+                  (let ((*tool-abort-p*
+                          (lambda ()
+                            (agent-aborted-p agent))))
+                    (execute-prepared-tool
+                     entry
+                     :cancellation-signal signal
+                     :execution-cwd
+                     (let ((session (agent-session agent)))
+                       (and session
+                            (session-cwd session)))
+                     :on-update
+                     (lambda (partial-result)
+                       (emit-tool-update
+                        agent
+                        (prepared-tool-call-call entry)
+                        partial-result))))
+               (forget-tool-cancellation agent signal)))))
       (if (eq decision :retry)
           (setf entry
                 (prepare-tool-restart-state

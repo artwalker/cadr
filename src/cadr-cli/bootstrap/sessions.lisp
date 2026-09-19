@@ -1071,6 +1071,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
       (when (getf before :cancel-p)
         (return-from clone-agent-session
           :cancelled)))
+    (cadr-agent:agent-abort-and-idle agent)
     (let ((clone
             (cadr-agent:create-session
              :directory directory
@@ -1209,6 +1210,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
       (when (getf before :cancel-p)
         (return-from fork-agent-session
           (values :cancelled nil))))
+    (cadr-agent:agent-abort-and-idle agent)
     (let* ((previous
              (namestring
               (cadr-agent:session-path source)))
