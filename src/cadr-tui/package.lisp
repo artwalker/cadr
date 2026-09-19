@@ -195,6 +195,7 @@
    #:single-line-input-value
    #:single-line-input-set-value
    #:single-line-input-handle-event
+   #:single-line-input-handle-mouse
    #:render-single-line-input
    #:render-truncated-text
    #:render-image-component

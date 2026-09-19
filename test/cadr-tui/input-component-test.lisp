@@ -130,3 +130,18 @@
       (is (string= "path\\" value)))
     (is (string= "path\\"
                  (cadr-tui:single-line-input-value input)))))
+
+(test single-line-input-press-positions-the-cursor
+  (let ((input
+          (cadr-tui:make-single-line-input :value "hello")))
+    (cadr-tui:render-single-line-input input 20)
+    (is (cadr-tui:single-line-input-handle-mouse
+         input :type :press :button :left :x 4 :y 0))
+    (single-input-event input :text "X")
+    (is (string= "heXllo"
+                 (cadr-tui:single-line-input-value input)))
+    (is (null
+         (cadr-tui:single-line-input-handle-mouse
+          input :type :click :button :left :x 4 :y 0)))
+    (is (string= "heXllo"
+                 (cadr-tui:single-line-input-value input)))))
