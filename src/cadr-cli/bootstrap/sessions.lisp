@@ -1053,6 +1053,16 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        (find model available-models
              :test #'cadr-ai:models-equal-p)))))
 
+(defun refuse-unflushed-persisted-fork (session)
+  (let ((path
+          (and session
+               (cadr-agent:session-path session))))
+    (when (and path (not (probe-file path)))
+      (error
+       'cadr-ai:configuration-error
+       :message
+       "This session has not been saved yet. Wait for the first assistant response before cloning or forking it."))))
+
 (defun clone-agent-session
     (agent directory)
   (let* ((source
@@ -1071,6 +1081,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
       (when (getf before :cancel-p)
         (return-from clone-agent-session
           :cancelled)))
+    (refuse-unflushed-persisted-fork source)
     (cadr-agent:agent-abort-and-idle agent)
     (let ((clone
             (cadr-agent:create-session
@@ -1210,6 +1221,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
       (when (getf before :cancel-p)
         (return-from fork-agent-session
           (values :cancelled nil))))
+    (when (cadr-agent:session-entry-parent-id entry)
+      (refuse-unflushed-persisted-fork source))
     (cadr-agent:agent-abort-and-idle agent)
     (let* ((previous
              (namestring

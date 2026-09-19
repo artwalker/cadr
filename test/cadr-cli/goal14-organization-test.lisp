@@ -437,7 +437,9 @@
     ;; missing-session-cwd-prompt (bootstrap/sessions.lisp).
     ;; +1 import collision: unique-import-session-path
     ;; (bootstrap/sessions.lisp, baseline importFromJsonl).
-    (is (= 176 definition-count)
+    ;; +1 unflushed fork: refuse-unflushed-persisted-fork
+    ;; (bootstrap/sessions.lisp, baseline existsSync before branch).
+    (is (= 177 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
