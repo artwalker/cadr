@@ -12843,13 +12843,13 @@
    (tm-asset= :fd "10.2.0" :darwin :arm64
               "fd-v10.2.0-aarch64-apple-darwin.tar.gz")
    (tm-asset= :fd "10.2.0" :linux :x64
-              "fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz")
+              "fd-v10.2.0-x86_64-unknown-linux-musl.tar.gz")
    (tm-asset= :fd "10.2.0" :windows :x64
               "fd-v10.2.0-x86_64-pc-windows-msvc.zip")
    (tm-asset= :rg "14.1.0" :linux :x64
               "ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz")
    (tm-asset= :rg "14.1.0" :linux :arm64
-              "ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz")
+              "ripgrep-14.1.0-aarch64-unknown-linux-musl.tar.gz")
    (tm-asset= :rg "14.1.0" :darwin :arm64
               "ripgrep-14.1.0-aarch64-apple-darwin.tar.gz")
    6))

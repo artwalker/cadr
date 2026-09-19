@@ -56,14 +56,14 @@
       (:fd
        (ecase platform
          (:darwin (format nil "fd-v~A-~A-apple-darwin.tar.gz" version arch))
-         (:linux (format nil "fd-v~A-~A-unknown-linux-gnu.tar.gz" version arch))
+         (:linux (format nil "fd-v~A-~A-unknown-linux-musl.tar.gz" version arch))
          (:windows (format nil "fd-v~A-~A-pc-windows-msvc.zip" version arch))))
       (:rg
        (ecase platform
          (:darwin (format nil "ripgrep-~A-~A-apple-darwin.tar.gz" version arch))
          (:linux
-          (format nil "ripgrep-~A-~A-unknown-linux-~A.tar.gz"
-                  version arch (if (eq architecture :arm64) "gnu" "musl")))
+          (format nil "ripgrep-~A-~A-unknown-linux-musl.tar.gz"
+                  version arch))
          (:windows (format nil "ripgrep-~A-~A-pc-windows-msvc.zip" version arch)))))))
 
 (defun default-tool-command-runner (arguments &key output-file)
@@ -77,20 +77,85 @@
       (uiop:run-program arguments :output :string :error-output :string
                                  :ignore-error-status t)))
 
+(defun percent-decode (text)
+  (with-output-to-string (out)
+    (let ((index 0)
+          (length (length text)))
+      (loop while (< index length)
+            do (let ((char (char text index)))
+                 (if (and (char= char #\%)
+                          (<= (+ index 3) length)
+                          (digit-char-p (char text (+ index 1)) 16)
+                          (digit-char-p (char text (+ index 2)) 16))
+                     (progn
+                       (write-char
+                        (code-char
+                         (parse-integer
+                          text :start (1+ index) :end (+ index 3)
+                          :radix 16))
+                        out)
+                       (incf index 3))
+                     (progn
+                       (write-char char out)
+                       (incf index))))))))
+
+(defun http-status-code (header-text)
+  (let* ((end (or (position #\Newline header-text) (length header-text)))
+         (line (string-right-trim '(#\Return) (subseq header-text 0 end)))
+         (parts (uiop:split-string line :separator '(#\Space))))
+    (and (second parts)
+         (parse-integer (second parts) :junk-allowed t))))
+
+(defun http-header-value (header-text name)
+  (let ((prefix (format nil "~A:" name)))
+    (loop for line in (uiop:split-string header-text :separator '(#\Newline))
+          for trimmed = (string-right-trim '(#\Return) line)
+          when (string-equal trimmed prefix :end1 (min (length trimmed) (length prefix)))
+            return (string-trim '(#\Space #\Tab)
+                                (subseq trimmed (length prefix))))))
+
+(defun version-from-release-redirect (repository header-text)
+  (let ((status (http-status-code header-text))
+        (location (http-header-value header-text "location")))
+    (unless (and status (<= 300 status 399)
+                location (plusp (length location)))
+      (error "Failed to resolve latest ~A release: HTTP ~A without redirect"
+             repository (or status "unknown")))
+    (let ((marker "/releases/tag/"))
+      (unless (search marker location)
+        (error "Failed to resolve latest ~A release: unexpected redirect to ~A"
+               repository location))
+      (let* ((absolute
+               (if (char= (char location 0) #\/)
+                   (concatenate 'string "https://github.com" location)
+                   location))
+             (tag-start (+ (search marker absolute) (length marker)))
+             (tag-end (or (position #\? absolute :start tag-start)
+                          (position #\# absolute :start tag-start)
+                          (length absolute)))
+             (tag (string-right-trim "/" (subseq absolute tag-start tag-end)))
+             (decoded (percent-decode tag)))
+        (if (and (plusp (length decoded))
+                 (char= (char decoded 0) #\v))
+            (subseq decoded 1)
+            decoded)))))
+
 (defun latest-tool-version (tool runner)
-  (multiple-value-bind (stdout stderr status)
-      (funcall runner
-               (list "curl" "-fsSL" "--max-time" "10"
-                     (format nil "https://api.github.com/repos/~A/releases/latest"
-                             (tool-repository tool))))
-    (declare (ignore stderr))
-    (unless (and (integerp status) (zerop status))
-      (error "GitHub API error for ~A" (tool-repository tool)))
-    (let* ((object (cadr-ai::parse-json stdout))
-           (tag (cadr-ai::json-get object "tag_name")))
-      (unless (and (stringp tag) (plusp (length tag)))
-        (error "GitHub release response omitted tag_name"))
-      (string-left-trim "v" tag))))
+  (let ((repository (tool-repository tool)))
+    (multiple-value-bind (stdout stderr status)
+        (funcall runner
+                 (list "curl" "-sS" "-D" "-"
+                       "-o" (if (uiop:os-windows-p) "NUL" "/dev/null")
+                       "--max-time" "10"
+                       "-A" (format nil "~A-coding-agent"
+                                    (cadr-ai::cadr-product-slug))
+                       (format nil "https://github.com/~A/releases/latest"
+                               repository)))
+      (declare (ignore stderr))
+      (unless (and (integerp status) (zerop status) (stringp stdout))
+        (error "Failed to resolve latest ~A release: HTTP ~A without redirect"
+               repository (or status "unknown")))
+      (version-from-release-redirect repository stdout))))
 
 (defun find-file-recursively (directory name)
   (labels ((walk (root)

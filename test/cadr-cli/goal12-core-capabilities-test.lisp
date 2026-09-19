@@ -170,10 +170,10 @@
 
 (test goal12-tool-manager-and-platform-cleanup-have-baseline-contract
   (is (string=
-       "fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz"
+       "fd-v10.2.0-x86_64-unknown-linux-musl.tar.gz"
        (cadr-cli::tool-release-asset :fd "10.2.0" :linux :x64)))
   (is (string=
-       "ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz"
+       "ripgrep-14.1.0-aarch64-unknown-linux-musl.tar.gz"
        (cadr-cli::tool-release-asset :rg "14.1.0" :linux :arm64)))
   (is (= 2 (length
             (cadr-cli::tool-extraction-commands
@@ -237,3 +237,56 @@
       (is (string= "context output" (result-text content)))
       (is (= 0 (getf details :exit-code))))
     (is (equal '("echo ignored") (goal12-fake-tool-commands context)))))
+
+(test tool-latest-version-uses-the-release-page-redirect
+  ;; Baseline #8708: the anonymous Releases API is not the version source.
+  (let ((seen nil))
+    (flet ((runner (arguments &key output-file)
+             (declare (ignore output-file))
+             (push arguments seen)
+             (values
+              (format nil "HTTP/2 302~%location: ~A~%~%"
+                      "https://github.com/sharkdp/fd/releases/tag/v10.4.2")
+              "" 0)))
+      (is (string= "10.4.2"
+                   (cadr-cli::latest-tool-version :fd #'runner)))
+      (is (find "https://github.com/sharkdp/fd/releases/latest"
+                (first seen) :test #'string=))
+      (is (null (search "api.github.com"
+                        (format nil "~{~A~^ ~}" (first seen)))))))
+  (flet ((runner (arguments &key output-file)
+           (declare (ignore arguments output-file))
+           (values
+            (format nil "HTTP/1.1 302 Found~%Location: ~A~%~%"
+                    "/BurntSushi/ripgrep/releases/tag/15.2.0")
+            "" 0)))
+    (is (string= "15.2.0"
+                 (cadr-cli::latest-tool-version :rg #'runner))))
+  (flet ((runner (arguments &key output-file)
+           (declare (ignore arguments output-file))
+           (values "HTTP/2 404~%content-type: text/plain~%~%" "" 0)))
+    (let ((message
+            (handler-case
+                (progn
+                  (cadr-cli::latest-tool-version :fd #'runner)
+                  nil)
+              (error (condition)
+                (princ-to-string condition)))))
+      (is (search
+           "Failed to resolve latest sharkdp/fd release: HTTP 404 without redirect"
+           message))))
+  (flet ((runner (arguments &key output-file)
+           (declare (ignore arguments output-file))
+           (values
+            (format nil "HTTP/2 302~%location: https://github.com/login~%~%")
+            "" 0)))
+    (let ((message
+            (handler-case
+                (progn
+                  (cadr-cli::latest-tool-version :fd #'runner)
+                  nil)
+              (error (condition)
+                (princ-to-string condition)))))
+      (is (search
+           "unexpected redirect to https://github.com/login"
+           message)))))
