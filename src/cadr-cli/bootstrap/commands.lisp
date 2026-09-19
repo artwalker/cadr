@@ -875,7 +875,9 @@
     (when tui-p
       ;; Baseline interactive-mode.ts:1825 — shortcut conflicts join the
       ;; [Extension issues] block; print/rpc never computes them.
-      (refresh-extension-shortcut-diagnostics extension-manager))
+      (refresh-extension-shortcut-diagnostics extension-manager)
+      (refresh-extension-command-conflict-diagnostics
+       extension-manager))
     (when (or
            (cli-arguments-thinking command)
            startup-thinking
@@ -1440,6 +1442,8 @@
                     ;; Baseline interactive-mode.ts:5885 — a reload
                     ;; recomputes the shortcut conflict diagnostics.
                     (refresh-extension-shortcut-diagnostics
+                     extension-manager)
+                    (refresh-extension-command-conflict-diagnostics
                      extension-manager)
                     (when slash-command-refresher
                       (funcall slash-command-refresher)))

@@ -508,6 +508,60 @@ startup must not report these."
        diagnostics)))
     diagnostics))
 
+(defun extension-builtin-command-conflict-diagnostics (host)
+  (let ((snapshot
+          (and host
+               (cadr-agent::extension-host-current-snapshot
+                host))))
+    (when snapshot
+      (loop for command
+            in (cadr-agent::extension-snapshot-commands
+                snapshot)
+            for name =
+              (cadr-agent::extension-command-definition-name
+               command)
+            for invocation =
+              (cadr-agent::extension-command-lookup-name
+               command)
+            when (member
+                  name
+                  +tui-autocomplete-command-specifications+
+                  :key #'first
+                  :test #'string=)
+              collect
+              (list
+               :type :warning
+               :path
+               (cadr-agent::extension-definition-origin
+                command)
+               :message
+               (if (string= invocation name)
+                   (format
+                    nil
+                    "Extension command '/~A' conflicts with built-in interactive command. Skipping in autocomplete."
+                    name)
+                   (format
+                    nil
+                    "Extension command '/~A' conflicts with built-in interactive command. Available as '/~A'."
+                    name invocation)))))))
+
+(defun refresh-extension-command-conflict-diagnostics
+    (manager)
+  (setf
+   (cli-extension-manager-startup-issues manager)
+   (nconc
+    (remove :command-conflict
+            (cli-extension-manager-startup-issues manager)
+            :key (lambda (issue) (getf issue :source)))
+    (mapcar
+     (lambda (issue)
+       (list :type :warning
+             :source :command-conflict
+             :path (getf issue :path)
+             :message (getf issue :message)))
+     (extension-builtin-command-conflict-diagnostics
+      (cli-extension-manager-host manager))))))
+
 (defun find-extension-shortcut-for-input
     (host input)
   (find-if
