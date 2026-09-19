@@ -357,3 +357,31 @@
         (is (not (null handled)))
         (is (eq :select action))
         (is (eq :high value))))))
+
+(test thinking-search-press-inserts-at-the-cursor
+  (let ((state
+          (cadr-cli::make-thinking-selector-state
+           :levels '(:off :low :high)
+           :current-level :off)))
+    (cadr-cli::thinking-selector-set-query state "hello")
+    (cadr-cli::render-thinking-selector state 40)
+    (let ((origin (cadr-cli::thinking-selector-state-input-origin state)))
+      (is (integerp origin))
+      (is (/= origin
+              (cadr-cli::thinking-selector-state-list-origin state)))
+      (is (null
+           (cadr-cli::thinking-selector-handle-mouse
+            state (list :type :press :button :left :x 4) 0)))
+      (is (= 5 (cadr-cli::thinking-selector-state-query-cursor state)))
+      (is (cadr-cli::thinking-selector-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-cli::thinking-selector-state-query-cursor state)))
+      (cadr-cli::thinking-selector-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-cli::thinking-selector-state-query state)))
+      (cadr-cli::thinking-selector-handle-event
+       state (cadr-tui:make-input-event :kind :backspace))
+      (is (string= "hello"
+                   (cadr-cli::thinking-selector-state-query state)))
+      (is (= 2 (cadr-cli::thinking-selector-state-query-cursor state))))))

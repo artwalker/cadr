@@ -36,6 +36,9 @@
   current-level
   default-level
   (query "" :type string)
+  (query-cursor 0 :type (integer 0 *))
+  (input-origin nil)
+  (input-width 80 :type (integer 1 *))
   (filtered-levels nil :type list)
   (filter-query nil :type (or null string))
   (filtered-count 0 :type (integer 0 *))
@@ -110,15 +113,21 @@
    (thinking-selector-state-selected state)
    (thinking-selector-state-filtered-levels state)))
 
-(defun thinking-selector-set-query (state query)
-  (setf
-   (thinking-selector-state-query state)
-   (or query ""))
-  (thinking-selector-apply-filter state)
-  (if (plusp (length (thinking-selector-state-query state)))
-      (setf (thinking-selector-state-selected state) 0)
-      (thinking-selector-clamp-selected state))
+(defun thinking-selector-edit-query (state query cursor)
+  (let ((query (or query "")))
+    (setf
+     (thinking-selector-state-query state) query
+     (thinking-selector-state-query-cursor state)
+     (max 0 (min cursor (length query))))
+    (thinking-selector-apply-filter state)
+    (if (plusp (length query))
+        (setf (thinking-selector-state-selected state) 0)
+        (thinking-selector-clamp-selected state)))
   state)
+
+(defun thinking-selector-set-query (state query)
+  (let ((query (or query "")))
+    (thinking-selector-edit-query state query (length query))))
 
 (defun thinking-selector-move (state delta)
   (setf
@@ -186,23 +195,69 @@
     ((:escape :interrupt)
      (values :cancel nil))
     (:backspace
-     (thinking-selector-set-query
-      state
-      (selector-delete-query-character
-       (thinking-selector-state-query state)))
+     (let* ((query (thinking-selector-state-query state))
+            (cursor
+              (min
+               (thinking-selector-state-query-cursor state)
+               (length query)))
+            (start
+              (if (zerop cursor)
+                  0
+                  (cadr-tui::previous-cluster-boundary
+                   query cursor))))
+       (unless (= start cursor)
+         (thinking-selector-edit-query
+          state
+          (concatenate
+           'string
+           (subseq query 0 start)
+           (subseq query cursor))
+          start)))
      (values :changed nil))
     (:text
-     (thinking-selector-set-query
-      state
-      (concatenate
-       'string
-       (thinking-selector-state-query state)
-       (or (cadr-tui:input-event-text event) "")))
+     (let* ((query (thinking-selector-state-query state))
+            (cursor
+              (min
+               (thinking-selector-state-query-cursor state)
+               (length query)))
+            (text
+              (or (cadr-tui:input-event-text event) "")))
+       (thinking-selector-edit-query
+        state
+        (concatenate
+         'string
+         (subseq query 0 cursor)
+         text
+         (subseq query cursor))
+        (+ cursor (length text))))
      (values :changed nil))
     (otherwise
      (values nil nil))))
 
 (defun thinking-selector-handle-mouse (state gesture local-y)
+  (let ((origin (thinking-selector-state-input-origin state))
+        (x (getf gesture :x)))
+    (when (and (integerp origin)
+               (eql local-y origin)
+               (eq (getf gesture :type) :press)
+               (eq (getf gesture :button) :left)
+               (integerp x))
+      (let* ((query (thinking-selector-state-query state))
+             (input
+               (cadr-tui:make-single-line-input
+                :value query :prompt "> ")))
+        (setf (cadr-tui::single-line-input-cursor input)
+              (min
+               (thinking-selector-state-query-cursor state)
+               (length query)))
+        (cadr-tui:render-single-line-input
+         input
+         (thinking-selector-state-input-width state))
+        (when (cadr-tui:single-line-input-handle-mouse
+               input :type :press :button :left :x x :y 0)
+          (setf (thinking-selector-state-query-cursor state)
+                (cadr-tui::single-line-input-cursor input))
+          (return-from thinking-selector-handle-mouse t)))))
   (unless (and (integerp (thinking-selector-state-list-origin state))
                (integerp local-y))
     (return-from thinking-selector-handle-mouse nil))
@@ -404,14 +459,19 @@
                 ""
                 (thinking-selector-cycle-line state width)
                 ""))
-             (input-lines
-               (nth-value
-                0
+             (input
+               (multiple-value-list
                 (selector-input-rendering
                  (thinking-selector-state-query state)
-                 width))))
+                 width
+                 :cursor
+                 (thinking-selector-state-query-cursor state)))))
         (setf (thinking-selector-state-list-origin state)
-              (+ (length header) (length input-lines) 1)
+              (+ (length header) (length (first input)) 1)
+              (thinking-selector-state-input-origin state)
+              (length header)
+              (thinking-selector-state-input-width state)
+              (max 1 width)
               (thinking-selector-state-list-limit state)
               10)
         (render-selector-frame
@@ -419,7 +479,10 @@
           :sections
           (list
            (list :lines header)
-           (list :input (thinking-selector-state-query state))
+           (list :component
+                 (first input)
+                 (second input)
+                 (third input))
            :blank
            (list :lines body-lines)
            :blank
