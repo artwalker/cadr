@@ -516,6 +516,44 @@
             agent
             (cadr-agent:session-entries session)))))))))
 
+(test branch-summary-output-cap-matches-baseline-4096
+  ;; Baseline branch-summarization.test.ts #8845: min(4096, model.maxTokens).
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (flet ((observe (model-max)
+             (let* ((observed nil)
+                    (session
+                      (cadr-agent:create-session
+                       :directory sessions :cwd cwd
+                       :id (format nil "branch-cap-~A" model-max)))
+                    (_entry
+                      (cadr-agent:session-append-message
+                       session
+                       (cadr-ai:make-user-message :content "branch")))
+                    (model
+                      (cadr-ai:make-model
+                       :id "cap" :provider :openai :api :openai-responses
+                       :base-url "https://example.invalid"
+                       :max-tokens model-max :context-window 100000))
+                    (agent
+                      (cadr-agent:make-agent
+                       :provider :mock :model model :session session
+                       :stream-function
+                       (lambda (provider request-model context on-event
+                                &key max-tokens abort-p cache-retention
+                                     session-id)
+                         (declare
+                          (ignore provider request-model context on-event
+                                  abort-p cache-retention session-id))
+                         (setf observed max-tokens)
+                         (compaction-test-response "summary" :stop)))))
+               (declare (ignore _entry))
+               (cadr-agent:generate-branch-summary
+                agent (cadr-agent:session-entries session))
+               observed)))
+      (is (= 4096 (observe 32000)))
+      (is (= 1024 (observe 1024))))))
+
 (test aborted-branch-summary-cancels-without-moving-the-session
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
