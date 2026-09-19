@@ -2196,7 +2196,7 @@ interactive-mode.ts:5956-5960).")
                        (or
                         (apply
                          on-model-selected
-                         (list value)
+                         value
                          (when persist '(:persist t)))
                         (tui-state-model
                          state)))))
