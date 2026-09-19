@@ -184,3 +184,14 @@
     (is (find "beta" trimmed :test #'search))
     (is (find "" trimmed :test #'string=)
         "an internal blank paragraph must survive")))
+
+(test mermaid-next-bullet-regex-keeps-tab-and-newline-escapes
+  ;; Common Lisp "\n" / "\t" are the letters n and t. A tab after the
+  ;; bullet must still count as the next list item.
+  (is-true
+   (cadr-tui::mermaid-next-bullet-p
+    (format nil "*~Cnext" #\Tab) 1 "\\*"))
+  (is-true
+   (cadr-tui::mermaid-next-bullet-p "* note with n" 1 "\\*"))
+  (is (null
+       (cadr-tui::mermaid-next-bullet-p "  continued" 1 "\\*"))))
