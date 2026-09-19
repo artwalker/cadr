@@ -537,3 +537,86 @@
            (cadr-ai::json-get payload "toolConfig")
            "functionCallingConfig")
           "mode")))))
+
+(test responses-explicit-long-cache-sends-thirty-minute-ttl
+  (let* ((model
+           (compat-model
+            :id "gpt-5.6-sol"
+            :provider :openai
+            :api :openai-responses
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 4096
+            :compat
+            '(:supports-explicit-prompt-cache-mode t
+              :supports-long-cache-retention t)))
+         (request
+           (build-request
+            (make-openai-provider :api-key "key")
+            model
+            (sample-context)
+            :stream-p t
+            :cache-retention :long
+            :session-id "session-long"
+            :max-tokens 128))
+         (payload (request-spec-payload request))
+         (options
+           (cadr-ai::json-get payload "prompt_cache_options")))
+    (is (string= "30m" (cadr-ai::json-get options "ttl")))
+    (is (not (cadr-ai::json-present-p options "mode")))
+    (is (not (cadr-ai::json-present-p payload "prompt_cache_retention")))
+    (is (= 128 (cadr-ai::json-get payload "max_output_tokens")))))
+
+(test responses-omit-max-output-tokens-when-compat-disables-them
+  (let* ((model
+           (compat-model
+            :id "gateway"
+            :provider :openai
+            :api :openai-responses
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 4096
+            :compat '(:supports-max-output-tokens nil)))
+         (payload
+           (request-spec-payload
+            (build-request
+             (make-openai-provider :api-key "key")
+             model
+             (sample-context)
+             :stream-p t
+             :max-tokens 128))))
+    (is (not (cadr-ai::json-present-p payload "max_output_tokens")))))
+
+(test completions-forward-vllm-priority-including-zero
+  (let* ((zero
+           (compat-model
+            :id "vllm"
+            :provider :vllm
+            :api :openai-completions
+            :base-url "http://127.0.0.1:8000/v1"
+            :max-tokens 4096
+            :compat '(:vllm-priority 0)))
+         (unset
+           (compat-model
+            :id "vllm"
+            :provider :vllm
+            :api :openai-completions
+            :base-url "http://127.0.0.1:8000/v1"
+            :max-tokens 4096))
+         (zero-payload
+           (request-spec-payload
+            (build-request
+             (cadr-ai:make-openai-completions-provider :api-key "key")
+             zero
+             (sample-context)
+             :stream-p t
+             :cache-retention :none)))
+         (unset-payload
+           (request-spec-payload
+            (build-request
+             (cadr-ai:make-openai-completions-provider :api-key "key")
+             unset
+             (sample-context)
+             :stream-p t
+             :cache-retention :none))))
+    (is (cadr-ai::json-present-p zero-payload "priority"))
+    (is (= 0 (cadr-ai::json-get zero-payload "priority")))
+    (is (not (cadr-ai::json-present-p unset-payload "priority")))))

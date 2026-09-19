@@ -119,7 +119,8 @@
     "supportsEagerToolInputStreaming" "sendSessionAffinityHeaders"
     "supportsCacheControlOnTools" "supportsTemperature"
     "forceAdaptiveThinking" "allowEmptySignature"
-    "supportsStrictTools" "supportsToolReferences"))
+    "supportsStrictTools" "supportsToolReferences"
+    "supportsMaxOutputTokens"))
 
 (defparameter +model-compat-enum-keys+
   '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
@@ -141,6 +142,9 @@
                   (stringp value))
              (list (model-compat-json-key key)
                    (model-compat-json-key value)))
+            ((and (string= key "vllmPriority")
+                  (numberp value))
+             (list :vllm-priority value))
             (t nil)))))
 
 (defun json-model (provider object base-url

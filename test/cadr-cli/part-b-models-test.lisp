@@ -979,6 +979,8 @@
             (args
              "supportsAdditionalTools" t
              "supportsStrictMode" nil
+             "supportsMaxOutputTokens" nil
+             "vllmPriority" 0
              "sessionAffinityFormat" "openrouter")))))))
       (write-json
        auth-path
@@ -1007,4 +1009,10 @@
                  model :supports-strict-mode t)))
         (is (eq :openrouter
                 (cadr-ai::model-compat-value
-                 model :session-affinity-format nil)))))))
+                 model :session-affinity-format nil)))
+        (is (eq nil
+                (cadr-ai::model-compat-value
+                 model :supports-max-output-tokens t)))
+        (is (= 0
+               (cadr-ai::model-compat-value
+                model :vllm-priority nil)))))))
