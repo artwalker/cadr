@@ -1993,7 +1993,7 @@
                     in
                     `((:extension
                        ,#'cadr-agent::extension-snapshot-commands
-                       ,#'cadr-agent::extension-command-definition-name
+                       ,#'cadr-agent::extension-command-lookup-name
                        ,#'cadr-agent::extension-command-definition-description
                        ,#'cadr-agent::extension-command-definition-argument-hint)
                       (:prompt-template

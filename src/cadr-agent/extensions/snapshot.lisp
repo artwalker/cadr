@@ -130,7 +130,6 @@ types add a method here instead of a second etypecase."))
 
 (defun make-extension-snapshot-from-bundles (bundles)
   (let ((tool-table (make-hash-table :test #'equal))
-        (command-table (make-hash-table :test #'equal))
         (template-table (make-hash-table :test #'equal))
         (native-provider-table
           (make-hash-table :test #'eq))
@@ -169,10 +168,8 @@ types add a method here instead of a second etypecase."))
          #'extension-tool-definition-name
          "Tool" '*conflicts*))
       (dolist (definition (extension-bundle-commands bundle))
-        (add-first-definition
-         command-table '*commands* definition
-         #'extension-command-definition-name
-         "Command" '*conflicts*))
+        (setf *commands*
+              (nconc *commands* (list definition))))
       (dolist (definition (extension-bundle-templates bundle))
         (add-first-definition
          template-table '*templates* definition
@@ -253,6 +250,7 @@ types add a method here instead of a second etypecase."))
          #'<
          :key #'extension-hook-definition-priority)))
      hooks)
+    (assign-extension-command-invocations *commands*)
     (make-extension-snapshot
      :bundles (copy-list bundles)
      :tools *tools*

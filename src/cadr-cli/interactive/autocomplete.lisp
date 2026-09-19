@@ -74,7 +74,9 @@
            unless (builtin-name-p name)
              collect
              (cadr-tui:make-autocomplete-command
-              :name name
+              :name
+              (cadr-agent::extension-command-lookup-name
+               command)
               :description
               (cadr-agent::extension-command-definition-description
                command)

@@ -1192,7 +1192,8 @@
     ;; +5 v0.84.4: ui prompt events (context.lisp) and custom-message
     ;; flush helpers (providers.lisp).
     ;; +2 Goal 28: extension host helpers added in B9 owners.
-    (is (= 260 definition-count)
+    ;; +2 duplicate command invocation names.
+    (is (= 262 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))

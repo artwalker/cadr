@@ -1276,6 +1276,40 @@
                     (cadr-tui:autocomplete-item-description
                      ship)))))))
 
+(test slash-autocomplete-uses-duplicate-command-invocation-names
+  (let* ((provider
+           (cadr-cli::make-tui-autocomplete-provider
+            :base-path (uiop:getcwd)))
+         (suggested
+           (lambda ()
+             (mapcar
+              #'cadr-tui:autocomplete-item-value
+              (cadr-tui:autocomplete-suggestions-items
+               (cadr-tui:autocomplete-get-suggestions
+                provider '("/") 0 1))))))
+    (cadr-cli::replace-extra-autocomplete-commands
+     provider
+     (cadr-cli::resource-slash-commands
+      nil nil nil
+      (list
+       (cadr-agent::make-extension-command-definition
+        :name "ship"
+        :invocation-name "ship:1"
+        :description "First")
+       (cadr-agent::make-extension-command-definition
+        :name "ship"
+        :invocation-name "ship:2"
+        :description "Second")
+       (cadr-agent::make-extension-command-definition
+        :name "settings"
+        :invocation-name "settings:1"
+        :description "Still a builtin name"))))
+    (is (member "ship:1" (funcall suggested) :test #'string=))
+    (is (member "ship:2" (funcall suggested) :test #'string=))
+    (is (not (member "ship" (funcall suggested) :test #'string=)))
+    (is (not (member "settings:1" (funcall suggested) :test #'string=)))
+    (is (= 1 (count "settings" (funcall suggested) :test #'string=)))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))
