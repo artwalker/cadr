@@ -802,3 +802,26 @@
           (cadr-tui::footer-context-text nil 0 t nil)))
     (is (string= "0.0%/0 (auto)" zero))
     (is (string= "?/0 (auto)" unknown))))
+
+(test model-search-press-inserts-at-the-cursor
+  (let ((state (cadr-cli::make-model-selector-state)))
+    (cadr-cli::model-selector-set-query state "hello")
+    (cadr-cli::render-model-selector state 40)
+    (let ((origin (cadr-cli::model-selector-state-input-origin state)))
+      (is (integerp origin))
+      (is (null
+           (cadr-cli::model-selector-handle-mouse
+            state (list :type :press :button :left :x 4) 0)))
+      (is (= 5 (cadr-cli::model-selector-state-query-cursor state)))
+      (is (cadr-cli::model-selector-handle-mouse
+           state (list :type :press :button :left :x 4) origin))
+      (is (= 2 (cadr-cli::model-selector-state-query-cursor state)))
+      (cadr-cli::model-selector-handle-event
+       state (cadr-tui:make-input-event :kind :text :text "X"))
+      (is (string= "heXllo"
+                   (cadr-cli::model-selector-state-query state)))
+      (cadr-cli::model-selector-handle-event
+       state (cadr-tui:make-input-event :kind :backspace))
+      (is (string= "hello"
+                   (cadr-cli::model-selector-state-query state)))
+      (is (= 2 (cadr-cli::model-selector-state-query-cursor state))))))

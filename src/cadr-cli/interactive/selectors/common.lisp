@@ -180,11 +180,15 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
     :enabled-p t)
    width))
 
-(defun selector-input-rendering (value width)
-  (cadr-tui:render-single-line-input
-   (cadr-tui:make-single-line-input
-    :value value :prompt "> ")
-   width))
+(defun selector-input-rendering (value width &key cursor)
+  (let* ((value (or value ""))
+         (input
+           (cadr-tui:make-single-line-input
+            :value value :prompt "> ")))
+    (when (integerp cursor)
+      (setf (cadr-tui::single-line-input-cursor input)
+            (max 0 (min cursor (length value)))))
+    (cadr-tui:render-single-line-input input width)))
 
 (defun selector-input-line (value width)
   (first
