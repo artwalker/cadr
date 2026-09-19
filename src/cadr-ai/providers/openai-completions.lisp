@@ -528,6 +528,10 @@
             (json-put payload "prompt_cache_key" cache-key))))
       (when (and (eq retention :long) supports-long)
         (json-put payload "prompt_cache_retention" "24h")))
+    (multiple-value-bind (priority present-p)
+        (plist-entry (model-compat model) :vllm-priority)
+      (when present-p
+        (json-put payload "priority" priority)))
     (make-request-spec
      :url (chat-completions-url (model-base-url model))
      :headers

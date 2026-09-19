@@ -425,23 +425,33 @@
        :supports-strict-mode
        (model-compat-value model :supports-strict-mode nil)
        :supports-openai-grammar-tools supports-grammar)))
-    (let ((retention
-            (normalize-cache-retention cache-retention)))
+    (let* ((retention
+             (normalize-cache-retention cache-retention))
+           (explicit-p
+             (model-compat-value
+              model :supports-explicit-prompt-cache-mode nil))
+           (long-p
+             (model-compat-value
+              model :supports-long-cache-retention t)))
       (unless (eq retention :none)
         (let ((cache-key
                 (clamp-openai-cache-key session-id)))
           (when cache-key
             (json-put payload "prompt_cache_key" cache-key))))
-      (when (and (eq retention :long)
-                 (model-compat-value
-                  model :supports-long-cache-retention t))
-        (json-put payload "prompt_cache_retention" "24h"))
-      (when (and (eq retention :none)
-                 (model-compat-value
-                  model :supports-explicit-prompt-cache-mode nil))
-        (json-put payload "prompt_cache_options"
-                  (json-object "mode" "explicit"))))
-    (when max-tokens
+      (cond
+        (explicit-p
+         (cond
+           ((eq retention :none)
+            (json-put payload "prompt_cache_options"
+                      (json-object "mode" "explicit")))
+           ((and (eq retention :long) long-p)
+            (json-put payload "prompt_cache_options"
+                      (json-object "ttl" "30m")))))
+        ((and (eq retention :long) long-p)
+         (json-put payload "prompt_cache_retention" "24h"))))
+    (when (and max-tokens
+               (model-compat-value
+                model :supports-max-output-tokens t))
       (json-put payload "max_output_tokens" (max 16 max-tokens)))
     (when (not (null temperature))
       (json-put payload "temperature" temperature))
