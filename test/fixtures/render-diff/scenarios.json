@@ -5863,6 +5863,84 @@
       ]
     },
     {
+      "id": "example-tic-tac-toe-agent",
+      "group": "examples",
+      "coverage": [
+        "example-ttt-agent-repaint"
+      ],
+      "description": "Agent tool places O after the user's move. The checkpoint is after the tool, not after the keystroke, so a missing overlay repaint fails the screen.",
+      "setup": {
+        "exampleExtensions": [
+          "tic-tac-toe"
+        ]
+      },
+      "responses": [
+        {
+          "content": [
+            {
+              "type": "toolCall",
+              "name": "tic_tac_toe",
+              "id": "tool-ttt-play",
+              "arguments": {
+                "action": "play"
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        {
+          "content": [
+            {
+              "type": "text",
+              "text": "O is in the corner."
+            }
+          ],
+          "stopReason": "stop"
+        }
+      ],
+      "actions": [
+        {
+          "waitForHex": "1b5b3f323032366c"
+        },
+        {
+          "pauseMs": 200
+        },
+        {
+          "sendText": "/tic-tac-toe"
+        },
+        {
+          "send": "enter"
+        },
+        {
+          "waitFor": "Tic-Tac-Toe"
+        },
+        {
+          "pauseMs": 80
+        },
+        {
+          "send": "enter"
+        },
+        {
+          "waitFor": "Placed O at (0,0)"
+        },
+        {
+          "pauseMs": 80
+        },
+        {
+          "checkpoint": "ttt-agent-repaint"
+        },
+        {
+          "send": "escape"
+        },
+        {
+          "pauseMs": 80
+        },
+        {
+          "send": "ctrl+d"
+        }
+      ]
+    },
+    {
       "id": "example-space-invaders",
       "group": "examples",
       "dimensions": [

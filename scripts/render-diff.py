@@ -299,6 +299,7 @@ REQUIRED_COVERAGE = {
     "example-todo-added",
     "example-todos-empty",
     "example-tools-selector",
+    "example-ttt-agent-repaint",
     "example-ttt-cursor",
     "example-ttt-initial",
     "example-ttt-played",
@@ -2678,6 +2679,36 @@ def capture_side(
             os.close(slave_fd)
 
 
+# The gray status rule animates the braille glyph and the ellipsis
+# (Working / Working. / Working.. / Working...). Accent-color spinner
+# rules above do not match 38;2;80;80;80, and the two sides split SGR
+# differently, so a checkpoint hashes a different frame on each run.
+_WORKING_STATUS_LINE = re.compile(
+    rb"(?m)^(?:\x1b\[[0-9;]*m)*"
+    rb"\xe2\x94\x80\xe2\x94\x80"
+    rb"(?:(?:\x1b\[[0-9;]*m)*[ ])+"
+    rb"(?:\x1b\[[0-9;]*m)*\xe2[\xa0-\xa3][\x80-\xbf]"
+    rb"(?:(?:\x1b\[[0-9;]*m)*[ ])+"
+    rb"(?:\x1b\[[0-9;]*m)*Working\.{0,3} "
+    rb"(?:(?:\x1b\[[0-9;]*m)*\xe2\x94\x80)+"
+    rb"(?:\x1b\[[0-9;]*m)*$"
+)
+
+
+def canonicalize_working_status(data: bytes) -> bytes:
+    def replace(match: re.Match[bytes]) -> bytes:
+        visible = re.sub(rb"\x1b\[[0-9;]*m", b"", match.group(0))
+        width = len(visible.decode("utf-8"))
+        prefix = "── ⠋ Working... "
+        fill = width - len(prefix)
+        if fill < 0:
+            return match.group(0)
+        body = (prefix + ("─" * fill)).encode("utf-8")
+        return b"\x1b[38;2;80;80;80m" + body + b"\x1b[39m"
+
+    return _WORKING_STATUS_LINE.sub(replace, data)
+
+
 def normalize_fixed_values(data: bytes) -> bytes:
     replacements = [
         (str(Path(f"/tmp/{_BASELINE_CACHE_NAME}")).encode(), b"<PI_BASELINE>"),
@@ -2859,7 +2890,7 @@ def normalize_fixed_values(data: bytes) -> bytes:
         b"/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log",
         result,
     )
-    return result
+    return canonicalize_working_status(result)
 
 
 def render_side_session_directory(sandbox: Path, side: str) -> Path:
