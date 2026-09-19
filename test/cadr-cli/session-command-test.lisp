@@ -908,3 +908,70 @@
                  (cadr-agent:agent-prompt agent "next prompt")
                  (is (equal '(:user) (first captured))))))
         (cadr-agent:agent-shutdown agent)))))
+
+(test unflushed-persisted-fork-waits-for-the-first-assistant
+  ;; Baseline agent-session-runtime.test.ts: the session file stays
+  ;; unwritten until the first assistant entry. Clone and a non-root
+  ;; fork say so instead of branching from memory.
+  (with-test-directory (directory)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory directory
+              :cwd directory
+              :id "unflushed-fork"))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session
+              :auto-compact-p nil))
+           (expected
+             "This session has not been saved yet. Wait for the first assistant response before cloning or forking it."))
+      (cadr-agent:session-append-model-change
+       session "openai" "mock")
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "hello"))
+      (is (null
+           (probe-file
+            (cadr-agent:session-path session))))
+      (let ((entry-id
+              (getf
+               (first
+                (cadr-cli::session-user-messages-for-forking
+                 session))
+               :entry-id)))
+        (flet ((message-of (thunk)
+                 (handler-case
+                     (progn (funcall thunk) nil)
+                   (cadr-ai:configuration-error (condition)
+                     (cadr-ai:cadr-error-message
+                      condition)))))
+          (is (string=
+               expected
+               (message-of
+                (lambda ()
+                  (cadr-cli::fork-agent-session
+                   agent entry-id directory)))))
+          (is (string=
+               expected
+               (message-of
+                (lambda ()
+                  (cadr-cli::clone-agent-session
+                   agent directory)))))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "ok"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (is (probe-file
+           (cadr-agent:session-path session)))
+      (is (typep
+           (cadr-cli::clone-agent-session
+            agent directory)
+           'cadr-agent:session)))))
