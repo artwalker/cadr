@@ -30,7 +30,11 @@ Items awaiting adjudication:
   - `src/cadr-ai/provider.lisp:431` synthesises `"No result provided"` for
     a tool call with no result — text present in no `context`.
   - `src/cadr-ai/providers/openai.lisp:118` injects fabricated message ids
-    (`msg_cadr_~D`) during serialisation.
+    (`msg_cadr_~D`) during serialisation. User ruling 2026-09-19: keep
+    that prefix. The baseline emits `msg_pi_*`
+    (`packages/ai/src/api/openai-responses-shared.ts`). Rewriting these
+    ids to `msg_pi_*` would violate product identity. This is not a new
+    intentional-difference class.
   - `src/cadr-agent/compaction.lisp:255` and
     `src/cadr-agent/branch-summarization.lisp:125` each build a separate
     sub-context from their own system prompt.
@@ -87,10 +91,9 @@ Items awaiting adjudication:
   parity obligation** (goal 20 prompt review, item D). cadr ships 11 user
   docs named after pi's (`extensions.md`, `keybindings.md`, `themes.md`,
   `sdk.md`, …); the source ledger counts only `packages/**/*.ts`, so doc
-  content is out of every ledger. The decision needed: either docs
-  content parity is in scope (build the fifth ledger for it) or it is
-  explicitly out — recorded here either way, so nobody assumes someone
-  else is watching it.
+  content is out of every ledger. **Adjudicated (user, 2026-09-19):
+  explicitly out.** Do not build a docs-content ledger. The source
+  ledger still counts only `packages/**/*.ts`.
 
 
 - `OQ-G20-UNDO-STACK-CAP`: **capping the editor undo stack**. Goal 20 queue
@@ -151,6 +154,23 @@ Items awaiting adjudication:
   - When registering the intentional difference, state the **trigger
     condition** (buffer size × edit count), not "for performance". A reason
     that does not say when the difference appears cannot be checked later.
+
+  **Measurement (2026-09-19), no budget named.** Undo entries are not
+  stored in session files. The only persisted editor text is the user
+  message `content` string, which is the buffer at submit, not the
+  per-keystroke stack. Walked `~/.cadr/agent/sessions/*.jsonl` (140
+  files). 384 user messages had string content. One JSONL line failed
+  to parse and was skipped. Nothing in the walk is printed except
+  lengths.
+
+  `(length text)` on those strings: min 1, p50 14, p90 170, p99 6694,
+  max 6711, sum 74124. UTF-8 bytes of the same strings: min 2, p50 27,
+  p90 189, p99 12654, max 12703. Counts by character length: 0–15: 213,
+  16–63: 93, 64–255: 43, 256–1023: 23, 1024–4095: 6, 4096–16383: 6,
+  16384 and above: 0. The long tail is not ASCII, so character length
+  and UTF-8 bytes diverge. This does not measure stack depth, paste
+  alist mass, or SBCL string heap size. No byte budget is chosen. No
+  cap is implemented.
 
 - `OQ-G20-AGENT-EVAL-TOOL`: **a Lisp evaluation tool for the agent (not for
   humans)**. On 2026-08-13 the user raised "cadr is written in Lisp; could the

@@ -355,4 +355,5 @@ triggers a turn from a custom component's input handler.
 
 The render-diff `example-tic-tac-toe` scenario still has empty faux
 responses, so it cannot see items 2–4. That remains
-`EXAMPLES-AGENT-DRIVEN-REDRAW-GAP`.
+`EXAMPLES-AGENT-DRIVEN-REDRAW-GAP`. User ruling 2026-09-19 keeps the
+obligation unit on user keystrokes. Do not add agent-driven scenarios.
