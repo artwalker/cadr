@@ -10,6 +10,7 @@
   (items nil :type list)
   (query "" :type string)
   (selected 0 :type (integer 0 *))
+  (mouse-pressed nil)
   (height 5 :type (integer 1 *))
   (show-filter-p t :type boolean)
   (min-primary-column-width 32
@@ -303,3 +304,62 @@
                  "")
                 :enabled-p
                 ansi-theme-p)))))))))
+
+(defun centered-list-mouse
+    (count selected height y type button wheel-delta
+     &key (row-offset 0) pressed)
+  "Map one mouse gesture onto a list whose window is centered on SELECTED.
+Hover and drag return the current index and no action. The window would
+move under the pointer if hover changed the index."
+  (when (or (not (integerp count)) (not (plusp count))
+            (not (integerp y)))
+    (return-from centered-list-mouse (values selected nil)))
+  (when (and (eq type :wheel)
+             (integerp wheel-delta)
+             (not (zerop wheel-delta)))
+    (let ((delta (if (minusp wheel-delta) -1 1)))
+      (return-from centered-list-mouse
+        (values
+         (max 0 (min (1- count) (+ selected delta)))
+         :wheel))))
+  (unless (and (eq button :left)
+               (member type '(:press :click)))
+    (return-from centered-list-mouse (values selected nil)))
+  (let* ((start
+           (max 0
+                (min (- selected (floor height 2))
+                     (- count height))))
+         (end (min count (+ start height)))
+         (index (+ start (- y row-offset))))
+    (unless (and (>= index start) (< index end))
+      (return-from centered-list-mouse (values selected nil)))
+    (if (eq type :press)
+        (values index :press)
+        (values (or pressed index) :click))))
+
+(defun select-list-handle-mouse
+    (list &key type button y wheel-delta)
+  (let ((items (select-list-filtered-items list)))
+    (multiple-value-bind (next action)
+        (centered-list-mouse
+         (length items)
+         (select-list-selected list)
+         (select-list-height list)
+         (or y 0)
+         type button wheel-delta
+         :pressed (select-list-mouse-pressed list))
+      (case action
+        (:wheel
+         (setf (select-list-selected list) next)
+         :scroll)
+        (:press
+         (setf (select-list-mouse-pressed list) next
+               (select-list-selected list) next)
+         :press)
+        (:click
+         (setf (select-list-selected list) next
+               (select-list-mouse-pressed list) nil)
+         (let ((item (nth next items)))
+           (when item
+             (values :select (select-item-value item)))))
+        (t nil)))))

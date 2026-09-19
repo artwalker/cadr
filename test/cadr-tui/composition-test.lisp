@@ -347,3 +347,44 @@
 (test select-list-height-default
   (is (= 5 (cadr-tui::select-list-height
             (cadr-tui:make-select-list)))))
+
+(test settings-hover-does-not-move-the-centered-selection
+  (dolist (row '(0 4))
+    (let* ((changes nil)
+           (list
+             (cadr-tui:make-settings-list-component
+              (loop for index below 12
+                    collect
+                    (cadr-tui:make-setting-item
+                     :id (format nil "item-~D" index)
+                     :label (format nil "Item ~D" index)
+                     :current-value "off"
+                     :values '("off" "on")))
+              5
+              :search-enabled-p t
+              :cursor "> "
+              :on-change
+              (lambda (id value)
+                (push (list id value) changes)))))
+      (setf (cadr-tui:settings-list-component-selected-index list) 5)
+      (is (eq :scroll
+              (cadr-tui:settings-list-handle-mouse
+               list :type :wheel :wheel-delta 1 :y (+ row 2))))
+      (let ((before (cadr-tui:component-render list 80)))
+        (is (some (lambda (line)
+                    (and (uiop:string-prefix-p "> " line)
+                         (search "Item 6" line)))
+                  before))
+        (dolist (y '(0 1 2 3 4))
+          (is (null
+               (cadr-tui:settings-list-handle-mouse
+                list :type :move :button :none :y (+ y 2))))
+          (is (equal before (cadr-tui:component-render list 80))))
+        (is (null changes))
+        (cadr-tui:settings-list-handle-mouse
+         list :type :press :button :left :y (+ row 2))
+        (is (eq :click
+                (cadr-tui:settings-list-handle-mouse
+                 list :type :click :button :left :y (+ row 2))))
+        (is (equal (list (list (format nil "item-~D" (+ 4 row)) "on"))
+                   changes))))))

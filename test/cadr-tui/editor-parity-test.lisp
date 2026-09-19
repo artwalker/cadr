@@ -987,3 +987,27 @@
              (lambda (line)
                (= 60 (cadr-tui:visible-width line)))
              lines))))))
+
+(test autocomplete-hover-does-not-move-the-centered-selection
+  (let ((editor (cadr-tui:make-multiline-editor :text "")))
+    (setf (cadr-tui::multiline-editor-autocomplete-suggestions editor)
+          (loop for index below 12
+                collect
+                (cadr-tui:make-autocomplete-item
+                 :label (format nil "Item ~D" index)
+                 :value (format nil "item-~D" index)))
+          (cadr-tui::multiline-editor-autocomplete-selected editor) 5
+          (cadr-tui::multiline-editor-autocomplete-prefix editor) "/")
+    (cadr-tui:render-editor editor 80)
+    (let ((origin (cadr-tui::multiline-editor-autocomplete-origin editor)))
+      (is (integerp origin))
+      (is (cadr-tui::editor-autocomplete-handle-mouse
+           editor origin :type :wheel :wheel-delta 1))
+      (is (= 6 (cadr-tui::multiline-editor-autocomplete-selected editor)))
+      (let ((before (cadr-tui:render-editor editor 80)))
+        (dolist (y '(0 1 2 3 4))
+          (is (null
+               (cadr-tui::editor-autocomplete-handle-mouse
+                editor (+ origin y) :type :move :button :none)))
+          (is (equal before (cadr-tui:render-editor editor 80))))
+        (is (= 6 (cadr-tui::multiline-editor-autocomplete-selected editor)))))))

@@ -54,6 +54,8 @@
   (autocomplete-max-visible 5
                             :type (integer 3 20))
   autocomplete-prefix
+  (autocomplete-origin nil)
+  (autocomplete-mouse-pressed nil)
   (autocomplete-clock #'editor-monotonic-seconds
                       :type function)
   autocomplete-pending-deadline
@@ -2138,6 +2140,9 @@
                 (list top-border)
                 content-lines
                 (list bottom-border))))
+      (setf (multiline-editor-autocomplete-origin editor)
+            (and (editor-autocomplete-visible-p editor)
+                 (length result)))
       (when (editor-autocomplete-visible-p editor)
         (setf
          result
@@ -2148,3 +2153,32 @@
        result
        (+ 1 (- cursor-row scroll-offset))
        (or cursor-column prompt-width))))))
+
+(defun editor-autocomplete-handle-mouse
+    (editor local-y &key type button wheel-delta)
+  (let ((origin (multiline-editor-autocomplete-origin editor))
+        (items (editor-autocomplete-items editor)))
+    (unless (and origin (integerp local-y) items)
+      (return-from editor-autocomplete-handle-mouse nil))
+    (multiple-value-bind (next action)
+        (centered-list-mouse
+         (length items)
+         (multiline-editor-autocomplete-selected editor)
+         (multiline-editor-autocomplete-max-visible editor)
+         (- local-y origin)
+         type button wheel-delta
+         :pressed (multiline-editor-autocomplete-mouse-pressed editor))
+      (case action
+        (:wheel
+         (setf (multiline-editor-autocomplete-selected editor) next)
+         t)
+        (:press
+         (setf (multiline-editor-autocomplete-mouse-pressed editor) next
+               (multiline-editor-autocomplete-selected editor) next)
+         t)
+        (:click
+         (setf (multiline-editor-autocomplete-selected editor) next
+               (multiline-editor-autocomplete-mouse-pressed editor) nil)
+         (editor-apply-autocomplete editor)
+         t)
+        (t nil)))))

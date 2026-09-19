@@ -55,6 +55,9 @@
   ;; v0.85.1 tui-alt-screen.ts copyOnSelect: default true; when false
   ;; mouse release leaves the highlight and Ctrl+X copies it.
   (copy-on-select-p t :type boolean)
+  component-mouse-function
+  component-mouse-press
+  (component-mouse-moved-p nil :type boolean)
   ;; pi@d981de122 tui-alt-screen.ts scrollToEndIndicator — when the
   ;; transcript is scrolled up, paint a centered label on the last
   ;; viewport row. Nil disables the overlay.
@@ -1239,6 +1242,61 @@ word-navigation character classes, then join word runs across '-' and
               (cdr point)))))))
     t)))
 
+(defun renderer-deliver-component-mouse (renderer mouse)
+  (let ((handler (terminal-renderer-component-mouse-function renderer)))
+    (unless handler
+      (return-from renderer-deliver-component-mouse nil))
+    (let* ((button (getf mouse :button))
+           (x (getf mouse :x))
+           (y (getf mouse :y))
+           (wheel-p (not (zerop (logand button 64))))
+           (motion-p (not (zerop (logand button 32))))
+           (release-p (getf mouse :release-p))
+           (decoded
+             (case (logand button 3)
+               (0 :left)
+               (1 :middle)
+               (2 :right)
+               (t :none)))
+           (press (terminal-renderer-component-mouse-press renderer)))
+      (when (and press
+                 (or (/= x (car press)) (/= y (cdr press))))
+        (setf (terminal-renderer-component-mouse-moved-p renderer) t))
+      (labels ((gesture (type button-name wheel-delta)
+                 (list :type type
+                       :button button-name
+                       :x x
+                       :y y
+                       :wheel-delta wheel-delta))
+               (deliver (plist)
+                 (not (null (funcall handler plist)))))
+        (cond
+          (wheel-p
+           (let ((direction (logand button 3)))
+             (when (member direction '(0 1))
+               (deliver
+                (gesture :wheel :none
+                         (if (zerop direction) -1 1))))))
+          (release-p
+           (let ((clicked
+                   (and press
+                        (not (terminal-renderer-component-mouse-moved-p
+                              renderer))
+                        (= x (car press))
+                        (= y (cdr press))
+                        (deliver (gesture :click decoded nil)))))
+             (setf (terminal-renderer-component-mouse-press renderer) nil
+                   (terminal-renderer-component-mouse-moved-p renderer) nil)
+             clicked))
+          (motion-p
+           (deliver
+            (gesture (if (eq decoded :none) :move :drag) decoded nil)))
+          (t
+           (setf (terminal-renderer-component-mouse-press renderer)
+                 (cons x y)
+                 (terminal-renderer-component-mouse-moved-p renderer) nil)
+           (deliver (gesture :press decoded nil))))))))
+
 (defun renderer-handle-input (renderer data)
   (unless
       (and
@@ -1249,6 +1307,8 @@ word-navigation character classes, then join word runs across '-' and
       nil))
   (let ((mouse (sgr-mouse-event data)))
     (when mouse
+      (when (renderer-deliver-component-mouse renderer mouse)
+        (return-from renderer-handle-input t))
       (let ((button (getf mouse :button)))
         (when
             (not
