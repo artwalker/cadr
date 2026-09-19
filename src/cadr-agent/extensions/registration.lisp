@@ -46,6 +46,7 @@
   invocation-name
   description
   argument-hint
+  argument-completions
   handler
   bundle)
 
@@ -294,7 +295,8 @@
   name)
 
 (defun register-extension-command
-    (name &key description argument-hint handler)
+    (name &key description argument-hint
+               argument-completions handler)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "command" name)
     (unless (or (null description) (stringp description))
@@ -308,6 +310,14 @@
        'extension-registration-error
        :message
        (format nil "Command ~A argument hint must be a string or NIL"
+               name)))
+    (unless (or (null argument-completions)
+                (functionp argument-completions))
+      (error
+       'extension-registration-error
+       :message
+       (format nil
+               "Command ~A argument completions must be a function or NIL"
                name)))
     (unless (functionp handler)
       (error
@@ -329,6 +339,7 @@
         :name name
         :description description
         :argument-hint argument-hint
+        :argument-completions argument-completions
         :handler handler
         :bundle bundle)))))
   name)
@@ -783,10 +794,13 @@
     :render-result ,render-result))
 
 (defmacro define-command
-    (name &key description argument-hint handler)
+    (name &key description argument-hint
+               argument-completions handler)
   `(register-extension-command
     ,name :description ,description
-    :argument-hint ,argument-hint :handler ,handler))
+    :argument-hint ,argument-hint
+    :argument-completions ,argument-completions
+    :handler ,handler))
 
 (defmacro define-event-hook
     (event &key (priority 0) handler)

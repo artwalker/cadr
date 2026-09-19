@@ -2496,6 +2496,10 @@
                 (append steering follow-up))))
            :cycle-model-function #'cycle-model
            :model-items-function #'model-items
+           :thinking-levels-function
+           (lambda ()
+             (cadr-ai:supported-thinking-levels
+              (cadr-agent:agent-model agent)))
            :login-options-function #'current-login-options
            :model-selector-function
            #'model-selector

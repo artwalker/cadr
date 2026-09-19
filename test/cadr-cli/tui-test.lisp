@@ -1398,6 +1398,44 @@
            "[u] Example skill"
            (cadr-tui:autocomplete-item-description item))))))
 
+(test slash-argument-completions-cover-thinking-and-extensions
+  (let ((provider
+          (cadr-cli::make-tui-autocomplete-provider
+           :base-path (uiop:getcwd)
+           :thinking-levels-function
+           (lambda () '(:off :low :high)))))
+    (let ((values
+            (mapcar
+             #'cadr-tui:autocomplete-item-value
+             (cadr-tui:autocomplete-suggestions-items
+              (cadr-tui:autocomplete-get-suggestions
+               provider '("/thinking l") 0 11)))))
+      (is (equal '("low") values))))
+  (let ((provider
+          (cadr-cli::make-tui-autocomplete-provider
+           :base-path (uiop:getcwd))))
+    (cadr-cli::replace-extra-autocomplete-commands
+     provider
+     (cadr-cli::resource-slash-commands
+      nil nil nil
+      (list
+       (cadr-agent::make-extension-command-definition
+        :name "ship"
+        :description "Ship it"
+        :argument-completions
+        (lambda (prefix)
+          (remove-if-not
+           (lambda (name)
+             (uiop:string-prefix-p prefix name))
+           '("alpha" "alpine" "beta")))))))
+    (let ((values
+            (mapcar
+             #'cadr-tui:autocomplete-item-value
+             (cadr-tui:autocomplete-suggestions-items
+              (cadr-tui:autocomplete-get-suggestions
+               provider '("/ship a") 0 7)))))
+      (is (equal '("alpha" "alpine") values)))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))

@@ -145,7 +145,15 @@
                        bundle))))
               :argument-hint
               (cadr-agent::extension-command-definition-argument-hint
-               command)))
+               command)
+              :argument-completer
+              (let ((completions
+                      (cadr-agent::extension-command-definition-argument-completions
+                       command)))
+                (when completions
+                  (lambda (prefix)
+                    (extension-argument-autocomplete-items
+                     (funcall completions prefix)))))))
      (when skill-commands-p
        (loop for skill in skills
              collect
@@ -297,10 +305,50 @@
                auth-label
                (format nil "~A · ~A" name auth-label))))))
 
+(defun tui-thinking-autocomplete-items
+    (levels-function prefix)
+  (let ((levels
+          (and levels-function
+               (funcall levels-function))))
+    (loop for level
+          in (cadr-tui::fuzzy-filter
+              (mapcar
+               (lambda (level)
+                 (string-downcase (symbol-name level)))
+               (or levels nil))
+              prefix
+              #'identity)
+          collect
+          (cadr-tui:make-autocomplete-item
+           :value level
+           :label level))))
+
+(defun extension-argument-autocomplete-items (items)
+  (when (listp items)
+    (loop for item in items
+          for normalized =
+            (cond
+              ((stringp item)
+               (cadr-tui:make-autocomplete-item
+                :value item :label item))
+              ((cadr-tui::autocomplete-item-p item)
+               item)
+              ((and (listp item) (getf item :value))
+               (cadr-tui:make-autocomplete-item
+                :value (getf item :value)
+                :label
+                (or (getf item :label)
+                    (getf item :value))
+                :description (getf item :description)))
+              (t nil))
+          when normalized
+            collect normalized)))
+
 (defun make-tui-autocomplete-provider
     (&key
        (base-path (uiop:getcwd))
        model-items-function
+       thinking-levels-function
        (login-options-function
          (lambda ()
            (login-provider-options
@@ -323,7 +371,11 @@
             ((string= name "login")
              (lambda (prefix)
                (tui-login-autocomplete-items
-                login-options-function prefix))))))
+                login-options-function prefix)))
+            ((string= name "thinking")
+             (lambda (prefix)
+               (tui-thinking-autocomplete-items
+                thinking-levels-function prefix))))))
    :base-path base-path
    :fd-path
    (find-tui-fd-program)))
