@@ -642,7 +642,8 @@
     ;; tui-builtin-slash-command-p, and
     ;; replace-extra-autocomplete-commands
     ;; (interactive/autocomplete.lisp).
-    (is (= 318 definition-count)
+    ;; +1 autocomplete source tags: prefix-autocomplete-description.
+    (is (= 319 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
