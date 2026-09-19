@@ -380,3 +380,164 @@
                 gist-url))))
       (when (probe-file temporary)
         (delete-file temporary)))))
+
+(defun share-tool-record (tool)
+  (cadr-ai::json-object
+   "name" (cadr-ai:tool-name tool)
+   "description" (cadr-ai:tool-description tool)
+   "parameters"
+   (cadr-agent::json-safe-value
+    (cadr-ai:tool-parameters tool))))
+
+(defun export-session-for-share
+    (session path &key (system-prompt "") tools)
+  (ensure-directories-exist path)
+  (let ((timestamp
+          (cadr-agent::session-timestamp-json
+           (cadr-core:unix-milliseconds)))
+        (parent-id nil))
+    (with-open-file
+        (stream path
+                :direction :output
+                :if-exists :supersede
+                :if-does-not-exist :create
+                :external-format :utf-8)
+      (cadr-agent::write-jsonl-object
+       stream
+       (cadr-ai::json-object
+        "type" "session"
+        "version" 3
+        "id" (cadr-agent:session-id session)
+        "timestamp" timestamp
+        "cwd" (cadr-agent:session-cwd session)))
+      (dolist (entry (cadr-agent::session-path-entries session))
+        (let ((object
+                (cadr-agent::session-entry-to-json entry)))
+          (cadr-ai::json-put
+           object "parentId" (or parent-id 'null))
+          (cadr-agent::write-jsonl-object stream object)
+          (setf parent-id
+                (cadr-agent:session-entry-id entry))))
+      (cadr-agent::write-jsonl-object
+       stream
+       (cadr-ai::json-object
+        "type" "custom"
+        "customType" "pi.share"
+        "id" (subseq (cadr-ai:uuid-v7) 0 8)
+        "parentId" (or parent-id 'null)
+        "timestamp" timestamp
+        "data"
+        (cadr-ai::json-object
+         "systemPrompt" (or system-prompt "")
+         "tools"
+         (map 'vector #'share-tool-record tools))))))
+  path)
+
+(defun radius-share-token (auth-path)
+  (let ((credential
+          (cadr-ai:read-auth-credential
+           (or auth-path (cadr-core:agent-auth-path))
+           :radius)))
+    (cond
+      ((typep credential 'cadr-ai:oauth-credential)
+       (let ((access
+               (cadr-ai:oauth-credential-access credential))
+             (expires
+               (cadr-ai:oauth-credential-expires credential)))
+         (when (and (stringp access)
+                    (plusp (length access))
+                    (or (not (plusp expires))
+                        (> expires
+                           (+ (cadr-core:unix-milliseconds)
+                              (* 5 60 1000)))))
+           access)))
+      ((typep credential 'cadr-ai:api-key-credential)
+       (let ((key
+               (cadr-ai:api-key-credential-key credential)))
+         (when (and (stringp key) (plusp (length key)))
+           key))))))
+
+(defun default-radius-gateway ()
+  (cadr-ai:provider-definition-base-url
+   (cadr-ai:find-provider-definition :radius)))
+
+(defun share-via-radius (jsonl-path token gateway http)
+  (let* ((body (uiop:read-file-string jsonl-path))
+         (title
+           (format nil "~A session"
+                   (cadr-ai::cadr-product-display-name)))
+         (request
+           (cadr-ai::make-request-spec
+            :method :post
+            :url
+            (format nil
+                    "~A/v1/artifacts?visibility=organization&title=~A"
+                    (string-right-trim "/" gateway)
+                    (cl-ppcre:regex-replace-all
+                     " " title "%20"))
+            :headers
+            (list
+             (cons "Authorization"
+                   (format nil "Bearer ~A" token))
+             (cons "Content-Type" "application/x-ndjson"))
+            :raw-body body)))
+    (let ((response
+            (handler-case
+                (funcall http request)
+              (error (condition)
+                (error "Failed to share via Radius: ~A"
+                       condition)))))
+      (let ((url
+              (cadr-ai::json-get response "canonical_url")))
+        (unless (and (stringp url) (plusp (length url)))
+          (error
+           "Failed to share via Radius: response has no canonical_url"))
+        url))))
+
+(defun share-session
+    (session
+     &key
+       agent
+       (runner #'default-share-command-runner)
+       viewer-base-url
+       (auth-path nil auth-path-p)
+       radius-token
+       radius-gateway
+       (http #'cadr-ai:request-json))
+  (let* ((token
+           (or radius-token
+               (and (not (and auth-path-p (null auth-path)))
+                    (radius-share-token auth-path))))
+         (directory
+           (merge-pathnames
+            (format nil "cadr-share-~A/" (cadr-ai:uuid-v7))
+            (uiop:temporary-directory)))
+         (jsonl (merge-pathnames "session.jsonl" directory)))
+    (ensure-directories-exist directory)
+    (unwind-protect
+         (progn
+           (export-session-for-share
+            session jsonl
+            :system-prompt
+            (or (and agent
+                     (cadr-agent::agent-system-prompt agent))
+                "")
+            :tools
+            (and agent
+                 (cadr-agent::merged-agent-tools agent)))
+           (if token
+               (values
+                (share-via-radius
+                 jsonl token
+                 (or radius-gateway (default-radius-gateway))
+                 http)
+                nil)
+               (share-session-as-gist
+                session
+                :runner runner
+                :viewer-base-url viewer-base-url)))
+      (when (probe-file directory)
+        (uiop:delete-directory-tree
+         directory
+         :validate t
+         :if-does-not-exist :ignore)))))

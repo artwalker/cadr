@@ -1883,13 +1883,13 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
           :message "The agent has no persistent session"))
        (multiple-value-bind
              (viewer-url gist-url)
-           (share-session-as-gist
+           (share-session
             (cadr-agent:agent-session agent)
+            :agent agent
             :runner share-runner)
-         (format
-          output
-          "Share URL: ~A~%Gist: ~A~%"
-          viewer-url gist-url))
+         (format output "Share URL: ~A~%" viewer-url)
+         (when (and gist-url (plusp (length gist-url)))
+           (format output "Gist: ~A~%" gist-url)))
        (finish-output output)
        t)
       ((string= command "/changelog")
