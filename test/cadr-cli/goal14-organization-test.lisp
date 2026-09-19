@@ -850,7 +850,10 @@
     ;; renderer/lifecycle-input.lisp.
     ;; +6 Goal 23 v0.85.1: alt-wheel / debug-redraw / working-indicator
     ;; / jump-to-latest owners land in B7 renderer+composition files.
-    (is (= 345 definition-count)
+    ;; +4 list hover stays off the selection: centered-list-mouse,
+    ;; select-list-handle-mouse, settings-list-handle-mouse,
+    ;; renderer-deliver-component-mouse.
+    (is (= 349 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

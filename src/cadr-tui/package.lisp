@@ -263,6 +263,7 @@
    #:make-settings-list-component
    #:settings-list-component-update-value
    #:settings-list-component-selected-index
+   #:settings-list-handle-mouse
    #:editor-component-text
    #:editor-component-set-text
    #:loader-component
@@ -305,6 +306,8 @@
    #:select-list-query
    #:select-list-filtered-items
    #:select-list-handle-event
+   #:select-list-handle-mouse
+   #:centered-list-mouse
    #:render-select-list
    #:terminal
    #:terminal-columns

@@ -256,7 +256,12 @@
                     (length pending-message-lines)
                     (length status-indicator)
                     (length widget-above-lines)
-                    editor-row))))
+                    editor-row)))
+           (editor-origin
+             (+ (length visible)
+                (length pending-message-lines)
+                (length status-indicator)
+                (length widget-above-lines))))
       (values
        (nconc visible
               pending-message-lines
@@ -268,4 +273,5 @@
        cursor-row
        (if overlay
            overlay-column
-           editor-column))))))
+           editor-column)
+       editor-origin)))))

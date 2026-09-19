@@ -18,6 +18,9 @@
    (selected-index
     :initform 0
     :accessor settings-list-component-selected-index)
+   (mouse-pressed-index
+    :initform nil
+    :accessor settings-list-component-mouse-pressed-index)
    (max-visible
     :initarg :max-visible
     :accessor settings-list-component-max-visible)
@@ -468,3 +471,39 @@
 (defmethod component-dispose
     ((input single-line-input))
   input)
+
+(defun settings-list-handle-mouse
+    (component &key type button y wheel-delta)
+  (when (settings-list-component-submenu-component component)
+    (return-from settings-list-handle-mouse nil))
+  (let ((row-offset 0))
+    (when (and (settings-list-component-search-enabled-p component)
+               (settings-list-component-search-input component))
+      (when (and (integerp y) (member y '(0 1)))
+        (return-from settings-list-handle-mouse nil))
+      (setf row-offset 2))
+    (let ((items (settings-list-display-items component)))
+      (multiple-value-bind (next action)
+          (centered-list-mouse
+           (length items)
+           (settings-list-component-selected-index component)
+           (settings-list-component-max-visible component)
+           (or y 0)
+           type button wheel-delta
+           :row-offset row-offset
+           :pressed
+           (settings-list-component-mouse-pressed-index component))
+        (case action
+          (:wheel
+           (setf (settings-list-component-selected-index component) next)
+           :scroll)
+          (:press
+           (setf (settings-list-component-mouse-pressed-index component) next
+                 (settings-list-component-selected-index component) next)
+           :press)
+          (:click
+           (setf (settings-list-component-selected-index component) next
+                 (settings-list-component-mouse-pressed-index component) nil)
+           (settings-list-activate-item component)
+           :click)
+          (t nil))))))

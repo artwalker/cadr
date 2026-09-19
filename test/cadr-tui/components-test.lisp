@@ -1086,3 +1086,35 @@
            (is (null (search wrong-boundary line)))
            (is (= width (cadr-tui:visible-width line))))
       (cadr-tui:reset-current-theme))))
+
+(test list-hover-does-not-move-the-centered-selection
+  (dolist (row '(0 4))
+    (let ((list
+            (cadr-tui:make-select-list
+             :height 5
+             :items
+             (loop for index below 12
+                   collect
+                   (cadr-tui:make-select-item
+                    :label (format nil "Item ~D" index)
+                    :value (format nil "item-~D" index))))))
+      (setf (cadr-tui::select-list-selected list) 5)
+      (is (eq :scroll
+              (cadr-tui:select-list-handle-mouse
+               list :type :wheel :wheel-delta 1 :y row)))
+      (is (= 6 (cadr-tui::select-list-selected list)))
+      (let ((before (cadr-tui:render-select-list list 80)))
+        (dolist (y '(0 1 2 3 4))
+          (is (null
+               (cadr-tui:select-list-handle-mouse
+                list :type :move :button :none :y y)))
+          (is (equal before (cadr-tui:render-select-list list 80))))
+        (is (= 6 (cadr-tui::select-list-selected list)))
+        (is (eq :press
+                (cadr-tui:select-list-handle-mouse
+                 list :type :press :button :left :y row)))
+        (multiple-value-bind (action value)
+            (cadr-tui:select-list-handle-mouse
+             list :type :click :button :left :y row)
+          (is (eq :select action))
+          (is (string= (format nil "item-~D" (+ 4 row)) value)))))))

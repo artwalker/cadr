@@ -505,7 +505,8 @@ interactive-mode.ts:5956-5960).")
          (terminal-progress-active-p nil)
          (terminal-active-p nil)
          (last-terminal-title nil)
-         (pending-work-render-p nil))
+         (pending-work-render-p nil)
+         (list-mouse-origin nil))
     (declare (ignore active-theme))
     (dolist (text initial-statuses)
       (add-tui-status state text))
@@ -565,7 +566,7 @@ interactive-mode.ts:5956-5960).")
            (let ((work-rendered-p nil))
              (sb-thread:with-mutex (lock)
                (multiple-value-bind
-                     (lines cursor-row cursor-column)
+                     (lines cursor-row cursor-column editor-origin)
                    (render-tui-state
                     state (current-editor)
                     (cadr-tui:terminal-columns terminal)
@@ -594,6 +595,7 @@ interactive-mode.ts:5956-5960).")
                    (extension-custom-ui-state-overlay-p overlay)
                    (extension-custom-ui-visible-p overlay)))
                  (setf
+                  list-mouse-origin editor-origin
                   work-rendered-p pending-work-render-p
                   pending-work-render-p nil)))
              (when (and work-rendered-p
@@ -3010,6 +3012,37 @@ interactive-mode.ts:5956-5960).")
               (tick-status-animation)
               (request-render t)
               (flush-render)
+              (setf
+               (cadr-tui::terminal-renderer-component-mouse-function
+                renderer)
+               (lambda (gesture)
+                 (let* ((origin list-mouse-origin)
+                        (y (getf gesture :y))
+                        (local
+                          (and origin
+                               (- (+ (cadr-tui::terminal-renderer-scroll-top
+                                      renderer)
+                                     y)
+                                  origin))))
+                   (cond
+                     ((or (null local) (minusp local))
+                      nil)
+                     ((settings-selector-state-p overlay)
+                      (multiple-value-bind (handled action value)
+                          (settings-selector-handle-mouse
+                           overlay gesture local)
+                        (when action
+                          (handle-overlay-action action value))
+                        handled))
+                     ((and (null overlay)
+                           (typep (current-editor)
+                                  'cadr-tui:multiline-editor))
+                      (cadr-tui::editor-autocomplete-handle-mouse
+                       (current-editor) local
+                       :type (getf gesture :type)
+                       :button (getf gesture :button)
+                       :wheel-delta (getf gesture :wheel-delta)))
+                     (t nil)))))
               (loop until done-p
                     do
                     (unless

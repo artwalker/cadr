@@ -16,6 +16,8 @@
   (filtered-options nil :type list)
   (query "" :type string)
   (selected 0 :type (integer 0 *))
+  (list-origin nil)
+  (mouse-pressed nil)
   (mode :main :type symbol)
   (submenu-selected 0 :type (integer 0 *))
   (submenu-query "" :type string)
@@ -818,6 +820,41 @@
          (values action value t)))
       (t (values nil nil nil)))))
 
+(defun settings-selector-handle-mouse (state gesture local-y)
+  (unless (and (eq :main (settings-selector-state-mode state))
+               (integerp (settings-selector-state-list-origin state))
+               (integerp local-y))
+    (return-from settings-selector-handle-mouse nil))
+  (let ((y (- local-y (settings-selector-state-list-origin state)))
+        (options (settings-selector-visible-options state)))
+    (when (minusp y)
+      (return-from settings-selector-handle-mouse nil))
+    (multiple-value-bind (next action)
+        (cadr-tui:centered-list-mouse
+         (length options)
+         (settings-selector-state-selected state)
+         10 y
+         (getf gesture :type)
+         (getf gesture :button)
+         (getf gesture :wheel-delta)
+         :pressed (settings-selector-state-mouse-pressed state))
+      (case action
+        (:wheel
+         (setf (settings-selector-state-selected state) next)
+         (values t nil nil))
+        (:press
+         (setf (settings-selector-state-mouse-pressed state) next
+               (settings-selector-state-selected state) next)
+         (values t nil nil))
+        (:click
+         (setf (settings-selector-state-selected state) next
+               (settings-selector-state-mouse-pressed state) nil)
+         (multiple-value-bind (kind value)
+             (settings-selector-handle-event
+              state (cadr-tui:make-input-event :kind :enter))
+           (values t kind value)))
+        (t nil)))))
+
 (defun settings-selector-visible-slice
     (options selected maximum)
   (selector-frame-visible-slice
@@ -1016,10 +1053,12 @@
 
 (defun render-settings-selector
     (state width)
-  (when (eq :main (settings-selector-state-mode state))
+    (when (eq :main (settings-selector-state-mode state))
     (multiple-value-bind (input-lines input-row input-column)
         (selector-input-rendering
          (settings-selector-state-query state) width)
+      (setf (settings-selector-state-list-origin state)
+            (+ 1 (length input-lines) 1))
       (return-from render-settings-selector
         (multiple-value-bind (lines cursor-row cursor-column)
             (render-selector-frame
@@ -1044,6 +1083,7 @@
              width)
           (declare (ignore cursor-row cursor-column))
           (values lines nil nil)))))
+  (setf (settings-selector-state-list-origin state) nil)
   (render-selector-frame
    (make-selector-frame
     :sections
