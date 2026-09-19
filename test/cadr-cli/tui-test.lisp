@@ -1310,6 +1310,94 @@
     (is (not (member "settings:1" (funcall suggested) :test #'string=)))
     (is (= 1 (count "settings" (funcall suggested) :test #'string=)))))
 
+(test slash-autocomplete-prefixes-source-tags
+  (is (string=
+       "Review files"
+       (cadr-cli::prefix-autocomplete-description
+        "Review files" nil nil)))
+  (is (string=
+       "[u] Example skill"
+       (cadr-cli::prefix-autocomplete-description
+        "Example skill" "local" "user")))
+  (is (string=
+       "[p]"
+       (cadr-cli::prefix-autocomplete-description
+        "" "auto" "project")))
+  (is (string=
+       "[t]"
+       (cadr-cli::prefix-autocomplete-description
+        nil "cli" "temporary")))
+  (is (string=
+       "[u:npm:@foo/bar] Packaged"
+       (cadr-cli::prefix-autocomplete-description
+        "Packaged" "npm:@foo/bar" "user")))
+  (is (string=
+       "[p:git:github.com/acme/tools@v1] Tools"
+       (cadr-cli::prefix-autocomplete-description
+        "Tools" "git:github.com/acme/tools@v1" "project")))
+  (let* ((agent (uiop:ensure-directory-pathname #P"/tmp/cadr-agent/"))
+         (cwd (uiop:ensure-directory-pathname #P"/tmp/cadr-proj/"))
+         (loader
+           (cadr-cli::make-default-resource-loader
+            :cwd cwd
+            :agent-directory agent
+            :explicit-skill-paths
+            (list #P"/tmp/cadr-cli-skills/")))
+         (project
+           (cadr-core:project-config-directory cwd)))
+    (cadr-cli::note-loader-package-sources
+     loader
+     (list
+      (list :path #P"/tmp/cadr-agent/packages/foo/skills/"
+            :source "npm:@foo/bar"
+            :scope "user")))
+    (multiple-value-bind (source scope)
+        (cadr-cli::resource-path-source-info
+         loader
+         (merge-pathnames "skills/example/SKILL.md" agent))
+      (is (equal '("local" "user") (list source scope))))
+    (multiple-value-bind (source scope)
+        (cadr-cli::resource-path-source-info
+         loader
+         (merge-pathnames "skills/example/SKILL.md" project))
+      (is (equal '("local" "project") (list source scope))))
+    (multiple-value-bind (source scope)
+        (cadr-cli::resource-path-source-info
+         loader
+         #P"/tmp/cadr-cli-skills/review.md")
+      (is (equal '("cli" "temporary") (list source scope))))
+    (multiple-value-bind (source scope)
+        (cadr-cli::resource-path-source-info
+         loader
+         #P"/tmp/cadr-agent/packages/foo/skills/bar/SKILL.md")
+      (is (equal '("npm:@foo/bar" "user") (list source scope)))))
+  (let* ((provider
+           (cadr-cli::make-tui-autocomplete-provider
+            :base-path (uiop:getcwd)))
+         (skill
+           (cadr-agent::make-skill
+            :name "example"
+            :description "Example skill"
+            :content "Use this skill."
+            :file-path "/tmp/cadr-agent/skills/example/SKILL.md")))
+    (cadr-cli::replace-extra-autocomplete-commands
+     provider
+     (cadr-cli::resource-slash-commands
+      (list skill) nil t nil
+      (lambda (path)
+        (declare (ignore path))
+        (values "local" "user"))))
+    (let ((item
+            (find "skill:example"
+                  (cadr-tui:autocomplete-suggestions-items
+                   (cadr-tui:autocomplete-get-suggestions
+                    provider '("/") 0 1))
+                  :key #'cadr-tui:autocomplete-item-value
+                  :test #'string=)))
+      (is (string=
+           "[u] Example skill"
+           (cadr-tui:autocomplete-item-description item))))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))

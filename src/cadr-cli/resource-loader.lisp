@@ -436,3 +436,65 @@ Returns the deduped list and a list of collision records
                (default-resource-loader-snapshot loader)
                snapshot)
               snapshot)))))))))
+
+(defvar *loader-package-sources*
+  (make-hash-table :test #'eq :weakness :key))
+
+(defun note-loader-package-sources (loader sources)
+  (setf (gethash loader *loader-package-sources*)
+        (copy-list sources))
+  loader)
+
+(defun loader-package-sources (loader)
+  (copy-list (gethash loader *loader-package-sources*)))
+
+(defun resource-path-under-p (file directory)
+  (let ((dir
+          (namestring
+           (uiop:ensure-directory-pathname directory)))
+        (name (namestring file)))
+    (and (plusp (length dir))
+         (uiop:string-prefix-p dir name))))
+
+(defun resource-path-source-info (loader path)
+  (when (or (null loader) (null path))
+    (return-from resource-path-source-info
+      (values nil nil)))
+  (dolist (entry (loader-package-sources loader))
+    (when (resource-path-under-p path (getf entry :path))
+      (return-from resource-path-source-info
+        (values (getf entry :source)
+                (getf entry :scope)))))
+  (dolist (root
+           (append
+            (default-resource-loader-explicit-skill-paths
+             loader)
+            (default-resource-loader-explicit-prompt-paths
+             loader)
+            (default-resource-loader-explicit-theme-paths
+             loader)))
+    (when (resource-path-under-p path root)
+      (return-from resource-path-source-info
+        (values "cli" "temporary"))))
+  (let ((agent
+          (default-resource-loader-agent-directory loader))
+        (project
+          (cadr-core:project-config-directory
+           (default-resource-loader-cwd loader))))
+    (dolist (name '("skills" "prompts" "themes" "extensions"))
+      (when (resource-path-under-p
+             path
+             (merge-pathnames
+              (concatenate 'string name "/")
+              agent))
+        (return-from resource-path-source-info
+          (values "local" "user"))))
+    (dolist (name '("skills" "prompts" "themes" "extensions"))
+      (when (resource-path-under-p
+             path
+             (merge-pathnames
+              (concatenate 'string name "/")
+              project))
+        (return-from resource-path-source-info
+          (values "local" "project")))))
+  (values "local" "temporary"))

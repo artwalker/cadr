@@ -721,7 +721,11 @@
             (cli-extension-manager-host
              extension-manager)))
          (resources
-           (reload-resources resource-loader))
+           (progn
+             (note-loader-package-sources
+              resource-loader
+              (getf package-resources :resource-sources))
+             (reload-resources resource-loader)))
          (baseline-tools
            (make-all-coding-tools
             cwd
@@ -1311,6 +1315,9 @@
             (default-resource-loader-package-project-theme-paths
              resource-loader)
             (getf package-resources :project-themes))
+           (note-loader-package-sources
+            resource-loader
+            (getf package-resources :resource-sources))
            package-resources)
          (current-theme-summary ()
            (let* ((configured
@@ -2255,7 +2262,10 @@
                  "enableSkillCommands" t)
                 (and snapshot
                      (cadr-agent::extension-snapshot-commands
-                      snapshot)))))
+                      snapshot))
+                (lambda (path)
+                  (resource-path-source-info
+                   resource-loader path)))))
            :set-slash-command-refresher
            (lambda (refresher)
              (setf slash-command-refresher refresher))

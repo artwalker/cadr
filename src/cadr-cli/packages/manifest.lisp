@@ -109,7 +109,8 @@
 
 (defun package-resource-paths (records)
   (let ((global (make-hash-table :test #'eq))
-        (project (make-hash-table :test #'eq)))
+        (project (make-hash-table :test #'eq))
+        (sources nil))
     (dolist (record records)
       (let* ((root (getf record :path))
              (scope
@@ -123,7 +124,15 @@
               (dolist (path
                        (package-record-resource-values
                         root manifest manifest-p (car field)))
-                (push path (gethash (car field) buckets))))))))
+                (push path (gethash (car field) buckets))
+                (push
+                 (list :path path
+                       :source
+                       (or (getf record :source) "local")
+                       :scope
+                       (if (eq scope :project)
+                           "project" "user"))
+                 sources)))))))
     (let ((result nil))
       (dolist (field +package-manifest-resource-fields+)
         (let* ((kind (car field))
@@ -139,4 +148,6 @@
                       (intern (format nil "PROJECT-~A" kind)
                               :keyword))
                 project-paths)))
+      (setf (getf result :resource-sources)
+            (nreverse sources))
       result)))

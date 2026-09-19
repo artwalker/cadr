@@ -50,14 +50,67 @@
      nil)
     ("quit" "Quit cadr" nil)))
 
+(defun prefix-autocomplete-description
+    (description source scope)
+  (flet ((scope-prefix (scope)
+           (cond
+             ((or (eq scope :user)
+                  (equal scope "user"))
+              "u")
+             ((or (eq scope :project)
+                  (equal scope "project"))
+              "p")
+             (t "t"))))
+    (when (or (null source) (null scope))
+      (return-from prefix-autocomplete-description
+        description))
+    (let* ((trimmed
+             (string-trim
+              '(#\Space #\Tab #\Newline #\Return)
+              source))
+           (prefix (scope-prefix scope))
+           (parsed (parse-package-source trimmed))
+           (tag
+             (cond
+               ((or (string= trimmed "auto")
+                    (string= trimmed "local")
+                    (string= trimmed "cli"))
+                prefix)
+               ((and (>= (length trimmed) 4)
+                     (string= "npm:" trimmed :end2 4))
+                (format nil "~A:~A" prefix trimmed))
+               ((eq :git (package-source-type parsed))
+                (format nil "~A:git:~A/~A~A"
+                        prefix
+                        (package-source-host parsed)
+                        (package-source-path parsed)
+                        (if (package-source-ref parsed)
+                            (format nil "@~A"
+                                    (package-source-ref
+                                     parsed))
+                            "")))
+               (t prefix))))
+      (if (and description
+               (plusp (length description)))
+          (format nil "[~A] ~A" tag description)
+          (format nil "[~A]" tag)))))
+
 (defun resource-slash-commands
     (skills prompts skill-commands-p
-     &optional extension-commands)
+     &optional extension-commands source-info-function)
   (flet ((builtin-name-p (name)
            (member name
                    +tui-autocomplete-command-specifications+
                    :key #'first
-                   :test #'string=)))
+                   :test #'string=))
+         (prefixed (description path)
+           (if (or (null source-info-function)
+                   (null path))
+               description
+               (multiple-value-bind (source scope)
+                   (funcall source-info-function path)
+                 (prefix-autocomplete-description
+                  description source scope)))))
     (nconc
      (loop for template in prompts
            collect
@@ -65,8 +118,11 @@
             :name
             (cadr-agent:prompt-template-name template)
             :description
-            (cadr-agent:prompt-template-description
-             template)))
+            (prefixed
+             (cadr-agent:prompt-template-description
+              template)
+             (cadr-agent:prompt-template-file-path
+              template))))
      (loop for command in extension-commands
            for name =
              (cadr-agent::extension-command-definition-name
@@ -78,8 +134,15 @@
               (cadr-agent::extension-command-lookup-name
                command)
               :description
-              (cadr-agent::extension-command-definition-description
-               command)
+              (prefixed
+               (cadr-agent::extension-command-definition-description
+                command)
+               (let ((bundle
+                       (cadr-agent::extension-command-definition-bundle
+                        command)))
+                 (and bundle
+                      (cadr-agent::extension-bundle-path
+                       bundle))))
               :argument-hint
               (cadr-agent::extension-command-definition-argument-hint
                command)))
@@ -91,7 +154,9 @@
               (format nil "skill:~A"
                       (cadr-agent:skill-name skill))
               :description
-              (cadr-agent:skill-description skill)))))))
+              (prefixed
+               (cadr-agent:skill-description skill)
+               (cadr-agent:skill-file-path skill))))))))
 
 (defun tui-builtin-slash-command-p (command)
   (member
