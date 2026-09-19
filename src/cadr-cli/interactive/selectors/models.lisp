@@ -119,6 +119,9 @@
   current-model
   (scope :all)
   (query "" :type string)
+  (query-cursor 0 :type (integer 0 *))
+  (input-origin nil)
+  (input-width 80 :type (integer 1 *))
   (filtered-models nil :type list)
   (filter-query nil :type (or null string))
   (filter-scope nil)
@@ -247,19 +250,21 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
    (model-selector-state-selected state)
    (model-selector-visible-models state)))
 
-(defun model-selector-set-query (state query)
-  (setf
-   (model-selector-state-query state)
-   (or query ""))
-  (model-selector-apply-filter state)
-  (if (plusp
-       (length
-        (model-selector-state-query state)))
-      (setf
-       (model-selector-state-selected state)
-       0)
-      (model-selector-clamp-selected state))
+(defun model-selector-edit-query (state query cursor)
+  (let ((query (or query "")))
+    (setf
+     (model-selector-state-query state) query
+     (model-selector-state-query-cursor state)
+     (max 0 (min cursor (length query))))
+    (model-selector-apply-filter state)
+    (if (plusp (length query))
+        (setf (model-selector-state-selected state) 0)
+        (model-selector-clamp-selected state)))
   state)
+
+(defun model-selector-set-query (state query)
+  (let ((query (or query "")))
+    (model-selector-edit-query state query (length query))))
 
 (defun model-selector-toggle-scope (state)
   (when (model-selector-state-scoped-models state)
@@ -372,23 +377,70 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
     ((:escape :interrupt)
      (values :cancel nil))
     (:backspace
-     (model-selector-set-query
-      state
-      (selector-delete-query-character
-       (model-selector-state-query state)))
+     (let* ((query (model-selector-state-query state))
+            (cursor
+              (min
+               (model-selector-state-query-cursor state)
+               (length query)))
+            (start
+              (if (zerop cursor)
+                  0
+                  (cadr-tui::previous-cluster-boundary
+                   query cursor))))
+       (unless (= start cursor)
+         (model-selector-edit-query
+          state
+          (concatenate
+           'string
+           (subseq query 0 start)
+           (subseq query cursor))
+          start)))
      (values :changed nil))
     (:text
-     (model-selector-set-query
-      state
-      (concatenate
-       'string
-       (model-selector-state-query state)
-       (or
-        (cadr-tui:input-event-text event)
-        "")))
+     (let* ((query (model-selector-state-query state))
+            (cursor
+              (min
+               (model-selector-state-query-cursor state)
+               (length query)))
+            (text
+              (or (cadr-tui:input-event-text event) "")))
+       (model-selector-edit-query
+        state
+        (concatenate
+         'string
+         (subseq query 0 cursor)
+         text
+         (subseq query cursor))
+        (+ cursor (length text))))
      (values :changed nil))
     (otherwise
      (values nil nil))))
+
+(defun model-selector-handle-mouse (state gesture local-y)
+  (let ((origin (model-selector-state-input-origin state))
+        (x (getf gesture :x)))
+    (unless (and (integerp origin)
+                 (eql local-y origin)
+                 (eq (getf gesture :type) :press)
+                 (eq (getf gesture :button) :left)
+                 (integerp x))
+      (return-from model-selector-handle-mouse nil))
+    (let* ((query (model-selector-state-query state))
+           (input
+             (cadr-tui:make-single-line-input
+              :value query :prompt "> ")))
+      (setf (cadr-tui::single-line-input-cursor input)
+            (min
+             (model-selector-state-query-cursor state)
+             (length query)))
+      (cadr-tui:render-single-line-input
+       input
+       (model-selector-state-input-width state))
+      (when (cadr-tui:single-line-input-handle-mouse
+             input :type :press :button :left :x x :y 0)
+        (setf (model-selector-state-query-cursor state)
+              (cadr-tui::single-line-input-cursor input))
+        t))))
 
 (defun model-selector-visible-slice
     (state maximum)
@@ -505,32 +557,47 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                            (model-selector-state-refresh-status-message
                             state)))
                   width :padding-x 0))))))
-      (render-selector-frame
-       (make-selector-frame
-        :sections
-        (list :border :blank
-              (list :lines
-                    (append
-                     (list
-                      (selector-component-text-line
-                       scope-line width :padding-x 0))
-                     (when scoped-p
-                       (list
-                        (selector-component-text-line
-                         (concatenate
-                          'string
-                          (selector-keybinding-hint
-                           (model-selector-keybindings state)
-                           "tui.input.tab" "scope")
-                          (cadr-tui:theme-foreground
-                           :muted " (all/scoped)"))
-                         width :padding-x 0)))))
-              :blank
-              (list :input (model-selector-state-query state))
-              :blank
-              (list :lines body-lines)
-              :blank :border))
-       width))))
+      (let* ((scope-lines
+               (append
+                (list
+                 (selector-component-text-line
+                  scope-line width :padding-x 0))
+                (when scoped-p
+                  (list
+                   (selector-component-text-line
+                    (concatenate
+                     'string
+                     (selector-keybinding-hint
+                      (model-selector-keybindings state)
+                      "tui.input.tab" "scope")
+                     (cadr-tui:theme-foreground
+                      :muted " (all/scoped)"))
+                    width :padding-x 0)))))
+             (input
+               (multiple-value-list
+                (selector-input-rendering
+                 (model-selector-state-query state)
+                 width
+                 :cursor
+                 (model-selector-state-query-cursor state)))))
+        (setf (model-selector-state-input-origin state)
+              (+ 3 (length scope-lines))
+              (model-selector-state-input-width state)
+              (max 1 width))
+        (render-selector-frame
+         (make-selector-frame
+          :sections
+          (list :border :blank
+                (list :lines scope-lines)
+                :blank
+                (list :component
+                      (first input)
+                      (second input)
+                      (third input))
+                :blank
+                (list :lines body-lines)
+                :blank :border))
+         width)))))
 (defstruct (scoped-models-selector-state
             (:constructor
                 %make-scoped-models-selector-state))
