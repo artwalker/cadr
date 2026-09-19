@@ -50,6 +50,54 @@
      nil)
     ("quit" "Quit cadr" nil)))
 
+(defun resource-slash-commands
+    (skills prompts skill-commands-p)
+  (nconc
+   (loop for template in prompts
+         collect
+         (cadr-tui:make-autocomplete-command
+          :name
+          (cadr-agent:prompt-template-name template)
+          :description
+          (cadr-agent:prompt-template-description
+           template)))
+   (when skill-commands-p
+     (loop for skill in skills
+           collect
+           (cadr-tui:make-autocomplete-command
+            :name
+            (format nil "skill:~A"
+                    (cadr-agent:skill-name skill))
+            :description
+            (cadr-agent:skill-description skill))))))
+
+(defun tui-builtin-slash-command-p (command)
+  (member
+   (cadr-tui::autocomplete-command-name command)
+   +tui-autocomplete-command-specifications+
+   :key #'first
+   :test #'string=))
+
+(defun replace-extra-autocomplete-commands
+    (provider extra)
+  (let ((commands
+          (append
+           (remove-if-not
+            #'tui-builtin-slash-command-p
+            (cadr-tui::autocomplete-provider-commands
+             provider))
+           extra)))
+    (setf
+     (cadr-tui::autocomplete-provider-commands
+      provider)
+     commands
+     (cadr-tui::autocomplete-provider-command-items
+      provider)
+     (mapcar
+      #'cadr-tui::command-autocomplete-item
+      commands))
+    provider))
+
 (defun find-tui-fd-program ()
   (loop for directory
         in (uiop:split-string

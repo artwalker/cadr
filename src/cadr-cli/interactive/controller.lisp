@@ -277,6 +277,8 @@ interactive-mode.ts:5956-5960).")
        (available-provider-count 0)
        subscription-p
        (autocomplete-max-visible 5)
+       slash-commands-function
+       set-slash-command-refresher
        show-terminal-progress-p
        show-terminal-progress-function
        theme-function
@@ -421,18 +423,31 @@ interactive-mode.ts:5956-5960).")
                    (cadr-tui:make-multiline-editor
                     :autocomplete-max-visible
                     autocomplete-max-visible)))
-             (cadr-tui:editor-set-autocomplete-provider
-              editor
-              (make-tui-autocomplete-provider
-               :base-path cwd
-               :model-items-function
-               model-items-function
-               :login-options-function
-               (or
-                login-options-function
-                (lambda ()
-                  (login-provider-options
-                   (cadr-ai:list-provider-definitions))))))
+             (let ((provider
+                     (make-tui-autocomplete-provider
+                      :base-path cwd
+                      :model-items-function
+                      model-items-function
+                      :login-options-function
+                      (or
+                       login-options-function
+                       (lambda ()
+                         (login-provider-options
+                          (cadr-ai:list-provider-definitions)))))))
+               (when slash-commands-function
+                 (replace-extra-autocomplete-commands
+                  provider
+                  (funcall slash-commands-function)))
+               (cadr-tui:editor-set-autocomplete-provider
+                editor provider)
+               (when set-slash-command-refresher
+                 (funcall
+                  set-slash-command-refresher
+                  (lambda ()
+                    (when slash-commands-function
+                      (replace-extra-autocomplete-commands
+                       provider
+                       (funcall slash-commands-function)))))))
              (cadr-tui:editor-set-autocomplete-clock
               editor clock-function)
              (cadr-tui:editor-set-border-mode

@@ -1205,6 +1205,50 @@
     (is (member "reload" values :test #'string=))
     (is (not (member "redo" values :test #'string=)))))
 
+(test slash-autocomplete-lists-file-prompts-and-skills
+  (let* ((skill
+           (cadr-agent::make-skill
+            :name "example"
+            :description "Example skill"
+            :content "Use this skill."
+            :file-path "/tmp/skills/example/SKILL.md"))
+         (template
+           (cadr-agent::make-prompt-template
+            :name "review"
+            :description "Review files"
+            :content "Review $1"
+            :file-path "/tmp/prompts/review.md"))
+         (provider
+           (cadr-cli::make-tui-autocomplete-provider
+            :base-path (uiop:getcwd))))
+    (flet ((names (commands)
+             (mapcar
+              #'cadr-tui::autocomplete-command-name
+              commands))
+           (suggested ()
+             (mapcar
+              #'cadr-tui:autocomplete-item-value
+              (cadr-tui:autocomplete-suggestions-items
+               (cadr-tui:autocomplete-get-suggestions
+                provider '("/") 0 1)))))
+      (cadr-cli::replace-extra-autocomplete-commands
+       provider
+       (cadr-cli::resource-slash-commands
+        (list skill) (list template) t))
+      (is (member "review" (suggested) :test #'string=))
+      (is (member "skill:example" (suggested) :test #'string=))
+      (is (member "settings" (suggested) :test #'string=))
+      (cadr-cli::replace-extra-autocomplete-commands
+       provider
+       (cadr-cli::resource-slash-commands
+        (list skill) (list template) nil))
+      (is (member "review" (suggested) :test #'string=))
+      (is (not (member "skill:example" (suggested) :test #'string=)))
+      (is (member "settings" (names
+                              (cadr-tui::autocomplete-provider-commands
+                               provider))
+                  :test #'string=)))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))
