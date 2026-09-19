@@ -603,6 +603,38 @@
         (is (search "gpt-5.6-luna" footer))
         (is (null (search "startup-model" footer)))))))
 
+(test model-selector-confirm-passes-the-model-object
+  (let* ((model
+           (cadr-ai:make-model
+            :id "grok-4.6" :name "Grok 4.6"
+            :provider :xai :api :openai-responses))
+         (received nil)
+         (terminal
+           (make-instance
+            'footer-sync-test-terminal
+            :columns 100 :rows 24
+            :inputs
+            (list
+             (footer-sync-submit-input "/model")
+             (string #\Return)
+             (footer-sync-submit-input "/quit")))))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "startup-model"
+     :terminal terminal
+     :model-selector-function
+     (lambda (&optional query)
+       (declare (ignore query))
+       (cadr-cli::make-model-selector-state
+        :all-models (list model)))
+     :on-model-selected
+     (lambda (selected &key persist)
+       (declare (ignore persist))
+       (setf received selected)
+       "grok-4.6"))
+    (is (typep received 'cadr-ai:model))
+    (is (eq received model))))
+
 (test goal9-footer-refreshes-all-live-fields-and-extension-statuses
   (let ((updated-p nil)
         (extension-ui nil)
