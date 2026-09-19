@@ -1923,12 +1923,13 @@
          (current-session-tree ()
            (session-tree-selector-data
             (cadr-agent:agent-session agent)))
-         (select-tree-entry (entry-id &optional chooser)
+         (select-tree-entry (entry-id &optional chooser editor)
            (multiple-value-bind
-                 (summarize-p prompt-cancelled-p)
+                 (summarize-p prompt-cancelled-p custom-instructions)
                (branch-summary-tree-summarize-p
                 settings-manager
-                :chooser chooser)
+                :chooser chooser
+                :editor editor)
              (when prompt-cancelled-p
                (return-from select-tree-entry
                  (values nil t)))
@@ -1937,6 +1938,7 @@
                  (cadr-agent:agent-navigate-tree
                   agent entry-id
                   :summarize-p summarize-p
+                  :custom-instructions custom-instructions
                   :reserve-tokens
                   (settings-branch-summary-reserve-tokens
                    settings-manager))

@@ -2345,20 +2345,46 @@ interactive-mode.ts:5956-5960).")
                            "Forked to new session")))))
                    (:tree
                     (when on-tree-selected
-                      (multiple-value-bind
-                            (selected-messages
-                             prompt-cancelled-p)
-                          (funcall
-                           on-tree-selected
-                           value
-                           #'show-extension-selection)
-                        (cond
-                          (prompt-cancelled-p
-                           (open-tree-selector))
-                          (selected-messages
-                           (reset-tui-messages
-                            state
-                            selected-messages))))))
+                      (let ((entry-id value))
+                        (sb-thread:make-thread
+                         (lambda ()
+                           (handler-case
+                               (multiple-value-bind
+                                     (selected-messages
+                                      prompt-cancelled-p)
+                                   (funcall
+                                    on-tree-selected
+                                    entry-id
+                                    #'show-extension-selection
+                                    (lambda ()
+                                      (let ((component
+                                              (make-extension-editor-dialog
+                                               "Custom summarization instructions"
+                                               nil)))
+                                        (setf
+                                         active-custom-ui-state
+                                         (make-extension-custom-ui-state
+                                          :component component
+                                          :done-function
+                                          #'finish-custom-ui
+                                          :legacy-p t))
+                                        (show-extension-overlay
+                                         active-custom-ui-state))))
+                                 (cond
+                                   (prompt-cancelled-p
+                                    (sb-thread:with-mutex (lock)
+                                      (open-tree-selector))
+                                    (request-render))
+                                   (selected-messages
+                                    (sb-thread:with-mutex (lock)
+                                      (reset-tui-messages
+                                       state
+                                       selected-messages))
+                                    (request-render))))
+                             (error (condition)
+                               (status
+                                (princ-to-string condition)))))
+                         :name "cadr-tree-navigate"))))
                    (:extension-custom
                     (finish-custom-ui value)))
                (error (condition)
@@ -2448,6 +2474,9 @@ interactive-mode.ts:5956-5960).")
                     (finish-custom-ui value)
                     (request-render))
                   (accept-selection value)))
+             (:submit
+              (when (eq overlay-kind :extension-custom)
+                (finish-custom-ui value)))
              (:persist
               (accept-selection value :persist t))
              (:cancel

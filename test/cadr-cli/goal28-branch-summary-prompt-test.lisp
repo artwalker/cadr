@@ -49,3 +49,43 @@
               manager)))
       (is (= 0 chooser-calls))
       (is (eq nil summarize-p)))))
+
+(test goal28-branch-summary-custom-prompt-keeps-the-instructions
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (chooser-calls 0)
+         (editor-calls 0))
+    (multiple-value-bind (summarize-p cancelled instructions)
+        (cadr-cli::branch-summary-tree-summarize-p
+         manager
+         :chooser
+         (lambda (title labels)
+           (declare (ignore title labels))
+           (incf chooser-calls)
+           "Summarize with custom prompt")
+         :editor
+         (lambda ()
+           (incf editor-calls)
+           "keep the API names"))
+      (is (eq t summarize-p))
+      (is (eq nil cancelled))
+      (is (string= "keep the API names" instructions))
+      (is (= 1 chooser-calls))
+      (is (= 1 editor-calls))))
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (chooser-calls 0))
+    (multiple-value-bind (summarize-p cancelled instructions)
+        (cadr-cli::branch-summary-tree-summarize-p
+         manager
+         :chooser
+         (lambda (title labels)
+           (declare (ignore title labels))
+           (incf chooser-calls)
+           (if (= chooser-calls 1)
+               "Summarize with custom prompt"
+               "No summary"))
+         :editor
+         (lambda () nil))
+      (is (eq nil summarize-p))
+      (is (eq nil cancelled))
+      (is (null instructions))
+      (is (= 2 chooser-calls)))))

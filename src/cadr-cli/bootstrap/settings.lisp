@@ -87,25 +87,31 @@
    manager "branchSummary" nil "skipPrompt"))
 
 (defun branch-summary-tree-summarize-p
-    (manager &key chooser)
+    (manager &key chooser editor)
   (when (settings-branch-summary-skip-prompt-p manager)
     (return-from branch-summary-tree-summarize-p
-      (values nil nil)))
-  (let ((choice
-          (and chooser
-               (funcall
-                chooser
-                "Summarize branch?"
-                '("No summary"
-                  "Summarize"
-                  "Summarize with custom prompt")))))
-    (cond
-      ((null choice)
-       (values nil t))
-      ((string= choice "No summary")
-       (values nil nil))
-      (t
-       (values t nil)))))
+      (values nil nil nil)))
+  (loop
+    (let ((choice
+            (and chooser
+                 (funcall
+                  chooser
+                  "Summarize branch?"
+                  '("No summary"
+                    "Summarize"
+                    "Summarize with custom prompt")))))
+      (cond
+        ((null choice)
+         (return (values nil t nil)))
+        ((string= choice "No summary")
+         (return (values nil nil nil)))
+        ((string= choice "Summarize with custom prompt")
+         (let ((instructions (and editor (funcall editor))))
+           (when (and (stringp instructions)
+                      (plusp (length instructions)))
+             (return (values t nil instructions)))))
+        (t
+         (return (values t nil nil)))))))
 
 (defun settings-optional-nonempty-string
     (manager key)
