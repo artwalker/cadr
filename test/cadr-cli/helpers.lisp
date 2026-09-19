@@ -56,8 +56,9 @@
 (defun args (&rest pairs)
   (apply #'cadr-ai::json-object pairs))
 
-(defun invoke-tool (tool arguments)
-  (funcall (cadr-ai:tool-executor tool) "test-call" arguments))
+(defun invoke-tool (tool arguments &optional cwd)
+  (let ((cadr-agent:*tool-call-cwd* cwd))
+    (funcall (cadr-ai:tool-executor tool) "test-call" arguments)))
 
 (defun result-text (content)
   (cadr-ai:text-content-text (first content)))

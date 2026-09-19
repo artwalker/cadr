@@ -342,6 +342,9 @@ pipeline lives.")
              (execute-prepared-tool
               entry
               :cancellation-signal signal
+              :execution-cwd
+              (let ((session (agent-session agent)))
+                (and session (session-cwd session)))
               :on-update
               (lambda (partial-result)
                 (emit-tool-update

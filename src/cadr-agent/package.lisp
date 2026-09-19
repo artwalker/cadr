@@ -125,6 +125,7 @@
    #:schema-validation-error-tool
    #:schema-validation-error-json-pointer
    #:schema-validation-error-reason
+   #:*tool-call-cwd*
    #:tool-execution-error
    #:tool-execution-error-tool
    #:tool-execution-error-tool-call-id

@@ -266,8 +266,11 @@
        :arguments arguments
        :appended-messages appended-messages)))))
 
+(defvar *tool-call-cwd* nil
+  "Directory for the tool call in progress. Nil keeps the directory captured when the tool was built.")
+
 (defun execute-prepared-tool
-    (prepared &key cancellation-signal on-update)
+    (prepared &key cancellation-signal on-update execution-cwd)
   (let* ((call (prepared-tool-call-call prepared))
          (tool (prepared-tool-call-tool prepared))
          (accepting-updates-p t)
@@ -299,27 +302,29 @@
                       (signal-tool-execution-error
                        (princ-to-string condition)
                        condition tool call)))))
-             (multiple-value-bind
-                   (content details terminate-p)
-                 (funcall
-                  (cadr-ai:tool-executor tool)
-                  (cadr-ai:tool-call-id call)
-                  (prepared-tool-call-arguments prepared))
-               (make-tool-outcome
-                :call call
-                :appended-messages
-                (prepared-tool-call-appended-messages
-                 prepared)
-                :terminate-p (eq terminate-p t)
-                :result
-                (cadr-ai:make-tool-result-message
-                 :tool-call-id
-                 (cadr-ai:tool-call-id call)
-                 :tool-name
-                 (cadr-ai:tool-call-name call)
-                 :content content
-                 :details details
-                 :is-error nil)))))
+             (let ((*tool-call-cwd*
+                     (or execution-cwd *tool-call-cwd*)))
+               (multiple-value-bind
+                     (content details terminate-p)
+                   (funcall
+                    (cadr-ai:tool-executor tool)
+                    (cadr-ai:tool-call-id call)
+                    (prepared-tool-call-arguments prepared))
+                 (make-tool-outcome
+                  :call call
+                  :appended-messages
+                  (prepared-tool-call-appended-messages
+                   prepared)
+                  :terminate-p (eq terminate-p t)
+                  :result
+                  (cadr-ai:make-tool-result-message
+                   :tool-call-id
+                   (cadr-ai:tool-call-id call)
+                   :tool-name
+                   (cadr-ai:tool-call-name call)
+                   :content content
+                   :details details
+                   :is-error nil))))))
       (sb-thread:with-recursive-lock
           (update-lock)
         (setf accepting-updates-p nil)))))

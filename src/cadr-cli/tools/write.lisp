@@ -49,8 +49,9 @@
           (let* ((path
                    (if context
                        (resolve-execution-context-path
-                        context cwd display-path)
-                       (resolve-tool-path cwd display-path)))
+                        context (effective-tool-cwd cwd) display-path)
+                       (resolve-tool-path
+                        (effective-tool-cwd cwd) display-path)))
                  (content
                    (required-string arguments "content")))
             (with-file-mutation-queue (path)

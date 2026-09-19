@@ -328,4 +328,4 @@
              (optional-string arguments "path" ".")))
        (call-with-normalized-file-operation
         :grep display-path
-        (lambda () (grep-lines cwd arguments)))))))
+        (lambda () (grep-lines (effective-tool-cwd cwd) arguments)))))))

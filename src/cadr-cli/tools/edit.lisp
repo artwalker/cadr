@@ -681,8 +681,9 @@
           (let* ((path
                    (if context
                        (resolve-execution-context-path
-                        context cwd display-path)
-                       (resolve-tool-path cwd display-path)))
+                        context (effective-tool-cwd cwd) display-path)
+                       (resolve-tool-path
+                        (effective-tool-cwd cwd) display-path)))
                  (replacement-count 0)
                  (display-diff nil)
                  (patch nil)
