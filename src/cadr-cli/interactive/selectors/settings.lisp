@@ -22,6 +22,9 @@
   (mode :main :type symbol)
   (submenu-selected 0 :type (integer 0 *))
   (submenu-query "" :type string)
+  (submenu-query-cursor 0 :type (integer 0 *))
+  (submenu-input-origin nil)
+  (submenu-input-width 80 :type (integer 1 *))
   (theme-names nil :type list)
   (available-models nil :type list)
   (model-thinking-key nil :type (or null string))
@@ -307,12 +310,22 @@
 
 (defun settings-selector-reset-submenu-query (state)
   (setf (settings-selector-state-submenu-query state) ""
+        (settings-selector-state-submenu-query-cursor state) 0
         (settings-selector-state-submenu-selected state) 0)
+  state)
+
+(defun settings-selector-edit-submenu-query (state query cursor)
+  (let ((query (or query "")))
+    (setf (settings-selector-state-submenu-query state) query
+          (settings-selector-state-submenu-query-cursor state)
+          (max 0 (min cursor (length query)))
+          (settings-selector-state-submenu-selected state) 0))
   state)
 
 (defun settings-selector-open-submenu (state option)
   (setf (settings-selector-state-submenu-selected state) 0
-        (settings-selector-state-submenu-query state) "")
+        (settings-selector-state-submenu-query state) ""
+        (settings-selector-state-submenu-query-cursor state) 0)
   (case (settings-option-submenu option)
     (:warnings
      (setf (settings-selector-state-mode state) :warnings))
@@ -651,12 +664,26 @@
                      (settings-selector-activate-submenu state))))
           (:backspace
            (if (settings-selector-searchable-submenu-p state)
-               (progn
-                 (setf (settings-selector-state-submenu-query state)
-                       (selector-delete-query-character
+               (let* ((query
                         (settings-selector-state-submenu-query state))
-                       (settings-selector-state-submenu-selected state)
-                       0)
+                      (cursor
+                        (min
+                         (settings-selector-state-submenu-query-cursor
+                          state)
+                         (length query)))
+                      (start
+                        (if (zerop cursor)
+                            0
+                            (cadr-tui::previous-cluster-boundary
+                             query cursor))))
+                 (unless (= start cursor)
+                   (settings-selector-edit-submenu-query
+                    state
+                    (concatenate
+                     'string
+                     (subseq query 0 start)
+                     (subseq query cursor))
+                    start))
                  (values :changed nil))
                (values nil nil)))
           (:text
@@ -664,14 +691,21 @@
                    (or (cadr-tui:input-event-text event) "")))
              (cond
                ((settings-selector-searchable-submenu-p state)
-                (when (plusp (length text))
-                  (setf (settings-selector-state-submenu-query state)
-                        (concatenate
-                         'string
-                         (settings-selector-state-submenu-query state)
-                         text)
-                        (settings-selector-state-submenu-selected state)
-                        0))
+                (let* ((query
+                         (settings-selector-state-submenu-query state))
+                       (cursor
+                         (min
+                          (settings-selector-state-submenu-query-cursor
+                           state)
+                          (length query))))
+                  (settings-selector-edit-submenu-query
+                   state
+                   (concatenate
+                    'string
+                    (subseq query 0 cursor)
+                    text
+                    (subseq query cursor))
+                   (+ cursor (length text))))
                 (values :changed nil))
                ((string= text " ")
                 (unwrap (lambda ()
@@ -822,6 +856,30 @@
       (t (values nil nil nil)))))
 
 (defun settings-selector-handle-mouse (state gesture local-y)
+  (let ((origin (settings-selector-state-submenu-input-origin state))
+        (x (getf gesture :x)))
+    (when (and (settings-selector-searchable-submenu-p state)
+               (integerp origin)
+               (eql local-y origin)
+               (eq (getf gesture :type) :press)
+               (eq (getf gesture :button) :left)
+               (integerp x))
+      (let* ((query (settings-selector-state-submenu-query state))
+             (input
+               (cadr-tui:make-single-line-input
+                :value query :prompt "> ")))
+        (setf (cadr-tui::single-line-input-cursor input)
+              (min
+               (settings-selector-state-submenu-query-cursor state)
+               (length query)))
+        (cadr-tui:render-single-line-input
+         input
+         (settings-selector-state-submenu-input-width state))
+        (when (cadr-tui:single-line-input-handle-mouse
+               input :type :press :button :left :x x :y 0)
+          (setf (settings-selector-state-submenu-query-cursor state)
+                (cadr-tui::single-line-input-cursor input))
+          (return-from settings-selector-handle-mouse t)))))
   (unless (and (integerp (settings-selector-state-list-origin state))
                (integerp local-y))
     (return-from settings-selector-handle-mouse nil))
@@ -956,29 +1014,41 @@
     (state width title description &key searchable)
   (let* ((options (settings-selector-submenu-options state))
          (selected (settings-selector-state-submenu-selected state))
-         (header
+         (title-line
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             :accent
+             (cadr-tui:theme-bold title))
+            width :padding-x 0))
+         (description-lines
+           (component-text-lines
+            (cadr-tui:theme-foreground :muted description)
+            width :padding-x 0))
+         (input
+           (when searchable
+             (multiple-value-list
+              (selector-input-rendering
+               (settings-selector-state-submenu-query state)
+               width
+               :cursor
+               (settings-selector-state-submenu-query-cursor state)))))
+         (prefix
            (append
-            (list
-             (selector-component-text-line
-              (cadr-tui:theme-foreground
-               :accent
-               (cadr-tui:theme-bold title))
-              width :padding-x 0)
-             "")
-            (component-text-lines
-             (cadr-tui:theme-foreground :muted description)
-             width :padding-x 0)
-            (if searchable
-                (append
-                 (list "")
-                 (multiple-value-bind (lines row column)
-                     (selector-input-rendering
-                      (settings-selector-state-submenu-query state)
-                      width)
-                   (declare (ignore row column))
-                   lines)
-                 (list ""))
+            (list title-line "")
+            description-lines
+            (list "")))
+         (header
+           (if searchable
+               (append prefix (first input) (list ""))
+               (append
+                (list title-line "")
+                description-lines
                 (list "")))))
+    (when searchable
+      (setf (settings-selector-state-submenu-input-origin state)
+            (+ 1 (length prefix))
+            (settings-selector-state-submenu-input-width state)
+            (max 1 width)))
     (values
      (append
       header
@@ -1079,6 +1149,7 @@
 
 (defun render-settings-selector
     (state width)
+  (setf (settings-selector-state-submenu-input-origin state) nil)
     (when (eq :main (settings-selector-state-mode state))
     (multiple-value-bind (input-lines input-row input-column)
         (selector-input-rendering
