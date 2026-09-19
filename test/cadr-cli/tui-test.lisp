@@ -1247,7 +1247,34 @@
       (is (member "settings" (names
                               (cadr-tui::autocomplete-provider-commands
                                provider))
-                  :test #'string=)))))
+                  :test #'string=))
+      (cadr-cli::replace-extra-autocomplete-commands
+       provider
+       (cadr-cli::resource-slash-commands
+        nil nil nil
+        (list
+         (cadr-agent::make-extension-command-definition
+          :name "ship"
+          :description "Ship it"
+          :argument-hint "<ref>")
+         (cadr-agent::make-extension-command-definition
+          :name "settings"
+          :description "Must not replace the builtin"))))
+      (is (member "ship" (suggested) :test #'string=))
+      (is (= 1 (count "settings" (suggested) :test #'string=)))
+      (let ((ship
+              (find "ship"
+                    (cadr-tui:autocomplete-suggestions-items
+                     (cadr-tui:autocomplete-get-suggestions
+                      provider '("/") 0 1))
+                    :key #'cadr-tui:autocomplete-item-value
+                    :test #'string=)))
+        (is (search "<ref>"
+                    (cadr-tui:autocomplete-item-description
+                     ship)))
+        (is (search "Ship it"
+                    (cadr-tui:autocomplete-item-description
+                     ship)))))))
 
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)

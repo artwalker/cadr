@@ -2241,14 +2241,21 @@
            :bash-function #'run-user-bash
            :slash-commands-function
            (lambda ()
-             (resource-slash-commands
-              (and resources
-                   (resource-snapshot-skills resources))
-              (and resources
-                   (resource-snapshot-prompts resources))
-              (settings-boolean-value
-               settings-manager
-               "enableSkillCommands" t)))
+             (let ((snapshot
+                     (cadr-agent::extension-host-current-snapshot
+                      (cli-extension-manager-host
+                       extension-manager))))
+               (resource-slash-commands
+                (and resources
+                     (resource-snapshot-skills resources))
+                (and resources
+                     (resource-snapshot-prompts resources))
+                (settings-boolean-value
+                 settings-manager
+                 "enableSkillCommands" t)
+                (and snapshot
+                     (cadr-agent::extension-snapshot-commands
+                      snapshot)))))
            :set-slash-command-refresher
            (lambda (refresher)
              (setf slash-command-refresher refresher))
