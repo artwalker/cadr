@@ -193,7 +193,7 @@
   (and (cl-ppcre:scan
         (mermaid-indent-prefix-pattern
          indent
-         (concatenate 'string "(?:" bull ")(?:[ \t][^\n]*)?(?:\n|$)"))
+         (concatenate 'string "(?:" bull ")(?:[\\t ][^\\n]*)?(?:\\n|$)"))
         line)
        t))
 
