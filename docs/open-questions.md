@@ -63,16 +63,20 @@ Items awaiting adjudication:
   sub-contexts all visible in one place, and it removes the
   self-snapshot problem because the expectation comes from pi.
 
-  **Implementation status (2026-09-18):** first slice landed as
+  **Implementation status (2026-09-19):** first slices land as
   `scripts/model-visible-diff.py` + `test/model-visible-diff-gate-test.py`
   with denominator in `test/fixtures/model-visible-diff/scenarios.json`.
   It diffs the skills block cadr formats against
   `packages/coding-agent/src/core/skills.ts` `formatSkillsForPrompt`, and
   proves the gate would catch the pre-fix harness wording
   ("Read the full skill file…"). A second scenario (`skills-block-bash`)
-  locks the bash-only load wording. Full wire capture after provider
-  serialisation and extension request hooks remains open under the same
-  OQ.
+  locks the bash-only load wording. A third scenario
+  (`custom-prompt-with-context-and-skills`) diffs the custom
+  `buildSystemPrompt` branch (append, project context, skills, trailing
+  cwd newline) against `packages/coding-agent/src/core/system-prompt.ts`.
+  Full wire capture after provider serialisation and extension request
+  hooks remains open under the same OQ. The default-prompt product name
+  wording stays out of this denominator (I04).
 
   **Implementation requirements, binding:**
 

@@ -1,19 +1,27 @@
 {
   "denominator": {
-    "scenarios": ["skills-block-default", "skills-block-bash"],
+    "scenarios": [
+      "skills-block-default",
+      "skills-block-bash",
+      "custom-prompt-with-context-and-skills"
+    ],
     "providers": ["openai-completions-stub"],
-    "branches": ["default-system-prompt"],
-    "captures": ["skills-block-after-format"],
+    "branches": ["default-system-prompt", "custom-system-prompt"],
+    "captures": [
+      "skills-block-after-format",
+      "custom-system-prompt-after-composition"
+    ],
     "does_not_cover": [
       "full provider HTTP body after extension request hooks",
       "compaction or branch-summary sub-contexts",
-      "custom system prompt branch",
+      "default system prompt product-identity wording",
       "tool-result synthesis strings"
     ]
   },
   "scenarios": [
     {
       "id": "skills-block-default",
+      "kind": "skills-block",
       "description": "OQ-G20-MODEL-VISIBLE-TEXT-GATE first slice. Diff the skills block cadr and pinned pi emit for one visible skill (read tool wording).",
       "fileReadTool": "read",
       "skill": {
@@ -24,6 +32,7 @@
     },
     {
       "id": "skills-block-bash",
+      "kind": "skills-block",
       "description": "Bash-only tool selection uses the bash load wording (baseline system-prompt.ts skillFileReadTool).",
       "fileReadTool": "bash",
       "skill": {
@@ -31,6 +40,28 @@
         "description": "Demo skill",
         "filePath": "/skills/demo/SKILL.md"
       }
+    },
+    {
+      "id": "custom-prompt-with-context-and-skills",
+      "kind": "custom-prompt",
+      "description": "Custom system-prompt branch appends context files, skills, and a trailing cwd newline (baseline system-prompt.ts customPrompt).",
+      "customPrompt": "Custom instructions only.",
+      "appendSystemPrompt": "Appended guidance.",
+      "selectedTools": ["read", "edit"],
+      "cwd": "/tmp/project",
+      "contextFiles": [
+        {
+          "path": "/tmp/project/AGENTS.md",
+          "content": "Project rules"
+        }
+      ],
+      "skills": [
+        {
+          "name": "demo",
+          "description": "Demo skill",
+          "filePath": "/skills/demo/SKILL.md"
+        }
+      ]
     }
   ]
 }
