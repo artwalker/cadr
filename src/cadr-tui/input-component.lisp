@@ -9,7 +9,8 @@
   (undo-stack (make-undo-stack) :type undo-stack)
   last-action
   last-yank-start
-  last-yank-end)
+  last-yank-end
+  (rendered-start-column 0 :type (integer 0 *)))
 
 (defun make-single-line-input
     (&key (value "") (prompt "> "))
@@ -328,6 +329,34 @@
           (single-line-input-value input)))))
     (values nil nil)))
 
+(defun single-line-input-handle-mouse
+    (input &key type button x y)
+  (unless (and (eq type :press)
+               (eq button :left)
+               (eql y 0)
+               (integerp x))
+    (return-from single-line-input-handle-mouse nil))
+  (let* ((value (single-line-input-value input))
+         (target
+           (+ (single-line-input-rendered-start-column input)
+              (max 0
+                   (- x
+                      (visible-width
+                       (single-line-input-prompt input)))))))
+    (setf (single-line-input-cursor input) (length value))
+    (loop with column = 0
+          with position = 0
+          while (< position (length value))
+          for next = (next-cluster-boundary value position)
+          for width = (grapheme-width (subseq value position next))
+          do (when (< target (+ column width))
+               (setf (single-line-input-cursor input) position)
+               (return))
+             (incf column width)
+             (setf position next))
+    (single-line-input-clear-action input)
+    t))
+
 (defun render-single-line-input (input width)
   (let* ((prompt
            (single-line-input-prompt input))
@@ -342,6 +371,7 @@
     (let* ((total-width (visible-width value))
            (visible-text value)
            (cursor-display cursor))
+      (setf (single-line-input-rendered-start-column input) 0)
       (when (>= total-width available-width)
         (let* ((scroll-width
                  (if (= cursor (length value))
@@ -365,6 +395,8 @@
                         (max 0 (- cursor-column start-column))
                         t)))
                 (setf
+                 (single-line-input-rendered-start-column input)
+                 start-column
                  visible-text
                  (slice-by-column
                   value start-column scroll-width t)

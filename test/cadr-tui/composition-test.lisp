@@ -388,3 +388,24 @@
                  list :type :click :button :left :y (+ row 2))))
         (is (equal (list (list (format nil "item-~D" (+ 4 row)) "on"))
                    changes))))))
+
+(test settings-search-press-positions-the-input-cursor
+  (let* ((list
+           (cadr-tui:make-settings-list-component
+            (list
+             (cadr-tui:make-setting-item
+              :id "mode" :label "Mode"
+              :current-value "one" :values '("one" "two")))
+            5
+            :search-enabled-p t))
+         (input
+           (cadr-tui::settings-list-component-search-input list)))
+    (cadr-tui:single-line-input-set-value input "hello")
+    (cadr-tui:component-render list 40)
+    (is (eq :press
+            (cadr-tui:settings-list-handle-mouse
+             list :type :press :button :left :x 4 :y 0)))
+    (is (= 2 (cadr-tui::single-line-input-cursor input)))
+    (is (null
+         (cadr-tui:settings-list-handle-mouse
+          list :type :move :button :none :x 0 :y 0)))))

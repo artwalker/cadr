@@ -473,13 +473,19 @@
   input)
 
 (defun settings-list-handle-mouse
-    (component &key type button y wheel-delta)
+    (component &key type button y x wheel-delta)
   (when (settings-list-component-submenu-component component)
     (return-from settings-list-handle-mouse nil))
   (let ((row-offset 0))
     (when (and (settings-list-component-search-enabled-p component)
                (settings-list-component-search-input component))
-      (when (and (integerp y) (member y '(0 1)))
+      (when (and (integerp y) (zerop y))
+        (return-from settings-list-handle-mouse
+          (and (single-line-input-handle-mouse
+                (settings-list-component-search-input component)
+                :type type :button button :x x :y 0)
+               :press)))
+      (when (and (integerp y) (= y 1))
         (return-from settings-list-handle-mouse nil))
       (setf row-offset 2))
     (let ((items (settings-list-display-items component)))
