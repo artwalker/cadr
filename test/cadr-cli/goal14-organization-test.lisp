@@ -650,7 +650,9 @@
     ;; +2 argument completions: tui-thinking-autocomplete-items
     ;; and extension-argument-autocomplete-items.
     ;; +2 builtin command conflict diagnostics.
-    (is (= 323 definition-count)
+    ;; +2 overlay input press: extension-input-dialog-handle-mouse
+    ;; and runtime-auth-input-handle-mouse.
+    (is (= 325 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

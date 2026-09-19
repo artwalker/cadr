@@ -3047,6 +3047,22 @@ interactive-mode.ts:5956-5960).")
                      ((session-selector-state-p overlay)
                       (session-selector-handle-mouse
                        overlay gesture local))
+                     ((login-dialog-state-p overlay)
+                      (login-dialog-handle-mouse
+                       overlay gesture local))
+                     ((api-key-input-state-p overlay)
+                      (api-key-input-handle-mouse
+                       overlay gesture local))
+                     ((runtime-auth-input-state-p overlay)
+                      (runtime-auth-input-handle-mouse
+                       overlay gesture local))
+                     ((and (extension-custom-ui-state-p overlay)
+                           (typep
+                            (extension-custom-ui-state-component overlay)
+                            'extension-input-dialog))
+                      (extension-input-dialog-handle-mouse
+                       (extension-custom-ui-state-component overlay)
+                       gesture local))
                      ((and (null overlay)
                            (typep (current-editor)
                                   'cadr-tui:multiline-editor))

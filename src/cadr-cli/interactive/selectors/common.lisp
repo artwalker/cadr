@@ -190,6 +190,35 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
             (max 0 (min cursor (length value)))))
     (cadr-tui:render-single-line-input input width)))
 
+(defun selector-input-press (input origin width gesture local-y)
+  (let ((x (getf gesture :x)))
+    (unless (and input
+                 (integerp origin)
+                 (eql local-y origin)
+                 (eq (getf gesture :type) :press)
+                 (eq (getf gesture :button) :left)
+                 (integerp x))
+      (return-from selector-input-press nil))
+    (cadr-tui:render-single-line-input input width)
+    (cadr-tui:single-line-input-handle-mouse
+     input :type :press :button :left :x x :y 0)))
+
+(defun selector-masked-input-press (input origin width gesture local-y)
+  (let* ((value (cadr-tui:single-line-input-value input))
+         (masked
+           (cadr-tui:make-single-line-input
+            :value
+            (make-string (length value) :initial-element #\*)
+            :prompt "> ")))
+    (setf (cadr-tui::single-line-input-cursor masked)
+          (min
+           (cadr-tui::single-line-input-cursor input)
+           (length value)))
+    (when (selector-input-press masked origin width gesture local-y)
+      (setf (cadr-tui::single-line-input-cursor input)
+            (cadr-tui::single-line-input-cursor masked))
+      t)))
+
 (defun selector-input-line (value width)
   (first
    (nth-value 0
