@@ -3034,6 +3034,13 @@ interactive-mode.ts:5956-5960).")
                         (when action
                           (handle-overlay-action action value))
                         handled))
+                     ((thinking-selector-state-p overlay)
+                      (multiple-value-bind (handled action value)
+                          (thinking-selector-handle-mouse
+                           overlay gesture local)
+                        (when action
+                          (handle-overlay-action action value))
+                        handled))
                      ((and (null overlay)
                            (typep (current-editor)
                                   'cadr-tui:multiline-editor))

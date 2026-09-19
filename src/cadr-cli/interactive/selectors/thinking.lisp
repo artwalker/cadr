@@ -40,12 +40,16 @@
   (filter-query nil :type (or null string))
   (filtered-count 0 :type (integer 0 *))
   (selected 0 :type (integer 0 *))
+  (list-origin nil)
+  (list-limit 10 :type (integer 1 *))
+  (mouse-pressed nil)
   keybindings)
 
 (defun thinking-selector-apply-filter (state)
   (let* ((query (thinking-selector-state-query state))
          (last-query (thinking-selector-state-filter-query state)))
-    (unless (string= query (or last-query ""))
+    (unless (and (stringp last-query)
+                 (string= query last-query))
       (let* ((levels (thinking-selector-state-levels state))
              (filtered
                (if (zerop (length query))
@@ -197,6 +201,41 @@
      (values :changed nil))
     (otherwise
      (values nil nil))))
+
+(defun thinking-selector-handle-mouse (state gesture local-y)
+  (unless (and (integerp (thinking-selector-state-list-origin state))
+               (integerp local-y))
+    (return-from thinking-selector-handle-mouse nil))
+  (let ((y (- local-y (thinking-selector-state-list-origin state)))
+        (levels (thinking-selector-state-filtered-levels state)))
+    (when (minusp y)
+      (return-from thinking-selector-handle-mouse nil))
+    (multiple-value-bind (next action)
+        (cadr-tui:centered-list-mouse
+         (length levels)
+         (thinking-selector-state-selected state)
+         (thinking-selector-state-list-limit state)
+         y
+         (getf gesture :type)
+         (getf gesture :button)
+         (getf gesture :wheel-delta)
+         :pressed (thinking-selector-state-mouse-pressed state))
+      (case action
+        (:wheel
+         (setf (thinking-selector-state-selected state) next)
+         (values t nil nil))
+        (:press
+         (setf (thinking-selector-state-mouse-pressed state) next
+               (thinking-selector-state-selected state) next)
+         (values t nil nil))
+        (:click
+         (setf (thinking-selector-state-mouse-pressed state) nil
+               (thinking-selector-state-selected state) next)
+         (multiple-value-bind (kind value)
+             (thinking-selector-handle-event
+              state (cadr-tui:make-input-event :kind :enter))
+           (values t kind value)))
+        (t nil)))))
 
 (defun thinking-level-description-line (level default-level)
   (let* ((base (settings-thinking-description level))
@@ -359,23 +398,33 @@
           width :padding-x 0)
          body-lines))
       (setf body-lines (nreverse body-lines))
-      (render-selector-frame
-       (make-selector-frame
-        :sections
-        (list
-         (list
-          :lines
+      (let* ((header
+               (list
+                (thinking-selector-title-line width)
+                ""
+                (thinking-selector-cycle-line state width)
+                ""))
+             (input-lines
+               (nth-value
+                0
+                (selector-input-rendering
+                 (thinking-selector-state-query state)
+                 width))))
+        (setf (thinking-selector-state-list-origin state)
+              (+ (length header) (length input-lines) 1)
+              (thinking-selector-state-list-limit state)
+              10)
+        (render-selector-frame
+         (make-selector-frame
+          :sections
           (list
-           (thinking-selector-title-line width)
-           ""
-           (thinking-selector-cycle-line state width)
-           ""))
-         (list :input (thinking-selector-state-query state))
-         :blank
-         (list :lines body-lines)
-         :blank
-         (list
-          :lines
-          (list (thinking-selector-footer-line width)))
-         :border))
-       width))))
+           (list :lines header)
+           (list :input (thinking-selector-state-query state))
+           :blank
+           (list :lines body-lines)
+           :blank
+           (list
+            :lines
+            (list (thinking-selector-footer-line width)))
+           :border))
+         width)))))
