@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `json-value-p` / `ensure-json-value` for tool-call arguments
+  and tool-result details at the session encode boundary. In-memory
+  keyword plists stay valid for renderer `getf`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
