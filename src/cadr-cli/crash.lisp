@@ -46,14 +46,27 @@
                 (crash-directory
                   (cadr-ai::default-crash-directory))
                 secrets
+                session-file
                 (exit-function #'uiop:quit))
-  (cadr-ai::call-with-fatal-condition-boundary
-   function
-   :program-name program-name
-   :crash-directory crash-directory
-   :secrets
-   (remove-duplicates
-    (append secrets (crash-known-secrets))
-    :test #'string=)
-   :redactor #'redact-crash-diagnostic
-   :exit-function exit-function))
+  (let ((cadr-ai::*fatal-condition-side-effect*
+          (lambda (report)
+            (when (record-crash
+                   :kind :uncaught-exception
+                   :message
+                   (cadr-ai::fatal-condition-report-user-message
+                    report)
+                   :session-file session-file
+                   :cwd (uiop:getcwd))
+              (format *error-output* "~%~A~%"
+                      (crash-report-instructions session-file))
+              (finish-output *error-output*)))))
+    (cadr-ai::call-with-fatal-condition-boundary
+     function
+     :program-name program-name
+     :crash-directory crash-directory
+     :secrets
+     (remove-duplicates
+      (append secrets (crash-known-secrets))
+      :test #'string=)
+     :redactor #'redact-crash-diagnostic
+     :exit-function exit-function)))

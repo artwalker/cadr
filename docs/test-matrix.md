@@ -1,6 +1,6 @@
 # Gate denominators (Goal 20 Part M)
 
-<!-- GOAL20_TEST_CHECKS systems=9 checks=21560 pass=21560 skip=0 fail=0 -->
+<!-- GOAL20_TEST_CHECKS systems=9 checks=21585 pass=21585 skip=0 fail=0 -->
 
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
 `scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green
@@ -211,6 +211,7 @@ above are unchanged. Recount: 199 files.
 | tic-tac-toe steer | `test/cadr-cli/tic-tac-toe-steer-test.lisp` |
 | part B ledger | `test/cadr-cli/goal20-part-b-ledger-test.lisp` |
 | part I file verdicts | `test/cadr-cli/goal20-part-i-test.lisp` |
+| `/bug` + crash log | `test/cadr-cli/goal24-bug-report-test.lisp` |
 | part L visible strings | `test/cadr-cli/goal20-part-l-test.lisp` |
 | selector cache | `test/cadr-cli/goal20-selector-cache-test.lisp` |
 | interactive PTY | `test/cadr-cli/goal9-a2-interactive-test.lisp` |

@@ -1993,15 +1993,22 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                         (cadr-agent:agent-session agent)))
                   :included nil
                   :summary-included nil)))
+              (crashes (crash-log-for-diagnostics))
               (diagnostics
-                (list
-                 :schema-version +bug-report-schema-version+
-                 :session-id
-                 (getf (getf metadata :session) :id)
-                 :entry-count 0
-                 :assistant-message-count 0
-                 :assistant nil
-                 :crashes nil)))
+                (let ((object
+                        (cadr-agent::json-safe-value
+                         (list
+                          :schema-version +bug-report-schema-version+
+                          :session-id
+                          (getf (getf metadata :session) :id)
+                          :entry-count 0
+                          :assistant-message-count 0
+                          :assistant nil))))
+                  (cadr-ai::json-put
+                   object
+                   "crashes"
+                   (map 'vector #'identity crashes))
+                  object)))
          (bug-report-write-zip
           path
           (list
@@ -2015,10 +2022,10 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
            (cons
             "diagnostics.json"
             (with-output-to-string (out)
-              (cadr-ai::write-json-value
-               (cadr-agent::json-safe-value diagnostics)
-               out)
+              (cadr-ai::write-json-value diagnostics out)
               (terpri out)))))
+         (when crashes
+           (clear-crash-log))
          (if status-function
              (funcall
               status-function

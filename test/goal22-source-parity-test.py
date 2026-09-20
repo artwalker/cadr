@@ -91,7 +91,7 @@ class Goal22SourceParityTest(unittest.TestCase):
         text = LEDGER.read_text(encoding="utf-8")
         self.assertIn("sorted 686-path manifest", text)
         self.assertIn(MANIFEST_SHA, text)
-        self.assertIn("| **Total** | **686** | **514** | **169** | **3** |", text)
+        self.assertIn("| **Total** | **687** | **515** | **169** | **3** |", text)
         self.assertIn(
             "| `packages/ai/scripts/openrouter-reasoning-options.ts` |",
             text,

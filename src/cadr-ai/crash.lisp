@@ -174,6 +174,9 @@
                   condition all-secrets redactor)
          :log-path path))))
 
+(defvar *fatal-condition-side-effect* nil
+  "Optional (report) callback after a fatal report is prepared for emit.")
+
 (defun emit-fatal-condition-report
     (report &key (exit-function #'uiop:quit))
   (let ((*handling-fatal-condition-p* t))
@@ -188,6 +191,9 @@
                   (namestring path))
           (format *error-output*
                   "Crash log could not be written.~%")))
+    (when *fatal-condition-side-effect*
+      (ignore-errors
+        (funcall *fatal-condition-side-effect* report)))
     (finish-output *error-output*)
     (funcall exit-function 1)))
 

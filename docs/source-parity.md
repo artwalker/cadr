@@ -1,6 +1,6 @@
 # Source parity ledger
 
-<!-- GOAL12_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc source=686/514/169/3 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc source=687/515/169/3 examples=99/99/0 -->
 
 ## 0. Resolved defect: 108 stale cadr-side mappings (advisor, 2026-08-13; healed 2026-08-16)
 
@@ -72,8 +72,8 @@ Source baseline: `earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`
 The denominator is every tracked `*.ts` file below `packages/` except paths
 ending in `*.test.ts`. This includes TypeScript configs, executable examples,
 and non-`.test.ts` helpers under `test/`; it excludes generated/untracked files.
-The sorted 686-path manifest has SHA-256
-`ba7e18fcd8c057605ff826e85dd6394d69d48b3083a9dc6aa5522a9b81d50e11`.
+The sorted 687-path manifest has SHA-256
+`24f0e13cd9402f0fe2ddac0021244025bb9fd89e7d82cf4e8f895dd2bc7d6d91`.
 Its input is UTF-8 path text with exactly one LF after each path and bytewise
 `LC_ALL=C` ordering; it contains no repository prefix, table prose, verdict,
 or evidence columns.
@@ -149,7 +149,7 @@ will be routed with this rule.)
 | Package | Files | implemented | intentional difference | missing |
 |---|---:|---:|---:|---:|
 | `ai` | 192 | 160 | 32 | 0 |
-| `coding-agent` | 316 | 266 | 47 | 3 |
+| `coding-agent` | 317 | 267 | 47 | 3 |
 | `agent` | 56 | 27 | 29 | 0 |
 | `tui` | 47 | 40 | 7 | 0 |
 | `server` | 18 | 2 | 16 | 0 |
@@ -158,9 +158,9 @@ will be routed with this rule.)
 | `protocol` | 9 | 8 | 1 | 0 |
 | `client` | 12 | 0 | 12 | 0 |
 | `telemetry` | 6 | 0 | 6 | 0 |
-| **Total** | **686** | **514** | **169** | **3** |
+| **Total** | **687** | **515** | **169** | **3** |
 
-All 686 baseline source files have a disposition: 514 implemented, 169 intentional difference,
+All 687 baseline source files have a disposition: 515 implemented, 169 intentional difference,
 3 missing.
 All 99 fixed-baseline examples have functionally equivalent Lisp sources and
 behavior tests. Parts C1–C5 closed all 19 reusable TUI composition rows, both Apple
@@ -566,6 +566,7 @@ against the 670 reason rows (development-policy section 5.4).
 | `packages/coding-agent/src/core/auth-storage.ts` | AuthStorageBackend; FileAuthStorageBackend; InMemoryAuthStorageBackend; AuthStorage; readStoredCredential | Provides AuthStorageBackend; FileAuthStorageBackend; InMemoryAuthStorageBackend; AuthStorage; readStoredCredential | src/cadr-cli/models/auth-storage.lisp:143 auth-storage-read | `implemented` | Baseline `packages/coding-agent/src/core/auth-storage.ts:1-271`. Capability held by the mapped symbols; `auth-storage-read` exercised by `goal13-built-in-runtime-login-routes-aliases-and-persists-canonical-credentials` in `test/cadr-cli/config-auth-test.lisp`. Mapping file refs cite pre-split modules (section 0 known defect; heal pending the N0 re-derivation). [class SP-F4] |
 | `packages/coding-agent/src/core/bash-executor.ts` | BashExecutorOptions; BashResult; executeBashWithOperations | Provides BashExecutorOptions; BashResult; executeBashWithOperations | src/cadr-cli/tools/bash.lisp:554 execute-user-bash | `implemented` | Baseline `packages/coding-agent/src/core/bash-executor.ts:1-156`. Capability held by the mapped symbols; `execute-user-bash` exercised by `wave3-startup-resource-trust-and-user-bash-hooks-are-wired` in `test/cadr-cli/extensions-test.lisp`. [class SP-F4] |
 | `packages/coding-agent/src/core/cache-stats.ts` | CACHE_TTL_MS; CacheMiss; CacheWasteTotals; ModelPriceSource; computeCacheWaste; collectCacheMisses; detectCacheMiss | Provides CACHE_TTL_MS; CacheMiss; CacheWasteTotals; ModelPriceSource; computeCacheWaste; collectCacheMisses; detectCacheMiss | src/cadr-cli/sdk/cache-version.lisp:58 detect-cache-miss; src/cadr-cli/sdk/cache-version.lisp:145 compute-cache-waste | `implemented` | Baseline `packages/coding-agent/src/core/cache-stats.ts:1-164`. Capability held by the mapped symbols; `detect-cache-miss` exercised by `cache-waste-detects-misses-model-switches-idle-and-resets` in `test/cadr-cli/part-b-sdk-test.lisp`. Mapping file refs cite pre-split modules (section 0 known defect; heal pending the N0 re-derivation). [class SP-F4] |
+| `packages/coding-agent/src/core/crash-log.ts` | CrashRecord; readCrashLog; recordCrash; takeUnnotifiedCrash; clearCrashLog | Persist bounded crash records, announce once on interactive start, attach to `/bug` | src/cadr-cli/support/crash-log.lisp:116 record-crash; src/cadr-cli/support/crash-log.lisp:175 take-unnotified-crash; src/cadr-cli/support/crash-log.lisp:68 read-crash-log; src/cadr-cli/support/crash-log.lisp:110 clear-crash-log | `implemented` | Baseline `packages/coding-agent/src/core/crash-log.ts:1-93` (v0.86.0). FiveAM `crash-log-round-trips-take-and-trim` and `bug-command-attaches-crashes-without-notified` lock max-5 trim, take-marks-notified, diagnostics strip of `notified`, and product-named startup copy. |
 | `packages/coding-agent/src/core/compaction/branch-summarization.ts` | BranchSummaryResult; BranchSummaryDetails; FileOperations from ./utils.ts; BranchPreparation; CollectEntriesResult; GenerateBranchSummaryOptions; collectEntriesForBranchSummary; prepareBranchEntries; generateBranchSummary | Provides BranchSummaryResult; BranchSummaryDetails; FileOperations from ./utils.ts; BranchPreparation; CollectEntriesResult; GenerateBranchSummaryOptions; collectEntriesForBranchSummary; prepareBranchEntries; generateBranchSummary | src/cadr-agent/branch-summarization.lisp:18 collect-entries-for-branch-summary; src/cadr-agent/branch-summarization.lisp:78 prepare-branch-entries; src/cadr-agent/branch-summarization.lisp:158 generate-branch-summary | `implemented` | Baseline `packages/coding-agent/src/core/compaction/branch-summarization.ts:1-376`. The native collector/preparer/generator covers abandoned branch, file operations, token budget and model summaries. Output cap is `min(4096, model-max-tokens)` per baseline #8845 (`branch-summary-output-cap-matches-baseline-4096`). |
 | `packages/coding-agent/src/core/compaction/compaction.ts` | CompactionDetails; CompactionResult; CompactionSettings; DEFAULT_COMPACTION_SETTINGS; calculateContextTokens; getLastAssistantUsage; ContextUsageEstimate; estimateContextTokens; shouldCompact; estimateTokens; findTurnStartIndex; CutPointResult; findCutPoint; completeSummarization; generateSummary; generateSummaryWithUsage; CompactionPreparation; prepareCompaction; compact | Provides CompactionDetails; CompactionResult; CompactionSettings; DEFAULT_COMPACTION_SETTINGS; calculateContextTokens; getLastAssistantUsage; ContextUsageEstimate; estimateContextTokens; shouldCompact; estimateTokens; findTurnStartIndex; CutPointResult; findCutPoint; completeSummarization; generateSummary; generateSummaryWithUsage; CompactionPreparation; prepareCompaction; compact | src/cadr-agent/compaction.lisp:917 compact-agent; src/cadr-agent/compaction.lisp:356 generate-compaction-summary | `implemented` | Baseline `packages/coding-agent/src/core/compaction/compaction.ts:1-969`. Capability held by the mapped symbols; `compact-agent` exercised by `goal18-nil-model-manual-compaction-emits-baseline-failure-events` in `test/cadr-agent/compaction-test.lisp`. [class SP-F4] |
 | `packages/coding-agent/src/core/compaction/index.ts` | * from ./branch-summarization.ts; * from ./compaction.ts; * from ./utils.ts | Provides * from ./branch-summarization.ts; * from ./compaction.ts; * from ./utils.ts | src/cadr-agent/package.lisp:1 cadr-agent public package; src/cadr-agent/branch-summarization.lisp:18 branch summary surface; src/cadr-agent/messages.lisp:100 file-operation surface | `implemented` | Baseline `packages/coding-agent/src/core/compaction/index.ts:1-7`. Package exports now aggregate compaction, branch-summary and reusable file-operation capabilities. |

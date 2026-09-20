@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: persist `crashes.json` (max 5, 7-day age), announce the
+  newest unnotified crash on interactive TUI start, attach crash
+  records to `/bug` ZIP diagnostics (with `notified` stripped), and
+  print muted `/bug` resume instructions on fatal exit. Consent UI
+  and Radius upload remain open.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
