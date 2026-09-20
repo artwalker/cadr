@@ -186,7 +186,7 @@
        index path)))
 
 (defun edit-no-changes-error (path replacement-count)
-  ;; pi@d981de122 packages/coding-agent/src/core/tools/edit-diff.ts:286-293
+  ;; pi@ecac0a9c4 packages/coding-agent/src/core/tools/edit-diff.ts:286-293
   ;; getNoChangeError — one owner for the single vs multiple copy.
   (if (= replacement-count 1)
       (error

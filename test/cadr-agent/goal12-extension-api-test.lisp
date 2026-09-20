@@ -268,7 +268,7 @@
       (is (not (null supplied-p))))))
 
 (test goal12-tool-before-hook-terminate-applies-only-on-block
-  ;; pi@d981de122 extensions/types.ts:1075-1079 + agent-loop.ts:637-640 —
+  ;; pi@ecac0a9c4 extensions/types.ts:1075-1079 + agent-loop.ts:637-640 —
   ;; a before hook may set terminate; it marks the blocked result and is
   ;; ignored without a block.
   (let* ((call

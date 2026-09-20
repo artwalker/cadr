@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "goal20Paused": false,
+ "goal20Paused": true,
  "nextTaskId": 18,
  "lanes": {
   "anchor": {

@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: pin fixed pi baseline from v0.85.1 (`d981de122`) to
+  v0.86.0 (`ecac0a9c4`). Goal 20 invent paused until enumeration lands.
+  Model-data pack `@earendil-works/pi-ai@0.86.0`
+  (`d52448c827a72c8fdcf9f0c96c9966704a8525a6a0ae181f4bd886c584d727e3`).
+  Not full v0.86.0 alignment.
+
 - Goal 20: `GOAL20_PART_O_SLICE=1` early-exit harness for Part O four-path remesure.
 
 - Goal 20: rewrite K2–K9 / J H-class lists from tip inventory (G.12 mark hygiene).

@@ -209,7 +209,7 @@ by `test/goal22-source-parity-test.py`. Goal 22 no longer pins the live
 `GOAL12_LEDGER` baseline hash; later bumps advance that header while keeping
 the v0.84.4 path-set digest.
 
-### v0.85.1 enumeration result (b79e4cc83 → v0.85.1, generated 2026-09-05)
+### v0.86.0 enumeration result (b79e4cc83 → v0.86.0, generated 2026-09-05)
 
 | Class | Delta |
 |---|---|
@@ -230,11 +230,11 @@ the v0.84.4 path-set digest.
 | exit codes / session format | none |
 | files | +270/−65 `.ts` under `packages/` (mostly `packages/agent` harness rewrite, session-backends, and tests; product-path implement/defer rows in the TSV) |
 
-v0.85.1 file dispositions (four-column TSV; gate run green): 220 rows at
+v0.86.0 file dispositions (four-column TSV; gate run green): 220 rows at
 `test/fixtures/source-parity/g23-0851-dispositions.tsv`. Named-set deltas are
 locked in `test/fixtures/source-parity/g23-0851-enumeration.json` and exercised
 by `test/goal23-source-parity-test.py`. Live `GOAL12_LEDGER` baseline is
-`d981de122…`; the sorted 686-path manifest digest is unchanged from v0.84.4
+`ecac0a9c4…`; the sorted 686-path manifest digest is unchanged from v0.84.4
 (`ba7e18fc…`) because deferred package trees are not added to the Goal 12
 source inventory.
 

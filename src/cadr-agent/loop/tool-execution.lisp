@@ -67,7 +67,7 @@
 
 (defvar *tool-result-image-normalize-function* nil
   "When bound, called with a tool result's content blocks to
-normalize image blocks entering session history (pi@d981de122
+normalize image blocks entering session history (pi@ecac0a9c4
 core/agent-session.ts:517-520).  Bound by cadr-cli, where the image
 pipeline lives.")
 

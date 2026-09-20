@@ -161,7 +161,7 @@
     (and value (plusp (length value)))))
 
 (defun parse-boolean-capability-override (value)
-  ;; pi@d981de122 terminal-image.ts:139-141 — only "1" and "0" override;
+  ;; pi@ecac0a9c4 terminal-image.ts:139-141 — only "1" and "0" override;
   ;; "auto" and anything else leave detection in place.
   (cond
     ((not (stringp value)) :unset)
@@ -315,7 +315,7 @@
   (setf *terminal-capabilities* nil))
 
 (defun set-capability-overrides (overrides)
-  ;; pi@d981de122 terminal-image.ts:179-189 — skip work when the three
+  ;; pi@ecac0a9c4 terminal-image.ts:179-189 — skip work when the three
   ;; override fields are unchanged; otherwise drop the cached detection.
   (unless (equal overrides *capability-overrides*)
     (setf *capability-overrides* (copy-list overrides)

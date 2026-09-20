@@ -1,4 +1,4 @@
-;; Generated from pi@d981de122 packages/tui/src/latex.ts renderLatex
+;; Generated from pi@ecac0a9c4 packages/tui/src/latex.ts renderLatex
 ;; output for each (source display) pair; NIL rendered means the
 ;; baseline rejected the expression as unsupported or malformed.
 (in-package #:cadr-tui/tests)

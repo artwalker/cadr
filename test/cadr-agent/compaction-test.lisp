@@ -356,7 +356,7 @@
          :key #'cadr-agent:session-entry-type))))))
 
 (test g21-session-compact-failed-notifies-extensions-on-auto-compaction-failure
-  ;; pi@d981de122 agent-session-compaction.test.ts notifies extensions when
+  ;; pi@ecac0a9c4 agent-session-compaction.test.ts notifies extensions when
   ;; auto-compaction fails.
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
@@ -1207,7 +1207,7 @@
       (cadr-agent::truncate-summary-tool-result text)))))
 
 (test goal17-summary-tool-result-truncates-by-javascript-utf16-code-units
-  ;; pi@d981de122 compaction/utils.ts:88-99 uses String.length and slice,
+  ;; pi@ecac0a9c4 compaction/utils.ts:88-99 uses String.length and slice,
   ;; whose unit is UTF-16 rather than Unicode scalar values.
   (let* ((emoji (string (code-char #x1f642)))
          (text

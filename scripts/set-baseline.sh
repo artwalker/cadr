@@ -61,12 +61,27 @@ targets="$(
 OLD_RELEASE="$(cut -d' ' -f2 "$PROJECT_DIRECTORY/.baseline-prev")"
 OLD_DISTANCE="$(cut -d' ' -f3 "$PROJECT_DIRECTORY/.baseline-prev")"
 for file in $targets; do
-  sed -i \
-    -e "s/$OLD_COMMIT/$NEW_COMMIT/g" \
-    -e "s/$OLD_SHORT/$NEW_SHORT/g" \
-    -e "s/$OLD_RELEASE/$NEW_RELEASE/g" \
-    -e "s/(+$OLD_DISTANCE,/(+$NEW_DISTANCE,/g" \
-    "$file"
+  # source-parity.md keeps historical "vX.Y.Z addition" / restructure notes.
+  # Only rewrite commit anchors there, plus the operational Source baseline
+  # and GOAL12_LEDGER pin lines.
+  if [ "$file" = "$PROJECT_DIRECTORY/docs/source-parity.md" ]; then
+    sed -i \
+      -e "s/$OLD_COMMIT/$NEW_COMMIT/g" \
+      -e "s/$OLD_SHORT/$NEW_SHORT/g" \
+      "$file"
+    sed -i \
+      -e "/GOAL12_LEDGER/s/$OLD_RELEASE/$NEW_RELEASE/g" \
+      -e "/Source baseline:/s/$OLD_RELEASE/$NEW_RELEASE/g" \
+      -e "/(\`$OLD_RELEASE\` +[0-9]\+)/s/$OLD_RELEASE/$NEW_RELEASE/g" \
+      "$file"
+  else
+    sed -i \
+      -e "s/$OLD_COMMIT/$NEW_COMMIT/g" \
+      -e "s/$OLD_SHORT/$NEW_SHORT/g" \
+      -e "s/$OLD_RELEASE/$NEW_RELEASE/g" \
+      -e "s/(+$OLD_DISTANCE,/(+$NEW_DISTANCE,/g" \
+      "$file"
+  fi
 done
 
 echo "set-baseline: $OLD_SHORT -> $NEW_SHORT ($NEW_RELEASE +$NEW_DISTANCE)"

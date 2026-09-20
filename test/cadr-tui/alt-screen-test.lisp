@@ -261,7 +261,7 @@
             renderer)))))
 
 (test alt-screen-half-page-and-prompt-jump-follow-the-baseline-rules
-  ;; pi@d981de122 tui-alt-screen.ts:435-449 — half-page scrolls by
+  ;; pi@ecac0a9c4 tui-alt-screen.ts:435-449 — half-page scrolls by
   ;; floor(viewport/2); prompt jumps land on the next OSC 133;A row.
   (let ((previous (cadr-tui:get-keybindings)))
     (unwind-protect
@@ -320,7 +320,7 @@
       (cadr-tui:set-keybindings previous))))
 
 (test alt-screen-scrollbar-follows-the-baseline-geometry-and-visibility
-  ;; pi@d981de122 layout.ts:268-303 + components/scroll-view.ts:62-70:
+  ;; pi@ecac0a9c4 layout.ts:268-303 + components/scroll-view.ts:62-70:
   ;; auto mode paints the thumb only after real scroll activity while
   ;; the content overflows; thumb height is track²/content clamped to
   ;; [min(2, track), track]; the offset maps scrollTop onto the free
@@ -626,7 +626,7 @@
             renderer)))))
 
 (test alt-screen-alt-wheel-scrolls-five-times-faster
-  ;; pi@d981de122 tui-alt-screen.ts:75,968-970 — SGR bit 3 (8) is Alt.
+  ;; pi@ecac0a9c4 tui-alt-screen.ts:75,968-970 — SGR bit 3 (8) is Alt.
   (let* ((terminal
            (make-alt-recording-terminal :rows 4))
          (renderer
@@ -652,7 +652,7 @@
     (is (= 18 (cadr-tui:renderer-viewport-top renderer)))))
 
 (test alt-screen-jump-to-latest-indicator-when-scrolled-up
-  ;; pi@d981de122 tui-alt-screen.ts:1618-1635
+  ;; pi@ecac0a9c4 tui-alt-screen.ts:1618-1635
   (let* ((terminal
            (make-alt-recording-terminal :rows 4 :columns 48))
          (renderer
@@ -732,7 +732,7 @@
                (search "sixth" restore)))))))
 
 (test renderer-live-mode-switch-round-trips-main-screen-state
-  ;; pi@d981de122 interactive-mode.ts:788-832 — a live tuiMode switch
+  ;; pi@ecac0a9c4 interactive-mode.ts:788-832 — a live tuiMode switch
   ;; preserves the main-screen render state across the fullscreen
   ;; round-trip and emits the preserveScreen exit sequence.
   (let* ((terminal (make-alt-recording-terminal))
@@ -766,7 +766,7 @@
     (is (cadr-tui::terminal-renderer-invalid-p renderer))))
 
 (test renderer-multi-click-selects-word-then-line
-  ;; pi@d981de122 tui-alt-screen.ts:644-713 — double click selects the
+  ;; pi@ecac0a9c4 tui-alt-screen.ts:644-713 — double click selects the
   ;; word under the cursor, triple click the line, and the streak
   ;; cycles back to a character selection on the fourth click.
   (let ((renderer
@@ -821,7 +821,7 @@
                  renderer 0))))))
 
 (test renderer-flash-composites-and-expires
-  ;; pi@d981de122 components/alt-screen-flash.ts — flashes render as
+  ;; pi@ecac0a9c4 components/alt-screen-flash.ts — flashes render as
   ;; reverse-video padded messages and expire after their duration.
   (let ((renderer
           (cadr-tui:make-terminal-renderer
@@ -843,7 +843,7 @@
 
 (test alt-screen-search-overlay-literals-match-baseline
   ;; Baseline packages/tui/src/alt-screen-search.ts:143-149
-  ;; (pi@d981de122). AltScreenSearchComponent.render composes the
+  ;; (pi@ecac0a9c4). AltScreenSearchComponent.render composes the
   ;; overlay title at runtime, so the extractor never sees these
   ;; literals. Expected strings are copied from the TypeScript, not
   ;; from cadr.
