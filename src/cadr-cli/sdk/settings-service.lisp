@@ -156,14 +156,28 @@
         default)))
 
 (defun sdk-settings-compaction-keep-recent-tokens
-    (manager)
-  (sdk-settings-positive-integer
-   manager "compaction" "keepRecentTokens" 20000))
+    (manager &optional model)
+  (settings-compaction-token-from-object
+   (sdk-settings-value manager "compaction" :missing)
+   "keepRecentTokens" model))
 
 (defun sdk-settings-compaction-reserve-tokens
-    (manager)
-  (sdk-settings-positive-integer
-   manager "compaction" "reserveTokens" 16384))
+    (manager &optional model)
+  (settings-compaction-token-from-object
+   (sdk-settings-value manager "compaction" :missing)
+   "reserveTokens" model))
+
+(defun sdk-settings-compaction-settings
+    (manager &optional model)
+  (list
+   :enabled-p
+   (sdk-settings-compaction-enabled-p manager)
+   :reserve-tokens
+   (sdk-settings-compaction-reserve-tokens
+    manager model)
+   :keep-recent-tokens
+   (sdk-settings-compaction-keep-recent-tokens
+    manager model)))
 
 (defun sdk-settings-branch-summary-reserve-tokens
     (manager)

@@ -218,6 +218,7 @@
    #:sdk-settings-compaction-enabled-p
    #:sdk-settings-compaction-keep-recent-tokens
    #:sdk-settings-compaction-reserve-tokens
+   #:sdk-settings-compaction-settings
    #:sdk-settings-branch-summary-reserve-tokens
    #:sdk-settings-branch-summary-skip-prompt-p
    #:sdk-settings-shell-path

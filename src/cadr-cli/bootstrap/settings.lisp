@@ -66,15 +66,156 @@
         value
         default)))
 
+(defparameter +compaction-default-reserve-tokens+ 16384)
+(defparameter +compaction-default-keep-recent-tokens+ 20000)
+(defparameter +js-max-safe-integer+ 9007199254740991)
+
+(defun settings-js-display-string (value)
+  ;; Match ECMAScript String(value) for the shapes the baseline
+  ;; settings-manager-compaction tests throw with.
+  (cond
+    ((eq value 'null) "null")
+    ((eq value t) "true")
+    ((null value) "false")
+    ((stringp value) value)
+    ((integerp value) (princ-to-string value))
+    ((and (floatp value) (sb-ext:float-nan-p value)) "NaN")
+    ((and (floatp value)
+          (sb-ext:float-infinity-p value)
+          (minusp value))
+     "-Infinity")
+    ((and (floatp value) (sb-ext:float-infinity-p value))
+     "Infinity")
+    ((or (floatp value)
+         (and (rationalp value) (not (integerp value))))
+     ;; JS String(1.5) is "1.5"; JSON may reify decimals as ratios.
+     (let* ((float (float value 1d0))
+            (text (string-trim
+                   '(#\Space)
+                   (format nil "~F" float))))
+       (cond
+         ((not (find #\. text)) text)
+         (t
+          (string-right-trim
+           '(#\.)
+           (string-right-trim '(#\0) text))))))
+    ((hash-table-p value) "[object Object]")
+    ((or (vectorp value) (listp value))
+     (if (zerop (length value))
+         ""
+         (princ-to-string value)))
+    (t (princ-to-string value))))
+
+(defun settings-compaction-safe-token-p (value)
+  (and (integerp value)
+       (not (minusp value))
+       (<= value +js-max-safe-integer+)))
+
+(defun settings-compaction-model-parts (model)
+  (cond
+    ((null model)
+     (values nil nil))
+    ((typep model 'cadr-ai:model)
+     (values
+      (provider-key (cadr-ai:model-provider model))
+      (cadr-ai:model-id model)))
+    ((hash-table-p model)
+     (values
+      (cadr-ai::json-get model "provider")
+      (cadr-ai::json-get model "id")))
+    ((and (listp model)
+          (or (getf model :provider)
+              (getf model :id)))
+     (values (getf model :provider) (getf model :id)))
+    (t
+     (values nil nil))))
+
+(defun settings-compaction-model-key (model)
+  (multiple-value-bind (provider id)
+      (settings-compaction-model-parts model)
+    (when (and (stringp provider)
+               (plusp (length provider))
+               (stringp id)
+               (plusp (length id)))
+      (format nil "~A/~A" provider id))))
+
+(defun settings-compaction-token-from-object
+    (compaction field &optional model)
+  ;; pi@ecac0a9c4 getCompactionTokenSetting: modelOverrides[provider/id].field
+  ;; then ordinary compaction.field then built-in default. Invalid shapes throw.
+  (let ((ordinary
+          (if (hash-table-p compaction)
+              (cadr-ai::json-get
+               compaction field :missing)
+              :missing)))
+    (unless (eq ordinary :missing)
+      (unless (settings-compaction-safe-token-p ordinary)
+        (error
+         "Invalid compaction.~A setting: ~A. Expected a non-negative safe integer."
+         field
+         (settings-js-display-string ordinary))))
+    (let* ((model-key
+             (settings-compaction-model-key model))
+           (overrides
+             (and (hash-table-p compaction)
+                  (cadr-ai::json-get
+                   compaction "modelOverrides" :missing)))
+           (entry
+             (if (and model-key (hash-table-p overrides))
+                 (cadr-ai::json-get
+                  overrides model-key :missing)
+                 :missing)))
+      (unless (eq entry :missing)
+        (unless (hash-table-p entry)
+          (error
+           "Invalid compaction.modelOverrides[~S] setting: ~A. Expected an object."
+           model-key
+           (settings-js-display-string entry))))
+      (let ((override
+              (if (hash-table-p entry)
+                  (cadr-ai::json-get entry field :missing)
+                  :missing)))
+        (unless (eq override :missing)
+          (unless (settings-compaction-safe-token-p override)
+            (error
+             "Invalid compaction.modelOverrides[~S].~A setting: ~A. Expected a non-negative safe integer."
+             model-key
+             field
+             (settings-js-display-string override))))
+        (cond
+          ((not (eq override :missing)) override)
+          ((not (eq ordinary :missing)) ordinary)
+          ((string= field "reserveTokens")
+           +compaction-default-reserve-tokens+)
+          (t +compaction-default-keep-recent-tokens+))))))
+
+(defun settings-compaction-token-setting
+    (manager field &optional model)
+  (settings-compaction-token-from-object
+   (settings-value manager "compaction" :missing)
+   field model))
+
 (defun settings-compaction-keep-recent-tokens
-    (manager)
-  (settings-positive-integer-value
-   manager "compaction" "keepRecentTokens" 20000))
+    (manager &optional model)
+  (settings-compaction-token-setting
+   manager "keepRecentTokens" model))
 
 (defun settings-compaction-reserve-tokens
-    (manager)
-  (settings-positive-integer-value
-   manager "compaction" "reserveTokens" 16384))
+    (manager &optional model)
+  (settings-compaction-token-setting
+   manager "reserveTokens" model))
+
+(defun settings-compaction-settings
+    (manager &optional model)
+  (list
+   :enabled-p
+   (settings-boolean-value
+    manager "compaction" t "enabled")
+   :reserve-tokens
+   (settings-compaction-reserve-tokens manager model)
+   :keep-recent-tokens
+   (settings-compaction-keep-recent-tokens
+    manager model)))
 
 (defun settings-branch-summary-reserve-tokens
     (manager)
@@ -532,21 +673,30 @@
        settings-manager level))
     effective))
 
+(defun sync-agent-compaction-tokens
+    (agent settings-manager)
+  (let ((model (cadr-agent:agent-model agent)))
+    (setf
+     (cadr-agent::agent-compaction-keep-recent-tokens
+      agent)
+     (settings-compaction-keep-recent-tokens
+      settings-manager model)
+     (cadr-agent::agent-compaction-reserve-tokens
+      agent)
+     (settings-compaction-reserve-tokens
+      settings-manager model)))
+  agent)
+
 (defun sync-agent-settings-from-manager
     (agent settings-manager)
   (setf
    (cadr-agent::agent-auto-compact-p agent)
    (settings-boolean-value
     settings-manager
-    "compaction" t "enabled")
-   (cadr-agent::agent-compaction-keep-recent-tokens
-    agent)
-   (settings-compaction-keep-recent-tokens
-    settings-manager)
-   (cadr-agent::agent-compaction-reserve-tokens
-    agent)
-   (settings-compaction-reserve-tokens
-    settings-manager)
+    "compaction" t "enabled"))
+  (sync-agent-compaction-tokens
+   agent settings-manager)
+  (setf
    (cadr-agent:agent-steering-mode agent)
    (if
        (string=

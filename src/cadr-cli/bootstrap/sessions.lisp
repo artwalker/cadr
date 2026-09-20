@@ -957,6 +957,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        :model selected
        :previous-model previous-model
        :source source))
+    (sync-agent-compaction-tokens
+     agent settings-manager)
     config))
 
 (defun refresh-agent-model-from-registry

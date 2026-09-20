@@ -279,15 +279,18 @@
     (agent settings)
   (setf
    (cadr-agent::agent-auto-compact-p agent)
-   (sdk-settings-compaction-enabled-p settings)
-   (cadr-agent::agent-compaction-keep-recent-tokens
-    agent)
-   (sdk-settings-compaction-keep-recent-tokens
-    settings)
-   (cadr-agent::agent-compaction-reserve-tokens
-    agent)
-   (sdk-settings-compaction-reserve-tokens
-    settings)
+   (sdk-settings-compaction-enabled-p settings))
+  (let ((model (cadr-agent:agent-model agent)))
+    (setf
+     (cadr-agent::agent-compaction-keep-recent-tokens
+      agent)
+     (sdk-settings-compaction-keep-recent-tokens
+      settings model)
+     (cadr-agent::agent-compaction-reserve-tokens
+      agent)
+     (sdk-settings-compaction-reserve-tokens
+      settings model)))
+  (setf
    (cadr-agent:agent-steering-mode agent)
    (if (string=
         "all"

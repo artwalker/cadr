@@ -42,9 +42,9 @@
   (max-turns 100 :type (integer 1 *))
   (auto-compact-p t :type boolean)
   (compaction-reserve-tokens 16384
-                             :type (integer 1 *))
+                             :type (integer 0 *))
   (compaction-keep-recent-tokens 20000
-                                 :type (integer 1 *))
+                                 :type (integer 0 *))
   abort-p
   (abort-requested-p nil :type boolean)
   compaction-cancellation
