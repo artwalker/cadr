@@ -448,6 +448,8 @@
               (second system-prompt-values)
               :tools base-tools
               :tool-filter-function tool-filter
+              :prepare-prompt-loadout-function
+              #'apply-prepare-prompt-and-tool-loadout
               :extension-host extension-host
               :session persistent
               :stream-function

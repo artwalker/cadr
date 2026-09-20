@@ -316,6 +316,59 @@
     (when patch
       (nreverse patch))))
 
+(defun prepare-prompt-and-tool-loadout
+    (options messages tool-lookup)
+  (let* ((selected-names
+           (remove-duplicates
+            (remove-if-not
+             (lambda (name)
+               (and (stringp name)
+                    (funcall tool-lookup name)))
+             (copy-list
+              (getf options :selected-tools)))
+            :test #'string=))
+         (selected-tools
+           (mapcar
+            (lambda (name) (funcall tool-lookup name))
+            selected-names))
+         (previous
+           (let ((message
+                   (cadr-ai:get-current-system-message
+                    messages)))
+             (if message
+                 (cadr-ai:system-message-sections message)
+                 nil)))
+         (current
+           (apply #'build-system-prompt-sections options))
+         (patch
+           (diff-system-prompt-sections previous current)))
+    (values
+     (when patch
+       (cadr-ai:make-system-message
+        :content ""
+        :sections patch
+        :timestamp (cadr-ai::unix-milliseconds)))
+     selected-tools)))
+
+(defun apply-prepare-prompt-and-tool-loadout
+    (agent options messages)
+  (let ((by-name (make-hash-table :test #'equal)))
+    (dolist
+        (tool
+         (cadr-agent::merged-agent-tools agent))
+      (setf
+       (gethash (cadr-ai:tool-name tool) by-name)
+       tool))
+    (multiple-value-bind (update selected)
+        (prepare-prompt-and-tool-loadout
+         options
+         messages
+         (lambda (name) (gethash name by-name)))
+      (setf
+       (cadr-agent::agent-tool-registry agent)
+       (cadr-agent:make-tool-registry selected))
+      update)))
+
 (defun build-system-prompt
     (&key
        (selected-tools nil selected-tools-p)

@@ -174,17 +174,110 @@
         (append-agent-messages-with-events
          agent appended))))
 
+(defun %system-message-with-tool-changes
+    (message changes)
+  (let ((added
+          (cadr-ai:tool-state-changes-tools-added changes))
+        (removed
+          (cadr-ai:tool-state-changes-tools-removed changes)))
+    (cadr-ai:make-system-message
+     :content (cadr-ai:system-message-content message)
+     :sections
+     (copy-list (cadr-ai:system-message-sections message))
+     :tools-added (when added (copy-list added))
+     :tools-removed (when removed (copy-list removed))
+     :timestamp (cadr-ai:system-message-timestamp message))))
+
+(defun declare-tool-changes
+    (committed-messages executable-tools pending-messages)
+  (let* ((system-index
+           (position-if
+            #'cadr-ai:system-message-p
+            pending-messages
+            :from-end t))
+         (pending
+           (and system-index
+                (nth system-index pending-messages)))
+         (no-changes (cadr-ai:make-tool-state-changes))
+         (baseline
+           (if pending
+               (loop
+                 for message in pending-messages
+                 for index from 0
+                 collect
+                 (if (= index system-index)
+                     (%system-message-with-tool-changes
+                      pending no-changes)
+                     message))
+               pending-messages))
+         (changes
+           (cadr-ai:get-tool-state-changes
+            (cadr-ai:get-current-tools
+             (append committed-messages baseline))
+            (mapcar
+             #'cadr-ai:to-tool-declaration
+             executable-tools)))
+         (unchanged
+           (and
+            (null
+             (cadr-ai:tool-state-changes-tools-added
+              changes))
+            (null
+             (cadr-ai:tool-state-changes-tools-removed
+              changes)))))
+    (cond
+      (pending
+       (if
+           (and
+            unchanged
+            (null (cadr-ai:system-message-tools-added pending))
+            (null
+             (cadr-ai:system-message-tools-removed pending)))
+           pending-messages
+           (loop
+             for message in baseline
+             for index from 0
+             collect
+             (if (= index system-index)
+                 (%system-message-with-tool-changes
+                  pending changes)
+                 message))))
+      (unchanged pending-messages)
+      (t
+       (let* ((update
+                (%system-message-with-tool-changes
+                 (cadr-ai:make-system-message
+                  :content ""
+                  :timestamp
+                  (cadr-ai::unix-milliseconds))
+                 changes))
+              (insert-index
+                (or
+                 (position-if-not
+                  #'cadr-ai:system-message-p
+                  pending-messages)
+                 (length pending-messages))))
+         (append
+          (subseq pending-messages 0 insert-index)
+          (list update)
+          (subseq pending-messages insert-index)))))))
+
 (defun begin-agent-turn
     (agent turn-index messages)
   (emit-agent-event agent :turn-start)
-  (dolist
-      (message
-       (cond
-         ((null messages) nil)
-         ((listp messages) messages)
-         (t (list messages))))
-    (begin-agent-turn-message
-     agent turn-index message)))
+  (let ((pending
+          (cond
+            ((null messages) nil)
+            ((listp messages) messages)
+            (t (list messages)))))
+    (setf pending
+          (declare-tool-changes
+           (agent-messages agent)
+           (registry-tools (agent-tool-registry agent))
+           pending))
+    (dolist (message pending)
+      (begin-agent-turn-message
+       agent turn-index message))))
 
 (defun run-turn-end-hooks
     (agent turn-index message results)

@@ -7,14 +7,20 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: emit mid-conversation `system-message` section and tool
+  deltas on turn prep (`prepare-prompt-and-tool-loadout`,
+  `declare-tool-changes`) so agent.messages and session JSONL retain
+  `before_agent_start` / tool-loadout changes. Provider TranscriptContext
+  wiring remains open.
+
 - Goal 24: `build-system-prompt-sections` and `diff-system-prompt-sections`
   for ordered, tag-wrapped prompt sections (`preamble` untagged). Flat
-  `build-system-prompt` callers unchanged; emission remains open.
+  `build-system-prompt` callers unchanged.
 
 - Goal 24: session codec round-trips `role:"system"` messages with
   `sections` / `toolsAdded` / `toolsRemoved` so mid-conversation
-  prompt and tool deltas survive JSONL restore. Agent emission and
-  provider TranscriptContext wiring remain open.
+  prompt and tool deltas survive JSONL restore. Provider TranscriptContext
+  wiring remains open.
 
 - Goal 24: transcript-backed system message replay helpers
   (`normalize-context`, `get-current-system-prompt`, tool declaration

@@ -79,6 +79,7 @@
                          messages
                          tools
                          (tool-filter-function #'identity)
+                         prepare-prompt-loadout-function
                          extension-host
                          session
                          (stream-function #'cadr-ai:stream-chat)
@@ -109,6 +110,8 @@
            :base-tools (copy-list tools)
            :tool-registry (make-tool-registry tools)
            :tool-filter-function tool-filter-function
+           :prepare-prompt-loadout-function
+           prepare-prompt-loadout-function
            :extension-host extension-host
            :session session
            :stream-function stream-function
@@ -125,6 +128,25 @@
            :abort-p abort-p)))
     (when extension-host
       (attach-extension-host extension-host agent))
+    (unless
+        (and
+         (agent-messages agent)
+         (cadr-ai:system-message-p
+          (first (agent-messages agent))))
+      (let ((initial
+              (cadr-ai:create-initial-system-message
+               nil
+               (mapcar
+                #'cadr-ai:to-tool-declaration
+                (registry-tools
+                 (agent-tool-registry agent))))))
+        (when initial
+          (let ((seeded
+                  (cons initial (agent-messages agent))))
+            (setf
+             (agent-messages agent) seeded
+             (agent-messages-tail agent) (last seeded)
+             (agent-messages-tail-head agent) seeded)))))
     agent))
 
 (defstruct prepared-tool-call
