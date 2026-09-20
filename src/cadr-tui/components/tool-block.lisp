@@ -47,10 +47,25 @@
        collapsed-p
        (eq status :complete))))
 
-(defun toggle-tool-block (block)
-  (setf (tool-block-collapsed-p block)
-        (not (tool-block-collapsed-p block)))
-  block)
+(defun format-tool-duration-seconds (seconds)
+  "Match baseline bash.ts formatDuration for shell tool timing lines."
+  (let ((value (float seconds 1d0)))
+    (if (< value 60d0)
+        (format nil "~,1Fs" value)
+        (let* ((total (floor value))
+               (minutes (floor total 60))
+               (remainder (mod total 60)))
+          (if (< minutes 60)
+              (format nil "~Dm ~Ds" minutes remainder)
+              (format nil "~Dh ~Dm ~Ds"
+                      (floor minutes 60)
+                      (mod minutes 60)
+                      remainder))))))
+
+(defun tool-block-shows-runtime-p (block)
+  (member (tool-block-name block)
+          '("bash" "powershell")
+          :test #'string-equal))
 
 (defun tool-status-theme-tokens (block)
   (case (or (tool-block-preview-status block)
@@ -562,8 +577,7 @@
                 ansi-theme-p)))
            (timing-line
              (and
-              (string-equal
-               (tool-block-name block) "bash")
+              (tool-block-shows-runtime-p block)
               (tool-block-started-at block)
               (let* ((running-p
                        (eq (tool-block-status block)
@@ -580,9 +594,9 @@
                            (tool-block-started-at block)))))
                 (theme-foreground
                  :muted
-                 (format nil "~A ~,1Fs"
+                 (format nil "~A ~A"
                          (if running-p "Elapsed" "Took")
-                         elapsed)
+                         (format-tool-duration-seconds elapsed))
                  :enabled-p ansi-theme-p))))
            (box-lines
              (append

@@ -132,6 +132,30 @@
                block 60 :now 99d0)))))
       (is (search "Took 0.0s" finished)))))
 
+(test goal24-shell-tool-duration-uses-minutes-after-one-minute
+  (is (string= "0.0s" (cadr-tui:format-tool-duration-seconds 0)))
+  (is (string= "1.3s" (cadr-tui:format-tool-duration-seconds 1.26d0)))
+  (is (string= "59.9s" (cadr-tui:format-tool-duration-seconds 59.9d0)))
+  (is (string= "1m 0s" (cadr-tui:format-tool-duration-seconds 60d0)))
+  (is (string= "1m 5s" (cadr-tui:format-tool-duration-seconds 65.9d0)))
+  (is (string= "1h 1m 0s"
+               (cadr-tui:format-tool-duration-seconds 3660d0)))
+  (is (string= "1h 1m 5s"
+               (cadr-tui:format-tool-duration-seconds 3665d0)))
+  (let ((block
+          (cadr-tui:make-tool-block
+           :name "powershell"
+           :summary "Write-Output ok"
+           :status :complete
+           :started-at 10d0
+           :ended-at 75.4d0)))
+    (let ((rendered
+            (cadr-tui:strip-terminal-sequences
+             (format
+              nil "~{~A~%~}"
+              (cadr-tui:render-tool-block block 60)))))
+      (is (search "Took 1m 5s" rendered)))))
+
 (test status-bar-and-select-list
   (is (search "↑12"
               (cadr-tui:render-status-bar

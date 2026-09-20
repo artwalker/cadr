@@ -205,6 +205,7 @@
    #:mermaid-code-span
    #:tool-block
    #:make-tool-block
+   #:format-tool-duration-seconds
    #:tool-block-name
    #:tool-block-summary
    #:tool-block-output
