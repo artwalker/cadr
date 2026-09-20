@@ -506,7 +506,8 @@ interactive-mode.ts:5956-5960).")
          (terminal-active-p nil)
          (last-terminal-title nil)
          (pending-work-render-p nil)
-         (list-mouse-origin nil))
+         (list-mouse-origin nil)
+         (collapsible-hit-ranges nil))
     (declare (ignore active-theme))
     (dolist (text initial-statuses)
       (add-tui-status state text))
@@ -566,7 +567,8 @@ interactive-mode.ts:5956-5960).")
            (let ((work-rendered-p nil))
              (sb-thread:with-mutex (lock)
                (multiple-value-bind
-                     (lines cursor-row cursor-column editor-origin)
+                     (lines cursor-row cursor-column editor-origin
+                      hit-ranges)
                    (render-tui-state
                     state (current-editor)
                     (cadr-tui:terminal-columns terminal)
@@ -596,6 +598,7 @@ interactive-mode.ts:5956-5960).")
                    (extension-custom-ui-visible-p overlay)))
                  (setf
                   list-mouse-origin editor-origin
+                  collapsible-hit-ranges hit-ranges
                   work-rendered-p pending-work-render-p
                   pending-work-render-p nil)))
              (when (and work-rendered-p
@@ -3018,13 +3021,22 @@ interactive-mode.ts:5956-5960).")
                (lambda (gesture)
                  (let* ((origin list-mouse-origin)
                         (y (getf gesture :y))
+                        (document-y
+                          (+ (cadr-tui::terminal-renderer-scroll-top
+                              renderer)
+                             y))
                         (local
                           (and origin
-                               (- (+ (cadr-tui::terminal-renderer-scroll-top
-                                      renderer)
-                                     y)
-                                  origin))))
+                               (- document-y origin))))
                    (cond
+                     ((and (null overlay)
+                           (or (null local) (minusp local))
+                           (handle-collapsible-summary-click
+                            collapsible-hit-ranges document-y
+                            :type (getf gesture :type)
+                            :button (getf gesture :button)))
+                      (request-render)
+                      t)
                      ((or (null local) (minusp local))
                       nil)
                      ((settings-selector-state-p overlay)

@@ -205,20 +205,23 @@
              (if overlay
                  overlay-lines
                  editor-lines))
-           (entry-content
-             (render-tui-entries
-              (tui-state-entries state)
-              width
-              :extension-host extension-host
-              :now now
-              :hide-thinking-block-p
-              (tui-state-hide-thinking-block-p state)
-              :hidden-thinking-label
-              (tui-state-hidden-thinking-label state)
-              :mermaid-mode
-              (tui-state-mermaid-mode state)
-              :code-block-indent
-              (tui-state-code-block-indent state)))
+           (entry-render
+             (multiple-value-list
+              (render-tui-entries
+               (tui-state-entries state)
+               width
+               :extension-host extension-host
+               :now now
+               :hide-thinking-block-p
+               (tui-state-hide-thinking-block-p state)
+               :hidden-thinking-label
+               (tui-state-hidden-thinking-label state)
+               :mermaid-mode
+               (tui-state-mermaid-mode state)
+               :code-block-indent
+               (tui-state-code-block-indent state))))
+           (entry-content (first entry-render))
+           (entry-hit-ranges (second entry-render))
            (startup-lines
              (if
                  (tui-state-tools-expanded-p state)
@@ -233,6 +236,18 @@
              (and startup-lines
                   (render-tui-startup-lines
                    startup-lines width)))
+           (content-origin
+             (+ (length header-lines)
+                (if startup-lines
+                    (+ 1 (length startup-lines) 1)
+                    0)))
+           (collapsible-hit-ranges
+             (mapcar
+              (lambda (range)
+                (list (+ content-origin (first range))
+                      (+ content-origin (second range))
+                      (third range)))
+              entry-hit-ranges))
            (all-content
              (append
               header-lines
@@ -274,4 +289,5 @@
        (if overlay
            overlay-column
            editor-column)
-       editor-origin)))))
+       editor-origin
+       collapsible-hit-ranges)))))

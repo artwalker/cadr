@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: left-click toggles one skill / branch / compaction summary
+  entry (`expanded`); expand hints use `app.tools.expand` key text.
+  Ctrl+o global expand unchanged.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

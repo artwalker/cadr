@@ -636,15 +636,45 @@
 (defparameter *transcript-summary-entry-by-key*
   (make-hash-table :test #'equal))
 
+(defun collapsible-summary-entry-type-p (type)
+  (member type
+          '(:skill-invocation :branch-summary :compaction-summary)
+          :test #'eq))
+
+(defun toggle-tui-collapsible-summary-entry (entry)
+  (when (collapsible-summary-entry-type-p (tui-entry-type entry))
+    (setf (tui-entry-expanded-p entry)
+          (not (tui-entry-expanded-p entry)))
+    (invalidate-tui-entry-render-cache entry)
+    (tui-entry-expanded-p entry)))
+
+(defun find-collapsible-summary-entry-at-y (ranges document-y)
+  (dolist (range ranges)
+    (destructuring-bind (start end entry) range
+      (when (and (<= start document-y) (< document-y end))
+        (return entry)))))
+
+(defun handle-collapsible-summary-click
+    (ranges document-y &key (type :click) (button :left))
+  (when (and (eq type :click) (eq button :left))
+    (let ((entry
+            (find-collapsible-summary-entry-at-y
+             ranges document-y)))
+      (when entry
+        (toggle-tui-collapsible-summary-entry entry)
+        t))))
+
 (defun render-transcript-summary-entry (entry width)
   (let* ((type (tui-entry-type entry))
          (expanded-p (tui-entry-expanded-p entry))
+         (expand-key (key-text "app.tools.expand"))
          (key
            (list (cadr-tui:current-theme)
                  type expanded-p
                  (tui-entry-label entry)
                  (tui-entry-text entry)
                  (tui-entry-tokens-before entry)
+                 expand-key
                  width)))
     (or (gethash key *transcript-summary-entry-by-key*)
         (setf (gethash key *transcript-summary-entry-by-key*)
@@ -678,7 +708,9 @@
                                    (transcript-summary-text
                                     (tui-entry-label entry))
                                    (cadr-tui:theme-foreground
-                                    :dim " (ctrl+o to expand)"
+                                    :dim
+                                    (format nil " (~A to expand)"
+                                            expand-key)
                                     :enabled-p t))))))
                            (:branch-summary
                             (list
@@ -695,7 +727,7 @@
                                    (transcript-summary-text
                                     "Branch summary (")
                                    (cadr-tui:theme-foreground
-                                    :dim "ctrl+o" :enabled-p t)
+                                    :dim expand-key :enabled-p t)
                                    (transcript-summary-text
                                     " to expand)"))))))
                            (:compaction-summary
@@ -720,7 +752,7 @@
                                               "Compacted from ~A tokens ("
                                               tokens))
                                      (cadr-tui:theme-foreground
-                                      :dim "ctrl+o" :enabled-p t)
+                                      :dim expand-key :enabled-p t)
                                      (transcript-summary-text
                                       " to expand)")))))))))
                        (component
@@ -1254,25 +1286,36 @@ lines that embed OSC-8."
                         hidden-thinking-label
                         (mermaid-mode "streaming")
                         (code-block-indent "  "))
-  (loop
-    for entry in entries
-    for index from 0
-    for rendered =
-      (render-tui-entry
-       entry width
-       :extension-host extension-host
-       :now now
-       :hide-thinking-block-p hide-thinking-block-p
-       :hidden-thinking-label hidden-thinking-label
-       :mermaid-mode mermaid-mode
-       :code-block-indent code-block-indent)
-    append
-      (if
-          (and
-           (plusp index)
-           (member
-            (tui-entry-type entry)
-            '(:user :branch-summary :compaction-summary)
-            :test #'eq))
-          (cons "" rendered)
-          rendered)))
+  (let ((lines nil)
+        (ranges nil)
+        (y 0))
+    (loop
+      for entry in entries
+      for index from 0
+      for rendered =
+        (render-tui-entry
+         entry width
+         :extension-host extension-host
+         :now now
+         :hide-thinking-block-p hide-thinking-block-p
+         :hidden-thinking-label hidden-thinking-label
+         :mermaid-mode mermaid-mode
+         :code-block-indent code-block-indent)
+      for spacer-p =
+        (and
+         (plusp index)
+         (member
+          (tui-entry-type entry)
+          '(:user :branch-summary :compaction-summary)
+          :test #'eq))
+      do
+         (when spacer-p
+           (push "" lines)
+           (incf y))
+         (when (collapsible-summary-entry-type-p
+                (tui-entry-type entry))
+           (push (list y (+ y (length rendered)) entry) ranges))
+         (dolist (line rendered)
+           (push line lines))
+         (incf y (length rendered)))
+    (values (nreverse lines) (nreverse ranges))))
