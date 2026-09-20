@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **299 files / 137,863 lines**
+Denominator: **300 files / 138,581 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 111,152 | 80.6% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,876 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
+| `paired` | 244 | 111,165 | 80.2% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,676 | 5.5% | single reference vs previous cadr |
+| `covered-as-callee` | 30 | 18,910 | 13.6% | on a named paired thunk; no own bench |
+| `needs-pair` | 2 | 830 | 0.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.6% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 86.2% of lines.
+- **Falsifiable vs baseline:** 80.2% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13936,7 +13936,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/bootstrap/auth.lisp` | 189 | `cli_bootstrap_sessions.bootstrap_auth` |
 | `src/cadr-cli/bootstrap/commands.lisp` | 2,822 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
-| `src/cadr-cli/bootstrap/sessions.lisp` | 2,237 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
+| `src/cadr-cli/bootstrap/sessions.lisp` | 2,250 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 1,243 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 106 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/config.lisp` | 331 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
@@ -14114,7 +14114,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/types.lisp` | 208 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/package.lisp` | 306 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/package.lisp` | 340 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-core/atomic-file.lisp` | 106 | `evals_harness.artifact_persist` |
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
@@ -14141,6 +14141,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
+| `cli_cache_warmer` | 1 | 671 |
 | `cli_support` | 1 | 159 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

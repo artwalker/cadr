@@ -7,11 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: prompt cache warmer decisions (`warm`/`stop` economics),
+  `cache_warming_decision` decide hook, and `/session` status via
+  `format-cache-warming-status`. Mode arrives through an injected
+  getter (default `streaming`). Live settle/stream dispatch remains
+  open. Settings mode UI stays with the settings PR.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
-  and Radius upload remain open. `/session` prints the baseline Cache
-  Warming block as inactive (`streaming` /
-  `waiting for first request`) without warmer dispatch. Hotkey help uses
+  and Radius upload remain open. Hotkey help uses
   `Copy selection or last assistant message` for Ctrl+X.
 
 - Goal 24: pin fixed pi baseline from v0.85.1 (`d981de122`) to
