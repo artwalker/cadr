@@ -739,6 +739,8 @@
         (is (search (format nil "Tokens~%Input:") plain))
         (is (search "Cached: 53,000 (24.8%)" plain))
         (is (search "Uncached: 160,500 (90,000 written to cache)" plain))
+        (is (search (format nil "Cache Warming~%Mode: streaming") plain))
+        (is (search "Status: Inactive (waiting for first request)" plain))
         (is (search "openai-codex/gpt-5.6-luna-2026-07-01: $0.110 (101k tokens)" plain))
         (is (search "openai-codex/gpt-5.6-luna: $0.085 (112k tokens)" plain))
         (is (search "deepseek/deepseek-v4-flash: $0.004 (3.4k tokens)" plain))
@@ -747,6 +749,7 @@
         (is (search (format nil "~C[1mSession Info" #\Escape) styled))
         (is (search (format nil "~C[1mMessages" #\Escape) styled))
         (is (search (format nil "~C[1mTokens" #\Escape) styled))
+        (is (search (format nil "~C[1mCache Warming" #\Escape) styled))
         (is (search (format nil "~C[1mCost" #\Escape) styled))))))
 
 (test post-goal15-hotkeys-table-uses-baseline-natural-column-widths

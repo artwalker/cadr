@@ -213,7 +213,9 @@ class EventDiffGateTest(unittest.TestCase):
                     "/5/result/firstKeptEntryId",
                     "/5/data/firstKeptEntryId",
                     "/10/result/firstKeptEntryId",
+                    "/12/result/firstKeptEntryId",
                     "/13/result/firstKeptEntryId",
+                    "/15/result/firstKeptEntryId",
                 },
             )
             self.assertNotIn("*", rule["pointer"])

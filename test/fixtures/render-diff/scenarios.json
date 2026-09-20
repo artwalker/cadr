@@ -3557,6 +3557,12 @@
           "pauseMs": 100
         },
         {
+          "sendText": "other"
+        },
+        {
+          "waitFor": "other session question"
+        },
+        {
           "send": "ctrl+d"
         },
         {
@@ -4360,6 +4366,15 @@
         },
         {
           "waitFor": "Paste the authorization code"
+        },
+        {
+          "waitFor": "to cancel"
+        },
+        {
+          "waitFor": "\u001b[2K> \u001b[7m"
+        },
+        {
+          "pauseMs": 300
         },
         {
           "checkpoint": "login-manual-dialog"
@@ -5278,16 +5293,22 @@
           "checkpoint": "slash-share"
         },
         {
-          "sendText": "/bug crashed on save"
+          "sendText": "/bug"
         },
         {
-          "send": "enter"
-        },
-        {
-          "waitFor": "Bug report written:"
+          "waitFor": "Report a bug to"
         },
         {
           "checkpoint": "slash-bug"
+        },
+        {
+          "send": "escape"
+        },
+        {
+          "pauseMs": 80
+        },
+        {
+          "send": "ctrl+u"
         },
         {
           "sendText": "/clone"

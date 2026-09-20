@@ -1483,6 +1483,17 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      (getf stats :output)
      (session-info-style "Total:" :label ansi-theme-p)
      total)
+    ;; Baseline interactive-mode.ts:6387-6390 — /session always prints the
+    ;; Cache Warming block. Goal 24 defers the warmer dispatch; the inactive
+    ;; default matches the baseline CacheWarmer before the first request.
+    (format
+     output
+     "~%~A~%~A ~A~%~A ~A~%"
+     (session-info-style "Cache Warming" :heading ansi-theme-p)
+     (session-info-style "Mode:" :label ansi-theme-p)
+     "streaming"
+     (session-info-style "Status:" :label ansi-theme-p)
+     "Inactive (waiting for first request)")
     (when
         (or
          (plusp (getf stats :cost))
@@ -1641,7 +1652,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      ("Toggle tool output expansion" "app.tools.expand")
      ("Toggle thinking block visibility" "app.thinking.toggle")
      ("Edit message in external editor" "app.editor.external")
-     ("Copy last assistant message" "app.message.copy")
+     ("Copy selection or last assistant message" "app.message.copy")
      ("Queue follow-up message" "app.message.followUp")
      ("Restore queued messages" "app.message.dequeue")
      ("Paste image or text from clipboard" "app.clipboard.pasteImage")
