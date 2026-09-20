@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `retry.maxAgentDelayMs` (default 60000) caps agent
+  auto-retry backoff via `auto-retry-max-delay-ms`. Provider retry
+  `maxRetryDelayMs` is unchanged.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

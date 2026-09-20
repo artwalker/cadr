@@ -62,6 +62,8 @@
                            :type (integer 0 *))
   (auto-retry-base-delay 2
                          :type (real 0 *))
+  (auto-retry-max-delay-ms 60000
+                           :type (integer 0 *))
   (retry-attempt 0 :type (integer 0 *))
   (retry-in-progress-p nil :type boolean)
   (retry-abort-requested-p nil :type boolean)
