@@ -1,10 +1,10 @@
 (in-package #:cadr-tui)
 
-;;; pi@d981de122 packages/tui/src/latex.ts — terminal-friendly Unicode
+;;; pi@ecac0a9c4 packages/tui/src/latex.ts — terminal-friendly Unicode
 ;;; rendering of basic LaTeX math.  Data tables are transcribed
 ;;; verbatim; the parser is a direct port of LatexParser.
 
-;; generated from pi@d981de122 packages/tui/src/latex.ts data tables
+;; generated from pi@ecac0a9c4 packages/tui/src/latex.ts data tables
 (defparameter +latex-symbols+
   (list
    (cons "alpha" "α")
@@ -832,7 +832,7 @@
     (and (< index (length lines)) (aref lines index))))
 
 (defun latex-push-layout-node (parser node)
-  ;; pi@d981de122 packages/tui/src/latex.ts layoutNodes.push — O(1) append
+  ;; pi@ecac0a9c4 packages/tui/src/latex.ts layoutNodes.push — O(1) append
   ;; plus the marker index.  The list+append form was quadratic.
   (vector-push-extend node (latex-parser-layout-nodes parser))
   (1- (length (latex-parser-layout-nodes parser))))
@@ -1284,7 +1284,7 @@
         (first (latex-parser-peek parser)))
     (cond
       ((or (eql first #\Newline) (eql first #\Return))
-       ;; Baseline v0.85.1 latex.ts: a line break directly after the
+       ;; Baseline v0.86.0 latex.ts: a line break directly after the
        ;; backslash is one space (CRLF counts once).
        (incf (latex-parser-position parser))
        (when (and (eql first #\Return)
@@ -1609,7 +1609,7 @@
             previous))))
 
 (defun latex-parse-required-argument-value (parser)
-  ;; Baseline v0.85.1 latex.ts: any whitespace is skipped here, not just
+  ;; Baseline v0.86.0 latex.ts: any whitespace is skipped here, not just
   ;; space and tab.
   (loop while (and (not (latex-parser-done-p parser))
                    (let ((peek (latex-parser-peek parser)))

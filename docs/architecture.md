@@ -5,7 +5,7 @@ agent harness, session v3, print/JSON and RPC are complete; the widened stable
 extension API has been re-frozen; the baseline's default execution security
 model is aligned; the Phase 8 TUI, the Phase 9 dependency closeout and the cadr
 naming migration are complete; Goal 8 Wave 5 storage/server/evals are complete
-and frozen; Goal 9 re-locked the behavior baseline to `d981de122` and completed
+and frozen; Goal 9 re-locked the behavior baseline to `ecac0a9c4` and completed
 Parts A–E; Goal 11 established the second, non-functional acceptance axis and
 completed the performance, memory and long-run stability gates; Goal 10 Part D's
 approved conditions/restarts and opt-in Slynk are implemented and re-frozen;
@@ -37,8 +37,8 @@ there is no `--yolo` branch.
 ### 1.1 Reference source
 
 - Behavior reference repository: `https://github.com/earendil-works/pi`
-- Fixed audit commit: `d981de1229ef899957bbe968bc8dcda02a21f477`
-  (`pi v0.85.1 + 38 commits`, 2026-07-30)
+- Fixed audit commit: `ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`
+  (`pi v0.86.0 + 38 commits`, 2026-07-30)
 - Historical audit anchor:
   `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`; used only for the Goal 4–8
   historical comparison, and no longer participates in current parity verdicts
@@ -51,7 +51,7 @@ there is no `--yolo` branch.
 - The current cadr tracked tree no longer contains the upstream TypeScript
   implementation; every reference path below means a path inside the fixed audit
   commit. Regenerating a cross-implementation fixture must check out
-  `d981de1229ef899957bbe968bc8dcda02a21f477` and pass its path as
+  `ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc` and pass its path as
   `scripts/export-ts-payloads.ts --reference`; a moving upstream or the tip of
   the legacy branch must not be used instead.
 
@@ -2041,7 +2041,7 @@ User-Agent and Radius registration. No new public export is added, and no
 version constant is duplicated. The current release candidate is `0.2.0`;
 `cadr-release-identity` composes the frozen upstream relationship from that
 version source, and the CLI prints
-`cadr 0.2.0 · aligned with pi v0.85.1 (+0, d981de122)`. The README, the CHANGELOG
+`cadr 0.2.0 · aligned with pi v0.86.0 (+0, ecac0a9c4)`. The README, the CHANGELOG
 and the Release draft lock the same identity verbatim. The tag and the GitHub
 Release still await user confirmation.
 

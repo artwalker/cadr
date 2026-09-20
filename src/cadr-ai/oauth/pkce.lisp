@@ -6,7 +6,7 @@
   login-label
   auth-url-instructions
   manual-input-message
-  ;; pi@d981de122 packages/ai/src/auth/oauth/*.ts — subscription-backed
+  ;; pi@ecac0a9c4 packages/ai/src/auth/oauth/*.ts — subscription-backed
   ;; OAuth access (footer "(sub)" marker via isUsingSubscription).
   (is-subscription-p nil :type boolean))
 

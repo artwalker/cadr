@@ -7,7 +7,7 @@
 
 ## 为什么单独开 goal
 
-仓上钉点仍是 **v0.85.1**（`BASELINE` 第一列 `d981de1229ef899957bbe968bc8dcda02a21f477`）。上游已发 **v0.86.0**（2026-09-19）。相对 `d981de122` 测得 **164** 个提交。`packages/coding-agent`、`packages/tui`、`packages/ai` 合计 **350** 个文件，**+16816 / −6195** 行。
+机械钉点已落到 **v0.86.0**（`BASELINE` 第一列 `ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`）。上游发布于 2026-09-19。相对旧钉 `d981de122` 测得 **164** 个提交。`packages/coding-agent`、`packages/tui`、`packages/ai` 合计 **350** 个文件，**+16816 / −6195** 行。用户可见增量与枚举仍在进行。
 
 测量命令（2026-09-20）：
 
@@ -32,7 +32,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `enumerate-baseline-diff.py` 与 `check-source-parity-drift.sh` 的处置 | 为过关而抬 pairing ceiling，或新造 intentional-difference 类 |
 | 下表用户可见增量。每一项要么有可重放的行为证据，要么是用户已经裁过的例外 | 与本 bump 无关的重构 |
 
-`docs/development-policy.md` 第 4 节现在写着 `v0.85.1 (+0, d981de122)`。`set-baseline.sh` 会改当前状态文档里的旧短哈希。政策文件本身要用户裁决才改。本 goal 就是那次裁决的记录。钉点提交落地时，把那一句改成 `v0.86.0 (+0, ecac0a9c4)`，不要提前手改。
+用户 2026-09-20 裁决本 bump。`set-baseline.sh` 已把 `docs/development-policy.md` 的钉点句改成 `v0.86.0 (+0, ecac0a9c4)`。
 
 ## v0.85.1 → v0.86.0 用户可见增量
 
@@ -98,13 +98,13 @@ Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，�
 
 ## 验收
 
-- [ ] `BASELINE` 第三列为 `0`，release 为 `v0.86.0`，commit 为 `ecac0a9c4…`
-- [ ] `python3 scripts/baseline-anchor.py check` 绿
+- [x] `BASELINE` 第三列为 `0`，release 为 `v0.86.0`，commit 为 `ecac0a9c4…`
+- [x] `python3 scripts/baseline-anchor.py check` 绿
 - [ ] `enumerate-baseline-diff` 各类 delta 均有 disposition
 - [ ] 上表每一行有测试名，或有用户已经裁过的例外
 - [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
-- [ ] `CHANGELOG.md` 记录 `cadr … · aligned with pi v0.86.0 (+0, ecac0a9c4)`
-- [ ] Goal 20 `paused=false` 只在钉点与枚举落地之后恢复
+- [ ] `CHANGELOG.md` 记录 `cadr … · aligned with pi v0.86.0 (+0, ecac0a9c4)`（全量对齐后再写；钉点提交只记 pin）
+- [ ] Goal 20 `paused=false` 只在钉点与枚举落地之后恢复（钉点期间 `paused=true`）
 - [ ] 不标记 G.17 `met`，不宣布 Goal 20 完成
 
 ## 与 Goal 20 的关系

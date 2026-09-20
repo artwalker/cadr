@@ -23,7 +23,7 @@
               (emit-agent-end agent)
               (return-from run-agent-loop
                 final-message))))
-        ;; pi@d981de122 agent-loop.ts #8782: compact before the next
+        ;; pi@ecac0a9c4 agent-loop.ts #8782: compact before the next
         ;; provider request once a turn has already completed, so
         ;; threshold compaction runs between tool rounds.
         (when (> turn 1)

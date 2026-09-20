@@ -13,7 +13,7 @@ Option B would add an in-process mock on cadr. That is the banned mock. Option A
 | side | client | wire |
 |---|---|---|
 | cadr | `stream-chat` `:transport :websocket` (`src/cadr-ai/websocket.lisp`) | usocket listen on `127.0.0.1:ephemeral`, HTTP 101, one request frame, recorded `response.*` text frames |
-| pi | `stream` `transport: "websocket"` (`packages/ai/src/api/openai-codex-responses.ts` at Goal 23 baseline `d981de122`) | Node `http` listen on `127.0.0.1:ephemeral`, HTTP 101, one request frame, the same recorded `response.*` text frames |
+| pi | `stream` `transport: "websocket"` (`packages/ai/src/api/openai-codex-responses.ts` at Goal 23 baseline `ecac0a9c4`) | Node `http` listen on `127.0.0.1:ephemeral`, HTTP 101, one request frame, the same recorded `response.*` text frames |
 
 Both close cached websocket sessions before each timed call. Both point `base-url` / `baseUrl` at `http://127.0.0.1:<port>` so the client opens `ws://127.0.0.1:<port>/codex/responses`. Native `globalThis.WebSocket` stays installed on pi. Fetch is still forbidden.
 

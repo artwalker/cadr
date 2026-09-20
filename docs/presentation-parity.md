@@ -1,9 +1,9 @@
 # Presentation parity ledger
 
-<!-- GOAL13_PRESENTATION_LEDGER baseline=d981de1229ef899957bbe968bc8dcda02a21f477 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4 -->
+<!-- GOAL13_PRESENTATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4 -->
 <!-- GOAL13_OUTPUT_CHANNELS total=18 covered=18 pending=0 -->
 
-Fixed baseline: `earendil-works/pi@d981de1229ef899957bbe968bc8dcda02a21f477`.
+Fixed baseline: `earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`.
 Audit point: Cadr `e04d9230f` (Goal 13 Part A complete).  This ledger audits
 the independent **presentation axis** only. Tool results sent to the model,
 provider payloads, event sequences, and session data belong to the behavior

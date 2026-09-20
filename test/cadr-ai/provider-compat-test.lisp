@@ -122,7 +122,7 @@
       (request-spec-payload request)))))
 
 (test openai-completions-baseten-reasoning-matches-reference
-  ;; pi@d981de122 api/openai-completions.ts:779-793 — the baseten
+  ;; pi@ecac0a9c4 api/openai-completions.ts:779-793 — the baseten
   ;; thinking format sends chat_template_args plus reasoning_effort.
   (let* ((model
            (compat-model
@@ -166,7 +166,7 @@
       (request-spec-payload request)))))
 
 (test openai-completions-thinking-token-budget-matches-reference
-  ;; pi@d981de122 api/openai-completions.ts:847-866 — vLLM caps
+  ;; pi@ecac0a9c4 api/openai-completions.ts:847-866 — vLLM caps
   ;; reasoning with a top-level thinking_token_budget; the budget is
   ;; min(level budget, max_tokens - 1024), so 4096-1024=3072 caps high.
   (let ((model

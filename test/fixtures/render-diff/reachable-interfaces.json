@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "d981de1229ef899957bbe968bc8dcda02a21f477",
+  "baselineCommit": "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc",
   "slashCommands": [
     {
       "name": "settings",

@@ -1,6 +1,6 @@
 # Performance and stability
 
-<!-- GOAL12_LEDGER baseline=d981de1229ef899957bbe968bc8dcda02a21f477 source=595/518/77/0 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc source=595/518/77/0 examples=99/99/0 -->
 
 This document is the **non-functional ledger** among the four independent
 acceptance axes: the behavior gate answers "what was produced", the source
@@ -122,7 +122,7 @@ MAD 4,518µs (five samples, 156–175ms).
 
 ## Fixed TS baseline strategy
 
-The audit target is fixed at `d981de122` (v0.85.1), not the continuously moving upstream
+The audit target is fixed at `ecac0a9c4` (v0.86.0), not the continuously moving upstream
 `main`. The conclusion is unambiguous: pi likewise traverses the complete
 component tree every frame and has no viewport-before-render, no virtual
 scrolling and no persisted history-prefix frame; its advantage comes from
@@ -140,7 +140,7 @@ component construction**; it can serve only as a lower-bound reference for
 process startup cost and cannot replace the other real-PTY cold-start numbers in
 this document.
 
-| `--version` process time | cadr | pi `d981de122` |
+| `--version` process time | cadr | pi `ecac0a9c4` |
 |---|---:|---:|
 | stable | 0.01s | 0.83s |
 | first | 0.05s | 1.72s |
@@ -169,11 +169,11 @@ Comparison entry point:
 
 ```sh
 node --expose-gc scripts/goal11-pi-baseline-bench.mjs \
-  /tmp/cadr-parity-d981de122 \
+  /tmp/cadr-parity-ecac0a9c4 \
   > /tmp/cadr-goal11-pi-baseline.json
 ```
 
-The script rejects any worktree that is not `d981de122e71…`. The archived object
+The script rejects any worktree that is not `ecac0a9c4e71…`. The archived object
 first runs a clean build of `tui`, `ai build:offline`, `agent` and
 `coding-agent` with an empty build cache, then loads the production
 `TuiMainScreen`, `TuiAltScreen`, `Editor`, user/assistant, read tool and bash
@@ -187,7 +187,7 @@ ladder, 1 warm-up, 5 samples, and fixture construction is not timed. Complete
 data is in
 [`benchmarks/goal-v11-pi-baseline.json`](benchmarks/goal-v11-pi-baseline.json).
 
-| metric at N=5000 | cadr before | pi `d981de122` | ratio |
+| metric at N=5000 | cadr before | pi `ecac0a9c4` | ratio |
 |---|---:|---:|---:|
 | frame | 488.0ms | 16.43ms | 29.7× |
 | key→frame | 480.0ms | 16.61ms | 28.9× |
@@ -388,7 +388,7 @@ compatibility field `tui_object_id` now records the Git object of
 locked jointly by the deterministic gates of the controller, frame, transcript
 and renderer.
 
-| paired N=5000 metric | pi `d981de122` | cadr `82db71b8c` | cadr / pi |
+| paired N=5000 metric | pi `ecac0a9c4` | cadr `82db71b8c` | cadr / pi |
 |---|---:|---:|---:|
 | mouse event→frame median | 276.150ms | 32.000ms | 0.12× |
 | wheel event→frame median | 297.999ms | 36.000ms | 0.12× |

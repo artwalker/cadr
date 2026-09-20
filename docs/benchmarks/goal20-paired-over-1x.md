@@ -1539,7 +1539,7 @@ Gate PASS. Artifact `/tmp/goal20-floor-remesure26`.
 
 Part O enforces the four paired paths from `goal20-draft.md` §十四.16:
 `journal_append`, `journal_read`, `session_load`, `list_models_render`.
-Pi baseline: `/tmp/cadr-render-diff-pi-d981de122`. Harness: `e4ab46c96`.
+Pi baseline: `/tmp/cadr-render-diff-pi-ecac0a9c4`. Harness: `e4ab46c96`.
 
 ### Ban (Part O hillclimb)
 
@@ -1586,7 +1586,7 @@ Dual confirm failed on journal_read. Walker reverted `3ae98c6c1`.
 
 ### Remesure43 / 44 / 45 (tip `8bef4de85`, quiet host; G.16 closeout)
 
-Pi baseline `/tmp/cadr-render-diff-pi-d981de122`. No new product keep.
+Pi baseline `/tmp/cadr-render-diff-pi-ecac0a9c4`. No new product keep.
 
 | run | artifact | append | read | load | list_models |
 |---|---|---:|---:|---:|---:|

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Goal 23: lock v0.84.4→v0.85.1 enumeration and the live source-parity ledger."""
+"""Goal 23: lock v0.84.4→v0.86.0 enumeration and the live source-parity ledger."""
 from __future__ import annotations
 
 import json
@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FROM = "b79e4cc834970cca69daebffab7df1da7d1e52c4"
-TO = "d981de1229ef899957bbe968bc8dcda02a21f477"
+TO = "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc"
 PI_REPO = Path("/root/projects/pi-mono")
 FIXTURE_DIR = ROOT / "test/fixtures/source-parity"
 DISPOSITIONS = FIXTURE_DIR / "g23-0851-dispositions.tsv"
@@ -76,9 +76,9 @@ class Goal23SourceParityTest(unittest.TestCase):
 
     def test_upgrade_doc_records_v0851_enumeration(self) -> None:
         text = UPGRADE_DOC.read_text(encoding="utf-8")
-        self.assertIn("### v0.85.1 enumeration result", text)
+        self.assertIn("### v0.86.0 enumeration result", text)
         self.assertIn("b79e4cc83", text)
-        self.assertIn("v0.85.1", text)
+        self.assertIn("v0.86.0", text)
         self.assertIn("app.thinking.save", text)
         self.assertIn("scrollbarTrack", text)
         self.assertIn("PI_TUI_DEBUG_REDRAW", text)
@@ -87,7 +87,7 @@ class Goal23SourceParityTest(unittest.TestCase):
     def test_source_ledger_matches_v0851_manifest(self) -> None:
         text = LEDGER.read_text(encoding="utf-8")
         self.assertIn(
-            "GOAL12_LEDGER baseline=d981de1229ef899957bbe968bc8dcda02a21f477 "
+            "GOAL12_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc "
             "source=686/514/169/3",
             text,
         )
