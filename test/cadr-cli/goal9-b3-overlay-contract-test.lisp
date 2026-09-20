@@ -275,7 +275,7 @@
      (">" "→ Auto-compact" "Auto-resize images" "Block images"
       "Skill commands" "Show hardware cursor" "Editor padding"
       "Output padding" "Autocomplete max items" "Clear on shrink"
-      "Terminal progress" "(1/30)"
+      "Terminal progress" "(1/31)"
       "Automatically compact context when it gets too large"
       "Type to search · Enter/Space to change · Esc to cancel"))
     ("resume"
