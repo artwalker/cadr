@@ -72,11 +72,11 @@
                  editor)))
          (embedded-working-message
            (and embed-working-p
-                (null (tui-state-status-message state))
-                busy-p
-                (tui-state-working-visible-p state)
-                (or (tui-state-working-message state)
-                    "Working...")))
+                (or (tui-state-status-message state)
+                    (and busy-p
+                         (tui-state-working-visible-p state)
+                         (or (tui-state-working-message state)
+                             "Working...")))))
          (embedded-working-spinner-frame
            (when embedded-working-message
              (let ((frames
@@ -102,10 +102,12 @@
                 state width))
              (status-indicator
                (or
-                (render-tui-status-indicator
-                 (tui-state-status-message state)
-                 width :reserve-idle-p nil
-                 :spinner-frame spinner-frame)
+                (and
+                 (not embedded-working-message)
+                 (render-tui-status-indicator
+                  (tui-state-status-message state)
+                  width :reserve-idle-p nil
+                  :spinner-frame spinner-frame))
                 (and
                  (not embedded-working-message)
                  busy-p

@@ -52,7 +52,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `user_bash` 失败即停。`undefined` 才继续传播 | bash 钩子 |
 | 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
 | `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | 工具结果类型 |
-| 压缩、分支摘要、重试的 spinner 进入编辑器边框 | 与已有 working indicator 同一嵌入点 |
+| 压缩、分支摘要、重试的 spinner 进入编辑器边框 | done：`goal24-default-editor-embeds-compaction-status-in-border`、`goal24-default-editor-embeds-retry-status-in-border`、`goal24-default-editor-embeds-branch-summary-status-in-border`、`goal24-custom-editor-keeps-standalone-compaction-status`（与 Working 同一 `showStatusIndicator` → embed 路径） |
 | 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | 工具注册 |
 | Bash / PowerShell 时长至少一分钟时写成「分 + 秒」 | 工具结果文案 |
 | `--resume` 按 mtime 渐进列出。`--continue` 读到最新匹配头即停 | session 列表 |
