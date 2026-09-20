@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `build-system-prompt-sections` and `diff-system-prompt-sections`
+  for ordered, tag-wrapped prompt sections (`preamble` untagged). Flat
+  `build-system-prompt` callers unchanged; emission remains open.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
