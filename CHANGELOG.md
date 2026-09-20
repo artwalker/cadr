@@ -5571,6 +5571,10 @@ tag/Release step.
 
 ### Fixed
 
+- Bedrock 1h cache write pricing: set `cacheWrite1h` from
+  `cacheDetails` so one-hour writes cost at 2× input
+  (upstream #9457).
+
 - Faster file-watcher path signature via `sb-posix:stat` (Goal 24 `cli_support.watch_signature`).
 
 - Goal 20 P.13: pair `agent_tool_loop.runtime` (steering/follow-up queue
