@@ -400,3 +400,48 @@
     (is (= 9 (length call-id)))
     (is (every #'alphanumericp call-id))
     (is (string= call-id result-id))))
+
+(test mistral-medium-ids-send-reasoning-effort-not-prompt-mode
+  (dolist (id '("mistral-medium-2604"
+                "mistral-medium-latest"
+                "mistral-medium-3.5"))
+    (let* ((model
+             (make-model
+              :id id
+              :provider :mistral
+              :api :mistral-conversations
+              :base-url "https://api.mistral.ai"
+              :max-tokens 4096
+              :reasoning-p t))
+           (payload
+             (request-spec-payload
+              (build-request
+               (cadr-ai:make-mistral-provider :api-key "key")
+               model
+               (sample-context)
+               :stream-p t
+               :reasoning :medium))))
+      (is (string= "medium"
+                   (cadr-ai::json-get payload "reasoning_effort"))
+          id)
+      (is-false (cadr-ai::json-present-p payload "prompt_mode")
+                id)))
+  (let* ((magistral
+           (make-model
+            :id "magistral-medium-latest"
+            :provider :mistral
+            :api :mistral-conversations
+            :base-url "https://api.mistral.ai"
+            :max-tokens 4096
+            :reasoning-p t))
+         (payload
+           (request-spec-payload
+            (build-request
+             (cadr-ai:make-mistral-provider :api-key "key")
+             magistral
+             (sample-context)
+             :stream-p t
+             :reasoning :medium))))
+    (is (string= "reasoning"
+                 (cadr-ai::json-get payload "prompt_mode")))
+    (is-false (cadr-ai::json-present-p payload "reasoning_effort"))))
