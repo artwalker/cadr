@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: clamp disabled Google thinking from each model map so
+  gemini-3.8-flash and peers send LOW (or thinkingBudget 0) instead of
+  unsupported MINIMAL (#9455).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

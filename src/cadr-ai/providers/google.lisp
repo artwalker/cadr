@@ -198,6 +198,25 @@
        (:medium "MEDIUM")
        (:high "HIGH")))))
 
+(defun google-uses-thinking-level-p (model)
+  ;; Baseline google-shared.ts usesGoogleThinkingLevel.
+  (or (google-gemini-3-pro-p model)
+      (google-gemini-3-flash-p model)
+      (google-gemma-4-p model)))
+
+(defun google-disabled-thinking-config (model)
+  ;; Baseline google-shared.ts getDisabledGoogleThinkingConfig (#9455).
+  (unless (google-uses-thinking-level-p model)
+    (return-from google-disabled-thinking-config
+      (json-object "thinkingBudget" 0)))
+  (let ((fallback (clamp-thinking-level model :off)))
+    (if (eq fallback :off)
+        (json-object "thinkingBudget" 0)
+        (let ((resolved (resolve-google-thinking-level model fallback)))
+          (json-object
+           "thinkingLevel"
+           (google-api-thinking-level resolved model))))))
+
 (defun google-thinking-config (model reasoning)
   (when (model-reasoning-p model)
     (if reasoning
@@ -207,15 +226,7 @@
            "includeThoughts" t
            "thinkingLevel"
            (google-api-thinking-level resolved model)))
-        (cond
-          ((google-gemini-3-pro-p model)
-           (json-object "thinkingLevel" "LOW"))
-          ((or (google-gemini-3-flash-p model)
-               (google-gemma-4-p model))
-           (json-object "thinkingLevel" "MINIMAL"))
-          (t
-           (json-object "thinkingBudget" 0))))))
-
+        (google-disabled-thinking-config model))))
 (defmethod build-request ((provider google-provider)
                           model context
                           &key stream-p max-tokens temperature reasoning

@@ -13806,14 +13806,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **299 files / 137,863 lines**
+Denominator: **299 files / 137,922 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 111,152 | 80.6% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 111,163 | 80.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,876 | 13.7% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 30 | 18,924 | 13.7% | on a named paired thunk; no own bench |
 | `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
@@ -13913,7 +13913,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/bedrock.lisp` | 931 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 37 | `provider_codex.stream_roundtrip` |
 | `src/cadr-ai/providers/definitions.lisp` | 1,091 | `provider_registry_defs.lookup` |
-| `src/cadr-ai/providers/google.lisp` | 472 | `provider_google.stream_roundtrip` |
+| `src/cadr-ai/providers/google.lisp` | 483 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 98 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 893 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai.lisp` | 839 | `provider_openai_responses.stream_roundtrip` |
@@ -14105,7 +14105,7 @@ On a named paired thunk. No own bench (G.12).
 |---|---:|---|
 | `src/cadr-agent/package.lisp` | 477 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/models.generated.lisp` | 10,123 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/package.lisp` | 484 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |

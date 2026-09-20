@@ -41,6 +41,6 @@
     }
   ],
   "thinkingConfig": {
-    "thinkingLevel": "MINIMAL"
+    "thinkingBudget": 0
   }
 }
