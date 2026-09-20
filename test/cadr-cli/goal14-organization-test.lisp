@@ -954,6 +954,7 @@
               "(defun load-session")
              ("session/discovery.lisp"
               "(defun read-session-header-for-discovery"
+              "(defun find-session-path-by-id"
               "(defun list-sessions"
               "(defun resume-session")
              ("session/export-html.lisp"
@@ -1046,7 +1047,8 @@
     ;; inMemory session entry owners land in B8 session/loop files.
     ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
     ;; adjacent session/codec helpers landed in B8 owners.
-    (is (= 341 definition-count)
+    ;; +1 Goal 24 pi#9601: find-session-path-by-id (session/discovery.lisp).
+    (is (= 342 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
