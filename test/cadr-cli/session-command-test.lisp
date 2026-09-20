@@ -980,7 +980,7 @@
            'cadr-agent:session)))))
 
 (test exact-session-id-resolves-without-list-session-infos
-  ;; pi#9601: exact ids use find-session-path-by-id (headers only).
+  ;; Exact ids use find-session-path-by-id (headers only).
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))
            (cwd (merge-pathnames "project/" root))

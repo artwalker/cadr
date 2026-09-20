@@ -377,7 +377,7 @@
     (id &key
         (directory (default-session-directory))
         cwd)
-  ;; pi@ecac0a9c4 SessionManager.findById: header-only exact id match.
+  ;; Baseline SessionManager.findById: header-only exact id match.
   (let* ((session-directory
            (uiop:ensure-directory-pathname directory))
          (canonical-cwd

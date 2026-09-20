@@ -7,7 +7,7 @@ tag/Release step.
 
 ## [Unreleased]
 
-- Fixed: exact session id open/resume reads headers only (pi#9601);
+- Fixed: exact session id open/resume reads headers only (#9601);
   prefix matches still walk full session metadata.
 
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
