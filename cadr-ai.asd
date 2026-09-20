@@ -23,7 +23,8 @@
                                            (:file "overflow")
                                            (:file "grammar-coercion")
                                            (:file "uuid")
-                                           (:file "attribution")))
+                                           (:file "attribution")
+                                           (:file "transcript")))
                              (:module "capabilities"
                               :serial t
                               :components ((:file "streaming-json")
@@ -117,6 +118,7 @@
                              (:file "provider-history-test")
                              (:file "provider-responses-test")
                              (:file "provider-streams-test")
+                             (:file "goal24-transcript-context-stream-test")
                              (:file "retry-test")
                              (:file "provider-registry-test")
                              (:file "provider-wave1-test")

@@ -160,10 +160,23 @@
   (execution-mode :parallel :type symbol)
   (executor nil :type (or null function)))
 
+(defstruct tool-reference
+  (name "" :type string))
+
+(defstruct system-message
+  (content "" :type (or string list))
+  (sections nil :type list)
+  (tools-added nil :type list)
+  (tools-removed nil :type list)
+  (timestamp 0 :type integer))
+
 (defstruct context
   (system-prompt nil :type (or null string))
   (messages nil :type list)
   (tools nil :type list))
+
+(defstruct transcript-context
+  (messages nil :type list))
 
 (defstruct image-model
   (id "" :type string)

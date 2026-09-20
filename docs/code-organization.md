@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc files=299 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=152 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc files=300 lines=129116 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=153 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -130,7 +130,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | 7 | Implement OpenRouter PKCE login, key exchange, and refresh. | pass | no-rewrite | Empty-string-as-null at :42-43 is forced by the shared auth.json round-trip contract. | 20 |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | 7 | Implement Radius browser/device login and gateway-scoped credential refresh. | pass | done | parse-device-authorization. I0: fourth copy gone. | 20 |
 | `src/cadr-ai/oauth/providers/xai.lisp` | 184 | 17 | Implement xAI device authorization, polling, and refresh over the shared OAuth request boundary. | pass | no-rewrite | member/string= over wire error lists at :112-120 are protocol constants; file already uses dynamic vars and &key test seams. | 20 |
-| `src/cadr-ai/package.lisp` | 480 | 2 | Declare the public `cadr-ai` package surface and HTTP injection seam. | pass | no-rewrite | The export barrel mirrors index.ts, but one defpackage is CL's one-owner API inventory; scattering :export would create N owners. | 20 |
+| `src/cadr-ai/package.lisp` | 505 | 2 | Declare the public `cadr-ai` package surface and HTTP injection seam. | pass | no-rewrite | The export barrel mirrors index.ts, but one defpackage is CL's one-owner API inventory; scattering :export would create N owners. | 20 |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | 12 | Resolve Bedrock credentials, profiles, regions, and ARN-derived configuration. | pass | done | destructuring-bind ARN parts. I0: no nth 2/3. | 20 |
 | `src/cadr-ai/auth/device-code.lisp` | 239 | 12 | Own generic cancellable device-code polling, validation, and credential parsing. | pass | done | parse-device-authorization. I0: one parse, keyword options. | 20 |
 | `src/cadr-ai/auth/github-copilot.lisp` | 53 | 3 | Parse GitHub device authorization and resolve Copilot endpoint/model metadata. | pass | done | parse-device-authorization. I0: third copy gone. | 20 |
@@ -160,10 +160,11 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/support/retry.lisp` | 169 | 9 | Classify retryable assistant failures and execute the bounded retry policy. | pass | done | aborted-message. I0: one abort-during-wait. | 20 |
 | `src/cadr-ai/support/threads.lisp` | 6 | 1 | Delegate bounded thread cleanup to the B3 core policy owner. | pass | no-rewrite | A 3-line facade forwarder keeping cadr-core the owner; nothing TS-shaped exists to rewrite. | 20 |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | 14 | Estimate message, tool, image, and context token usage. | pass | no-rewrite | utf16-code-unit-length at :11-13 counts UTF-16 units because that is the JS-semantics baseline heuristic, not an index-loop habit. | 20 |
+| `src/cadr-ai/support/transcript.lisp` | 210 | 18 | Normalize Context into TranscriptContext and resolve mid-convo system/tool state for the provider stream boundary. | pass | done | normalize-context / resolve-transcript. I0: one fold path. | 24 |
 | `src/cadr-ai/support/uuid.lisp` | 93 | 4 | Generate monotonic UUIDv7 identifiers from random octets. | pass | no-rewrite | Manual byte assembly is RFC 9564 UUIDv7 layout; entropy pool copies getRandomValues (no /dev/urandom per id). | 20 |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | 10 | Decode AWS event-stream frames and issue Bedrock event requests. | pass | no-rewrite | Manual offset walking and CRC32 at :18-83 are a byte-fixed frame format; dep policy bars new libs, failures are signaled conditions. | 20 |
 | `src/cadr-ai/transport/http.lisp` | 831 | 42 | Implement abortable native HTTP/TLS transport, framing, and normalized errors. | pass · large | done | parsed-url-authority + signal-http-timeout. I0: one port, one timeout. | 20 |
-| `src/cadr-ai/types.lisp` | 207 | 21 | Define provider/model/message/content/tool/event value types and safe printers. | pass | done | defstruct constructor. I0: no 13-key wrapper. | 20 |
+| `src/cadr-ai/types.lisp` | 221 | 21 | Define provider/model/message/content/tool/event value types and safe printers. | pass | done | defstruct constructor. I0: no 13-key wrapper. | 20 |
 | `src/cadr-ai/websocket.lisp` | 628 | 41 | Implement OpenAI Codex WebSocket framing, pooling, continuation, and provider dispatch. | pass · large | no-rewrite | json-value-equal-p at :403-404 matches the baseline's own JSON.stringify cache-admission comparison; hand-rolled SHA-1 justified by the dep policy. | 20 |
 
 ### 2.3 `cadr-cli`

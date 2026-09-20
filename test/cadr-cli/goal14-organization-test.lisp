@@ -1419,7 +1419,8 @@
                    "support/threads.lisp" "support/release.lisp"
                    "support/retry.lisp" "support/token-estimation.lisp"
                    "support/overflow.lisp" "support/grammar-coercion.lisp"
-                   "support/uuid.lisp")
+                   "support/uuid.lisp" "support/attribution.lisp"
+                   "support/transcript.lisp")
                  collect
                  (goal14-b1-source root (format nil "src/cadr-ai/~A" relative)))))
     (is (and threads
@@ -1445,7 +1446,8 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +N Goal 24: TranscriptContext stream boundary exports.
+              "081712f1364c09fa5577abd67983a3ccdc7fd940cd54421f621cfd287796da4c"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
@@ -1465,7 +1467,8 @@
              "(:file \"threads\")" "(:file \"release\")"
              "(:file \"retry\")" "(:file \"token-estimation\")"
              "(:file \"overflow\")" "(:file \"grammar-coercion\")"
-             "(:file \"uuid\")"
+             "(:file \"uuid\")" "(:file \"attribution\")"
+             "(:file \"transcript\")"
              "(:module \"capabilities\""
              "(:file \"streaming-json\")" "(:file \"event-stream\")"
              "(:file \"grammar-tools\")" "(:file \"session-resources\")"

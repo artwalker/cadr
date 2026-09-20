@@ -110,11 +110,32 @@
    #:tool-constrained-sampling
    #:tool-execution-mode
    #:tool-executor
+   #:tool-reference
+   #:make-tool-reference
+   #:tool-reference-name
+   #:system-message
+   #:make-system-message
+   #:system-message-content
+   #:system-message-sections
+   #:system-message-tools-added
+   #:system-message-tools-removed
+   #:system-message-timestamp
    #:context
    #:make-context
    #:context-system-prompt
    #:context-messages
    #:context-tools
+   #:transcript-context
+   #:make-transcript-context
+   #:transcript-context-messages
+   #:normalize-context
+   #:ensure-transcript-context
+   #:resolve-transcript
+   #:collapse-system-messages
+   #:get-current-system-prompt
+   #:get-current-tools
+   #:resolve-transcript-tools
+   #:transcript-context-as-request-context
    #:stream-event
    #:make-stream-event
    #:stream-event-type

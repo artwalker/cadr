@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 299,
-    "lines": 137863
+    "files": 300,
+    "lines": 138115
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -2271,6 +2271,13 @@
       "class": "paired",
       "metrics": [
         "ai_support.estimate_text"
+      ]
+    },
+    {
+      "prefix": "src/cadr-ai/support/transcript.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "provider_stream.stream_roundtrip"
       ]
     },
     {

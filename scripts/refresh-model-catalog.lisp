@@ -62,6 +62,10 @@
     ("supportsLongCacheRetention"
      . :supports-long-cache-retention)
     ("supportsMidConvoEffort" . :supports-mid-convo-effort)
+    ("supportsMidConvoSystemMessages"
+     . :supports-mid-convo-system-messages)
+    ("supportsMidConvoToolChanges"
+     . :supports-mid-convo-tool-changes)
     ("supportsOpenAIGrammarTools"
      . :supports-openai-grammar-tools)
     ("supportsReasoningEffort" . :supports-reasoning-effort)
