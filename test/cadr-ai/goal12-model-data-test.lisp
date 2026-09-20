@@ -16,6 +16,14 @@
          (cadr-ai::model-data-structure-hash structure)))
     (is-true (cadr-ai::validate-model-data-directory structure directory))))
 
+(test goal24-openai-codex-catalog-omits-gpt-5.4-and-mini
+  (let ((ids
+          (mapcar #'cadr-ai:model-metadata-id
+                  (cadr-ai:list-model-metadata :openai-codex))))
+    (is (member "gpt-5.5" ids :test #'string=))
+    (is (not (member "gpt-5.4" ids :test #'string=)))
+    (is (not (member "gpt-5.4-mini" ids :test #'string=)))))
+
 (test goal12-model-data-validator-rejects-a-stale-provider-file
   (let* ((source (fixture-path "test/fixtures/catalogs/provider-data/"))
          (structure (cadr-ai::read-model-data-structure source))

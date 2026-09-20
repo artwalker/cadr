@@ -7,6 +7,9 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: drop `gpt-5.4` and `gpt-5.4-mini` from the OpenAI Codex
+  catalog (`openai-codex` fixture + generated model metadata).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
