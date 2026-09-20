@@ -505,7 +505,7 @@ These must not be filed as callees.
 | file | lines |
 |---|---:|
 | `src/cadr-cli/interactive/autocomplete.lisp` | 331 |
-| `src/cadr-cli/interactive/clipboard.lisp` | 449 |
+| `src/cadr-cli/interactive/clipboard.lisp` | 644 |
 | `src/cadr-cli/interactive/controller.lisp` | 2,909 |
 | `src/cadr-cli/interactive/extension-ui.lisp` | 756 |
 | `src/cadr-cli/interactive/footer.lisp` | 536 |

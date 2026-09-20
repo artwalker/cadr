@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: clipboard copy matches baseline remote-only OSC 52,
+  platform `Clipboard unavailable: …` errors, and a 5s command
+  timeout. Interactive selection / Ctrl+X copy uses process
+  environment via `copy-text-with-process-environment`. No `.node`
+  native module.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

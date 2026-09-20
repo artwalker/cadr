@@ -1104,20 +1104,150 @@
     (is (string=
          ""
          (get-output-stream-string output))))
-  (signals cadr-ai:configuration-error
-    (cadr-cli::copy-to-clipboard
-     (make-string 80000 :initial-element #\x)
-     :platform :darwin
-     :native-setter
-     (lambda (text)
-       (declare (ignore text))
-       (error "native failed"))
-     :command-runner
-     (lambda (argv input)
-       (declare (ignore argv input))
-       nil)
-     :output
-     (make-string-output-stream)))
+  (let ((output (make-string-output-stream)))
+    (handler-case
+        (progn
+          (cadr-cli::copy-to-clipboard
+           "hello"
+           :platform :linux
+           :x11-display-p t
+           :command-runner
+           (lambda (argv input)
+             (declare (ignore argv input))
+             nil)
+           :output output)
+          (fail "expected local Linux clipboard failure"))
+      (cadr-ai:configuration-error (condition)
+        (is (string=
+             "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access"
+             (cadr-ai:cadr-error-message condition)))))
+    (is (string=
+         ""
+         (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (handler-case
+        (progn
+          (cadr-cli::copy-to-clipboard
+           "hello"
+           :platform :linux
+           :wayland-p t
+           :wayland-display-p t
+           :x11-display-p t
+           :command-runner
+           (lambda (argv input)
+             (declare (ignore argv input))
+             nil)
+           :output output)
+          (fail "expected local Wayland clipboard failure"))
+      (cadr-ai:configuration-error (condition)
+        (is (string=
+             "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access"
+             (cadr-ai:cadr-error-message condition)))))
+    (is (string=
+         ""
+         (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (handler-case
+        (progn
+          (cadr-cli::copy-to-clipboard
+           "hello"
+           :platform :linux
+           :termux-p t
+           :command-runner
+           (lambda (argv input)
+             (declare (ignore argv input))
+             nil)
+           :output output)
+          (fail "expected Termux clipboard failure"))
+      (cadr-ai:configuration-error (condition)
+        (is (string=
+             "Clipboard unavailable: install the Termux:API app and `termux-api` package"
+             (cadr-ai:cadr-error-message condition)))))
+    (is (string=
+         ""
+         (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (handler-case
+        (progn
+          (cadr-cli::copy-to-clipboard
+           "hello"
+           :platform :linux
+           :command-runner
+           (lambda (argv input)
+             (declare (ignore argv input))
+             nil)
+           :output output)
+          (fail "expected no-display clipboard failure"))
+      (cadr-ai:configuration-error (condition)
+        (is (string=
+             "Clipboard unavailable: no Wayland or X11 display detected"
+             (cadr-ai:cadr-error-message condition)))))
+    (is (string=
+         ""
+         (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (is (eq
+         :osc52
+         (cadr-cli::copy-to-clipboard
+          "hello"
+          :platform :darwin
+          :remote-p t
+          :output output
+          :native-setter
+          (lambda (text)
+            (declare (ignore text))
+            (error "native failed"))
+          :command-runner
+          (lambda (argv input)
+            (declare (ignore argv input))
+            nil))))
+    (is (search
+         "]52;c;aGVsbG8="
+         (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (handler-case
+        (progn
+          (cadr-cli::copy-to-clipboard
+           (make-string 80000 :initial-element #\x)
+           :platform :darwin
+           :remote-p t
+           :native-setter
+           (lambda (text)
+             (declare (ignore text))
+             (error "native failed"))
+           :command-runner
+           (lambda (argv input)
+             (declare (ignore argv input))
+             nil)
+           :output output)
+          (fail "expected oversized remote OSC52 failure"))
+      (cadr-ai:configuration-error (condition)
+        (is (string=
+             "Clipboard unavailable"
+             (cadr-ai:cadr-error-message condition)))))
+    (is (string=
+         ""
+         (get-output-stream-string output))))
+  (handler-case
+      (progn
+        (cadr-cli::copy-to-clipboard
+         (make-string 80000 :initial-element #\x)
+         :platform :darwin
+         :native-setter
+         (lambda (text)
+           (declare (ignore text))
+           (error "native failed"))
+         :command-runner
+         (lambda (argv input)
+           (declare (ignore argv input))
+           nil)
+         :output
+         (make-string-output-stream))
+        (fail "expected local clipboard failure"))
+    (cadr-ai:configuration-error (condition)
+      (is (string=
+           "Clipboard unavailable"
+           (cadr-ai:cadr-error-message condition)))))
   (let ((calls nil))
     (let ((image
             (cadr-cli::read-clipboard-image

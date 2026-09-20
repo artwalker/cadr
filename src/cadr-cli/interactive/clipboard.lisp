@@ -43,17 +43,72 @@
                text))
       (condition () nil))))
 
-(defun default-clipboard-copy-runner (argv input)
+(defparameter +clipboard-command-timeout-ms+ 5000)
+
+(defun default-clipboard-copy-runner
+    (argv input
+     &key (timeout-ms +clipboard-command-timeout-ms+))
+  ;; Baseline clipboard-command.ts: spawn with timeout then SIGKILL.
   (handler-case
-      (progn
-        (uiop:run-program
-         argv
-         :input
-         (make-string-input-stream input)
-         :output nil
-         :error-output nil)
-        t)
+      (let* ((process
+               (uiop:launch-program
+                argv
+                :input
+                (make-string-input-stream input)
+                :output nil
+                :error-output nil
+                :ignore-error-status t))
+             (deadline
+               (+ (get-internal-real-time)
+                  (floor
+                   (* timeout-ms
+                      internal-time-units-per-second)
+                   1000)))
+             (completed-p nil))
+        (unwind-protect
+             (progn
+               (loop while (uiop:process-alive-p process)
+                     do
+                     (when (>= (get-internal-real-time)
+                               deadline)
+                       (uiop:terminate-process
+                        process :urgent t)
+                       (return-from
+                           default-clipboard-copy-runner
+                         nil))
+                     (sleep 0.01d0))
+               (let ((status
+                       (or (uiop:wait-process process) 1)))
+                 (setf completed-p t)
+                 (zerop status)))
+          (when (and (not completed-p)
+                     (ignore-errors
+                       (uiop:process-alive-p process)))
+            (ignore-errors
+              (uiop:terminate-process
+               process :urgent t))
+            (ignore-errors
+              (uiop:wait-process process)))))
     (condition () nil)))
+
+(defun clipboard-unavailable-message
+    (&key
+       (platform :linux)
+       termux-p
+       wayland-display-p
+       x11-display-p)
+  ;; Baseline clipboard.ts copyToClipboard failure strings.
+  (if (eq platform :linux)
+      (cond
+        (termux-p
+         "Clipboard unavailable: install the Termux:API app and `termux-api` package")
+        (wayland-display-p
+         "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access")
+        (x11-display-p
+         "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access")
+        (t
+         "Clipboard unavailable: no Wayland or X11 display detected"))
+      "Clipboard unavailable"))
 
 (defun copy-to-clipboard
     (text
@@ -98,11 +153,10 @@
           (setf copied-p t
                 shell-p t)
           (return))))
+    ;; Baseline: OSC 52 only for remote sessions (#9618).
     (let ((osc52
-            (and
-             (or remote-p
-                 (not copied-p))
-             (osc52-copy-sequence text))))
+            (and remote-p
+                 (osc52-copy-sequence text))))
       (when osc52
         (write-string osc52 output)
         (finish-output output)
@@ -110,7 +164,12 @@
       (unless copied-p
         (error
          'cadr-ai:configuration-error
-         :message "Failed to copy to clipboard"))
+         :message
+         (clipboard-unavailable-message
+          :platform platform
+          :termux-p termux-p
+          :wayland-display-p wayland-display-p
+          :x11-display-p x11-display-p)))
       (cond
         ((and native-p osc52) :native+osc52)
         ((and shell-p osc52) :shell+osc52)
@@ -118,6 +177,54 @@
         (shell-p :shell)
         (osc52 :osc52)
         (t :unknown)))))
+
+(defun copy-text-with-process-environment
+    (text
+     &key
+       (platform
+         #+darwin :darwin
+         #+win32 :windows
+         #-(or darwin win32) :linux)
+       (environment nil)
+       native-setter
+       (command-runner
+         #'default-clipboard-copy-runner)
+       (output *standard-output*))
+  (copy-to-clipboard
+   text
+   :platform platform
+   :termux-p
+   (not
+    (null
+     (clipboard-environment-value
+      environment "TERMUX_VERSION")))
+   :wayland-p
+   (not
+    (null
+     (clipboard-wayland-p environment)))
+   :wayland-display-p
+   (not
+    (null
+     (clipboard-environment-value
+      environment "WAYLAND_DISPLAY")))
+   :x11-display-p
+   (not
+    (null
+     (clipboard-environment-value
+      environment "DISPLAY")))
+   :remote-p
+   (not
+    (null
+     (or
+      (clipboard-environment-value
+       environment "SSH_CONNECTION")
+      (clipboard-environment-value
+       environment "SSH_CLIENT")
+      (clipboard-environment-value
+       environment "MOSH_CONNECTION"))))
+   :native-setter native-setter
+   :command-runner command-runner
+   :output output))
 
 (defstruct clipboard-image
   bytes
@@ -203,14 +310,100 @@
          (clipboard-base-mime-type value)))
       types))))
 
-(defun default-clipboard-image-runner (argv)
+(defun default-clipboard-image-runner
+    (argv
+     &key (timeout-ms +clipboard-command-timeout-ms+))
+  ;; Same timeout/SIGKILL contract as default-clipboard-copy-runner.
   (handler-case
-      (let ((bytes
-              (uiop:run-program
-               argv
-               :output :byte-vector
-               :error-output nil)))
-        (values bytes t))
+      (let* ((process
+               (uiop:launch-program
+                argv
+                :input nil
+                :output :stream
+                :error-output nil
+                :element-type '(unsigned-byte 8)
+                :ignore-error-status t))
+             (deadline
+               (+ (get-internal-real-time)
+                  (floor
+                   (* timeout-ms
+                      internal-time-units-per-second)
+                   1000)))
+             (completed-p nil)
+             (chunks nil)
+             (byte-count 0))
+        (labels
+            ((drain-available ()
+               (let ((out
+                       (uiop:process-info-output
+                        process)))
+                 (when out
+                   (loop
+                     while
+                     (ignore-errors (listen out))
+                     for byte =
+                       (read-byte out nil :eof)
+                     until (eq byte :eof)
+                     do
+                     (push byte chunks)
+                     (incf byte-count)))))
+             (drain-rest ()
+               (let ((out
+                       (uiop:process-info-output
+                        process)))
+                 (when out
+                   (loop
+                     for byte =
+                       (read-byte out nil :eof)
+                     until (eq byte :eof)
+                     do
+                     (push byte chunks)
+                     (incf byte-count)))))
+             (bytes-vector ()
+               (make-array
+                byte-count
+                :element-type '(unsigned-byte 8)
+                :initial-contents
+                (nreverse chunks)))
+             (empty-bytes ()
+               (make-array
+                0
+                :element-type
+                '(unsigned-byte 8))))
+          (unwind-protect
+               (progn
+                 (loop while
+                       (uiop:process-alive-p process)
+                       do
+                       (when
+                           (>=
+                            (get-internal-real-time)
+                            deadline)
+                         (uiop:terminate-process
+                          process :urgent t)
+                         (return-from
+                             default-clipboard-image-runner
+                           (values (empty-bytes) nil)))
+                       (drain-available)
+                       (sleep 0.01d0))
+                 (drain-rest)
+                 (let ((status
+                         (or
+                          (uiop:wait-process process)
+                          1)))
+                   (setf completed-p t)
+                   (values
+                    (bytes-vector)
+                    (zerop status))))
+            (when (and (not completed-p)
+                       (ignore-errors
+                         (uiop:process-alive-p
+                          process)))
+              (ignore-errors
+                (uiop:terminate-process
+                 process :urgent t))
+              (ignore-errors
+                (uiop:wait-process process))))))
     (condition ()
       (values
        (make-array

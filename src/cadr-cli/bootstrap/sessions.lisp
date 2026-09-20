@@ -570,39 +570,9 @@ interrupt (baseline selectSession onExit: silent exit 0)."
   #-(or darwin win32) :linux)
 
 (defun default-copy-text (text)
-  (let ((environment nil))
-    (copy-to-clipboard
-     text
-     :platform (cli-platform)
-     :termux-p
-     (not
-      (null
-       (clipboard-environment-value
-        environment "TERMUX_VERSION")))
-     :wayland-p
-     (not
-      (null
-       (clipboard-wayland-p environment)))
-     :wayland-display-p
-     (not
-      (null
-       (clipboard-environment-value
-        environment "WAYLAND_DISPLAY")))
-     :x11-display-p
-     (not
-      (null
-       (clipboard-environment-value
-        environment "DISPLAY")))
-     :remote-p
-     (not
-      (null
-       (or
-        (clipboard-environment-value
-         environment "SSH_CONNECTION")
-        (clipboard-environment-value
-         environment "SSH_CLIENT")
-        (clipboard-environment-value
-         environment "MOSH_CONNECTION")))))))
+  (copy-text-with-process-environment
+   text
+   :platform (cli-platform)))
 
 (defun assistant-tool-call-only-p (message)
   (let ((content

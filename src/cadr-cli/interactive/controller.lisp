@@ -166,11 +166,13 @@ interactive-mode.ts:5956-5960).")
    :copy-on-select-p copy-on-select-p
    :copy-selection-function
    ;; v0.86.0 tui-alt-screen.ts copySelection: the native/platform
-   ;; clipboard with a verified success path, OSC 52 as its own
-   ;; fallback inside copy-to-clipboard.
+   ;; clipboard with a verified success path; OSC 52 only when remote
+   ;; (inside copy-to-clipboard / copy-text-with-process-environment).
    (lambda (text)
      (handler-case
-         (progn (copy-to-clipboard text) t)
+         (progn
+           (copy-text-with-process-environment text)
+           t)
        (condition () nil)))
    :open-url-function
    #'open-tui-url
@@ -2865,7 +2867,8 @@ interactive-mode.ts:5956-5960).")
                                 (plusp (length text)))
                            (handler-case
                                (progn
-                                 (copy-to-clipboard text)
+                                 (copy-text-with-process-environment
+                                  text)
                                  (if *alt-screen-flash-function*
                                      (funcall
                                       *alt-screen-flash-function*

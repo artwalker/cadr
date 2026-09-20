@@ -56,7 +56,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | 工具注册 |
 | Bash / PowerShell 时长至少一分钟时写成「分 + 秒」 | 工具结果文案 |
 | `--resume` 按 mtime 渐进列出。`--continue` 读到最新匹配头即停 | session 列表 |
-| 剪贴板改为捆绑的异步辅助程序，保留平台命令与 OSC 52 | 行为对齐。不移植 `.node` |
+| 剪贴板改为捆绑的异步辅助程序，保留平台命令与 OSC 52 | 行为对齐（OSC52 仅远程、平台错误文案、5s 命令超时、controller 经 `copy-text-with-process-environment`）。PR pending。不移植 `.node` |
 | Codex 选择里去掉 GPT-5.4 与 GPT-5.4 mini | catalog |
 | 发布说明里的 provider / session / compaction / RPC 修复 | 枚举后按条处置 |
 
