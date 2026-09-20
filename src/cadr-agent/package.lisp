@@ -184,6 +184,8 @@
    #:extension-context-thinking-level
    #:extension-context-model-registry-find
    #:extension-context-model-registry-resolve-auth
+   #:extension-context-model-registry-stream
+   #:extension-context-model-registry-stream-simple
    #:extension-context-signal
    #:extension-context-abort
    #:extension-context-shutdown

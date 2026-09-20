@@ -46,7 +46,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | 离线 Radius 模型目录。缓存与在线目录可叠加。默认 `balanced` | catalog |
 | 按模型的 `reserveTokens` / `keepRecentTokens`（`compaction.modelOverrides`） | compaction 设置 |
 | 分支摘要、压缩摘要、skill 调用条目的点击折叠 | TUI |
-| `ctx.modelRegistry.stream()` / `streamSimple()` | extension API |
+| `ctx.modelRegistry.stream()` / `streamSimple()` | done: `goal24-extension-model-registry-stream-passes-api-key`, `goal24-extension-model-registry-stream-simple-passes-api-key` |
 | `compat.allowedFallbackModels` | Anthropic 兼容设置 |
 | `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | extension 事件 |
 | `user_bash` 失败即停。`undefined` 才继续传播 | bash 钩子 |
