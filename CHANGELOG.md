@@ -7,8 +7,17 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: register `/bug`, redact URLs/secret keys, and write a local
+  `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
+  and Radius upload remain open. `/session` prints the baseline Cache
+  Warming block as inactive (`streaming` /
+  `waiting for first request`) without warmer dispatch. Hotkey help uses
+  `Copy selection or last assistant message` for Ctrl+X.
+
 - Goal 24: pin fixed pi baseline from v0.85.1 (`d981de122`) to
-  v0.86.0 (`ecac0a9c4`). Goal 20 invent paused until enumeration lands.
+  v0.86.0 (`ecac0a9c4`). Release identity is
+  `cadr 0.2.0 · aligned with pi v0.86.0 (+0, ecac0a9c4)`.
+  Goal 20 invent paused until enumeration lands.
   Model-data pack `@earendil-works/pi-ai@0.86.0`
   (`d52448c827a72c8fdcf9f0c96c9966704a8525a6a0ae181f4bd886c584d727e3`).
   Not full v0.86.0 alignment.

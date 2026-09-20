@@ -93,5 +93,5 @@ above remains the historical record of the 0.2.0 preparation.  The current
 release identity is:
 
 ```text
-cadr 0.2.0 · aligned with pi v0.85.1 (+0, d981de122)
+cadr 0.2.0 · aligned with pi v0.86.0 (+0, ecac0a9c4)
 ```

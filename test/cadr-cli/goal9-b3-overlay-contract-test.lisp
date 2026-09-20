@@ -1571,6 +1571,7 @@
       ("export" "Export session (HTML default, or specify path: .html/.jsonl)" nil)
       ("import" "Import and resume a session from a JSONL file" nil)
       ("share" "Share session as a secret GitHub gist" nil)
+      ("bug" "Report a bug to the developers" "<description>")
       ("copy" "Copy last agent message to clipboard" nil)
       ("name" "Set session display name" nil)
       ("session" "Show session info and stats" nil)

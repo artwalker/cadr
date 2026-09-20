@@ -28,7 +28,30 @@ A	-	packages/agent/src/harness/execution/assistant.ts	defer: packages/agent harn
 A	-	packages/agent/src/harness/execution/effect-gate.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/execution/tools.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/hooks.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
-D	packages/agent/src/harness/reducer.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/pico3/bash.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/bounded.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/chord.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/context.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/harness.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/hooks.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/index.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/jsonl.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/collapse.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/entries.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/frames.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/generation.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/job.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/plugin.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/post-tools.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/task-api.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/tool.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/membrane.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/memory.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/scheduler.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/session.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/system.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/types.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/view.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/agent/src/harness/runtime/drive.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/runtime/drive/boundary.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/runtime/drive/checkpoint.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
@@ -54,16 +77,14 @@ A	-	packages/agent/src/harness/session/commit.ts	defer: packages/agent harness r
 A	-	packages/agent/src/harness/session/fork-policy.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/fork.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/in-memory-storage-state.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
-D	packages/agent/src/harness/session/jsonl.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
-D	packages/agent/src/harness/session/jsonl/errors.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/jsonl/fork.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/agent/src/harness/session/jsonl/index.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+A	-	packages/agent/src/harness/session/jsonl/io.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/agent/src/harness/session/jsonl/legacy-v3.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/mutation-line.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
-D	packages/agent/src/harness/session/state.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/testing/benchmark/datasets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/agent/src/harness/session/testing/benchmark/session-repo.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/agent/src/harness/session/testing/benchmark/storage.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
-D	packages/agent/src/harness/session/testing/conformance.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/testing/conformance/session-repo.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/testing/conformance/storage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/session/testing/gating-storage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
@@ -73,13 +94,16 @@ A	-	packages/agent/src/harness/session/values.ts	defer: packages/agent harness r
 A	-	packages/agent/src/harness/utils/adaptive-publisher.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/utils/output-capture.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/src/harness/utils/usage.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
-D	packages/agent/src/search/scanning.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/agent/test/harness/pico3/helpers.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/test/harness/pico3/types.compile.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/agent/test/harness/runtime/test-utils.ts	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
 A	-	packages/agent/test/utils/wait-for-tick.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/agent/vitest.benchmark.config.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/ai/src/api/cloudflare-ai-binding.ts	defer: Workers AI binding fetch passthrough; cadr has no Workers runtime; HTTPS cloudflare gateway path already mapped
-D	packages/ai/src/api/cloudflare-gateway-binding.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/ai/src/providers/opencode-headers.ts	implement and add a ledger row (Goal 24 provider/transcript)
+A	-	packages/ai/src/providers/radius.models.ts	implement and add a ledger row (Goal 24 provider/transcript)
 A	-	packages/ai/src/utils/assistant-message-frame.ts	defer: compact assistant-message frame codec for session backends; cadr keeps existing stream event model; new-server alignment tracks this
+A	-	packages/ai/src/utils/transcript.ts	implement and add a ledger row (Goal 24 provider/transcript)
 A	-	packages/chord/src/api.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/chord/src/bundler.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/chord/src/context/index.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
@@ -104,21 +128,22 @@ A	-	packages/chord/src/services/state-internals.ts	defer: non-product or test/be
 A	-	packages/chord/src/services/state.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/chord/src/services/wire.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/chord/src/types.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
+A	-	packages/chord/test/delta-retention.worker.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/chord/test/delta-traversal.bench.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/chord/test/helpers.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
-D	packages/client/src/session-handle.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
-D	packages/client/src/state.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 A	-	packages/coding-agent/examples/plugins/pi-example-plugin/src/contract.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/examples/plugins/pi-example-plugin/src/session.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/examples/plugins/pi-example-plugin/src/tui.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
-D	packages/coding-agent/src/bun/register-bedrock.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 A	-	packages/coding-agent/src/bun/runtime-setup.ts	defer: experimental/runtime-setup surface; not required for cadr product path on G23
 A	-	packages/coding-agent/src/bun/sandbox-env-setup.ts	defer: experimental/runtime-setup surface; not required for cadr product path on G23
-D	packages/coding-agent/src/cli/experimental/auth.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
-D	packages/coding-agent/src/cli/experimental/commands/pi.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
-D	packages/coding-agent/src/cli/experimental/transport-address.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/cli/setup.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
-D	packages/coding-agent/src/client/remote-session.ts	-	defer: deleted upstream remote-session client; cadr ledger already intentional difference (no remote-session client / v0.83 server)
-D	packages/coding-agent/src/client/transcript.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/coding-agent/src/core/bug-report-upload.ts	implement and add a ledger row (Goal 24 /bug)
+A	-	packages/coding-agent/src/core/bug-report.ts	implement and add a ledger row (Goal 24 /bug)
+A	-	packages/coding-agent/src/core/cache-warmer.ts	implement and add a ledger row (Goal 24 cache warming / crash log)
+A	-	packages/coding-agent/src/core/crash-log.ts	implement and add a ledger row (Goal 24 cache warming / crash log)
+A	-	packages/coding-agent/src/core/extensions/jiti-loader.ts	Node extension compiler deferral; Lisp loads extensions natively; add intentional-difference ledger row [class SP-F6]
+A	-	packages/coding-agent/src/core/extensions/jiti-static-loader.ts	Node extension compiler deferral; Lisp loads extensions natively; add intentional-difference ledger row [class SP-F6]
+A	-	packages/coding-agent/src/core/extensions/virtual-modules.ts	Node extension compiler deferral; Lisp loads extensions natively; add intentional-difference ledger row [class SP-F6]
 A	-	packages/coding-agent/src/core/tools/renderers/bash.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/coding-agent/src/core/tools/renderers/edit.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/coding-agent/src/core/tools/renderers/find.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
@@ -135,6 +160,13 @@ A	-	packages/coding-agent/src/experimental/client.ts	defer: experimental/docs/be
 A	-	packages/coding-agent/src/experimental/commands.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/experimental/coordinator-entry.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/experimental/coordinator.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/experimental/micro/api.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/main.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/models.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/runtime.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/sessions.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/tools.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/tui.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
 A	-	packages/coding-agent/src/experimental/mini/main.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/experimental/mini/server/entry.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/experimental/mini/server/run.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
@@ -172,30 +204,43 @@ A	-	packages/coding-agent/src/experimental/services/worker.ts	defer: experimenta
 A	-	packages/coding-agent/src/experimental/session-worker-manager.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/experimental/session-worker.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/coding-agent/src/experimental/source-resolver.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+A	-	packages/coding-agent/src/modes/interactive/bug-report.ts	implement and add a ledger row (Goal 24 /bug)
 A	-	packages/coding-agent/src/modes/interactive/chat-viewport.ts	defer: layout helper extracting ScrollView+dock; cadr interactive controller already composes equivalent transcript/dock layout
 A	-	packages/coding-agent/src/modes/interactive/theme/theme-json.ts	defer: typebox theme JSON validator split for module-size; cadr theme load already validates via existing theme-json path
 A	-	packages/coding-agent/src/modes/interactive/tui-renderer.ts	defer: composition root for TuiAltScreen/TuiMainScreen; cadr run-tui already wires equivalent renderer options including scrollToEndIndicator
-D	packages/coding-agent/src/server/create-harness.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
-D	packages/coding-agent/test/client/support.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+A	-	packages/coding-agent/src/utils/clipboard-command.ts	implement and add a ledger row (Goal 24 clipboard/zip for /bug)
+A	-	packages/coding-agent/src/utils/zip.ts	implement and add a ledger row (Goal 24 clipboard/zip for /bug)
 A	-	packages/coding-agent/test/experimental-service-binding.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/coding-agent/test/experimental-session-support.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/coding-agent/test/fixtures/faux-session-worker.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
 A	-	packages/coding-agent/test/fixtures/keyed-service.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
+A	-	packages/durable/src/index.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/durable/src/memory-storage.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/durable/src/types.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/docker/entrypoint.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/acme-server.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/configured-runtime.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/custom-provider.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/documentation-audit.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/extensions.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/models.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/openai-provider.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/smoke.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/tui.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/cli.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/docker.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/harness.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/plan.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/report.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/vitest.evals.config.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/protocol/src/protocol.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
-D	packages/protocol/src/schemas.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
-D	packages/server/src/protocol.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 A	-	packages/server/src/session-router.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
-D	packages/server/src/sessions.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
-D	packages/server/src/snapshots.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 A	-	packages/server/src/testing/host.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
-D	packages/server/src/testing/service.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 A	-	packages/server/src/transports/unix/address.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/session-backends/sqlite-node/benchmark/session/session-repo-targets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/session-backends/sqlite-node/benchmark/session/session-repo.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/session-backends/sqlite-node/benchmark/session/storage-targets.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
 A	-	packages/session-backends/sqlite-node/benchmark/session/storage.bench.ts	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
-D	packages/session-backends/sqlite-node/src/sqlite/branch-cache.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
-D	packages/session-backends/sqlite-node/src/sqlite/search-backend.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 A	-	packages/session-backends/sqlite-node/src/sqlite/session.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/session-backends/sqlite-node/src/sqlite/session/branch-entries.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/session-backends/sqlite-node/src/sqlite/session/entries.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
@@ -205,6 +250,46 @@ A	-	packages/session-backends/sqlite-node/src/sqlite/session/session-stats.ts	de
 A	-	packages/session-backends/sqlite-node/src/sqlite/session/usage-ledger.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/session-backends/sqlite-node/src/sqlite/session/values.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
 A	-	packages/session-backends/sqlite-node/src/sqlite/storage.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
+A	-	packages/session-backends/sqlite-node/vitest.benchmark.config.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
+A	-	packages/tui/src/components/mouse-region.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
+A	-	packages/tui/src/native-platform.ts	Node native .node helpers; cadr keeps platform command + OSC 52; add intentional-difference ledger row [class SP-F6]
+A	-	packages/tui/test/alt-screen-large-transcript-bench.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
+D	packages/agent/src/harness/reducer.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/jsonl.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/jsonl/errors.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/state.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/harness/session/testing/conformance.ts	-	defer: packages/agent harness rewrite; cadr uses cadr-agent not pi agent package
+D	packages/agent/src/search/scanning.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/ai/src/api/cloudflare-gateway-binding.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/ai/src/utils/deferred-tools.ts	-	remove obsolete ledger row (deferred tools moved into provider native loading)
+D	packages/client/src/session-handle.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/client/src/state.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/coding-agent/examples/extensions/kimi-deferred-tools.ts	-	remove obsolete ledger row (deferred tools moved into provider native loading)
+D	packages/coding-agent/src/bun/register-bedrock.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/coding-agent/src/cli/experimental/auth.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/coding-agent/src/cli/experimental/commands/pi.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/coding-agent/src/cli/experimental/transport-address.ts	-	defer: experimental/docs/benchmark/example surface; not cadr product path for G23
+D	packages/coding-agent/src/client/remote-session.ts	-	defer: deleted upstream remote-session client; cadr ledger already intentional difference (no remote-session client / v0.83 server)
+D	packages/coding-agent/src/client/transcript.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/coding-agent/src/server/create-harness.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/coding-agent/src/utils/clipboard-native.ts	-	remove obsolete ledger row (replaced by clipboard-command.ts)
+D	packages/coding-agent/test/client/support.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/evals/src/extensions.eval.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/pi-harness.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/smoke.eval.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/artifacts.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/harness-table.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/reporter.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/setup.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/summary.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/vitest.config.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/protocol/src/schemas.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/server/src/protocol.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/server/src/sessions.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/server/src/snapshots.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/server/src/testing/service.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/branch-cache.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
+D	packages/session-backends/sqlite-node/src/sqlite/search-backend.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 D	packages/session-backends/sqlite-node/src/sqlite/storage/branch-entries.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 D	packages/session-backends/sqlite-node/src/sqlite/storage/branch-tips.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 D	packages/session-backends/sqlite-node/src/sqlite/storage/entries.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
@@ -216,6 +301,3 @@ D	packages/session-backends/sqlite-node/src/sqlite/storage/session-stats.ts	-	re
 D	packages/session-backends/sqlite-node/src/sqlite/storage/sessions.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 D	packages/session-backends/sqlite-node/src/sqlite/storage/writer-leases.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
 D	packages/session-backends/sqlite-node/test/test-utils.ts	-	remove obsolete ledger row if present; otherwise no-op (deleted upstream path)
-A	-	packages/session-backends/sqlite-node/vitest.benchmark.config.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23
-A	-	packages/tui/src/components/mouse-region.ts	defer: added baseline source audited; no cadr user-visible delta beyond existing mapped surfaces for G23
-A	-	packages/tui/test/alt-screen-large-transcript-bench.ts	defer: non-product or test/benchmark surface; not a cadr user-visible contract for G23

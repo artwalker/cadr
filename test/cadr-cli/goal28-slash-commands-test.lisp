@@ -2,7 +2,7 @@
 (in-suite cadr-cli-suite)
 
 (defparameter +goal28-pin-slash-commands+
-  '("changelog" "clone" "compact" "copy" "export"
+  '("bug" "changelog" "clone" "compact" "copy" "export"
     "fork" "hotkeys" "import" "login" "logout"
     "model" "name" "new" "quit" "reload" "resume"
     "scoped-models" "session" "settings" "share"

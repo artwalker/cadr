@@ -275,6 +275,7 @@
              ("support/threads.lisp" "(defun stop-thread-for-cleanup")
              ("support/atomic-write.lisp" "(defun atomic-write-utf8")
              ("support/changelog-share.lisp" "(defun parse-changelog")
+             ("support/bug-report.lisp" "(defun bug-report-redact-url")
              ("support/html.lisp" "(defun escape-html")
              ("support/resume-version-git.lisp" "(defun format-resume-command")
              ("support/headers.lisp" "(defun merge-header-sources")

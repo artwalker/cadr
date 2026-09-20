@@ -40,6 +40,7 @@ cliFlags	--tui-mode	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli
 cliFlags	--use-theme	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
 cliFlags	--verbose	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
 cliFlags	--version	name-present	open	+cli-usage-prefix+ Options in src/cadr-cli/arguments.lisp
+slashCommands	bug	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
 slashCommands	changelog	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
 slashCommands	clone	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp
 slashCommands	compact	name-present	open	registry +tui-autocomplete-command-specifications+ in src/cadr-cli/interactive/autocomplete.lisp

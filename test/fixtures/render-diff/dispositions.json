@@ -64,7 +64,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ad51aa9db858786867173941cec0387471494b58888818df5e6817bc376ca0d0",
+          "pi": "82529bb3d64a6ace1e832848d41ce0a5e8ebe865a97fcdb2dcfce80da32d3982",
           "cadr": "941d29b0ac92afc93c827ce78a3f86886ef9051412bc1b7d4e964772c7476dd8"
         },
         "narrow": {
@@ -87,7 +87,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "311fddb2be94b6d09e149e17d90b27dd6f70c8aa73bc65f8c6d241f826fb7fc7",
+          "pi": "9add7573cc8e08785d68e0f53faf7bb35cfc5a9826f5620d6acbd7c17d117adb",
           "cadr": "80e782c5d0cce8cfcf06fac81d80ec55c27c5f0ae9041b21499950d5a2ce5478"
         },
         "narrow": {
@@ -110,7 +110,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "dd83c0e37e4f7e1e4a1a61754e42f338299f40cb173c0fd7fe96b4643406b73c",
+          "pi": "3dac2e05d490e70fc3f7a5afb9af34ff23fc0e7c8cd5117e0e6cf2bbd1f60eb8",
           "cadr": "9503e5e300830e9a0b7c838ef43578f02070a9deb1ce3c8536350cf2f9d99f71"
         },
         "narrow": {
@@ -133,7 +133,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "af0a8cce9c311d572af378f6e238da2d198ba3d61c45ab661210d3d487be4db5",
+          "pi": "bd0fd8707bf4faac271d49fabe8e86878038c284515991029e18da6eb8396e57",
           "cadr": "96c19fc63cbb85ee695d407879e01562b8a49f8ceef5bff376cf12e6dc627d3c"
         },
         "narrow": {
@@ -156,7 +156,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "31482d85a2ce7cc776e72fc1269e2356b0b73747d0bd6a1b53c2e11427511aec",
+          "pi": "0031593ee408643cb22f9a67fd7bde26694dbabc69c447c31a555d9fdf2c1fab",
           "cadr": "7873e26fb4254d42ef65ae256163239c87b29de46e99aa0ecc1518c4880f4907"
         },
         "narrow": {
@@ -179,7 +179,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "913bb2c3abd419d1fec3521beb3073d24aa4e8dbebb97d73539593daaf2374ac",
+          "pi": "ac4460623117377b3377aeefeb3770d0ed140b1eb29afaebe2710e37a86265d9",
           "cadr": "77387bf6b0c9fcc1d148b70050e49f1799aa5a21b3093dcdfb6d7d8c07111dcf"
         },
         "narrow": {
@@ -202,12 +202,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "4c217a6565de51d92d1034ab32ecbfb9192365544d949607197df87f4be1e2f5",
-          "cadr": "4dba0bd5b5666549a73b6714bb2b510d70f788b0717fd901d15e04310b966f3e"
+          "pi": "ef00fd69b7137d36eaa49c99a8eb517f64163c42b9e26eb621659520dbf1c20c",
+          "cadr": "d9f7f9bf6772e33a5a518a6660b893dd39f917c6fa44a2aa3e2fa093dcaeb159"
         },
         "narrow": {
-          "pi": "49d045ceef5d3d3769714beb9471b37ce5a9537e94543dc004d5926fd8f26935",
-          "cadr": "362fffb91beb4cdec77708ec3b654ef701ab1e448a5fc5c9b47aa25acc84b13b"
+          "pi": "117884b2e3e71f32ed21180ef985c6e4e7253c7e649e4e2c42e6693ac0d78261",
+          "cadr": "c1d497604c857b0e6e5588c7f9df4d4595d7d4c2ed243b276294f9f5a990712f"
         }
       },
       "note": "cadr's CHANGELOG links point at github.com/artwalker/cadr (I04), one cell shorter per URL than earendil-works/pi, so markdown lines reflow and the viewport shows a one-entry-earlier slice of the same changelog; all visible text is otherwise identical. ANSI segmentation differs (I01)."
@@ -226,15 +226,51 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "96d0504ec3dff9ca5e888c11e2a0e12b2d80791775e4e02e77fa69bdeec52220",
-          "cadr": "0cea4d4864f2989f7950afe2a1e98b83319d486192e23d7ece49c60a6d61a6d7"
+          "pi": "022e0072caf7e04e136f64069389a93774501976a6c3e831cc6df10da7d77ff1",
+          "cadr": "5bba26bd807a282cc91c0d7766f0c58c595b68f9b5ef72fe103d622bccc25c06"
         },
         "narrow": {
           "pi": "467f3289ec2dcde03d59b73320c0a0de475c1515f642e10e1f3757ece418402b",
-          "cadr": "892f4be88b71508166447946dc6e7251eb48f128bd3e49bfe78af81f48d0fd9b"
+          "cadr": "a5c830668e686108211cd8705fc4bab931f11b6c86de7ab8baa756afadd5b5f8"
         }
       },
       "note": "At commands-informational/slash-share [wide+narrow] Product-identity text differs exactly at 'pi.dev/session/' (I04); layout is identical and the raw ANSI update segmentation differs (I01)."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-bug",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ba39df233eb02893f0124445ca12895330ef20a74faca069d6c3cd18f7e24286",
+          "cadr": "5c2b56bff4f67493ab8e289ce9e5696a7598593c07fbe940e425c49b76a49a68"
+        }
+      },
+      "note": "At commands-informational/slash-bug [wide] the autocomplete row differs by product identity ('Report a bug to the Pi developers' vs 'Report a bug to the developers') and residual slash-share chrome still shows cadr.dev vs pi session URL wrap (I04); raw ANSI segmentation and teardown still differ (I01)."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-bug",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6edbf62ab566861b59082e0a6f312ee433998775d18e7a1c7d1b84cd41c2fcc5",
+          "cadr": "1bc683684665fb5aa7aff80a07fe76adaf83b28e6897bde3339e7e8c0717c1d7"
+        }
+      },
+      "note": "At commands-informational/slash-bug [narrow] residual slash-share chrome and the truncated bug autocomplete row reflow from Goal 16 product-identity URL/name length (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "fatal-crash",
@@ -250,11 +286,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ec22ac8cde5aa5f61e3a7856157e70360abd2f07f6e78bc040c11223147500ca",
+          "pi": "8f416306b6ea3ad2fcacdd2e5ad442016739b2fc44183a418df59b395edba20d",
           "cadr": "15d83eafe4fc0cc5eb671fb6fbbda5b9c9f0ae0f81f615d113ee727b29e1a28d"
         },
         "narrow": {
-          "pi": "47878b8479f8ae38904cf2c884a6bef2c2e5161e745cdbc1fb5d62c530803db5",
+          "pi": "ca68c64ab71fa9cf1b6c54dcb60240eaf4c44c79ef41d14807eb48adec75012d",
           "cadr": "8befc1e641a828b04cba1ae0a4d82ad8851dc0206f2d4c68d1671ca1e017f6f0"
         }
       },
@@ -319,7 +355,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cb6fc0ab301133fd9a913702bb92bac699bf1840f59027a81a641b172bb97d6e",
+          "pi": "fd2ba005552a79cf3831ba97f135cd4117bd2a63f3d9402ca20256ea3e8dca94",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
@@ -338,7 +374,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "02129459a51964aa0727cb756f417b08fc951dd801fb7b316ac1127724b39175",
+          "pi": "f20a9c619bceee850e31523acace1af2fc9556f2a88847e530bd4b3c8f2452d2",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
@@ -358,7 +394,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "602091b75631527a5f15cc65dee5d857006c4ce6f6273e976556d21b10cd59a9",
+          "pi": "7c994cd9c30c6165794e209e3def7e9dab4a49922501c46eeeb74c614ab05ec1",
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         },
         "narrow": {
@@ -381,7 +417,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "22cea32d31c5c78edaeb6459c67efc4258269c6dc8b2df8873feafc041f7c2af",
+          "pi": "9346d83f246762126e06f1b4f009fb6fbb111a19145840a44509b4393711a52d",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
@@ -400,7 +436,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "66c45651b932654c697423cbac2a48e13d11c7ed87b0eecbaeebaf0a1baaea51",
+          "pi": "e2c71cf690506f9a48b048b1f782d5d90a19d0c6e034ad528629bd2366515040",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
@@ -419,7 +455,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b3b43d8ec07a81a0ca96641fc814c379f0c70dcc2a5fde9c85243cdb6d258200",
+          "pi": "d352494f40e0ee5b60429579549593334ff997aa790d4c2a16734975ba55561e",
           "cadr": "060ab25195bc88b8bcfd57e41728096e7f7f2c4b09769c6b2db4035e115679ff"
         },
         "narrow": {
@@ -443,7 +479,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fd9e991f7b8da22c2daaeaa7410a8ca0bc3356927e9a91c4f779d4caa9536eb1",
+          "pi": "3a2590df4307aa7f54839be850a6a99009f00a3a7d91bfad04994425ada76295",
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         },
         "narrow": {
@@ -466,7 +502,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "041b264a056f7f5b220594cb925680d8c2cb51431d4c77d38993d154fd6083a1",
+          "pi": "5db89a04d7e8eef6a80e639fd23c9c79de03b81745c9921a44d9cff2b3b5a0f0",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
@@ -485,7 +521,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a5ee1a0f992560288377cd8c43479d5954b4bf6befdc0c8255edca2dc180d5ea",
+          "pi": "051d9604caa2a9f936bf1d3ca92784985b8399495f3f5ea36c96fabaa1ff4f7b",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
@@ -521,7 +557,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1eb3494ba533ce1c690150284f4e257a5ee1239cd31da56f9d475ec3356a12f0",
+          "pi": "7f36685df4e58b5088d0aa0f8f364958e0b02b80a5bf74517448637d607fe72e",
           "cadr": "186ea539c3ad5b07a55c73a3c05b8aa0ec048dbb9d960f7e378a43d1ddb51de8"
         }
       },
@@ -539,7 +575,7 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "106adae9a0a35e8687d7cb3b6449109bad2a7c2e3797daea6f32cccb7fbce5dd",
+          "pi": "12bdaba8941689013ab68db1a78f4f3e3e3d480881c1066176b9a66f01bd54e2",
           "cadr": "fbba418e574fc5038a26097a66b2926d800b6536550d512197695e50c22cd868"
         }
       },
@@ -557,7 +593,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "176b1ce1ff9b3de9e1572d3cf0aa4458dd931b5dca7c3da9757b19ebf6a65063",
+          "pi": "1919d1b152c3b3f34ccdf926b2ca168b4fbea0c71dd22dfd39bbb7ff1c46240c",
           "cadr": "114642fcc35ec8a2c1eb568a965ed28d16f2388f89a71a0fcd6b2cb777708851"
         }
       },
@@ -689,7 +725,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2e98b401d1252a9f82cce6183fb55ddf9e678faae1b60af15c95b5ad2b63e844",
+          "pi": "36646ef0d78e6d0cba9f06c9e8e2dc79e53e3068f01d23b821bbdb559d3fdd47",
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         }
       },
@@ -727,7 +763,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fd506c3ec45ff3741ae01cea9dca1f277358415bb770083ea5ef5d237b86ba93",
+          "pi": "5df111909fbd607750d5d642806342ce85839987224017cd001b7591d95cb733",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
@@ -746,7 +782,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "118bd255059a344bdfea374bd92cce271dcc32508008afaa062e138c4e22bb80",
+          "pi": "2eb5b45d3c602d9dcd88e33da0dd17499c27ef543a0e677752366901f2585692",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
@@ -836,7 +872,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "421b8c6d89307d1e48698f3d6131ff5384fb088423489bd07fee32213c22a1c9",
+          "pi": "bf03e8d442f88b48947a65afdf592fbe7ab2eb2030859dd90cb26e215d055bcc",
           "cadr": "c6d36e98557e4731c436db8b4d9396ba81226eb1c7bd272d8fe87b8d3d6afa55"
         }
       },
@@ -2132,7 +2168,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "74a5c2f3fa1c9b65570af400010e31d6b68ae189f7bd52a6912f826469a318fb",
+          "pi": "92fcfd69099d9f2c675390e490a95843a1019e1156ca9db549bb90ed7dc3fa0b",
           "cadr": "fc4e3c7619634cbc5e4e5642565ea1ae1923ef2ed74a279a89384fcf40f9989b"
         },
         "narrow": {
@@ -2155,7 +2191,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e4c231fa54bd25af407dba3daf64c6c9fac77ac11b219f26c4a7492d58f14950",
+          "pi": "29e46b23e69a034b04781e0dd2ded5bb0711f380385ef6cf780c25c5b1eb8014",
           "cadr": "661997dee35da7c702b095596a45d8c44911d3f8f79a8c99a2185967c6d1ac12"
         },
         "narrow": {
@@ -2178,7 +2214,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "66e29be644ec6d9fb3485091d60bada2ae137fa5851240304ac417c564bc9e63",
+          "pi": "e5a65d012d47fc753a35086d28bcb6cfe160076087581eca2b4667772581af5d",
           "cadr": "f6c0786964dd18b98f1c7caf451bd0b47ba0bf3f8639ddd7c9fe26a51d1177a6"
         },
         "narrow": {
@@ -2201,7 +2237,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0c508a71893e847ba952ecb09add4300ebd176ffbd883484dad6a38ba2845d3a",
+          "pi": "24705d3e260ff5e79a181abe23476d06c05133ec89e6f4178167c4a5326bd113",
           "cadr": "41dd44f23f28b8d0ee972da12f23d4855675873f6b2269406ea8e5b642ec8a59"
         },
         "narrow": {
@@ -2224,11 +2260,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "106e13d7b016c314e4dcb995685dcf17bbb4b037c7d7d4ad8a2d65bd205911f2",
+          "pi": "49adcac6b5c54fd02527c8d9d584ea1b9cef028d485b0ef8aff061c63034a816",
           "cadr": "314f9630978ba54884a8e6b0f6b67213d3fd4031a0a8fa9c012374620fa5520f"
         },
         "narrow": {
-          "pi": "f0d4eadf71227f7721df18903e13b3447064a176dd6eb04e98e1689d87531f3c",
+          "pi": "396c6ae7fda145ddaa72cf4f5ecaf269755798c71aa53edef6e8255b72e70708",
           "cadr": "b3db865eeab7a72f9af8b966e4bab74e2e2f9460d92f8fd42d94a26d983446ae"
         }
       },
@@ -2247,7 +2283,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e2787aed6fd61bd7fa7924c01ac82cfd26513cbffb69d9cf0278b3f478b1696a",
+          "pi": "5faf289aef54899aafb3c4ff5a9b4bd99a0dca354bbea03cb8420e3a0dfc5b26",
           "cadr": "1368bf3946bcd748edca99286c7a58ba6080fbdee710b18fe5ac1ef4a170be49"
         },
         "narrow": {
@@ -2430,11 +2466,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bc1406f618e9132d1d0bac4adc3b4a9e352e317a7673fa7e7eaf92c998b4c3e4",
+          "pi": "cff4e7f75effb14b7d5a495ffae42e8b2157adaa47ecb1dc6101c4ecc1c549a1",
           "cadr": "8dd2348a4515147df5632a022fad2ac3988a55f6832f461dc11ad7742ad008ff"
         },
         "narrow": {
-          "pi": "2aca861ac3450e316454a411f60b81ff802a491edf7538b5bec7f571a404f371",
+          "pi": "22d06884766b61d3db96712f243c6c5a8aae910a3531114253241ce170bb8275",
           "cadr": "1a9c1b3cc2570c205f617e92dedbcc824c0da21588fb4fc05587128383071d40"
         }
       },
@@ -2453,11 +2489,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "75c3d46ef16a2f121497fb666a234ae79123a274410d3970b53fc146b5d44c59",
+          "pi": "b5193f4c2d786df0e0077c19472203643d814458f70c2f3deedc2177658b96fa",
           "cadr": "16f2db151ae1b831c8965767fb4a67eaee9d101b587bdad88c2376a6ddde8815"
         },
         "narrow": {
-          "pi": "1293ceeaa2427ae7aeada4a4740d6c25944b1bece497f66a53c8567d84e6b992",
+          "pi": "4ce2860b2515a1b17662c3ab548589f45937e7d8acf6a373e8c80498b3641039",
           "cadr": "05e198e797c016d22f3d5b273e74ae4e83b0509702d36a8277efc0ecae3d5533"
         }
       },
@@ -2476,11 +2512,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bc4033f67484b8d081fe6a8ba12ea5c5379f41be75d96b3d75b705a3b51ab5a1",
+          "pi": "1afeb615634cba51b1dd2f3a22d648376c6f9b349513b15d3d0b782e7cb0b37e",
           "cadr": "cbe1e6efbee181b673632fc3b0e9d5ada03b736f8a07db96321837ccb597d2bc"
         },
         "narrow": {
-          "pi": "c8548bca0a49808e319709c0a56abaefd2f72039a1f3f3309194cc4e3642fc5b",
+          "pi": "749436283b75e8ddafafcf0f9721df978db3c3e0969ee5e1d9f60def651688d4",
           "cadr": "0c4fd46f2184f608a3e10946ab48d19555cd33459a34afb9c73198664b311181"
         }
       },
@@ -2563,7 +2599,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7bb728d0de9b77ddaaa3a3bade7927b7ada30765e7174484270e553b8cb3980f",
+          "pi": "a78f587d58afcbf1adf16e0caa94201c3f0e2812a034ca997f19f8bab1590cc5",
           "cadr": "cbe9e1d5b6a0ad5e9e8a7cb1fb8e0a3532935996bdbc1259d8535556f6320ef8"
         },
         "narrow": {
@@ -2586,7 +2622,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ebc47c52151e6457b30dcda376f44da2819eb94e606142bd9d6e4c6e90447b37",
+          "pi": "9ab359ae9ac8d840aa54561101d1bade44d810c52b662579c88c907f6e3ab834",
           "cadr": "c4ea01b85658650ec8789793d367d5a9f519217712ea417e6ebdfaca22ef1c06"
         },
         "narrow": {
@@ -2609,7 +2645,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a3ccf76e6a518d3ad4129e33b0f7ffc7a3065d36f5327dc3b6e5b2daa7b2b487",
+          "pi": "a64d3cbda9cda4efe28ffa11787d935cc972a05c5af73e9129f1d17708f60580",
           "cadr": "5b6ff5f0a14611e7a0c73e552423a1430ce11702fb58345e083828a0bf1ce98e"
         },
         "narrow": {
@@ -2632,7 +2668,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "43a3c86e5c412e72eae5ecc674c4101bffabf2b92815c5b7ca99fc119acbd4bd",
+          "pi": "d7e3b1a467f78e78e8d5f64f64425167bb7c48e5377ddbb883bc020e7042a17a",
           "cadr": "891898003aa1b7de1c42acffeae4be60edd8ca3d81edded00ee0f892b512b55d"
         },
         "narrow": {
@@ -3036,7 +3072,7 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "2a3584c76ecbbef481c64357282e4537160e86c7251c74dae5576ed348186c60",
+          "pi": "ea7e4617b5c90f02f92a89f0f0d54cd2fa2e2713fc59dd7f3e27ed60fca17b11",
           "cadr": "819127cdebb73da7946deac2d9394c26e90042327a63cd34acedb7f7aec3c0c9"
         },
         "wide": {
@@ -3076,7 +3112,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3008b492c197562a1c49585c6e894871073b72bbc6dbfc894f5b86a54f80fda1",
+          "pi": "2462213a0749f0d6d906fe3eb5e07a075651f4869f9980ac9079a1723092f066",
           "cadr": "c08e2131228560780b31fda12a2631c89c8da90533233c10af03f67ada564cc7"
         }
       },
@@ -3706,7 +3742,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cc601a35870c41465b614dbda112c1f200ef580636d83024e3e35370a30686c1",
+          "pi": "097c9bdedade4ffe39fc8b5a262aabf83d1d99e6bb5772a8ddc6835f6c23f350",
           "cadr": "2c1bab0c05d531a8b589688cfcff1db3ea94ed0778b3fc25e0af7ba9265c2a8e"
         }
       },
@@ -3724,7 +3760,7 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "43624bf73704ac3014569ebd8847630fb68984d20bf9ebd03d789346a020698e",
+          "pi": "40afaf2c8a2b8c67622d305ee3a2c262ed20b620ba722c291caaab6fbbe4a4c3",
           "cadr": "c67a89fc8d18be967b4855b56226081a1b999f40c3b11c08ff65019c7954087b"
         }
       },
@@ -3742,7 +3778,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "97f8d83f3db0efc3301adc2b012a163a88acc4ea850fef74a75a3ddfa502bcd1",
+          "pi": "5b12bb737c3600bf03110bb9e97c04e1d0d6d9b215439e785ba96fe4205586d3",
           "cadr": "b84b3bea128f84dbcfe4d799a8bd350d0ba340b78e4d8f8a89365aec24f31778"
         }
       },
@@ -3760,7 +3796,7 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "6a7c0ee2328ecd99fa966e25cdaaa167101a39f240a6a65d9a5799145b8412bf",
+          "pi": "55c3f195c038836b15e5db2e547737cdc3d707e8c57e3fb3adc012a366b4ba9c",
           "cadr": "ddeb06f2d87ab427c76a7d9ef9f00ba8a346efdab62b6b5edda7df428f3ebdf9"
         }
       },
@@ -3778,7 +3814,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "897bc5183769e77a6b1509f9708415d5c8276826fbcbe92a10ace2bc7505c9ce",
+          "pi": "162d9ff803820881eb4810bbc9fec453b12ff9225fda8e532dd92dde7ddda0c3",
           "cadr": "618e398d9cf38200a0ad363e8f181b381f90eea87e89d8e34235bf5f755cb12b"
         }
       },
@@ -3796,7 +3832,7 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "2f6d158cf7be2a3fbf9569192a50d302a6156df3876fa174fa7e76ba65feb330",
+          "pi": "b66a8e06a714731500376fc60fe5d0f2676e05a2f199acf4ac117c6612abbb24",
           "cadr": "ca12a6dc88af8943e4c9a13b30623aead4e5587708894938cba36534e793543b"
         }
       },
@@ -4164,7 +4200,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8559dc9753aef12a3267c8627887f8b8f9425aa66b692662cd57a7144b6938ce",
+          "pi": "44157ecb8b88ce3687e6977846f188e6a4895e0e22165d3e876fde96b5d9b83a",
           "cadr": "50daec9b45b9b87d1f56a07c4f12b7fb2504b621bf14cff1b3f0cf46cb014f31"
         }
       },
@@ -4222,7 +4258,7 @@
           "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
         },
         "narrow": {
-          "pi": "0b20cea75881bc8c96c8e1f5c0cbd3fe2be9dc86dc7647c87e0d6568c537ce95",
+          "pi": "c65dc7243ba6c7d09c454fd86e744a7a6526d38cf759dc29939afec6f84d4d44",
           "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
         }
       },
@@ -4241,11 +4277,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "42dac7c4e8ea199c622a5c024380bc1d1377da8a5db45c7bba27915468a7152c",
+          "pi": "d8336088a29a23c3a6c11fd6996f955bc3f0223bdd8a892a7e392e91b6a7fd82",
           "cadr": "27a2a949a409c87f79dba712c0a4f42090947cf41657258fdfa7fa3bcfc05165"
         },
         "narrow": {
-          "pi": "3ec561910d0dd16a64388f9a1bc00b54626216520a343879020c03c81103c674",
+          "pi": "d1906c1ee4f727a4976c9691f43fb3036c02eb236977b2773c3735af033027c8",
           "cadr": "65eaa269511d2356b182368ca01edf491216b326a89e3f35b75e910e23e8a32a"
         }
       },
@@ -4264,11 +4300,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "034b5fa66d5efce43484bab5b0bc5673444c4e285cba5d771fd9c9a1f60d637f",
+          "pi": "1fb391e18633509586b7e456613ea45bb1b166975e97021e4cdaf8e14122c1e5",
           "cadr": "6c95a9ce5d696c7606c26afeb001d7a1b95c2c04cb967f2305f9674bff24756c"
         },
         "narrow": {
-          "pi": "47259631e774c2a2b3dfcae172d5ca26b3fc099f7170158d8ec00f9f4f8d7b6c",
+          "pi": "23b9fd9b3ca9d567215d9b5bbeff520a34e532e44b79c701e62961cde4864cea",
           "cadr": "bd1cb8e300a11ef7ef88adfe8cde20a45a4074053f62eaa4ff58282bda357607"
         }
       },
@@ -4287,11 +4323,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5995212eb4a1d167b0fb5df5d25b11116d7d296b40d39fb90e296a31713311d8",
+          "pi": "656494e9a90e342ec097be393aca71187771cf78b5c94674f89d1b3fdf3f616f",
           "cadr": "a9f64bbc9945c85c9bdd631e129bae26e522774ad4a29ee76af53ba6f19b551c"
         },
         "narrow": {
-          "pi": "f7868164e8c41a7752883ae51b7604a07344d7d0a51e3b935cf9dcf2a64beeee",
+          "pi": "b2803a48c3fcc693f7fc4a7f2540d4550505c0a1ba69c738831b40a22bd9251a",
           "cadr": "310fd0c3b2bcbdc427b95c14db61cfc1ae44e8408f6f6dfbc04e7a84eabb445f"
         }
       },
@@ -4309,7 +4345,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "979deb70d2ef800723333b3abd47156a08421612c49f52614d0a1f6addc15bc0",
+          "pi": "eefee94ffec39ce52964ecfe6aed6624e81ceea1e660a1858a95958f0e7767f3",
           "cadr": "99a1aea7a0d8c40029de00f59fafa824923f64c365fb1f376430f0658ecb6ad6"
         }
       },
@@ -4345,7 +4381,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "96a8a2359fd68c21643c651f038cdbb947c0300e60cd6684ddd2cc7ab2dea6c4",
+          "pi": "895a46f98f9451122a0c654b3f4c40b9a5fa13c374217803a1b60aec0ae35ef4",
           "cadr": "6aee9a69fa180428d93971d4e7f9304a34bcaa000443e20efca0df2ee99316a6"
         }
       },
@@ -4386,7 +4422,7 @@
           "cadr": "dda4e725ba80206a7828c20525cc86aeca8e864f8ffa8dad1b1f2abd23fecdaa"
         },
         "wide": {
-          "pi": "beec50a5fee1f59849faef61115a656ceb0b4a0aa76a1612cdca8be790adb1cf",
+          "pi": "41d0fcb149c15ede3a66b6e7a5abadfd86f8e62a164cf424b8909a1c223f33c1",
           "cadr": "d3738d8a66408459ca5665210d5d3997e6366db35bd5e8518862ca31365553d0"
         }
       },
@@ -4409,7 +4445,7 @@
           "cadr": "4cd455c86ecd1e81d365eb2792aa61ea92a1fa25004bca3b8dc19f7e3b7b1288"
         },
         "wide": {
-          "pi": "9fcd5ecf83275c0db5460c5ec574570a5c94baebe0388563f54fa5d42abb821e",
+          "pi": "c61ebcbae1a95f9c3bd82f6e3fe57b616f949f1c66636e6e84f66454cf50157d",
           "cadr": "89c616576504267cc3ecc67b83619dccbce7d93f6e0c570b78dbf8cffc1044b6"
         }
       },
@@ -4445,7 +4481,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9088a0a249a654d56f463e337e369a008dba1962a61d8230a6d8efc0781d6759",
+          "pi": "4c6049c73bcd6a8941477e616529e74dcd63bfeccc4979f04f699adbe1e928fe",
           "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
         }
       },
@@ -4468,7 +4504,7 @@
           "cadr": "e1de1804ff966b37954a66b4a60ae43742f475f5ae99647dd43bbdc9e9810ca0"
         },
         "wide": {
-          "pi": "be861700c0787890d50f73c1c745bc9bdad819963919cd56331e93141f7ed3a9",
+          "pi": "8cbf5f3693102444a8bbd5a4cfcccceb5b2e91dc16c7fcdfa8a520c013b2de35",
           "cadr": "7e1710c0cba04d8183584688f81a0fdcd868b52a882cc7ff6ed70ee5ca10a7fb"
         }
       },
@@ -4491,7 +4527,7 @@
           "cadr": "3ff5503f3b974c4adaae67db885bb4a9a730b3bebe15a8ff274f07f882836181"
         },
         "wide": {
-          "pi": "74af43e9510c7ed1f844cbf8c93c09a342589392936ee8b68d900f1c109a3701",
+          "pi": "f94ab56797457e51d0805f5e59e6c37033cd6c3b50d96c3cf71796bd1f0c16d3",
           "cadr": "4bb48231b1e47bffac580f5b239ec2f2fc8629ce69c3fe4c7bdf4bffa240fb13"
         }
       },
@@ -4514,7 +4550,7 @@
           "cadr": "9c13c844b962e030a6db4b875bf3b094a26a996ad725a8bac50824f97a610d78"
         },
         "wide": {
-          "pi": "50940b5fd17eeda845227c4f26f143a83b43e2ed1cc8ee51b594ccaa3b7f1fb3",
+          "pi": "38f453479e619dd5698937c1c4b79cd9fc0cd82ee7d474abd704dffe1aaef06a",
           "cadr": "619d8c954de8760c514540e23bd4f34852da525d5b9477ac47ef8b6f5b30fdba"
         }
       },
@@ -4533,11 +4569,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "054beabf7f804f971c64807c6c17696a457fa23976d9f852a156f66c195c8aff",
+          "pi": "51869e272ce80957c8a4ed8d76d92408a7d49e8a72855326fa43a1ff6e6ca0ac",
           "cadr": "be2103f870c5abd19600f8bb65d844ae49be948fb6e67b05cb9153529456e696"
         },
         "wide": {
-          "pi": "57790a60aae1b39a3a0c1fc87179c893b153df08b976f7bb6b260e330ef66c09",
+          "pi": "aefe1d41546d3baa892b74559665524d176aa63387cce6b66aa82e922e77f593",
           "cadr": "fe55c9bbc14d62857d0cf6c83bf84721778c738ea8448e4c79d5a0681e1667e0"
         }
       },
@@ -4556,12 +4592,12 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "cc0b87d10bb29cbfc3ec197e365fdab5400c56972b67d3f4db6080494f918eb0",
-          "cadr": "178a5dffdf0cbd1bab126599e702d05be8cc6bfd75faf4d5dd6899f3f999c1bf"
+          "pi": "9ee2e97164bd45521eef867e8596d1c1575bb80de8f93230008f96d853d06669",
+          "cadr": "e45820060b87180f0f790616a92a330478f64738e9143a0391cb809ca6e83912"
         },
         "wide": {
-          "pi": "65f1ff1ca529325de3097793ae12c1948c20abf621c8bf728e10c85385e21344",
-          "cadr": "1a1ccb9ca520078c99e1f548d6da9a601c895c7cca0e3fc334186487b29a7aa5"
+          "pi": "3e0524095f4363a1993073a0467505ef77daaf012ef2f3b6ef4954b3c69c3f7b",
+          "cadr": "0a8268deaa827d267f3e3b579df7c10ee34d52d7eb770090c09153504a36f323"
         }
       },
       "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.86.0. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
@@ -4583,7 +4619,7 @@
           "cadr": "719a96111737788f012c6d6ac4b479995df6cdbb1fdb548b7930cbf7694e75de"
         },
         "wide": {
-          "pi": "86ed259b0f26f240ab72b391525f858bb602de713b78513f323eaf414a2edf3c",
+          "pi": "deee6594a8f89a0fa7cb8b6fe59d3397b2e4c86248d14f4a3d74f661b65fca57",
           "cadr": "a740bc25cea6fdcb5c69f5638cb9687837f7ad9e7f1835a9b2022c4862e5cb35"
         }
       },
@@ -4606,7 +4642,7 @@
           "cadr": "2b4a0f76da531ff521ab369ed9a8f2dc8f82bf2f6f1200cba927d17efdd0932f"
         },
         "wide": {
-          "pi": "645e3871c2891f5efad10038624c9912d26efb5bb3557acd87d578ff6b736c0a",
+          "pi": "85de45740eea13fa853859a36252600e2a47e061f7c471252b724bf80db78d3a",
           "cadr": "18b3fcb9fe7b52f8d25ea05876ff48afc7f42732b8a3f097e746f82e2b5d5cf8"
         }
       },
@@ -4625,11 +4661,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "de790a6f0f574f052bef0dac1082cbb508c71881274ab302367064adc635bc2d",
+          "pi": "9aebdb3c508e284a6d38c0ee1a6d32d95ea0c16b0f22cb0507e32ee3809ad0b6",
           "cadr": "94774379c0077e96f0755efae96926c6892c10ee06ae1a48b140e0dd9ba72b1c"
         },
         "wide": {
-          "pi": "d59b5ee1348976ec3ff4bc87450a24a5f3a0f83bfb121875477acf3f1a94dd97",
+          "pi": "f7b2516cf59c74b4066ba356b21dd7f810228bb36cc3e5e19d9d82ed06af490b",
           "cadr": "118e7f78a3c9367756ad793be31451d6a2c2b724ca17331419194ca7295d004e"
         }
       },
@@ -4652,7 +4688,7 @@
           "cadr": "d1282f45190e4e8f415ce437e77281b11bf750e0ef8f284f8450fbcd8be9cc07"
         },
         "wide": {
-          "pi": "67e605dbb130c10fdecad592f5fdd5e6b74ba37e7424a0cef0f439462b1bcb5f",
+          "pi": "cd9a4d2d36b9b9d42af68bdd65094fa7ee8c29ecb7b3ebf1fe175057ce2302db",
           "cadr": "c960de7282ff0c2cd6fd3c414b7436027dcc0aad241da47ba88241556b71dbe6"
         }
       },
@@ -4671,11 +4707,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "5609ec4f61bae2ed314033a4f707fe3260b9dbd90fe4fa70bded341e0bf35c67",
+          "pi": "845fd0964b03cd85fed25ce550339831be3f56dea7501ff2078de3bdf7429a0e",
           "cadr": "5b1bb6ec4a395c38accb69cdeb49d33f8d431168cb109e62b5a7863c14da2607"
         },
         "wide": {
-          "pi": "8422908afa1de4a2ffc52a9064955f6df094990e306c29ee13f7cb2099604a66",
+          "pi": "0632f09a91235199bb789d01c6fab65aa2a71c64c77d2c6408dc39cc47a82e61",
           "cadr": "87100abbe1ecf5e5dbed640f9734e086ee1c893d447ba9bfb59a0c8947520944"
         }
       },
@@ -4694,11 +4730,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "85d5e466ed23f7b8bf22ce266603ea7b620af0c645413f96eb7ff3c58d561b4a",
+          "pi": "0716dbf1cdbc6ebecc5c9175a335164a2200453d34652af1cbeb84f57a834a26",
           "cadr": "de3bafec9afce8d97d184df368dac799905a25970ffbae32cba063f2022b4d80"
         },
         "wide": {
-          "pi": "4dfdee0bc8ef662da8ffc24b4fa3a4550f093ba93c9cfa320a832e2ffaa7bfd5",
+          "pi": "3fe040ec5dcd22f9afc871f974884a2e459b809ae36521e08cbcaa2d33c3db18",
           "cadr": "fbbe1bb5330ae51e7d9dc12aa98459aa1de089e91d01cd7e34f1e9de50e2db34"
         }
       },
@@ -4721,7 +4757,7 @@
           "cadr": "87e99b8f01d597c39ba265d96e2ba7956dae0b05b672f15d78cb77ef6494d1d0"
         },
         "wide": {
-          "pi": "fb881b0e3a68493eccae5539b83fa26d75eee12cd66dfedf5fa7fa6745b0906a",
+          "pi": "d509c76149b5deceed1bb09e329e11054118d0db2bf1e04cc090b86308e1f9f2",
           "cadr": "2da914fb9de66e68376433e602cf9e19ae275322763868f58be7c812f76b9c3f"
         }
       },
@@ -4744,7 +4780,7 @@
           "cadr": "be6fdc3dd22e3adbd554ca899f6b0347b15d17f95ad1a7f249b2468532fbec75"
         },
         "wide": {
-          "pi": "ab14944489b931f1d0e8317eb56772f722e5408e769ee6a416165e5cc60d0f28",
+          "pi": "c9cbef8021a36d0b926b08b4f4d63763a4f9eb6adad67b4a9bde016854dc39ca",
           "cadr": "32d5fccaa299b6a03e634f56e7254a2bea2d7503bb4b97d4ebaa76222163afdb"
         }
       },
@@ -4762,7 +4798,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7cbbe8ca51302d1d326e0e55febc7ab7cfb115a77b1294dbf27220f0ce529ece",
+          "pi": "3397bbb72e12cca257108d45fb2a07b782ee2e68ad9eaaef28ddc96b32a7bc19",
           "cadr": "54dcff4e80bbe57adce90711c0504c9fb7681537c116bc79571d92dfdbaf5a7c"
         }
       },
@@ -4780,7 +4816,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "404418ae6bcca633d185a99c23bf2529d1bccf387bec8f8f20351c459f5fb157",
+          "pi": "7a460654e1eaee4036e3048bfb45c39f8124922c1aac43fbc471b1e7b2800373",
           "cadr": "951235fe19fa6575505c8318cdea6fc51f0e3814ef91f3ff6b12424eab78212e"
         }
       },
@@ -4798,7 +4834,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3895515c9c6a46c0ad3d3e5a664889cf48a56156100547342dd9adb63484ef52",
+          "pi": "aacd20ba3cc5dcf5a684abd98110de968c57f2e068812d772c54c3c807bf15c8",
           "cadr": "29ca575f62d4fc9dd285f99894d56dc49e77a1cf749f7baefca64f373356a3aa"
         }
       },
@@ -4821,7 +4857,7 @@
           "cadr": "2f2630d56c81580a66f639a3a496f7071489121aa1314458b8222a9fc1c71fbb"
         },
         "wide": {
-          "pi": "f3228d5855ca7b0ec30b6dd925cb3182dd7e66d4e244aa0ed539bc4fc01c37f3",
+          "pi": "aef60829c11ba797f87cedbd1fdc05da3f0d82a5d93c0a703679a738d9401725",
           "cadr": "707566d37a73f7019ca02f9b81916d09503626abd5e7ed386124986d10b24cd5"
         }
       },
@@ -4844,7 +4880,7 @@
           "cadr": "cb34e9bc605ec668a4fe633fad44b94c892ffb8a3e03ffcd43a5ec6fb222696a"
         },
         "wide": {
-          "pi": "9b7d2279d414b221b822a4c3804f85ffab27d2d5e5ceaa9193c55f22ad0d4bfd",
+          "pi": "2e3b5413b8befb2dba4e5c2f1b19ccc6bc3145454bc36d6206ac67e6aff62e1b",
           "cadr": "ab1f0108e7d0e3cc2668188f945d95e1e4ccb147dee201b4530a8206c6066cb0"
         }
       },
@@ -4867,7 +4903,7 @@
           "cadr": "4e8f1e84b4202affab4b035ccfde1dc7fe8b06464fe1e9c981c161e1395f9de1"
         },
         "wide": {
-          "pi": "3f1f656d5581771945cbbe63e162baa6ffd0e6076974d445483eb1ea71a32124",
+          "pi": "dae08c5aaa3e9c4bd2cddfd9ce0b6ab6c85583858c011a9fd1432cd7f302744c",
           "cadr": "a55979f4bc6538739a162e762e0f5c46de7b965ddb1187daca612cd03715cdaf"
         }
       },
@@ -4890,7 +4926,7 @@
           "cadr": "34418ef25fc255b07e4fe7a6955c60769206d09b840cef5966abd66b5eb4e09f"
         },
         "wide": {
-          "pi": "c3fdc980f4a556d295a23896ebcb6f55b7012392992a530464f11ac68e1ebfe4",
+          "pi": "8ef5f569163dd6105817bd8a26fc5dcbed7e2dd647bd246e48e8b3cf56fe1b50",
           "cadr": "f386742c7c85cafeccc4bfe37198ee54c259f54c57c1767c20a084a6be514cdb"
         }
       },
@@ -4909,7 +4945,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "92c17c1b78384a2c977134b0f41a2597b7913d995b597b584c741c255665dbb7",
+          "pi": "7690e6c1274c3174904541e68c962f9083f5d6354a31449ac3330c62038e6792",
           "cadr": "b9465b452713b38da973524abea2f0907a3bc6eac984760c58864254b8c119ca"
         },
         "narrow": {
@@ -4932,11 +4968,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8618f7341a846509857c439268979993c2c7c3cefcd7362c7f89896b42b2ef20",
+          "pi": "6e06108b747f958b3b9fa6f6be62371c314c80b4829d67b029459bdc51800fa4",
           "cadr": "6d3699458d546a0c71dcf9bc294d285f0a8bbc9f341a08e0f4986ad2b3949f7f"
         },
         "narrow": {
-          "pi": "1be228e23d43862ad2bd99c96a316022ae8c05f8b819829d40964be23b0b0669",
+          "pi": "81822ae4799729568f5f52373327f8d2bd92ffcd7706bb083a0e9cc4be6f9eda",
           "cadr": "17784b2e6ba7c928866173c0c310fd2d5b7ecf25fbe1540c07f323e3b8fd9422"
         }
       },
@@ -4955,7 +4991,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "201a1ec8c7e61310c687d4384e67ae4ff282738d7184276500ea982d06e1bdac",
+          "pi": "d5a86cfab63dd53012f4a0c38abb735a4bed013c01973647bc7ca191e19e3395",
           "cadr": "e7f83c425d2a1ea46c2ec816c941f85312dc2f9bf6fc9b4b9de0023aa43e127c"
         },
         "narrow": {
@@ -4978,7 +5014,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "462d4c7a92d07adf2769ccdde0b598f58bd822ae0c5b19e3bece89f9414380c9",
+          "pi": "048be3f14db25bb7335d3198bb4a501befbc0ef863f5101c8a3cc911828bcb9f",
           "cadr": "e9f4d1ac2f9ee052677f42785cc01df918abaac4afea565a009be7e0e6dc3a12"
         },
         "narrow": {
@@ -5001,7 +5037,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ca611797da2897f28dc32371b068c58c214b48df39984626cc82282c074cd0e1",
+          "pi": "3edc3e401e49a2849e1001046e82fd3e2d692be07a214267cbf9fd5b544c617b",
           "cadr": "bd03c7464218dd011c7b0c994d6455fd203326cc56c8f98f980952ef03a1b432"
         },
         "narrow": {
@@ -5024,7 +5060,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5576a921f8718456ba7ce1233c38a891565b29e11ccc6ca0b229f8e0d7d930e9",
+          "pi": "7d7e4ddbdd37ab9a36cc73d0b1a734b393b882185425626ef645ebc2eae63211",
           "cadr": "67c6481ed81e9b5ccc91845dba4e54aa6f22071409405232e1f83142d44fa9e4"
         },
         "narrow": {
@@ -5047,7 +5083,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c1a4d5b63802cb98bfbafe93c02d742b9ac8e7f1d48d5f2f8909e084f18eac42",
+          "pi": "94a5381e7087b308bd28262e8a8e5a4a099170855c15958665b85374bbd06b93",
           "cadr": "a3efbb13e5fbcf797a4d7dd09923ebdc0aa12a75fbb9bb77a26eae6d52469064"
         },
         "narrow": {
@@ -5070,7 +5106,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cd545476e24b30ca1447456a72b04cbc1472e3daba44cb006dd89192a42c9b98",
+          "pi": "8d7dba3fade51920652749533137a14b87ecd4f0dd04a8ddd581363d1f1fd9c2",
           "cadr": "4dbd079452bd8af90010d85b5e9404a7973aa7eea2ab390811988434abe3b1c4"
         },
         "narrow": {
@@ -5093,7 +5129,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9dd36a4bbd330d5eeb4a37e3860717fd413d5e77b3b8e9c5c9f3796534f9ac79",
+          "pi": "fd48bc80dbe57ead4c3fea11dffe1765814aa20a37a83d281d0b54738f3ad49b",
           "cadr": "3f25d53dc7fc2abfff1f00da3aaf82ca6d9d24490618bc4cdcd650445252d1ca"
         },
         "narrow": {
@@ -5116,11 +5152,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1c9066bf6295f86ade8ae51ea7215036cb745d66e65debfe19c38f8ada9d8d68",
+          "pi": "c7f91db85c7c2cca7d513f92b1c275f34da4d5a9f62cad78921f00031fcfa71a",
           "cadr": "b5fcc50c807ffc88e4c895021d16bcd12ee6fd2f8b67eb27566142721b373b0f"
         },
         "narrow": {
-          "pi": "7bdfeb12fdc60e0899b0200bb70989f15008319a9aedaba4101333900c154bd6",
+          "pi": "d70b83e6d7f398d6b814fccd99949bfa90c7dd1cd26fdbb4949f2810c9e01ef9",
           "cadr": "c23eed95ffbe89e58e05fa956f195108147225c5f296138061585b75d0f4bc4d"
         }
       },
@@ -5139,11 +5175,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e1982108cb2ba5de12af419e5cfe83d5bf3d32405a07f11fb554b5a3dccc4a2f",
+          "pi": "c89f0cb0620b1ea42d75d717ce3a03258d4cd38197e965d855e0fee1faa32169",
           "cadr": "ab6f0e07452c8c9c1991fc5bb9759a913890220cf17160139a2b10bf623d48c3"
         },
         "narrow": {
-          "pi": "229ea3370e03dfa48bedb6277db0404bc296b7b57c989cb5aa742b394dc14ed8",
+          "pi": "e4a4adca8e6c04a32bb794f6ca883f776768b8bb0e98f3b5a65b17e0be789d63",
           "cadr": "69e8c48ec2d542ad2b480c98b3137cf9024759d7fd8eeae1c44e0071e69f3cce"
         }
       },
@@ -5162,7 +5198,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b4941f5dca649d56197b52ce30a72d3e337bc0b23339d4d32f588010edeaf884",
+          "pi": "6b1596b84f350460e9e983ca387f9534eff0c17e17eb9353ea37188a28ab37eb",
           "cadr": "87c5fdb012fc1daa23617bbc0e71d5744621380f27466c4e5a1a8a72a202168a"
         },
         "narrow": {
@@ -5185,7 +5221,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "af133ea690ced76b8f5ff84d90cb5736911056594cbaf934a667a5534c467da0",
+          "pi": "5b703044fd53f5699eaa0e6c844f6d99cb18d1f071d365cddd814d2c4566cfb1",
           "cadr": "7751e5345972fac708a22f164ca8124eb83bf3483e9f1434c8bc19ca5ed11a5e"
         },
         "narrow": {
@@ -5208,7 +5244,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "688a50ca118a63e0aff60013a1c4825ba278e1e6758c0d8b0cc047ee475dbbf4",
+          "pi": "13ea25bcc1ddf4cd81622494a12058ef99a58dc2a9b59f8ff619bc527da29004",
           "cadr": "1233884b52257ec57b03668b5dc2385043851fb9039938e14af1b15f4d47b931"
         },
         "narrow": {
@@ -5231,7 +5267,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ed133bf857d7754b7ddce8aa5e742b201bd4dd81c2288e856324f7700080bb41",
+          "pi": "ef6c75511404ac18145ea4e77809ca3f0656d283d117c918287d0196e7030187",
           "cadr": "c1cdeeee7986dabe18e01add8989183a0c444417f0f4660d365db6428ad1c319"
         },
         "narrow": {
@@ -5254,7 +5290,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "803dc936367ecef58d60c8fb81e852f0b1c614637d3da51c20ec4dd934af3ce3",
+          "pi": "38f76abd69d56207f72e9641f75dff80bd698a27417e21b965d28838e8dd81b2",
           "cadr": "bc764d85d707073387bd0ebebe82e5d4ef9dba7092aa62c1776d467b01641054"
         },
         "narrow": {
@@ -5277,11 +5313,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b9308b2dba7d3d0f138be171d70d529d0c3ad5ca2d82c9292cd9a53d6c685ff6",
+          "pi": "bad6ff48a71faab374a5dcbd1d7ce5c21f18ba1a31204fb81ac201b0edff547c",
           "cadr": "d95cd76b2e83b5866c479761e83bb71f2983eec550ae54498d294c7951185f1b"
         },
         "narrow": {
-          "pi": "539c981daba050dbf0883d112dbf7c77cb5a06901083fbf260693a1045aca479",
+          "pi": "2be537a88e2cb60376f3814ab36a2071f07db726321ba46243fc95d951b1f6c7",
           "cadr": "9188e4f24262199d9069921818cc35d815b70f56be040aaf9a8e7d0fe151e7f8"
         }
       },
@@ -5300,11 +5336,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b40b16033d2ec4b827b7896a6217603f0d1db6f51edc4516752cd15b0261991c",
+          "pi": "5874d38982968b7147d1610823a37ed1eca675647dc3ad107363f98adc0a655e",
           "cadr": "a7bc747d31a6d4f45e602ea320fba11af402706ee19d5079aa31560f77b0bc4f"
         },
         "narrow": {
-          "pi": "c7d0c9bdfe9d7c5c8aa5231763a74e64fc9eaf581fd46d4e71b5cf45b4db45ad",
+          "pi": "04365178335795c32350b73e72405de3f8002676537cdbaba9c4b5b2ff6f0290",
           "cadr": "f24ab10237fe7c972bb896e5455a59c10600f62c9850beb62020111eca16d64b"
         }
       },
@@ -5323,7 +5359,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2db9cfe4af2c7c752ece0663eea45123e8a29e252a014f8962250b3bf51d749b",
+          "pi": "fc2230540a21353f487088e9229c47978e1cf5a7828e1bbba88ad18dc3c1decf",
           "cadr": "1b19ecb3be988eb9692b3afb4da9fd9663676bbe0119535c44f1f2e1f40dddd4"
         },
         "narrow": {
@@ -5346,7 +5382,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b3518e5a77d045f4ecfd4121fd62999eb5de218d21a329b7823b99c67538780c",
+          "pi": "00bac62925bf457526b9e4bbaf4d4142a967963ee239aa9a6777067d6632cf40",
           "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
         },
         "narrow": {
@@ -5369,7 +5405,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2f0d8d36b5df88275e3795055de886b95e8ada9538bc0b818c35640c421fb4ce",
+          "pi": "563dbf0c40ae82dece160fa12f212a7eee01898d50f22855c34e26b3c5b3d56b",
           "cadr": "bb528caaa42b23edbe6de43233ee8c4e0d2c157a053b69392eb6ed311311e771"
         },
         "narrow": {
@@ -5392,7 +5428,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a65bd949f7788d9bf687a4fc13c6624da6113971ad77f337f6729b86525c93c9",
+          "pi": "29e7d8436b8107ab23884403dcc0cfe3f1d3ba06a18c57f961b49be723847cfe",
           "cadr": "4d8488bde5598c955f32faed50298f5cda502d7ac353b07c6b9d9b0afc38cec3"
         },
         "narrow": {
@@ -5415,7 +5451,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "41eccea95b07dc5e4c35b080aa3fa4af970299126ca82e49a7132b89ef308467",
+          "pi": "2d3bbde72f4639554d4c7857688b0318c084a6fb22e2f27a052a8edb68f3be18",
           "cadr": "c805b8c0c375e35f00db358671953c5a61b6a942770460bfe3e70c936029d78d"
         },
         "narrow": {
@@ -5438,7 +5474,7 @@
       "screenSha256": {
         "narrow": {
           "pi": "ed4d2cd466be8c3601ce906562ff8e9c7907154b29e1dc1e894aae5b97216219",
-          "cadr": "6fca8fd0963c254a0bb133d10cd88b8f86026aea0ec04cf040dee6079ea0112d"
+          "cadr": "4fd925a9c90106f7dd982f191e2334a48e85e632570fe2c371f8f98f7020ffb6"
         }
       },
       "note": "At overlays-core/overlay-thinking [narrow] the /thinking selector and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
@@ -5455,8 +5491,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b3c827aa14701af440d6ce4a385a7676e8a9436f56986285fbc084b7bea6db96",
-          "cadr": "1e798c2f1cae9a6e9d24d819c3912a58b1baa0d7433aaeda60f1e2b1b767b8fd"
+          "pi": "5fa6f047407133d5f90d52b21639f18922918e645e99a4e16dd3d74fe62bfa0b",
+          "cadr": "43ff073f4151a61bc94b6fe3f36fab8e025686669bc37a822f93ca9a621f8996"
         }
       },
       "note": "At overlays-core/overlay-thinking [wide] the /thinking selector and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
@@ -5474,7 +5510,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0896b5d04c13a604ea41979a778d4043af278a9ca96135983f80048591a5f9cd",
+          "pi": "91753d3d1bb75732955dada3c054d790961d8f93238e501c976ddea0f097da47",
           "cadr": "9f847af00228963debd3a0a1b4dafe81d785777ca0c5c64a046b6e820188e0e4"
         },
         "narrow": {
@@ -5497,12 +5533,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ed3b06fb87dbcadfc65350000a0066de61e4b47d6ef631729db0cc3c910bc29e",
-          "cadr": "84e77b345c2147dc1b891c7052d4acc58d800c37b4e677256c7654bd3cc7b30a"
+          "pi": "30f22fb42717ffd0e0d266840572b09a4e3e49a69230dd8038f12afd1ea457d0",
+          "cadr": "816955bcb5fa8fd67722cc382a52367d16af9fa1afd8c7314449ecc4f4fc89e5"
         },
         "narrow": {
-          "pi": "fa29e2cd9d273b22cbee9001172a546998aaeed5e32943e0e7baf8748dde31ba",
-          "cadr": "1b9463fd7b13312bd1d1f25c3a32e8f7b0ca527d02e3983484d96a2bb328f3f6"
+          "pi": "d299bd8831617c48a8ef8b9c75fc750e6e586d8a7e43d431f6294c5db51cd5ce",
+          "cadr": "a83ece972ba945f317aa652658dfe91be913a982aee47445055a2cf45aeac461"
         }
       },
       "note": "At autocomplete-surfaces/autocomplete-slash [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
@@ -5520,7 +5556,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b52a3b9bb9102a6d83488b86a0b0ca830dd90903cfc57973a9ccb4a760f5bde9",
+          "pi": "57243851ede2ab876b15499b2915cc4a756340b8066bf8dc9f8489de622d67a7",
           "cadr": "43bd20386bc3ffeb45fe81c18afa9925ffb8a15dfbcef477a96689cada08baab"
         },
         "narrow": {
@@ -5542,7 +5578,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c9899d67d1d493e00d6ec4f45cb1c69d79015699f42195418efafad7aebe5c8b",
+          "pi": "9fa354336cf1436a9a71f289045305c8b1a9770ebcb579cbc97e0cfedb08a8d5",
           "cadr": "1d32d9f64f2eef117bd20c4ae48a823957608d2b42abeb2525662d44f6ee050e"
         }
       },
@@ -5561,7 +5597,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "674401ab98b1052cb8cb378700778909d2ab839cb7bc66e97709b08f8cae48f0",
+          "pi": "3dcc03f83886b3761353cd72daade39357c3c2fd4f574fdb79efe20b0dbaa792",
           "cadr": "3e28f086c792e35a959dc9dbbe3b7d18bf5bc815b82a75b9384ed35125f51d1d"
         },
         "narrow": {
@@ -5584,7 +5620,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ff9c85d60da12640fcf74deb7f175182440f5577b5bc7e28eac476ba7528a180",
+          "pi": "3f538bd0a480083e1a3525388b4d656dd15df8c6526556c15eff98a0d21ade91",
           "cadr": "69000326429b83dbc113c5f5464559b3f2aaa9fa7b9be337963c7b29f75296bb"
         },
         "narrow": {
@@ -5607,7 +5643,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "976ccb0db523883d99e51ca05bc08b435b12c46b37980e813f2a46d0cdd89e8a",
+          "pi": "17de7dbef696c96c7fa9b4d581de8520c6c0a89bf9e08df4db22ed7256db520f",
           "cadr": "514432a1df696fc90a1463c987bc2594eae655a6b6ada7d0855a8627d1ed8bec"
         },
         "narrow": {
@@ -5646,7 +5682,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bc6dc7608d26066c90187f9c4f48ed97fb93173a661338415d795b67c514a7fc",
+          "pi": "fa72c269ebcd5e1ad8f3d35857095aeacdc50f403cda275ce00db410c8fd2a9e",
           "cadr": "aff1c0a66cd8e2cee253c5bfde9c7cc641676c79c7ead277d64c6d3715b2964d"
         }
       },
@@ -5664,7 +5700,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e243a14f53162eebd417678f78c0d0e2dbcfd130ad58c7587abf33f35c46dc45",
+          "pi": "af7b4ffb799bb7cff692ba1647f5db67d1e994fc66ed550a9a3bf481fde83321",
           "cadr": "6f23d4f1bb3df5a299002a208e743f96dd5cb095832ec4a932cecba613f85028"
         }
       },
@@ -5683,11 +5719,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "aa1e3b05498092c2ff34e9084c95131a4a8e4cc69ff113b985d2091aca4543f7",
+          "pi": "e67630772eaca85d5511899351930d1cdcad51c88a1556d6ee40557d111f1b44",
           "cadr": "550a0426a0c4f775686f300ddaaa00c8c242d04aa7e9e8fad8e99dc6341ebee5"
         },
         "wide": {
-          "pi": "fa0d7a950d1110473cfcd6e5f24fd3d72a657143d3c2c15e24f1243e4e9ab54e",
+          "pi": "3cd892dd0a60691c1630164e9464044a092b2fadb8c51480969371259efdfd92",
           "cadr": "8d9e3ad4d1096fdadfd6e9d0ef488f438d0d2e0cb5b91601e7478e0d28dfb7c0"
         }
       },
@@ -5706,11 +5742,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1b5a59b645ea84e0a0d3e523e5a2103949d01de3ed37b0bcc46e491c7389c73a",
+          "pi": "dfb69774c0c56edac2649586aca776089c8e8d86794c93bcf8f48ee1537b2d77",
           "cadr": "76e3eb6753890051d0d5c38092bd79ad32b2b410108bc170b74c5fed53f0a5ce"
         },
         "narrow": {
-          "pi": "9f320afb1f6f26e48ffea87b9314d5558f8dd68df006b42ef73fb52e6c136319",
+          "pi": "aa9c698fbf7fb8f1c83f411ecf517d83941479e4e93cf8de8959f9934dd19568",
           "cadr": "fac346c5d0f2ad50206f69b5e09aa2ba6f3305738fe363f1686fa4da8bbc61dc"
         }
       },
@@ -5729,11 +5765,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "188a2bf6441c6c9def7776ffed714f6d63e512336af6d0913962e17cc3e6eff2",
+          "pi": "817abcb5c163fd522ba64cd639bfe07326d5ac615389eb91ebd20e4c7371c86d",
           "cadr": "6cf20a012e4f6864b112ae32bb3fbeede7cc2933d72739577f10bc22ef76fd89"
         },
         "narrow": {
-          "pi": "1cdb91ab51b620efd08ddcfd88ccc10ffcc3243805a0dacc673d188bc116a99b",
+          "pi": "28ca288945433352cf92c0d098c90ab0ded3337ec026231d7f1f3c798048dddd",
           "cadr": "9ae358fbbd0229a4422679b79e61f0003c003521f0ef90fac3e7a0e2d7ac3c92"
         }
       },
@@ -5752,11 +5788,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "14abd1f54e46536826b219a3fa8e6fcb3e1fa35685b111d930b750f33c7ef6ac",
+          "pi": "61653b6573a2c3f01788b230cfff6e2c0851176225ca94207597b16f1031560e",
           "cadr": "4c5b2ac34d919c636d2bdd4063feab9eefdf39b253e28a48ff8b0cb665dcb697"
         },
         "narrow": {
-          "pi": "6cf66533e19c47e69fadefa8e2fd66ab969ee70e69f61b370ba0bc741df8e7bd",
+          "pi": "ada1f06781383dd0450eb0469891f7267b4d6896d92a05901390dd2e56ffc987",
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
@@ -5775,11 +5811,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "98fc2dd2c27d5afdd28d6233e1a4a1abc2759f224664977d5a4c8fd218df1ed6",
+          "pi": "556d974e6f9843f3964bcf0c1ed4ac752ecd49103060e9e113bd9f03bfba839f",
           "cadr": "dbead14d9620e547ced9652fa7f54968d7fdbc87ec74cc9e69877288fda08694"
         },
         "wide": {
-          "pi": "438a1730aa2ed030225113d0de9a0374feb94e4b50e85bbddd36eeb0a86722f9",
+          "pi": "f913b31d23ca454394f725af3840bdf777857c3b227a9644fa64093e485d60be",
           "cadr": "f1fb76897d9c0beb25244bd976794bb62410eb6346e8e8d059a5f9e330de8e7c"
         }
       },
@@ -5798,11 +5834,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f8d5f5d2ad58e4b6f1812e3810fc4c37152950a4145f71991dd350d3cf148718",
+          "pi": "d3d5b740dd22d20799ecffcfedf2d2987b5a70e7b2cbd9372b9855185da538a1",
           "cadr": "0033586f7b5287131698bc130c3174ab086e252b928f8badfab386afd29b9750"
         },
         "narrow": {
-          "pi": "51baa62e36717a386e44684f75a49dd7e2d3d4bc34f24842deceb5b658b29557",
+          "pi": "acd6b397dfbe7d7da9b8b06109d142f509117af92cb7f500b926823a1d467bd8",
           "cadr": "9f615f32cea67934c86fe59733a6e3365e77d5477489a893203ab55f33dbd28e"
         }
       },
@@ -5821,11 +5857,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "361d1c492924f71cf43017cf5254f0432dec4cd4762002338d1c14b089f381b1",
+          "pi": "72ca7ecaf0ec26caa299c6c53a9bb7c0531b0a4643cdfd798c539cedb3caeeb1",
           "cadr": "734e7dce94e46553c2535ada1f59be081d8d3e478b9e3df3ee2b1564d268b594"
         },
         "narrow": {
-          "pi": "195f14463a24d4cfb865aaedc2a4a4fd353924fc1d29410956fd5a7e7b579ecc",
+          "pi": "783c2cc3138efa04e88a02c6694fad037ef7f49da41ca714e3af0434210e8751",
           "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
         }
       },
@@ -5844,11 +5880,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d2ab622d44cfc5334c2caf5e6c73798c22f129613dccb121ccc5c80a46850993",
+          "pi": "6c51bbb0083288053a6c21536f08ebce60ee33e2f0f6861830349d33eb3c5d56",
           "cadr": "aea8009e09e275666d4548b01a876a2073b299ed1a50865da4270800da85b22f"
         },
         "narrow": {
-          "pi": "e97af20e0a4aa393335a2ae9603bc6cfbdcf53e9148c7cf2b9b0277998105642",
+          "pi": "3ec67b1e30f168a76ab56ea6bfb143ee18692ad471de7ca1e325e3bac9e787c9",
           "cadr": "b0557dede851e60a8bc3153e6e1497067de723f7ab0f80370a744565321c5f31"
         }
       },
@@ -5866,7 +5902,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "82d24f41a4145a3820d365118e0ba0922c52c253e9eb269687dae590a3c88c3f",
+          "pi": "a1cb847661424a910f498f46551e8926f0cb6bfa8c2f5748a98a764e90faafbc",
           "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
         }
       },
@@ -5885,7 +5921,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "967966afa6fd2c548eca8044a788f174123821988aa67dddca9c8b3d6964a0ee",
+          "pi": "4ff215432c69ac8dfdc1f29baed39e47eccc5c4f281580ba5b6bb415b22c1a33",
           "cadr": "fd7f3e65112ef239877ba66275f0b9bdd8f5c8d39df1bcfba40a84eeee09f50a"
         },
         "narrow": {
@@ -5908,7 +5944,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b3360028ff8803e149de96c0567edbdb0522372123716ace264f61768801de01",
+          "pi": "4c606f1a68693e0611a7a7d0f8e5914ac7ce2088578223adedad8488899ee2d9",
           "cadr": "b71bc90d71e7fa8c0b4751a5b65427c50c1b08d7995ad2c9d1780db21a620414"
         },
         "narrow": {
@@ -5931,7 +5967,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "083bbe594f8058a8174b9909565e51ac97b985d276d9c1e8a313cf8e25b8223a",
+          "pi": "d8e7c9e5f92d5edcdb3af1f3e89f85cdf9b805427db0f09a85e22a2b85de799f",
           "cadr": "86346062b2c7586095c1c177d5bf5098e6eff120324c5f9909220642dfc60691"
         },
         "narrow": {
@@ -5954,7 +5990,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "93b3fb47478f0417a89a0c05b7492f562def1a5d9dee6f1acae75ce7dfea28f1",
+          "pi": "43b3bd036967a08c2f8cb7d1543bdd289ee1f1bfb5eb30db39d673b308bb9acb",
           "cadr": "4a330c2e63748ee7556909d53f03ade754c495faceb529a4153700f97327a9ff"
         },
         "narrow": {
@@ -5977,7 +6013,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0e6466e7192ad41733dc6484373b3068b15937c262b303444e031a257bb6d50a",
+          "pi": "e4847fc003b1aa11f0353ab4e619aad03df6c01d39bbc94f9f77b5cd1f8f5ec5",
           "cadr": "0a89ecc446c89e4485901327d4c3d769f619fba3c33efef627d9bd0eb54602db"
         },
         "narrow": {
@@ -5999,7 +6035,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "dc8699069dd6734ee7097fa66d8da0b418e4bb649651aa309a998cd9607fa25a",
+          "pi": "88235eacd52b9e3861399cc0b9c5052a4284b61af977e671e853255bc9e3084b",
           "cadr": "11a934ea4a5e2d15fc219e7f23de1d3022b519d7ed14383c3bd8d4a329e0119b"
         }
       },
@@ -6017,7 +6053,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8eb799db5dab12853b847df977ff1af7aa675c2b37c31b5f6012f1bd8d3ca77f",
+          "pi": "aec398124aedfa4bd85403998afdfe74e5d2d6993a780d4c58cd2b28b36d05a6",
           "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
         }
       },
@@ -6036,7 +6072,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b4afa2efb6a1c0cd2280dc53a91d0edc658bd298be598af068ce440a7ca4f4c5",
+          "pi": "3ea229c30196411ed27496dc9c3346d03d9d265e1352c4a550d191871a8ba5be",
           "cadr": "2eb008773bc51ca5593dd83d5f49cbaefdd726111be8b2b52d4811b2fb7e5d3b"
         },
         "narrow": {
@@ -6058,7 +6094,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e2f3bd49ced1beb78ad96b5d47ab7dd3b674c33f9dbf107363853b27841095aa",
+          "pi": "6d28b5a3b8aa57b956c788f5219b9da4653298eda170bf027f681d52015e8c9b",
           "cadr": "5ed1d061ccaa67bbbe41307e29a8b13282fb8e8f41eac4e4fba17fc22f5cee48"
         }
       },
@@ -6076,7 +6112,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ba8fcbc4e0455d0160d5dd7e522945efd2a0658114f368226073b3d6efa0fcf2",
+          "pi": "267aa7a297783828e0d97ba294054ca14f29f9c5cbc310a1a74d49fced874d60",
           "cadr": "3df25d03fab45b8b51454a7c611b623a16610ef1a3cb94d1ec332265360309e6"
         }
       },
@@ -6094,7 +6130,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e2f3bd49ced1beb78ad96b5d47ab7dd3b674c33f9dbf107363853b27841095aa",
+          "pi": "6d28b5a3b8aa57b956c788f5219b9da4653298eda170bf027f681d52015e8c9b",
           "cadr": "5ed1d061ccaa67bbbe41307e29a8b13282fb8e8f41eac4e4fba17fc22f5cee48"
         }
       },
@@ -6112,7 +6148,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9bc8b4bdc4419fb200c8cd6842a463ddc40a3e0f39d5ad3d85266b26b6579e5b",
+          "pi": "00346ab36b289bce71d4af7b9bdd9dc9018e1d3e75936f56a04b339affbee0bc",
           "cadr": "7a1ade2b2de148e01aa877628158de387115e3c829cd15481c4cfcf1860cbc73"
         }
       },
@@ -6130,7 +6166,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "4ba7369cfbeef9fa7c6acc819688497fb86cba1f4bf6f4f26615c4ff035afe10",
+          "pi": "274506dd7e0b72c6cc53b30e4171472e4680219059450a4116feec91b62a6b5f",
           "cadr": "02733b854de6027dc56215ce377fe9790c7471cc6a08305176e38112c8cdb344"
         }
       },
@@ -6148,7 +6184,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9a7e254def6148e4875eb7a9544cd38bca2175e97792738b39b72fd66d937e3e",
+          "pi": "fdde26d1e3fe2aec009221ce7df39b2baceae27f1f35216eecb3c9ed7b34070d",
           "cadr": "770a8d55439a82e7a055fa3a01b06be7d5fc670b8742c68073ebbc7232c3ba14"
         }
       },
@@ -6167,7 +6203,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "314a347b2e2c0cc8312f1843d1cea2a32d1cab68b2b1d43c5e253dddce349531",
+          "pi": "7cadd3e4fddca5e21c420cc32c8986c41a3bdcbdd586d0674d223d63c520ab52",
           "cadr": "f4c3181b134f3dd732dfb9ac2b5bff53fc4aa5abe3bfbffcd1abaffce677cc90"
         },
         "narrow": {
@@ -6189,7 +6225,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "25d8fe96c57564d5b5bef0fa21f0168582bb328e71baf17f1f5bddc46ec6457b",
+          "pi": "3700202b3c66f63639b3c37a1161e4e6568a42354fc47d58b4fb7239881b20be",
           "cadr": "7426a038ca1b966255922a3967279076516d1c830f0bc1139d6dbfb1ecccf083"
         }
       },
@@ -6207,7 +6243,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "25ab7c3aadf61ab7b4654af3344b8830bfbc4fcb6e66c34f0b60e6468b579f13",
+          "pi": "e14083cc4830f71e3e5632779bed115721e84c3ca5a95b6983b82a5f99e0e7d2",
           "cadr": "f984a0c119448f65fdc3d6a8b272589ad701aeea6dfa36cb3713f465e3430485"
         }
       },
@@ -6226,7 +6262,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1fc564c9d283699fd1ab5b56128ef17c20d0b0facfa57cf66919cea6f2216441",
+          "pi": "4f9b6521c03bc6b455a77a6a71c535a1a00ca9733ebbaa33a103219742fa1106",
           "cadr": "b8651ef1770f130a3fd8cd1b2827aa6a80cdaff472538e25baa38cfe15a85a8d"
         },
         "narrow": {
@@ -6249,7 +6285,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "314a347b2e2c0cc8312f1843d1cea2a32d1cab68b2b1d43c5e253dddce349531",
+          "pi": "7cadd3e4fddca5e21c420cc32c8986c41a3bdcbdd586d0674d223d63c520ab52",
           "cadr": "f4c3181b134f3dd732dfb9ac2b5bff53fc4aa5abe3bfbffcd1abaffce677cc90"
         },
         "narrow": {
@@ -6271,7 +6307,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fcc8196b39bced4af65d1599a6b9c50588933d4b5556fd00a8447bdee443bde9",
+          "pi": "b5fe63ea365e6315262b4c24ac0f8dff859a3dd18d7daed96415fa7d30774c25",
           "cadr": "c0d2ac921b317b3dbb9139ab8048c89569c70b1d54ca5e919849e52e43371ead"
         }
       },
@@ -6290,7 +6326,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3f293544ad61309860b09c66dcb9cef9f4c5d2ff54bd174524b52b799597a639",
+          "pi": "c79fe9bc57cf036e6968ba39efa070e034f82ee4c6d3d25a77a852a8cb4d632d",
           "cadr": "0f33a3ee5711d417e031881d23c142d6554e0fe05dd85830ad6d8041475db577"
         },
         "narrow": {
@@ -6313,7 +6349,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8eb799db5dab12853b847df977ff1af7aa675c2b37c31b5f6012f1bd8d3ca77f",
+          "pi": "aec398124aedfa4bd85403998afdfe74e5d2d6993a780d4c58cd2b28b36d05a6",
           "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
         },
         "narrow": {
@@ -6335,7 +6371,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "753533f7d672c73e629b1f9cbefa526198d73987bf0842fa88ec86776c24d46a",
+          "pi": "8918d94ef9fb7b29afb1366b149c0f25a3ccabc7c102bc99102a7647afd27e90",
           "cadr": "ae729e0b4428d0fa2251005ad97031e18411d2f295b74a0d17664db855a2b9ef"
         }
       },
@@ -6353,7 +6389,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "73e3e456b0e5dee1e73bd32d3b7f2330158a8f924cd1888d1625fcf85fd00070",
+          "pi": "464ee3f18ab4eb895a5e41b8e3836691d2988ee4122cf20a57052636d7cd2b3a",
           "cadr": "c9e5d3d088905c7461d4dad8e7b6c7183b67f6593d7e08e751c0164df93decdf"
         }
       },
@@ -6372,7 +6408,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "816f08534f77eaad4debd05ce38defc0e413e773258e4586d1e875ace776f05e",
+          "pi": "cd81a21bbc8bf2498a5f745d95375b4ed516d0717048bb3f83df0567f7af8cee",
           "cadr": "3070c718906abadabd32fea0196344dae3fdb525cb784c2ade570ff50e27ec58"
         },
         "narrow": {
@@ -6394,7 +6430,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cef14a5ad8de2041a4fede04fc32331c7a64df221412cfbb65fa2e20df9c1bfa",
+          "pi": "7737b2858150441fa3108112ba7d339ecc3279f0beb248306aaf73c6c9e65639",
           "cadr": "d2eb4dc5065b58336bce22823e2f50065a8d7d7d0536cd993fc8168e5cdb6664"
         }
       },
@@ -6413,7 +6449,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7882f9ad3cd3d9a66b551f8d326a455b85ff4703d0b1ab3438f668c4eed8ba19",
+          "pi": "717f13e0903f74a53fc1284eb501e7348bcd6d0d595959ad4ad15e8e297239a9",
           "cadr": "b041019cf4f53fa524a0abcb3c52732f544036c3223b12959124bf1f8efb0d88"
         },
         "narrow": {
@@ -6436,7 +6472,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7da782de3082253df97ef2d16b7b7063ec543afa9e71caf51b2abcd1da1deac1",
+          "pi": "aa05f9cef296bf0581038b6ce6c9010b95805b3a91cd9b641110feb276e522e4",
           "cadr": "8e9d04d05c723a51ab93582b4625b0242768b51526e844b2a2545122919fb3d0"
         },
         "narrow": {
@@ -6459,11 +6495,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b1c0ce9d1e05188db5873a51b9a548ca6a06b418590e6dc16a71118dff47f777",
+          "pi": "99ab13601296acf763d31bd7c8cd00ea81cbcd10eb303fc7a1607e18a848675a",
           "cadr": "7ba013fd0faf71c7894af8be8a4c831257b914996debd24e385289926ea4c83e"
         },
         "narrow": {
-          "pi": "86016d2c8e026bc6291e6adde97c0c678ed048c1784464cb71ee32b74cdd92d3",
+          "pi": "68d25170854f6227eb02563baaa22d60210bb3614b17d9ffbd042eb246d7eb3d",
           "cadr": "8f06e5dcfa986d74d4e483ea4a2e351512f17182f85e24eb044ded6073c74f27"
         }
       },
@@ -6482,11 +6518,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "546f60c8de9e12e3996f73985f144fa6cbab535cf4d97a194165daebe6858e51",
+          "pi": "fcd59028e4d1e99a093764cbbebce467ceb79d50d9b6d24e00d50f77cd43f597",
           "cadr": "ee63e33a5d02edd8683f0747d26d694ce86abc5070e1ac4cc6867fba2c8bb8d5"
         },
         "narrow": {
-          "pi": "1a3db54a63cf33c1adae158fbe3238cd1f8641e2fb7f7b7db9b04b889970659a",
+          "pi": "cc75b88627bf468b9ae1f39a1cd1a704f98e5251d7a08d9af6a002f9b7d57345",
           "cadr": "5b13680a8ce656a1207f329b38e7d664d446347594ebddeeeceee88a04e8d10c"
         }
       },
@@ -6505,11 +6541,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "190d24fdb52dc8a9af7a9db088ce9652defc6e25a1992b7e185702e3f915ffe6",
+          "pi": "bc5e81738c04d43000a457374d1b6a841a31ab5e16b5f5dd81f21812902036df",
           "cadr": "570c21f50a0215fffcdc963455d77c855fe66ccc92fe21b11b2e8c1958efe27a"
         },
         "narrow": {
-          "pi": "2c2bc6da6640fc21be1cd68effbe3b5dcbd92788843dfa83a3e17ba797d91fa1",
+          "pi": "1fbbce59fa528e739243e3f6b3a24c5d71abb8f88166c2fafb9474f18cecd4f7",
           "cadr": "316904de4cd869412ca2458059d1a7c8f3c642b2e99aae04c036a326cf84e201"
         }
       },
@@ -6527,7 +6563,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "93b3fb47478f0417a89a0c05b7492f562def1a5d9dee6f1acae75ce7dfea28f1",
+          "pi": "43b3bd036967a08c2f8cb7d1543bdd289ee1f1bfb5eb30db39d673b308bb9acb",
           "cadr": "4a330c2e63748ee7556909d53f03ade754c495faceb529a4153700f97327a9ff"
         }
       },
@@ -6546,7 +6582,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9a3917b054866e2268000d57064cdd8f2c4445f2530cb9dda04ea728f00247ff",
+          "pi": "cc087118f02703f72cfedcb7afb57b533b1ef022e302a965c0a5c70cba83a888",
           "cadr": "ec831f1eb6c9666bdb71477181c4f951a521430db3176ace5f5651c3af0bf25d"
         },
         "narrow": {
@@ -6569,11 +6605,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d53eece09c43647a46710fbaf10346cc449c38c85378060709e865222ab0e50f",
+          "pi": "850526eac9f1ee7e82fb81bae0f9dfdd6e6e3d2bd333eeaddda80c7a551fd162",
           "cadr": "ef54ada47d200bc29e3c0cab515908cd70e6b0b915d6b824ec6f83acbf99a3e9"
         },
         "narrow": {
-          "pi": "7f6716e790f8f56db9bdca1c492b1b9969a7541fadaef0f4768b71fb0fbfee5c",
+          "pi": "1457315284a1c631c96d56df6126f19fd1027825dd1c81695eae1943e72b86e9",
           "cadr": "b78b051fbcb7b68f2a8825f7c01e6d5e7f5c4b378cdae52ccac93a18685b30b1"
         }
       },
@@ -6592,11 +6628,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "45ab7c2f7fe91fa9866bdca7c7ae8b1a447d1ee7fc106bad17c4bc9520a06263",
+          "pi": "7c481d6c8e17b0bba68fa6dac42903b76617b1ca5e89c18e6a2dac343ee90994",
           "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
         },
         "wide": {
-          "pi": "a5dc4007bd6834f29cedd62fe714554da2644399e1e56b0788437f1819e79551",
+          "pi": "6eda1c8b43a9e1c2f09a66423b803aa3dea55709d7294b4d1b1f4749b2a5903e",
           "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
         }
       },
@@ -6615,11 +6651,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "9846c29175a699dd1c1a7c37071ed8806e7e197aa75c91995e4d69c4e183e020",
+          "pi": "75e228a338efd72ae2ae1fcb62c81053e838c41b6454baf16cab1f21698f9bb4",
           "cadr": "5a996bd2e7cbb719646df5d271ecd7c09bb6e2cef260adc6792353f70b1bc853"
         },
         "wide": {
-          "pi": "ebaae65d3e809d4c8fdb282753f34802f654026bd71a86f16203b100b1ef3925",
+          "pi": "899423dc5321777bf59b4425ff980bc4721a91ed60ef2a8217d7d999f2e54ebc",
           "cadr": "befb9ebee157c68f1ae67cefbc7f0e45b336710a9dbf375d093655e4cd1d637a"
         }
       },
@@ -6638,7 +6674,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "386c93f3e5e7307103865f3408cc63c3d2c8ba0120c83148ec9d56b4b530a0ad",
+          "pi": "a0bbf76502b276d643e174bc640cd1c98aab5f136c0ab018badd65f1b313704f",
           "cadr": "03c7b1023b27eb9d2032cb5ca26c92cadab96d4ea858f33f7e3f8d5fa4d9f382"
         },
         "narrow": {
@@ -6660,7 +6696,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "407354a41c8342738ddabe8580228b3fdd562dec86527d1b73dcd06698cbb984",
+          "pi": "80c5e790e3c0e3c3f48d63ce3bddec39d7215e1d805f104d3e905a1aae2e0437",
           "cadr": "7e22923a0a7a7d4f19eb760012e384101ac57eb3f9f7e5476a13b799ab344408"
         }
       },
@@ -6679,7 +6715,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0d3a748690a30b14a44e226de5257e21eabea858a89f73304caccbd4e70e1e91",
+          "pi": "5cb37ce602422e8bcf4a9feac15bda5ec1e71dcadce9356ec742dfbd126b3eeb",
           "cadr": "952c1a4418e3b4e5306355d1ea248486e1c797031ae534b962d8982ebc9a0d21"
         },
         "narrow": {
@@ -6701,7 +6737,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2735a50324a6ef1dcc70f2df7deb2dce0d99c1583a9568441d0667e890521fcd",
+          "pi": "b013ef76ac9209dc8efff34b0dc295055738ed46f38655f8d1f3c53a2644f1fe",
           "cadr": "346fc45d377dd77e940c568e5a8351eec27fd20d7bc2cfead42f04b9e026f29c"
         }
       },
@@ -6715,15 +6751,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "e36568b8e5fe3aa44dc2f1616843f907d2e721de463af62a2697a8a74484ce87",
+          "pi": "8573ca63339eb76df478dc19ad575135faffcad868b10ea7cb1402002b30738a",
           "cadr": "e36568b8e5fe3aa44dc2f1616843f907d2e721de463af62a2697a8a74484ce87"
         },
         "wide": {
-          "pi": "17a9fa52dda437a28c0a57750db207edd70c8a13aa6ccffcb7a0d4e96a0ff192",
+          "pi": "73a19227db4c1902e4f7543d4f51b46b76fdcc7c693fc05c365e85a9fd44c070",
           "cadr": "17a9fa52dda437a28c0a57750db207edd70c8a13aa6ccffcb7a0d4e96a0ff192"
         }
       },
@@ -6737,15 +6774,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "af7c5ffe070e2eda03a231843dea3d8af34396eba6c3815c581bf71f1aa0fff4",
+          "pi": "4009b24c198d19692ea321ae16a2b98c7801710e00751119086be10a63372a05",
           "cadr": "af7c5ffe070e2eda03a231843dea3d8af34396eba6c3815c581bf71f1aa0fff4"
         },
         "wide": {
-          "pi": "0608c103326a2bedf0acb72f5ddbd51ecd32165f7b9581a6ba8f96384948aab6",
+          "pi": "d00594e2ae4dba21e462d38ec37c24c7fdb73d7729d7ba9dfb3254b2ff1ee514",
           "cadr": "0608c103326a2bedf0acb72f5ddbd51ecd32165f7b9581a6ba8f96384948aab6"
         }
       },
@@ -6759,15 +6797,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "623fb8f592d88896c865c233a61181794f6bcb3e3e7d0501923a30c2c7db106b",
+          "pi": "80f843ca803eecce53dfcb783bd30f993144075696c3898988b184462513f3e9",
           "cadr": "623fb8f592d88896c865c233a61181794f6bcb3e3e7d0501923a30c2c7db106b"
         },
         "wide": {
-          "pi": "a6b05544ece7beee662615b80412adfecf7d98e154153c29cc0c54a07c4fa8db",
+          "pi": "3f1e235cb2f9d6433d19b93ae892809dcb51b03518be001785e21bf6f559d2cd",
           "cadr": "a6b05544ece7beee662615b80412adfecf7d98e154153c29cc0c54a07c4fa8db"
         }
       },
@@ -6781,15 +6820,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4647a868217d900e898f80d3aeb77d5e691bd2e40d1d2e6ffa08d21879c4865c",
+          "pi": "b680ed069ea233e96839fee86d951f481af0ae7e67fbf00d6a83180111d8c02e",
           "cadr": "4647a868217d900e898f80d3aeb77d5e691bd2e40d1d2e6ffa08d21879c4865c"
         },
         "wide": {
-          "pi": "43db59559ba6822d074dcd6c6f3d9572b0a0a260410612e64b334fe296669722",
+          "pi": "f98129601eb02914b16deb2d6e611ac26cac0bc0cae1411d159364e1243b710b",
           "cadr": "43db59559ba6822d074dcd6c6f3d9572b0a0a260410612e64b334fe296669722"
         }
       },
@@ -6807,7 +6847,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "36d1738183525b5aef2fd903c74391b7fb054234b89278cf58512ea5f0d16914",
+          "pi": "ec91e643fbed9582acd7cfc99aa896a53e77fdfad7b5eed1f25cc607fda95301",
           "cadr": "f8707ea8392c22ef9620a1969512b80517634f0fb1cc109b2e02195ade13f80d"
         }
       },
@@ -6820,15 +6860,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6374b4e7d22f2f2404759eda73dc4942d869a4be30f64197e61aed499b5fc674",
+          "pi": "54fd8fef2801729aa46736c07b99633f42ae70a37fb6beef7e821f9ae518e68a",
           "cadr": "6374b4e7d22f2f2404759eda73dc4942d869a4be30f64197e61aed499b5fc674"
         }
       },
-      "note": "At tools-success/find [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/find [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6837,11 +6878,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "d5f996247d668c896ad170bff3ad32dc49a2cff5a29f702f4d5441d42be8a893",
+          "pi": "9af46d38835a3d25ceab1796495a91bbba423383ed56e0ba9c2fab53e8daadc7",
           "cadr": "d5f996247d668c896ad170bff3ad32dc49a2cff5a29f702f4d5441d42be8a893"
         }
       },
@@ -6854,15 +6896,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "97a3cfcabcf76fedc18d9ff6dc0397de816e265ef7758889105c680d788531ee",
+          "pi": "80b690c4dfadc3fba6bac86553d49efc6078e82d586dce4a15043507f115b01f",
           "cadr": "97a3cfcabcf76fedc18d9ff6dc0397de816e265ef7758889105c680d788531ee"
         }
       },
-      "note": "At tools-success/find-default-path [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/find-default-path [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6871,11 +6914,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a458ecfc11a382bbbd9aa605ee24d994026dfca5fe3bb38864a4bc3284414d14",
+          "pi": "1ef95d716fc45ef5759ea54f08843fe827f4261456b43388b2fd24680410012e",
           "cadr": "a458ecfc11a382bbbd9aa605ee24d994026dfca5fe3bb38864a4bc3284414d14"
         }
       },
@@ -6888,15 +6932,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "32503eee777137565f8fc38230fe2f35d877a4d228ae5033bd19f0d093965e8e",
+          "pi": "fa333b08f94f7ffbbe38b394d9bb6b6b84b7778e4f6fca96fe5e48fa22dcc9cf",
           "cadr": "32503eee777137565f8fc38230fe2f35d877a4d228ae5033bd19f0d093965e8e"
         }
       },
-      "note": "At tools-success/grep-default-path [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/grep-default-path [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6905,11 +6950,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "c5d34eb24187dd557f82dfd7920c52ee2fd65c5776b4631ade7b7f35063dec76",
+          "pi": "3f733f39e1658a3399528ebf203ce290e560210a387cd61313a9abc0224f4b76",
           "cadr": "c5d34eb24187dd557f82dfd7920c52ee2fd65c5776b4631ade7b7f35063dec76"
         }
       },
@@ -6922,15 +6968,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c",
+          "pi": "4f2abc1e0aa9ba099d2f865ba7c70e0fd7797d2d454093a00bddb1c322cb4d8a",
           "cadr": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c"
         }
       },
-      "note": "At tools-success/ls [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/ls [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6939,11 +6986,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8",
+          "pi": "f1d84ce4e9f693d14eeacc5afb201f5c92ab6d43c58feae9b8c8ef4940f9f551",
           "cadr": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8"
         }
       },
@@ -6956,15 +7004,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f1b544a1387f2a83bcd04c1e72ab9aa182b648cc4f47ffbd26a8969b03330632",
+          "pi": "582e8c9e5986bfa611c465250c3e460e480d71ac7c5da74ee5c483ec2bd9506a",
           "cadr": "f1b544a1387f2a83bcd04c1e72ab9aa182b648cc4f47ffbd26a8969b03330632"
         }
       },
-      "note": "At tools-success/process-exit [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/process-exit [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6973,11 +7022,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "6e8fba75307e25271292bb97ef63f27316d1ff49b1474e55fdb65c975deeaa7d",
+          "pi": "21ce5294c9e639f6203e6e3fb5f3f1460b2822e54fb378ba6aa347cdef229d19",
           "cadr": "6e8fba75307e25271292bb97ef63f27316d1ff49b1474e55fdb65c975deeaa7d"
         }
       },
@@ -6991,15 +7041,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "678d35544a1a98aa5120c69b600dc9a8c5fdbd942e1ddd3c6e3c26cfd5f68ca7",
+          "pi": "578ff835ccbd3a4181d42feeefa3b4fb7ca02a5f2eaf8786b12e4ea82f77229c",
           "cadr": "678d35544a1a98aa5120c69b600dc9a8c5fdbd942e1ddd3c6e3c26cfd5f68ca7"
         },
         "wide": {
-          "pi": "33d1fb9b179dc5870633ced12b935c74993139756dc0f55c1010cb9f8117e6d6",
+          "pi": "6837d5a56fa8dce5921fc79ad5f34c8dba2d8521bd69f55d7f7b89b0e81d4be5",
           "cadr": "33d1fb9b179dc5870633ced12b935c74993139756dc0f55c1010cb9f8117e6d6"
         }
       },
@@ -7013,15 +7064,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d",
+          "pi": "a617b02d4d57b28b61621c18227f428359fc798fc962c09080a552b1cb9cbf79",
           "cadr": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d"
         },
         "wide": {
-          "pi": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8",
+          "pi": "75d419c50fe95558509090db81418f7ba3be177326c22c9f07b6490d6e77a5d8",
           "cadr": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8"
         }
       },
@@ -7034,15 +7086,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984",
+          "pi": "5c4e071a5e5f76dfa9c3a8368ebf6f7146abd35c0f8d9c1ac7ee217863176d4e",
           "cadr": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At conversation-content/markdown-code-thinking needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At conversation-content/markdown-code-thinking [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -7055,7 +7108,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "aaf3516a64f59271ed48b650aa74b2386e83e90a71f99b98cfbe422f5e148d43",
+          "pi": "0d43389b5bf862f5ee80312e14c6f42213ea13769dfe3adc616ef56316237409",
           "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
         }
       },
@@ -7068,15 +7121,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "509a94764f3382d456c07c236860b7fe9b9c5ab8b850c21883a8aa7ed4a2922b",
+          "pi": "f58ce32c190dca24fa2d07daeb17ec0aa2b11e6cb2d2e6f16aa6cdfcb3f7d965",
           "cadr": "509a94764f3382d456c07c236860b7fe9b9c5ab8b850c21883a8aa7ed4a2922b"
         }
       },
-      "note": "At tools-success/edit [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/edit [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -7085,11 +7139,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0b9cf0f49b0b7c16aa7881f0176b703bfda42f8e965d888e425492c743be465c",
+          "pi": "98292dc122c96cbf0bcd90d1ff6585d6f5c5852fa0b469c9d9e946ce66f7ba06",
           "cadr": "0b9cf0f49b0b7c16aa7881f0176b703bfda42f8e965d888e425492c743be465c"
         }
       },
@@ -7102,15 +7157,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a084834878e80bddb699aa292a42f40b3050269ab9d61c1d0ab9c1a073744219",
+          "pi": "78d8cfe679b67fbd4c5a208994ade98c8bbef096765a4d5996275c7576eb3b04",
           "cadr": "a084834878e80bddb699aa292a42f40b3050269ab9d61c1d0ab9c1a073744219"
         }
       },
-      "note": "At tools-success/grep [wide] screens match after identity normalization (I01 protocol only). Split from narrow I04 pin."
+      "note": "At tools-success/grep [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -7119,11 +7175,12 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "365b243051365572aa1f29ad9ba7d3bc259c4ccb933f666814dbb38fdf90a446",
+          "pi": "e130fca5fc824fec8ae0ce40d3b6c341865df51b39b28b23b50475e7657a1259",
           "cadr": "365b243051365572aa1f29ad9ba7d3bc259c4ccb933f666814dbb38fdf90a446"
         }
       },
@@ -7141,7 +7198,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "554a6c053b2ac8a0e6395537fb56462cf4f883b5fa940b0c0908cae5f83af332",
+          "pi": "705e0d514fc6c40eb5d145a2c88899773c4e08b0481042a9efaf0d14aed92da2",
           "cadr": "14e9a89745c142fbf8108d7bba491c5d5940ebe653528ed8431144a04e350b77"
         },
         "narrow": {
@@ -7163,7 +7220,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7bada6c4482b69d1556b50b980110b1ef48aeb5aead2b8ec567cfa1aff8e10ab",
+          "pi": "67257778c98588e20e89a56fb256abd30d4009837b833b7d7d21c535efecb5b0",
           "cadr": "84c3769a7560a1cd4a5bb8cfe9d1300fb396678184d0d536fd634b3186083f90"
         },
         "narrow": {
@@ -7185,7 +7242,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "32bf01eb4bf8509d26bc982e278769ef41154c831fc6ff0660bb5286e9ad35de",
+          "pi": "996429059db95b5fd985185b8008a8ad0f923ee69ec03bb38901284c89161e5b",
           "cadr": "2e4e6b7bc9516b761408b399545ac02f1dcab770afb4ee85ce5d5e1fbadab1b4"
         },
         "narrow": {
@@ -7207,7 +7264,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "514b7a6177be7f15ab27894d9687d87f1d257f2b5eccc8ecec148f7bb88a9e6f",
+          "pi": "001202a3bcf21209a280656dbc44112d2c8afbb3df00b59bbbd7a7bfd482460a",
           "cadr": "b37eb78a22deeb7d4653ef50b5a19b29cad30225aeb58b00744ced3d409cb37a"
         },
         "narrow": {
@@ -7229,7 +7286,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "14903628448fbb52b82b2d185319d1170ec6ba3223f4bd495e095d23458d0211",
+          "pi": "cc0b445a030eb664b1d30326a3463eec74d2c66afa506aac0635f850691ba5e5",
           "cadr": "3a1aeb6248f7bf22cf5cfeeddcdd756c38741f0341e365d075568d91f537895f"
         },
         "narrow": {
@@ -7251,7 +7308,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "efd46210ecad11189e4e44f3761bc17739f5d12f8fcfcc4a60e988aa6cfde108",
+          "pi": "2940573fc8dd72e63d191a79ffe141b6ea9dec82dbeccbe925ac82e96836b818",
           "cadr": "0c05824ea52a3022822ad67d530f173a5913b157dfda5417d116a32cbaa6b5be"
         },
         "narrow": {
@@ -7273,7 +7330,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "82c1f8c308070c8064c1150a2da882d924ada3b677b2eb6143fe6db8a980cf53",
+          "pi": "bb571eff1a6ee54ea88fcd7959483aa4892b5a8ca33adf118d9ccaa6dd5913c2",
           "cadr": "945b759566f81582dbbabff2d75e9beb95eb4e3af5c9a3f2c6e89083fb18f4bd"
         },
         "narrow": {
@@ -7295,7 +7352,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f629f29aa7154eacbf1865b8ad971db176f7823b08001458979d15529d4cf463",
+          "pi": "c693c31ff8a324b5b57ec1730c60be35d642866744a8e93b509adc7032ad2db7",
           "cadr": "6d80d064571afe41678cfe5f815710f6b23bacd636e73b9dd13a98438a0e56e6"
         },
         "narrow": {
@@ -7317,7 +7374,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "657bb064336fa7590db40b99da87c1e76897c8bce0dce099e1c38352eb2f0ab0",
+          "pi": "9f6b95b524d0fe861ef7f9da724744ade2af90e6ffa2b7a1aec1f51aec670a3d",
           "cadr": "0915606bc56317ae2bc1373f65869cef398429855875eba6685d81ae24a093d5"
         },
         "narrow": {
@@ -7339,7 +7396,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b92ebc5954c3eabb85532fe88c75c8b8ddfac952733edce5ed9b10d7118bde1f",
+          "pi": "b567f9a5bece4b812c53026f4afd0b315b67519b0d109ffad08018de918b799f",
           "cadr": "4b6074f8764092b14c106607f5460486720a22c88c81972872edacd7f29e17e7"
         },
         "narrow": {
@@ -7361,7 +7418,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a52b60380cd9a7199d61609487b3d3b503bee47dd79dd350458717b3b9d2ca32",
+          "pi": "d0dc7c0dfe904dda22463924777ce68c367cbe31816faa1dca6f8055c3416eed",
           "cadr": "2e6f63eb7e0e2c58695424a65e6e4d3859d03290ecfd013258d9535dd6499045"
         },
         "narrow": {
@@ -7383,7 +7440,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8feb5c0aab3dfffd0b18d62e0f1d13c4970dcad63d2744124a1d0fa9ffde1e1c",
+          "pi": "a9bf948cefbc57813409776454401c6029c280a329cd1fde527cab31b78ac6fc",
           "cadr": "5df09f896c7d515626a835822a1e97eae612a8a6f01e4c6215db68ea4cfc3797"
         },
         "narrow": {
@@ -7405,7 +7462,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8286a1fcb83985026934e8e4bcbde52d0586a363d4a207cae46778dbf4e2e8b9",
+          "pi": "ac54d335aa1d4fdd4aa13bf05ae1a9eda9f65ee9c52b9de6c1203f69285e6be2",
           "cadr": "e18f9193f630c3806c646fd7bb11646eef20fefc4fbfbd5f8e8d6699014744c9"
         },
         "narrow": {
@@ -7427,7 +7484,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "49994b7d24438c2940b4e07fe169d68c67648e62889b0b3b9431a4d0bb2b6c9a",
+          "pi": "28eda6d45989b7a63edf8e05f1ee768c48ec5bb52e4ce517ce8474ac8f9716ef",
           "cadr": "3fde791f86a6443be85ff73f362b33f877a0ab82b9194c61f1ada92d6803f148"
         },
         "narrow": {
@@ -7449,7 +7506,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "93c7050ae8984b958e042c5e8006581f068d148183814d2f984a073b18a2806a",
+          "pi": "64aa15f404b67b9cfd10c29d666cf5227cd76239b40e7481865cd8eec9e23e22",
           "cadr": "3ac3fc496286a848604d0451cdbb688dd83041d2f14d046bd986b42c251680a2"
         },
         "narrow": {
@@ -7466,15 +7523,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "6a3e79fa9e3dd1c9e13f14ab3d78406542908c602f1b4212ce0dd5d0116a84d7",
+          "pi": "606f2f47c9170a1cadf1a95f7ef34b81ddfcb41f409f53e82f7b99757ee14106",
           "cadr": "6a3e79fa9e3dd1c9e13f14ab3d78406542908c602f1b4212ce0dd5d0116a84d7"
         }
       },
-      "note": "At overlays-core/overlay-session [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session [narrow] after the non-active 'other' session seed used by overlay-session-delete, list order shows other above overlay question; residual is Goal 16 identity wrap (I04) plus I01 ANSI segmentation."
     },
     {
       "scenario": "overlays-core",
@@ -7487,7 +7545,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f8b4adfd1a08ff06762932398df442eec10b6030c0e09212182e0ecaacb2083a",
+          "pi": "2aff1ce8b0d062d6a61817021466be9661ae4a66dc0c9256fcdefdf1502a0d67",
           "cadr": "1defc1d250ba2c3cdf500a9c576263eb2a7f88e742b7806e8334990db85add0a"
         }
       },
@@ -7521,7 +7579,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fcbd4bd65946180e13e1b7d88f9953ffadf22691d892e3431bf052873d7470f4",
+          "pi": "9dab2e708c6e524e09cbab468c4f7a761b1398e099049729fddb2945dadad3c8",
           "cadr": "bfcf8569b741d313c628b86694e420202e1b236fa994935b2253f5da5134d020"
         }
       },
@@ -7538,8 +7596,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "6a04e3423c5bfc5f3d90f8b0f1013dfd89322501f2d9b72298701eec0c7b4d6e",
-          "cadr": "6a04e3423c5bfc5f3d90f8b0f1013dfd89322501f2d9b72298701eec0c7b4d6e"
+          "pi": "5c3485592726d1a156b25eef693f1f87db5161376c93986a81f731c40ec20547",
+          "cadr": "5c3485592726d1a156b25eef693f1f87db5161376c93986a81f731c40ec20547"
         }
       },
       "note": "At overlays-core/overlay-session-delete [narrow] semantic screens match; raw ANSI/teardown remains I01. Prior: At overlays-core/overlay-session-delete needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
@@ -7551,15 +7609,16 @@
         "wide"
       ],
       "classes": [
+        "I01",
         "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "080ed703823c1551e68f20264102492b7dd29154a98a806ed1d509b89da79447",
-          "cadr": "0b297a968be1293c102270bfc8ff87a95fa8ab572e622cd4d666f156c1132aa8"
+          "pi": "e96a3d3c43368c6d23760ad96bf5cae7e6e5e56c0d5dd1827bd430c96e1317f0",
+          "cadr": "acd5d7a1e49a144b5802e2245f0d89fb2706fa6bd84dc1cfd0227fe892d5e319"
         }
       },
-      "note": "At overlays-core/overlay-session-delete [wide] At overlays-core/overlay-session-delete needs review \u2014 skeleton from manifest sync (visible text/geometry differs)."
+      "note": "At overlays-core/overlay-session-delete [wide] after selecting the non-active 'other' session, the delete confirm chrome matches; remaining visible delta is Goal 16 product-identity wrap/padding on the startup banner (<PRODUCT>/<VERSION> vs pi v0.86.0) (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -7589,7 +7648,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cf9ee1bf87a24a8841fe111f92ec581128d01c254750e406e184d23c2db977ff",
+          "pi": "ebaedb7ebe9bfd12852b78feb2e4ccefeb60f575fc03d6acd5d8ac917fed924c",
           "cadr": "45ab225cedec1f76534a2909386c2fd36705b55809e5de7d96a6ebc0e52a8395"
         }
       },
@@ -7623,7 +7682,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5ed0b0e7cf65c5365414a9d5f41fdf63363386a1ab66f1ea7d490996766f05a1",
+          "pi": "8ed4448aceebbb7958ff4311beeb90853aa2e1cf00c3ace2a5f08b9f0e09877e",
           "cadr": "8d62c77775cbf8946f8c3269242cca6729111bed964e9da2fc03fdde4f7a38e6"
         }
       },
@@ -7657,7 +7716,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "97dca6742f2efa6c4b54ed0188c9f6486d4afa195dd63e33c45e9cbc2bea30f4",
+          "pi": "bfdb6bd24a36ba6e060ef107b9e31af844d6e497c8a55b13ae9c0a5d0457a4e0",
           "cadr": "e15661bf791f5c7bb513015ad7999cd5196e41798a007be2696cd338f0ffa696"
         }
       },
@@ -7692,15 +7751,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0",
+          "pi": "50c10e2a712f9c59af04baeb7931b651612785533f4dc3bc83be7f786bc70217",
           "cadr": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0"
         }
       },
-      "note": "At conversation-content/cjk-emoji [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At conversation-content/cjk-emoji [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -7709,15 +7769,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d1c740a5e312dcda1c5db074f31c5efb8cf5f375452c8ae2fae25b04200ea11b",
+          "pi": "2d9d4e6f17757d52550434ee68b4dc9a17bb74705c75d4d6c26e18967799db57",
           "cadr": "d1c740a5e312dcda1c5db074f31c5efb8cf5f375452c8ae2fae25b04200ea11b"
         }
       },
-      "note": "At conversation-content/process-exit [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At conversation-content/process-exit [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-mermaid",
@@ -7732,11 +7793,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a38e5065449a9637514c095f4a4b23135ef5bf9f5aa3f544a2b78737c9cdd5be",
+          "pi": "14796ad7e2ebee4190f3391ad8ad34004ae74b7da70c4c7384bf11e168293aa4",
           "cadr": "4374a4308a8a2b31a08bf308c373aaa360baa3a98cb7eeb98f4ed4879d3fe02a"
         },
         "narrow": {
-          "pi": "4f1a6f26d339009173aef90b21c74ff12cd004e2a15757569c52c1ce834536d3",
+          "pi": "d25ad373835a79f8aa58ab9960d963a940f2549e2bf3eff2418b20e99bfafbb0",
           "cadr": "44c59ac0a894f9278d31995b1279f36fa7514b54c4f1a57136522207754d707f"
         }
       },
@@ -7755,11 +7816,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6469f0e57bfdd656d00548e44613a2594aaca7d56d790048226670fc9db57437",
+          "pi": "91cdae11a39e21bf201b5626497f879b07c47cec44146986071570b66061f19a",
           "cadr": "13d0b96bb34fb3a5101b2c8d0ae73e1f9988f958806e5a395eb22140ecd5354c"
         },
         "narrow": {
-          "pi": "9465a51c5a5414f00a13f1070aecb6024a9ef532072117ac505bd78c92c2ac05",
+          "pi": "d5ff32a2415d8e17bafe21b9d8975fd9c603fd2f5974e51039c62785dd39ecef",
           "cadr": "8e4620afc0d77bd335b5204aa4cb8566fe37a80d76b778286f33e6ff83c971c2"
         }
       },
@@ -7772,15 +7833,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "62fc86a9d7e33f1726b6455173675aadad38d97d6e84239563299f283b08ec98",
+          "pi": "ca8554dad6cb9984cc29c7015bfd16ac130da6e4a8aff5918b63b34c038f4f84",
           "cadr": "62fc86a9d7e33f1726b6455173675aadad38d97d6e84239563299f283b08ec98"
         }
       },
-      "note": "At tools-success/read-range [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-success/read-range [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -7789,15 +7851,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "430a68dd3575c48d409d66081c8408b6bd4048e62ba3a85a51154e4ee00496d4",
+          "pi": "221b3140db585fcd3bdd1154085a33df7abcb22b22471e57db0bd43fa634e33b",
           "cadr": "430a68dd3575c48d409d66081c8408b6bd4048e62ba3a85a51154e4ee00496d4"
         }
       },
-      "note": "At tools-success/write [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-success/write [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -7806,15 +7869,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c27bef0a7c485f87964c57012bf0bdca4b26c7f1f68ef13604eaf467d669a3f3",
+          "pi": "33b521cc6c7fa1fd24fb99226eb767d310d6679913824fcd328de5643b4ff187",
           "cadr": "c27bef0a7c485f87964c57012bf0bdca4b26c7f1f68ef13604eaf467d669a3f3"
         }
       },
-      "note": "At tools-failure/bash-nonzero [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/bash-nonzero [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -7823,15 +7887,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2f05770a493d11bcb022f5386681f8e746d465d14104a5872c6b2f013f5f5aca",
+          "pi": "99ae5d6ad000d1cd074057fe967fb80694a810ca1d86174890f9caea4c86a734",
           "cadr": "2f05770a493d11bcb022f5386681f8e746d465d14104a5872c6b2f013f5f5aca"
         }
       },
-      "note": "At tools-failure/bash-timeout [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/bash-timeout [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -7840,15 +7905,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5159a5bef41282e416821ce2167d7f88409d8ed5b5fdb0ba0cbc5a8506f7b4b3",
+          "pi": "6c14a3950f34ae3ef2ae4db23a3ad8339aca9dccd97c97e46f112af9480cd4a7",
           "cadr": "5159a5bef41282e416821ce2167d7f88409d8ed5b5fdb0ba0cbc5a8506f7b4b3"
         }
       },
-      "note": "At tools-failure/process-exit [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/process-exit [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -7862,7 +7928,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f3f853784de1f38950b4ea4676eaf870201d0d7627392eeb518dfe0f3a8cbcd7",
+          "pi": "1a4f2b9396ad33ff40e6ab680323ea731471e80fefd118473417d82a683c0fb1",
           "cadr": "a28ff4f8f5cc94d14a2c265e0cfbf6fce8d4f2fb9d2340cd7156e84d2a4ab4a4"
         }
       },
@@ -7875,15 +7941,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "782b0faa24ea4d1d89b4ccbe4de758afa1997155c82c3cb8abac7f5041026cb9",
+          "pi": "ee952ac3259a3481ce33c7ba4e1c20fae8ba3ddb81eec0d13005aa0dc784f209",
           "cadr": "782b0faa24ea4d1d89b4ccbe4de758afa1997155c82c3cb8abac7f5041026cb9"
         }
       },
-      "note": "At tools-significant-states/tool-invalid-arguments [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-significant-states/tool-invalid-arguments [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -7892,15 +7959,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "37bd714cb79fa6c4c31f9d0053117ec4d5870fe2b6914c205112b3e4bf266caa",
+          "pi": "685a5178365da93afe9d7e85b2227ac34705cecf52fee39a4f834457ba14d3e9",
           "cadr": "37bd714cb79fa6c4c31f9d0053117ec4d5870fe2b6914c205112b3e4bf266caa"
         }
       },
-      "note": "At tools-significant-states/grep-invalid-arguments [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-significant-states/grep-invalid-arguments [wide] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -7913,8 +7981,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "53e2ea279d7b716b40bf51e05852cc668aaab625a50dfcf801c07eafbaf84c42",
-          "cadr": "53e2ea279d7b716b40bf51e05852cc668aaab625a50dfcf801c07eafbaf84c42"
+          "pi": "64cee72cffa4ac0af495c58a748eeaa4239ac7eba9a7b5e63f127d706d2b2c5d",
+          "cadr": "64cee72cffa4ac0af495c58a748eeaa4239ac7eba9a7b5e63f127d706d2b2c5d"
         }
       },
       "note": "At commands-informational/slash-session [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
@@ -7930,8 +7998,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "58106761e587cb5dba068020518cec1472d142a3dcc120c5da47c94d1e5ec935",
-          "cadr": "58106761e587cb5dba068020518cec1472d142a3dcc120c5da47c94d1e5ec935"
+          "pi": "c0131d608a564d3e03c8814017747b90801181e1c377f509cc087a17b46e743c",
+          "cadr": "c0131d608a564d3e03c8814017747b90801181e1c377f509cc087a17b46e743c"
         }
       },
       "note": "At commands-informational/slash-name [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
@@ -7947,8 +8015,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "30e35c6ac83f7d628e9c120a0b55dec30f625ab7ec8f49d2fc9cee9870062dd1",
-          "cadr": "30e35c6ac83f7d628e9c120a0b55dec30f625ab7ec8f49d2fc9cee9870062dd1"
+          "pi": "6ce22feba013163de4564dee6c14e3bb2ee18b849e0d3a24b62d14ff2807510a",
+          "cadr": "6ce22feba013163de4564dee6c14e3bb2ee18b849e0d3a24b62d14ff2807510a"
         }
       },
       "note": "At commands-informational/slash-hotkeys [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
@@ -7977,15 +8045,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e",
+          "pi": "85bf7aeb205c011456b8eecc5c3d291672d75d6e525d15a33d99a99badd79b89",
           "cadr": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e"
         }
       },
-      "note": "At conversation-content/cjk-emoji [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At conversation-content/cjk-emoji [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -7994,15 +8063,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a0f72ef98f48d4d14c16466a601ac095e5d81133e24cc8cfbf55d59cba6a14a3",
+          "pi": "5bb1f63b784c377b6286fb6bccb89cef74b5de940808f95a2be294604502a123",
           "cadr": "a0f72ef98f48d4d14c16466a601ac095e5d81133e24cc8cfbf55d59cba6a14a3"
         }
       },
-      "note": "At conversation-content/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At conversation-content/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-mermaid",
@@ -8011,15 +8081,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01",
+          "pi": "6ec24444c7f902c90fb849fa5c31bec5a620c7dd3d7c1b097a09df008dd1b384",
           "cadr": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01"
         }
       },
-      "note": "At conversation-mermaid/mermaid-rendered [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At conversation-mermaid/mermaid-rendered [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -8028,15 +8099,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "5c2cd4e148f9b4c6401db341a7f0d1da0daf6c99a8d62f381694a2af2bf2499e",
+          "pi": "3e2dd1ee0b704ae50b2b1393f2ac8c8f5fc94d47e8a8a534275fa9de1edcca81",
           "cadr": "5c2cd4e148f9b4c6401db341a7f0d1da0daf6c99a8d62f381694a2af2bf2499e"
         }
       },
-      "note": "At tools-success/bash-multiline [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-success/bash-multiline [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -8045,15 +8117,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ccca643f9ea00d8298846e3f0840eee7e534eafcde378f0715bbc69d160034e6",
+          "pi": "19f65dc48706dcead926c94d913672f36e07ed732bfea25945543c6d060e6419",
           "cadr": "ccca643f9ea00d8298846e3f0840eee7e534eafcde378f0715bbc69d160034e6"
         }
       },
-      "note": "At tools-success/read-range [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-success/read-range [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -8062,15 +8135,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "e8d3a465f58a30f09e1ca4d3e7fed3f1dcca2837e8dced305af2d81977c97cb7",
+          "pi": "6f77cbe671803cde43a58b87ea753caad7de9cec54da1e6cbb37dd1229ca8404",
           "cadr": "e8d3a465f58a30f09e1ca4d3e7fed3f1dcca2837e8dced305af2d81977c97cb7"
         }
       },
-      "note": "At tools-success/write [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-success/write [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -8079,15 +8153,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "f378e9c3ab1159acc0b2b5ccb33f4c9d73c300a83a1f59d8b1ff41c3da68b30c",
+          "pi": "9204cf9f25520e4e0547075fe1c5ad97766ec55286fd0f99934693d07d4320d2",
           "cadr": "f378e9c3ab1159acc0b2b5ccb33f4c9d73c300a83a1f59d8b1ff41c3da68b30c"
         }
       },
-      "note": "At tools-failure/tool-failure [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/tool-failure [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -8096,15 +8171,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "912d22ad05dfa3ccde28f8b1be0669f54f4ff0e364482d26840a2f5f4da3e20f",
+          "pi": "e80216040c7d1bfffda5cd030cfc50151195842d4513d8817df5d041fb297f1f",
           "cadr": "912d22ad05dfa3ccde28f8b1be0669f54f4ff0e364482d26840a2f5f4da3e20f"
         }
       },
-      "note": "At tools-failure/bash-nonzero [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/bash-nonzero [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -8113,15 +8189,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "5b2c325051ced188146e3a247c987788f720ac0f923d4029a1a79d003b25275d",
+          "pi": "1728f4251dc671d87b5e1cbc932706016884261808cd3637f442f8671e036a51",
           "cadr": "5b2c325051ced188146e3a247c987788f720ac0f923d4029a1a79d003b25275d"
         }
       },
-      "note": "At tools-failure/bash-timeout [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/bash-timeout [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -8130,15 +8207,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "9b931bb8653d2c47de67e719b52a7a6477c9936a5b0e82defea80823c54a445b",
+          "pi": "f5761c4392285c486f3784a31435789aabd850699dcc87896d4dd717fdf83fb7",
           "cadr": "9b931bb8653d2c47de67e719b52a7a6477c9936a5b0e82defea80823c54a445b"
         }
       },
-      "note": "At tools-failure/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-failure/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -8147,15 +8225,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "26e76f1c34f5a3e7b8cc42c68649f9225b4c565f885591c4ce28570dff388c42",
+          "pi": "fafda22a82de0337f54c59d3525dadb46ba8e17dd9108f2a61a9fb5f32f292aa",
           "cadr": "26e76f1c34f5a3e7b8cc42c68649f9225b4c565f885591c4ce28570dff388c42"
         }
       },
-      "note": "At tools-significant-states/bash-empty [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-significant-states/bash-empty [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -8164,15 +8243,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "5e669d8b477ac32fd38f237dde5242adb1893cbea3675333b2339de4193929c7",
+          "pi": "ac1a2df9c28353de7c63274402b6e70ccdbafff29331b71790088edce21db968",
           "cadr": "5e669d8b477ac32fd38f237dde5242adb1893cbea3675333b2339de4193929c7"
         }
       },
-      "note": "At tools-significant-states/tool-invalid-arguments [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-significant-states/tool-invalid-arguments [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -8181,15 +8261,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "cca2cfbd6c9f8c89bb3906bfd2e9c736c00c2cf0fb02bec656abd84a5c233f68",
+          "pi": "f2ce62de921e53f0038f23a7c15687f88a4e10427694c4e7b549e44b383ec59c",
           "cadr": "cca2cfbd6c9f8c89bb3906bfd2e9c736c00c2cf0fb02bec656abd84a5c233f68"
         }
       },
-      "note": "At tools-significant-states/grep-invalid-arguments [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At tools-significant-states/grep-invalid-arguments [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -8385,15 +8466,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "pi": "221a8068d9e89fa43777916afc97d59f572fb9cfa2ec4c7e0474632925a8c38c",
           "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
         }
       },
-      "note": "At overlays-auth-oauth/login-post-cancel [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-oauth/login-post-cancel [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -8402,15 +8484,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "pi": "4bf532b0bf749c62fa8a932f0f3b6aa5d5c8e24923abfc8e546ffb78cd861fd2",
           "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
         }
       },
-      "note": "At overlays-auth-oauth/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-oauth/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -8419,15 +8502,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "pi": "221a8068d9e89fa43777916afc97d59f572fb9cfa2ec4c7e0474632925a8c38c",
           "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
         }
       },
-      "note": "At overlays-auth-device-code/login-device-post-cancel [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-device-code/login-device-post-cancel [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -8436,15 +8520,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "pi": "4bf532b0bf749c62fa8a932f0f3b6aa5d5c8e24923abfc8e546ffb78cd861fd2",
           "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
         }
       },
-      "note": "At overlays-auth-device-code/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-device-code/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -8453,15 +8538,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "pi": "221a8068d9e89fa43777916afc97d59f572fb9cfa2ec4c7e0474632925a8c38c",
           "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
         }
       },
-      "note": "At overlays-auth-api-key/api-key-post-cancel [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-api-key/api-key-post-cancel [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -8470,15 +8556,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "pi": "4bf532b0bf749c62fa8a932f0f3b6aa5d5c8e24923abfc8e546ffb78cd861fd2",
           "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
         }
       },
-      "note": "At overlays-auth-api-key/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-api-key/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -8487,15 +8574,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "pi": "221a8068d9e89fa43777916afc97d59f572fb9cfa2ec4c7e0474632925a8c38c",
           "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -8504,15 +8592,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "pi": "4bf532b0bf749c62fa8a932f0f3b6aa5d5c8e24923abfc8e546ffb78cd861fd2",
           "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
         }
       },
-      "note": "At overlays-auth-browser-callback/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At overlays-auth-browser-callback/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -8572,15 +8661,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4b5773e45867f5d53f5fb55980e84b5e424a4f05140f65a1b0926c92503bb725",
+          "pi": "24ee1af056102ea81ee46c5880b9b2e92592ac85bc532173dd6fa44a8d783297",
           "cadr": "4b5773e45867f5d53f5fb55980e84b5e424a4f05140f65a1b0926c92503bb725"
         }
       },
-      "note": "At stream-interrupt-queue/process-exit [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+      "note": "At stream-interrupt-queue/process-exit [narrow] Remaining visible delta is the footer token/cost counters (cadr session-start on UI attach shifts usage totals vs pi) (I04); raw ANSI segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -8593,8 +8683,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "946fd56f305b61aae2d2983a459ff45a056081c96ceb1ac5ec9e08091c2b96c2",
-          "cadr": "946fd56f305b61aae2d2983a459ff45a056081c96ceb1ac5ec9e08091c2b96c2"
+          "pi": "ca319ba22b043d903c453fbfd2e21a600d3ea9f8fcb9c07bb4183f0398c29c62",
+          "cadr": "ca319ba22b043d903c453fbfd2e21a600d3ea9f8fcb9c07bb4183f0398c29c62"
         }
       },
       "note": "At commands-informational/slash-session [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."

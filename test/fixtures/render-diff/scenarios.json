@@ -3557,6 +3557,12 @@
           "pauseMs": 100
         },
         {
+          "sendText": "other"
+        },
+        {
+          "waitFor": "other session question"
+        },
+        {
           "send": "ctrl+d"
         },
         {
@@ -4362,6 +4368,15 @@
           "waitFor": "Paste the authorization code"
         },
         {
+          "waitFor": "to cancel"
+        },
+        {
+          "waitFor": "\u001b[2K> \u001b[7m"
+        },
+        {
+          "pauseMs": 300
+        },
+        {
           "checkpoint": "login-manual-dialog"
         },
         {
@@ -5136,6 +5151,7 @@
         "slash-changelog",
         "slash-hotkeys",
         "slash-share",
+        "slash-bug",
         "slash-clone"
       ],
       "description": "Every informational or local persistent-session command.",
@@ -5275,6 +5291,24 @@
         },
         {
           "checkpoint": "slash-share"
+        },
+        {
+          "sendText": "/bug"
+        },
+        {
+          "waitFor": "Report a bug to"
+        },
+        {
+          "checkpoint": "slash-bug"
+        },
+        {
+          "send": "escape"
+        },
+        {
+          "pauseMs": 80
+        },
+        {
+          "send": "ctrl+u"
         },
         {
           "sendText": "/clone"

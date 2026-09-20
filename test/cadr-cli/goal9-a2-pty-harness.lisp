@@ -165,7 +165,7 @@
       "  tree"
       "  thinking"
       "  scoped-models"
-      "  (1/23)"))
+      "  (1/24)"))
    (padded-contract-snapshot
     40 10
     '("────────────────────────────────────────"

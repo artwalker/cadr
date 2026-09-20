@@ -452,12 +452,12 @@ class RenderDiffGateTest(unittest.TestCase):
             ROOT,
             manifest["baselineCommit"],
         )
-        self.assertEqual(len(inventory["slashCommands"]), 23)
+        self.assertEqual(len(inventory["slashCommands"]), 24)
         self.assertEqual(
             [entry["name"] for entry in registry["slashCommands"]],
             inventory["slashCommands"],
         )
-        self.assertEqual(len(inventory["constructorSites"]), 23)
+        self.assertEqual(len(inventory["constructorSites"]), 25)
         self.assertEqual(
             sorted(registry["baselineConstructorSites"]),
             inventory["constructorSites"],
@@ -493,7 +493,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 manifest,
                 ROOT,
             )
-        self.assertEqual(len(registry["slashCommands"]), 23)
+        self.assertEqual(len(registry["slashCommands"]), 24)
         self.assertEqual(len(registry["interfaces"]), 29)
 
     def test_reachable_interface_registry_fails_closed_for_new_commands_and_missing_captures(self) -> None:
@@ -1058,17 +1058,17 @@ class RenderDiffGateTest(unittest.TestCase):
         RENDER_DIFF.validate_visible_string_inventory(
             inventory, manifest["baselineCommit"]
         )
-        # Locked to tip baseline-visible-strings.json after Goal30 /
-        # experimental-README universe shrink. Recount from the fixture:
-        # 527 sites, 1182 branches, 1119 printable-visible, 63
-        # terminal-protocol, 258 source-inventory entries.
-        self.assertEqual(527, len(inventory["entries"]))
+        # Locked to tip baseline-visible-strings.json after the v0.86.0
+        # pin inventory refresh. Recount from the fixture:
+        # 549 sites, 1221 branches, 1158 printable-visible, 63
+        # terminal-protocol, 268 source-inventory entries.
+        self.assertEqual(549, len(inventory["entries"]))
         self.assertEqual(
-            1182,
+            1221,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1119,
+            1158,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -1083,7 +1083,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 if entry["sink"]["channel"] == "terminal-protocol"
             ),
         )
-        self.assertEqual(258, len(inventory["sourceInventory"]))
+        self.assertEqual(268, len(inventory["sourceInventory"]))
         self.assertEqual(
             62,
             sum(
