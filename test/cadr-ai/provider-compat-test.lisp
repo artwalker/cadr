@@ -620,3 +620,31 @@
     (is (cadr-ai::json-present-p zero-payload "priority"))
     (is (= 0 (cadr-ai::json-get zero-payload "priority")))
     (is (not (cadr-ai::json-present-p unset-payload "priority")))))
+
+(test baseten-catalog-sends-session-affinity-headers
+  (let* ((session-id "baseten-catalog-session")
+         (model
+           (cadr-ai::model-from-metadata
+            (cadr-ai:find-model-metadata
+             :baseten "zai-org/GLM-5.2")))
+         (request
+           (build-request
+            (cadr-ai:make-openai-completions-provider
+             :api-key "key")
+            model
+            (sample-context)
+            :stream-p t
+            :cache-retention :short
+            :session-id session-id))
+         (headers (request-spec-headers request)))
+    (is (eq t
+            (cadr-ai::model-compat-value
+             model :send-session-affinity-headers nil)))
+    (is (string=
+         session-id
+         (cdr (assoc "x-session-affinity" headers
+                     :test #'string-equal))))
+    (is (string=
+         session-id
+         (cdr (assoc "x-client-request-id" headers
+                     :test #'string-equal))))))

@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: every cataloged Baseten model sets
+  `sendSessionAffinityHeaders` so Completions requests with a
+  `sessionId` emit `x-session-affinity` and `x-client-request-id`
+  (pi #9629).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
