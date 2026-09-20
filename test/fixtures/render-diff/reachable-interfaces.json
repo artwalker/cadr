@@ -59,6 +59,13 @@
       }
     },
     {
+      "name": "bug",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-bug"
+      }
+    },
+    {
       "name": "copy",
       "capture": {
         "scenario": "commands-empty-lifecycle",
@@ -579,16 +586,22 @@
     ]
   },
   "baselineConstructorSites": {
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:288:SelectSubmenu": [
+    "packages/coding-agent/src/modes/interactive/bug-report.ts:235:ExtensionInputComponent": [
+      "extension-input"
+    ],
+    "packages/coding-agent/src/modes/interactive/bug-report.ts:261:ExtensionSelectorComponent": [
+      "extension-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:292:SelectSubmenu": [
       "settings-theme"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:404:SelectSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:408:SelectSubmenu": [
       "settings-theme"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:567:WarningSettingsSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:579:WarningSettingsSubmenu": [
       "settings-warnings"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:711:ThemeSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:723:ThemeSubmenu": [
       "settings-theme",
       "settings-theme-automatic",
       "settings-theme-light",
@@ -597,58 +610,58 @@
     "packages/coding-agent/src/modes/interactive/components/settings-submenu.ts:211:SelectSubmenu": [
       "settings-theme"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2497:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2562:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2573:ExtensionInputComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2638:ExtensionInputComponent": [
       "extension-input"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2614:ExtensionEditorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2679:ExtensionEditorComponent": [
       "extension-editor"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4562:SettingsSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4666:SettingsSelectorComponent": [
       "settings-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4825:ThinkingSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4934:ThinkingSelectorComponent": [
       "thinking-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4969:TrustSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5078:TrustSelectorComponent": [
       "trust-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5008:ModelSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5117:ModelSelectorComponent": [
       "model-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5075:ScopedModelsSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5184:ScopedModelsSelectorComponent": [
       "scoped-models-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5159:UserMessageSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5268:UserMessageSelectorComponent": [
       "fork-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5218:TreeSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5327:TreeSelectorComponent": [
       "tree-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5350:SessionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5467:SessionSelectorComponent": [
       "session-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5546:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5668:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5584:OAuthSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5706:OAuthSelectorComponent": [
       "login-provider-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5634:OAuthSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5756:OAuthSelectorComponent": [
       "login-provider-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5756:LoginDialogComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5900:LoginDialogComponent": [
       "login-dialog"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5778:LoginDialogComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5922:LoginDialogComponent": [
       "login-dialog"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5836:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5980:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5908:LoginDialogComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6052:LoginDialogComponent": [
       "login-dialog"
     ]
   },

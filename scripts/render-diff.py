@@ -386,6 +386,7 @@ REQUIRED_COVERAGE = {
     "read-truncation-bytes",
     "read-truncation-lines",
     "settings-state-sweep",
+    "slash-bug",
     "slash-changelog",
     "slash-clone",
     "slash-compact",
@@ -603,20 +604,29 @@ def extract_baseline_extension_events(repo: Path, commit: str) -> list[str]:
     aliases: dict[str, list[str]] = {}
     interface_events: dict[str, str] = {}
     interface_extends: dict[str, str] = {}
+
+    def ingest_interfaces(blob: str) -> None:
+        for match in re.finditer(
+            r"(?:export )?interface (\w+)(?:\s+extends\s+(\w+(?:<[^>]+>)?))?\s*\{([^}]*?)\n\}",
+            blob,
+            re.DOTALL,
+        ):
+            literal = re.search(r'\ttype:\s*"([a-z_]+)";', match.group(3))
+            if literal:
+                interface_events[match.group(1)] = literal.group(1)
+            elif match.group(2):
+                base = re.sub(r"<.*$", "", match.group(2))
+                interface_extends[match.group(1)] = base
+
     for match in re.finditer(
         r"export type (\w+)\s*=\s*\n((?:\s*\|\s*\w+\s*\n?)+);", source
     ):
         aliases[match.group(1)] = re.findall(r"\|\s*(\w+)", match.group(2))
-    for match in re.finditer(
-        r"(?:export )?interface (\w+)(?:\s+extends\s+(\w+))?\s*\{([^}]*?)\n\}",
-        source,
-        re.DOTALL,
-    ):
-        literal = re.search(r'\ttype:\s*"([a-z_]+)";', match.group(3))
-        if literal:
-            interface_events[match.group(1)] = literal.group(1)
-        elif match.group(2):
-            interface_extends[match.group(1)] = match.group(2)
+    ingest_interfaces(source)
+    # v0.86.0 re-exports CacheWarmingDecisionEvent from cache-warmer.ts.
+    ingest_interfaces(
+        git_blob(repo, commit, "packages/coding-agent/src/core/cache-warmer.ts")
+    )
     union = aliases.get("ExtensionEvent")
     if not union:
         raise HarnessFailure("cannot locate fixed-baseline ExtensionEvent union")

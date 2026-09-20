@@ -5136,6 +5136,7 @@
         "slash-changelog",
         "slash-hotkeys",
         "slash-share",
+        "slash-bug",
         "slash-clone"
       ],
       "description": "Every informational or local persistent-session command.",
@@ -5275,6 +5276,18 @@
         },
         {
           "checkpoint": "slash-share"
+        },
+        {
+          "sendText": "/bug crashed on save"
+        },
+        {
+          "send": "enter"
+        },
+        {
+          "waitFor": "Bug report written:"
+        },
+        {
+          "checkpoint": "slash-bug"
         },
         {
           "sendText": "/clone"

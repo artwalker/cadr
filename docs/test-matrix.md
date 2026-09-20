@@ -1,6 +1,6 @@
 # Gate denominators (Goal 20 Part M)
 
-<!-- GOAL20_TEST_CHECKS systems=9 checks=21539 pass=21539 skip=0 fail=0 -->
+<!-- GOAL20_TEST_CHECKS systems=9 checks=21557 pass=21557 skip=0 fail=0 -->
 
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
 `scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green

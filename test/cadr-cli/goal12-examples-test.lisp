@@ -145,7 +145,9 @@
            (append
             (remove-if
              (lambda (name)
-               (member name '("tool-call" "tool-result") :test #'string=))
+               (member name '("tool-call" "tool-result"
+                              "cache-warming-decision")
+                       :test #'string=))
              (mapcar
               (lambda (name)
                 (substitute #\- #\_ name))
@@ -159,7 +161,7 @@
               (string-downcase (symbol-name event)))
             cadr-agent::+extension-hook-events+)
            #'string<)))
-    (is (= 36 (length baseline)))
+    (is (= 37 (length baseline)))
     (is (equal expected actual)
         "cadr extension events drifted from the derived baseline set")))
 

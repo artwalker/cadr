@@ -41,7 +41,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | 上游能力 | cadr 动作 |
 |---|---|
 | Prompt cache warming（长工具运行，以及可选的空闲刷新） | 设置、转录提示、`/session` 诊断、`cache_warming_decision` |
-| `/bug`。脱敏诊断、可选转录或 ZIP、Radius 上传或导出、`pi.bug-report` 条目、崩溃公告 | 命令、崩溃日志、身份仍只走 `CADR_*` 与 `src/cadr-ai/support/release.lisp` |
+| `/bug`。脱敏诊断、可选转录或 ZIP、Radius 上传或导出、`pi.bug-report` 条目、崩溃公告 | partial：注册 + 脱敏 + 本地 ZIP（FiveAM）。Consent / Radius / 崩溃公告仍 open |
 | 转录保留中途 system prompt 与 tool 变更（`before_agent_start`） | session 条目与恢复 |
 | 离线 Radius 模型目录。缓存与在线目录可叠加。默认 `balanced` | catalog |
 | 按模型的 `reserveTokens` / `keepRecentTokens`（`compaction.modelOverrides`） | compaction 设置 |

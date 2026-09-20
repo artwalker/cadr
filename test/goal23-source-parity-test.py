@@ -72,7 +72,7 @@ class Goal23SourceParityTest(unittest.TestCase):
                 str(DISPOSITIONS),
             ],
         )
-        self.assertIn("Source parity dispositions complete: 220", proc.stdout)
+        self.assertIn("Source parity dispositions complete: 302", proc.stdout)
 
     def test_upgrade_doc_records_v0851_enumeration(self) -> None:
         text = UPGRADE_DOC.read_text(encoding="utf-8")

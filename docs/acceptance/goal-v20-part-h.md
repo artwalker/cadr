@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **298 files / 135,202 lines**
+Denominator: **299 files / 137,852 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 108,751 | 80.4% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 7,582 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,869 | 14.0% | on a named paired thunk; no own bench |
-| `needs-pair` | 0 | 0 | 0.0% | must get an H pair; not a file-level idle bench |
+| `paired` | 244 | 111,141 | 80.6% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
+| `covered-as-callee` | 30 | 18,876 | 13.7% | on a named paired thunk; no own bench |
+| `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.4% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 86.0% of lines.
+- **Falsifiable vs baseline:** 80.6% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 86.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13852,20 +13852,20 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/branch-summarization.lisp` | 184 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
-| `src/cadr-agent/compaction.lisp` | 943 | `session_compact.compact` |
+| `src/cadr-agent/branch-summarization.lisp` | 224 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
+| `src/cadr-agent/compaction.lisp` | 955 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/execution-env.lisp` | 878 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
 | `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue`, `file_mutation_queue.queue_key`, `file_mutation_queue.lock`, `file_mutation_queue.register`, `file_mutation_queue.wait_turn`, `file_mutation_queue.release_turn`, `file_mutation_queue.ensure_state`, `file_mutation_queue.call_with`, `file_mutation_queue.make_state`, `file_mutation_queue.state_key`, `file_mutation_queue.pending_count`, `file_mutation_queue.next_ticket`, `file_mutation_queue.serving_ticket`, `file_mutation_queue.waitqueue`, `file_mutation_queue.registry`, `file_mutation_queue.state_p` |
 | `src/cadr-agent/harness-events.lisp` | 75 | `harness_events.emit`, `harness_events.on`, `harness_events.watch`, `harness_events.make_start`, `harness_events.make_end`, `harness_events.event_type`, `harness_events.make_bus` |
-| `src/cadr-agent/loop/agent-loop.lisp` | 455 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/agent-loop.lisp` | 457 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/tool-execution.lisp` | 496 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 401 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
+| `src/cadr-agent/messages.lisp` | 261 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
-| `src/cadr-agent/resources.lisp` | 746 | `resource_loader.reload` |
-| `src/cadr-agent/runtime.lisp` | 421 | `agent_tool_loop.runtime` |
+| `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
+| `src/cadr-agent/runtime.lisp` | 479 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,188 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 483 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
@@ -13878,7 +13878,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/storage/memory.lisp` | 378 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
-| `src/cadr-agent/tool.lisp` | 325 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/tool.lisp` | 330 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 806 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
@@ -13915,8 +13915,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/definitions.lisp` | 1,091 | `provider_registry_defs.lookup` |
 | `src/cadr-ai/providers/google.lisp` | 472 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 98 | `provider_mistral.stream_roundtrip` |
-| `src/cadr-ai/providers/openai-completions.lisp` | 889 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/providers/openai.lisp` | 829 | `provider_openai_responses.stream_roundtrip` |
+| `src/cadr-ai/providers/openai-completions.lisp` | 893 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/providers/openai.lisp` | 839 | `provider_openai_responses.stream_roundtrip` |
 | `src/cadr-ai/providers/pi-messages.lisp` | 331 | `provider_pi_messages.stream_roundtrip` |
 | `src/cadr-ai/providers/registry.lisp` | 157 | `provider_registry_defs.protocol_provider`, `provider_registry_defs.protocol_provider_anthropic`, `provider_registry_defs.instantiate_provider` |
 | `src/cadr-ai/providers/runtime-projection.lisp` | 297 | `provider_registry_defs.api_key_auth`, `provider_registry_defs.api_key_login_function`, `provider_registry_defs.api_key_strategy`, `provider_registry_defs.merge_environment`, `provider_registry_defs.model_filter_function`, `provider_registry_defs.oauth_login_function`, `provider_registry_defs.oauth_refresh_function`, `provider_registry_defs.oauth_to_auth`, `provider_registry_defs.provider_options`, `provider_registry_defs.runtime_models`, `provider_registry_defs.strip_runtime_options`, `provider_registry_defs.structured_api_key_login`, `provider_registry_defs.runtime_provider`, `provider_registry_defs.runtime_provider_copilot`, `provider_registry_defs.models_runtime` |
@@ -13934,13 +13934,13 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/websocket.lisp` | 657 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/auth.lisp` | 189 | `cli_bootstrap_sessions.bootstrap_auth` |
-| `src/cadr-cli/bootstrap/commands.lisp` | 2,759 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
+| `src/cadr-cli/bootstrap/commands.lisp` | 2,822 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
-| `src/cadr-cli/bootstrap/sessions.lisp` | 2,078 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
-| `src/cadr-cli/bootstrap/settings.lisp` | 1,232 | `settings_load.http_idle` |
+| `src/cadr-cli/bootstrap/sessions.lisp` | 2,226 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
+| `src/cadr-cli/bootstrap/settings.lisp` | 1,243 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 106 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/config.lisp` | 331 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
-| `src/cadr-cli/extensions/commands.lisp` | 56 | `cli_extensions_install.handle_plain`, `cli_extensions_install.handle_unknown`, `cli_extensions_install.split_command` |
+| `src/cadr-cli/extensions/commands.lisp` | 76 | `cli_extensions_install.handle_plain`, `cli_extensions_install.handle_unknown`, `cli_extensions_install.split_command` |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
 | `src/cadr-cli/extensions/installer.lisp` | 209 | `cli_extensions_install.unsafe_git`, `cli_extensions_install.git_path`, `cli_extensions_install.normalize_git`, `cli_extensions_install.string_prefix`, `cli_extensions_install.split_path_segments`, `cli_extensions_install.strip_git_query` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 485 | `cli_extensions_install.llama_url` |
@@ -13949,27 +13949,27 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/provider.lisp` | 337 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 | `cli_extensions_install.llama_context_label`, `cli_extensions_install.llama_model_description`, `cli_extensions_install.llama_compact_count`, `cli_extensions_install.llama_format_context`, `cli_extensions_install.llama_js_to_fixed`, `cli_extensions_install.llama_search_exact`, `cli_extensions_install.llama_search_status`, `cli_extensions_install.llama_search_filter`, `cli_extensions_install.llama_view_width` |
 | `src/cadr-cli/extensions/loader.lisp` | 702 | `cli_extensions_install.http_timeout_p`, `cli_extensions_install.inline_factory`, `cli_extensions_install.local_system_name`, `cli_extensions_install.manager_notify`, `cli_extensions_install.output_boundary`, `cli_extensions_install.package_fragment`, `cli_extensions_install.quiet_manager`, `cli_extensions_install.same_source`, `cli_extensions_install.startup_issues` |
-| `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
+| `src/cadr-cli/interactive/autocomplete.lisp` | 574 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 451 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | `cli_interactive_controller.announcement_make`, `cli_interactive_controller.announcement_url`, `cli_interactive_controller.announcement_title` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 294 | `cli_selectors.armin_cell`, `cli_selectors.armin_copy_cell`, `cli_selectors.armin_copy_grid`, `cli_selectors.armin_copy_row`, `cli_selectors.armin_grid_height`, `cli_selectors.armin_make_grid`, `cli_selectors.armin_pixel`, `cli_selectors.armin_rotate_row`, `cli_selectors.armin_row_string` |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_dispose`, `cli_selectors.countdown_render`, `cli_selectors.countdown_seconds`, `cli_selectors.countdown_start_guard`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_unstarted` |
-| `src/cadr-cli/interactive/components/daxnuts.lisp` | 194 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_dispose`, `cli_selectors.daxnuts_invalidate`, `cli_selectors.daxnuts_render`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
+| `src/cadr-cli/interactive/components/daxnuts.lisp` | 204 | `cli_selectors.daxnuts_component_tick`, `cli_selectors.daxnuts_dispose`, `cli_selectors.daxnuts_invalidate`, `cli_selectors.daxnuts_render`, `cli_selectors.daxnuts_rgb_at`, `cli_selectors.make_daxnuts_component` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 197 | `cli_selectors.key_text` |
-| `src/cadr-cli/interactive/controller.lisp` | 3,059 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
+| `src/cadr-cli/interactive/controller.lisp` | 3,285 | `cli_interactive_controller.make_notification_stream`, `cli_interactive_controller.notification_stream_flush`, `cli_interactive_controller.route_tui_submission`, `cli_interactive_controller.should_use_tui`, `cli_interactive_controller.terminal_title_sequence`, `cli_interactive_controller.tui_command_error` |
 | `src/cadr-cli/interactive/entries.lisp` | 919 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-cli/interactive/extension-ui.lisp` | 879 | `cli_interactive_controller.extension_custom_ui_handle_event`, `cli_interactive_controller.extension_dialog_chrome`, `cli_interactive_controller.extension_host_turn`, `cli_interactive_controller.extension_render_value_lines`, `cli_interactive_controller.framed_select_state_handle_event`, `cli_interactive_controller.framed_select_state_handle_raw_input`, `cli_interactive_controller.make_extension_editor_dialog`, `cli_interactive_controller.make_extension_input_dialog`, `cli_interactive_controller.make_framed_select_state`, `cli_interactive_controller.make_runtime_auth_input_state`, `cli_interactive_controller.note_component_render_channel`, `cli_interactive_controller.render_extension_custom_entry`, `cli_interactive_controller.render_extension_custom_ui`, `cli_interactive_controller.render_framed_select_state`, `cli_interactive_controller.render_runtime_auth_input`, `cli_interactive_controller.render_tui_extension_overlay`, `cli_interactive_controller.runtime_auth_input_handle_event`, `cli_interactive_controller.tui_component_protocol`, `cli_interactive_controller.tui_extension_theme_runtime`, `cli_interactive_controller.tui_input_thread`, `cli_interactive_controller.wrap_extension_host_turn` |
+| `src/cadr-cli/interactive/extension-ui.lisp` | 921 | `cli_interactive_controller.extension_custom_ui_handle_event`, `cli_interactive_controller.extension_dialog_chrome`, `cli_interactive_controller.extension_host_turn`, `cli_interactive_controller.extension_render_value_lines`, `cli_interactive_controller.framed_select_state_handle_event`, `cli_interactive_controller.framed_select_state_handle_raw_input`, `cli_interactive_controller.make_extension_editor_dialog`, `cli_interactive_controller.make_extension_input_dialog`, `cli_interactive_controller.make_framed_select_state`, `cli_interactive_controller.make_runtime_auth_input_state`, `cli_interactive_controller.note_component_render_channel`, `cli_interactive_controller.render_extension_custom_entry`, `cli_interactive_controller.render_extension_custom_ui`, `cli_interactive_controller.render_framed_select_state`, `cli_interactive_controller.render_runtime_auth_input`, `cli_interactive_controller.render_tui_extension_overlay`, `cli_interactive_controller.runtime_auth_input_handle_event`, `cli_interactive_controller.tui_component_protocol`, `cli_interactive_controller.tui_extension_theme_runtime`, `cli_interactive_controller.tui_input_thread`, `cli_interactive_controller.wrap_extension_host_turn` |
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
-| `src/cadr-cli/interactive/frame.lisp` | 269 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/frame.lisp` | 277 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/auth.lisp` | 720 | `cli_selectors.api_key_input_state_handle_event`, `cli_selectors.api_key_input_ui_state`, `cli_selectors.credential_entry_auth_type`, `cli_selectors.login_auth_type_route`, `cli_selectors.login_method_selector_handle_event`, `cli_selectors.login_method_selector_ui_state`, `cli_selectors.login_provider_options`, `cli_selectors.logout_provider_options`, `cli_selectors.make_api_key_input_state`, `cli_selectors.make_login_method_selector_state`, `cli_selectors.make_oauth_selector_state`, `cli_selectors.oauth_environment_source_p`, `cli_selectors.oauth_option_status_label`, `cli_selectors.oauth_option_status_rendered`, `cli_selectors.oauth_selector_apply_filter`, `cli_selectors.oauth_selector_handle_event`, `cli_selectors.oauth_selector_handle_raw_input`, `cli_selectors.oauth_selector_move`, `cli_selectors.oauth_selector_search_text`, `cli_selectors.oauth_selector_selection`, `cli_selectors.oauth_selector_ui_state` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 408 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
+| `src/cadr-cli/interactive/selectors/auth.lisp` | 733 | `cli_selectors.api_key_input_state_handle_event`, `cli_selectors.api_key_input_ui_state`, `cli_selectors.credential_entry_auth_type`, `cli_selectors.login_auth_type_route`, `cli_selectors.login_method_selector_handle_event`, `cli_selectors.login_method_selector_ui_state`, `cli_selectors.login_provider_options`, `cli_selectors.logout_provider_options`, `cli_selectors.make_api_key_input_state`, `cli_selectors.make_login_method_selector_state`, `cli_selectors.make_oauth_selector_state`, `cli_selectors.oauth_environment_source_p`, `cli_selectors.oauth_option_status_label`, `cli_selectors.oauth_option_status_rendered`, `cli_selectors.oauth_selector_apply_filter`, `cli_selectors.oauth_selector_handle_event`, `cli_selectors.oauth_selector_handle_raw_input`, `cli_selectors.oauth_selector_move`, `cli_selectors.oauth_selector_search_text`, `cli_selectors.oauth_selector_selection`, `cli_selectors.oauth_selector_ui_state` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 441 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/fork.lisp` | 199 | `cli_selectors.render_user_message_selector`, `cli_selectors.user_message_handle_event`, `cli_selectors.user_message_handle_raw`, `cli_selectors.user_message_make`, `cli_selectors.user_message_move`, `cli_selectors.user_message_selection` |
-| `src/cadr-cli/interactive/selectors/login-dialog.lisp` | 310 | `cli_selectors.dlg_auth`, `cli_selectors.dlg_dev`, `cli_selectors.dlg_make`, `cli_selectors.login_dialog_complete_input`, `cli_selectors.login_dialog_handle_event`, `cli_selectors.login_dialog_show_details`, `cli_selectors.login_dialog_show_info`, `cli_selectors.login_dialog_show_manual_input`, `cli_selectors.login_dialog_show_progress`, `cli_selectors.login_dialog_show_prompt`, `cli_selectors.login_dialog_show_waiting`, `cli_selectors.render_login_dialog` |
-| `src/cadr-cli/interactive/selectors/models.lisp` | 1,537 | `cli_selectors.all_known_model_ids_enabled_p`, `cli_selectors.make_model_selector_state`, `cli_selectors.make_models_selector_keybindings`, `cli_selectors.make_scoped_models_selector_state`, `cli_selectors.model_equal_p`, `cli_selectors.model_selector_active_models`, `cli_selectors.model_selector_apply_filter`, `cli_selectors.model_selector_clamp_selected`, `cli_selectors.model_selector_filter_search_text`, `cli_selectors.model_selector_finish_refresh`, `cli_selectors.model_selector_handle_event`, `cli_selectors.model_selector_handle_raw_input`, `cli_selectors.model_selector_key_p`, `cli_selectors.model_selector_keybindings`, `cli_selectors.model_selector_move`, `cli_selectors.model_selector_provider_badge`, `cli_selectors.model_selector_rebuild_search_text_table`, `cli_selectors.model_selector_search_text`, `cli_selectors.model_selector_select_current`, `cli_selectors.model_selector_selected_model`, `cli_selectors.model_selector_set_query`, `cli_selectors.model_selector_toggle_scope`, `cli_selectors.model_selector_ui_state`, `cli_selectors.model_selector_visible_models`, `cli_selectors.model_selector_visible_slice`, `cli_selectors.move_list_item`, `cli_selectors.qualified_model_id`, `cli_selectors.render_model_selector`, `cli_selectors.scoped_model_id_enabled_p`, `cli_selectors.scoped_model_item_search_text`, `cli_selectors.scoped_model_selector_search_text`, `cli_selectors.scoped_models_binding_label`, `cli_selectors.scoped_models_clear_ids`, `cli_selectors.scoped_models_copy_enabled`, `cli_selectors.scoped_models_enable_ids`, `cli_selectors.scoped_models_enabled_set`, `cli_selectors.scoped_models_model_by_id`, `cli_selectors.scoped_models_selector_apply_filter`, `cli_selectors.scoped_models_selector_cancel`, `cli_selectors.scoped_models_selector_clamp_selected`, `cli_selectors.scoped_models_selector_clear_all`, `cli_selectors.scoped_models_selector_counts`, `cli_selectors.scoped_models_selector_enable_all`, `cli_selectors.scoped_models_selector_finish_refresh`, `cli_selectors.scoped_models_selector_handle_event`, `cli_selectors.scoped_models_selector_handle_raw_input`, `cli_selectors.scoped_models_selector_items`, `cli_selectors.scoped_models_selector_key_p`, `cli_selectors.scoped_models_selector_mark_changed`, `cli_selectors.scoped_models_selector_move`, `cli_selectors.scoped_models_selector_notify_change`, `cli_selectors.scoped_models_selector_persist`, `cli_selectors.scoped_models_selector_rebuild_items`, `cli_selectors.scoped_models_selector_rebuild_models_by_id`, `cli_selectors.scoped_models_selector_refresh_items`, `cli_selectors.scoped_models_selector_reorder`, `cli_selectors.scoped_models_selector_select_id`, `cli_selectors.scoped_models_selector_selected_item`, `cli_selectors.scoped_models_selector_set_query`, `cli_selectors.scoped_models_selector_sorted_ids`, `cli_selectors.scoped_models_selector_target_ids`, `cli_selectors.scoped_models_selector_toggle_provider`, `cli_selectors.scoped_models_selector_toggle_selected`, `cli_selectors.scoped_models_selector_ui_state`, `cli_selectors.scoped_models_selector_visible_items`, `cli_selectors.scoped_models_toggle_id`, `cli_selectors.session_scoped_models`, `cli_selectors.sort_model_selector_models` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,526 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
-| `src/cadr-cli/interactive/selectors/settings.lisp` | 1,043 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
-| `src/cadr-cli/interactive/selectors/thinking.lisp` | 381 | `cli_selectors.make_thinking_selector_state`, `cli_selectors.render_thinking_selector`, `cli_selectors.thinking_level_description_line`, `cli_selectors.thinking_level_label`, `cli_selectors.thinking_level_search_text`, `cli_selectors.thinking_selector_apply_filter`, `cli_selectors.thinking_selector_clamp_selected`, `cli_selectors.thinking_selector_handle_event`, `cli_selectors.thinking_selector_handle_raw_input`, `cli_selectors.thinking_selector_key_p`, `cli_selectors.thinking_selector_keybindings`, `cli_selectors.thinking_selector_move`, `cli_selectors.thinking_selector_select_current`, `cli_selectors.thinking_selector_selected_level`, `cli_selectors.thinking_selector_set_query` |
+| `src/cadr-cli/interactive/selectors/login-dialog.lisp` | 325 | `cli_selectors.dlg_auth`, `cli_selectors.dlg_dev`, `cli_selectors.dlg_make`, `cli_selectors.login_dialog_complete_input`, `cli_selectors.login_dialog_handle_event`, `cli_selectors.login_dialog_show_details`, `cli_selectors.login_dialog_show_info`, `cli_selectors.login_dialog_show_manual_input`, `cli_selectors.login_dialog_show_progress`, `cli_selectors.login_dialog_show_prompt`, `cli_selectors.login_dialog_show_waiting`, `cli_selectors.render_login_dialog` |
+| `src/cadr-cli/interactive/selectors/models.lisp` | 1,604 | `cli_selectors.all_known_model_ids_enabled_p`, `cli_selectors.make_model_selector_state`, `cli_selectors.make_models_selector_keybindings`, `cli_selectors.make_scoped_models_selector_state`, `cli_selectors.model_equal_p`, `cli_selectors.model_selector_active_models`, `cli_selectors.model_selector_apply_filter`, `cli_selectors.model_selector_clamp_selected`, `cli_selectors.model_selector_filter_search_text`, `cli_selectors.model_selector_finish_refresh`, `cli_selectors.model_selector_handle_event`, `cli_selectors.model_selector_handle_raw_input`, `cli_selectors.model_selector_key_p`, `cli_selectors.model_selector_keybindings`, `cli_selectors.model_selector_move`, `cli_selectors.model_selector_provider_badge`, `cli_selectors.model_selector_rebuild_search_text_table`, `cli_selectors.model_selector_search_text`, `cli_selectors.model_selector_select_current`, `cli_selectors.model_selector_selected_model`, `cli_selectors.model_selector_set_query`, `cli_selectors.model_selector_toggle_scope`, `cli_selectors.model_selector_ui_state`, `cli_selectors.model_selector_visible_models`, `cli_selectors.model_selector_visible_slice`, `cli_selectors.move_list_item`, `cli_selectors.qualified_model_id`, `cli_selectors.render_model_selector`, `cli_selectors.scoped_model_id_enabled_p`, `cli_selectors.scoped_model_item_search_text`, `cli_selectors.scoped_model_selector_search_text`, `cli_selectors.scoped_models_binding_label`, `cli_selectors.scoped_models_clear_ids`, `cli_selectors.scoped_models_copy_enabled`, `cli_selectors.scoped_models_enable_ids`, `cli_selectors.scoped_models_enabled_set`, `cli_selectors.scoped_models_model_by_id`, `cli_selectors.scoped_models_selector_apply_filter`, `cli_selectors.scoped_models_selector_cancel`, `cli_selectors.scoped_models_selector_clamp_selected`, `cli_selectors.scoped_models_selector_clear_all`, `cli_selectors.scoped_models_selector_counts`, `cli_selectors.scoped_models_selector_enable_all`, `cli_selectors.scoped_models_selector_finish_refresh`, `cli_selectors.scoped_models_selector_handle_event`, `cli_selectors.scoped_models_selector_handle_raw_input`, `cli_selectors.scoped_models_selector_items`, `cli_selectors.scoped_models_selector_key_p`, `cli_selectors.scoped_models_selector_mark_changed`, `cli_selectors.scoped_models_selector_move`, `cli_selectors.scoped_models_selector_notify_change`, `cli_selectors.scoped_models_selector_persist`, `cli_selectors.scoped_models_selector_rebuild_items`, `cli_selectors.scoped_models_selector_rebuild_models_by_id`, `cli_selectors.scoped_models_selector_refresh_items`, `cli_selectors.scoped_models_selector_reorder`, `cli_selectors.scoped_models_selector_select_id`, `cli_selectors.scoped_models_selector_selected_item`, `cli_selectors.scoped_models_selector_set_query`, `cli_selectors.scoped_models_selector_sorted_ids`, `cli_selectors.scoped_models_selector_target_ids`, `cli_selectors.scoped_models_selector_toggle_provider`, `cli_selectors.scoped_models_selector_toggle_selected`, `cli_selectors.scoped_models_selector_ui_state`, `cli_selectors.scoped_models_selector_visible_items`, `cli_selectors.scoped_models_toggle_id`, `cli_selectors.session_scoped_models`, `cli_selectors.sort_model_selector_models` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,563 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 1,330 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
+| `src/cadr-cli/interactive/selectors/thinking.lisp` | 493 | `cli_selectors.make_thinking_selector_state`, `cli_selectors.render_thinking_selector`, `cli_selectors.thinking_level_description_line`, `cli_selectors.thinking_level_label`, `cli_selectors.thinking_level_search_text`, `cli_selectors.thinking_selector_apply_filter`, `cli_selectors.thinking_selector_clamp_selected`, `cli_selectors.thinking_selector_handle_event`, `cli_selectors.thinking_selector_handle_raw_input`, `cli_selectors.thinking_selector_key_p`, `cli_selectors.thinking_selector_keybindings`, `cli_selectors.thinking_selector_move`, `cli_selectors.thinking_selector_select_current`, `cli_selectors.thinking_selector_selected_level`, `cli_selectors.thinking_selector_set_query` |
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,931 | `cli_selectors.tree_entry_filtered` |
 | `src/cadr-cli/interactive/selectors/trust.lisp` | 347 | `cli_selectors.make_trust_selector_state`, `cli_selectors.project_trust_options`, `cli_selectors.render_trust_selector`, `cli_selectors.trust_decision_description`, `cli_selectors.trust_option_saved_p`, `cli_selectors.trust_selector_handle_event`, `cli_selectors.trust_selector_handle_raw_input`, `cli_selectors.trust_selector_move`, `cli_selectors.trust_selector_selection`, `cli_selectors.trust_selector_ui_state` |
 | `src/cadr-cli/interactive/state.lisp` | 308 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -13979,7 +13979,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/themes.lisp` | 428 | `cli_interactive_controller.apply_tui_theme_summary`, `cli_interactive_controller.load_tui_theme_file`, `cli_interactive_controller.theme_object_overrides`, `cli_interactive_controller.theme_get`, `cli_interactive_controller.theme_kind`, `cli_interactive_controller.theme_ok`, `cli_interactive_controller.theme_prim`, `cli_interactive_controller.theme_res`, `cli_interactive_controller.theme_val` |
 | `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | `cli_interactive_controller.sess_draw`, `cli_interactive_controller.sess_make`, `cli_interactive_controller.sess_new`, `cli_interactive_controller.sess_out`, `cli_interactive_controller.sess_set`, `cli_interactive_controller.sess_upd` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,027 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-cli/interactive/transcript.lisp` | 1,272 | `cli_interactive_controller.accumulate_usage`, `cli_interactive_controller.append_user_message`, `cli_interactive_controller.assistant_display_blocks`, `cli_interactive_controller.assistant_has_tools`, `cli_interactive_controller.assistant_price_known`, `cli_interactive_controller.assistant_stop_error`, `cli_interactive_controller.cache_ok`, `cli_interactive_controller.cache_p`, `cli_interactive_controller.pad_sp`, `cli_interactive_controller.pad_str`, `cli_interactive_controller.render_assistant_blocks`, `cli_interactive_controller.render_assistant_lines`, `cli_interactive_controller.render_package_notification`, `cli_interactive_controller.render_transcript_summary`, `cli_interactive_controller.render_tui_entries`, `cli_interactive_controller.render_tui_entry`, `cli_interactive_controller.render_tui_entry_uncached`, `cli_interactive_controller.render_user_lines`, `cli_interactive_controller.render_version_notification`, `cli_interactive_controller.reset_tui_messages`, `cli_interactive_controller.seed_tui_message`, `cli_interactive_controller.syntax_highlight`, `cli_interactive_controller.theme_message_background`, `cli_interactive_controller.transcript_summary_label`, `cli_interactive_controller.transcript_summary_text`, `cli_interactive_controller.transform_tui_markdown`, `cli_interactive_controller.update_notification_border`, `cli_interactive_controller.update_notification_text`, `cli_interactive_controller.wrap_ln`, `cli_interactive_controller.wrap_osc` |
+| `src/cadr-cli/interactive/transcript.lisp` | 1,278 | `cli_interactive_controller.accumulate_usage`, `cli_interactive_controller.append_user_message`, `cli_interactive_controller.assistant_display_blocks`, `cli_interactive_controller.assistant_has_tools`, `cli_interactive_controller.assistant_price_known`, `cli_interactive_controller.assistant_stop_error`, `cli_interactive_controller.cache_ok`, `cli_interactive_controller.cache_p`, `cli_interactive_controller.pad_sp`, `cli_interactive_controller.pad_str`, `cli_interactive_controller.render_assistant_blocks`, `cli_interactive_controller.render_assistant_lines`, `cli_interactive_controller.render_package_notification`, `cli_interactive_controller.render_transcript_summary`, `cli_interactive_controller.render_tui_entries`, `cli_interactive_controller.render_tui_entry`, `cli_interactive_controller.render_tui_entry_uncached`, `cli_interactive_controller.render_user_lines`, `cli_interactive_controller.render_version_notification`, `cli_interactive_controller.reset_tui_messages`, `cli_interactive_controller.seed_tui_message`, `cli_interactive_controller.syntax_highlight`, `cli_interactive_controller.theme_message_background`, `cli_interactive_controller.transcript_summary_label`, `cli_interactive_controller.transcript_summary_text`, `cli_interactive_controller.transform_tui_markdown`, `cli_interactive_controller.update_notification_border`, `cli_interactive_controller.update_notification_text`, `cli_interactive_controller.wrap_ln`, `cli_interactive_controller.wrap_osc` |
 | `src/cadr-cli/interactive/user-bash.lisp` | 213 | `cli_interactive_controller.append_output`, `cli_interactive_controller.bash_append_running`, `cli_interactive_controller.bash_complete_string`, `cli_interactive_controller.bash_stop_entry`, `cli_interactive_controller.complete_entry`, `cli_interactive_controller.make_entry` |
 | `src/cadr-cli/media.lisp` | 1,331 | `image_runtime.mime_type` |
 | `src/cadr-cli/migration.lisp` | 512 | `cli_bootstrap_sessions.data_directory`, `cli_bootstrap_sessions.legacy_data_directory`, `cli_bootstrap_sessions.manual_migration_command`, `cli_bootstrap_sessions.managed_binary_names`, `cli_bootstrap_sessions.migration_guide_url`, `cli_bootstrap_sessions.extensions_doc_url` |
@@ -13987,25 +13987,25 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
 | `src/cadr-cli/models/matching.lisp` | 396 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 869 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/models/store.lisp` | 201 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/modes/print.lisp` | 600 | `cli_print_rpc.jsonl_line` |
 | `src/cadr-cli/modes/rpc/commands.lisp` | 474 | `cli_print_rpc.asst_text`, `cli_print_rpc.cmd_list`, `cli_print_rpc.queue_parse` |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 125 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/modes/rpc/mode.lisp` | 100 | `cli_print_rpc.array_line`, `cli_print_rpc.bad_line`, `cli_print_rpc.ui_absent` |
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/prompt-bash.lisp` | 253 | `cli_print_rpc.bash_result`, `cli_print_rpc.rpc_images`, `cli_print_rpc.rpc_prompt` |
-| `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
+| `src/cadr-cli/modes/rpc/sessions.lisp` | 286 | `cli_print_rpc.session_stats` |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 288 | `cli_print_rpc.dialog_request`, `cli_print_rpc.dialog_result`, `cli_print_rpc.dialog_expired`, `cli_print_rpc.dialog_default`, `cli_print_rpc.dialog_deadline`, `cli_print_rpc.close_pending` |
 | `src/cadr-cli/output-accumulator.lisp` | 199 | `output_accumulator.append`, `output_accumulator.snapshot`, `output_accumulator.finish`, `output_accumulator.last_line_bytes`, `output_accumulator.needs_file`, `output_accumulator.close_temp_file` |
 | `src/cadr-cli/packages/commands.lisp` | 837 | `package_manager.resolve` |
 | `src/cadr-cli/packages/config-selector.lisp` | 1,561 | `package_manager.autoload_disabled`, `package_manager.config_fit_line`, `package_manager.config_glob_regex`, `package_manager.delta_resource_state`, `package_manager.derived_project_state`, `package_manager.enabled_by_patterns`, `package_manager.entry_target`, `package_manager.find_item_index`, `package_manager.group_less_p`, `package_manager.item_matches`, `package_manager.item_ordinal`, `package_manager.item_source_base`, `package_manager.normalize_pattern`, `package_manager.package_entry_filter`, `package_manager.package_entry_has_filters`, `package_manager.package_override_source`, `package_manager.package_resource_pattern`, `package_manager.pattern_candidates`, `package_manager.pattern_matches`, `package_manager.project_top_level_state`, `package_manager.relative_pattern`, `package_manager.replace_pattern`, `package_manager.resource_display_name`, `package_manager.resource_file_p`, `package_manager.resource_group_label`, `package_manager.resource_key`, `package_manager.resource_kinds`, `package_manager.resource_specification`, `package_manager.scope_base`, `package_manager.selected_entry`, `package_manager.selector_items`, `package_manager.selector_move`, `package_manager.settings_array`, `package_manager.settings_values`, `package_manager.type_label`, `package_manager.visible_range`, `package_manager.resource_item_key`, `package_manager.project_override_state`, `package_manager.next_project_state`, `package_manager.inherited_enabled`, `package_manager.resource_group_key`, `package_manager.package_entry_index`, `package_manager.project_package_entry`, `package_manager.project_package_state`, `package_manager.package_setting_record`, `package_manager.package_setting_records`, `package_manager.selector_rebuild`, `package_manager.switch_scope`, `package_manager.selector_hint`, `package_manager.override_suffix`, `package_manager.checkbox` |
-| `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
+| `src/cadr-cli/packages/manifest.lisp` | 153 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 356 | `package_manager.resolve`, `package_manager.package_source` |
 | `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id`, `package_manager.git_output`, `package_manager.records_project_first`, `package_manager.candidate_record`, `package_manager.update_offline`, `package_manager.remote_ref`, `package_manager.update_record_result` |
 | `src/cadr-cli/repl.lisp` | 112 | `cli_bootstrap_sessions.pb_ok`, `cli_bootstrap_sessions.rt_ok`, `cli_bootstrap_sessions.dp_ok` |
-| `src/cadr-cli/resource-loader.lisp` | 438 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
-| `src/cadr-cli/sdk/agent-session.lisp` | 527 | `cli_sdk.agent_session` |
+| `src/cadr-cli/resource-loader.lisp` | 524 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
+| `src/cadr-cli/sdk/agent-session.lisp` | 535 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
 | `src/cadr-cli/sdk/resource-service.lisp` | 378 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
@@ -14017,7 +14017,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/settings/manager.lisp` | 643 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/atomic-write.lisp` | 7 | `cli_support.write_hello`, `cli_support.write_overwrite`, `cli_support.write_empty` |
-| `src/cadr-cli/support/changelog-share.lisp` | 382 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
+| `src/cadr-cli/support/changelog-share.lisp` | 635 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/external-editor.lisp` | 42 | `cli_support.editor_success`, `cli_support.editor_fail`, `cli_support.editor_empty` |
 | `src/cadr-cli/support/file-watcher.lisp` | 71 | `cli_support.watch_retry_delay`, `cli_support.close_watcher`, `cli_support.watch_signature`, `cli_support.watch_error`, `cli_support.watch_start_close`, `cli_support.poll_once` |
@@ -14030,17 +14030,17 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/threads.lisp` | 8 | `cli_support.threads_absent`, `cli_support.threads_current`, `cli_support.threads_joined` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/system-prompt.lisp` | 53 | `skill_prompt_load.resolve_prompt`, `skill_prompt_load.node_read_error`, `skill_prompt_load.prompt_appends` |
-| `src/cadr-cli/tool-manager.lisp` | 295 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
+| `src/cadr-cli/tool-manager.lisp` | 360 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
 | `src/cadr-cli/tools/bash.lisp` | 624 | `bash_tool.append_status`, `bash_tool.live_output`, `bash_tool.make_tool`, `bash_tool.normalized_extension`, `bash_tool.output_path`, `bash_tool.process_deadline`, `bash_tool.record_nil`, `bash_tool.strip_exit_footer`, `bash_tool.strip_status`, `bash_tool.strip_truncation`, `bash_tool.truncation_notice`, `bash_tool.user_bash_result` |
-| `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
+| `src/cadr-cli/tools/edit.lisp` | 754 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/find.lisp` | 171 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/glob.lisp` | 249 | `find_tool.gitignore_regex`, `find_tool.gitignored`, `find_tool.glob_regex`, `find_tool.glob_regex_body`, `find_tool.glob_scanner`, `find_tool.glob_special`, `find_tool.ignored_directory`, `find_tool.make_glob_tool`, `find_tool.parse_gitignore_line`, `find_tool.directory_gitignore_rules`, `find_tool.collect_tree_files`, `find_tool.glob_files` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/ls.lisp` | 100 | `ls_tool.directory_entry_name`, `ls_tool.list_directory`, `ls_tool.make_tool` |
-| `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
+| `src/cadr-cli/tools/path.lisp` | 337 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/powershell.lisp` | 115 | `powershell_tool.make_tool`, `powershell_tool.prefix_command`, `powershell_tool.utf8_prefix` |
-| `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
-| `src/cadr-cli/tools/write.lisp` | 68 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
+| `src/cadr-cli/tools/read.lisp` | 193 | `tool_read.text_file` |
+| `src/cadr-cli/tools/write.lisp` | 69 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort`, `core_rest.cancellation_predicate` |
 | `src/cadr-core/redacted-print.lisp` | 54 | `core_rest.redacted_secrets`, `core_rest.redacted_register`, `core_rest.redacted_replace` |
@@ -14058,25 +14058,25 @@ production work, not merely as a transitive callee.
 | `src/cadr-protocol/schema.lisp` | 610 | `protocol_codec.roundtrip` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
-| `src/cadr-tui/autocomplete.lisp` | 647 | `tui_autocomplete.suggest_apply` |
+| `src/cadr-tui/autocomplete.lisp` | 696 | `tui_autocomplete.suggest_apply` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/markdown.lisp` | 1,556 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/components/select-list.lisp` | 305 | `tui_select_settings_loaders.filter` |
+| `src/cadr-tui/components/select-list.lisp` | 365 | `tui_select_settings_loaders.filter` |
 | `src/cadr-tui/components/tool-block.lisp` | 623 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/loaders.lisp` | 235 | `tui_select_settings_loaders.loader_frames`, `tui_select_settings_loaders.loader_interval`, `tui_select_settings_loaders.loader_step` |
 | `src/cadr-tui/composition/protocol.lisp` | 143 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/composition/settings-list.lisp` | 470 | `tui_settings_list.apply_filter` |
+| `src/cadr-tui/composition/settings-list.lisp` | 515 | `tui_settings_list.apply_filter` |
 | `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/editor.lisp` | 2,150 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/editor.lisp` | 2,224 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/fuzzy.lisp` | 134 | `tui_editor_helpers.fuzzy_match` |
-| `src/cadr-tui/input-component.lisp` | 408 | `tui_input_component.edit` |
+| `src/cadr-tui/input-component.lisp` | 440 | `tui_input_component.edit` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keybindings.lisp` | 270 | `tui_keybindings.resolve_match` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/kill-ring.lisp` | 38 | `tui_kill_ring.push_peek` |
-| `src/cadr-tui/latex.lisp` | 1,973 | `tui_latex.render` |
+| `src/cadr-tui/latex.lisp` | 1,987 | `tui_latex.render` |
 | `src/cadr-tui/mermaid/index.lisp` | 109 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/source-box.lisp` | 93 | `tui_mermaid.source_box` |
 | `src/cadr-tui/mermaid/transform.lisp` | 428 | `tui_mermaid.transform` |
@@ -14084,7 +14084,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/overlay.lisp` | 485 | `tui_overlay.composite_line` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 674 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,426 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,490 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/main-screen.lisp` | 656 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -14103,7 +14103,7 @@ On a named paired thunk. No own bench (G.12).
 
 | file | lines | parent metrics |
 |---|---:|---|
-| `src/cadr-agent/package.lisp` | 474 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/package.lisp` | 477 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
@@ -14131,7 +14131,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-tui/mermaid/parse.lisp` | 1,197 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/width-data.lisp` | 1,008 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/width.lisp` | 72 | `tui_mermaid.render` |
-| `src/cadr-tui/package.lisp` | 365 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input`, `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
+| `src/cadr-tui/package.lisp` | 369 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input`, `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 | `src/cadr-tui/threads.lisp` | 6 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 
 ### 6.4 Needs an H pair
@@ -14141,6 +14141,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
+| `cli_support` | 1 | 159 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

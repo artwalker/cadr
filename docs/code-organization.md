@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc files=298 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=151 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc files=299 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=152 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -21,11 +21,11 @@ owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 298 current files.
+goal is supposed to police, so this ledger covers all 299 current files.
 
 - 293 Lisp files, 121,105 lines, 4,976 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 298 production files and 125,380 physical lines in total.
+- 299 production files and 125,380 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `pass` means one predictable responsibility; `pass · large` means the same but
@@ -180,6 +180,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/build-support.lisp` | 14 | 2 | Supply the native-image save arguments and executable entry point. | pass | no-rewrite | nothing TS-shaped; nearest candidate is the L8 `(member :sb-core-compression features)` probe, which is already keyword-based — a 14-line keyword-plist builder for save-lisp-and-die is exactly the native form. | 20 |
 | `src/cadr-cli/config.lisp` | 284 | 22 | Resolve legacy CLI provider configuration and auth commands. | pass | done | +oauth-login-providers+. I0: one login/refresh table. | 20 |
 | `src/cadr-cli/support/atomic-write.lisp` | 7 | 1 | Retain the CLI compatibility entry point while delegating atomic replacement to `cadr-core`. | pass | done | core default, no restated :flush. I0: wrapper owns nothing extra. | 20 |
+| `src/cadr-cli/support/bug-report.lisp` | 159 | 10 | Redact diagnostics and write the local `/bug` ZIP archive. | pass | done | redact-url + redact-json-value. I0: CADR_* env only. | 20 |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | 10 | Strip terminal styling, parse changelogs, and publish the resulting session share. | pass | no-rewrite | Most TS-like: the hand-indexed strip-ansi scanner (lines 9-79, incf/length poking), but byte-exact strip parity on adversarial edges (unterminated OSC keeps ESC, lines 52-56; C1 0x9B introducer, line 14) is the output contract, and baseline implements it as a chalk-derived regex (pi utils/ansi.ts:29-42) whose CSI-final set deliberately differs from line 63's #x40-#x7E — swapping in cl-ppcre would be a parity risk, not a checkable improvement; the (condition () nil) parse swallows (line 245) mirror baseline failure->null. | 20 |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | 5 | Own the process-local event bus and its error sink. | pass | no-rewrite | Most TS-like: string-keyed channels with append-ordered handler lists (lines 4, 12-16), a JS Map | 20 |
 | `src/cadr-cli/support/external-editor.lisp` | 20 | 1 | Round-trip text through the configured external editor. | pass | no-rewrite | Most TS-like: integer-exit-status runner with zerop branch (line 15) and manual probe/delete cleanup (lines 19-20), but exit codes are inherently integers and fallback-to-original-content on nonzero exit is the baseline contract; uiop:with-temporary-file + unwind-protect + chmod #o600 (lines 4-14) is already the Lisp-native form. | 20 |
@@ -438,14 +439,14 @@ unified requirements 7–9.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 28 | 13 | 0 | 0 | 41 |
 | `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
-| `cadr-cli` | 88 | 27 | 0 | 0 | 115 |
+| `cadr-cli` | 90 | 27 | 0 | 0 | 117 |
 | `cadr-core` | 7 | 0 | 0 | 0 | 7 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 30 | 19 | 0 | 0 | 49 |
-| **Total** | **214** | **85** | **0** | **0** | **299** |
+| **Total** | **215** | **85** | **0** | **0** | **299** |
 
 No production file remains in `should split` or `should merge`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This

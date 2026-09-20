@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 298,
-    "lines": 135202
+    "files": 299,
+    "lines": 137852
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -1296,6 +1296,11 @@
       "prefix": "src/cadr-ai/oauth/page.lisp",
       "class": "unpairable",
       "pathId": "oauth_success_page_mark"
+    },
+    {
+      "prefix": "src/cadr-cli/support/bug-report.lisp",
+      "class": "needs-pair",
+      "hole": "cli_support"
     },
     {
       "prefix": "src/cadr-server/",

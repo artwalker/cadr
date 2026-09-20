@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1471,
+  "expected_findings": 1473,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -695,6 +695,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.85.1 (+0, d981de122)`.",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.0 (+0, ecac0a9c4)`.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -10153,6 +10161,14 @@
       "line": "  ;; pi@ecac0a9c4 agent-session.ts _addPersistedDefaultToNonEmptyScope:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/support/bug-report.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +bug-report-custom-entry-type+ \"pi.bug-report\")",
+      "occurrences": 1,
+      "reason": "Bug report writes the baseline customType pi.bug-report. That token is the artifact schema, not the product name."
     },
     {
       "path": "src/cadr-cli/support/changelog-share.lisp",

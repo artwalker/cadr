@@ -452,12 +452,12 @@ class RenderDiffGateTest(unittest.TestCase):
             ROOT,
             manifest["baselineCommit"],
         )
-        self.assertEqual(len(inventory["slashCommands"]), 23)
+        self.assertEqual(len(inventory["slashCommands"]), 24)
         self.assertEqual(
             [entry["name"] for entry in registry["slashCommands"]],
             inventory["slashCommands"],
         )
-        self.assertEqual(len(inventory["constructorSites"]), 23)
+        self.assertEqual(len(inventory["constructorSites"]), 25)
         self.assertEqual(
             sorted(registry["baselineConstructorSites"]),
             inventory["constructorSites"],
@@ -493,7 +493,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 manifest,
                 ROOT,
             )
-        self.assertEqual(len(registry["slashCommands"]), 23)
+        self.assertEqual(len(registry["slashCommands"]), 24)
         self.assertEqual(len(registry["interfaces"]), 29)
 
     def test_reachable_interface_registry_fails_closed_for_new_commands_and_missing_captures(self) -> None:
