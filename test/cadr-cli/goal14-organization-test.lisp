@@ -1047,7 +1047,7 @@
     ;; inMemory session entry owners land in B8 session/loop files.
     ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
     ;; adjacent session/codec helpers landed in B8 owners.
-    ;; +1 Goal 24 pi#9601: find-session-path-by-id (session/discovery.lisp).
+    ;; +1 Goal 24 #9601: find-session-path-by-id (session/discovery.lisp).
     (is (= 342 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
