@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **300 files / 138,115 lines**
+Denominator: **300 files / 138,091 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
 | `paired` | 244 | 111,160 | 80.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 31 | 19,120 | 13.8% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 31 | 19,096 | 13.8% | on a named paired thunk; no own bench |
 | `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 80.5% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 86.0% of lines.
+- **K-advanceable** (paired ∪ unpairable): 86.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -14111,7 +14111,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 18 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/support/transcript.lisp` | 210 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/support/transcript.lisp` | 186 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/types.lisp` | 221 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
