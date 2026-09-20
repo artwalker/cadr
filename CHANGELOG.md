@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: transcript-backed system message replay helpers
+  (`normalize-context`, `get-current-system-prompt`, tool declaration
+  diffs). Provider and session wiring remain open.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

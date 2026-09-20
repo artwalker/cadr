@@ -1419,6 +1419,7 @@
                    "support/threads.lisp" "support/release.lisp"
                    "support/retry.lisp" "support/token-estimation.lisp"
                    "support/overflow.lisp" "support/grammar-coercion.lisp"
+                   "support/transcript.lisp"
                    "support/uuid.lisp")
                  collect
                  (goal14-b1-source root (format nil "src/cadr-ai/~A" relative)))))
@@ -1445,7 +1446,8 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +40 Goal 24: transcript-backed system-message replay exports.
+              "455239c7099c028683a575050074d50da30cb9749b1ab74ae456945f5af52b44"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
@@ -1465,6 +1467,7 @@
              "(:file \"threads\")" "(:file \"release\")"
              "(:file \"retry\")" "(:file \"token-estimation\")"
              "(:file \"overflow\")" "(:file \"grammar-coercion\")"
+             "(:file \"transcript\")"
              "(:file \"uuid\")"
              "(:module \"capabilities\""
              "(:file \"streaming-json\")" "(:file \"event-stream\")"

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 299,
-    "lines": 137863
+    "files": 300,
+    "lines": 138164
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -2272,6 +2272,11 @@
       "metrics": [
         "ai_support.estimate_text"
       ]
+    },
+    {
+      "prefix": "src/cadr-ai/support/transcript.lisp",
+      "class": "needs-pair",
+      "hole": "ai_transcript_replay"
     },
     {
       "prefix": "src/cadr-ai/support/uuid.lisp",
