@@ -294,6 +294,7 @@
    #:load-session
    #:list-sessions
    #:list-session-infos
+   #:find-session-path-by-id
    #:session-list-info
    #:session-list-info-id
    #:session-list-info-path

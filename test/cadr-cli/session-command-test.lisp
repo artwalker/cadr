@@ -978,3 +978,125 @@
            (cadr-cli::clone-agent-session
             agent directory)
            'cadr-agent:session)))))
+
+(test exact-session-id-resolves-without-list-session-infos
+  ;; pi#9601: exact ids use find-session-path-by-id (headers only).
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (alpha
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "exact-alpha-id"))
+           (beta
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "exact-beta-id"))
+           (original
+             (symbol-function
+              'cadr-agent:list-session-infos)))
+      (declare (ignore _))
+      (flet ((persist (session text)
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-user-message :content text))
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-assistant-message
+                 :content
+                 (list
+                  (cadr-ai:make-text-content :text text))
+                 :api :openai-responses
+                 :provider :openai
+                 :model "mock"
+                 :stop-reason :stop))))
+        (persist alpha "alpha body")
+        (persist beta "beta body"))
+      (is (probe-file (cadr-agent:session-path alpha)))
+      (is (probe-file (cadr-agent:session-path beta)))
+      (unwind-protect
+           (progn
+             (setf
+              (symbol-function
+               'cadr-agent:list-session-infos)
+              (lambda (&rest args)
+                (declare (ignore args))
+                (error
+                 "list-session-infos must not run for exact id")))
+             (let ((resolved
+                     (cadr-cli::resolve-session-reference
+                      "exact-alpha-id" sessions cwd)))
+               (is (string=
+                    "exact-alpha-id"
+                    (cadr-agent:session-id resolved)))
+               (is
+                (string=
+                 (namestring
+                  (cadr-agent:session-path alpha))
+                 (namestring
+                  (cadr-agent:session-path resolved)))))
+             (let ((opened
+                     (cadr-cli::resolve-cli-session
+                      :session-id "exact-beta-id"
+                      :directory sessions
+                      :cwd cwd
+                      :output (make-string-output-stream))))
+               (is (string=
+                    "exact-beta-id"
+                    (cadr-agent:session-id opened)))))
+        (setf
+         (symbol-function
+          'cadr-agent:list-session-infos)
+         original)))))
+
+(test prefix-session-id-still-uses-list-session-infos
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "prefix-target-full"))
+           (list-calls 0)
+           (original
+             (symbol-function
+              'cadr-agent:list-session-infos)))
+      (declare (ignore _))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "prefix body"))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "prefix body"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (is (probe-file (cadr-agent:session-path session)))
+      (unwind-protect
+           (progn
+             (setf
+              (symbol-function
+               'cadr-agent:list-session-infos)
+              (lambda (&rest args)
+                (incf list-calls)
+                (apply original args)))
+             (let ((resolved
+                     (cadr-cli::resolve-session-reference
+                      "prefix-target" sessions cwd)))
+               (is (string=
+                    "prefix-target-full"
+                    (cadr-agent:session-id resolved)))
+               (is (plusp list-calls))))
+        (setf
+         (symbol-function
+          'cadr-agent:list-session-infos)
+         original)))))
