@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: classify Cloudflare HTTP 520 and Azure peak-load capacity
+  errors as retryable (`#9627`, `#9669`), matching
+  `packages/ai/src/utils/retry.ts` at pin `ecac0a9c4`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
