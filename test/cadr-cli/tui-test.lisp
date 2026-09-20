@@ -1569,7 +1569,7 @@
   (let ((arguments
           (cadr-cli::parse-cli-arguments
            '("--provider=deepseek"
-             "--model" "deepseek-v4-flash"
+             "--model" "deepseek-flash"
              "--extension" "one.lisp"
              "--extension=two.lisp"
              "--continue"
@@ -1580,7 +1580,7 @@
          (cadr-cli::cli-arguments-provider
           arguments)))
     (is (string=
-         "deepseek-v4-flash"
+         "deepseek-flash"
          (cadr-cli::cli-arguments-model
           arguments)))
     (is (equal

@@ -25410,13 +25410,13 @@
       0))
 
 (defun run-cli-interactive-assistant-price-known ()
-  (leftover-assistant-price-known-flag :deepseek "deepseek-v4-flash")
+  (leftover-assistant-price-known-flag :deepseek "deepseek-flash")
   (leftover-assistant-price-known-flag :nope "zz-model")
   (leftover-assistant-price-known-flag :google "gemini-3.6-flash")
   (leftover-assistant-price-known-flag :deepseek "")
   (leftover-assistant-price-known-flag nil "deepseek-v4-flash")
   (list
-   (leftover-assistant-price-known-flag :deepseek "deepseek-v4-flash")
+   (leftover-assistant-price-known-flag :deepseek "deepseek-flash")
    (leftover-assistant-price-known-flag :nope "zz-model")
    (leftover-assistant-price-known-flag :google "gemini-3.6-flash")
    (leftover-assistant-price-known-flag :deepseek "")
@@ -25424,7 +25424,7 @@
 
 (defun leftover-usage-fixture-message
     (&key (provider :deepseek)
-          (model "deepseek-v4-flash")
+          (model "deepseek-flash")
           (stop-reason :end-turn))
   (cadr-ai:make-assistant-message
    :provider provider

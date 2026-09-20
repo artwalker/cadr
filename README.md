@@ -23,7 +23,7 @@ Set a provider key (DeepSeek example):
 ```bash
 export DEEPSEEK_API_KEY=sk-...
 export CADR_PROVIDER=deepseek
-export CADR_MODEL=deepseek-v4-flash
+export CADR_MODEL=deepseek-flash
 ```
 
 One-shot prompt, then interactive:
@@ -181,14 +181,14 @@ Provider credentials:
 | Anthropic | `ANTHROPIC_API_KEY` | `claude-opus-4-8` |
 | OpenAI | `OPENAI_API_KEY` | `gpt-5.5` |
 | Google | `GEMINI_API_KEY` | `gemini-3.6-flash` |
-| DeepSeek | `DEEPSEEK_API_KEY` | `deepseek-v4-flash` |
+| DeepSeek | `DEEPSEEK_API_KEY` | `deepseek-flash` |
 | Ollama | none | `gpt-oss:20b` |
 
 Selection overrides:
 
 ```bash
 CADR_PROVIDER=deepseek
-CADR_MODEL=deepseek-v4-flash
+CADR_MODEL=deepseek-flash
 CADR_BASE_URL=https://api.deepseek.com
 ```
 
@@ -211,7 +211,7 @@ Equivalent command-line options are `--provider`, `--model`, and
 {
   "providers": {
     "deepseek": {
-      "model": "deepseek-v4-flash",
+      "model": "deepseek-flash",
       "base-url": "https://api.deepseek.com"
     }
   }
@@ -304,7 +304,7 @@ The eval harness requires an explicit provider and model:
 ```bash
 ./scripts/run-evals.sh \
   --provider deepseek \
-  --model deepseek-v4-flash
+  --model deepseek-flash
 ```
 
 Credential-gated live blocks run through `./scripts/test-live.sh`, separately

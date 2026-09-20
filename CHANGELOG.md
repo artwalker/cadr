@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: replace retired DeepSeek Flash aliases with canonical
+  `deepseek-flash` (images+text, pricing 0.3 / 1.2 / 0.006) and refresh
+  `deepseek-v4-pro` pricing (1.32 / 3.96 / 0.044) on the deepseek
+  provider catalog only (#9423).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

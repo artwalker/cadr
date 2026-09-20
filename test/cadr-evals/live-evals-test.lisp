@@ -98,7 +98,7 @@
     (assert-live-smoke-eval
      (cadr-evals:run-smoke-eval
       :provider "deepseek"
-      :model "deepseek-v4-flash")
+      :model "deepseek-flash")
      "deepseek")))
 
 (test live-opencode-go-eval-smoke-uses-explicit-model-and-api-key
@@ -124,7 +124,7 @@
     (cadr-evals:make-eval-prompt-step
      "Call the live-echo tool with value phase7. After it succeeds, reply exactly SELF_EXTENSION_OK."))
    :provider "deepseek"
-   :model "deepseek-v4-flash"
+   :model "deepseek-flash"
    :no-tools
    '("read" "edit" "bash"
      "find" "grep" "ls")
@@ -335,7 +335,7 @@ echo \"test passed\"
       (cadr-evals:make-eval-prompt-step
        "Read calc.sh, correct only the subtraction to addition with the edit tool, then call bash with command exactly bash ./test.sh. Do not edit test.sh. Do not stop until its output reports test passed, then reply exactly REPAIR_VERIFIED."))
      :provider "deepseek"
-     :model "deepseek-v4-flash"
+     :model "deepseek-flash"
      :no-tools
      '("write" "find" "grep" "ls")
      :selector

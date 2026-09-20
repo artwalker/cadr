@@ -70,7 +70,7 @@
         (skip "DEEPSEEK_API_KEY is not set")
         (multiple-value-bind (message events)
             (run-live-stream
-             :deepseek api-key "deepseek-v4-flash"
+             :deepseek api-key "deepseek-flash"
              (list
               (cadr-ai:make-user-message
                :content
