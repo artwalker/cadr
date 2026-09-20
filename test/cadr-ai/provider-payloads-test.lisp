@@ -113,6 +113,84 @@
           (request-spec-payload codex-request)
           "max_output_tokens")))))
 
+(test codex-responses-sends-off-reasoning-when-effort-omitted
+  ;; Baseline e86102f18 (#9191): omitted effort keeps { effort } only.
+  (let* ((mapped-model
+           (make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"
+            :reasoning-p t
+            :thinking-level-map
+            '((:off . "none")
+              (:low . "low")
+              (:medium . "medium")
+              (:high . "high"))))
+         (fallback-model
+           (make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"
+            :reasoning-p t
+            :thinking-level-map
+            '((:low . "low")
+              (:high . "high"))))
+         (provider
+           (cadr-ai:make-openai-codex-provider
+            :oauth-access-token "oauth-test"
+            :oauth-account-id "acct-test"))
+         (context (sample-context))
+         (omitted
+           (build-request provider mapped-model context
+                          :stream-p t
+                          :max-tokens 4096))
+         (fallback
+           (build-request provider fallback-model context
+                          :stream-p t
+                          :max-tokens 4096))
+         (explicit-off
+           (build-request provider mapped-model context
+                          :stream-p t
+                          :max-tokens 4096
+                          :reasoning :off))
+         (explicit-high
+           (build-request provider mapped-model context
+                          :stream-p t
+                          :max-tokens 4096
+                          :reasoning :high))
+         (omitted-reasoning
+           (cadr-ai::json-get (request-spec-payload omitted)
+                              "reasoning"))
+         (fallback-reasoning
+           (cadr-ai::json-get (request-spec-payload fallback)
+                              "reasoning"))
+         (off-reasoning
+           (cadr-ai::json-get (request-spec-payload explicit-off)
+                              "reasoning"))
+         (high-reasoning
+           (cadr-ai::json-get (request-spec-payload explicit-high)
+                              "reasoning")))
+    (is (hash-table-p omitted-reasoning))
+    (is (string= "none"
+                 (cadr-ai::json-get omitted-reasoning "effort")))
+    (is (not (cadr-ai::json-present-p omitted-reasoning "summary")))
+    (is (not
+         (cadr-ai::json-present-p
+          (request-spec-payload omitted)
+          "max_output_tokens")))
+    (is (hash-table-p fallback-reasoning))
+    (is (string= "none"
+                 (cadr-ai::json-get fallback-reasoning "effort")))
+    (is (not (cadr-ai::json-present-p fallback-reasoning "summary")))
+    (is (hash-table-p off-reasoning))
+    (is (string= "none"
+                 (cadr-ai::json-get off-reasoning "effort")))
+    (is (hash-table-p high-reasoning))
+    (is (string= "high"
+                 (cadr-ai::json-get high-reasoning "effort")))))
+
 (test providers-reject-missing-api-key
   (let ((model (make-model :id "gpt-test"
                            :provider :openai

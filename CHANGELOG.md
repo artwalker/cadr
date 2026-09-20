@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: Codex Responses sends Off `reasoning.effort` when effort is
+  omitted on a reasoning model (#9191 / baseline `e86102f18`), instead of
+  stripping the field after `add-responses-reasoning`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

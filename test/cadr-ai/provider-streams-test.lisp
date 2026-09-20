@@ -700,7 +700,15 @@
                :absent
                :off)))
       (:openai-codex-responses
-       (if reasoning :on :absent))
+       ;; Baseline e86102f18 (#9191): omitted effort still sends Off.
+       (if reasoning
+           :on
+           (if (and
+                (cadr-ai::model-thinking-level-present-p model :off)
+                (null
+                 (cadr-ai::model-thinking-level-value model :off)))
+               :absent
+               :off)))
       ((:google-generative-ai :google-vertex)
        (if reasoning
            :on
