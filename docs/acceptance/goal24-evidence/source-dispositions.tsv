@@ -1,0 +1,83 @@
+status	old_path	new_path	decision
+A	-	packages/agent/src/harness/pico3/bash.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/bounded.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/chord.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/context.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/harness.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/hooks.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/index.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/jsonl.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/collapse.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/entries.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/frames.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/generation.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/job.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/plugin.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/post-tools.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/task-api.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/kinds/tool.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/membrane.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/memory.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/scheduler.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/session.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/system.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/types.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/pico3/view.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/session/jsonl/fork.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/src/harness/session/jsonl/io.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/test/harness/pico3/helpers.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/agent/test/harness/pico3/types.compile.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/ai/src/providers/opencode-headers.ts	implement and add a ledger row (Goal 24 provider/transcript)
+A	-	packages/ai/src/providers/radius.models.ts	implement and add a ledger row (Goal 24 provider/transcript)
+A	-	packages/ai/src/utils/transcript.ts	implement and add a ledger row (Goal 24 provider/transcript)
+A	-	packages/chord/test/delta-retention.worker.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/chord/test/delta-traversal.bench.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/coding-agent/src/core/bug-report.ts	implement and add a ledger row (Goal 24 /bug)
+A	-	packages/coding-agent/src/core/bug-report-upload.ts	implement and add a ledger row (Goal 24 /bug)
+A	-	packages/coding-agent/src/core/cache-warmer.ts	implement and add a ledger row (Goal 24 cache warming / crash log)
+A	-	packages/coding-agent/src/core/crash-log.ts	implement and add a ledger row (Goal 24 cache warming / crash log)
+A	-	packages/coding-agent/src/core/extensions/jiti-loader.ts	Node extension compiler deferral; Lisp loads extensions natively; add intentional-difference ledger row [class SP-F6]
+A	-	packages/coding-agent/src/core/extensions/jiti-static-loader.ts	Node extension compiler deferral; Lisp loads extensions natively; add intentional-difference ledger row [class SP-F6]
+A	-	packages/coding-agent/src/core/extensions/virtual-modules.ts	Node extension compiler deferral; Lisp loads extensions natively; add intentional-difference ledger row [class SP-F6]
+A	-	packages/coding-agent/src/experimental/micro/api.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/main.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/models.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/runtime.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/sessions.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/tools.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/experimental/micro/tui.ts	experimental micro surface; ledger-defer pending user cut; add pending-adjudication row
+A	-	packages/coding-agent/src/modes/interactive/bug-report.ts	implement and add a ledger row (Goal 24 /bug)
+A	-	packages/coding-agent/src/utils/clipboard-command.ts	implement and add a ledger row (Goal 24 clipboard/zip for /bug)
+A	-	packages/coding-agent/src/utils/zip.ts	implement and add a ledger row (Goal 24 clipboard/zip for /bug)
+A	-	packages/durable/src/index.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/durable/src/memory-storage.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/durable/src/types.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/docker/entrypoint.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/acme-server.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/configured-runtime.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/custom-provider.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/documentation-audit.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/extensions.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/models.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/openai-provider.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/smoke.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/evals/tui.docs.eval.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/cli.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/docker.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/harness.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/plan.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/src/report.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/evals/vitest.evals.config.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
+A	-	packages/tui/src/native-platform.ts	Node native .node helpers; cadr keeps platform command + OSC 52; add intentional-difference ledger row [class SP-F6]
+D	packages/ai/src/utils/deferred-tools.ts	-	remove obsolete ledger row (deferred tools moved into provider native loading)
+D	packages/coding-agent/examples/extensions/kimi-deferred-tools.ts	-	remove obsolete ledger row (deferred tools moved into provider native loading)
+D	packages/coding-agent/src/utils/clipboard-native.ts	-	remove obsolete ledger row (replaced by clipboard-command.ts)
+D	packages/evals/src/extensions.eval.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/pi-harness.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/smoke.eval.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/artifacts.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/harness-table.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/reporter.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/setup.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/src/vitest-evals/summary.ts	-	remove obsolete ledger row (evals/harness reshape)
+D	packages/evals/vitest.config.ts	-	remove obsolete ledger row (evals/harness reshape)

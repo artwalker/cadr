@@ -100,7 +100,7 @@ Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，�
 
 - [x] `BASELINE` 第三列为 `0`，release 为 `v0.86.0`，commit 为 `ecac0a9c4…`
 - [x] `python3 scripts/baseline-anchor.py check` 绿
-- [ ] `enumerate-baseline-diff` 各类 delta 均有 disposition
+- [x] `enumerate-baseline-diff` 各类 delta 均有 disposition（`docs/acceptance/goal24-evidence/source-dispositions.tsv`，82 行；drift EXIT 0）
 - [ ] 上表每一行有测试名，或有用户已经裁过的例外
 - [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
 - [ ] `CHANGELOG.md` 记录 `cadr … · aligned with pi v0.86.0 (+0, ecac0a9c4)`（全量对齐后再写；钉点提交只记 pin）
