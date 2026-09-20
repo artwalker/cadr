@@ -350,11 +350,7 @@ interrupt (baseline selectSession onExit: silent exit 0)."
          (decoder (cadr-tui:make-input-decoder))
          (state
            (make-session-selector-state
-            :current-sessions
-            (mapcar
-             #'session-list-info-to-search-record
-             (cadr-agent:list-session-infos
-              :directory directory :cwd cwd))
+            :current-sessions nil
             :all-sessions nil
             :delete-function #'delete-session-file
             :keybindings
@@ -363,7 +359,11 @@ interrupt (baseline selectSession onExit: silent exit 0)."
          (done-p nil)
          (selected-path nil)
          (exit-p nil)
+         (current-loader-thread nil)
          (loader-thread nil))
+    (setf
+     (session-selector-state-load-progress-loaded state)
+     0)
     (labels
         ((render ()
            (multiple-value-bind (lines row column)
@@ -372,6 +372,58 @@ interrupt (baseline selectSession onExit: silent exit 0)."
              (cadr-tui:render-frame
               renderer lines
               :cursor-row row :cursor-column column)))
+         (start-current-load ()
+           (setf
+            current-loader-thread
+            (sb-thread:make-thread
+             (lambda ()
+               (handler-case
+                   (let ((infos
+                           (cadr-agent:list-session-infos
+                            :directory directory
+                            :cwd cwd
+                            :progress-function
+                            (lambda
+                                (loaded total
+                                 &optional
+                                 (partial-infos nil partial-p))
+                              (if partial-p
+                                  (session-selector-note-current-load-progress
+                                   state
+                                   loaded
+                                   total
+                                   (mapcar
+                                    #'session-list-info-to-search-record
+                                    partial-infos))
+                                  (session-selector-note-current-load-progress
+                                   state loaded total))))
+                     (setf
+                      (session-selector-state-current-sessions
+                       state)
+                      (mapcar
+                       #'session-list-info-to-search-record
+                       infos)
+                      (session-selector-state-load-progress-loaded
+                       state)
+                      nil
+                      (session-selector-state-load-progress-total
+                       state)
+                      nil)
+                     (session-selector-clamp-selected state))
+                 (condition (condition)
+                   (setf
+                    (session-selector-state-load-progress-loaded
+                     state)
+                    nil
+                    (session-selector-state-load-progress-total
+                     state)
+                    nil
+                    (session-selector-state-status-message
+                     state)
+                    (format
+                     nil "Failed to load sessions: ~A"
+                     condition))))
+             :name "cadr-resume-picker-current-load")))
          (start-all-load (token)
            (setf
             loader-thread
@@ -383,7 +435,23 @@ interrupt (baseline selectSession onExit: silent exit 0)."
                     (mapcar
                      #'session-list-info-to-search-record
                      (cadr-agent:list-session-infos
-                      :directory directory)))
+                      :directory directory
+                      :progress-function
+                      (lambda
+                          (loaded total
+                           &optional
+                           (partial-infos nil partial-p))
+                        (if partial-p
+                            (session-selector-note-load-progress
+                             state
+                             token
+                             loaded
+                             total
+                             (mapcar
+                              #'session-list-info-to-search-record
+                              partial-infos))
+                            (session-selector-note-load-progress
+                             state token loaded total))))))
                  (condition (condition)
                    (session-selector-fail-all-load
                     state token condition))))
@@ -418,6 +486,7 @@ interrupt (baseline selectSession onExit: silent exit 0)."
       (cadr-tui:call-with-terminal
        terminal
        (lambda ()
+         (start-current-load)
          (render)
          (loop until done-p
                do
@@ -451,6 +520,8 @@ interrupt (baseline selectSession onExit: silent exit 0)."
        (lambda () (cadr-tui:renderer-after-stop renderer))))
     ;; The loader only reads session files; a bounded cleanup wait keeps
     ;; a slow disk from blocking the picker exit path.
+    (cadr-core:stop-thread-for-cleanup
+     current-loader-thread :timeout 2 :terminate-p nil)
     (cadr-core:stop-thread-for-cleanup
      loader-thread :timeout 2 :terminate-p nil)
     (values selected-path exit-p)))

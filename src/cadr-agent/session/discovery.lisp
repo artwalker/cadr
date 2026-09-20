@@ -373,35 +373,71 @@
             info)))
     (error () nil)))
 
+(defun session-list-publish-partial-p (loaded total interval)
+  ;; pi@ecac0a9c4 listSessionsFromDir / listAll: first, every N, and last.
+  (or (= loaded 1)
+      (zerop (mod loaded interval))
+      (= loaded total)))
+
+(defun call-session-list-progress
+    (progress-function loaded total
+     &optional publish-partial-p partial-infos)
+  ;; Two-arg callers stay valid on non-publish ticks. Publish ticks
+  ;; always pass a third argument (possibly NIL) so empty partials
+  ;; still match baseline's defined partialSessions array.
+  (when progress-function
+    (if publish-partial-p
+        (funcall progress-function loaded total partial-infos)
+        (funcall progress-function loaded total))))
+
 (defun list-session-infos (&key
                                  (directory
                                    (default-session-directory))
                                  cwd
                                  progress-function)
+  ;; pi@ecac0a9c4 SessionListProgress: (loaded, total, partialSessions?).
+  ;; cwd-filtered listing publishes every 10; list-all (no cwd) every 100.
   (let* ((session-directory
            (uiop:ensure-directory-pathname directory))
          (canonical-cwd
-           (and cwd (canonical-session-cwd cwd))))
+           (and cwd (canonical-session-cwd cwd)))
+         (publish-interval
+           (if canonical-cwd 10 100)))
     (unless (probe-file session-directory)
       (return-from list-session-infos nil))
-    (sort
-     (loop with paths =
+    (let* ((paths
              (directory
               (merge-pathnames
-               "*.jsonl" session-directory))
-           with total = (length paths)
-           for path in paths
-           for loaded from 1
-           for info =
-             (progn
-               (when progress-function
-                 (funcall progress-function loaded total))
-               (read-session-list-info
-                path
-                :expected-cwd canonical-cwd))
-           when info
-             collect info)
-     #'> :key #'session-list-info-modified)))
+               "*.jsonl" session-directory)))
+           (total (length paths))
+           (partial nil)
+           (infos
+             (loop for path in paths
+                   for loaded from 1
+                   for info =
+                     (read-session-list-info
+                      path
+                      :expected-cwd canonical-cwd)
+                   do
+                   (when info
+                     (push info partial))
+                   (when progress-function
+                     (let ((publish-partial-p
+                             (session-list-publish-partial-p
+                              loaded total publish-interval)))
+                       (call-session-list-progress
+                        progress-function
+                        loaded
+                        total
+                        publish-partial-p
+                        (when publish-partial-p
+                          (sort
+                           (copy-list partial)
+                           #'>
+                           :key #'session-list-info-modified)))))
+                   when info
+                     collect info)))
+      (sort infos #'> :key #'session-list-info-modified))))
 
 (defun list-sessions (&key
                             (directory

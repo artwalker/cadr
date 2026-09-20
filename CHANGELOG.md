@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `--resume` / session selector publish sorted partial session
+  lists while loading (`list-session-infos` every 10 with cwd, every
+  100 without; FiveAM
+  `goal24-list-session-infos-publishes-partial-every-10`). Resume picker
+  and in-TUI all-load fill the list progressively. `--continue` early
+  stop remains open.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

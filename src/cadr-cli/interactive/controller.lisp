@@ -2556,10 +2556,25 @@ interactive-mode.ts:5956-5960).")
                                (session-select-items-to-records
                                 (funcall
                                  all-session-items-function
-                                 (lambda (loaded total)
+                                 (lambda
+                                     (loaded total
+                                      &optional
+                                      (partial-infos nil partial-p))
                                    (sb-thread:with-mutex (lock)
-                                     (session-selector-note-load-progress
-                                      selector token loaded total))
+                                     (if partial-p
+                                         (session-selector-note-load-progress
+                                          selector
+                                          token
+                                          loaded
+                                          total
+                                          (mapcar
+                                           #'session-list-info-to-search-record
+                                           partial-infos))
+                                         (session-selector-note-load-progress
+                                          selector
+                                          token
+                                          loaded
+                                          total)))
                                    (request-render))))))
                          (sb-thread:with-mutex (lock)
                            (session-selector-complete-all-load
