@@ -59,8 +59,11 @@
         (contains-ci-p
          fragment (assistant-message-error-message message)))
       +overflow-fragments+)
-     (bare-overflow-http-status-p
-      (assistant-message-error-message message))))
+     ;; Baseline #9482: bodyless 400/413 is Cerebras-only.
+     (and
+      (eq :cerebras (assistant-message-provider message))
+      (bare-overflow-http-status-p
+       (assistant-message-error-message message)))))
    (and
     context-window
     (eq :stop (assistant-message-stop-reason message))

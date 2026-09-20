@@ -7,6 +7,9 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: treat bodyless HTTP 400/413 as context overflow only for
+  Cerebras (`#9482`), matching `packages/ai/src/utils/overflow.ts`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

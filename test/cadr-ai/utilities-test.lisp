@@ -167,12 +167,35 @@ second" (cadr-ai:content-text content)))
          "Requested token count exceeds the model's maximum context length of 131072 tokens."
          "Input length (265330) exceeds model's maximum context length (262144)."
          "Input length 131393 exceeds the maximum allowed input length of 131040 tokens."
-         "Prompt has 5,958,968 tokens, but the configured context size is 256,000 tokens"
-         "413 status code (no body)"))
+         "Prompt has 5,958,968 tokens, but the configured context size is 256,000 tokens"))
     (is-true
      (cadr-ai:context-overflow-p
       (utility-error-message text)
       262144)))
+  (dolist
+      (text
+       '("400 status code (no body)"
+         "413 status code (no body)"))
+    (is-true
+     (cadr-ai:context-overflow-p
+      (cadr-ai:make-assistant-message
+       :content nil
+       :api :test
+       :provider :cerebras
+       :model "test"
+       :stop-reason :error
+       :error-message text)
+      131072))
+    (is-false
+     (cadr-ai:context-overflow-p
+      (cadr-ai:make-assistant-message
+       :content nil
+       :api :test
+       :provider :opencode-go
+       :model "test"
+       :stop-reason :error
+       :error-message text)
+      1000000)))
   (dolist
       (text
        '("500 `model runner crashed unexpectedly`"
