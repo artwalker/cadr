@@ -1046,7 +1046,9 @@
     ;; inMemory session entry owners land in B8 session/loop files.
     ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
     ;; adjacent session/codec helpers landed in B8 owners.
-    (is (= 341 definition-count)
+    ;; +6 Goal 24: system-message JSON helpers on session/codec.lisp
+    ;; (compaction CompactionEntry.systemMessage round-trip).
+    (is (= 347 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

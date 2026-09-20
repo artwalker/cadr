@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: compaction session entries store and restore the replayed
+  `systemMessage` checkpoint (`session-append-compaction`,
+  `session-messages`). Provider mid-convo emission and
+  TranscriptContext remain open.
+
 - Goal 24: transcript-backed system message replay helpers
   (`normalize-context`, `get-current-system-prompt`, tool declaration
   diffs). Provider and session wiring remain open.

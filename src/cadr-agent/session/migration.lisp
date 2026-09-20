@@ -66,7 +66,9 @@
          ((or (eq key "summary") (string= key "summary"))
           (setf (session-entry-summary entry) value))
          ((string= key "sourceIds")
-          (setf (session-entry-source-ids entry) value))))
+          (setf (session-entry-source-ids entry) value))
+         ((string= key "systemMessage")
+          (setf (session-entry-system-message entry) value))))
       (#\f
        (cond
          ((string= key "firstKeptEntryId")
@@ -1132,12 +1134,25 @@
                       ((and (= w #x656d6974) (= n 9))
                        (setf (session-json-message-timestamp bag)
                              (parse-timestamp-value)))
-                      ((and (= w #x6c6f6f74) (= n 10))
+                      ((and (= w #x6c6f6f74) (= n 10)
+                            (= (aref octets (+ key-start 4)) #x43))
+                       ;; toolCallId — 5th byte #\C (not toolsAdded #\s).
                        (keep-extra bag :tool-call-id
                                    (parse-string-value)))
-                      ((and (= w #x6c6f6f74) (= n 12))
+                      ((and (= w #x6c6f6f74) (= n 10)
+                            (= (aref octets (+ key-start 4)) #x73))
+                       ;; toolsAdded (system-message).
+                       (keep-extra bag :tools-added (parse-generic)))
+                      ((and (= w #x6c6f6f74) (= n 12)
+                            (= (aref octets (+ key-start 4)) #x5f))
+                       ;; tool_call_id
                        (keep-extra bag :tool-call-id
                                    (parse-string-value)))
+                      ((and (= w #x6c6f6f74) (= n 12)
+                            (= (aref octets (+ key-start 4)) #x73))
+                       ;; toolsRemoved (system-message).
+                       (keep-extra bag :tools-removed
+                                   (parse-generic)))
                       ((and (= w #x6c6f6f74) (= n 8))
                        (keep-extra bag :tool-name
                                    (parse-string-value)))
@@ -1149,6 +1164,9 @@
                       ((and (= w #x746e6f63) (= n 7))
                        (setf (session-json-message-content bag)
                              (parse-content-value)))
+                      ((and (= w #x74636573) (= n 8))
+                       ;; sections (system-message).
+                       (keep-extra bag :sections (parse-generic)))
                       ((and (= w #x6d6d6f63) (= n 7))
                        (keep-extra bag :command (parse-string-value)))
                       ((and (= w #x636e6163) (= n 9))
@@ -1521,6 +1539,9 @@
                (#xc61746572
                 (setf (session-entry-retained-tail entry)
                       (parse-generic)))
+               (#xd74737973
+                (setf (session-entry-system-message entry)
+                      (parse-generic)))
                (otherwise
                 (skip-value)))))
         (skip-space)
@@ -1668,6 +1689,12 @@
                        (string= field "toolName")
                        (string= field "tool_name"))
                    (keep-extra bag :tool-name value))
+                  ((or (eq field "toolsAdded")
+                       (string= field "toolsAdded"))
+                   (keep-extra bag :tools-added value))
+                  ((or (eq field "toolsRemoved")
+                       (string= field "toolsRemoved"))
+                   (keep-extra bag :tools-removed value))
                   ((or (eq field "truncated")
                        (string= field "truncated"))
                    (keep-extra bag :truncated value))))
@@ -1702,10 +1729,14 @@
                   (setf (session-json-message-usage bag)
                         (usage-or-hash value))))
                (#\s
-                (when (or (eq field "stopReason")
-                          (string= field "stopReason")
-                          (string= field "stop_reason"))
-                  (keep-extra bag :stop-reason value)))
+                (cond
+                  ((or (eq field "stopReason")
+                       (string= field "stopReason")
+                       (string= field "stop_reason"))
+                   (keep-extra bag :stop-reason value))
+                  ((or (eq field "sections")
+                       (string= field "sections"))
+                   (keep-extra bag :sections value))))
                (#\e
                 (cond
                   ((or (eq field "errorMessage")
@@ -2441,6 +2472,11 @@
                  (if (hash-table-p usage-object)
                      (usage-from-json usage-object)
                      usage-object))
+            (session-entry-system-message entry)
+            (let ((system-message
+                    (session-entry-system-message entry)))
+              (and system-message
+                   (system-message-from-json system-message)))
             (session-entry-retained-tail entry)
             (let ((tail
                     (session-entry-retained-tail entry)))

@@ -286,6 +286,7 @@
    #:session-entry-label
    #:session-entry-name
    #:session-entry-retained-tail
+   #:session-entry-system-message
    #:session-entries
    #:session-entry-count
    #:default-session-directory

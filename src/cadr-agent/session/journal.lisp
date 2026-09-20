@@ -2,6 +2,8 @@
 
 (defun message-timestamp (message)
   (etypecase message
+    (cadr-ai:system-message
+     (cadr-ai:system-message-timestamp message))
     (cadr-ai:user-message
      (cadr-ai:user-message-timestamp message))
     (cadr-ai:assistant-message
@@ -106,6 +108,11 @@
       base "tokensBefore"
       (session-entry-tokens-before entry))
      (put-session-details-and-usage base entry)
+     (when (session-entry-system-message entry)
+       (cadr-ai::json-put
+        base "systemMessage"
+        (system-message-to-json
+         (session-entry-system-message entry))))
      (when (session-entry-retained-tail entry)
        (cadr-ai::json-put
         base "retainedTail"
@@ -365,7 +372,7 @@
 
 (defun session-append-compaction
     (session summary source-ids first-kept-id tokens-before
-     &key details usage from-hook-p)
+     &key details usage from-hook-p system-message)
   (unless (stringp summary)
     (session-failure
      (session-path session) nil
@@ -382,21 +389,44 @@
       (session-failure
        (session-path session) nil
        "Compaction source entry does not exist: ~S" id)))
-  (append-session-entry
-   session
-   (make-session-entry
-    :type :compaction
-    :id (make-session-entry-id
-         (session-by-id session))
-    :parent-id (session-leaf-id session)
-    :timestamp (cadr-ai::unix-milliseconds)
-    :summary summary
-    :source-ids (copy-list source-ids)
-    :first-kept-id first-kept-id
-    :tokens-before tokens-before
-    :details details
-    :usage usage
-    :from-hook-p (not (null from-hook-p)))))
+  (let* ((timestamp (cadr-ai::unix-milliseconds))
+         (resolved-system-message
+           (or
+            system-message
+            (let ((current
+                    (cadr-ai:get-current-system-message
+                     (session-messages session))))
+              (when current
+                (cadr-ai:make-system-message
+                 :content
+                 (cadr-ai:system-message-content current)
+                 :sections
+                 (copy-list
+                  (cadr-ai:system-message-sections current))
+                 :tools-added
+                 (copy-list
+                  (cadr-ai:system-message-tools-added current))
+                 :tools-removed
+                 (copy-list
+                  (cadr-ai:system-message-tools-removed
+                   current))
+                 :timestamp timestamp))))))
+    (append-session-entry
+     session
+     (make-session-entry
+      :type :compaction
+      :id (make-session-entry-id
+           (session-by-id session))
+      :parent-id (session-leaf-id session)
+      :timestamp timestamp
+      :summary summary
+      :source-ids (copy-list source-ids)
+      :first-kept-id first-kept-id
+      :tokens-before tokens-before
+      :details details
+      :usage usage
+      :from-hook-p (not (null from-hook-p))
+      :system-message resolved-system-message))))
 
 (defun make-session-child-entry (session type)
   (make-session-entry
@@ -669,7 +699,13 @@
                   (:message
                    (list (session-entry-message entry)))
                   (:compaction
-                   (list (compaction-summary-message entry)))
+                   (let ((summary
+                           (compaction-summary-message entry)))
+                     (if (session-entry-system-message entry)
+                         (list
+                          (session-entry-system-message entry)
+                          summary)
+                         (list summary))))
                   (:branch-summary
                    (list
                     (cadr-ai:make-user-message

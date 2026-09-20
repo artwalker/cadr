@@ -1360,3 +1360,194 @@
                   buffer))))
         (is (plusp (length octets)))
         (is (= 10 (aref octets (1- (length octets)))))))))
+
+(defun goal24-session-tool (name)
+  (cadr-ai:make-tool
+   :name name
+   :description (format nil "~A tool" name)
+   :parameters
+   (cadr-ai::json-object
+    "type" "object"
+    "properties" (cadr-ai::json-object))))
+
+(test goal24-compaction-stores-and-restores-system-message
+  ;; Baseline session-manager appendCompaction / sessionEntryToContextMessages:
+  ;; compaction entries store getCurrentSystemMessage and rebuild as
+  ;; [systemMessage, summary] when present.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((tool (goal24-session-tool "read"))
+           (system
+             (cadr-ai:make-system-message
+              :content "base prompt"
+              :sections '(("preamble" . "<preamble>hi</preamble>"))
+              :tools-added (list tool)
+              :timestamp 50))
+           (memory
+             (cadr-agent:create-session
+              :persist-p nil
+              :cwd cwd
+              :id "g24-mem"
+              :timestamp 100))
+           (mem-early
+             (progn
+               (cadr-agent::append-session-entry
+                memory
+                (cadr-agent::make-session-entry
+                 :type :message
+                 :id (cadr-agent::make-session-entry-id
+                      (cadr-agent::session-by-id memory))
+                 :parent-id nil
+                 :timestamp 101
+                 :message system))
+               (cadr-agent:session-append-message
+                memory
+                (cadr-ai:make-user-message
+                 :content "early"
+                 :timestamp 102))))
+           (mem-compaction
+             (cadr-agent:session-append-compaction
+              memory
+              "memory summary"
+              (list mem-early)
+              mem-early
+              7))
+           (mem-entry
+             (gethash
+              mem-compaction
+              (cadr-agent::session-by-id memory)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "g24-sys"
+              :timestamp 200))
+           (path (cadr-agent:session-path session))
+           (early-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "early"
+               :timestamp 201))))
+      (is
+       (typep
+        (cadr-agent:session-entry-system-message mem-entry)
+        'cadr-ai:system-message))
+      (is
+       (string=
+        "base prompt"
+        (cadr-ai:system-message-content
+         (cadr-agent:session-entry-system-message mem-entry))))
+      (is
+       (= (cadr-agent:session-entry-timestamp mem-entry)
+          (cadr-ai:system-message-timestamp
+           (cadr-agent:session-entry-system-message mem-entry))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "ack"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 202))
+      (let* ((kept-id
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-user-message
+                 :content "kept"
+                 :timestamp 203)))
+             (compaction-id
+               (cadr-agent:session-append-compaction
+                session
+                "compacted summary"
+                (list early-id)
+                kept-id
+                42
+                :system-message system))
+             (entry
+               (gethash
+                compaction-id
+                (cadr-agent::session-by-id session)))
+             (checkpoint
+               (cadr-agent:session-entry-system-message entry))
+             (live-messages
+               (cadr-agent:session-messages session)))
+        (is (eq system checkpoint))
+        (is (typep (first live-messages) 'cadr-ai:system-message))
+        (is
+         (search
+          "<summary>"
+          (cadr-ai:user-message-content
+           (second live-messages))))
+        (is
+         (string=
+          "kept"
+          (cadr-ai:user-message-content
+           (third live-messages))))
+        (let* ((records (parse-json-lines path))
+               (compaction-record
+                 (find
+                  "compaction"
+                  (rest records)
+                  :key
+                  (lambda (record)
+                    (cadr-ai::json-get record "type"))
+                  :test #'string=))
+               (wire
+                 (cadr-ai::json-get
+                  compaction-record "systemMessage")))
+          (is (hash-table-p wire))
+          (is
+           (string=
+            "system"
+            (cadr-ai::json-get wire "role")))
+          (is
+           (string=
+            "base prompt"
+            (cadr-ai::json-get wire "content")))
+          (is
+           (hash-table-p
+            (cadr-ai::json-get wire "sections")))
+          (is
+           (vectorp
+            (cadr-ai::json-get wire "toolsAdded"))))
+        (let* ((loaded (cadr-agent:load-session path))
+               (reloaded
+                 (cadr-agent:session-messages loaded))
+               (head (first reloaded))
+               (summary (second reloaded)))
+          (is (typep head 'cadr-ai:system-message))
+          (is
+           (string=
+            "base prompt"
+            (cadr-ai:system-message-content head)))
+          (is
+           (string=
+            "<preamble>hi</preamble>"
+            (cdr
+             (assoc
+              "preamble"
+              (cadr-ai:system-message-sections head)
+              :test #'string=))))
+          (is
+           (= 1
+              (length
+               (cadr-ai:system-message-tools-added head))))
+          (is
+           (cadr-ai:declarations-equal
+            tool
+            (first
+             (cadr-ai:system-message-tools-added head))))
+          (is (typep summary 'cadr-ai:user-message))
+          (is
+           (search
+            "compacted summary"
+            (cadr-ai:user-message-content summary)))
+          (is
+           (string=
+            "kept"
+            (cadr-ai:user-message-content
+             (third reloaded)))))))))
