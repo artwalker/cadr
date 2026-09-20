@@ -93,7 +93,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/storage/jsonl.lisp` | 536 | 21 | Implement JSONL session storage and repository backends. | pass | no-rewrite | Manual path joining at :315-352 is required — execution-env paths are opaque possibly-non-local strings and the filename encoding is the byte contract. | 20 |
 | `src/cadr-agent/storage/memory.lisp` | 378 | 20 | Implement in-memory session storage and repository backends. | pass | done | tail pointer. I0: O(1) append like journal. | 20 |
 | `src/cadr-agent/storage/protocol.lisp` | 142 | 25 | Define storage/repository metadata, generic protocols, and shared errors. | pass | no-rewrite | ensure-session-metadata (:40-53) is the single owner of default construction; the file is otherwise the defgeneric protocol all backends specialize. | 20 |
-| `src/cadr-agent/tool.lisp` | 319 | 23 | Define tool registry, execution bindings, validation, and prepared outcomes. | pass · large | done | drop (or content nil). I0: TS ?? is identity. | 20 |
+| `src/cadr-agent/tool.lisp` | 352 | 24 | Define tool registry, execution bindings, validation, and prepared outcomes. | pass · large | done | drop (or content nil). I0: TS ?? is identity. | 20 |
 | `src/cadr-agent/truncate.lisp` | 554 | 35 | Implement baseline-compatible bounded head/tail/line truncation and its result contract. | pass | no-rewrite | Post-12F-1 the core is zero-alloc; the 11 forwarders at :28-62 are the exported API surface over the single-owning struct; line semantics match split("\n"). Head/tail now scan indices instead of split-string. Head and tail ASCII-run fill plus exact copy. | 20 |
 
 Part K6 (2026-08-18): 23 needs-rewrite rows done. 14 no-rewrite
