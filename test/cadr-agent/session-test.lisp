@@ -203,6 +203,159 @@
       (is (string= "newer"
                    (cadr-agent::session-id continued))))))
 
+;; Baseline findMostRecentSession (file-operations.test.ts): empty → null.
+(test find-most-recent-session-empty-directory-is-null
+  (with-session-directories (sessions cwd other-cwd)
+    (values cwd other-cwd)
+    (is (null
+         (cadr-agent:find-most-recent-session
+          :directory sessions)))))
+
+;; Baseline: mtime descending wins (not activity / content age).
+(test find-most-recent-session-mtime-wins-over-older-file
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((canonical
+             (cadr-agent::canonical-session-cwd cwd))
+           (older (merge-pathnames "older.jsonl" sessions))
+           (newer (merge-pathnames "newer.jsonl" sessions)))
+      (with-open-file
+          (stream older
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (format
+         stream
+         "{\"type\":\"session\",\"version\":3,\"id\":\"old\",\"timestamp\":\"2025-01-01T00:00:00Z\",\"cwd\":~S}~%"
+         canonical))
+      (with-open-file
+          (stream newer
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (format
+         stream
+         "{\"type\":\"session\",\"version\":3,\"id\":\"new\",\"timestamp\":\"2025-01-01T00:00:00Z\",\"cwd\":~S}~%"
+         canonical))
+      (sb-posix:utime (namestring older) 1000000000 1000000000)
+      (sb-posix:utime (namestring newer) 2000000000 2000000000)
+      (is
+       (string=
+        "newer"
+        (pathname-name
+         (cadr-agent:find-most-recent-session
+          :directory sessions)))))))
+
+;; Baseline: cwd filter skips newer-mtime other project.
+(test find-most-recent-session-cwd-filter-skips-other-cwd
+  (with-session-directories (sessions cwd other-cwd)
+    (let* ((cwd-a (cadr-agent::canonical-session-cwd cwd))
+           (cwd-b (cadr-agent::canonical-session-cwd other-cwd))
+           (file-a (merge-pathnames "a.jsonl" sessions))
+           (file-b (merge-pathnames "b.jsonl" sessions)))
+      (with-open-file
+          (stream file-a
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (format
+         stream
+         "{\"type\":\"session\",\"version\":3,\"id\":\"a\",\"timestamp\":\"2025-01-01T00:00:00Z\",\"cwd\":~S}~%"
+         cwd-a))
+      (with-open-file
+          (stream file-b
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (format
+         stream
+         "{\"type\":\"session\",\"version\":3,\"id\":\"b\",\"timestamp\":\"2025-01-01T00:00:00Z\",\"cwd\":~S}~%"
+         cwd-b))
+      (sb-posix:utime (namestring file-a) 1000000000 1000000000)
+      (sb-posix:utime (namestring file-b) 2000000000 2000000000)
+      (is
+       (string=
+        "a"
+        (pathname-name
+         (cadr-agent:find-most-recent-session
+          :directory sessions :cwd cwd))))
+      (is
+       (string=
+        "b"
+        (pathname-name
+         (cadr-agent:find-most-recent-session
+          :directory sessions :cwd other-cwd)))))))
+
+;; Baseline: invalid discovery header is skipped → null when alone.
+(test find-most-recent-session-skips-invalid-header-jsonl
+  (with-session-directories (sessions cwd other-cwd)
+    (values cwd other-cwd)
+    (with-open-file
+        (stream (merge-pathnames "invalid.jsonl" sessions)
+                :direction :output
+                :if-exists :supersede
+                :if-does-not-exist :create
+                :external-format :utf-8)
+      (format stream "{\"type\":\"message\"}~%"))
+    (is
+     (null
+      (cadr-agent:find-most-recent-session
+       :directory sessions)))))
+
+;; Goal 24: continue-session follows file mtime, not list activity.
+(test goal24-continue-session-uses-file-mtime-winner
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((high-activity
+             (cadr-agent::create-session
+              :directory sessions
+              :cwd cwd
+              :id "high-activity"
+              :timestamp 10))
+           (mtime-winner
+             (cadr-agent::create-session
+              :directory sessions
+              :cwd cwd
+              :id "mtime-winner"
+              :timestamp 20)))
+      (cadr-agent::session-append-message
+       high-activity
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "hot"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :timestamp 9999999999999
+        :stop-reason :stop))
+      (cadr-agent::session-append-message
+       mtime-winner
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "cool"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :timestamp 1
+        :stop-reason :stop))
+      (sb-posix:utime
+       (namestring (cadr-agent::session-path high-activity))
+       1000000000
+       1000000000)
+      (sb-posix:utime
+       (namestring (cadr-agent::session-path mtime-winner))
+       2000000000
+       2000000000)
+      (let ((continued
+              (cadr-agent:continue-session
+               :directory sessions :cwd cwd)))
+        (is (string=
+             "mtime-winner"
+             (cadr-agent::session-id continued)))))))
+
+;; Baseline find: discovery-invalid alone → null; continue does not error.
 (test continue-session-rejects-invalid-session-headers
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
@@ -212,12 +365,11 @@
                 :if-exists :supersede
                 :if-does-not-exist :create
                 :external-format :utf-8)
-      (format stream
-              "{\"type\":\"session\",\"version\":99,\"id\":\"bad\",\"timestamp\":1,\"cwd\":\"~A\"}~%"
-              (cadr-agent::canonical-session-cwd cwd)))
-    (signals cadr-agent::session-error
-      (cadr-agent::continue-session
-       :directory sessions :cwd cwd))))
+      (format stream "{\"type\":\"message\"}~%"))
+    (is
+     (null
+      (cadr-agent:continue-session
+       :directory sessions :cwd cwd)))))
 
 (test agent-flushes-final-user-and-assistant-messages-to-session
   (with-session-directories (sessions cwd other-cwd)

@@ -306,6 +306,7 @@
    #:session-list-info-parent-session
    #:read-session-list-info
    #:resume-session
+   #:find-most-recent-session
    #:continue-session
    #:session-branch
    #:session-append-message

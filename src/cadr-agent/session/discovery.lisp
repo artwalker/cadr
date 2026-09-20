@@ -470,14 +470,56 @@
          nil
          "Session not found: ~A" id))))
 
+;; Baseline pi@ecac0a9c4 findMostRecentSession: readdir *.jsonl,
+;; sort by file mtime descending, return first path whose discovery
+;; header is ok and matches optional cwd. Catch → null.
+(defun find-most-recent-session (&key
+                                       (directory
+                                         (default-session-directory))
+                                       cwd)
+  (handler-case
+      (let* ((session-directory
+               (uiop:ensure-directory-pathname directory))
+             (canonical-cwd
+               (and cwd (canonical-session-cwd cwd))))
+        (unless (probe-file session-directory)
+          (return-from find-most-recent-session nil))
+        (let ((ranked
+                (sort
+                 (mapcar
+                  (lambda (path)
+                    (cons
+                     path
+                     (session-list-info-file-mtime-ms path)))
+                  (directory
+                   (merge-pathnames
+                    "*.jsonl" session-directory)))
+                 #'>
+                 :key #'cdr)))
+          (dolist (entry ranked nil)
+            (let* ((path (car entry))
+                   (header
+                     (read-session-header-for-discovery
+                      path)))
+              (when
+                  (and
+                   header
+                   (or
+                    (null canonical-cwd)
+                    (string=
+                     canonical-cwd
+                     (or
+                      (session-file-header-cwd header)
+                      ""))))
+                (return path))))))
+    (error () nil)))
+
 (defun continue-session (&key
                                (directory
                                  (default-session-directory))
                                cwd)
-  (let ((info
-          (first
-           (list-session-infos
-            :directory directory
-            :cwd (or cwd (uiop:getcwd))))))
-    (and info
-         (load-session (session-list-info-path info)))))
+  (let ((path
+          (find-most-recent-session
+           :directory directory
+           :cwd (or cwd (uiop:getcwd)))))
+    (and path (load-session path))))
