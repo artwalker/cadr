@@ -8,9 +8,10 @@ tag/Release step.
 ## [Unreleased]
 
 - Goal 24: `/bug` consent via extension UI (`:input` / `:select`),
-  Radius multipart upload to `/v1/bug-reports`, and zip export with
-  baseline status copy. Session transcript optional; summary and crash
-  announcement remain open. Custom entry type stays `pi.bug-report`.
+  Radius multipart upload to `/v1/bug-reports`, zip export with
+  baseline status copy, and `crashes.json` plus startup crash
+  announcement. Session transcript optional; summary generation
+  remains open. Custom entry type stays `pi.bug-report`.
   `/session` prints the baseline Cache Warming block as inactive
   (`streaming` / `waiting for first request`) without warmer dispatch.
   Hotkey help uses `Copy selection or last assistant message` for Ctrl+X.
