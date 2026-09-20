@@ -53,7 +53,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
 | `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | 工具结果类型 |
 | 压缩、分支摘要、重试的 spinner 进入编辑器边框 | 与已有 working indicator 同一嵌入点 |
-| 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | 工具注册 |
+| 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | met：`goal24-builtin-tools-prefer-strict-sampling`（FiveAM） |
 | Bash / PowerShell 时长至少一分钟时写成「分 + 秒」 | 工具结果文案 |
 | `--resume` 按 mtime 渐进列出。`--continue` 读到最新匹配头即停 | session 列表 |
 | 剪贴板改为捆绑的异步辅助程序，保留平台命令与 OSC 52 | 行为对齐。不移植 `.node` |

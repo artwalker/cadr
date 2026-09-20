@@ -175,7 +175,7 @@
      "limit"
      (number-property "Maximum number of lines to read"))
     '("path"))
-   :constrained-sampling (experimental-tool-sampling)
+   :constrained-sampling '(:type :json-schema :strict :prefer)
    :execution-mode :parallel
    :executor
    (lambda (call-id arguments)

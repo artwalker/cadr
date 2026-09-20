@@ -300,11 +300,6 @@
        schema "required" (coerce required 'vector)))
     schema))
 
-(defun experimental-tool-sampling ()
-  ;; Baseline core/experimental.ts getExperimentalToolSampling.
-  (and (experimental-features-enabled-p)
-       '(:type :json-schema :strict :prefer)))
-
 (defun string-property (&optional description)
   (let ((property (cadr-ai::json-object "type" "string")))
     (when description

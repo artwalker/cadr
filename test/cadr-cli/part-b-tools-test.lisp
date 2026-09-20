@@ -538,19 +538,32 @@
            (cadr-agent::agent-tool-registry
             agent)))))))
 
-(test experimental-tool-sampling-follows-the-env-flag
-  ;; Mirrors experimental-tool-strict-mode.test.ts (v0.84.2): the four
-  ;; built-in tools carry strict-prefer sampling only under the
-  ;; experimental flag.
-  (sb-posix:unsetenv "CADR_EXPERIMENTAL")
-  (let ((plain (cadr-cli::make-read-tool "/tmp")))
-    (is (null (cadr-ai:tool-constrained-sampling plain))))
-  (sb-posix:setenv "CADR_EXPERIMENTAL" "1" 1)
-  (unwind-protect
-       (dolist (tool (list (cadr-cli::make-read-tool "/tmp")
-                           (cadr-cli::make-bash-tool "/tmp")
-                           (cadr-cli::make-edit-tool "/tmp")
-                           (cadr-cli::make-write-tool "/tmp")))
-         (is (equal '(:type :json-schema :strict :prefer)
-                    (cadr-ai:tool-constrained-sampling tool))))
-    (sb-posix:unsetenv "CADR_EXPERIMENTAL")))
+(test goal24-builtin-tools-prefer-strict-sampling
+  ;; Baseline packages/coding-agent/test/builtin-tool-strict-mode.test.ts
+  ;; (pi@ecac0a9c4): read/bash/powershell/edit/write always prefer
+  ;; strict JSON schema; grep/find/ls stay unconstrained. Env no longer
+  ;; gates the five.
+  (flet ((assert-prefer (tool)
+           (is (equal '(:type :json-schema :strict :prefer)
+                      (cadr-ai:tool-constrained-sampling tool))))
+         (assert-none (tool)
+           (is (null (cadr-ai:tool-constrained-sampling tool))))
+         (prefer-five ()
+           (list (make-read-tool "/tmp")
+                 (make-bash-tool "/tmp")
+                 (make-powershell-tool "/tmp")
+                 (make-edit-tool "/tmp")
+                 (make-write-tool "/tmp")))
+         (unconstrained-three ()
+           (list (make-grep-tool "/tmp")
+                 (cadr-cli:make-find-tool "/tmp")
+                 (cadr-cli:make-ls-tool "/tmp"))))
+    (sb-posix:unsetenv "CADR_EXPERIMENTAL")
+    (mapc #'assert-prefer (prefer-five))
+    (mapc #'assert-none (unconstrained-three))
+    (sb-posix:setenv "CADR_EXPERIMENTAL" "1" 1)
+    (unwind-protect
+         (progn
+           (mapc #'assert-prefer (prefer-five))
+           (mapc #'assert-none (unconstrained-three)))
+      (sb-posix:unsetenv "CADR_EXPERIMENTAL"))))

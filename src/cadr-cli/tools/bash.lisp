@@ -606,7 +606,7 @@
      (number-property
       "Timeout in seconds (optional, no default timeout)"))
     '("command"))
-   :constrained-sampling (experimental-tool-sampling)
+   :constrained-sampling '(:type :json-schema :strict :prefer)
    :execution-mode :sequential
    :executor
    (lambda (call-id arguments)
