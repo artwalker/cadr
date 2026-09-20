@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `register-extension-hook` / `define-event-hook` return a
+  zero-arg unsubscribe. Dispatch still snapshots the handler list, so
+  add/remove during an emit applies on the next emit
+  (`goal24-hook-unsubscribe-*`, `goal24-hook-register-during-dispatch-runs-next-time`).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

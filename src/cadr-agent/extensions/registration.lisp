@@ -22,7 +22,9 @@
   (entry-renderers nil :type list)
   (tool-renderers nil :type list)
   (hidden-p nil :type boolean)
-  (snapshot-references 0 :type (integer 0 *)))
+  (snapshot-references 0 :type (integer 0 *))
+  ;; Live host publishing this bundle; nil when not installed.
+  host)
 
 (defstruct extension-tool-definition
   name
@@ -403,6 +405,63 @@
          event)
         event)))
 
+(defun extension-bundle-live-snapshot (bundle)
+  (let ((host (extension-bundle-host bundle)))
+    (when host
+      (let ((snapshot (extension-host-current-snapshot host)))
+        (when
+            (and
+             (not (extension-snapshot-retired-p snapshot))
+             (member
+              bundle
+              (extension-snapshot-bundles snapshot)
+              :test #'eq))
+          snapshot)))))
+
+(defun install-extension-hook-definition (definition)
+  (let* ((bundle (extension-hook-definition-bundle definition))
+         (event (extension-hook-definition-event definition))
+         (snapshot (extension-bundle-live-snapshot bundle)))
+    (setf
+     (extension-bundle-hooks bundle)
+     (nconc
+      (extension-bundle-hooks bundle)
+      (list definition)))
+    (when snapshot
+      (let* ((hooks (extension-snapshot-hooks snapshot))
+             (current (gethash event hooks)))
+        (setf
+         (gethash event hooks)
+         (stable-sort
+          (append current (list definition))
+          #'<
+          :key #'extension-hook-definition-priority)))))
+  definition)
+
+(defun uninstall-extension-hook-definition (definition)
+  (let* ((bundle (extension-hook-definition-bundle definition))
+         (event (extension-hook-definition-event definition))
+         (snapshot (extension-bundle-live-snapshot bundle)))
+    (setf
+     (extension-bundle-hooks bundle)
+     (delete
+      definition
+      (extension-bundle-hooks bundle)
+      :count 1
+      :test #'eq))
+    (when snapshot
+      (let* ((hooks (extension-snapshot-hooks snapshot))
+             (remaining
+               (delete
+                definition
+                (gethash event hooks)
+                :count 1
+                :test #'eq)))
+        (if remaining
+            (setf (gethash event hooks) remaining)
+            (remhash event hooks)))))
+  definition)
+
 (defun register-extension-hook
     (event &key (priority 0) handler)
   (let ((bundle (require-extension-registration-bundle))
@@ -421,18 +480,21 @@
       (error
        'extension-registration-error
        :message "Extension hook handler must be a function"))
-    (setf
-     (extension-bundle-hooks bundle)
-     (nconc
-      (extension-bundle-hooks bundle)
-      (list
-       (make-extension-hook-definition
-        :event event
-        :priority priority
-        :handler handler
-        :bundle bundle
-        :order (length (extension-bundle-hooks bundle)))))))
-  event)
+    (let* ((definition
+             (make-extension-hook-definition
+              :event event
+              :priority priority
+              :handler handler
+              :bundle bundle
+              :order
+              (length (extension-bundle-hooks bundle))))
+           (active-p t))
+      (install-extension-hook-definition definition)
+      (lambda ()
+        (when active-p
+          (setf active-p nil)
+          (uninstall-extension-hook-definition definition)
+          nil)))))
 
 (defun register-extension-template
     (name &key description argument-hint template)

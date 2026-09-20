@@ -754,3 +754,164 @@
              host :confirm "Inner"
              (lambda () 'ok))))))
     (is (equal '((:end :select) (:start :select)) seen))))
+
+;;; Goal 24 — pi@ecac0a9c4 packages/coding-agent/test/extensions-runner.test.ts
+;;; describe("event subscriptions"): pi.on returns unsubscribe; dispatch
+;;; snapshots the handler list so add/remove applies on the next emit.
+
+(test goal24-hook-unsubscribe-self-removal-keeps-neighbors
+  (let ((calls nil)
+        (stop-a nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "goal24-unsub-self"
+              (lambda ()
+                (setf stop-a
+                      (cadr-agent:define-event-hook
+                       :agent-end
+                       :handler
+                       (lambda (event context)
+                         (declare (ignore event context))
+                         (push :a calls)
+                         (funcall stop-a)
+                         nil)))
+                (cadr-agent:define-event-hook
+                 :agent-end
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :b calls)
+                   nil)))))
+           (host (make-test-extension-host (list bundle))))
+      (is (functionp stop-a))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:b :a) calls))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:b :b :a) calls))
+      (funcall stop-a)
+      (funcall stop-a)
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:b :b :b :a) calls)))))
+
+(test goal24-hook-unsubscribe-defers-removal-until-next-dispatch
+  (let ((calls nil)
+        (stop-b nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "goal24-unsub-defer"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :agent-end
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :a calls)
+                   (funcall stop-b)
+                   nil))
+                (setf stop-b
+                      (cadr-agent:define-event-hook
+                       :agent-end
+                       :handler
+                       (lambda (event context)
+                         (declare (ignore event context))
+                         (push :b calls)
+                         nil)))
+                (cadr-agent:define-event-hook
+                 :agent-end
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :c calls)
+                   nil)))))
+           (host (make-test-extension-host (list bundle))))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:c :b :a) calls))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:c :a :c :b :a) calls)))))
+
+(test goal24-hook-register-during-dispatch-runs-next-time
+  (let ((calls nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "goal24-register-during"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :agent-end
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :a calls)
+                   (cadr-agent:define-event-hook
+                    :agent-end
+                    :handler
+                    (lambda (event context)
+                      (declare (ignore event context))
+                      (push :c calls)
+                      nil))
+                   nil))
+                (cadr-agent:define-event-hook
+                 :agent-end
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :b calls)
+                   nil)))))
+           (host (make-test-extension-host (list bundle))))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:b :a) calls))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:c :b :a :b :a) calls)))))
+
+(test goal24-hook-unsubscribe-duplicate-registrations-independently
+  (let ((calls nil)
+        (stop-first nil)
+        (stop-b nil)
+        (stop-second nil))
+    (let* ((shared
+             (lambda (event context)
+               (declare (ignore event context))
+               (push :shared calls)
+               nil))
+           (bundle
+             (make-test-extension-bundle
+              "goal24-unsub-dup"
+              (lambda ()
+                (setf stop-first
+                      (cadr-agent:define-event-hook
+                       :agent-end :handler shared))
+                (setf stop-b
+                      (cadr-agent:define-event-hook
+                       :agent-end
+                       :handler
+                       (lambda (event context)
+                         (declare (ignore event context))
+                         (push :b calls)
+                         nil)))
+                (setf stop-second
+                      (cadr-agent:define-event-hook
+                       :agent-end :handler shared)))))
+           (host (make-test-extension-host (list bundle))))
+      (funcall stop-second)
+      (funcall stop-second)
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:b :shared) calls))
+      (funcall stop-first)
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-end :payload '(:messages ()))
+      (is (equal '(:b :b :shared) calls))
+      (funcall stop-b)
+      (is
+       (null
+        (gethash
+         :agent-end
+         (cadr-agent::extension-snapshot-hooks
+          (cadr-agent::extension-host-current-snapshot
+           host))))))))

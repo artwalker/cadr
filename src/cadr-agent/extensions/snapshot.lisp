@@ -302,6 +302,10 @@ types add a method here instead of a second etypecase."))
          (extension-bundle-snapshot-references bundle)))
       (setf old (extension-host-snapshot host)
             (extension-host-snapshot host) snapshot)
+      (dolist (bundle (extension-snapshot-bundles old))
+        (setf (extension-bundle-host bundle) nil))
+      (dolist (bundle (extension-snapshot-bundles snapshot))
+        (setf (extension-bundle-host bundle) host))
       (dolist (flag (extension-snapshot-flags snapshot))
         (multiple-value-bind (value present-p)
             (gethash
@@ -370,13 +374,13 @@ types add a method here instead of a second etypecase."))
     (host snapshot definition function)
   (let* ((held
            (acquire-extension-snapshot host snapshot))
+         (bundle (extension-definition-bundle definition))
          (context
            (%make-extension-context
             :host host
             :source-path
             (extension-definition-origin definition)
-            :bundle
-            (extension-definition-bundle definition)
+            :bundle bundle
             :kind
             (etypecase definition
               (extension-tool-definition :tool)
@@ -390,6 +394,8 @@ types add a method here instead of a second etypecase."))
               (extension-tool-renderer-definition
                :tool-renderer)))))
     (unwind-protect
-         (funcall function context)
+         ;; Keep register-extension-hook usable during dispatch (pi.on).
+         (let ((*extension-registration-bundle* bundle))
+           (funcall function context))
       (setf (%extension-context-active-p context) nil)
       (release-acquired-extension-snapshot host held))))
