@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `build-system-prompt-sections` and `diff-system-prompt-sections`
+  for ordered, tag-wrapped prompt sections (`preamble` untagged). Flat
+  `build-system-prompt` callers unchanged; emission remains open.
+
 - Goal 24: session codec round-trips `role:"system"` messages with
   `sections` / `toolsAdded` / `toolsRemoved` so mid-conversation
   prompt and tool deltas survive JSONL restore. Agent emission and
