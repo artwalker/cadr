@@ -202,6 +202,10 @@
    #:daxnuts-component-tick
    #:make-earendil-announcement-component
    #:build-system-prompt
+   #:normalize-build-system-prompt-options
+   #:build-system-prompt-sections
+   #:build-system-prompt-state
+   #:diff-system-prompt-sections
    #:sdk-settings-manager
    #:make-sdk-settings-manager
    #:make-memory-sdk-settings-manager

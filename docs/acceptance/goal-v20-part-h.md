@@ -13806,18 +13806,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **299 files / 137,863 lines**
+Denominator: **299 files / 138,129 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 111,152 | 80.6% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 111,414 | 80.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,876 | 13.7% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 30 | 18,880 | 13.7% | on a named paired thunk; no own bench |
 | `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.6% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 80.7% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 86.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -14012,7 +14012,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-manager.lisp` | 133 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/settings-service.lisp` | 281 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled`, `settings_load.sdk_make_manager`, `settings_load.sdk_make_memory`, `settings_load.sdk_effective_thinking_level` |
-| `src/cadr-cli/sdk/system-prompt.lisp` | 224 | `skill_prompt_load.build_prompt` |
+| `src/cadr-cli/sdk/system-prompt.lisp` | 486 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 643 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
@@ -14114,7 +14114,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/types.lisp` | 208 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/package.lisp` | 306 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/package.lisp` | 310 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-core/atomic-file.lisp` | 106 | `evals_harness.artifact_persist` |
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
