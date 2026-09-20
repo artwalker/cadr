@@ -361,9 +361,7 @@ interrupt (baseline selectSession onExit: silent exit 0)."
          (exit-p nil)
          (current-loader-thread nil)
          (loader-thread nil))
-    (setf
-     (session-selector-state-load-progress-loaded state)
-     0)
+    (setf (session-selector-state-load-progress-loaded state) 0)
     (labels
         ((render ()
            (multiple-value-bind (lines row column)
@@ -372,57 +370,57 @@ interrupt (baseline selectSession onExit: silent exit 0)."
              (cadr-tui:render-frame
               renderer lines
               :cursor-row row :cursor-column column)))
+         (apply-current-progress (loaded total partial-infos partial-p)
+           (if partial-p
+               (session-selector-note-current-load-progress
+                state loaded total
+                (mapcar #'session-list-info-to-search-record
+                        partial-infos))
+               (session-selector-note-current-load-progress
+                state loaded total)))
+         (apply-all-progress (token loaded total partial-infos partial-p)
+           (if partial-p
+               (session-selector-note-load-progress
+                state token loaded total
+                (mapcar #'session-list-info-to-search-record
+                        partial-infos))
+               (session-selector-note-load-progress
+                state token loaded total)))
+         (finish-current-load (infos)
+           (setf
+            (session-selector-state-current-sessions state)
+            (mapcar #'session-list-info-to-search-record infos)
+            (session-selector-state-load-progress-loaded state)
+            nil
+            (session-selector-state-load-progress-total state)
+            nil)
+           (session-selector-clamp-selected state))
+         (fail-current-load (condition)
+           (setf
+            (session-selector-state-load-progress-loaded state)
+            nil
+            (session-selector-state-load-progress-total state)
+            nil
+            (session-selector-state-status-message state)
+            (format nil "Failed to load sessions: ~A" condition)))
          (start-current-load ()
            (setf
             current-loader-thread
             (sb-thread:make-thread
              (lambda ()
                (handler-case
-                   (let ((infos
-                           (cadr-agent:list-session-infos
-                            :directory directory
-                            :cwd cwd
-                            :progress-function
-                            (lambda
-                                (loaded total
-                                 &optional
-                                 (partial-infos nil partial-p))
-                              (if partial-p
-                                  (session-selector-note-current-load-progress
-                                   state
-                                   loaded
-                                   total
-                                   (mapcar
-                                    #'session-list-info-to-search-record
-                                    partial-infos))
-                                  (session-selector-note-current-load-progress
-                                   state loaded total))))
-                     (setf
-                      (session-selector-state-current-sessions
-                       state)
-                      (mapcar
-                       #'session-list-info-to-search-record
-                       infos)
-                      (session-selector-state-load-progress-loaded
-                       state)
-                      nil
-                      (session-selector-state-load-progress-total
-                       state)
-                      nil)
-                     (session-selector-clamp-selected state))
+                   (finish-current-load
+                    (cadr-agent:list-session-infos
+                     :directory directory
+                     :cwd cwd
+                     :progress-function
+                     (lambda (loaded total
+                              &optional
+                              (partial-infos nil partial-p))
+                       (apply-current-progress
+                        loaded total partial-infos partial-p))))
                  (condition (condition)
-                   (setf
-                    (session-selector-state-load-progress-loaded
-                     state)
-                    nil
-                    (session-selector-state-load-progress-total
-                     state)
-                    nil
-                    (session-selector-state-status-message
-                     state)
-                    (format
-                     nil "Failed to load sessions: ~A"
-                     condition))))
+                   (fail-current-load condition))))
              :name "cadr-resume-picker-current-load")))
          (start-all-load (token)
            (setf
@@ -437,21 +435,12 @@ interrupt (baseline selectSession onExit: silent exit 0)."
                      (cadr-agent:list-session-infos
                       :directory directory
                       :progress-function
-                      (lambda
-                          (loaded total
-                           &optional
-                           (partial-infos nil partial-p))
-                        (if partial-p
-                            (session-selector-note-load-progress
-                             state
-                             token
-                             loaded
-                             total
-                             (mapcar
-                              #'session-list-info-to-search-record
-                              partial-infos))
-                            (session-selector-note-load-progress
-                             state token loaded total))))))
+                      (lambda (loaded total
+                               &optional
+                               (partial-infos nil partial-p))
+                        (apply-all-progress
+                         token loaded total
+                         partial-infos partial-p)))))
                  (condition (condition)
                    (session-selector-fail-all-load
                     state token condition))))
