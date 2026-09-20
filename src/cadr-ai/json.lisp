@@ -86,6 +86,101 @@
   (setf (gethash key object) value)
   object)
 
+(defun json-symbol-key-name (symbol)
+  (string-downcase (symbol-name symbol)))
+
+(defun json-plist-like-p (value)
+  (and (listp value)
+       (evenp (length value))
+       (loop for tail on value by #'cddr
+             for key = (first tail)
+             always
+             (or (keywordp key)
+                 (stringp key)))))
+
+(defun json-value-p (value)
+  ;; Runtime stand-in for baseline packages/ai JsonValue.
+  (cond
+    ((eq value 'null) t)
+    ((eq value t) t)
+    ((null value) t)
+    ((stringp value) t)
+    ((integerp value) t)
+    ((and (floatp value)
+          (not (sb-ext:float-infinity-p value))
+          (not (sb-ext:float-nan-p value)))
+     t)
+    ((and (rationalp value) (not (floatp value))) t)
+    ((hash-table-p value)
+     (block check
+       (maphash
+        (lambda (key item)
+          (unless (and (stringp key) (json-value-p item))
+            (return-from check nil)))
+        value)
+       t))
+    ((json-object-pairs-p value)
+     (loop for (key item) on (cdr value) by #'cddr
+           always (and (stringp key) (json-value-p item))))
+    ((and (vectorp value) (not (stringp value)))
+     (every #'json-value-p value))
+    ((and (listp value)
+          (null (cdr (last value))))
+     (every #'json-value-p value))
+    (t nil)))
+
+(defun ensure-json-value (value)
+  ;; Coerce Lisp conveniences to JsonValue the way session encoding
+  ;; already did (cadr-agent json-safe-value). Preserve JSON null.
+  (cond
+    ((eq value 'null) 'null)
+    ((null value) nil)
+    ((stringp value) value)
+    ((hash-table-p value)
+     (let ((copy (json-object)))
+       (maphash
+        (lambda (key item)
+          (json-put
+           copy
+           (if (stringp key)
+               key
+               (json-symbol-key-name key))
+           (ensure-json-value item)))
+        value)
+       copy))
+    ((json-object-pairs-p value)
+     (let ((copy (json-object)))
+       (loop for (key item) on (cdr value) by #'cddr
+             do (json-put
+                 copy
+                 (if (stringp key)
+                     key
+                     (json-symbol-key-name key))
+                 (ensure-json-value item)))
+       copy))
+    ((vectorp value)
+     (map 'vector #'ensure-json-value value))
+    ((json-plist-like-p value)
+     (let ((object (json-object)))
+       (loop for (key item) on value by #'cddr
+             do (json-put
+                 object
+                 (if (stringp key)
+                     key
+                     (json-symbol-key-name key))
+                 (ensure-json-value item)))
+       object))
+    ((listp value)
+     (map 'vector #'ensure-json-value value))
+    ((pathnamep value)
+     (namestring value))
+    ((and (symbolp value) (not (member value '(nil t))))
+     (json-symbol-key-name value))
+    (t value)))
+
+(defun coerce-json-value (value)
+  (ensure-json-value value))
+
 (defun valid-json-number-token-p (token)
   (let ((index 0)
         (length (length token)))

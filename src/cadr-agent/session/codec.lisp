@@ -128,50 +128,7 @@
                  (stringp key)))))
 
 (defun json-safe-value (value)
-  (cond
-    ((null value) nil)
-    ((stringp value) value)
-    ((hash-table-p value)
-     (let ((copy (cadr-ai::json-object)))
-       (maphash
-        (lambda (key item)
-          (cadr-ai::json-put
-           copy
-           (if (stringp key)
-               key
-               (symbol-json-name key))
-           (json-safe-value item)))
-        value)
-       copy))
-    ((cadr-ai::json-object-pairs-p value)
-     (let ((copy (cadr-ai::json-object)))
-       (loop for (key item) on (cdr value) by #'cddr
-             do (cadr-ai::json-put
-                 copy
-                 (if (stringp key)
-                     key
-                     (symbol-json-name key))
-                 (json-safe-value item)))
-       copy))
-    ((vectorp value)
-     (map 'vector #'json-safe-value value))
-    ((plist-like-p value)
-     (let ((object (cadr-ai::json-object)))
-       (loop for (key item) on value by #'cddr
-             do (cadr-ai::json-put
-                 object
-                 (if (stringp key)
-                     key
-                     (symbol-json-name key))
-                 (json-safe-value item)))
-       object))
-    ((listp value)
-     (map 'vector #'json-safe-value value))
-    ((pathnamep value)
-     (namestring value))
-    ((and (symbolp value) (not (member value '(nil t))))
-     (symbol-json-name value))
-    (t value)))
+  (cadr-ai:ensure-json-value value))
 
 (defun content-block-to-json (block)
   (cond
