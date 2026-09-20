@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: session codec round-trips `role:"system"` messages with
+  `sections` / `toolsAdded` / `toolsRemoved` so mid-conversation
+  prompt and tool deltas survive JSONL restore. Agent emission and
+  provider TranscriptContext wiring remain open.
+
 - Goal 24: transcript-backed system message replay helpers
   (`normalize-context`, `get-current-system-prompt`, tool declaration
   diffs). Provider and session wiring remain open.

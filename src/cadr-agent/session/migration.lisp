@@ -1132,9 +1132,15 @@
                       ((and (= w #x656d6974) (= n 9))
                        (setf (session-json-message-timestamp bag)
                              (parse-timestamp-value)))
+                      ((and (= w #x6c6f6f74) (= n 10)
+                            (= (aref octets (+ key-start 4)) #x73))
+                       (keep-extra bag :tools-added (parse-generic)))
                       ((and (= w #x6c6f6f74) (= n 10))
                        (keep-extra bag :tool-call-id
                                    (parse-string-value)))
+                      ((and (= w #x6c6f6f74) (= n 12)
+                            (= (aref octets (+ key-start 4)) #x73))
+                       (keep-extra bag :tools-removed (parse-generic)))
                       ((and (= w #x6c6f6f74) (= n 12))
                        (keep-extra bag :tool-call-id
                                    (parse-string-value)))
@@ -1177,6 +1183,8 @@
                       ((and (= w #x706f7473) (= n 11))
                        (setf (session-json-message-stop-reason bag)
                              (keyword-from-json (parse-string-value))))
+                      ((and (= w #x74636573) (= n 8))
+                       (keep-extra bag :sections (parse-generic)))
                       ((and (= w #x6f727265) (= n 12))
                        (keep-extra bag :error-message
                                    (parse-string-value)))
@@ -1660,6 +1668,14 @@
                        (string= field "timestamp"))
                    (setf (session-json-message-timestamp bag)
                          value))
+                  ((or (eq field "toolsAdded")
+                       (string= field "toolsAdded")
+                       (string= field "tools_added"))
+                   (keep-extra bag :tools-added value))
+                  ((or (eq field "toolsRemoved")
+                       (string= field "toolsRemoved")
+                       (string= field "tools_removed"))
+                   (keep-extra bag :tools-removed value))
                   ((or (eq field "toolCallId")
                        (string= field "toolCallId")
                        (string= field "tool_call_id"))
@@ -1702,10 +1718,14 @@
                   (setf (session-json-message-usage bag)
                         (usage-or-hash value))))
                (#\s
-                (when (or (eq field "stopReason")
-                          (string= field "stopReason")
-                          (string= field "stop_reason"))
-                  (keep-extra bag :stop-reason value)))
+                (cond
+                  ((or (eq field "sections")
+                       (string= field "sections"))
+                   (keep-extra bag :sections value))
+                  ((or (eq field "stopReason")
+                       (string= field "stopReason")
+                       (string= field "stop_reason"))
+                   (keep-extra bag :stop-reason value))))
                (#\e
                 (cond
                   ((or (eq field "errorMessage")

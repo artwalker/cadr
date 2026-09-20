@@ -2,6 +2,8 @@
 
 (defun message-timestamp (message)
   (etypecase message
+    (cadr-ai:system-message
+     (cadr-ai:system-message-timestamp message))
     (cadr-ai:user-message
      (cadr-ai:user-message-timestamp message))
     (cadr-ai:assistant-message

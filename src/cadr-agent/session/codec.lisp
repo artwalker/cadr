@@ -292,8 +292,154 @@
     (t
      (intern (string-upcase key) "KEYWORD"))))
 
+(defun system-sections-to-json (sections)
+  (let ((object (cadr-ai::json-object)))
+    (dolist (pair sections)
+      (cadr-ai::json-put
+       object
+       (car pair)
+       (let ((value (cdr pair)))
+         (if (null value) 'null value))))
+    object))
+
+(defun system-sections-from-json (value)
+  (cond
+    ((null value) nil)
+    ((hash-table-p value)
+     (let ((result nil))
+       (maphash
+        (lambda (name item)
+          (push
+           (cons name
+                 (if (or (null item) (eq item 'null))
+                     nil
+                     item))
+           result))
+        value)
+       (nreverse result)))
+    ((cadr-ai::json-object-pairs-p value)
+     (loop for (name item) on (cdr value) by #'cddr
+           collect
+           (cons name
+                 (if (or (null item) (eq item 'null))
+                     nil
+                     item))))
+    (t
+     (error "System message sections must be an object"))))
+
+(defun tool-declaration-from-json (object)
+  (unless (hash-table-p object)
+    (error "Tool declaration must be an object"))
+  (multiple-value-bind (constrained present-p)
+      (gethash "constrainedSampling" object)
+    (cadr-ai:make-tool
+     :name (or (cadr-ai::json-get object "name") "")
+     :description (or (cadr-ai::json-get object "description") "")
+     :parameters
+     (or (cadr-ai::json-get object "parameters")
+         (cadr-ai::json-object))
+     :constrained-sampling
+     (cond
+       ((not present-p) nil)
+       ((or (null constrained) (eq constrained 'null) (eq constrained :false))
+        :false)
+       (t (copy-tree constrained)))
+     :executor nil)))
+
+(defun tools-added-from-json (value)
+  (cond
+    ((null value) nil)
+    ((listp value)
+     (mapcar #'tool-declaration-from-json value))
+    ((vectorp value)
+     (loop for object across value
+           collect (tool-declaration-from-json object)))
+    (t
+     (error "toolsAdded must be an array"))))
+
+(defun tools-removed-from-json (value)
+  (cond
+    ((null value) nil)
+    ((listp value)
+     (mapcar
+      (lambda (object)
+        (cadr-ai:make-tool-reference
+         :name
+         (or (if (hash-table-p object)
+                 (cadr-ai::json-get object "name")
+                 "")
+             "")))
+      value))
+    ((vectorp value)
+     (loop for object across value
+           collect
+           (cadr-ai:make-tool-reference
+            :name
+            (or (cadr-ai::json-get object "name") ""))))
+    (t
+     (error "toolsRemoved must be an array"))))
+
+(defun tools-added-to-json (tools)
+  (map
+   'vector
+   (lambda (tool)
+     (cadr-ai::%tool-declaration-json
+      (cadr-ai:to-tool-declaration tool)))
+   tools))
+
+(defun tools-removed-to-json (tools)
+  (map
+   'vector
+   (lambda (tool)
+     (cadr-ai::json-object
+      "name" (cadr-ai:tool-reference-name tool)))
+   tools))
+
+(defun system-message-to-json (message)
+  (let ((object
+          (cadr-ai::json-object
+           "role" "system"
+           "content"
+           (let ((content (cadr-ai:system-message-content message)))
+             (if (stringp content)
+                 content
+                 (content-blocks-to-json content)))
+           "timestamp"
+           (cadr-ai:system-message-timestamp message))))
+    (when (cadr-ai:system-message-sections message)
+      (cadr-ai::json-put
+       object "sections"
+       (system-sections-to-json
+        (cadr-ai:system-message-sections message))))
+    (when (cadr-ai:system-message-tools-added message)
+      (cadr-ai::json-put
+       object "toolsAdded"
+       (tools-added-to-json
+        (cadr-ai:system-message-tools-added message))))
+    (when (cadr-ai:system-message-tools-removed message)
+      (cadr-ai::json-put
+       object "toolsRemoved"
+       (tools-removed-to-json
+        (cadr-ai:system-message-tools-removed message))))
+    object))
+
+(defun system-message-from-fields
+    (content timestamp sections tools-added tools-removed)
+  (cadr-ai:make-system-message
+   :content
+   (cond
+     ((null content) "")
+     ((stringp content) content)
+     (t (content-blocks-from-json content)))
+   :sections (system-sections-from-json sections)
+   :tools-added (tools-added-from-json tools-added)
+   :tools-removed (tools-removed-from-json tools-removed)
+   :timestamp (or timestamp 0)))
+
 (defun message-to-json (message)
   (cond
+    ((typep message 'cadr-ai:system-message)
+     (system-message-to-json message))
     ((typep message 'cadr-ai:user-message)
      (cadr-ai::json-object
       "role" "user"
@@ -540,7 +686,8 @@
          (cadr-ai:make-cost)))))
 
 (defun message-from-json (object)
-  (when (or (typep object 'cadr-ai:user-message)
+  (when (or (typep object 'cadr-ai:system-message)
+            (typep object 'cadr-ai:user-message)
             (typep object 'cadr-ai:assistant-message)
             (typep object 'cadr-ai:tool-result-message)
             (typep object 'cadr-agent:bash-execution-message))
@@ -551,6 +698,13 @@
             (content (session-json-message-content object))
             (extra (session-json-message-extra object)))
         (cond
+          ((string= type "system")
+           (system-message-from-fields
+            content
+            (session-json-message-timestamp object)
+            (getf extra :sections)
+            (getf extra :tools-added)
+            (getf extra :tools-removed)))
           ((string= type "user")
            (cadr-ai:make-user-message
             :content
@@ -627,6 +781,13 @@
            (cadr-ai::json-get object "type")))
         (content (cadr-ai::json-get object "content")))
     (cond
+      ((string= type "system")
+       (system-message-from-fields
+        content
+        (cadr-ai::json-get object "timestamp")
+        (cadr-ai::json-get object "sections")
+        (json-get-either object "toolsAdded" "tools_added")
+        (json-get-either object "toolsRemoved" "tools_removed")))
       ((string= type "user")
        (cadr-ai:make-user-message
         :content
@@ -999,6 +1160,30 @@
 (defun write-session-message (message buffer)
   (vector-push-extend #x7b buffer)
   (cond
+    ((typep message 'cadr-ai:system-message)
+     (let ((sections (cadr-ai:system-message-sections message))
+           (tools-added (cadr-ai:system-message-tools-added message))
+           (tools-removed (cadr-ai:system-message-tools-removed message)))
+       (emit-json-key buffer t "content")
+       (write-session-content
+        (cadr-ai:system-message-content message) buffer)
+       (emit-json-key buffer nil "role")
+       (emit-json-value buffer "system")
+       (when sections
+         (emit-json-key buffer nil "sections")
+         (emit-json-value buffer (system-sections-to-json sections)))
+       (emit-json-key buffer nil "timestamp")
+       (emit-json-value
+        buffer
+        (cadr-ai:system-message-timestamp message))
+       (when tools-added
+         (emit-json-key buffer nil "toolsAdded")
+         (emit-json-value buffer (tools-added-to-json tools-added)))
+       (when tools-removed
+         (emit-json-key buffer nil "toolsRemoved")
+         (emit-json-value
+          buffer
+          (tools-removed-to-json tools-removed)))))
     ((typep message 'cadr-ai:user-message)
      (emit-json-key buffer t "content")
      (write-session-content

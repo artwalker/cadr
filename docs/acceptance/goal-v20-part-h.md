@@ -13806,18 +13806,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **300 files / 138,164 lines**
+Denominator: **300 files / 138,371 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 111,152 | 80.4% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
+| `paired` | 244 | 111,359 | 80.5% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,676 | 5.5% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,938 | 13.7% | on a named paired thunk; no own bench |
 | `needs-pair` | 2 | 398 | 0.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.4% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 80.5% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 86.0% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -13867,11 +13867,11 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
 | `src/cadr-agent/runtime.lisp` | 479 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
-| `src/cadr-agent/session/codec.lisp` | 1,188 | `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/codec.lisp` | 1,373 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 483 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 744 | `session_export_html.to_html` |
-| `src/cadr-agent/session/journal.lisp` | 692 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/migration.lisp` | 2,861 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-agent/session/journal.lisp` | 694 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/migration.lisp` | 2,881 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
 | `src/cadr-agent/storage/harness.lisp` | 476 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/jsonl.lisp` | 538 | `harness_storage.open_walk` |
