@@ -430,9 +430,11 @@
              (not (eq (normalize-cache-retention cache-retention)
                       :none))
              (model-compat-value
-              model :send-session-affinity-headers nil))
+              model :send-session-affinity-headers
+              (model-openrouter-p model)))
     (case (model-compat-value
-           model :session-affinity-format :openai)
+           model :session-affinity-format
+           (if (model-openrouter-p model) :openrouter :openai))
       (:openrouter
        `(("x-session-id" . ,session-id)))
       (:openai-nosession

@@ -339,8 +339,7 @@
 (defun responses-session-affinity-format (model)
   (model-compat-value
    model :session-affinity-format
-   (if (or (eq (model-provider model) :openrouter)
-           (search "openrouter.ai" (model-base-url model)))
+   (if (model-openrouter-p model)
        :openrouter
        :openai)))
 

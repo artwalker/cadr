@@ -474,8 +474,18 @@
               (when (and cache-control
                          (non-empty-string-p session-id)
                          (model-compat-value
-                          model :send-session-affinity-headers nil))
-                `(("x-session-affinity" . ,session-id)))
+                          model :send-session-affinity-headers
+                          (model-openrouter-p model)))
+                (let ((format
+                        (model-compat-value
+                         model :session-affinity-format
+                         (if (model-openrouter-p model)
+                             :openrouter
+                             nil))))
+                  `((,(if (eq format :openrouter)
+                          "x-session-id"
+                          "x-session-affinity")
+                     . ,session-id))))
               (opencode-request-headers
                :provider (model-provider model)
                :base-url (model-base-url model)

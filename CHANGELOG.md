@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: OpenRouter Completions and Anthropic Messages send
+  `x-session-id` from `sessionId` when prompt caching is enabled,
+  via runtime OpenRouter detection (not catalog row flags). Explicit
+  compat opt-out still wins (#9102).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
