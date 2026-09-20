@@ -10533,7 +10533,7 @@ async function measureSqliteSession() {
 	// paired-paths runs cannot book a fake open_walk.
 	if (process.env.GOAL20_ALLOW_SQLITE_STUB !== "1") {
 		throw new Error(
-			"goal20 paired paths: sqlite_session ingest not ported for pi v0.85.1; set GOAL20_ALLOW_SQLITE_STUB=1 only for floor_slice remesure",
+			"goal20 paired paths: sqlite_session ingest not ported for pi v0.86.0; set GOAL20_ALLOW_SQLITE_STUB=1 only for floor_slice remesure",
 		);
 	}
 	return {
