@@ -110,11 +110,51 @@
    #:tool-constrained-sampling
    #:tool-execution-mode
    #:tool-executor
+   #:tool-reference
+   #:make-tool-reference
+   #:tool-reference-name
+   #:system-message
+   #:make-system-message
+   #:system-message-p
+   #:system-message-content
+   #:system-message-sections
+   #:system-message-tools-added
+   #:system-message-tools-removed
+   #:system-message-timestamp
    #:context
    #:make-context
    #:context-system-prompt
    #:context-messages
    #:context-tools
+   #:transcript-context
+   #:make-transcript-context
+   #:transcript-context-messages
+   #:tool-state-changes
+   #:make-tool-state-changes
+   #:tool-state-changes-tools-added
+   #:tool-state-changes-tools-removed
+   #:transcript-tools
+   #:make-transcript-tools
+   #:transcript-tools-request-tools
+   #:transcript-tools-anchors-additions
+   #:create-initial-system-message
+   #:normalize-context
+   #:get-initial-system-message
+   #:without-initial-system-message
+   #:get-current-tools
+   #:get-current-system-message
+   #:get-current-system-prompt
+   #:collapse-system-messages
+   #:resolve-transcript
+   #:to-tool-declaration
+   #:declarations-equal
+   #:get-tool-state-changes
+   #:get-declared-tools
+   #:has-tool-redefinitions
+   #:has-non-additive-tool-changes
+   #:resolve-transcript-tools
+   #:get-system-message-text
+   #:render-system-message-update
    #:stream-event
    #:make-stream-event
    #:stream-event-type
