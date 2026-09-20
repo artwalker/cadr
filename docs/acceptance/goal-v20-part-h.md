@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **300 files / 138,843 lines**
+Denominator: **300 files / 138,848 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 111,822 | 80.5% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 111,827 | 80.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,676 | 5.5% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,947 | 13.6% | on a named paired thunk; no own bench |
 | `needs-pair` | 2 | 398 | 0.3% | must get an H pair; not a file-level idle bench |
@@ -13878,7 +13878,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/storage/memory.lisp` | 378 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
-| `src/cadr-agent/tool.lisp` | 347 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/tool.lisp` | 352 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 806 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
