@@ -126,10 +126,39 @@
   '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
     "thinkingFormat"))
 
+(defun compat-cost-number (value)
+  (if (numberp value)
+      (coerce value 'double-float)
+      0d0))
+
+(defun parse-allowed-fallback-models (entries)
+  ;; Empty JSON array must become '() with the key present, not a
+  ;; missing key — model-compat-value distinguishes disable from omit.
+  (when (vectorp entries)
+    (loop for entry across entries
+          collect
+          (list
+           :provider (cadr-ai::json-get entry "provider")
+           :model (cadr-ai::json-get entry "model")
+           :cost
+           (let ((cost (cadr-ai::json-get entry "cost")))
+             (when (hash-table-p cost)
+               (list
+                :input (compat-cost-number
+                        (cadr-ai::json-get cost "input"))
+                :output (compat-cost-number
+                         (cadr-ai::json-get cost "output"))
+                :cache-read (compat-cost-number
+                             (cadr-ai::json-get cost "cacheRead"))
+                :cache-write (compat-cost-number
+                              (cadr-ai::json-get
+                               cost "cacheWrite")))))))))
+
 (defun parse-model-compat (object)
   ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum
-  ;; compat keys from models.json.  The routing-object keys
-  ;; (openRouterRouting, vercelGatewayRouting) are not parsed yet.
+  ;; compat keys from models.json, plus allowedFallbackModels.
+  ;; The routing-object keys (openRouterRouting, vercelGatewayRouting)
+  ;; are not parsed yet.
   (when (hash-table-p object)
     (loop for key being the hash-keys of object
           using (hash-value value)
@@ -145,7 +174,54 @@
             ((and (string= key "vllmPriority")
                   (numberp value))
              (list :vllm-priority value))
+            ((string= key "allowedFallbackModels")
+             (list :allowed-fallback-models
+                   (or (parse-allowed-fallback-models value)
+                       '())))
             (t nil)))))
+
+(defun merge-model-compat (base override)
+  ;; Baseline provider-composer mergeCompat: shallow merge; nested
+  ;; routing objects deep-merge elsewhere. allowedFallbackModels is
+  ;; replaced entirely when present on the override, including [].
+  (cond
+    ((null override) base)
+    ((null base) (copy-list override))
+    (t
+     (let ((merged (copy-list base)))
+       (loop for (key value) on override by #'cddr
+             do (setf (getf merged key) value))
+       merged))))
+
+(defun apply-model-json-override (model override)
+  ;; Baseline applyModelOverride fields needed by Goal 24 tests:
+  ;; name, reasoning, contextWindow, maxTokens, compat.
+  (unless (hash-table-p override)
+    (return-from apply-model-json-override model))
+  (let ((copy (cadr-ai::copy-model model))
+        (name (cadr-ai::json-get override "name"))
+        (reasoning (cadr-ai::json-get override "reasoning"))
+        (context-window
+          (cadr-ai::json-get override "contextWindow"))
+        (max-tokens (cadr-ai::json-get override "maxTokens"))
+        (compat (cadr-ai::json-get override "compat")))
+    (when (stringp name)
+      (setf (cadr-ai::model-name copy) name))
+    (when (cadr-ai::json-present-p override "reasoning")
+      (setf (cadr-ai:model-reasoning-p copy)
+            (eq t reasoning)))
+    (when (numberp context-window)
+      (setf (cadr-ai:model-context-window copy)
+            (truncate context-window)))
+    (when (numberp max-tokens)
+      (setf (cadr-ai:model-max-tokens copy)
+            (truncate max-tokens)))
+    (when (hash-table-p compat)
+      (setf (cadr-ai::model-compat copy)
+            (merge-model-compat
+             (cadr-ai::model-compat model)
+             (parse-model-compat compat))))
+    copy))
 
 (defun json-model (provider object base-url
                    provider-api provider-headers)

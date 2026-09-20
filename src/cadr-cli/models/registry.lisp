@@ -317,7 +317,10 @@
                       (cadr-ai::json-get config "api"))
                     (custom
                       (cadr-ai::json-get
-                       config "models")))
+                       config "models"))
+                    (overrides
+                      (cadr-ai::json-get
+                       config "modelOverrides")))
                (setf (gethash provider settings)
                      config)
                (setf
@@ -350,7 +353,26 @@
                               :key #'cadr-ai:model-id
                               :test #'string=
                               :count 1))
-                       (push model models)))))
+                       (push model models)))
+               (when (hash-table-p overrides)
+                 (setf
+                  models
+                  (mapcar
+                   (lambda (model)
+                     (if (eq provider
+                             (cadr-ai:model-provider
+                              model))
+                         (let ((override
+                                 (gethash
+                                  (cadr-ai:model-id
+                                   model)
+                                  overrides)))
+                           (if (hash-table-p override)
+                               (apply-model-json-override
+                                model override)
+                               model))
+                         model))
+                   models)))))
            providers))
         (setf
          (model-registry-models registry)

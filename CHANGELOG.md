@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: honor `models.json` `compat.allowedFallbackModels` and
+  provider `modelOverrides` (including `[]` to disable). Locked on
+  built-in `anthropic`/`claude-fable-5`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
