@@ -725,7 +725,13 @@
              :provider :opencode :session-id "session"))
           (opencode-go-ephemeral
             (cadr-cli::provider-attribution-headers
-             :provider :opencode-go)))
+             :provider :opencode-go))
+          (opencode-override
+            (cadr-cli::provider-attribution-headers
+             :provider :opencode
+             :session-id "generated-value"
+             :request-headers
+             '(("X-OpenCode-Session" . "caller-value")))))
       (is (string= "https://github.com/artwalker/cadr"
                    (header "HTTP-Referer" openrouter)))
       (is (string= "cadr"
@@ -738,16 +744,20 @@
                    (header "x-opencode-client" opencode)))
       (is (string= "session"
                    (header "x-opencode-session" opencode)))
-      (is (stringp
+      (is (null
            (header "x-opencode-session"
                    opencode-go-ephemeral)))
-      (is (plusp
-           (length
-            (header "x-opencode-session"
-                    opencode-go-ephemeral))))
-      (is (string= "cadr"
-                   (header "x-opencode-client"
-                           opencode-go-ephemeral)))))
+      (is (null
+           (header "x-opencode-client"
+                   opencode-go-ephemeral)))
+      (is (string=
+           "caller-value"
+           (header "X-OpenCode-Session"
+                   opencode-override)))
+      (is (string=
+           "cadr"
+           (header "x-opencode-client"
+                   opencode-override)))))
   (let ((headers
           (cadr-cli::provider-attribution-headers
            :provider :openrouter

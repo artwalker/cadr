@@ -104,7 +104,7 @@ Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，�
 - [ ] 上表每一行有测试名，或有用户已经裁过的例外
 - [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
 - [ ] `CHANGELOG.md` 记录 `cadr … · aligned with pi v0.86.0 (+0, ecac0a9c4)`（全量对齐后再写；钉点提交只记 pin）
-- [ ] Goal 20 `paused=false` 只在钉点与枚举落地之后恢复（钉点期间 `paused=true`）
+- [x] Goal 20 `paused=false` 只在钉点与枚举落地之后恢复（钉点期间 `paused=true`）
 - [ ] 不标记 G.17 `met`，不宣布 Goal 20 完成
 
 ## 与 Goal 20 的关系

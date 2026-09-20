@@ -27,7 +27,7 @@ A	-	packages/agent/src/harness/session/jsonl/fork.ts	non-coding-agent package; a
 A	-	packages/agent/src/harness/session/jsonl/io.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/agent/test/harness/pico3/helpers.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
 A	-	packages/agent/test/harness/pico3/types.compile.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]
-A	-	packages/ai/src/providers/opencode-headers.ts	implement and add a ledger row (Goal 24 provider/transcript)
+A	-	packages/ai/src/providers/opencode-headers.ts	implemented: session header only when session-id present; opencode-request-headers-match-baseline-session-presence; provider-attribution-and-stream-settings-follow-baseline-precedence
 A	-	packages/ai/src/providers/radius.models.ts	implement and add a ledger row (Goal 24 provider/transcript)
 A	-	packages/ai/src/utils/transcript.ts	implement and add a ledger row (Goal 24 provider/transcript)
 A	-	packages/chord/test/delta-retention.worker.ts	non-coding-agent package; add intentional-difference ledger row pending behavioral audit [class SP-F6]

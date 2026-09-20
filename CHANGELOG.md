@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: OpenCode `x-opencode-session` / `x-opencode-client` only when
+  a session id is present (pi #9326). No UUID fabricate on ephemeral
+  requests. Goal 20 invent `paused=false` after the v0.86.0 pin and
+  enumeration.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache
