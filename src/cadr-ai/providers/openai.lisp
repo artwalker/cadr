@@ -16,6 +16,11 @@
          (trimmed (string-right-trim "_" sanitized)))
     trimmed))
 
+(defun openai-compatible-provider-error-label (provider-id)
+  (if (eq provider-id :openai)
+      "OpenAI"
+      (string-downcase (symbol-name provider-id))))
+
 (defun responses-normalize-tool-call-id (id target source)
   (if (not (member (model-provider target)
                    '(:openai :openai-codex :opencode)
@@ -494,7 +499,7 @@
       (model-headers model))
      :payload payload
      :stream-p stream-p
-     :provider :openai)))
+     :provider (model-provider model))))
 
 (defun parse-openai-output (output)
   (loop for item across (or output #())
@@ -824,16 +829,24 @@
         ((string= type "response.failed")
          (setf (provider-stream-state-terminal-p state) t)
          (let* ((response (json-get payload "response"))
-                (error-object (json-get response "error")))
+                (error-object (json-get response "error"))
+                (provider-id (assistant-message-provider message))
+                (label (openai-compatible-provider-error-label
+                        provider-id)))
            (error 'api-error
-                  :provider :openai
+                  :provider provider-id
                   :status 200
                   :message (or (json-get error-object "message")
-                               "OpenAI response failed"))))
+                               (format nil "~A response failed"
+                                       label)))))
         ((string= type "error")
-         (error 'api-error
-                :provider :openai
-                :status 200
-                :message (or (json-get payload "message")
-                             "OpenAI stream error")))))
+         (let* ((provider-id (assistant-message-provider message))
+                (label (openai-compatible-provider-error-label
+                        provider-id)))
+           (error 'api-error
+                  :provider provider-id
+                  :status 200
+                  :message (or (json-get payload "message")
+                               (format nil "~A stream error"
+                                       label)))))))
   nil))

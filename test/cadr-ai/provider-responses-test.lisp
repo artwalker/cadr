@@ -109,3 +109,70 @@
                              :abort-p (constantly t))))
         (is (not called-p))
         (is (eq :aborted (assistant-message-stop-reason message)))))))
+
+(defun responses-failed-without-message (model)
+  (let* ((provider (make-openai-provider :api-key "test"))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model)))
+         (payload
+           (cadr-ai::stringify-json
+            (cadr-ai::json-object
+             "type" "response.failed"
+             "response"
+             (cadr-ai::json-object
+              "error" (cadr-ai::json-object))))))
+    (handler-case
+        (progn
+          (cadr-ai::reduce-provider-sse-event
+           provider state
+           (cadr-ai::make-sse-event :data payload)
+           (lambda (event) (declare (ignore event))))
+          nil)
+      (cadr-ai:api-error (condition)
+        condition))))
+
+(test openai-responses-failed-labels-non-openai-provider
+  ;; Baseline openai-responses.ts catch: provider id, not always OpenAI.
+  (let* ((model
+           (make-model
+            :id "copilot-gpt"
+            :provider :github-copilot
+            :api :openai-responses
+            :base-url "https://api.githubcopilot.com"
+            :max-tokens 4096))
+         (condition (responses-failed-without-message model))
+         (message (cadr-ai:cadr-error-message condition)))
+    (is (eq :github-copilot (cadr-ai:api-error-provider condition)))
+    (is (string= "github-copilot response failed" message))))
+
+(test openai-responses-failed-keeps-openai-display-label
+  (let* ((model
+           (make-model
+            :id "gpt-test"
+            :provider :openai
+            :api :openai-responses
+            :base-url "https://api.openai.com"
+            :max-tokens 4096))
+         (condition (responses-failed-without-message model))
+         (message (cadr-ai:cadr-error-message condition)))
+    (is (eq :openai (cadr-ai:api-error-provider condition)))
+    (is (string= "OpenAI response failed" message))))
+
+(test openai-responses-build-request-carries-model-provider
+  (let* ((model
+           (make-model
+            :id "copilot-gpt"
+            :provider :github-copilot
+            :api :openai-responses
+            :base-url "https://api.githubcopilot.com"
+            :max-tokens 4096))
+         (request
+           (build-request
+            (make-openai-provider :api-key "test")
+            model
+            (sample-context)
+            :stream-p t
+            :max-tokens 4096)))
+    (is (eq :github-copilot
+            (cadr-ai::request-spec-provider request)))))
