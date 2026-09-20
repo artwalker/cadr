@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: fail closed on `user_bash` hook errors and invalid
+  `{operations}|{result}` returns (rethrow after notify; no local bash
+  fallback). Nil still continues to the next handler.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

@@ -609,7 +609,7 @@
        (extension-source
         (format
          nil
-         "(define-event-hook :resources-discover :handler (lambda (event context) (declare (ignore event context)) (push :resources-discover cadr-cli/tests::*goal12-production-lifecycle-events*) (list :skill-paths (list ~S))))~%(define-event-hook :project-trust :handler (lambda (event context) (declare (ignore event context)) (push :project-trust cadr-cli/tests::*goal12-production-lifecycle-events*) '(:trusted :yes :remember-p t)))~%(define-event-hook :user-bash :handler (lambda (event context) (declare (ignore event context)) (push :user-bash cadr-cli/tests::*goal12-production-lifecycle-events*) '(:result (:output \"intercepted\" :exit-code 7))))"
+         "(define-event-hook :resources-discover :handler (lambda (event context) (declare (ignore event context)) (push :resources-discover cadr-cli/tests::*goal12-production-lifecycle-events*) (list :skill-paths (list ~S))))~%(define-event-hook :project-trust :handler (lambda (event context) (declare (ignore event context)) (push :project-trust cadr-cli/tests::*goal12-production-lifecycle-events*) '(:trusted :yes :remember-p t)))~%(define-event-hook :user-bash :handler (lambda (event context) (declare (ignore event context)) (push :user-bash cadr-cli/tests::*goal12-production-lifecycle-events*) '(:result (:output \"intercepted\" :exit-code 7 :cancelled-p nil :truncated-p nil))))"
          (namestring extra-skills))))
       (let* ((manager
                (make-test-extension-manager

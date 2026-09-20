@@ -49,7 +49,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `ctx.modelRegistry.stream()` / `streamSimple()` | extension API |
 | `compat.allowedFallbackModels` | Anthropic 兼容设置 |
 | `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | extension 事件 |
-| `user_bash` 失败即停。`undefined` 才继续传播 | bash 钩子 |
+| `user_bash` 失败即停。`undefined` 才继续传播 | fail-closed in `run-extension-lifecycle-hooks` (`:user-bash` only). FiveAM `goal24-user-bash-handler-throw-fails-closed`, `goal24-user-bash-invalid-result-fails-closed`, `goal24-user-bash-undefined-continues-to-next`, `user-bash-returns-first-interception` |
 | 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
 | `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | 工具结果类型 |
 | 压缩、分支摘要、重试的 spinner 进入编辑器边框 | 与已有 working indicator 同一嵌入点 |

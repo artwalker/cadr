@@ -691,7 +691,9 @@
                    (declare (ignore event context))
                    '(:result
                      (:output "handled"
-                      :exit-code 0))))
+                      :exit-code 0
+                      :cancelled-p nil
+                      :truncated-p nil))))
                 (cadr-agent:define-event-hook
                  :user-bash
                  :handler
@@ -705,7 +707,9 @@
       (is (equal
            '(:result
              (:output "handled"
-              :exit-code 0))
+              :exit-code 0
+              :cancelled-p nil
+              :truncated-p nil))
            (cadr-agent::run-extension-lifecycle-hooks
             host :user-bash
             :payload
@@ -713,6 +717,139 @@
               :exclude-from-context-p nil
               :cwd "/project"))))
       (is (not late-called-p)))))
+
+(test goal24-user-bash-handler-throw-fails-closed
+  (let ((*notifications* nil)
+        (late-called-p nil))
+    (declare (special *notifications*))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "bash-throw"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (error "Routing failed")))
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (setf late-called-p t)
+                   '(:result
+                     (:output "late"
+                      :exit-code 0
+                      :cancelled-p nil
+                      :truncated-p nil)))))))
+           (host
+             (make-test-extension-host
+              (list bundle)
+              :notifications '*notifications*)))
+      (handler-case
+          (progn
+            (cadr-agent::run-extension-lifecycle-hooks
+             host :user-bash
+             :payload
+             '(:command "pwd"
+               :exclude-from-context-p nil
+               :cwd "/project"))
+            (fail "expected user_bash handler error to propagate"))
+        (error (condition)
+          (is (search
+               "Routing failed"
+               (princ-to-string condition)))))
+      (is (not late-called-p))
+      (is (= 1 (length *notifications*)))
+      (is (eq :error (first (first *notifications*))))
+      (is (search
+           "Routing failed"
+           (second (first *notifications*)))))))
+
+(test goal24-user-bash-invalid-result-fails-closed
+  (let ((*notifications* nil)
+        (late-called-p nil))
+    (declare (special *notifications*))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "bash-invalid"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   '(:result (:output "handled"))))
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (setf late-called-p t)
+                   nil)))))
+           (host
+             (make-test-extension-host
+              (list bundle)
+              :notifications '*notifications*)))
+      (handler-case
+          (progn
+            (cadr-agent::run-extension-lifecycle-hooks
+             host :user-bash
+             :payload
+             '(:command "pwd"
+               :exclude-from-context-p nil
+               :cwd "/project"))
+            (fail "expected invalid user_bash result to signal"))
+        (error (condition)
+          (is (search
+               "Invalid user_bash handler result"
+               (princ-to-string condition)))))
+      (is (not late-called-p))
+      (is (= 1 (length *notifications*)))
+      (is (search
+           "Invalid user_bash handler result"
+           (second (first *notifications*)))))))
+
+(test goal24-user-bash-undefined-continues-to-next
+  (let ((late-called-p nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "bash-undefined"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   nil))
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (setf late-called-p t)
+                   '(:result
+                     (:output "from-second"
+                      :exit-code 0
+                      :cancelled-p nil
+                      :truncated-p nil)))))))
+           (host
+             (make-test-extension-host
+              (list bundle))))
+      (is (equal
+           '(:result
+             (:output "from-second"
+              :exit-code 0
+              :cancelled-p nil
+              :truncated-p nil))
+           (cadr-agent::run-extension-lifecycle-hooks
+            host :user-bash
+            :payload
+            '(:command "pwd"
+              :exclude-from-context-p nil
+              :cwd "/project"))))
+      (is (not (null late-called-p))))))
 
 (test g22-ui-prompt-events-wrap-the-outermost-extension-prompt
   (let* ((seen nil)

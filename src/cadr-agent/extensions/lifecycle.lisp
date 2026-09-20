@@ -479,12 +479,82 @@
         ":BEFORE-PROVIDER-HEADERS handlers must return NIL"))
      nil)
     ((eq event :user-bash)
-     (when result
-       (validate-lifecycle-result-keys
-        event result '(:operations :result)))
-     result)
+     (validate-user-bash-lifecycle-result result))
     (t
      (error "No lifecycle result contract for ~S" event))))
+
+(defun invalid-user-bash-handler-result ()
+  (error
+   "Invalid user_bash handler result: return undefined for local execution or exactly one valid { operations } or { result } object"))
+
+(defun validate-user-bash-result-body (payload)
+  (unless (strict-keyword-plist-p payload)
+    (invalid-user-bash-handler-result))
+  (let ((seen-output nil)
+        (seen-exit-code nil)
+        (seen-cancelled-p nil)
+        (seen-truncated-p nil))
+    (loop for (key value) on payload by #'cddr
+          do
+          (case key
+            (:output
+             (setf seen-output t)
+             (unless (stringp value)
+               (invalid-user-bash-handler-result)))
+            (:exit-code
+             (setf seen-exit-code t)
+             (unless (or (null value) (numberp value))
+               (invalid-user-bash-handler-result)))
+            (:cancelled-p
+             (setf seen-cancelled-p t)
+             (unless (extension-boolean-p value)
+               (invalid-user-bash-handler-result)))
+            (:truncated-p
+             (setf seen-truncated-p t)
+             (unless (extension-boolean-p value)
+               (invalid-user-bash-handler-result)))
+            (:full-output-path
+             (unless (or (null value) (stringp value))
+               (invalid-user-bash-handler-result)))
+            (otherwise
+             (invalid-user-bash-handler-result))))
+    (unless
+        (and seen-output
+             seen-exit-code
+             seen-cancelled-p
+             seen-truncated-p)
+      (invalid-user-bash-handler-result))
+    payload))
+
+(defun validate-user-bash-lifecycle-result (result)
+  (unless result
+    (return-from validate-user-bash-lifecycle-result nil))
+  (unless (strict-keyword-plist-p result)
+    (invalid-user-bash-handler-result))
+  (let ((has-operations nil)
+        (has-result nil)
+        (operations nil)
+        (bash-result nil))
+    (loop for (key value) on result by #'cddr
+          do
+          (case key
+            (:operations
+             (setf has-operations t
+                   operations value))
+            (:result
+             (setf has-result t
+                   bash-result value))
+            (otherwise
+             (invalid-user-bash-handler-result))))
+    (unless (not (eq has-operations has-result))
+      (invalid-user-bash-handler-result))
+    (cond
+      (has-operations
+       (unless (functionp operations)
+         (invalid-user-bash-handler-result)))
+      (has-result
+       (validate-user-bash-result-body bash-result)))
+    result))
 
 (defun make-lifecycle-event (event payload)
   (%make-extension-event
@@ -806,7 +876,9 @@
                (condition (condition)
                  (notify-extension-failure
                   host definition "Lifecycle hook"
-                  condition)))))
+                  condition)
+                 (when (eq event :user-bash)
+                   (error condition))))))
       (release-acquired-extension-snapshot host held))
     (finalize-lifecycle-state
      event state last-result)))
