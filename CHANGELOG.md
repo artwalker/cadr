@@ -12,9 +12,12 @@ tag/Release step.
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
   Not full v0.86.1 alignment. `version.sexp` stays `0.2.0`.
 
+- Goal 24: `/bug` writes `summary.md` when the user asks for a summary
+  instead of the transcript. The model sees the newest messages that
+  fit in 60% of the context window and the baseline report sections.
+
 - Goal 24: persist structured crash records (`crashes.json`) for `/bug`
-  diagnostics and announce unnotified crashes on TUI start. Summary
-  generation for `/bug` remains open.
+  diagnostics and announce unnotified crashes on TUI start.
 
 - Goal 24: `/bug` consent via extension UI (`:input` / `:select`),
   Radius multipart upload to `/v1/bug-reports`, and zip export with
