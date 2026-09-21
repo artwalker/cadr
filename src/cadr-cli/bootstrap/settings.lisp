@@ -18,6 +18,9 @@
     ("tree-filter-mode" . "treeFilterMode")
     ("theme" . "theme")))
 
+(defparameter +cache-warming-modes+
+  '("off" "streaming" "idle"))
+
 (defun default-agent-directory ()
   ;; Thin forwarder: cadr-core owns the layout decision (including the
   ;; CADR_CODING_AGENT_DIR override); this name stays for CLI callers.
@@ -476,6 +479,24 @@
    (format nil "~,3G sec"
            (/ timeout-ms 1000.0))))
 
+(defun settings-cache-warming-mode (manager)
+  ;; Baseline settings-manager.ts getCacheWarmingMode: globalSettings only.
+  (let ((mode
+          (cadr-ai::json-get
+           (settings-manager-global manager)
+           "cacheWarming"
+           :missing)))
+    (if (and (not (eq mode :missing))
+             (member mode +cache-warming-modes+ :test #'equal))
+        mode
+        "streaming")))
+
+(defun settings-set-cache-warming-mode (manager mode)
+  (unless (member mode +cache-warming-modes+ :test #'equal)
+    (error "Invalid cacheWarming mode ~S" mode))
+  (settings-set manager "cacheWarming" mode :scope :global)
+  mode)
+
 (defun default-project-trust-label (value)
   (cond
     ((string= value "always") "Always trust")
@@ -816,6 +837,14 @@
              :format-function
              #'http-idle-timeout-label)
             (make-settings-option
+             :id "cache-warming-mode"
+             :label "Cache warming"
+             :description
+             "off; streaming while the agent runs; idle also between runs while continuation stays profitable"
+             :value
+             (settings-cache-warming-mode settings-manager)
+             :values +cache-warming-modes+)
+            (make-settings-option
              :id "hide-thinking"
              :label "Hide thinking"
              :description
@@ -1145,6 +1174,9 @@
            (string-downcase
             (symbol-name value))
            :scope :global))
+         ((string= id "cache-warming-mode")
+          (settings-set-cache-warming-mode
+           settings-manager value))
          ((string= id "model-thinking-level")
           (let* ((model-key (getf value :model-key))
                  (model
