@@ -58,7 +58,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `--resume` 按 mtime 渐进列出。`--continue` 读到最新匹配头即停 | https://github.com/artwalker/cadr/pull/762 、https://github.com/artwalker/cadr/pull/763 。`--continue` mtime 早停；`--resume` / session selector 渐进 `partialSessions` |
 | 剪贴板改为捆绑的异步辅助程序，保留平台命令与 OSC 52 | https://github.com/artwalker/cadr/pull/769 。本地写失败不退回 OSC 52，并写出具体后端；不移植 `.node` |
 | Codex 选择里去掉 GPT-5.4 与 GPT-5.4 mini | https://github.com/artwalker/cadr/pull/761 |
-| 发布说明里的 provider / session / compaction / RPC 修复 | 进行中。https://github.com/artwalker/cadr/pull/781 、https://github.com/artwalker/cadr/pull/782 、https://github.com/artwalker/cadr/pull/783 、https://github.com/artwalker/cadr/pull/784 、https://github.com/artwalker/cadr/pull/785 、https://github.com/artwalker/cadr/pull/786 、https://github.com/artwalker/cadr/pull/787 、https://github.com/artwalker/cadr/pull/788 、https://github.com/artwalker/cadr/pull/789 、https://github.com/artwalker/cadr/pull/790 （deepseek-flash）。其余条仍待枚举处置 |
+| 发布说明里的 provider / session / compaction / RPC 修复 | 进行中。https://github.com/artwalker/cadr/pull/781 、https://github.com/artwalker/cadr/pull/782 、https://github.com/artwalker/cadr/pull/783 、https://github.com/artwalker/cadr/pull/784 、https://github.com/artwalker/cadr/pull/785 、https://github.com/artwalker/cadr/pull/786 、https://github.com/artwalker/cadr/pull/787 、https://github.com/artwalker/cadr/pull/788 、https://github.com/artwalker/cadr/pull/789 、https://github.com/artwalker/cadr/pull/790 、https://github.com/artwalker/cadr/pull/791 （Bedrock cacheWrite1h）。其余条仍待枚举处置 |
 
 Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，不按文件抄。对应的用户可见行为仍走上表。
 
