@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=13cbf77df2396303013a41646bcfa77b4271ae56 files=299 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=152 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=13cbf77df2396303013a41646bcfa77b4271ae56 files=300 lines=129538 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=153 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -273,6 +273,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/settings/trust.lisp` | 216 | 13 | Persist and resolve inherited project-trust decisions. | pass | no-rewrite | Mutex-scoped store with multiple values and pathname discipline; most-TS is the :path/:decision plist entry at :69-71, a two-key record at the JSON boundary. | 20 |
 | `src/cadr-cli/system-prompt.lisp` | 53 | 4 | Resolve the default, replacement, and appended system prompt. | pass | no-rewrite | most TS-like is L37 sniffing "Permission denied" in the printed condition, correct here because portable CL exposes no errno slot on stream-open failure and the emitted text must be Node's literal "EACCES: permission denied, open '...'" (baseline resource-loader.ts:62 byte contract), so message-matching is the only portable route. | 20 |
 | `src/cadr-cli/tool-manager.lisp` | 286 | 25 | Locate, download, extract, and quarantine optional host tools. | pass | no-rewrite | Most TS-like: arch detection by string-sniffing machine-type (:39-45); correct because CL exposes no portable arch keyword (mirrors process.arch mapping), and the ecase asset tables (:53-67) already buy machine-checked exhaustiveness — a Lisp benefit actually used | 20 |
+| `src/cadr-cli/cache-warmer.lisp` | 671 | 40 | Decide and schedule prompt-cache warming; format `/session` status. | pass · large | done | economics + schedule + formatters. I0: mode injected, no settle/stream dispatch yet. | 24 |
 | `src/cadr-cli/tools/bash.lisp` | 591 | 23 | Execute bash with live output, process-group abort/timeout, truncation, and tool wrapping. | pass · large | no-rewrite | Most TS-like: abort detected by string-matching condition messages ("Command aborted", :144-146); correct because abort crosses the extension/operations boundary where message text is the only stable contract (baseline discriminates identically, bash.ts:441/443) — the in-house path already uses the typed user-bash-aborted condition (:14-28, :399-416) | 20 |
 | `src/cadr-cli/tools/powershell.lisp` | 115 | 8 | Execute PowerShell with UTF-8 output prefixing, truncation, and Windows-only availability. | pass | done | +powershell-args+ and get-powershell-config gate. I0: one non-Windows fail-closed owner. | 21 |
 | `src/cadr-cli/tools/edit.lisp` | 753 | 32 | Match replacements and produce/apply exact edit diffs. | pass · large | done | edit-no-changes-error. I0: one no-change message. | 20 |
@@ -439,14 +440,14 @@ unified requirements 7–9.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 28 | 13 | 0 | 0 | 41 |
 | `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
-| `cadr-cli` | 90 | 27 | 0 | 0 | 117 |
+| `cadr-cli` | 90 | 28 | 0 | 0 | 118 |
 | `cadr-core` | 7 | 0 | 0 | 0 | 7 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 30 | 19 | 0 | 0 | 49 |
-| **Total** | **215** | **85** | **0** | **0** | **299** |
+| **Total** | **215** | **86** | **0** | **0** | **300** |
 
 No production file remains in `should split` or `should merge`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This
