@@ -2,6 +2,8 @@
 
 (defvar *agent-run-system-prompt* :use-agent-system-prompt)
 
+(defvar *agent-run-force-system-prompt* nil)
+
 (defvar *agent-run-new-messages* nil)
 
 (defparameter +non-retryable-assistant-error-pattern+
@@ -73,10 +75,12 @@
        :payload '(:reason :startup)))))
 
 (defun current-agent-system-prompt (agent)
-  (if (eq *agent-run-system-prompt*
-          :use-agent-system-prompt)
-      (agent-system-prompt agent)
-      *agent-run-system-prompt*))
+  (or
+   *agent-run-force-system-prompt*
+   (if (eq *agent-run-system-prompt*
+           :use-agent-system-prompt)
+       (agent-system-prompt agent)
+       *agent-run-system-prompt*)))
 
 (defun lifecycle-message-end (agent message)
   (let ((result

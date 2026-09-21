@@ -352,7 +352,7 @@
        agent message source)
     (when handled-p
       (return-from prepare-agent-prompt
-        (values nil nil t)))
+        (values nil nil t nil)))
     (multiple-value-bind (final-text final-images)
         (user-message-input-values final-message)
       (let* ((prompt-options
@@ -394,29 +394,36 @@
                   (copy-list
                    (getf before-result :messages))
                   (drain-agent-queue agent :steering)))
+               (force-system-prompt
+                 (let ((sentinel (list :missing)))
+                   (let ((system-prompt
+                           (getf
+                            before-result
+                            :system-prompt sentinel)))
+                     (unless (eq system-prompt sentinel)
+                       system-prompt))))
                (loadout
                  (agent-prepare-prompt-loadout-function
                   agent))
                (update
-                 (when loadout
-                   (funcall
-                    loadout
-                    agent
-                    prompt-options
-                    (agent-messages agent)))))
+                 (progn
+                   (when force-system-prompt
+                     (setf
+                      (getf prompt-options :force-system-prompt)
+                      force-system-prompt))
+                   (when loadout
+                     (funcall
+                      loadout
+                      agent
+                      prompt-options
+                      (agent-messages agent))))))
           (when update
             (setf pending (cons update pending)))
           (values
            pending
-           (let ((sentinel (list :missing)))
-             (let ((system-prompt
-                     (getf
-                      before-result
-                      :system-prompt sentinel)))
-               (if (eq system-prompt sentinel)
-                   (agent-system-prompt agent)
-                   system-prompt)))
-           nil))))))
+           (agent-system-prompt agent)
+           nil
+           force-system-prompt))))))
 
 (defun agent-prompt
     (agent prompt
@@ -432,7 +439,8 @@
        (flush-agent-pending-custom-messages agent)
        (maybe-compact-agent agent)
        (multiple-value-bind
-             (messages system-prompt handled-p)
+             (messages system-prompt handled-p
+              force-system-prompt)
            (prepare-agent-prompt
             agent message source)
          (if handled-p
@@ -457,7 +465,9 @@
                  (funcall preflight-function))
                (assert-agent-not-shutdown agent)
                (let ((*agent-run-system-prompt*
-                       system-prompt))
+                       system-prompt)
+                     (*agent-run-force-system-prompt*
+                       force-system-prompt))
                  (run-agent-with-retries
                   agent messages)))))))))
 

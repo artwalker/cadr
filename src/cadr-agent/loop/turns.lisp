@@ -57,7 +57,11 @@
            (convert-agent-messages-to-llm
             (or
              (getf context-result :messages)
-             messages))))
+             messages)))
+         (forced *agent-run-force-system-prompt*)
+         (has-system-p
+           (find-if #'cadr-ai:system-message-p
+                    request-messages)))
     (let* ((callback
              (lambda (event)
                (case (cadr-ai:stream-event-type event)
@@ -97,13 +101,30 @@
                   :stop-reason :error
                   :error-message "This operation was aborted")
                  (let ((context
-                         (cadr-ai:make-context
-                          :system-prompt
-                          (current-agent-system-prompt agent)
-                          :messages request-messages
-                          :tools
-                          (registry-tools
-                           (agent-tool-registry agent)))))
+                         (cond
+                           ((and has-system-p forced)
+                            ;; Forced prompt is the provider's leading
+                            ;; system message (cache-miss), not a section
+                            ;; patch after the original.
+                            (cadr-ai:make-context
+                             :system-prompt nil
+                             :messages
+                             (cadr-ai:project-forced-system-prompt
+                              request-messages forced)
+                             :tools nil))
+                           (has-system-p
+                            (cadr-ai:make-context
+                             :system-prompt nil
+                             :messages request-messages
+                             :tools nil))
+                           (t
+                            (cadr-ai:make-context
+                             :system-prompt
+                             (current-agent-system-prompt agent)
+                             :messages request-messages
+                             :tools
+                             (registry-tools
+                              (agent-tool-registry agent)))))))
                    ;; abort-p is a keyword on the stream call, not a
                    ;; one-field plist built to be read back (TS
                    ;; object-literal leftover).

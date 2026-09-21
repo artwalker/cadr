@@ -61,8 +61,12 @@
         (is (typep (second messages) 'cadr-ai:assistant-message))
         (is (typep (third messages) 'cadr-ai:tool-result-message))
         (is (typep (fourth messages) 'cadr-ai:assistant-message)))
-      (let ((second-context (first *contexts*)))
-        (is (typep (third (cadr-ai:context-messages second-context))
+      (let* ((second-context (first *contexts*))
+             (llm-messages
+               (remove-if
+                #'cadr-ai:system-message-p
+                (cadr-ai:context-messages second-context))))
+        (is (typep (third llm-messages)
                    'tool-result-message))))))
 
 (test pairing-agent-tool-loop-observed-stays-put

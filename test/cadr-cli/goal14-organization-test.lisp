@@ -1050,7 +1050,8 @@
     ;; session/codec.lisp (sections/toolsAdded/toolsRemoved round-trip).
     ;; +2 Goal 24: declare-tool-changes and
     ;; %system-message-with-tool-changes (loop/turns.lisp).
-    (is (= 352 definition-count)
+    ;; +1 Goal 24: *agent-run-force-system-prompt* (loop/events.lisp).
+    (is (= 353 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1454,7 +1455,8 @@
               ;; +3 Goal 24: ensure-transcript-context /
               ;; transcript-context-as-request-context /
               ;; coerce-provider-request-context.
-              "d514409179bd223d2fea40fd2627ec211572484d327135ef4b2c3a83d2da57ab"
+              ;; +1 Goal 24: #:project-forced-system-prompt.
+              "2a924770d5fdf4c665339c0452ecbd78f8fd216a7b777deec059f5365a6b5d16"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

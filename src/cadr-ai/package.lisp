@@ -148,6 +148,7 @@
    #:get-current-system-message
    #:get-current-system-prompt
    #:collapse-system-messages
+   #:project-forced-system-prompt
    #:resolve-transcript
    #:to-tool-declaration
    #:declarations-equal
