@@ -164,6 +164,28 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
 (defparameter +bug-report-transcript-note+
   "The transcript contains your messages, model output, tool calls and their results, including file contents and command output read during this session.")
 
+(defparameter +bug-summary-system-prompt+
+  "You are helping a user file a bug report about pi, the coding agent they are talking to. You will be shown the conversation transcript. Write a report for the pi developers describing what the user was doing and what went wrong.
+
+Do NOT continue the conversation. Do NOT respond to any questions in the conversation. ONLY output the report.")
+
+(defparameter +bug-summary-instructions+
+  "Write the bug report in Markdown with these sections:
+
+## What the user was doing
+One short paragraph.
+
+## What went wrong
+Concrete description of the failure: wrong output, errors, hangs, tool failures, unexpected behavior. Quote error messages and tool output verbatim where they exist.
+
+## Steps to reproduce
+Numbered list, as specific as the transcript allows.
+
+## Relevant details
+Tool calls involved, files touched, model behavior, anything else that helps a developer reproduce or locate the problem.
+
+Do not include file contents, secrets, or credentials from the transcript; refer to files by path only. Keep the report factual and concise.")
+
 (defun bug-report-json-document (value)
   (with-output-to-string (out)
     (cadr-ai::write-json-value
@@ -708,6 +730,146 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
        :kind :error)
       nil)))
 
+(defun bug-report-summary-token-budget (model)
+  (let ((window (and model (cadr-ai:model-context-window model))))
+    (floor (* (if (and (integerp window) (plusp window))
+                  window
+                  128000)
+              3)
+           5)))
+
+(defun bug-report-summary-max-tokens (model)
+  (let ((limit (and model (cadr-ai:model-max-tokens model))))
+    (min 4096
+         (if (and (integerp limit) (plusp limit))
+             limit
+             4096))))
+
+(defun bug-report-select-messages (messages token-budget)
+  (let ((selected nil)
+        (tokens 0))
+    (dolist (message (reverse messages))
+      (let ((next (cadr-agent::message-estimated-tokens message)))
+        (when (and selected (> (+ tokens next) token-budget))
+          (return))
+        (push message selected)
+        (incf tokens next)))
+    selected))
+
+(defun bug-report-aborted-p (agent abort-p)
+  (or (and abort-p (funcall abort-p))
+      (and agent (cadr-agent::agent-aborted-p agent))))
+
+(defun bug-report-summary-prompt (messages selected hint)
+  (let* ((hint
+           (and (stringp hint)
+                (string-trim
+                 '(#\Space #\Tab #\Newline #\Return)
+                 hint)))
+         (parts nil))
+    (when (< (length selected) (length messages))
+      (push
+       (format nil
+               "Note: only the last ~D of ~D messages are shown."
+               (length selected)
+               (length messages))
+       parts))
+    (push
+     (format nil "<conversation>~%~A~%</conversation>"
+             (cadr-agent:serialize-conversation
+              (cadr-agent:convert-agent-messages-to-llm selected)))
+     parts)
+    (when (and hint (plusp (length hint)))
+      (push
+       (format nil "<user-report>~%~A~%</user-report>" hint)
+       parts))
+    (push +bug-summary-instructions+ parts)
+    (format nil "~{~A~^~%~%~}" (nreverse parts))))
+
+(defun bug-report-summary-text (response)
+  (unless response
+    (error "Bug report summary was cancelled"))
+  (case (cadr-ai:assistant-message-stop-reason response)
+    (:aborted (error "Bug report summary was cancelled"))
+    (:error
+     (error "Bug report summary failed: ~A"
+            (or (cadr-ai:assistant-message-error-message response)
+                "Unknown error")))
+    (:length
+     (error
+      "Bug report summary failed: generation hit the token cap and the summary is incomplete")))
+  (when (some (lambda (block) (typep block 'cadr-ai:tool-call))
+              (cadr-ai:assistant-message-content response))
+    (error "Bug report summary attempted to call a tool"))
+  (let ((text
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return)
+           (cadr-ai:content-text
+            (cadr-ai:assistant-message-content response)))))
+    (unless (plusp (length text))
+      (error "Bug report summary was empty"))
+    text))
+
+(defun call-with-bug-report-abort (agent abort-p function)
+  (if (or (null agent) (null abort-p))
+      (funcall function)
+      (let ((previous (cadr-agent::agent-abort-p agent)))
+        (setf (cadr-agent::agent-abort-p agent)
+              (lambda ()
+                (or (funcall abort-p)
+                    (and previous (funcall previous)))))
+        (unwind-protect (funcall function)
+          (setf (cadr-agent::agent-abort-p agent) previous)))))
+
+(defun generate-bug-report-summary
+    (agent messages &key hint abort-p)
+  (let* ((model (and agent (cadr-agent:agent-model agent)))
+         (selected
+           (bug-report-select-messages
+            messages
+            (bug-report-summary-token-budget model)))
+         (thinking
+           (and agent (cadr-agent::agent-thinking-level agent)))
+         (reasoning
+           (and model
+                (cadr-ai:model-reasoning-p model)
+                thinking
+                (not (eq thinking :off))
+                thinking)))
+    (when (bug-report-aborted-p agent abort-p)
+      (error "Bug report summary was cancelled"))
+    (let ((text
+            (bug-report-summary-text
+             (call-with-bug-report-abort
+              agent abort-p
+              (lambda ()
+                (cadr-agent::complete-summarization
+                 agent
+                 (cadr-ai:make-context
+                  :system-prompt +bug-summary-system-prompt+
+                  :messages
+                  (list
+                   (cadr-ai:make-user-message
+                    :content
+                    (bug-report-summary-prompt
+                     messages selected hint)))
+                  :tools nil)
+                 (bug-report-summary-max-tokens model)
+                 :bug-report
+                 :reasoning reasoning))))))
+      (when (bug-report-aborted-p agent abort-p)
+        (error "Bug report summary was cancelled"))
+      text)))
+
+(defun summarize-for-bug-report (agent &key hint abort-p)
+  (unless (and agent (cadr-agent:agent-model agent))
+    (error "No model selected"))
+  (generate-bug-report-summary
+   agent
+   (cadr-agent:agent-messages agent)
+   :hint hint
+   :abort-p abort-p))
+
 (defun run-bug-report
     (agent
      &key
@@ -718,7 +880,8 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
        (http #'cadr-ai:request-json)
        auth-path
        token
-       gateway-url)
+       gateway-url
+       abort-p)
   (let ((options
           (if ui-function
               (prompt-bug-report-options
@@ -738,16 +901,42 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
        "Bug report cancelled" output
        :status-function status-function)
       (return-from run-bug-report t))
-    (when (getf options :include-summary)
-      (bug-report-emit
-       "Bug report summary is not available yet"
-       output
-       :status-function status-function
-       :kind :error)
-      (return-from run-bug-report t))
-    (let ((bundle
-            (handler-case
-                (build-bug-report-bundle agent options)
+    (let ((summary nil))
+      (when (getf options :include-summary)
+        (let ((model (and agent (cadr-agent:agent-model agent))))
+          (bug-report-emit
+           (format nil "Writing summary with ~A..."
+                   (or (and model (cadr-ai::model-name model))
+                       "the current model"))
+           output
+           :status-function status-function)
+          (handler-case
+              (setf summary
+                    (summarize-for-bug-report
+                     agent
+                     :hint (getf options :hint)
+                     :abort-p abort-p))
+            (error (condition)
+              (if (bug-report-aborted-p agent abort-p)
+                  (bug-report-emit
+                   "Bug report cancelled" output
+                   :status-function status-function)
+                  (bug-report-emit
+                   (format nil
+                           "Failed to write bug report summary: ~A"
+                           condition)
+                   output
+                   :status-function status-function
+                   :kind :error))
+              (return-from run-bug-report t)))
+          (when (bug-report-aborted-p agent abort-p)
+            (bug-report-emit
+             "Bug report cancelled" output
+             :status-function status-function)
+            (return-from run-bug-report t))))
+      (let ((bundle
+              (handler-case
+                  (build-bug-report-bundle agent options summary)
               (error (condition)
                 (bug-report-emit
                  (format nil "Failed to build bug report: ~A"
@@ -786,4 +975,4 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
        agent bundle
        :output output
        :status-function status-function)
-      t)))
+      t))))
