@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 299,
-    "lines": 137863
+    "files": 301,
+    "lines": 138097
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -3852,6 +3852,20 @@
       "class": "paired",
       "metrics": [
         "tui_word_navigation.step"
+      ]
+    },
+    {
+      "prefix": "src/cadr-ai/oauth/providers/meta.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "oauth_pkce_device.kimi_host_default"
+      ]
+    },
+    {
+      "prefix": "src/cadr-ai/providers/meta.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "provider_mistral.stream_roundtrip"
       ]
     }
   ]

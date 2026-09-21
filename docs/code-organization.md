@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=13cbf77df2396303013a41646bcfa77b4271ae56 files=299 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=152 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=13cbf77df2396303013a41646bcfa77b4271ae56 files=301 lines=129077 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=149 in-progress=0 done=152 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -21,11 +21,11 @@ owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 299 current files.
+goal is supposed to police, so this ledger covers all 301 current files.
 
 - 293 Lisp files, 121,105 lines, 4,976 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 299 production files and 125,380 physical lines in total.
+- 301 production files and 125,590 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `pass` means one predictable responsibility; `pass · large` means the same but
@@ -126,6 +126,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | 1 | Project the Anthropic browser OAuth flow into the runtime callback contract. | pass | no-rewrite | 16-line adapter; closure wrappers at :7-16 are precisely the seam keeping the login flow decoupled. | 20 |
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | 15 | Implement GitHub Copilot device login, token exchange, refresh, and model filtering. | pass | no-rewrite | RFC 8628 code lists at :117-118 are wire tokens; the single-owner fix belongs to oauth-poll-token defaults, not this file. | 20 |
 | `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | 6 | Implement Kimi Coding device login and credential refresh. | pass | no-rewrite | Poll vocabulary at :43-44 is wire constants; owner fix lives in oauth-poll-token (xai.lisp:91), not here. | 20 |
+| `src/cadr-ai/oauth/providers/meta.lisp` | 161 | 14 | Implement Meta device authorization, identity-token mint, and refresh. | pass | no-rewrite | Wire errors match the pin. Polling reuses poll-device-authorization. | 25 |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | 7 | Implement OpenAI Codex device authorization, polling, and runtime login selection. | pass | no-rewrite | string= on OpenAI wire error codes at :116-123 is the baseline-verbatim contract; cancellation via dynamic binding is already Lisp-native. | 20 |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | 7 | Implement OpenRouter PKCE login, key exchange, and refresh. | pass | no-rewrite | Empty-string-as-null at :42-43 is forced by the shared auth.json round-trip contract. | 20 |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | 7 | Implement Radius browser/device login and gateway-scoped credential refresh. | pass | done | parse-device-authorization. I0: fourth copy gone. | 20 |
@@ -143,6 +144,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/providers/bedrock.lisp` | 934 | 34 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | pass · large | done | bedrock-sigv4-headers. I0: one sigv4 bind. | 20 |
 | `src/cadr-ai/providers/codex.lisp` | 35 | 1 | Adapt the OpenAI Codex Responses request contract. | pass | no-rewrite | Post-build remhash at :28-33 reuses the OpenAI builder and applies a two-key delta — the correct reuse shape, not a copy. | 20 |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | 4 | Adapt Mistral Conversations reasoning and tool-call identifiers. | pass | done | affinity-p. I0: one session/cache decision. | 20 |
+| `src/cadr-ai/providers/meta.lisp` | 49 | 2 | Register the Meta Muse catalog on the openai-responses hook. | pass | no-rewrite | Hand-written catalog rows. The pin does not commit meta.json. | 25 |
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | 6 | Implement pi Messages request rewriting and event/response reduction. | pass | done | block-indices stores the block. I0: no nth. | 20 |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | 2 | Adapt Google Vertex endpoints and signed request construction. | pass | no-rewrite | {location} substring sniffing at :7 is the baseline base-URL config contract; credential fallback is or/let* idiom with signaled errors. | 20 |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | 33 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | pass · large | done | block-indices stores (index . block). I0: no nth. | 20 |
@@ -438,7 +440,7 @@ unified requirements 7–9.
 | System | pass | pass · large | should split | should merge | Total |
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 28 | 13 | 0 | 0 | 41 |
-| `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
+| `cadr-ai` | 48 | 15 | 0 | 0 | 63 |
 | `cadr-cli` | 90 | 27 | 0 | 0 | 117 |
 | `cadr-core` | 7 | 0 | 0 | 0 | 7 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
@@ -446,7 +448,7 @@ unified requirements 7–9.
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 30 | 19 | 0 | 0 | 49 |
-| **Total** | **215** | **85** | **0** | **0** | **299** |
+| **Total** | **217** | **85** | **0** | **0** | **301** |
 
 No production file remains in `should split` or `should merge`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This
@@ -461,7 +463,7 @@ the tests reject a missing owner or a surviving mixed file.
 | `cadr-tui` | 0 | 0 | +0 |
 | **Total** | **0** | **0** | **+0** |
 
-At current boundaries the physical distribution is 166 files below 300 lines,
+At current boundaries the physical distribution is 168 files below 300 lines,
 81 at 300–699, 28 at 700–999, and 23 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000. Average file
 size is now 420.0 lines and the under-300 share is about 55.7%. The modest
