@@ -1,7 +1,7 @@
 (in-package #:cadr-cli)
 
 ;;; Baseline: packages/coding-agent/src/core/cache-warmer.ts (13cbf77df).
-;;; Live agent-settle / stream dispatch is a follow-up.
+;;; Live settle/stream dispatch mirrors sdk.ts + agent-session.ts.
 
 (defconstant +max-warming-age-ms+ (* 60 60 1000))
 (defconstant +max-idle-warming-age-ms+ (* 30 60 1000))
@@ -669,3 +669,199 @@
                (format nil " (~A)" note)
                "")))
     (format nil "Cache warmed~A: $~A" note-text cost-text)))
+
+;;; Live dispatch helpers (sdk.ts streamFn + agent-session settle/dispose).
+
+(defparameter +cache-warming-mode-values+
+  '("off" "streaming" "idle"))
+
+(defparameter +anthropic-prompt-cache+
+  '(:short 300 :long 3600))
+
+(defun %settings-backend (manager)
+  (cond
+    ((settings-manager-p manager) manager)
+    (t
+     (let* ((class-name
+              (find-symbol "SDK-SETTINGS-MANAGER" :cadr-cli))
+            (class
+              (and class-name (find-class class-name nil)))
+            (reader
+              (find-symbol
+               "SDK-SETTINGS-MANAGER-BACKEND" :cadr-cli)))
+       (if (and class reader (fboundp reader)
+                (typep manager class))
+           (funcall (symbol-function reader) manager)
+           manager)))))
+
+(defun %cache-warming-mode-from-global (manager)
+  ;; Mirrors #771 settings-cache-warming-mode: globalSettings only.
+  (let ((mode
+          (cadr-ai::json-get
+           (settings-manager-global
+            (%settings-backend manager))
+           "cacheWarming"
+           :missing)))
+    (if (and (not (eq mode :missing))
+             (member mode +cache-warming-mode-values+
+                     :test #'equal))
+        mode
+        "streaming")))
+
+(defun %read-cache-warming-mode (manager)
+  (let ((backend (%settings-backend manager)))
+    (if (fboundp 'settings-cache-warming-mode)
+        (funcall
+         (symbol-function 'settings-cache-warming-mode)
+         backend)
+        (%cache-warming-mode-from-global manager))))
+
+(defun set-cache-warming-mode (manager mode &optional warmer)
+  (unless (member mode +cache-warming-mode-values+ :test #'equal)
+    (error "Invalid cacheWarming mode ~S" mode))
+  (let ((backend (%settings-backend manager)))
+    (if (fboundp 'settings-set-cache-warming-mode)
+        (funcall
+         (symbol-function 'settings-set-cache-warming-mode)
+         backend mode)
+        (settings-set
+         backend "cacheWarming" mode :scope :global)))
+  (when warmer
+    (cache-warmer-on-mode-changed warmer))
+  mode)
+
+(defun model-as-cache-warm-model (model)
+  (let* ((provider (cadr-ai:model-provider model))
+         (id (cadr-ai:model-id model))
+         (api (cadr-ai:model-api model))
+         (cost
+           (handler-case
+               (let ((metadata
+                       (cadr-ai:find-model-metadata
+                        provider id)))
+                 (list
+                  :input
+                  (cadr-ai:model-metadata-input-price metadata)
+                  :output
+                  (cadr-ai:model-metadata-output-price metadata)
+                  :cache-read
+                  (cadr-ai:model-metadata-cache-read-price
+                   metadata)
+                  :cache-write
+                  (cadr-ai:model-metadata-cache-write-price
+                   metadata)))
+             (cadr-ai:configuration-error ()
+               nil)))
+         (prompt-cache
+           (when (and (eq provider :anthropic)
+                      (eq api :anthropic-messages))
+             +anthropic-prompt-cache+)))
+    (make-cache-warm-model
+     :id id
+     :provider provider
+     :api api
+     :prompt-cache prompt-cache
+     :cost cost
+     :compat (copy-list (cadr-ai::model-compat model)))))
+
+(defun cache-context-is-current (agent model)
+  "Return a thunk that is true while AGENT still extends MODEL's request prefix."
+  (let ((request-messages
+          (copy-list (cadr-agent:agent-messages agent)))
+        (request-provider (cadr-ai:model-provider model))
+        (request-id (cadr-ai:model-id model)))
+    (lambda ()
+      (let* ((current-model (cadr-agent:agent-model agent))
+             (current-messages
+               (cadr-agent:agent-messages agent)))
+        (and current-model
+             (eq (cadr-ai:model-provider current-model)
+                 request-provider)
+             (string= (cadr-ai:model-id current-model)
+                      request-id)
+             (<= (length request-messages)
+                 (length current-messages))
+             (loop for message in request-messages
+                   for current in current-messages
+                   always (eq message current)))))))
+
+(defun make-cache-warmer-stream-simple
+    (get-agent inner-stream-function)
+  "Bridge warmer (model context options) to cadr agent stream."
+  (lambda (warm-model context options)
+    (let* ((agent (funcall get-agent))
+           (live
+             (and agent (cadr-agent:agent-model agent)))
+           (provider
+             (or (and live (cadr-ai:model-provider live))
+                 (cache-warm-model-provider warm-model)))
+           (model
+             (or
+              (and live
+                   (string=
+                    (cadr-ai:model-id live)
+                    (cache-warm-model-id warm-model))
+                   (eq (cadr-ai:model-provider live)
+                       (cache-warm-model-provider warm-model))
+                   live)
+              live)))
+      (when model
+        (apply
+         inner-stream-function
+         provider model context
+         (lambda (event) (declare (ignore event)))
+         (copy-list options))))))
+
+(defun make-cache-warm-append-usage ()
+  "Build a usage entry only. Session :usage codec append is deferred."
+  (lambda (kind provider model-id usage note)
+    (make-cache-warm-usage-entry
+     :kind kind
+     :provider provider
+     :model-id model-id
+     :usage usage
+     :note note)))
+
+(defun wrap-stream-function-with-cache-warmer
+    (warmer get-session-id get-agent inner-stream-function)
+  "Start warming when the request session id matches the live session."
+  (lambda (provider model context on-event &rest options)
+    (let* ((agent-session-id (funcall get-session-id))
+           (request-session-id
+             (or (getf options :session-id)
+                 agent-session-id)))
+      (when (and agent-session-id
+                 request-session-id
+                 (string= request-session-id
+                          agent-session-id))
+        (cache-warmer-start
+         warmer
+         (make-cache-warm-request
+          :model (model-as-cache-warm-model model)
+          :context context
+          :options (copy-list options))
+         (cache-context-is-current
+          (funcall get-agent) model))))
+    (apply
+     inner-stream-function
+     provider model context on-event options)))
+
+(defun make-live-cache-warmer
+    (settings-manager get-agent get-branch
+     inner-stream-function
+     &key decide on-warmed now-fn schedule-fn)
+  (apply
+   #'make-cache-warmer
+   (make-cache-warmer-stream-simple
+    get-agent inner-stream-function)
+   get-branch
+   (make-cache-warm-append-usage)
+   (lambda () (%read-cache-warming-mode settings-manager))
+   (append
+    (list :decide
+          (or decide
+              (lambda (event)
+                (getf event :action))))
+    (when on-warmed (list :on-warmed on-warmed))
+    (when now-fn (list :now-fn now-fn))
+    (when schedule-fn (list :schedule-fn schedule-fn)))))
