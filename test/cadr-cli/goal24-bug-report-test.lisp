@@ -85,3 +85,81 @@
                          (list "unzip" "-l"
                                (uiop:native-namestring path))
                          :output :string)))))))))
+
+(test bug-report-payload-keeps-multiline-diagnostics
+  (with-test-directory (root)
+    (uiop:with-current-directory (root)
+      (let* ((sessions (merge-pathnames "sessions/" root))
+             (cwd (merge-pathnames "cwd/" root))
+             (_
+               (progn
+                 (ensure-directories-exist sessions)
+                 (ensure-directories-exist cwd)))
+             (session
+               (cadr-agent:create-session
+                :directory sessions
+                :cwd cwd
+                :id "bug-lines"
+                :timestamp 1))
+             (agent
+               (cadr-agent:make-agent
+                :session session
+                :provider nil
+                :model nil))
+             (diagnostic
+               (format nil
+                       "Request failed~C~%  ↳ pi exiting...~C~%stack trace"
+                       #\Return #\Return))
+             (expected
+               "Request failed
+  ↳ pi exiting...
+stack trace")
+             (out (make-string-output-stream)))
+        (declare (ignore _))
+        (is (eq t
+                (cadr-cli::handle-session-command
+                 (format nil "/bug ~A" diagnostic)
+                 agent
+                 :directory sessions
+                 :cwd cwd
+                 :output out)))
+        (let* ((text (get-output-stream-string out))
+               (start (search "Bug report written: " text))
+               (path
+                 (and start
+                      (string-trim
+                       '(#\Space #\Tab #\Newline #\Return)
+                       (subseq text
+                               (+ start
+                                  (length
+                                   "Bug report written: "))))))
+               (report
+                 (cadr-ai::parse-json
+                  (uiop:run-program
+                   (list "unzip" "-p"
+                         (uiop:native-namestring path)
+                         "report.json")
+                   :output :string)))
+               (hint (cadr-ai::json-get report "hint")))
+          (is (string= expected hint)))))))
+
+(test bug-report-hint-skips-cancel-and-retryable-failures
+  (labels ((message (text &optional (reason :error))
+             (cadr-ai:make-assistant-message
+              :api :faux
+              :provider :faux
+              :model "faux-1"
+              :stop-reason reason
+              :error-message text)))
+    (dolist (text '("This operation was aborted"
+                    "Request cancelled"
+                    "503 Service Unavailable"))
+      (is (null
+           (cadr-cli::bug-report-hint (message text)))))
+    (is (null
+         (cadr-cli::bug-report-hint
+          (message nil :aborted))))
+    (let ((hint
+            (cadr-cli::bug-report-hint
+             (message "Unexpected internal state"))))
+      (is (and (stringp hint) (search "/bug" hint))))))
