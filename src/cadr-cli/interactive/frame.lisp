@@ -205,20 +205,23 @@
              (if overlay
                  overlay-lines
                  editor-lines))
-           (entry-content
-             (render-tui-entries
-              (tui-state-entries state)
-              width
-              :extension-host extension-host
-              :now now
-              :hide-thinking-block-p
-              (tui-state-hide-thinking-block-p state)
-              :hidden-thinking-label
-              (tui-state-hidden-thinking-label state)
-              :mermaid-mode
-              (tui-state-mermaid-mode state)
-              :code-block-indent
-              (tui-state-code-block-indent state)))
+           (entry-rendering
+             (multiple-value-list
+              (render-tui-entries
+               (tui-state-entries state)
+               width
+               :extension-host extension-host
+               :now now
+               :hide-thinking-block-p
+               (tui-state-hide-thinking-block-p state)
+               :hidden-thinking-label
+               (tui-state-hidden-thinking-label state)
+               :mermaid-mode
+               (tui-state-mermaid-mode state)
+               :code-block-indent
+               (tui-state-code-block-indent state))))
+           (entry-content (first entry-rendering))
+           (entry-hits (second entry-rendering))
            (startup-lines
              (if
                  (tui-state-tools-expanded-p state)
@@ -262,6 +265,19 @@
                 (length pending-message-lines)
                 (length status-indicator)
                 (length widget-above-lines))))
+      (setf
+       (tui-state-summary-click-ranges state)
+       (let ((entry-origin
+               (+ (length header-lines)
+                  (if startup-lines
+                      (+ 2 (length startup-lines))
+                      0))))
+         (mapcar
+          (lambda (hit)
+            (list (first hit)
+                  (+ entry-origin (second hit))
+                  (+ entry-origin (third hit))))
+          entry-hits)))
       (values
        (nconc visible
               pending-message-lines
