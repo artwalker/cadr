@@ -519,6 +519,13 @@
        ((plusp (length description)) description)
        (t nil)))))
 
+(defun autocomplete-slash-match-text (prefix item)
+  (let ((value (autocomplete-item-value item)))
+    (if (and (not (string-prefix-p "skill:" prefix))
+             (string-prefix-p "skill:" value))
+        (subseq value (length "skill:"))
+        value)))
+
 (defun autocomplete-command-suggestions
     (provider text)
   (let* ((space (position #\Space text))
@@ -532,7 +539,9 @@
                  (autocomplete-provider-command-items
                   provider)
                  prefix
-                 #'autocomplete-item-value)))
+                 (lambda (item)
+                   (autocomplete-slash-match-text
+                    prefix item)))))
           (and items
                (make-autocomplete-suggestions
                 :items items :prefix text)))

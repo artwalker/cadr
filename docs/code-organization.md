@@ -360,7 +360,7 @@ at :4. No rewrite invented. Report:
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-tui/autocomplete.lisp` | 594 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | pass · large | done | dead when gone. I0: no empty-when guard. editor-line-at indexes vector or list. | 20 |
+| `src/cadr-tui/autocomplete.lisp` | 705 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | pass · large | done | dead when gone. I0: no empty-when guard. editor-line-at indexes vector or list. | 20 |
 | `src/cadr-tui/components/image.lisp` | 40 | 1 | Render image bytes or the baseline text fallback. | pass | done | fallback-lines flet. I0: one fallback owner. | 20 |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | 45 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | pass · large | done | table widths aref. I0: no nth on width lists. | 20 |
 | `src/cadr-tui/components/select-list.lisp` | 305 | 8 | Own filterable two-column selection state, navigation, and rendering. | pass | done | clamp-select-index; height default 5. I0: one clamp owner. | 20 |

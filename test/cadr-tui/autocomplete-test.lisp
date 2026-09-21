@@ -2,6 +2,56 @@
 
 (in-suite cadr-tui-suite)
 
+(defun slash-suggestion-values (provider line)
+  (mapcar
+   #'cadr-tui:autocomplete-item-value
+   (cadr-tui:autocomplete-suggestions-items
+    (cadr-tui:autocomplete-get-suggestions
+     provider (list line) 0 (length line)))))
+
+(test autocomplete-slash-skill-query-ranks-bare-name
+  (let ((provider
+          (cadr-tui:make-autocomplete-provider
+           :commands
+           (list
+            (cadr-tui:make-autocomplete-command
+             :name "skill:deep-research"
+             :description "Multi-agent deep research")
+            (cadr-tui:make-autocomplete-command
+             :name "skill:research-idea"
+             :description
+             "Refine a raw idea into a falsifiable seed")
+            (cadr-tui:make-autocomplete-command
+             :name "skill:to-sidecar"
+             :description "Route work to a sidecar")
+            (cadr-tui:make-autocomplete-command
+             :name "model"
+             :description "Select the active model")))))
+    (let ((idea (slash-suggestion-values provider "/idea"))
+          (model-names
+            (slash-suggestion-values provider "/mod"))
+          (skill-names
+            (slash-suggestion-values provider "/skill:side")))
+      (is (string= "skill:research-idea" (first idea)))
+      (is (not (member "skill:deep-research" idea
+                       :test #'string=)))
+      (is (member "model" model-names :test #'string=))
+      (is (member "skill:to-sidecar" skill-names
+                  :test #'string=)))))
+
+(test autocomplete-slash-exact-bare-skill-name-ranks-first
+  (let* ((provider
+           (cadr-tui:make-autocomplete-provider
+            :commands
+            (list
+             (cadr-tui:make-autocomplete-command
+              :name "skill:ideal")
+             (cadr-tui:make-autocomplete-command
+              :name "skill:idea"))))
+         (names
+           (slash-suggestion-values provider "/idea")))
+    (is (string= "skill:idea" (first names)))))
+
 (defun with-autocomplete-tree (function)
   (let* ((root
            (merge-pathnames
