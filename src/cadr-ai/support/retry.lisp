@@ -102,11 +102,35 @@
          (text-matches-any-retry-pattern-p
           text +retryable-assistant-error-patterns+))))
 
+(defconstant +default-max-agent-retry-delay-ms+ 60000)
+
 (defstruct retry-policy
   (enabled-p t :type boolean)
   (max-retries 3 :type (integer 0 *))
   (base-delay-milliseconds 1000
-                           :type (integer 0 *)))
+                           :type (integer 0 *))
+  (max-agent-delay-milliseconds
+   +default-max-agent-retry-delay-ms+
+   :type (integer 0 *)))
+
+(defun retry-delay-milliseconds
+    (base-milliseconds attempt
+     &optional
+       (max-agent-delay-milliseconds
+        +default-max-agent-retry-delay-ms+))
+  (let ((delay
+          (* base-milliseconds
+             (expt 2 (max 0 (1- attempt))))))
+    (min delay max-agent-delay-milliseconds)))
+
+(defun retry-delay-seconds
+    (base-seconds attempt
+     &optional (max-agent-delay-seconds 60))
+  (/ (retry-delay-milliseconds
+      (round (* base-seconds 1000))
+      attempt
+      (round (* max-agent-delay-seconds 1000)))
+     1000d0))
 
 (defun retry-assistant-call
     (produce policy
@@ -150,8 +174,11 @@
                  (or (assistant-message-error-message message)
                      "Unknown error"))
            (let ((delay
-                   (* (retry-policy-base-delay-milliseconds policy)
-                      (expt 2 (1- attempt)))))
+                   (retry-delay-milliseconds
+                    (retry-policy-base-delay-milliseconds policy)
+                    attempt
+                    (retry-policy-max-agent-delay-milliseconds
+                     policy))))
              (flet ((aborted-message ()
                       (when on-retry-finished
                         (funcall on-retry-finished

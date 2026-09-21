@@ -285,6 +285,10 @@
    #:retry-policy-enabled-p
    #:retry-policy-max-retries
    #:retry-policy-base-delay-milliseconds
+   #:retry-policy-max-agent-delay-milliseconds
+   #:+default-max-agent-retry-delay-ms+
+   #:retry-delay-milliseconds
+   #:retry-delay-seconds
    #:retryable-assistant-error-p
    #:retry-assistant-call
    #:grammar-json-buffer

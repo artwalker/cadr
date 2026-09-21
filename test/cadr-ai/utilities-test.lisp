@@ -86,6 +86,39 @@ second" (cadr-ai:content-text content)))
              (:finished t 2))
            (nreverse events))))))
 
+(test agent-retry-delay-caps-at-max-agent-delay-ms
+  ;; Baseline packages/ai/src/utils/retry.ts retryDelayMs (upstream 8826).
+  (is (= 60000
+         (cadr-ai:retry-delay-milliseconds 2000 6)))
+  (is (= 5000
+         (cadr-ai:retry-delay-milliseconds 2000 5 5000)))
+  (is (= 0
+         (cadr-ai:retry-delay-milliseconds 2000 5 0)))
+  (is (= 60d0
+         (cadr-ai:retry-delay-seconds 2 6)))
+  (is (= 5d0
+         (cadr-ai:retry-delay-seconds 2 5 5)))
+  (is (= 0d0
+         (cadr-ai:retry-delay-seconds 2 5 0)))
+  (let ((scheduled nil))
+    (cadr-ai:retry-assistant-call
+     (let ((calls 0))
+       (lambda ()
+         (incf calls)
+         (if (< calls 2)
+             (utility-error-message "terminated")
+             (utility-error-message nil :stop))))
+     (cadr-ai:make-retry-policy
+      :max-retries 3
+      :base-delay-milliseconds 2000
+      :max-agent-delay-milliseconds 15)
+     :sleep-function (lambda (seconds) (declare (ignore seconds)))
+     :on-retry-scheduled
+     (lambda (attempt maximum delay text)
+       (declare (ignore attempt maximum text))
+       (setf scheduled delay)))
+    (is (= 15 scheduled))))
+
 (test goal17-retry-classifier-matches-the-baseline-transient-pattern-matrix
   (dolist
       (text
