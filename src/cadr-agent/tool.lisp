@@ -82,6 +82,7 @@
                          extension-host
                          session
                          (stream-function #'cadr-ai:stream-chat)
+                         summarization-auth-function
                          on-event
                          (max-turns 100)
                          (auto-compact-p t)
@@ -112,6 +113,8 @@
            :extension-host extension-host
            :session session
            :stream-function stream-function
+           :summarization-auth-function
+           summarization-auth-function
            :on-event on-event
            :max-turns max-turns
            :auto-compact-p auto-compact-p

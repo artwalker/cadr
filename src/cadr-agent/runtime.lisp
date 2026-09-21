@@ -38,6 +38,7 @@
   extension-host
   session
   stream-function
+  summarization-auth-function
   on-event
   (max-turns 100 :type (integer 1 *))
   (auto-compact-p t :type boolean)

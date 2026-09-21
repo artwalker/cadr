@@ -678,6 +678,38 @@ Be concise. Focus on what's needed to understand the kept suffix.")
          (getf file-ops :modified-files)))
        usage))))
 
+(defun compaction-aborted-outcome-p
+    (signal cancelled-by-extension-p)
+  ;; Baseline catch: aborted = signal.aborted || cancelledByExtension.
+  (or cancelled-by-extension-p
+      (and signal
+           (extension-cancellation-aborted-p signal))))
+
+(defun resolve-summarization-request-auth
+    (agent model signal)
+  ;; Baseline _getSummarizationRequestAuth(model, signal). Auth waits must
+  ;; observe the compaction cancellation signal (#9777).
+  (let ((function
+          (agent-summarization-auth-function agent)))
+    (when function
+      (funcall function agent model signal))))
+
+(defun emit-compaction-aborted-end
+    (agent reason &key from-extension-p will-retry-p)
+  (emit-agent-event
+   agent :compaction-end
+   :reason reason
+   :result nil
+   :aborted t
+   :will-retry nil)
+  (emit-session-compact-failed
+   agent
+   :reason reason
+   :aborted t
+   :will-retry-p nil
+   :from-extension-p from-extension-p)
+  nil)
+
 (defun %compact-agent
     (agent &key force-p custom-instructions
                 (reason :manual) will-retry-p)
@@ -761,152 +793,162 @@ Be concise. Focus on what's needed to understand the kept suffix.")
           (unwind-protect
                (progn
                  (emit-agent-event
-           agent :compaction-start
-           :reason reason)
-                 (let ((from-extension-p nil))
-            (handler-case
-                (let* ((before
-                         (run-compaction-lifecycle
-                          agent :session-before-compact
-                          (list
-                           :preparation preparation
-                           :branch-entries (copy-list entries)
-                           :custom-instructions custom-instructions
-                           :reason reason
-                           :will-retry-p (not (null will-retry-p))
-                           :signal signal)))
-                       (extension-compaction
-                         (and before
-                              (getf before :compaction))))
-                  (when (or (getf before :cancel-p)
-                            (extension-cancellation-aborted-p signal))
-                    (emit-agent-event
-                     agent :compaction-end
-                     :reason reason
-                     :result nil
-                     :aborted t
-                     :will-retry nil)
-                    (emit-session-compact-failed
-                     agent
-                     :reason reason
-                     :aborted t
-                     :will-retry-p nil
-                     :from-extension-p nil)
-                    (return-from %compact-agent nil))
-                  (unless (usable-extension-compaction-p
-                           extension-compaction)
-                    (setf extension-compaction nil))
-                  (setf from-extension-p (not (null extension-compaction)))
-                  (let* (
-                       (generated
-                         (unless from-extension-p
-                           (multiple-value-list
-                            (compact-from-preparation
-                             agent preparation
-                             :custom-instructions custom-instructions
-                             :reason reason))))
-                       (summary
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :summary (first generated)))
-                       (first-kept-entry-id
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :first-kept-entry-id
-                          (session-entry-id kept-entry)))
-                       (effective-tokens-before
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :tokens-before tokens-before))
-                       (usage
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :usage (second generated)))
-                       (details
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :details
-                          (getf preparation :file-ops))))
-                    (when
-                        (extension-cancellation-aborted-p signal)
-                      (emit-agent-event
-                       agent :compaction-end
-                       :reason reason
-                       :result nil
-                       :aborted t
-                       :will-retry nil)
-                      (emit-session-compact-failed
-                       agent
-                       :reason reason
-                       :aborted t
-                       :will-retry-p nil
-                       :from-extension-p from-extension-p)
-                      (return-from %compact-agent nil))
-                (assert-agent-not-shutdown agent)
-                (let* ((entry-id
-                         (session-append-compaction
-                          session summary source-ids
-                          first-kept-entry-id
-                          effective-tokens-before
-                          :details details
-                          :usage usage
-                          :from-hook-p from-extension-p))
-                       (entry
-                         (gethash entry-id
-                                  (session-by-id session))))
-                  (run-compaction-lifecycle
-                   agent :session-compact
-                   (list
-                    :compaction-entry entry
-                    :from-extension-p from-extension-p
-                    :reason reason
-                    :will-retry-p
-                    (not (null will-retry-p)))))
-                (setf (agent-messages agent)
-                      (session-messages session))
-                (let ((result
-                        (list
-                         :summary summary
-                         :first-kept-entry-id first-kept-entry-id
-                         :tokens-before effective-tokens-before
-                         :estimated-tokens-after
-                         (session-context-estimated-tokens session)
-                         :usage usage
-                         :details details)))
-                  (emit-agent-event
-                   agent :compaction-end
-                   :reason reason
-                   :result result
-                   :aborted nil
-                   :will-retry (not (null will-retry-p)))
-                  result)))
-            (error (condition)
-                (let ((error-message
-                        (format
-                         nil
-                         (case reason
-                           (:overflow
-                            "Context overflow recovery failed: ~A")
-                           (:threshold
-                            "Auto-compaction failed: ~A")
-                           (otherwise
-                            "Compaction failed: ~A"))
-                         (princ-to-string condition))))
-                  (emit-agent-event
-                   agent :compaction-end
-                   :reason reason
-                   :result nil
-                   :aborted nil
-                   :will-retry nil
-                   :error-message error-message)
-                  (emit-session-compact-failed
-                   agent
-                   :reason reason
-                   :error-message error-message
-                   :aborted nil
-                   :will-retry-p nil
-                   :from-extension-p from-extension-p)
-                  nil)))))
+                  agent :compaction-start
+                  :reason reason)
+                 (let ((from-extension-p nil)
+                       (cancelled-by-extension-p nil))
+                   (handler-case
+                       (progn
+                         ;; Sync abort from compaction_start (#9777).
+                         (when (extension-cancellation-aborted-p
+                                signal)
+                           (return-from %compact-agent
+                             (emit-compaction-aborted-end
+                              agent reason)))
+                         (resolve-summarization-request-auth
+                          agent model signal)
+                         (when (extension-cancellation-aborted-p
+                                signal)
+                           (return-from %compact-agent
+                             (emit-compaction-aborted-end
+                              agent reason)))
+                         (let* ((before
+                                  (run-compaction-lifecycle
+                                   agent :session-before-compact
+                                   (list
+                                    :preparation preparation
+                                    :branch-entries (copy-list entries)
+                                    :custom-instructions custom-instructions
+                                    :reason reason
+                                    :will-retry-p (not (null will-retry-p))
+                                    :signal signal)))
+                                (extension-compaction
+                                  (and before
+                                       (getf before :compaction))))
+                           (when (getf before :cancel-p)
+                             (setf cancelled-by-extension-p t))
+                           (when (or cancelled-by-extension-p
+                                     (extension-cancellation-aborted-p
+                                      signal))
+                             (return-from %compact-agent
+                               (emit-compaction-aborted-end
+                                agent reason
+                                :from-extension-p nil)))
+                           (unless (usable-extension-compaction-p
+                                    extension-compaction)
+                             (setf extension-compaction nil))
+                           (setf from-extension-p
+                                 (not (null extension-compaction)))
+                           (let* ((generated
+                                    (unless from-extension-p
+                                      (multiple-value-list
+                                       (compact-from-preparation
+                                        agent preparation
+                                        :custom-instructions
+                                        custom-instructions
+                                        :reason reason))))
+                                  (summary
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :summary (first generated)))
+                                  (first-kept-entry-id
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :first-kept-entry-id
+                                     (session-entry-id kept-entry)))
+                                  (effective-tokens-before
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :tokens-before tokens-before))
+                                  (usage
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :usage (second generated)))
+                                  (details
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :details
+                                     (getf preparation :file-ops))))
+                             (when
+                                 (extension-cancellation-aborted-p signal)
+                               (return-from %compact-agent
+                                 (emit-compaction-aborted-end
+                                  agent reason
+                                  :from-extension-p from-extension-p)))
+                             (assert-agent-not-shutdown agent)
+                             (let* ((entry-id
+                                      (session-append-compaction
+                                       session summary source-ids
+                                       first-kept-entry-id
+                                       effective-tokens-before
+                                       :details details
+                                       :usage usage
+                                       :from-hook-p from-extension-p))
+                                    (entry
+                                      (gethash entry-id
+                                               (session-by-id session))))
+                               (run-compaction-lifecycle
+                                agent :session-compact
+                                (list
+                                 :compaction-entry entry
+                                 :from-extension-p from-extension-p
+                                 :reason reason
+                                 :will-retry-p
+                                 (not (null will-retry-p))))
+                               (setf (agent-messages agent)
+                                     (session-messages session))
+                               (let ((result
+                                       (list
+                                        :summary summary
+                                        :first-kept-entry-id
+                                        first-kept-entry-id
+                                        :tokens-before
+                                        effective-tokens-before
+                                        :estimated-tokens-after
+                                        (session-context-estimated-tokens
+                                         session)
+                                        :usage usage
+                                        :details details)))
+                                 (emit-agent-event
+                                  agent :compaction-end
+                                  :reason reason
+                                  :result result
+                                  :aborted nil
+                                  :will-retry
+                                  (not (null will-retry-p)))
+                                 result)))))
+                     (error (condition)
+                       (let* ((aborted-p
+                                (compaction-aborted-outcome-p
+                                 signal
+                                 cancelled-by-extension-p))
+                              (error-message
+                                (unless aborted-p
+                                  (format
+                                   nil
+                                   (case reason
+                                     (:overflow
+                                      "Context overflow recovery failed: ~A")
+                                     (:threshold
+                                      "Auto-compaction failed: ~A")
+                                     (otherwise
+                                      "Compaction failed: ~A"))
+                                   (princ-to-string condition)))))
+                         (emit-agent-event
+                          agent :compaction-end
+                          :reason reason
+                          :result nil
+                          :aborted aborted-p
+                          :will-retry nil
+                          :error-message error-message)
+                         (emit-session-compact-failed
+                          agent
+                          :reason reason
+                          :error-message error-message
+                          :aborted aborted-p
+                          :will-retry-p nil
+                          :from-extension-p from-extension-p)
+                         nil)))))
             (sb-thread:with-mutex
                 ((agent-state-lock agent))
               (when (eq (agent-compaction-cancellation agent)

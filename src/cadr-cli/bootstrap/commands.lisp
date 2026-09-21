@@ -819,6 +819,17 @@
                 (settings-http-proxy settings-manager)))
              (lambda ()
                (settings-retry-settings settings-manager)))
+            :summarization-auth-function
+            (lambda (agent model signal)
+              (declare (ignore agent))
+              (when model
+                (provider-config-for-model
+                 model-registry model
+                 :allow-missing-auth-p t
+                 :abort-p
+                 (lambda ()
+                   (cadr-agent:extension-cancellation-aborted-p
+                    signal)))))
             :session session
             :auto-retry-p
             (getf retry-settings :enabled-p)

@@ -471,6 +471,16 @@
                   (sdk-settings-http-proxy settings)))
                (lambda ()
                  (sdk-settings-retry-settings settings)))
+              :summarization-auth-function
+              (lambda (agent model signal)
+                (declare (ignore agent))
+                (when model
+                  (sdk-model-runtime-auth
+                   runtime model
+                   :abort-p
+                   (lambda ()
+                     (cadr-agent:extension-cancellation-aborted-p
+                      signal)))))
               :auto-retry-p
               (getf retry-settings :enabled-p)
               :auto-retry-max-attempts
