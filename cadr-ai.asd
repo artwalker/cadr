@@ -130,6 +130,7 @@
                              (:file "auth-test")
                              (:file "goal12-capabilities-test")
                              (:file "goal12-provider-capabilities-test")
+                             (:file "goal24-fireworks-deferred-tools-test")
                              (:file "goal14-provider-organization-test")
                              (:file "goal12-auth-test")
                              (:file "goal18-auth-test")
