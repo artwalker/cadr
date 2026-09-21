@@ -148,6 +148,18 @@ interactive-mode.ts:5956-5960).")
    suspend-function)
   t)
 
+(defun interactive-copy-selection (text &rest copy-args)
+  ;; pi@13cbf77df tui-alt-screen.ts copySelection: true on success,
+  ;; a string names the failed backend, anything else → generic
+  ;; "Copy failed" in the TUI flash helper.
+  (handler-case
+      (progn
+        (apply #'copy-to-clipboard text copy-args)
+        t)
+    (cadr-ai:configuration-error (condition)
+      (cadr-ai:cadr-error-message condition))
+    (condition () nil)))
+
 (defun make-interactive-renderer
     (terminal alt-p
      &key show-hardware-cursor-p
@@ -165,13 +177,7 @@ interactive-mode.ts:5956-5960).")
    :exit-output-mode exit-output-mode
    :copy-on-select-p copy-on-select-p
    :copy-selection-function
-   ;; v0.86.1 tui-alt-screen.ts copySelection: the native/platform
-   ;; clipboard with a verified success path, OSC 52 as its own
-   ;; fallback inside copy-to-clipboard.
-   (lambda (text)
-     (handler-case
-         (progn (copy-to-clipboard text) t)
-       (condition () nil)))
+   #'interactive-copy-selection
    :open-url-function
    #'open-tui-url
    :scroll-to-end-indicator-function

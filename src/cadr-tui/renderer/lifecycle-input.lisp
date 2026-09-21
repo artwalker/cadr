@@ -1009,6 +1009,17 @@ word-navigation character classes, then join word runs across '-' and
 (defun renderer-has-active-selection-p (renderer)
   (not (null (renderer-active-selection-text renderer))))
 
+(defun renderer-copy-selection-flash (result)
+  ;; pi@13cbf77df tui-alt-screen.ts copyTextToClipboard: true →
+  ;; "Copied!", a string is the named backend error (5s), else
+  ;; generic "Copy failed" (5s).
+  (values
+   (cond
+     ((eq result t) "Copied!")
+     ((stringp result) result)
+     (t "Copy failed"))
+   (if (eq result t) 1000 5000)))
+
 (defun renderer-copy-selection (renderer)
   (let ((text (renderer-active-selection-text renderer)))
     (unless text
@@ -1017,12 +1028,10 @@ word-navigation character classes, then join word runs across '-' and
             (terminal-renderer-copy-selection-function
              renderer)))
       (if copier
-          ;; v0.86.1: the host clipboard path reports success; a
-          ;; bare OSC 52 write can flash "Copied!" without
-          ;; reaching the system clipboard.
-          (renderer-flash
-           renderer
-           (if (funcall copier text) "Copied!" "Copy failed"))
+          (multiple-value-bind (message duration)
+              (renderer-copy-selection-flash
+               (funcall copier text))
+            (renderer-flash renderer message duration))
           (progn
             ;; pi@13cbf77df tui-alt-screen.ts:896 — the fullscreen
             ;; copy confirmation is a flash, not a status.

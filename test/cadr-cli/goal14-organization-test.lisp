@@ -653,7 +653,9 @@
     ;; +2 builtin command conflict diagnostics.
     ;; +2 overlay input press: extension-input-dialog-handle-mouse
     ;; and runtime-auth-input-handle-mouse.
-    (is (= 325 definition-count)
+    ;; +1 Goal 24 selection-copy host: interactive-copy-selection
+    ;; (controller.lisp) returns a named configuration-error message.
+    (is (= 326 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -856,7 +858,9 @@
     ;; +4 list hover stays off the selection: centered-list-mouse,
     ;; select-list-handle-mouse, settings-list-handle-mouse,
     ;; renderer-deliver-component-mouse.
-    (is (= 349 definition-count)
+    ;; +1 Goal 24 clipboard fail-naming: renderer-copy-selection-flash
+    ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
+    (is (= 350 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

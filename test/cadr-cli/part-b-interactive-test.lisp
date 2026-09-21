@@ -1338,6 +1338,37 @@
          message))
     (is (string= "" output))))
 
+(test goal24-host-copy-selection-returns-named-backend-error
+  ;; Host copySelection contract: configuration-error → message string
+  ;; (not nil → generic "Copy failed"). Success stays T.
+  (let ((output (make-string-output-stream)))
+    (is (string=
+         "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access"
+         (cadr-cli::interactive-copy-selection
+          "hello"
+          :platform :linux
+          :x11-display-p t
+          :wsl-p nil
+          :command-runner
+          (lambda (argv input)
+            (declare (ignore argv input))
+            nil)
+          :output output)))
+    (is (string= "" (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (is (eq t
+            (cadr-cli::interactive-copy-selection
+             "hello"
+             :platform :linux
+             :x11-display-p t
+             :wsl-p nil
+             :command-runner
+             (lambda (argv input)
+               (declare (ignore argv input))
+               t)
+             :output output)))
+    (is (string= "" (get-output-stream-string output)))))
+
 (test clipboard-wsl-without-display-uses-windows-clipboard
   (with-test-directory (root)
     (let* ((temporary
