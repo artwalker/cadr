@@ -49,7 +49,7 @@
     },
     {
       "path": "packages/coding-agent/src/cli/args.ts",
-      "sha256": "f8ba813e8acb43d33b42dff087b05fa3784fc24e6428026d13abe007993bab73",
+      "sha256": "de0b21efa0cca60cd012547b3f187f2cabb6c8e8eb62c4f0e01153351b6be973",
       "kind": "parsed-source"
     },
     {
@@ -339,7 +339,7 @@
     },
     {
       "path": "packages/coding-agent/src/core/model-resolver.ts",
-      "sha256": "75fead81206126dbdfbf559746b91400cd5b70a5358a4b133e2cc0de04f1cc57",
+      "sha256": "afe357efe95ca478a600596cb93ee19938ac1ad692664fa11e27058f27ffff19",
       "kind": "parsed-source"
     },
     {
@@ -660,7 +660,7 @@
     },
     {
       "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-      "sha256": "afdbfc56c42f39349052cd5232c155cfcc41556a3ea2fa94c44c14c3a83f549a",
+      "sha256": "5cc615bf4582a8dada5ab1562d527f0f0fd52bac44a09ad28d8eab51dd6e640f",
       "kind": "parsed-source"
     },
     {
@@ -745,7 +745,7 @@
     },
     {
       "path": "packages/coding-agent/src/modes/interactive/components/extension-editor.ts",
-      "sha256": "29f5371be2530eaa121d380de3c90d6a7013a776856fdf5c3c5b49e03b6eaa18",
+      "sha256": "d41f13dfaf73596643111fac10520b190998202627c6004eb6846d42ce9d37f1",
       "kind": "parsed-source"
     },
     {
@@ -890,7 +890,7 @@
     },
     {
       "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-      "sha256": "01ebf39a2ce0b8939076fbd5cc78e9cad6f49f642a608cd3b2adb8d215e6c0f0",
+      "sha256": "598362c7f05a4840d8c7474aaf589fa2bc4bd77fbdb10410e36ba361dd6a2601",
       "kind": "parsed-source"
     },
     {
@@ -1178,12 +1178,12 @@
     },
     {
       "path": "packages/coding-agent/src/utils/clipboard-image.ts",
-      "sha256": "d38796e1f442819d55dd25da394a71c26cb536e44ffd38a914c94c3ae90f0374",
+      "sha256": "d0f228cbf7df4bd11bc0fd039c23049a8f2166b2e48a5df2e1a3e51723058904",
       "kind": "parsed-source"
     },
     {
       "path": "packages/coding-agent/src/utils/clipboard.ts",
-      "sha256": "892f019d5701c733e046306062d597698395592e093117d3541134985bdb3ec6",
+      "sha256": "1331d3b9ade0eeb3c71500eabad44f2eab52fa4c1cc5154c66cf9aec9c0c811c",
       "kind": "parsed-source"
     },
     {
@@ -1319,6 +1319,11 @@
     {
       "path": "packages/coding-agent/src/utils/windows-self-update.ts",
       "sha256": "4289579fd8219b63dbe2d01bff20dd6afb806fb8e4d14484bc911868bfd83844",
+      "kind": "parsed-source"
+    },
+    {
+      "path": "packages/coding-agent/src/utils/wsl.ts",
+      "sha256": "689ab1d024e0d7e6d956ee9040c50ca8d741627c07718bf487dfdb560985d024",
       "kind": "parsed-source"
     },
     {
@@ -1540,17 +1545,17 @@
   "unresolvedDataflow": [],
   "entries": [
     {
-      "id": "VS-7be0ba35f359a49d",
+      "id": "VS-61f3725a40a6b971",
       "site": {
         "path": "packages/coding-agent/src/cli/args.ts",
         "line": 262,
         "column": 14,
-        "endLine": 446,
+        "endLine": 447,
         "endColumn": 2,
         "start": 9089,
-        "end": 19646,
+        "end": 19702,
         "kind": "output:console.log",
-        "nodeSha256": "e4d7afd0bc7535c4e6d1b7f1365e6adb333f7c02fe3a0821d0ac4290dd0cef1e"
+        "nodeSha256": "2040bce1856ac6f0c02fd843283c22705432e5acb30d650c4d31c06a71999769"
       },
       "sink": {
         "kind": "output:console.log",
@@ -2086,13 +2091,13 @@
           ]
         },
         {
-          "id": "B-2e5f33b5d7d3",
+          "id": "B-838b294d96ea",
           "conditions": [],
           "runtimeChoices": [],
           "segments": [
             {
               "kind": "literal",
-              "text": "\n  ANTHROPIC_AUTH_TOKEN             - Anthropic bearer auth token\n  ANTHROPIC_API_KEY                - Anthropic Claude API key\n  ANTHROPIC_OAUTH_TOKEN            - Anthropic OAuth token (alternative to API key)\n  ANT_LING_API_KEY                 - Ant Ling API key\n  OPENAI_API_KEY                   - OpenAI GPT API key\n  AZURE_OPENAI_API_KEY             - Azure OpenAI API key\n  AZURE_OPENAI_BASE_URL            - Azure OpenAI/Cognitive Services base URL (e.g. https://{resource}.openai.azure.com)\n  AZURE_OPENAI_RESOURCE_NAME       - Azure OpenAI resource name (alternative to base URL)\n  AZURE_OPENAI_API_VERSION         - Azure OpenAI API version (default: v1)\n  AZURE_OPENAI_DEPLOYMENT_NAME_MAP - Azure OpenAI model=deployment map (comma-separated)\n  DEEPSEEK_API_KEY                 - DeepSeek API key\n  NVIDIA_API_KEY                   - NVIDIA NIM API key\n  GEMINI_API_KEY                   - Google Gemini API key\n  GROQ_API_KEY                     - Groq API key\n  CEREBRAS_API_KEY                 - Cerebras API key\n  XAI_API_KEY                      - xAI Grok API key\n  FIREWORKS_API_KEY                - Fireworks API key\n  TOGETHER_API_KEY                 - Together AI API key\n  BASETEN_API_KEY                  - Baseten API key\n  OPENROUTER_API_KEY               - OpenRouter API key\n  AI_GATEWAY_API_KEY               - Vercel AI Gateway API key\n  ZAI_API_KEY                      - ZAI Coding Plan API key (Global)\n  ZAI_CODING_CN_API_KEY            - ZAI Coding Plan API key (China)\n  MISTRAL_API_KEY                  - Mistral API key\n  MINIMAX_API_KEY                  - MiniMax API key\n  MOONSHOT_API_KEY                 - Moonshot AI API key\n  OPENCODE_API_KEY                 - OpenCode Zen/OpenCode Go API key\n  KIMI_API_KEY                     - Kimi For Coding API key\n  CLOUDFLARE_API_KEY               - Cloudflare API token (Workers AI and AI Gateway)\n  CLOUDFLARE_ACCOUNT_ID            - Cloudflare account id (required for both)\n  CLOUDFLARE_GATEWAY_ID            - Cloudflare AI Gateway slug (required for AI Gateway)\n  QWEN_TOKEN_PLAN_API_KEY          - Qwen Token Plan API key (international region)\n  QWEN_TOKEN_PLAN_CN_API_KEY       - Qwen Token Plan API key (China region)\n  XIAOMI_API_KEY                   - Xiaomi MiMo API key (api.xiaomimimo.com billing)\n  XIAOMI_TOKEN_PLAN_CN_API_KEY     - Xiaomi MiMo Token Plan API key (China region)\n  XIAOMI_TOKEN_PLAN_AMS_API_KEY    - Xiaomi MiMo Token Plan API key (Amsterdam region)\n  XIAOMI_TOKEN_PLAN_SGP_API_KEY    - Xiaomi MiMo Token Plan API key (Singapore region)\n  AWS_PROFILE                      - AWS profile for Amazon Bedrock\n  AWS_ACCESS_KEY_ID                - AWS access key for Amazon Bedrock\n  AWS_SECRET_ACCESS_KEY            - AWS secret key for Amazon Bedrock\n  AWS_BEARER_TOKEN_BEDROCK         - Bedrock API key (bearer token)\n  AWS_REGION                       - AWS region for Amazon Bedrock (e.g., us-east-1)\n  ",
+              "text": "\n  ANTHROPIC_AUTH_TOKEN             - Anthropic bearer auth token\n  ANTHROPIC_API_KEY                - Anthropic Claude API key\n  ANTHROPIC_OAUTH_TOKEN            - Anthropic OAuth token (alternative to API key)\n  ANT_LING_API_KEY                 - Ant Ling API key\n  OPENAI_API_KEY                   - OpenAI GPT API key\n  AZURE_OPENAI_API_KEY             - Azure OpenAI API key\n  AZURE_OPENAI_BASE_URL            - Azure OpenAI/Cognitive Services base URL (e.g. https://{resource}.openai.azure.com)\n  AZURE_OPENAI_RESOURCE_NAME       - Azure OpenAI resource name (alternative to base URL)\n  AZURE_OPENAI_API_VERSION         - Azure OpenAI API version (default: v1)\n  AZURE_OPENAI_DEPLOYMENT_NAME_MAP - Azure OpenAI model=deployment map (comma-separated)\n  DEEPSEEK_API_KEY                 - DeepSeek API key\n  NVIDIA_API_KEY                   - NVIDIA NIM API key\n  GEMINI_API_KEY                   - Google Gemini API key\n  GROQ_API_KEY                     - Groq API key\n  CEREBRAS_API_KEY                 - Cerebras API key\n  XAI_API_KEY                      - xAI Grok API key\n  FIREWORKS_API_KEY                - Fireworks API key\n  TOGETHER_API_KEY                 - Together AI API key\n  BASETEN_API_KEY                  - Baseten API key\n  OPENROUTER_API_KEY               - OpenRouter API key\n  AI_GATEWAY_API_KEY               - Vercel AI Gateway API key\n  ZAI_API_KEY                      - ZAI Coding Plan API key (Global)\n  ZAI_CODING_CN_API_KEY            - ZAI Coding Plan API key (China)\n  MISTRAL_API_KEY                  - Mistral API key\n  MINIMAX_API_KEY                  - MiniMax API key\n  MOONSHOT_API_KEY                 - Moonshot AI API key\n  OPENCODE_API_KEY                 - OpenCode Zen/OpenCode Go API key\n  KIMI_API_KEY                     - Kimi For Coding API key\n  META_API_KEY                     - Meta Model API key\n  CLOUDFLARE_API_KEY               - Cloudflare API token (Workers AI and AI Gateway)\n  CLOUDFLARE_ACCOUNT_ID            - Cloudflare account id (required for both)\n  CLOUDFLARE_GATEWAY_ID            - Cloudflare AI Gateway slug (required for AI Gateway)\n  QWEN_TOKEN_PLAN_API_KEY          - Qwen Token Plan API key (international region)\n  QWEN_TOKEN_PLAN_CN_API_KEY       - Qwen Token Plan API key (China region)\n  XIAOMI_API_KEY                   - Xiaomi MiMo API key (api.xiaomimimo.com billing)\n  XIAOMI_TOKEN_PLAN_CN_API_KEY     - Xiaomi MiMo Token Plan API key (China region)\n  XIAOMI_TOKEN_PLAN_AMS_API_KEY    - Xiaomi MiMo Token Plan API key (Amsterdam region)\n  XIAOMI_TOKEN_PLAN_SGP_API_KEY    - Xiaomi MiMo Token Plan API key (Singapore region)\n  AWS_PROFILE                      - AWS profile for Amazon Bedrock\n  AWS_ACCESS_KEY_ID                - AWS access key for Amazon Bedrock\n  AWS_SECRET_ACCESS_KEY            - AWS secret key for Amazon Bedrock\n  AWS_BEARER_TOKEN_BEDROCK         - Bedrock API key (bearer token)\n  AWS_REGION                       - AWS region for Amazon Bedrock (e.g., us-east-1)\n  ",
               "stylePath": []
             }
           ]
@@ -2878,15 +2883,15 @@
       ]
     },
     {
-      "id": "VS-f52d17c491f0530a",
+      "id": "VS-ae29703f40f28bae",
       "site": {
         "path": "packages/coding-agent/src/core/model-resolver.ts",
-        "line": 378,
+        "line": 379,
         "column": 16,
-        "endLine": 378,
+        "endLine": 379,
         "endColumn": 62,
-        "start": 12103,
-        "end": 12149,
+        "start": 12128,
+        "end": 12174,
         "kind": "output:console.warn",
         "nodeSha256": "4fa1f20cac4046a8667c5378a462611004e3b3f0c984e47ee0f3d96fd440e5fd"
       },
@@ -2912,15 +2917,15 @@
       ]
     },
     {
-      "id": "VS-e3a997d6e0d99e56",
+      "id": "VS-703c96c5f1d157ad",
       "site": {
         "path": "packages/coding-agent/src/core/model-resolver.ts",
-        "line": 727,
+        "line": 728,
         "column": 16,
-        "endLine": 727,
+        "endLine": 728,
         "endColumn": 77,
-        "start": 24445,
-        "end": 24506,
+        "start": 24470,
+        "end": 24531,
         "kind": "output:console.log",
         "nodeSha256": "cfd68d0f189fbf5ec417caf3dfa4d470930439a91c9713033a418e06b7e9ab49"
       },
@@ -2960,15 +2965,15 @@
       ]
     },
     {
-      "id": "VS-24b6c70082c82625",
+      "id": "VS-6b1dc2b8f04084f4",
       "site": {
         "path": "packages/coding-agent/src/core/model-resolver.ts",
-        "line": 736,
+        "line": 737,
         "column": 17,
-        "endLine": 736,
+        "endLine": 737,
         "endColumn": 111,
-        "start": 24753,
-        "end": 24847,
+        "start": 24778,
+        "end": 24872,
         "kind": "output:console.error",
         "nodeSha256": "22d7e777a4b322df2cb291d2a283e5fba55451938b9272e1a8d7b96967c556f0"
       },
@@ -3064,15 +3069,15 @@
       ]
     },
     {
-      "id": "VS-aee49da58fd9e26b",
+      "id": "VS-83d022f8ca70c89a",
       "site": {
         "path": "packages/coding-agent/src/core/model-resolver.ts",
-        "line": 742,
+        "line": 743,
         "column": 16,
-        "endLine": 742,
+        "endLine": 743,
         "endColumn": 89,
-        "start": 24970,
-        "end": 25043,
+        "start": 24995,
+        "end": 25068,
         "kind": "output:console.log",
         "nodeSha256": "4b3bafab9f63459d45af6fb2dfb5eb9b13948223121070583c7493e1ffac0aca"
       },
@@ -3112,15 +3117,15 @@
       ]
     },
     {
-      "id": "VS-98466a4b9de607b2",
+      "id": "VS-1c735a0f3a5091c9",
       "site": {
         "path": "packages/coding-agent/src/core/model-resolver.ts",
-        "line": 771,
+        "line": 772,
         "column": 16,
-        "endLine": 771,
+        "endLine": 772,
         "endColumn": 91,
-        "start": 25931,
-        "end": 26006,
+        "start": 25956,
+        "end": 26031,
         "kind": "output:console.log",
         "nodeSha256": "3cba61ebf9ccd8c6a80a56b7d78b436c02d0dd485228753e763638ea257ca7ca"
       },
@@ -9147,15 +9152,15 @@
       ]
     },
     {
-      "id": "VS-f155cec7a9f339b6",
+      "id": "VS-6fd44d5922faa248",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 51,
+        "line": 53,
         "column": 22,
-        "endLine": 51,
+        "endLine": 53,
         "endColumn": 44,
-        "start": 2232,
-        "end": 2254,
+        "start": 2337,
+        "end": 2359,
         "kind": "call:showStatus",
         "nodeSha256": "eeab51eefea9b516ab79e5270bbacb10c19ca84f85cffc5badc591d4c2ccfd47"
       },
@@ -9179,15 +9184,15 @@
       ]
     },
     {
-      "id": "VS-171fa2292353a89a",
+      "id": "VS-2cbf82d3ecae8e33",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 65,
+        "line": 67,
         "column": 50,
-        "endLine": 65,
+        "endLine": 67,
         "endColumn": 72,
-        "start": 2692,
-        "end": 2714,
+        "start": 2797,
+        "end": 2819,
         "kind": "call:showStatus",
         "nodeSha256": "eeab51eefea9b516ab79e5270bbacb10c19ca84f85cffc5badc591d4c2ccfd47"
       },
@@ -9211,15 +9216,15 @@
       ]
     },
     {
-      "id": "VS-0bb2baacac4fbbdb",
+      "id": "VS-32d2077861de6d3e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 66,
+        "line": 68,
         "column": 27,
-        "endLine": 66,
+        "endLine": 68,
         "endColumn": 87,
-        "start": 2743,
-        "end": 2803,
+        "start": 2848,
+        "end": 2908,
         "kind": "call:showError",
         "nodeSha256": "bce3fae3fa4abdcf4ab1468c90838e52ce4a020f99b81d5a948d5f096d09b453"
       },
@@ -9243,15 +9248,15 @@
       ]
     },
     {
-      "id": "VS-bb48643ef4194cc0",
+      "id": "VS-cff9e2566b204275",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 71,
+        "line": 73,
         "column": 23,
-        "endLine": 71,
+        "endLine": 73,
         "endColumn": 45,
-        "start": 2908,
-        "end": 2930,
+        "start": 3013,
+        "end": 3035,
         "kind": "call:showStatus",
         "nodeSha256": "eeab51eefea9b516ab79e5270bbacb10c19ca84f85cffc5badc591d4c2ccfd47"
       },
@@ -9275,15 +9280,15 @@
       ]
     },
     {
-      "id": "VS-14454e16eb604867",
+      "id": "VS-b1717ab072ba7d85",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 80,
+        "line": 82,
         "column": 21,
-        "endLine": 80,
+        "endLine": 82,
         "endColumn": 73,
-        "start": 3096,
-        "end": 3148,
+        "start": 3201,
+        "end": 3253,
         "kind": "call:showError",
         "nodeSha256": "3c2156d90ca7f7c40dad50245ad448cea46b761ef75cd3004412221a9787692f"
       },
@@ -9307,15 +9312,15 @@
       ]
     },
     {
-      "id": "VS-c7f30e1bef525f2d",
+      "id": "VS-9e18e03c2561ff97",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 94,
+        "line": 96,
         "column": 23,
-        "endLine": 94,
+        "endLine": 96,
         "endColumn": 45,
-        "start": 3515,
-        "end": 3537,
+        "start": 3620,
+        "end": 3642,
         "kind": "call:showStatus",
         "nodeSha256": "eeab51eefea9b516ab79e5270bbacb10c19ca84f85cffc5badc591d4c2ccfd47"
       },
@@ -9339,15 +9344,15 @@
       ]
     },
     {
-      "id": "VS-c014d27e74915c61",
+      "id": "VS-c5b28e5fb20cb452",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 183,
+        "line": 185,
         "column": 22,
-        "endLine": 183,
+        "endLine": 185,
         "endColumn": 68,
-        "start": 7033,
-        "end": 7079,
+        "start": 7138,
+        "end": 7184,
         "kind": "call:showStatus",
         "nodeSha256": "eb1b5a7dc21c94736bb1c4dbeb11f94afc4cc90a5cd45ed4b28d64f1b4bba183"
       },
@@ -9371,15 +9376,15 @@
       ]
     },
     {
-      "id": "VS-491da2ce6d479754",
+      "id": "VS-f5383008f7937966",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 188,
+        "line": 190,
         "column": 23,
-        "endLine": 188,
+        "endLine": 190,
         "endColumn": 45,
-        "start": 7217,
-        "end": 7239,
+        "start": 7322,
+        "end": 7344,
         "kind": "call:showStatus",
         "nodeSha256": "eeab51eefea9b516ab79e5270bbacb10c19ca84f85cffc5badc591d4c2ccfd47"
       },
@@ -9403,15 +9408,15 @@
       ]
     },
     {
-      "id": "VS-ad685f0608ef7f4f",
+      "id": "VS-4edb899e55d79d3c",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 200,
+        "line": 202,
         "column": 21,
-        "endLine": 200,
+        "endLine": 202,
         "endColumn": 73,
-        "start": 7597,
-        "end": 7649,
+        "start": 7702,
+        "end": 7754,
         "kind": "call:showError",
         "nodeSha256": "936ec0f9e8ad65d717f8fe8306aa737796121c457ae52954c29fd9c062522d17"
       },
@@ -9435,15 +9440,15 @@
       ]
     },
     {
-      "id": "VS-af5cbe7b9eeab6a6",
+      "id": "VS-d9d6465b2224991a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/bug-report.ts",
-        "line": 204,
+        "line": 206,
         "column": 21,
-        "endLine": 204,
+        "endLine": 206,
         "endColumn": 95,
-        "start": 7768,
-        "end": 7842,
+        "start": 7873,
+        "end": 7947,
         "kind": "call:showStatus",
         "nodeSha256": "5d87eeba0b3d713375e8a5a2a890b8c4ad518cf2e2562dc382745acbbeb1a220"
       },
@@ -10447,15 +10452,15 @@
       ]
     },
     {
-      "id": "VS-e2d0b6ae17d41262",
+      "id": "VS-38484c5b2b960c4e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/components/extension-editor.ts",
-        "line": 90,
+        "line": 99,
         "column": 26,
-        "endLine": 90,
+        "endLine": 99,
         "endColumn": 30,
-        "start": 2368,
-        "end": 2372,
+        "start": 2680,
+        "end": 2684,
         "kind": "new:Text",
         "nodeSha256": "b80e0af617d0f8ff54ab3142c34c76e83eafe75c6b2cbe87a44c56bb8505dd01"
       },
@@ -14899,15 +14904,15 @@
       ]
     },
     {
-      "id": "VS-76cca568f712caa1",
+      "id": "VS-653fc444be348b66",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 790,
+        "line": 797,
         "column": 41,
-        "endLine": 790,
+        "endLine": 797,
         "endColumn": 54,
-        "start": 30895,
-        "end": 30908,
+        "start": 30949,
+        "end": 30962,
         "kind": "new:Text",
         "nodeSha256": "c2a82eade53205fc0beae6988daaadc81fd8c1df4e984fb6ee71f7b901777455"
       },
@@ -14969,15 +14974,15 @@
       ]
     },
     {
-      "id": "VS-1d88adcacf2d5679",
+      "id": "VS-23c4ab5c78da614f",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 792,
+        "line": 799,
         "column": 41,
-        "endLine": 792,
+        "endLine": 799,
         "endColumn": 85,
-        "start": 30969,
-        "end": 31013,
+        "start": 31023,
+        "end": 31067,
         "kind": "new:Text",
         "nodeSha256": "88f63c26c63bb9388d13da77b02b7f6ffddefb0f5933d250d264cb813657b5c9"
       },
@@ -15004,15 +15009,15 @@
       ]
     },
     {
-      "id": "VS-271ea9807b4861b7",
+      "id": "VS-9681b14b734a7756",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 891,
+        "line": 898,
         "column": 16,
-        "endLine": 891,
+        "endLine": 898,
         "endColumn": 72,
-        "start": 34623,
-        "end": 34679,
+        "start": 34677,
+        "end": 34733,
         "kind": "output:console.log",
         "nodeSha256": "dcf3e5233ba087793a2709ce5bd0de675e876857c94aa59f25037781b8cb0e69"
       },
@@ -15068,15 +15073,15 @@
       ]
     },
     {
-      "id": "VS-e79b02325eb561a7",
+      "id": "VS-865f8b761d64eb9a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1044,
+        "line": 1051,
         "column": 30,
-        "endLine": 1044,
+        "endLine": 1051,
         "endColumn": 78,
-        "start": 40636,
-        "end": 40684,
+        "start": 40690,
+        "end": 40738,
         "kind": "call:setTitle",
         "nodeSha256": "c62a32f99fedaa9c1f0f0bb35b78847fae6096352e4c4cdb2fc80ef24eb4ff65"
       },
@@ -15100,15 +15105,15 @@
       ]
     },
     {
-      "id": "VS-d3e52c2c6d1f5fa6",
+      "id": "VS-da51d5693f4b1de9",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1046,
+        "line": 1053,
         "column": 30,
-        "endLine": 1046,
+        "endLine": 1053,
         "endColumn": 61,
-        "start": 40727,
-        "end": 40758,
+        "start": 40781,
+        "end": 40812,
         "kind": "call:setTitle",
         "nodeSha256": "711eef6e7266e1b06481098b208a215e28543cb1a284b708d3cb3b04e2db216a"
       },
@@ -15132,15 +15137,15 @@
       ]
     },
     {
-      "id": "VS-a36eb1239d946518",
+      "id": "VS-948baed3dd821455",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1116,
+        "line": 1123,
         "column": 21,
-        "endLine": 1116,
+        "endLine": 1123,
         "endColumn": 89,
-        "start": 42702,
-        "end": 42770,
+        "start": 42756,
+        "end": 42824,
         "kind": "call:showWarning",
         "nodeSha256": "8cce562c1c5d3eb371f6e15f2f69d39327221e431cad0b7e9b6186270d31e42a"
       },
@@ -15164,15 +15169,15 @@
       ]
     },
     {
-      "id": "VS-15cd307ef9f3bc0a",
+      "id": "VS-eec021a283be520a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1121,
+        "line": 1128,
         "column": 19,
-        "endLine": 1121,
+        "endLine": 1128,
         "endColumn": 58,
-        "start": 42885,
-        "end": 42924,
+        "start": 42939,
+        "end": 42978,
         "kind": "call:showError",
         "nodeSha256": "b2b73d5732d25ce2ac10d2c307e13ebff0118f72a76fb32c75b5688d404e4397"
       },
@@ -15196,15 +15201,15 @@
       ]
     },
     {
-      "id": "VS-0b61797496e58e0a",
+      "id": "VS-c44f0fe5af128e41",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1132,
+        "line": 1139,
         "column": 5,
-        "endLine": 1132,
+        "endLine": 1139,
         "endColumn": 126,
-        "start": 43149,
-        "end": 43270,
+        "start": 43203,
+        "end": 43324,
         "kind": "call:showWarning",
         "nodeSha256": "e964d4b052667667b8d07728051e63aeb1d8c3fdafc08d6c5c8761ba65fa7f00"
       },
@@ -15252,15 +15257,15 @@
       ]
     },
     {
-      "id": "VS-31f1d62fec78d764",
+      "id": "VS-036f496d5b37163a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1144,
+        "line": 1151,
         "column": 20,
-        "endLine": 1144,
+        "endLine": 1151,
         "endColumn": 32,
-        "start": 43617,
-        "end": 43629,
+        "start": 43671,
+        "end": 43683,
         "kind": "call:showError",
         "nodeSha256": "1d7f81f3d2a1a33b38fde279ca4c2394b1e467a03141b4981d1c9a9f1fab6d9b"
       },
@@ -15284,15 +15289,15 @@
       ]
     },
     {
-      "id": "VS-0b9392f96f5a8865",
+      "id": "VS-c818dcf6fc99c672",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1154,
+        "line": 1161,
         "column": 21,
-        "endLine": 1154,
+        "endLine": 1161,
         "endColumn": 33,
-        "start": 43906,
-        "end": 43918,
+        "start": 43960,
+        "end": 43972,
         "kind": "call:showError",
         "nodeSha256": "1d7f81f3d2a1a33b38fde279ca4c2394b1e467a03141b4981d1c9a9f1fab6d9b"
       },
@@ -15316,15 +15321,15 @@
       ]
     },
     {
-      "id": "VS-125b9c3cf147ff93",
+      "id": "VS-e2b30e4e42795e3d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1166,
+        "line": 1173,
         "column": 20,
-        "endLine": 1166,
+        "endLine": 1173,
         "endColumn": 32,
-        "start": 44221,
-        "end": 44233,
+        "start": 44275,
+        "end": 44287,
         "kind": "call:showError",
         "nodeSha256": "1d7f81f3d2a1a33b38fde279ca4c2394b1e467a03141b4981d1c9a9f1fab6d9b"
       },
@@ -15348,15 +15353,15 @@
       ]
     },
     {
-      "id": "VS-2a7917dc4ea10a3d",
+      "id": "VS-2a644c7d9391f875",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1759,
+        "line": 1766,
         "column": 22,
-        "endLine": 1759,
+        "endLine": 1766,
         "endColumn": 31,
-        "start": 63624,
-        "end": 63633,
+        "start": 63678,
+        "end": 63687,
         "kind": "call:addLoadedSection",
         "nodeSha256": "045c2341d1c0fec237488ff711e7463038fef020998ef9fe5e973aa0158894cd"
       },
@@ -15380,15 +15385,15 @@
       ]
     },
     {
-      "id": "VS-74db609dda4595a6",
+      "id": "VS-39983f3ad9699013",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1772,
+        "line": 1779,
         "column": 22,
-        "endLine": 1772,
+        "endLine": 1779,
         "endColumn": 30,
-        "start": 64187,
-        "end": 64195,
+        "start": 64241,
+        "end": 64249,
         "kind": "call:addLoadedSection",
         "nodeSha256": "9ef55360356880caebb49be5ba400713dd0eeac2508bc992f99f869a3a07255d"
       },
@@ -15412,15 +15417,15 @@
       ]
     },
     {
-      "id": "VS-72d1634adb065c5f",
+      "id": "VS-b337cd56bb98d8f4",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1792,
+        "line": 1799,
         "column": 22,
-        "endLine": 1792,
+        "endLine": 1799,
         "endColumn": 31,
-        "start": 65074,
-        "end": 65083,
+        "start": 65128,
+        "end": 65137,
         "kind": "call:addLoadedSection",
         "nodeSha256": "1e7282414cd2d2db3bd83babc62e10dc07e55ad813e7e67ea101e0179ec0acf3"
       },
@@ -15444,15 +15449,15 @@
       ]
     },
     {
-      "id": "VS-7757980fa2383761",
+      "id": "VS-19b4e44410657a4a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1803,
+        "line": 1810,
         "column": 22,
-        "endLine": 1803,
+        "endLine": 1810,
         "endColumn": 34,
-        "start": 65580,
-        "end": 65592,
+        "start": 65634,
+        "end": 65646,
         "kind": "call:addLoadedSection",
         "nodeSha256": "e2053fc07ecfd03162a4a046094f3cd2afbaf2a4633ebfc828099f474e7dc856"
       },
@@ -15476,15 +15481,15 @@
       ]
     },
     {
-      "id": "VS-3a5d683ccb580b71",
+      "id": "VS-7cad1bdeb61576b3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1826,
+        "line": 1833,
         "column": 22,
-        "endLine": 1826,
+        "endLine": 1833,
         "endColumn": 30,
-        "start": 66454,
-        "end": 66462,
+        "start": 66508,
+        "end": 66516,
         "kind": "call:addLoadedSection",
         "nodeSha256": "d7972c9e7dd0e731debb0332c47f84df67625e88f77f68c564e51c51afe7161c"
       },
@@ -15508,15 +15513,15 @@
       ]
     },
     {
-      "id": "VS-719bd2e9925ad51b",
+      "id": "VS-495f67f10b6b4b85",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1835,
+        "line": 1842,
         "column": 15,
-        "endLine": 1835,
+        "endLine": 1842,
         "endColumn": 77,
-        "start": 66759,
-        "end": 66821,
+        "start": 66813,
+        "end": 66875,
         "kind": "new:Text",
         "nodeSha256": "f8b643bfdef0ef527d02c6d5f396e5a70f245849a19ff87f423d325f17bb43d8"
       },
@@ -15554,15 +15559,15 @@
       ]
     },
     {
-      "id": "VS-f24bd919c65cf516",
+      "id": "VS-44a9ab4472eb3f67",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1844,
+        "line": 1851,
         "column": 15,
-        "endLine": 1844,
+        "endLine": 1851,
         "endColumn": 78,
-        "start": 67136,
-        "end": 67199,
+        "start": 67190,
+        "end": 67253,
         "kind": "new:Text",
         "nodeSha256": "5bf2af726eb614df6aa9f6fdb5495c3839a51fc42daf919bb296900fbcf2b32e"
       },
@@ -15600,15 +15605,15 @@
       ]
     },
     {
-      "id": "VS-ea1c66d4633f0393",
+      "id": "VS-56f3424fe7698f02",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1867,
+        "line": 1874,
         "column": 15,
-        "endLine": 1867,
+        "endLine": 1874,
         "endColumn": 78,
-        "start": 68169,
-        "end": 68232,
+        "start": 68223,
+        "end": 68286,
         "kind": "new:Text",
         "nodeSha256": "a485bda11edc5027e4cf7e9a6dcdaebef0198976103cea241c1c15bf66d91a49"
       },
@@ -15646,15 +15651,15 @@
       ]
     },
     {
-      "id": "VS-02842caa1008f028",
+      "id": "VS-84cc72f9f6fde52d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1876,
+        "line": 1883,
         "column": 15,
-        "endLine": 1876,
+        "endLine": 1883,
         "endColumn": 77,
-        "start": 68543,
-        "end": 68605,
+        "start": 68597,
+        "end": 68659,
         "kind": "new:Text",
         "nodeSha256": "4cb81d61ab40cb22cd2f964e2b4af0b12a5cb3ef5eda60aa5fdd3d32fec3b5d6"
       },
@@ -15692,15 +15697,15 @@
       ]
     },
     {
-      "id": "VS-6f882500d8baa798",
+      "id": "VS-32da850f2d286bbe",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1909,
+        "line": 1916,
         "column": 24,
-        "endLine": 1909,
+        "endLine": 1916,
         "endColumn": 47,
-        "start": 69608,
-        "end": 69631,
+        "start": 69662,
+        "end": 69685,
         "kind": "call:showStatus",
         "nodeSha256": "67a6a043d1ae2eeda62e2d69e6ba66686966f121a40c7f61da207f200c0580d3"
       },
@@ -15724,15 +15729,15 @@
       ]
     },
     {
-      "id": "VS-d4a374bebf48f81f",
+      "id": "VS-fe052a3b9251797d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 1932,
+        "line": 1939,
         "column": 22,
-        "endLine": 1932,
+        "endLine": 1939,
         "endColumn": 51,
-        "start": 70386,
-        "end": 70415,
+        "start": 70440,
+        "end": 70469,
         "kind": "call:showStatus",
         "nodeSha256": "fc91595ca3ee795b2ec4f360891f640543483b813e82cf4e803a3fcece83962f"
       },
@@ -15756,15 +15761,15 @@
       ]
     },
     {
-      "id": "VS-6cc625b73be0326a",
+      "id": "VS-00473e62387556e9",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2024,
+        "line": 2031,
         "column": 18,
-        "endLine": 2024,
+        "endLine": 2031,
         "endColumn": 41,
-        "start": 73613,
-        "end": 73636,
+        "start": 73667,
+        "end": 73690,
         "kind": "call:showError",
         "nodeSha256": "845bfee7e22c908e1212611d12f909ccf5f6f7f5540e2821819a4e3fa5dfcecd"
       },
@@ -15788,15 +15793,15 @@
       ]
     },
     {
-      "id": "VS-9645646edab85779",
+      "id": "VS-5e689cec268ba6e7",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2051,
+        "line": 2058,
         "column": 10,
-        "endLine": 2051,
+        "endLine": 2058,
         "endColumn": 99,
-        "start": 74465,
-        "end": 74554,
+        "start": 74519,
+        "end": 74608,
         "kind": "typed-string-producer-return",
         "nodeSha256": "69481f28615db5c0a51f17bfd29b3563cf38d4276ca6eb28bd14009fe11c0d50"
       },
@@ -15868,15 +15873,15 @@
       ]
     },
     {
-      "id": "VS-40b6a1bc0e19ee8e",
+      "id": "VS-799fedccec9e39b1",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2059,
+        "line": 2066,
         "column": 5,
-        "endLine": 2059,
+        "endLine": 2066,
         "endColumn": 102,
-        "start": 74717,
-        "end": 74814,
+        "start": 74771,
+        "end": 74868,
         "kind": "new:Text",
         "nodeSha256": "7961cc0534d893444247068984e4285bf591a2277fb378b70ec9eb1ac54d3472"
       },
@@ -15916,15 +15921,15 @@
       ]
     },
     {
-      "id": "VS-deee37a648e2fc6e",
+      "id": "VS-d16714a4427eaa22",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2143,
+        "line": 2156,
         "column": 22,
-        "endLine": 2143,
+        "endLine": 2156,
         "endColumn": 99,
-        "start": 77726,
-        "end": 77803,
+        "start": 78049,
+        "end": 78126,
         "kind": "call:showError",
         "nodeSha256": "f89db9339064695528d313224a81c3c0b4aee5aac14cb9eaf3c867ced6ca1ce1"
       },
@@ -15948,15 +15953,15 @@
       ]
     },
     {
-      "id": "VS-db7761c2e37fad4e",
+      "id": "VS-fe7ca8018d5a803e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2282,
+        "line": 2295,
         "column": 33,
-        "endLine": 2282,
+        "endLine": 2295,
         "endColumn": 76,
-        "start": 82046,
-        "end": 82089,
+        "start": 82369,
+        "end": 82412,
         "kind": "new:Text",
         "nodeSha256": "ddf78de494a4ae58265995cb92d7a5a920d7700435b5827460e44fb65f431c07"
       },
@@ -15982,15 +15987,15 @@
       ]
     },
     {
-      "id": "VS-85dbcb55555e7406",
+      "id": "VS-7f0b6b44319b3c0d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2334,
+        "line": 2347,
         "column": 5,
-        "endLine": 2334,
+        "endLine": 2347,
         "endColumn": 79,
-        "start": 83615,
-        "end": 83689,
+        "start": 83938,
+        "end": 84012,
         "kind": "call:setMessage",
         "nodeSha256": "eeee465bc4cacca23f3a013de6f3738687c4870c4d89a9ede34d533dd26d57fd"
       },
@@ -16038,15 +16043,15 @@
       ]
     },
     {
-      "id": "VS-1c84d883bc59d57a",
+      "id": "VS-3f7ce5ad5dd9f4fb",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2499,
+        "line": 2512,
         "column": 44,
-        "endLine": 2499,
+        "endLine": 2512,
         "endColumn": 81,
-        "start": 88789,
-        "end": 88826,
+        "start": 89112,
+        "end": 89149,
         "kind": "call:setMessage",
         "nodeSha256": "6a0cec729537527286f079119b6a468f403a477901cba965b70daf0165de818b"
       },
@@ -16070,15 +16075,15 @@
       ]
     },
     {
-      "id": "VS-318e8475e9526c05",
+      "id": "VS-dec1afaff0f06152",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2606,
+        "line": 2619,
         "column": 51,
-        "endLine": 2606,
+        "endLine": 2619,
         "endColumn": 73,
-        "start": 92298,
-        "end": 92320,
+        "start": 92621,
+        "end": 92643,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "3adaaa6d3bfa62c632e349410895f29bbb4f0e3be8fd08e06377685ae5d074f1"
       },
@@ -16102,15 +16107,15 @@
       ]
     },
     {
-      "id": "VS-06069020ee63ad63",
+      "id": "VS-66d75ca4b60399f5",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2606,
+        "line": 2619,
         "column": 76,
-        "endLine": 2606,
+        "endLine": 2619,
         "endColumn": 81,
-        "start": 92323,
-        "end": 92328,
+        "start": 92646,
+        "end": 92651,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "184fda5c980b9d9cb375f42a528817c6235fbd4f79775a8018fae5afcbdf2a63"
       },
@@ -16134,15 +16139,15 @@
       ]
     },
     {
-      "id": "VS-bcda4378bd3f8b81",
+      "id": "VS-bd9ecda2fcc87258",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2606,
+        "line": 2619,
         "column": 83,
-        "endLine": 2606,
+        "endLine": 2619,
         "endColumn": 87,
-        "start": 92330,
-        "end": 92334,
+        "start": 92653,
+        "end": 92657,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "b2cbc4e2e5545a6c43f6f8cc8f0e4766773fa6c83d238076313b6fa1e349caf6"
       },
@@ -16166,15 +16171,15 @@
       ]
     },
     {
-      "id": "VS-fd040e2a295cd6ef",
+      "id": "VS-271f4a8e7baecb99",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2612,
+        "line": 2625,
         "column": 4,
-        "endLine": 2612,
+        "endLine": 2625,
         "endColumn": 27,
-        "start": 92535,
-        "end": 92558,
+        "start": 92858,
+        "end": 92881,
         "kind": "call:showExtensionConfirm",
         "nodeSha256": "8bb72cb7f7c9aa817feb896f4a8d734ef572bcff3189c3ec8b370f67874efab0"
       },
@@ -16198,15 +16203,15 @@
       ]
     },
     {
-      "id": "VS-875a84c0210bd89d",
+      "id": "VS-caddebde55da9359",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 2894,
+        "line": 2907,
         "column": 30,
-        "endLine": 2894,
+        "endLine": 2907,
         "endColumn": 57,
-        "start": 101028,
-        "end": 101055,
+        "start": 101351,
+        "end": 101378,
         "kind": "new:Text",
         "nodeSha256": "45235cc1176ab901e12ccb71cbb65b69271c0e199de2d8b53c4a6a9ad04c9e34"
       },
@@ -16246,15 +16251,15 @@
       ]
     },
     {
-      "id": "VS-243c072024319ee8",
+      "id": "VS-482e042ee7e37b7b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3026,
+        "line": 3039,
         "column": 19,
-        "endLine": 3026,
+        "endLine": 3039,
         "endColumn": 49,
-        "start": 106106,
-        "end": 106136,
+        "start": 106429,
+        "end": 106459,
         "kind": "call:showStatus",
         "nodeSha256": "a648c01b9f33b22de05c070a490898aaab536a22f569a745760abb7c5c60ffd7"
       },
@@ -16278,15 +16283,15 @@
       ]
     },
     {
-      "id": "VS-624e83d8eb7f33a7",
+      "id": "VS-16a211abe9e332f3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3182,
+        "line": 3195,
         "column": 24,
-        "endLine": 3182,
+        "endLine": 3195,
         "endColumn": 90,
-        "start": 110321,
-        "end": 110387,
+        "start": 110644,
+        "end": 110710,
         "kind": "call:showWarning",
         "nodeSha256": "567911b5751986157c3ca19304ad5b1896aa5ea02d05b1eb5da9372cbcab8028"
       },
@@ -16310,15 +16315,15 @@
       ]
     },
     {
-      "id": "VS-d625da48dd78ce2a",
+      "id": "VS-2022c705e72af96b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3486,
+        "line": 3499,
         "column": 22,
-        "endLine": 3486,
+        "endLine": 3499,
         "endColumn": 44,
-        "start": 119834,
-        "end": 119856,
+        "start": 120133,
+        "end": 120155,
         "kind": "call:showError",
         "nodeSha256": "00d77994fa17d4ec286c228996f507fd5475765a88c8e5ceead3161bcc253d94"
       },
@@ -16342,15 +16347,15 @@
       ]
     },
     {
-      "id": "VS-729fe949ecc1ed31",
+      "id": "VS-d4ed8c5c05e339aa",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3488,
+        "line": 3501,
         "column": 23,
-        "endLine": 3488,
+        "endLine": 3501,
         "endColumn": 50,
-        "start": 119895,
-        "end": 119922,
+        "start": 120194,
+        "end": 120221,
         "kind": "call:showStatus",
         "nodeSha256": "cd7d0b2a3090ef0f9417f3b18b76ba18f7a003502173c679274baff65ec92dae"
       },
@@ -16374,15 +16379,15 @@
       ]
     },
     {
-      "id": "VS-32403e4ff1575b3e",
+      "id": "VS-9f22a891a4910169",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3548,
+        "line": 3561,
         "column": 21,
-        "endLine": 3548,
+        "endLine": 3561,
         "endColumn": 107,
-        "start": 121878,
-        "end": 121964,
+        "start": 122177,
+        "end": 122263,
         "kind": "call:showError",
         "nodeSha256": "d58acda0c6bc1708a631395a7c77c60c6645ac22fec24df6674b6d4786399018"
       },
@@ -16430,15 +16435,15 @@
       ]
     },
     {
-      "id": "VS-3b429faf73d16c92",
+      "id": "VS-b0e24fcfbb5c7e05",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3601,
+        "line": 3613,
         "column": 40,
-        "endLine": 3601,
+        "endLine": 3613,
         "endColumn": 64,
-        "start": 123639,
-        "end": 123663,
+        "start": 123908,
+        "end": 123932,
         "kind": "new:Text",
         "nodeSha256": "9c01c499f3b606a43b66aefad52e15a42adc843e1e90eb0fd42bcb9bcb09d16b"
       },
@@ -16464,15 +16469,15 @@
       ]
     },
     {
-      "id": "VS-fca458878b5ad28a",
+      "id": "VS-20d6f87856d789d2",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3899,
+        "line": 3911,
         "column": 13,
-        "endLine": 3899,
+        "endLine": 3911,
         "endColumn": 90,
-        "start": 133928,
-        "end": 134005,
+        "start": 134197,
+        "end": 134274,
         "kind": "new:Text",
         "nodeSha256": "c1475d7b92dfcce087f2abb7de4d7a561bd6a7b9b512cd4ad59e3937d78fe5a9"
       },
@@ -16568,15 +16573,15 @@
       ]
     },
     {
-      "id": "VS-a919ee5aacca7af5",
+      "id": "VS-46033ed3c7a3a80e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3941,
+        "line": 3953,
         "column": 13,
-        "endLine": 3941,
+        "endLine": 3953,
         "endColumn": 98,
-        "start": 135556,
-        "end": 135641,
+        "start": 135825,
+        "end": 135910,
         "kind": "new:Text",
         "nodeSha256": "f67dff0a1f490121e7290519cd48c6eeb0f8da1f21eb3fd760fa552c665bf2f4"
       },
@@ -16658,15 +16663,15 @@
       ]
     },
     {
-      "id": "VS-9c646c61bb76f976",
+      "id": "VS-076bb26f37dfbcc7",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3971,
+        "line": 3983,
         "column": 40,
-        "endLine": 3971,
+        "endLine": 3983,
         "endColumn": 44,
-        "start": 136888,
-        "end": 136892,
+        "start": 137157,
+        "end": 137161,
         "kind": "new:Text",
         "nodeSha256": "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
       },
@@ -16790,15 +16795,15 @@
       ]
     },
     {
-      "id": "VS-eea6ff8a56b34314",
+      "id": "VS-c4395b9c23425ff5",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 3987,
+        "line": 3999,
         "column": 20,
-        "endLine": 3987,
+        "endLine": 3999,
         "endColumn": 48,
-        "start": 137457,
-        "end": 137485,
+        "start": 137726,
+        "end": 137754,
         "kind": "call:showStatus",
         "nodeSha256": "02d7c034a92d5f8867b8847e657645e1523a974e17bb239079ef7571732e7aa2"
       },
@@ -16846,15 +16851,15 @@
       ]
     },
     {
-      "id": "VS-3592d99db7f74ef7",
+      "id": "VS-d895398b347d7b83",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4001,
+        "line": 4013,
         "column": 5,
-        "endLine": 4004,
+        "endLine": 4016,
         "endColumn": 6,
-        "start": 137829,
-        "end": 138014,
+        "start": 138098,
+        "end": 138283,
         "kind": "new:Text",
         "nodeSha256": "8df667c2bbe9847e959717c2395f7a8c0504db5045fa9266dc5f783542e72373"
       },
@@ -16894,15 +16899,15 @@
       ]
     },
     {
-      "id": "VS-a2f80b4ba61b83a2",
+      "id": "VS-71567140f18f5c99",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4091,
+        "line": 4103,
         "column": 25,
-        "endLine": 4091,
+        "endLine": 4103,
         "endColumn": 85,
-        "start": 140916,
-        "end": 140976,
+        "start": 141185,
+        "end": 141245,
         "kind": "output:process.stdout.write",
         "nodeSha256": "21bb64e6ed6eb97f684eead5d41517096b45faa00dba5c469b1b43aa1e30209f"
       },
@@ -16952,15 +16957,15 @@
       ]
     },
     {
-      "id": "VS-ec67daef4f3c08df",
+      "id": "VS-8c866f0be97e0c59",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4131,
+        "line": 4143,
         "column": 17,
-        "endLine": 4131,
+        "endLine": 4143,
         "endColumn": 64,
-        "start": 142180,
-        "end": 142227,
+        "start": 142449,
+        "end": 142496,
         "kind": "output:console.error",
         "nodeSha256": "acffa8b0833e33ec214f4a73f0e9b8792ccc5360c2d2fdb111fe609a4090124f"
       },
@@ -16984,15 +16989,15 @@
       ]
     },
     {
-      "id": "VS-53e55080503dbd59",
+      "id": "VS-ff5781c12bf35dd3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4134,
+        "line": 4146,
         "column": 18,
-        "endLine": 4134,
+        "endLine": 4146,
         "endColumn": 55,
-        "start": 142326,
-        "end": 142363,
+        "start": 142595,
+        "end": 142632,
         "kind": "output:console.error",
         "nodeSha256": "1118f2ea34a3819722420ef45137c093eb71e14eba9e420ac39ced2933b63db8"
       },
@@ -17016,15 +17021,15 @@
       ]
     },
     {
-      "id": "VS-3bc77d319b6826eb",
+      "id": "VS-902cc44c3efd2a78",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4196,
+        "line": 4208,
         "column": 20,
-        "endLine": 4196,
+        "endLine": 4208,
         "endColumn": 71,
-        "start": 144505,
-        "end": 144556,
+        "start": 144774,
+        "end": 144825,
         "kind": "call:showStatus",
         "nodeSha256": "ed46c36ed38848b6633dfa7e6c74c3b127a154e38946642e3718de2df2ab289d"
       },
@@ -17048,15 +17053,15 @@
       ]
     },
     {
-      "id": "VS-d9db901861f7588e",
+      "id": "VS-5d12548ed29d07d5",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4266,
+        "line": 4278,
         "column": 20,
-        "endLine": 4266,
+        "endLine": 4278,
         "endColumn": 51,
-        "start": 146835,
-        "end": 146866,
+        "start": 147104,
+        "end": 147135,
         "kind": "call:showStatus",
         "nodeSha256": "62453108e543cc2a8e02d5ddbe9a3a9eb502b76242a9e93c0e1b4d186f3708be"
       },
@@ -17080,15 +17085,15 @@
       ]
     },
     {
-      "id": "VS-88727e38f3cb88b9",
+      "id": "VS-a75e18a1f1d373d3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4268,
+        "line": 4280,
         "column": 20,
-        "endLine": 4268,
+        "endLine": 4280,
         "endColumn": 93,
-        "start": 146899,
-        "end": 146972,
+        "start": 147168,
+        "end": 147241,
         "kind": "call:showStatus",
         "nodeSha256": "f2ef7b55ce0c806b6fde030287bbae7d946573bec83a36fa2595239e450fa0a1"
       },
@@ -17148,15 +17153,15 @@
       ]
     },
     {
-      "id": "VS-30af5cfdbff5dde7",
+      "id": "VS-4da84d8df973597f",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4286,
+        "line": 4298,
         "column": 20,
-        "endLine": 4286,
+        "endLine": 4298,
         "endColumn": 61,
-        "start": 147465,
-        "end": 147506,
+        "start": 147734,
+        "end": 147775,
         "kind": "call:showStatus",
         "nodeSha256": "7d6ef71397625746ff33ef8198ce74767a17a50661418b2f8c048635b1f4cc27"
       },
@@ -17180,15 +17185,15 @@
       ]
     },
     {
-      "id": "VS-e38b702ab9d30c1a",
+      "id": "VS-37fb4015e86a7fe3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4290,
+        "line": 4302,
         "column": 20,
-        "endLine": 4290,
+        "endLine": 4302,
         "endColumn": 49,
-        "start": 147603,
-        "end": 147632,
+        "start": 147872,
+        "end": 147901,
         "kind": "call:showStatus",
         "nodeSha256": "9609e58ccdf4028cee953b54fe550d9c1da76850d227659b53b82b8d6974cfa9"
       },
@@ -17212,15 +17217,15 @@
       ]
     },
     {
-      "id": "VS-ceb4165b86608255",
+      "id": "VS-4b53ce794660cc69",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4299,
+        "line": 4311,
         "column": 21,
-        "endLine": 4299,
+        "endLine": 4311,
         "endColumn": 24,
-        "start": 147951,
-        "end": 147954,
+        "start": 148220,
+        "end": 148223,
         "kind": "call:showStatus",
         "nodeSha256": "e46b320165eec91e6344fa10340d5b3208304d6cad29d0d5aed18466d1d9d80e"
       },
@@ -17256,15 +17261,15 @@
       ]
     },
     {
-      "id": "VS-4d7384f267d7efa4",
+      "id": "VS-c32ca2146faf249d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4305,
+        "line": 4317,
         "column": 21,
-        "endLine": 4305,
+        "endLine": 4317,
         "endColumn": 88,
-        "start": 148188,
-        "end": 148255,
+        "start": 148457,
+        "end": 148524,
         "kind": "call:showStatus",
         "nodeSha256": "43f4ace7ae894229fbb6af0451785302fbe8bc9fe1d71957b59d4a6da77a2511"
       },
@@ -17312,15 +17317,15 @@
       ]
     },
     {
-      "id": "VS-6cc903ce73c8259c",
+      "id": "VS-fe47886ef47379e9",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4332,
+        "line": 4344,
         "column": 19,
-        "endLine": 4332,
+        "endLine": 4344,
         "endColumn": 72,
-        "start": 149046,
-        "end": 149099,
+        "start": 149315,
+        "end": 149368,
         "kind": "call:showStatus",
         "nodeSha256": "03f6c0cf81517d0619bf31c36564f65366ca2962b0704d8e05b7a7ed4438e043"
       },
@@ -17368,15 +17373,15 @@
       ]
     },
     {
-      "id": "VS-b2cb3dd581797a3c",
+      "id": "VS-0908f62a82b85bb3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4349,
+        "line": 4361,
         "column": 19,
-        "endLine": 4349,
+        "endLine": 4361,
         "endColumn": 86,
-        "start": 149669,
-        "end": 149736,
+        "start": 149938,
+        "end": 150005,
         "kind": "call:showStatus",
         "nodeSha256": "ba33d40f98589c34d7483c3ddddb15383a5afd641a29153ae1fb7a11f9715fd5"
       },
@@ -17424,15 +17429,15 @@
       ]
     },
     {
-      "id": "VS-3dc4d4e1b5e7df71",
+      "id": "VS-077eebce8e8f92b4",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4381,
+        "line": 4393,
         "column": 40,
-        "endLine": 4381,
+        "endLine": 4393,
         "endColumn": 83,
-        "start": 150602,
-        "end": 150645,
+        "start": 150871,
+        "end": 150914,
         "kind": "new:Text",
         "nodeSha256": "d7b68e94d152404399a6ddca8d6704a6cbc746024ca350047369a656434c5919"
       },
@@ -17458,15 +17463,15 @@
       ]
     },
     {
-      "id": "VS-cfa043e94a38a21f",
+      "id": "VS-9d4eddc0cbcfbf13",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4387,
+        "line": 4399,
         "column": 40,
-        "endLine": 4387,
+        "endLine": 4399,
         "endColumn": 89,
-        "start": 150829,
-        "end": 150878,
+        "start": 151098,
+        "end": 151147,
         "kind": "new:Text",
         "nodeSha256": "9bdd0b852ee34097967ce2b095a8a039d36969b02844fb638a56fb4fa294df2c"
       },
@@ -17492,15 +17497,15 @@
       ]
     },
     {
-      "id": "VS-8c062f1acb5760b0",
+      "id": "VS-fc26fe83bb063cf1",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4404,
+        "line": 4416,
         "column": 13,
-        "endLine": 4404,
+        "endLine": 4416,
         "endColumn": 91,
-        "start": 151643,
-        "end": 151721,
+        "start": 151912,
+        "end": 151990,
         "kind": "new:Text",
         "nodeSha256": "e7ac8d171efa47c083fc2f32d7f8e0cfbe069f90c8dfcfdb1a6e2fb606bb004d"
       },
@@ -17581,15 +17586,15 @@
       ]
     },
     {
-      "id": "VS-658870b2cb791ab1",
+      "id": "VS-0df84c1eb5194fdb",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4415,
+        "line": 4427,
         "column": 40,
-        "endLine": 4415,
+        "endLine": 4427,
         "endColumn": 53,
-        "start": 152047,
-        "end": 152060,
+        "start": 152316,
+        "end": 152329,
         "kind": "new:Text",
         "nodeSha256": "b647960e89b0ab42b5a2fc1dc4f481d4fe04e12e9f94b72b441d62d9f62d253b"
       },
@@ -17629,15 +17634,15 @@
       ]
     },
     {
-      "id": "VS-d67a544d94c5b95c",
+      "id": "VS-8596360605748769",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4429,
+        "line": 4441,
         "column": 5,
-        "endLine": 4429,
+        "endLine": 4441,
         "endColumn": 144,
-        "start": 152665,
-        "end": 152804,
+        "start": 152934,
+        "end": 153073,
         "kind": "new:Text",
         "nodeSha256": "e63dbd9bfb5c0d50143ba906ced6417eb02586c7bcce4bc98fe597080842578a"
       },
@@ -17718,15 +17723,15 @@
       ]
     },
     {
-      "id": "VS-cee10150c7a42562",
+      "id": "VS-30cd45176a903cb0",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4481,
+        "line": 4493,
         "column": 62,
-        "endLine": 4481,
+        "endLine": 4493,
         "endColumn": 66,
-        "start": 154625,
-        "end": 154629,
+        "start": 154894,
+        "end": 154898,
         "kind": "new:TruncatedText",
         "nodeSha256": "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
       },
@@ -17752,15 +17757,15 @@
       ]
     },
     {
-      "id": "VS-6b855eff7246fe44",
+      "id": "VS-6cbc7bee3a94cb67",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4485,
+        "line": 4497,
         "column": 62,
-        "endLine": 4485,
+        "endLine": 4497,
         "endColumn": 66,
-        "start": 154809,
-        "end": 154813,
+        "start": 155078,
+        "end": 155082,
         "kind": "new:TruncatedText",
         "nodeSha256": "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
       },
@@ -17786,15 +17791,15 @@
       ]
     },
     {
-      "id": "VS-3cfdfbcb223d02ba",
+      "id": "VS-168b810908ad1e68",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4489,
+        "line": 4501,
         "column": 61,
-        "endLine": 4489,
+        "endLine": 4501,
         "endColumn": 69,
-        "start": 155042,
-        "end": 155050,
+        "start": 155311,
+        "end": 155319,
         "kind": "new:TruncatedText",
         "nodeSha256": "1361b8299dc217833ae27f8a5bdb472b6b6df1bcf018b374b6d608459c21f2c6"
       },
@@ -17834,15 +17839,15 @@
       ]
     },
     {
-      "id": "VS-5b938bd9a293d2ac",
+      "id": "VS-99e41a31bcbb27ea",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4519,
+        "line": 4531,
         "column": 19,
-        "endLine": 4519,
+        "endLine": 4531,
         "endColumn": 56,
-        "start": 156046,
-        "end": 156083,
+        "start": 156315,
+        "end": 156352,
         "kind": "call:showStatus",
         "nodeSha256": "856f9ede8949d1e0208f601c6f04e2ed966c6f690509c335de9691385aa09823"
       },
@@ -17866,15 +17871,15 @@
       ]
     },
     {
-      "id": "VS-d7b0bc0e31d2929f",
+      "id": "VS-5c8d61b9d1755a02",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4546,
+        "line": 4558,
         "column": 5,
-        "endLine": 4548,
+        "endLine": 4560,
         "endColumn": 7,
-        "start": 156909,
-        "end": 157049,
+        "start": 157178,
+        "end": 157318,
         "kind": "call:showError",
         "nodeSha256": "bdb05e7343e81dcea5943a6654e50e708c76d8c9f833e69b6b93466b4f1af329"
       },
@@ -17922,15 +17927,15 @@
       ]
     },
     {
-      "id": "VS-6165f85ec01a082a",
+      "id": "VS-def78f48e51f4805",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4753,
+        "line": 4765,
         "column": 23,
-        "endLine": 4753,
+        "endLine": 4765,
         "endColumn": 81,
-        "start": 165076,
-        "end": 165134,
+        "start": 165345,
+        "end": 165403,
         "kind": "call:showStatus",
         "nodeSha256": "80b865a25262cb81038273c1268d0ac42931078b6890367ba4a162f531d7fabd"
       },
@@ -17954,15 +17959,15 @@
       ]
     },
     {
-      "id": "VS-b0536a04af8a84d8",
+      "id": "VS-88d1363b686ee96f",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4757,
+        "line": 4769,
         "column": 23,
-        "endLine": 4757,
+        "endLine": 4769,
         "endColumn": 47,
-        "start": 165256,
-        "end": 165280,
+        "start": 165525,
+        "end": 165549,
         "kind": "call:showStatus",
         "nodeSha256": "d9d71ed227b2c560dcbe26858651d5ba0812575e8816f9602c455dcdfe8b8dc6"
       },
@@ -17986,15 +17991,15 @@
       ]
     },
     {
-      "id": "VS-0c9b690cdd50ec31",
+      "id": "VS-1336bec3fe1104da",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4869,
+        "line": 4881,
         "column": 24,
-        "endLine": 4869,
+        "endLine": 4881,
         "endColumn": 72,
-        "start": 169837,
-        "end": 169885,
+        "start": 170106,
+        "end": 170154,
         "kind": "call:showStatus",
         "nodeSha256": "ace803d2dc18008793cfd52aabf006c133a5386b964ea68de0110a8edf5de71a"
       },
@@ -18018,15 +18023,15 @@
       ]
     },
     {
-      "id": "VS-5d22cab5e2e504d2",
+      "id": "VS-84bd204db67480ad",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4874,
+        "line": 4886,
         "column": 23,
-        "endLine": 4874,
+        "endLine": 4886,
         "endColumn": 42,
-        "start": 170047,
-        "end": 170066,
+        "start": 170316,
+        "end": 170335,
         "kind": "call:showStatus",
         "nodeSha256": "c8615fb00a1f42f8a0fc1f74fa6940aecd3e2e0312edbedbb5c4603379c55aea"
       },
@@ -18050,15 +18055,15 @@
       ]
     },
     {
-      "id": "VS-3387c2d4fb5d7c23",
+      "id": "VS-dc0095dc5ceeee82",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4910,
+        "line": 4922,
         "column": 19,
-        "endLine": 4910,
+        "endLine": 4922,
         "endColumn": 109,
-        "start": 171208,
-        "end": 171298,
+        "start": 171477,
+        "end": 171567,
         "kind": "call:showError",
         "nodeSha256": "ecc47094850a79db93716d8a066061614d1e0d7f3281034fb7f590f82c72a915"
       },
@@ -18106,15 +18111,15 @@
       ]
     },
     {
-      "id": "VS-fe0bb02bcd85d418",
+      "id": "VS-150bf50a50fab100",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4922,
+        "line": 4934,
         "column": 20,
-        "endLine": 4922,
+        "endLine": 4934,
         "endColumn": 93,
-        "start": 171585,
-        "end": 171658,
+        "start": 171854,
+        "end": 171927,
         "kind": "call:showStatus",
         "nodeSha256": "45a3e73548aa8a6acb1c838e9596350cc30420135830b1421d3614414fbc2ba9"
       },
@@ -18150,15 +18155,15 @@
       ]
     },
     {
-      "id": "VS-cc12f9f48cf3b105",
+      "id": "VS-0838d2c158e47d00",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4961,
+        "line": 4973,
         "column": 21,
-        "endLine": 4961,
+        "endLine": 4973,
         "endColumn": 41,
-        "start": 172784,
-        "end": 172804,
+        "start": 173053,
+        "end": 173073,
         "kind": "call:showStatus",
         "nodeSha256": "87c730de18f93de00999e28a96df92a95ac16e3af0eecefbede4de342ba037b5"
       },
@@ -18182,15 +18187,15 @@
       ]
     },
     {
-      "id": "VS-6e06e580089ce0b1",
+      "id": "VS-29e5ec40b852b2ad",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4981,
+        "line": 4993,
         "column": 19,
-        "endLine": 4981,
+        "endLine": 4993,
         "endColumn": 47,
-        "start": 173520,
-        "end": 173548,
+        "start": 173789,
+        "end": 173817,
         "kind": "call:showStatus",
         "nodeSha256": "ac41afef7b29e54942df4d4242081c3c1fc945ad8fcc5bc5f76dd4271f132d0e"
       },
@@ -18214,15 +18219,15 @@
       ]
     },
     {
-      "id": "VS-eb58f5602ce59f4f",
+      "id": "VS-891c0014b17fcaaf",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4991,
+        "line": 5003,
         "column": 22,
-        "endLine": 4991,
+        "endLine": 5003,
         "endColumn": 73,
-        "start": 173871,
-        "end": 173922,
+        "start": 174140,
+        "end": 174191,
         "kind": "call:showWarning",
         "nodeSha256": "6ae02bdbb59fdacf885f9d8182fbaa38770b3ccef907dc4eab667ff7692242e1"
       },
@@ -18246,15 +18251,15 @@
       ]
     },
     {
-      "id": "VS-9251e4e628062b4a",
+      "id": "VS-ac756473634b6204",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4993,
+        "line": 5005,
         "column": 22,
-        "endLine": 4993,
+        "endLine": 5005,
         "endColumn": 107,
-        "start": 173986,
-        "end": 174071,
+        "start": 174255,
+        "end": 174340,
         "kind": "call:showWarning",
         "nodeSha256": "0f026646a2aece482f7b588aae02ad2c2fad42dd1656baa66374661c3cb0debe"
       },
@@ -18290,15 +18295,15 @@
       ]
     },
     {
-      "id": "VS-44e5830189aa2d01",
+      "id": "VS-69a03ae6132f30d2",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 4997,
+        "line": 5009,
         "column": 5,
-        "endLine": 4999,
+        "endLine": 5011,
         "endColumn": 101,
-        "start": 174124,
-        "end": 174292,
+        "start": 174393,
+        "end": 174561,
         "kind": "call:showWarning",
         "nodeSha256": "5c999ed2a245950127c50f0a1df6f6f951e8efc5cd073345098f6d10d00cd02d"
       },
@@ -18334,15 +18339,15 @@
       ]
     },
     {
-      "id": "VS-952979cf508d5b30",
+      "id": "VS-03e5bd4c7be747ed",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5033,
+        "line": 5045,
         "column": 22,
-        "endLine": 5033,
+        "endLine": 5045,
         "endColumn": 57,
-        "start": 175451,
-        "end": 175486,
+        "start": 175720,
+        "end": 175755,
         "kind": "call:showWarning",
         "nodeSha256": "acd38f0085a238bae6c3f8a0b01bf721d638930f24d7ccdd77694e8eb748835b"
       },
@@ -18366,15 +18371,15 @@
       ]
     },
     {
-      "id": "VS-6bcfe439f16803e5",
+      "id": "VS-4b527b22c8a1cc0a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5041,
+        "line": 5053,
         "column": 21,
-        "endLine": 5041,
+        "endLine": 5053,
         "endColumn": 56,
-        "start": 175733,
-        "end": 175768,
+        "start": 176002,
+        "end": 176037,
         "kind": "call:showWarning",
         "nodeSha256": "acd38f0085a238bae6c3f8a0b01bf721d638930f24d7ccdd77694e8eb748835b"
       },
@@ -18398,15 +18403,15 @@
       ]
     },
     {
-      "id": "VS-641d4680bcb11c17",
+      "id": "VS-89940c7d0cc4a871",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5067,
+        "line": 5079,
         "column": 5,
-        "endLine": 5067,
+        "endLine": 5079,
         "endColumn": 107,
-        "start": 176462,
-        "end": 176564,
+        "start": 176731,
+        "end": 176833,
         "kind": "call:showWarning",
         "nodeSha256": "dad2077ec0150f5fc70173ac31207ab02deb0314f3c18a5cb1e1a512b57f77b5"
       },
@@ -18430,15 +18435,15 @@
       ]
     },
     {
-      "id": "VS-fb27dbd4e5f24e94",
+      "id": "VS-b9d4cc2615dfe05a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5086,
+        "line": 5098,
         "column": 7,
-        "endLine": 5086,
+        "endLine": 5098,
         "endColumn": 123,
-        "start": 177094,
-        "end": 177210,
+        "start": 177363,
+        "end": 177479,
         "kind": "call:showStatus",
         "nodeSha256": "30f6b9e60d28c0f14b4193a3ea478c8416f699567adf8659843081ce9dda55a5"
       },
@@ -18510,15 +18515,15 @@
       ]
     },
     {
-      "id": "VS-cbadebf5527d0faa",
+      "id": "VS-3dc835445c9f6533",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5107,
+        "line": 5119,
         "column": 22,
-        "endLine": 5107,
+        "endLine": 5119,
         "endColumn": 101,
-        "start": 177744,
-        "end": 177823,
+        "start": 178013,
+        "end": 178092,
         "kind": "call:showStatus",
         "nodeSha256": "767522e51a10261c1fc231c1f01f910beb99e834ca1c4fb698aa7509186eb37a"
       },
@@ -18566,15 +18571,15 @@
       ]
     },
     {
-      "id": "VS-7d4c8c7fa22459be",
+      "id": "VS-8e29a4a9f6f8469a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5202,
+        "line": 5214,
         "column": 23,
-        "endLine": 5202,
+        "endLine": 5214,
         "endColumn": 58,
-        "start": 181541,
-        "end": 181576,
+        "start": 181810,
+        "end": 181845,
         "kind": "call:showStatus",
         "nodeSha256": "85b74deabf95be89ee10790ff1544e0ecc427f0b97164d2e46acd4697e33691e"
       },
@@ -18598,15 +18603,15 @@
       ]
     },
     {
-      "id": "VS-6e400f500c758ff2",
+      "id": "VS-f39682eade42aef5",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5261,
+        "line": 5273,
         "column": 20,
-        "endLine": 5261,
+        "endLine": 5273,
         "endColumn": 46,
-        "start": 183493,
-        "end": 183519,
+        "start": 183762,
+        "end": 183788,
         "kind": "call:showStatus",
         "nodeSha256": "e17311b861473d36c566d8c49b9358a7ca35142cb858d904350137f45fad757a"
       },
@@ -18630,15 +18635,15 @@
       ]
     },
     {
-      "id": "VS-6e82237f54acf0d0",
+      "id": "VS-5e7d93bb00c003ce",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5280,
+        "line": 5292,
         "column": 23,
-        "endLine": 5280,
+        "endLine": 5292,
         "endColumn": 46,
-        "start": 184035,
-        "end": 184058,
+        "start": 184304,
+        "end": 184327,
         "kind": "call:showStatus",
         "nodeSha256": "67a6a043d1ae2eeda62e2d69e6ba66686966f121a40c7f61da207f200c0580d3"
       },
@@ -18662,15 +18667,15 @@
       ]
     },
     {
-      "id": "VS-4223bd75bb0b2de0",
+      "id": "VS-0aa4a098ce1c6bcf",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5298,
+        "line": 5310,
         "column": 20,
-        "endLine": 5298,
+        "endLine": 5310,
         "endColumn": 42,
-        "start": 184494,
-        "end": 184516,
+        "start": 184763,
+        "end": 184785,
         "kind": "call:showStatus",
         "nodeSha256": "7f6620c30cbc88a321afee04fbba129a9586f4e7d19c66b7268a47bb76bec1e9"
       },
@@ -18694,15 +18699,15 @@
       ]
     },
     {
-      "id": "VS-bd5082b6e34aff8e",
+      "id": "VS-3ee49aea940ad22c",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5310,
+        "line": 5322,
         "column": 20,
-        "endLine": 5310,
+        "endLine": 5322,
         "endColumn": 43,
-        "start": 184739,
-        "end": 184762,
+        "start": 185008,
+        "end": 185031,
         "kind": "call:showStatus",
         "nodeSha256": "77a6fec898df5b39174b44dfddab2c65228d01ae6b7c5f84aa5354451ac297ae"
       },
@@ -18726,15 +18731,15 @@
       ]
     },
     {
-      "id": "VS-ed1f68b2db6ace62",
+      "id": "VS-6e733681d34e9759",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5322,
+        "line": 5334,
         "column": 20,
-        "endLine": 5322,
+        "endLine": 5334,
         "endColumn": 43,
-        "start": 185156,
-        "end": 185179,
+        "start": 185425,
+        "end": 185448,
         "kind": "call:showStatus",
         "nodeSha256": "7fcce1287f15b7a6d22ff9693bea845642303cd1f6c4ec6d779e69e49a94a7a7"
       },
@@ -18758,15 +18763,15 @@
       ]
     },
     {
-      "id": "VS-a54948097e8eb284",
+      "id": "VS-4fe4865b7cec606a",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5335,
+        "line": 5347,
         "column": 23,
-        "endLine": 5335,
+        "endLine": 5347,
         "endColumn": 46,
-        "start": 185509,
-        "end": 185532,
+        "start": 185778,
+        "end": 185801,
         "kind": "call:showStatus",
         "nodeSha256": "e72def61877fcdb18625e703e59fb0ac99fc3fb51595a289c852eb1a047f08cb"
       },
@@ -18790,15 +18795,15 @@
       ]
     },
     {
-      "id": "VS-b17a3ed002c0d9ad",
+      "id": "VS-eb3669c049ca0e25",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5349,
+        "line": 5361,
         "column": 63,
-        "endLine": 5349,
+        "endLine": 5361,
         "endColumn": 82,
-        "start": 186014,
-        "end": 186033,
+        "start": 186283,
+        "end": 186302,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "d1e4f030fb3128d3c760aaf6ed6ed9535b37427a374ec9e0506ca7a6d6867cd8"
       },
@@ -18822,15 +18827,15 @@
       ]
     },
     {
-      "id": "VS-0ef7736fecf057bc",
+      "id": "VS-4bea32407156f0e2",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5350,
+        "line": 5362,
         "column": 9,
-        "endLine": 5350,
+        "endLine": 5362,
         "endColumn": 21,
-        "start": 186045,
-        "end": 186057,
+        "start": 186314,
+        "end": 186326,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "81f844f57a41cd68838f7a5955562593a8b61e24d87ed7719123818f12bbad11"
       },
@@ -18854,15 +18859,15 @@
       ]
     },
     {
-      "id": "VS-baeefe4baa83303b",
+      "id": "VS-f5aba0005f593957",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5351,
+        "line": 5363,
         "column": 9,
-        "endLine": 5351,
+        "endLine": 5363,
         "endColumn": 20,
-        "start": 186067,
-        "end": 186078,
+        "start": 186336,
+        "end": 186347,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "805a8a2b55aafb7d437d64a7efa244ccdd7c103a85c898a99eef50dfd3422863"
       },
@@ -18886,15 +18891,15 @@
       ]
     },
     {
-      "id": "VS-0a90ae8b7e3c6bb8",
+      "id": "VS-35c35566d0ad239b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5352,
+        "line": 5364,
         "column": 9,
-        "endLine": 5352,
+        "endLine": 5364,
         "endColumn": 39,
-        "start": 186088,
-        "end": 186118,
+        "start": 186357,
+        "end": 186387,
         "kind": "call:showExtensionSelector",
         "nodeSha256": "495173205aea4a5e204933fd4d9e0f8f421aa563f8aaa1177ae88530947b2cd9"
       },
@@ -18918,15 +18923,15 @@
       ]
     },
     {
-      "id": "VS-290cf89a91ed0c8a",
+      "id": "VS-ef8b6e86eaf4d640",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5364,
+        "line": 5376,
         "column": 61,
-        "endLine": 5364,
+        "endLine": 5376,
         "endColumn": 96,
-        "start": 186493,
-        "end": 186528,
+        "start": 186762,
+        "end": 186797,
         "kind": "call:showExtensionEditor",
         "nodeSha256": "5b53d95c72bc04a6ff8b8d2da2b99185de5391e38976a4afd151aa634e4b4bcc"
       },
@@ -18950,15 +18955,15 @@
       ]
     },
     {
-      "id": "VS-0b19dd858dc8192c",
+      "id": "VS-77549d2b93bf878b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5385,
+        "line": 5397,
         "column": 8,
-        "endLine": 5385,
+        "endLine": 5397,
         "endColumn": 106,
-        "start": 187105,
-        "end": 187203,
+        "start": 187374,
+        "end": 187472,
         "kind": "call:showError",
         "nodeSha256": "9002644df21714e412b33e1800f8d112bdf2da65af7e2941d72daafc530e70f7"
       },
@@ -18982,15 +18987,15 @@
       ]
     },
     {
-      "id": "VS-b5eff1b8cd938e54",
+      "id": "VS-a0f72920c472fe74",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5412,
+        "line": 5424,
         "column": 24,
-        "endLine": 5412,
+        "endLine": 5424,
         "endColumn": 56,
-        "start": 187998,
-        "end": 188030,
+        "start": 188267,
+        "end": 188299,
         "kind": "call:showStatus",
         "nodeSha256": "d82833a136205f61b6dfecafd597a2de7fab3261749028dd0332807ba1d2dc3c"
       },
@@ -19014,15 +19019,15 @@
       ]
     },
     {
-      "id": "VS-da6eda70e6f7c1c5",
+      "id": "VS-e1ecd79b83327e62",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5417,
+        "line": 5429,
         "column": 24,
-        "endLine": 5417,
+        "endLine": 5429,
         "endColumn": 46,
-        "start": 188148,
-        "end": 188170,
+        "start": 188417,
+        "end": 188439,
         "kind": "call:showStatus",
         "nodeSha256": "5f10e9b9ba83607ad11ad2b44ed295ba445e1af56b4d75725b9522a6d1a6f8b5"
       },
@@ -19046,15 +19051,15 @@
       ]
     },
     {
-      "id": "VS-854554844be7570a",
+      "id": "VS-e5021fa624333e21",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5427,
+        "line": 5439,
         "column": 23,
-        "endLine": 5427,
+        "endLine": 5439,
         "endColumn": 52,
-        "start": 188427,
-        "end": 188456,
+        "start": 188696,
+        "end": 188725,
         "kind": "call:showStatus",
         "nodeSha256": "fc91595ca3ee795b2ec4f360891f640543483b813e82cf4e803a3fcece83962f"
       },
@@ -19078,15 +19083,15 @@
       ]
     },
     {
-      "id": "VS-436e3c202032fe29",
+      "id": "VS-61b62a669df2f2fd",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5451,
+        "line": 5463,
         "column": 21,
-        "endLine": 5451,
+        "endLine": 5463,
         "endColumn": 57,
-        "start": 189114,
-        "end": 189150,
+        "start": 189383,
+        "end": 189419,
         "kind": "call:showError",
         "nodeSha256": "33e92e7efc7c735e4cb5521eaf80ad0851381a0edbd9768331a5f5ae7cb808cc"
       },
@@ -19110,15 +19115,15 @@
       ]
     },
     {
-      "id": "VS-cc139f27df6febb7",
+      "id": "VS-f53f290f79366d3d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5456,
+        "line": 5468,
         "column": 22,
-        "endLine": 5456,
+        "endLine": 5468,
         "endColumn": 60,
-        "start": 189237,
-        "end": 189275,
+        "start": 189506,
+        "end": 189544,
         "kind": "call:showStatus",
         "nodeSha256": "bbc7056d05576acad84bc892f3c49e3d23d7acd8ab0e8c5e996d6cb4944f2f7d"
       },
@@ -19142,15 +19147,15 @@
       ]
     },
     {
-      "id": "VS-0e9df880d344583d",
+      "id": "VS-0aec30f5e3069858",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5521,
+        "line": 5533,
         "column": 20,
-        "endLine": 5521,
+        "endLine": 5533,
         "endColumn": 37,
-        "start": 191115,
-        "end": 191132,
+        "start": 191384,
+        "end": 191401,
         "kind": "call:showStatus",
         "nodeSha256": "b1a8a6c1248356aa5806b317159374755ff5c4d76377d8767dd6cd6bbb61ce90"
       },
@@ -19174,15 +19179,15 @@
       ]
     },
     {
-      "id": "VS-05c4db34baa42847",
+      "id": "VS-dac857ec493f8528",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5527,
+        "line": 5539,
         "column": 22,
-        "endLine": 5527,
+        "endLine": 5539,
         "endColumn": 40,
-        "start": 191347,
-        "end": 191365,
+        "start": 191616,
+        "end": 191634,
         "kind": "call:showStatus",
         "nodeSha256": "ea8b66b91108704b45d37632520debe02802375c8633df1dc16b0b9dd0486ceb"
       },
@@ -19206,15 +19211,15 @@
       ]
     },
     {
-      "id": "VS-7ecd43866c308aed",
+      "id": "VS-37d17a05d0265030",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5538,
+        "line": 5550,
         "column": 21,
-        "endLine": 5538,
+        "endLine": 5550,
         "endColumn": 53,
-        "start": 191710,
-        "end": 191742,
+        "start": 191979,
+        "end": 192011,
         "kind": "call:showStatus",
         "nodeSha256": "fa88b878c35498fb7aada4b8bb6b42e6eebf49bd33b5f52183f16dfd894e2a7f"
       },
@@ -19238,15 +19243,15 @@
       ]
     },
     {
-      "id": "VS-889a683d22f62e41",
+      "id": "VS-845fa982f1b8e136",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5638,
+        "line": 5650,
         "column": 29,
-        "endLine": 5638,
+        "endLine": 5650,
         "endColumn": 73,
-        "start": 195079,
-        "end": 195123,
+        "start": 195348,
+        "end": 195392,
         "kind": "selector-metadata:subscriptionLabel",
         "nodeSha256": "d3dc37b508c4173aba4e37d5d0ed79c1cb70829fbedbf70aef35575d34994d95",
         "metadata": {
@@ -19274,15 +19279,15 @@
       ]
     },
     {
-      "id": "VS-3a7959f30b706cbe",
+      "id": "VS-13f056b6fe4cbcd5",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5639,
+        "line": 5651,
         "column": 23,
-        "endLine": 5639,
+        "endLine": 5651,
         "endColumn": 48,
-        "start": 195147,
-        "end": 195172,
+        "start": 195416,
+        "end": 195441,
         "kind": "selector-metadata:apiKeyLabel",
         "nodeSha256": "ccd8c3c3b50eb2df7a778e0c98132f62670f06855a2d2f5407482859ab45ca72",
         "metadata": {
@@ -19310,15 +19315,15 @@
       ]
     },
     {
-      "id": "VS-20b48bb5d1b04def",
+      "id": "VS-6fae45fb5d3dfaff",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5652,
+        "line": 5664,
         "column": 20,
-        "endLine": 5652,
+        "endLine": 5664,
         "endColumn": 49,
-        "start": 195596,
-        "end": 195625,
+        "start": 195865,
+        "end": 195894,
         "kind": "call:showStatus",
         "nodeSha256": "c5dc7a3ad038505d71faf58ed81366b2ddfb0d74fdc565706da9bfe6a6f320bf"
       },
@@ -19342,15 +19347,15 @@
       ]
     },
     {
-      "id": "VS-5fd90e4475e9d44f",
+      "id": "VS-569114fe008cde09",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5664,
+        "line": 5676,
         "column": 17,
-        "endLine": 5666,
+        "endLine": 5678,
         "endColumn": 37,
-        "start": 195851,
-        "end": 195976,
+        "start": 196120,
+        "end": 196245,
         "kind": "selector-metadata:title",
         "nodeSha256": "535edadc506c86525925a18da89b3a737fd706b7b490aa680d0fbf57965a6a7a",
         "metadata": {
@@ -19402,15 +19407,15 @@
       ]
     },
     {
-      "id": "VS-afa09bf414e434c9",
+      "id": "VS-eb56fc0a3bc5bb2d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5701,
+        "line": 5713,
         "column": 20,
-        "endLine": 5701,
+        "endLine": 5713,
         "endColumn": 27,
-        "start": 197053,
-        "end": 197060,
+        "start": 197322,
+        "end": 197329,
         "kind": "call:showStatus",
         "nodeSha256": "ab530a13e45914982b79f9b7e3fba994cfd1f3fb22f71cea1afbf02b460c6d1d"
       },
@@ -19458,15 +19463,15 @@
       ]
     },
     {
-      "id": "VS-19f2ecf2e2d40298",
+      "id": "VS-dc1e1691efae61ee",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5745,
+        "line": 5757,
         "column": 19,
-        "endLine": 5745,
+        "endLine": 5757,
         "endColumn": 113,
-        "start": 198055,
-        "end": 198149,
+        "start": 198324,
+        "end": 198418,
         "kind": "call:showError",
         "nodeSha256": "7cbfb59cafaade3ee77bece12c7cfcf1603e070001b9ae9f581afa59ef42e6ff"
       },
@@ -19490,15 +19495,15 @@
       ]
     },
     {
-      "id": "VS-7f72b15c51db0198",
+      "id": "VS-a2ce5b5304354b1e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5750,
+        "line": 5762,
         "column": 5,
-        "endLine": 5750,
+        "endLine": 5762,
         "endColumn": 149,
-        "start": 198229,
-        "end": 198373,
+        "start": 198498,
+        "end": 198642,
         "kind": "call:showStatus",
         "nodeSha256": "647e4c505266d6a3d9d2d622c6b4f05091dc168d40c721df851099dcf1effc0e"
       },
@@ -19522,15 +19527,15 @@
       ]
     },
     {
-      "id": "VS-9c198b28898bb2f6",
+      "id": "VS-5932237f2eb0201c",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5776,
+        "line": 5788,
         "column": 23,
-        "endLine": 5776,
+        "endLine": 5788,
         "endColumn": 30,
-        "start": 199140,
-        "end": 199147,
+        "start": 199409,
+        "end": 199416,
         "kind": "call:showStatus",
         "nodeSha256": "ab530a13e45914982b79f9b7e3fba994cfd1f3fb22f71cea1afbf02b460c6d1d"
       },
@@ -19578,15 +19583,15 @@
       ]
     },
     {
-      "id": "VS-85f7f3cffb3c50a6",
+      "id": "VS-f7c704387610b649",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5780,
+        "line": 5792,
         "column": 8,
-        "endLine": 5782,
+        "endLine": 5794,
         "endColumn": 38,
-        "start": 199289,
-        "end": 199494,
+        "start": 199558,
+        "end": 199763,
         "kind": "call:showError",
         "nodeSha256": "eb36d1a71d14e4ffc6a6060cbd262c8d5b84b43fa5d55aa819a60cf118d1ffb5"
       },
@@ -19634,15 +19639,15 @@
       ]
     },
     {
-      "id": "VS-3557f8cc99bacc20",
+      "id": "VS-03e84cde0a677656",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5848,
+        "line": 5860,
         "column": 21,
-        "endLine": 5848,
+        "endLine": 5860,
         "endColumn": 106,
-        "start": 202324,
-        "end": 202409,
+        "start": 202593,
+        "end": 202678,
         "kind": "call:showStatus",
         "nodeSha256": "b3d3b8d9c3d5e379a26ce22858a0f4967c23664bdebe13ebf2836641501a1032"
       },
@@ -19678,15 +19683,15 @@
       ]
     },
     {
-      "id": "VS-0f59b2db95ba3f91",
+      "id": "VS-f493719194225074",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5852,
+        "line": 5864,
         "column": 21,
-        "endLine": 5852,
+        "endLine": 5864,
         "endColumn": 76,
-        "start": 202561,
-        "end": 202616,
+        "start": 202830,
+        "end": 202885,
         "kind": "call:showStatus",
         "nodeSha256": "7ec4ee35df080951af104633b8ecba2554ad0faaf84e20224a8838376939d99e"
       },
@@ -19710,15 +19715,15 @@
       ]
     },
     {
-      "id": "VS-a3f1e0f7833bcfe2",
+      "id": "VS-c30486a4c34869fd",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5861,
+        "line": 5873,
         "column": 20,
-        "endLine": 5861,
+        "endLine": 5873,
         "endColumn": 102,
-        "start": 202812,
-        "end": 202894,
+        "start": 203081,
+        "end": 203163,
         "kind": "call:showStatus",
         "nodeSha256": "de76fc48c19c84cdaedbb45f109a9f2e8d0a64971ebc6cb3cc01639971ef6e3c"
       },
@@ -19778,15 +19783,15 @@
       ]
     },
     {
-      "id": "VS-18cf7d4b550f11b0",
+      "id": "VS-63300887ba515a67",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5872,
+        "line": 5884,
         "column": 23,
-        "endLine": 5872,
+        "endLine": 5884,
         "endColumn": 102,
-        "start": 203227,
-        "end": 203306,
+        "start": 203496,
+        "end": 203575,
         "kind": "call:showWarning",
         "nodeSha256": "ac290fc537ae34040cc7c6f9b341ec581a89d507e80be1531f47ddf2b6f94462"
       },
@@ -19810,15 +19815,15 @@
       ]
     },
     {
-      "id": "VS-01993f3336a6c824",
+      "id": "VS-29669aab8d1056c4",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5874,
+        "line": 5886,
         "column": 23,
-        "endLine": 5874,
+        "endLine": 5886,
         "endColumn": 107,
-        "start": 203372,
-        "end": 203456,
+        "start": 203641,
+        "end": 203725,
         "kind": "call:showWarning",
         "nodeSha256": "36b1e68d6692ecf2b4f50568c8a2137a78d2c73bde12876fc48c884a6e8af025"
       },
@@ -19842,15 +19847,15 @@
       ]
     },
     {
-      "id": "VS-6c79250ee4572e1b",
+      "id": "VS-b10a991e27c83057",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5886,
+        "line": 5898,
         "column": 6,
-        "endLine": 5886,
+        "endLine": 5898,
         "endColumn": 127,
-        "start": 203841,
-        "end": 203962,
+        "start": 204110,
+        "end": 204231,
         "kind": "call:showWarning",
         "nodeSha256": "783a6bcab31f6561627146893ceeff85cf272e43bcddc3d07f5dab0c079f0c28"
       },
@@ -19874,15 +19879,15 @@
       ]
     },
     {
-      "id": "VS-f2a47bf195c969f8",
+      "id": "VS-1813b0725d74e011",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5905,
+        "line": 5917,
         "column": 4,
-        "endLine": 5905,
+        "endLine": 5917,
         "endColumn": 34,
-        "start": 204410,
-        "end": 204440,
+        "start": 204679,
+        "end": 204709,
         "kind": "new:LoginDialogComponent",
         "nodeSha256": "00870a9a2bb2c0b5c9c2a16c942511be88652b3163a35208f72dd88778c3c4b7"
       },
@@ -19906,15 +19911,15 @@
       ]
     },
     {
-      "id": "VS-07c8647af2eaa801",
+      "id": "VS-b799e56851b962fd",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5908,
+        "line": 5920,
         "column": 4,
-        "endLine": 5908,
+        "endLine": 5920,
         "endColumn": 91,
-        "start": 204469,
-        "end": 204556,
+        "start": 204738,
+        "end": 204825,
         "kind": "call:showInfo",
         "nodeSha256": "d28bac83aad3a11313286da756c87868ab3421f5f1db2964f1f4a5a39bd80f0a"
       },
@@ -19962,15 +19967,15 @@
       ]
     },
     {
-      "id": "VS-df63e3a9f468e9c7",
+      "id": "VS-aa25f09511f99e0b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5933,
+        "line": 5945,
         "column": 5,
-        "endLine": 5933,
+        "endLine": 5945,
         "endColumn": 94,
-        "start": 205082,
-        "end": 205171,
+        "start": 205351,
+        "end": 205440,
         "kind": "call:showDetails",
         "nodeSha256": "c729f75dd113e027a8f56b7d38356f681a83d186bab03b7a9983bae776f6a2cb"
       },
@@ -19996,15 +20001,15 @@
       ]
     },
     {
-      "id": "VS-7b0f673a70fcbb77",
+      "id": "VS-73ccad9e7ed0dadb",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5934,
+        "line": 5946,
         "column": 5,
-        "endLine": 5934,
+        "endLine": 5946,
         "endColumn": 30,
-        "start": 205177,
-        "end": 205202,
+        "start": 205446,
+        "end": 205471,
         "kind": "call:showDetails",
         "nodeSha256": "419fe54cbcf00883dc94c7a8601786edb8c3f718d8a3d98dc6782f350b5ccf98"
       },
@@ -20030,15 +20035,15 @@
       ]
     },
     {
-      "id": "VS-91a6799186bbe58c",
+      "id": "VS-88a63e521b805b21",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5935,
+        "line": 5947,
         "column": 5,
-        "endLine": 5935,
+        "endLine": 5947,
         "endColumn": 72,
-        "start": 205208,
-        "end": 205275,
+        "start": 205477,
+        "end": 205544,
         "kind": "call:showDetails",
         "nodeSha256": "42781057a8cd0a45216ae10641aaad49df292bf8a25efdcb6b45df79823d3cf2"
       },
@@ -20064,15 +20069,15 @@
       ]
     },
     {
-      "id": "VS-f9242b84e888a96a",
+      "id": "VS-192156614dd2535b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5960,
+        "line": 5972,
         "column": 6,
-        "endLine": 5960,
+        "endLine": 5972,
         "endColumn": 103,
-        "start": 205992,
-        "end": 206089,
+        "start": 206261,
+        "end": 206358,
         "kind": "call:showError",
         "nodeSha256": "715a9f75cff26acf31c8d5d2ee47346d61104fc2edd1e4319474886f54cd056b"
       },
@@ -20108,15 +20113,15 @@
       ]
     },
     {
-      "id": "VS-6bf70a8926b3636c",
+      "id": "VS-c615d6c5b73d101b",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 5963,
+        "line": 5975,
         "column": 20,
-        "endLine": 5963,
+        "endLine": 5975,
         "endColumn": 77,
-        "start": 206165,
-        "end": 206222,
+        "start": 206434,
+        "end": 206491,
         "kind": "call:showError",
         "nodeSha256": "31b863b4c1b7b9c60c8c99e9231497e5a680fe70d6d84d92cceb279f1717fc85"
       },
@@ -20152,15 +20157,15 @@
       ]
     },
     {
-      "id": "VS-9a371ba715dbf580",
+      "id": "VS-d700704d93b8d66d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6030,
+        "line": 6042,
         "column": 23,
-        "endLine": 6030,
+        "endLine": 6042,
         "endColumn": 54,
-        "start": 208356,
-        "end": 208387,
+        "start": 208625,
+        "end": 208656,
         "kind": "call:showWaiting",
         "nodeSha256": "42aa1ec7fbaec59efc36bc9717c3fb368e13fe507709620249489701624712f7"
       },
@@ -20184,15 +20189,15 @@
       ]
     },
     {
-      "id": "VS-5c50179c016be4d2",
+      "id": "VS-085daff5f5d675cb",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6074,
+        "line": 6086,
         "column": 6,
-        "endLine": 6074,
+        "endLine": 6086,
         "endColumn": 98,
-        "start": 209826,
-        "end": 209918,
+        "start": 210095,
+        "end": 210187,
         "kind": "call:showError",
         "nodeSha256": "87ee4c597e8d6610adac8f4a046a53ba554deb656b8b7341793dc5d7f295c77f"
       },
@@ -20228,15 +20233,15 @@
       ]
     },
     {
-      "id": "VS-311cf8a6893850a4",
+      "id": "VS-b8f92f2451d3e4ae",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6077,
+        "line": 6089,
         "column": 20,
-        "endLine": 6077,
+        "endLine": 6089,
         "endColumn": 69,
-        "start": 209994,
-        "end": 210043,
+        "start": 210263,
+        "end": 210312,
         "kind": "call:showError",
         "nodeSha256": "f401692a723b402f4b9d0297b1041ff26f86c12370c3e74c3583332c83689661"
       },
@@ -20272,15 +20277,15 @@
       ]
     },
     {
-      "id": "VS-95767322daaa291e",
+      "id": "VS-284c7476daa6489f",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6088,
+        "line": 6100,
         "column": 21,
-        "endLine": 6088,
+        "endLine": 6100,
         "endColumn": 80,
-        "start": 210345,
-        "end": 210404,
+        "start": 210614,
+        "end": 210673,
         "kind": "call:showWarning",
         "nodeSha256": "98c4783eb3742c420fd2b1196e9f99da81464662cb2e0484ae9cfa7a92661581"
       },
@@ -20304,15 +20309,15 @@
       ]
     },
     {
-      "id": "VS-993e5b4018290aa7",
+      "id": "VS-30548ffce5c4e569",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6092,
+        "line": 6104,
         "column": 21,
-        "endLine": 6092,
+        "endLine": 6104,
         "endColumn": 70,
-        "start": 210477,
-        "end": 210526,
+        "start": 210746,
+        "end": 210795,
         "kind": "call:showWarning",
         "nodeSha256": "9cf4a20eb1259a4620bda723ae3dc842b5e3a2d48ea555cf8e785e7e92156913"
       },
@@ -20336,15 +20341,15 @@
       ]
     },
     {
-      "id": "VS-2a9b96866d461b6e",
+      "id": "VS-b7ecff0ddcdf5933",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6104,
+        "line": 6116,
         "column": 5,
-        "endLine": 6104,
+        "endLine": 6116,
         "endColumn": 106,
-        "start": 210800,
-        "end": 210901,
+        "start": 211069,
+        "end": 211170,
         "kind": "new:Text",
         "nodeSha256": "f58bd5519e85e8d462ce167c02bcc936423381979a3adf6252f6e51d482ba37f"
       },
@@ -20370,15 +20375,15 @@
       ]
     },
     {
-      "id": "VS-4f0ac7bdf7d6121d",
+      "id": "VS-72a6f1cf6f11a6c6",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6159,
+        "line": 6171,
         "column": 20,
-        "endLine": 6159,
+        "endLine": 6171,
         "endColumn": 59,
-        "start": 212736,
-        "end": 212775,
+        "start": 213005,
+        "end": 213044,
         "kind": "call:showError",
         "nodeSha256": "b2b73d5732d25ce2ac10d2c307e13ebff0118f72a76fb32c75b5688d404e4397"
       },
@@ -20402,15 +20407,15 @@
       ]
     },
     {
-      "id": "VS-ebf4138181350840",
+      "id": "VS-eb593dcd88a3a102",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6162,
+        "line": 6174,
         "column": 5,
-        "endLine": 6164,
+        "endLine": 6176,
         "endColumn": 86,
-        "start": 212807,
-        "end": 213025,
+        "start": 213076,
+        "end": 213294,
         "kind": "call:showStatus",
         "nodeSha256": "db1f0885d3362631e2a1ff21276734b5ff5f14fa35a5452ddb17887417b67bd3"
       },
@@ -20446,15 +20451,15 @@
       ]
     },
     {
-      "id": "VS-6ab1a16c9259ec2c",
+      "id": "VS-c8f2ae9e828b6cd3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6172,
+        "line": 6184,
         "column": 19,
-        "endLine": 6172,
+        "endLine": 6184,
         "endColumn": 93,
-        "start": 213234,
-        "end": 213308,
+        "start": 213503,
+        "end": 213577,
         "kind": "call:showError",
         "nodeSha256": "656455fdfb17a0463e2f9fb9a25c97370f5af60961b2627789ccdcaa00f6f665"
       },
@@ -20478,15 +20483,15 @@
       ]
     },
     {
-      "id": "VS-caadfe5739062600",
+      "id": "VS-d857b0d4fde3a872",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6182,
+        "line": 6194,
         "column": 21,
-        "endLine": 6182,
+        "endLine": 6194,
         "endColumn": 55,
-        "start": 213583,
-        "end": 213617,
+        "start": 213852,
+        "end": 213886,
         "kind": "call:showStatus",
         "nodeSha256": "cb44aca0291490e78096d8d0819e0ad08d20d58d84f4d2861f243dd7f85e26d9"
       },
@@ -20510,15 +20515,15 @@
       ]
     },
     {
-      "id": "VS-c6ed166b2dca04ef",
+      "id": "VS-b97777ef9b94e6c3",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6187,
+        "line": 6199,
         "column": 21,
-        "endLine": 6187,
+        "endLine": 6199,
         "endColumn": 55,
-        "start": 213755,
-        "end": 213789,
+        "start": 214024,
+        "end": 214058,
         "kind": "call:showStatus",
         "nodeSha256": "cb44aca0291490e78096d8d0819e0ad08d20d58d84f4d2861f243dd7f85e26d9"
       },
@@ -20542,15 +20547,15 @@
       ]
     },
     {
-      "id": "VS-d7cd0ce128699054",
+      "id": "VS-e8694eb89ccc3584",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6190,
+        "line": 6202,
         "column": 19,
-        "endLine": 6190,
+        "endLine": 6202,
         "endColumn": 106,
-        "start": 213844,
-        "end": 213931,
+        "start": 214113,
+        "end": 214200,
         "kind": "call:showError",
         "nodeSha256": "937b61595dd3eb9bafac5a76e0c8543a2d509b45d5119ea2b2d2e97a81145101"
       },
@@ -20586,15 +20591,15 @@
       ]
     },
     {
-      "id": "VS-f0334d07faed79ac",
+      "id": "VS-69b54b88ffcbf41d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6226,
+        "line": 6238,
         "column": 19,
-        "endLine": 6226,
+        "endLine": 6238,
         "endColumn": 48,
-        "start": 214874,
-        "end": 214903,
+        "start": 215143,
+        "end": 215172,
         "kind": "call:showError",
         "nodeSha256": "403999e3cc8543e05249b4b112d8cf4557fc74f1620b222c6aaca3cac4918c74"
       },
@@ -20618,15 +20623,15 @@
       ]
     },
     {
-      "id": "VS-3d348653abb914c6",
+      "id": "VS-1787d7a95f457723",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6230,
+        "line": 6242,
         "column": 53,
-        "endLine": 6230,
+        "endLine": 6242,
         "endColumn": 69,
-        "start": 214974,
-        "end": 214990,
+        "start": 215243,
+        "end": 215259,
         "kind": "call:showExtensionConfirm",
         "nodeSha256": "8cd31d30d471dde808f633b4276e5e5315c915f4b35d9aff238bb89d51a19ded"
       },
@@ -20650,15 +20655,15 @@
       ]
     },
     {
-      "id": "VS-bcc4dfa068ca3233",
+      "id": "VS-f440e7aa2fc1cabd",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6230,
+        "line": 6242,
         "column": 71,
-        "endLine": 6230,
+        "endLine": 6242,
         "endColumn": 115,
-        "start": 214992,
-        "end": 215036,
+        "start": 215261,
+        "end": 215305,
         "kind": "call:showExtensionConfirm",
         "nodeSha256": "4b23bf7cb62a0b1fa3ec8d0f49c2be650b0f0d9eefea3b07400d608ef31042d8"
       },
@@ -20694,112 +20699,16 @@
       ]
     },
     {
-      "id": "VS-c07de7c281d3cf42",
+      "id": "VS-6cac77e7531a1e61",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6232,
+        "line": 6244,
         "column": 20,
-        "endLine": 6232,
+        "endLine": 6244,
         "endColumn": 38,
-        "start": 215078,
-        "end": 215096,
-        "kind": "call:showStatus",
-        "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
-      },
-      "sink": {
-        "kind": "call:showStatus",
-        "channel": "printable-visible"
-      },
-      "branches": [
-        {
-          "id": "B-9abedd5724d6",
-          "conditions": [],
-          "runtimeChoices": [],
-          "segments": [
-            {
-              "kind": "literal",
-              "text": "Import cancelled",
-              "stylePath": []
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "VS-ea67fb469d5aa75e",
-      "site": {
-        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6240,
-        "column": 21,
-        "endLine": 6240,
-        "endColumn": 39,
-        "start": 215271,
-        "end": 215289,
-        "kind": "call:showStatus",
-        "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
-      },
-      "sink": {
-        "kind": "call:showStatus",
-        "channel": "printable-visible"
-      },
-      "branches": [
-        {
-          "id": "B-9abedd5724d6",
-          "conditions": [],
-          "runtimeChoices": [],
-          "segments": [
-            {
-              "kind": "literal",
-              "text": "Import cancelled",
-              "stylePath": []
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "VS-54708958bdcf66dc",
-      "site": {
-        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6243,
-        "column": 20,
-        "endLine": 6243,
-        "endColumn": 57,
-        "start": 215328,
+        "start": 215347,
         "end": 215365,
         "kind": "call:showStatus",
-        "nodeSha256": "4e9489bc920ccdbf41cd42efa8d0a61083434aea1bc201261ea919316610064d"
-      },
-      "sink": {
-        "kind": "call:showStatus",
-        "channel": "printable-visible"
-      },
-      "branches": [
-        {
-          "id": "B-7d6a22ed70a1",
-          "conditions": [],
-          "runtimeChoices": [],
-          "segments": [
-            {
-              "kind": "literal",
-              "text": "Session imported from: ",
-              "stylePath": []
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "VS-0d640b19f791a94a",
-      "site": {
-        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6248,
-        "column": 22,
-        "endLine": 6248,
-        "endColumn": 40,
-        "start": 215562,
-        "end": 215580,
-        "kind": "call:showStatus",
         "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
       },
       "sink": {
@@ -20822,47 +20731,47 @@
       ]
     },
     {
-      "id": "VS-c5c3c54bb3432fd3",
+      "id": "VS-9579e88e9185e252",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6253,
-        "column": 22,
-        "endLine": 6253,
-        "endColumn": 40,
-        "start": 215734,
-        "end": 215752,
-        "kind": "call:showStatus",
-        "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
-      },
-      "sink": {
-        "kind": "call:showStatus",
-        "channel": "printable-visible"
-      },
-      "branches": [
-        {
-          "id": "B-9abedd5724d6",
-          "conditions": [],
-          "runtimeChoices": [],
-          "segments": [
-            {
-              "kind": "literal",
-              "text": "Import cancelled",
-              "stylePath": []
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "VS-885d375888fd5e95",
-      "site": {
-        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6256,
+        "line": 6252,
         "column": 21,
-        "endLine": 6256,
-        "endColumn": 58,
-        "start": 215794,
-        "end": 215831,
+        "endLine": 6252,
+        "endColumn": 39,
+        "start": 215540,
+        "end": 215558,
+        "kind": "call:showStatus",
+        "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
+      },
+      "sink": {
+        "kind": "call:showStatus",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-9abedd5724d6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Import cancelled",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-93925c57456e3d19",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 6255,
+        "column": 20,
+        "endLine": 6255,
+        "endColumn": 57,
+        "start": 215597,
+        "end": 215634,
         "kind": "call:showStatus",
         "nodeSha256": "4e9489bc920ccdbf41cd42efa8d0a61083434aea1bc201261ea919316610064d"
       },
@@ -20886,15 +20795,111 @@
       ]
     },
     {
-      "id": "VS-a716d4cd04a19a3b",
+      "id": "VS-cb93d2d0a8a8677e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
         "line": 6260,
-        "column": 20,
+        "column": 22,
         "endLine": 6260,
+        "endColumn": 40,
+        "start": 215831,
+        "end": 215849,
+        "kind": "call:showStatus",
+        "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
+      },
+      "sink": {
+        "kind": "call:showStatus",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-9abedd5724d6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Import cancelled",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-d9e4e8dd8eec76fb",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 6265,
+        "column": 22,
+        "endLine": 6265,
+        "endColumn": 40,
+        "start": 216003,
+        "end": 216021,
+        "kind": "call:showStatus",
+        "nodeSha256": "c7df9d23977216359f6787226b4a68adbe8c9769c29a13b65e43308f221f9e82"
+      },
+      "sink": {
+        "kind": "call:showStatus",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-9abedd5724d6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Import cancelled",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-3b7501b5aff1d0ff",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 6268,
+        "column": 21,
+        "endLine": 6268,
+        "endColumn": 58,
+        "start": 216063,
+        "end": 216100,
+        "kind": "call:showStatus",
+        "nodeSha256": "4e9489bc920ccdbf41cd42efa8d0a61083434aea1bc201261ea919316610064d"
+      },
+      "sink": {
+        "kind": "call:showStatus",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-7d6a22ed70a1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Session imported from: ",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-9b311b37a5951d95",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 6272,
+        "column": 20,
+        "endLine": 6272,
         "endColumn": 64,
-        "start": 215928,
-        "end": 215972,
+        "start": 216197,
+        "end": 216241,
         "kind": "call:showError",
         "nodeSha256": "458ac85e1b946664ab563c65bece0b62578ccdfec6955f0ced6f235524d669b9"
       },
@@ -20918,15 +20923,15 @@
       ]
     },
     {
-      "id": "VS-d235a5fbafabe376",
+      "id": "VS-84742bfddc5964e6",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6307,
+        "line": 6320,
         "column": 19,
-        "endLine": 6307,
+        "endLine": 6320,
         "endColumn": 51,
-        "start": 217145,
-        "end": 217177,
+        "start": 217449,
+        "end": 217481,
         "kind": "call:showError",
         "nodeSha256": "0a809e1d31514ad855e74e0fac8e40c6848a414d50e06c2f0112dcdde62ac1aa"
       },
@@ -20950,15 +20955,15 @@
       ]
     },
     {
-      "id": "VS-5d519f7000b28d7c",
+      "id": "VS-b555c6d6b7192de1",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6316,
+        "line": 6329,
         "column": 21,
-        "endLine": 6316,
+        "endLine": 6329,
         "endColumn": 61,
-        "start": 217369,
-        "end": 217409,
+        "start": 217673,
+        "end": 217713,
         "kind": "call:showStatus",
         "nodeSha256": "7ff4af46e71dcff457852dc5ba1f7aef5422c59b1f49c44482fa8efe9bb9f825"
       },
@@ -20982,15 +20987,15 @@
       ]
     },
     {
-      "id": "VS-20b7a001409a6a28",
+      "id": "VS-c1fc8e3a1a99b535",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6329,
+        "line": 6342,
         "column": 42,
-        "endLine": 6329,
+        "endLine": 6342,
         "endColumn": 89,
-        "start": 217810,
-        "end": 217857,
+        "start": 218114,
+        "end": 218161,
         "kind": "new:Text",
         "nodeSha256": "37e3e8a968fa47ee241ae3b5f6eb3f169f12df7f54e6a09104afc28eb8d53bd4"
       },
@@ -21016,15 +21021,15 @@
       ]
     },
     {
-      "id": "VS-ba589bc1ea3c7e53",
+      "id": "VS-29751f730b761a36",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6331,
+        "line": 6344,
         "column": 22,
-        "endLine": 6331,
+        "endLine": 6344,
         "endColumn": 43,
-        "start": 217900,
-        "end": 217921,
+        "start": 218204,
+        "end": 218225,
         "kind": "call:showWarning",
         "nodeSha256": "edacbfe321c6361bbc7ee03031b4aa53654ffb1f8ca15ff471d896e9372378c8"
       },
@@ -21048,15 +21053,15 @@
       ]
     },
     {
-      "id": "VS-694f56c38d791539",
+      "id": "VS-fcbb4b0bd20697d5",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6340,
+        "line": 6353,
         "column": 21,
-        "endLine": 6340,
+        "endLine": 6353,
         "endColumn": 113,
-        "start": 218120,
-        "end": 218212,
+        "start": 218424,
+        "end": 218516,
         "kind": "call:showWarning",
         "nodeSha256": "dab80e20e09c283a18995b1e853ce18a7256e9440fa73ca0507030642192ed61"
       },
@@ -21092,15 +21097,15 @@
       ]
     },
     {
-      "id": "VS-f6536cae8349a5a3",
+      "id": "VS-856d807ee8745f97",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6343,
+        "line": 6356,
         "column": 40,
-        "endLine": 6343,
+        "endLine": 6356,
         "endColumn": 99,
-        "start": 218304,
-        "end": 218363,
+        "start": 218608,
+        "end": 218667,
         "kind": "new:Text",
         "nodeSha256": "b0e93c32822b2c605987db38215adbbffc027c20cc292a8983cfb16db0386dc0"
       },
@@ -21126,15 +21131,15 @@
       ]
     },
     {
-      "id": "VS-46a8b96ed64e382a",
+      "id": "VS-3c409d8ed5c38812",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6416,
+        "line": 6429,
         "column": 40,
-        "endLine": 6416,
+        "endLine": 6429,
         "endColumn": 44,
-        "start": 222285,
-        "end": 222289,
+        "start": 222589,
+        "end": 222593,
         "kind": "new:Text",
         "nodeSha256": "06271baf49532c879aa3c58b48671884bcc858f09197412d682750496c33e1e1"
       },
@@ -21722,15 +21727,15 @@
       ]
     },
     {
-      "id": "VS-0afb272f5cf1949d",
+      "id": "VS-9d4ae98810f5c298",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6434,
+        "line": 6447,
         "column": 40,
-        "endLine": 6434,
+        "endLine": 6447,
         "endColumn": 84,
-        "start": 222808,
-        "end": 222852,
+        "start": 223112,
+        "end": 223156,
         "kind": "new:Text",
         "nodeSha256": "88f63c26c63bb9388d13da77b02b7f6ffddefb0f5933d250d264cb813657b5c9"
       },
@@ -21757,15 +21762,15 @@
       ]
     },
     {
-      "id": "VS-5ac60f08c20484a9",
+      "id": "VS-c4ae0ab9e18bbd50",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6436,
+        "line": 6449,
         "column": 44,
-        "endLine": 6436,
+        "endLine": 6449,
         "endColumn": 61,
-        "start": 222951,
-        "end": 222968,
+        "start": 223255,
+        "end": 223272,
         "kind": "new:Markdown",
         "nodeSha256": "d9f6077217a0fbe0cbd3cb7b3c0e150172f8204279bfb646a5f577f414cdca1c"
       },
@@ -21789,15 +21794,15 @@
       ]
     },
     {
-      "id": "VS-386b2cc51aa9e9af",
+      "id": "VS-646441282b3072a0",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6565,
+        "line": 6578,
         "column": 40,
-        "endLine": 6565,
+        "endLine": 6578,
         "endColumn": 92,
-        "start": 228825,
-        "end": 228877,
+        "start": 229129,
+        "end": 229181,
         "kind": "new:Text",
         "nodeSha256": "215f75265e75dd6b3f040e08efb1b486ebe02f774d1632b7d35a9afddb2a6493"
       },
@@ -21824,15 +21829,15 @@
       ]
     },
     {
-      "id": "VS-4a18157339c37852",
+      "id": "VS-f2bf4491d9584b1d",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6567,
+        "line": 6580,
         "column": 44,
-        "endLine": 6567,
+        "endLine": 6580,
         "endColumn": 58,
-        "start": 228976,
-        "end": 228990,
+        "start": 229280,
+        "end": 229294,
         "kind": "new:Markdown",
         "nodeSha256": "b604a2876e40d49d83b5a7a49d7fee535c32c5861837d5db4f2af785aff526bd"
       },
@@ -22336,15 +22341,15 @@
       ]
     },
     {
-      "id": "VS-92cffdd55e296ef8",
+      "id": "VS-84cd720946d0b40e",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6580,
+        "line": 6593,
         "column": 41,
-        "endLine": 6580,
+        "endLine": 6593,
         "endColumn": 89,
-        "start": 229398,
-        "end": 229446,
+        "start": 229702,
+        "end": 229750,
         "kind": "new:Text",
         "nodeSha256": "83edbeac0140b46786299ab32ca9784d161a7b21b215b0c2d5b077694a10363a"
       },
@@ -22370,15 +22375,15 @@
       ]
     },
     {
-      "id": "VS-20cf97c4f1c8775e",
+      "id": "VS-0572b832d0380f43",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6615,
+        "line": 6628,
         "column": 13,
-        "endLine": 6615,
+        "endLine": 6628,
         "endColumn": 95,
-        "start": 230500,
-        "end": 230582,
+        "start": 230804,
+        "end": 230886,
         "kind": "new:Text",
         "nodeSha256": "f6f05ccaf9924754e48a5fcfa4b87630436ae6b60ac05c76eacef7bdfd6298b4"
       },
@@ -22416,15 +22421,15 @@
       ]
     },
     {
-      "id": "VS-04ae3ec150f89477",
+      "id": "VS-78fb9b5ac1742448",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
-        "line": 6730,
+        "line": 6743,
         "column": 19,
-        "endLine": 6730,
+        "endLine": 6743,
         "endColumn": 101,
-        "start": 234094,
-        "end": 234176,
+        "start": 234398,
+        "end": 234480,
         "kind": "call:showError",
         "nodeSha256": "feb4b9520354f6700bcc56600c93e1ecb51d9e22658a992284e046396dc83a8e"
       },
@@ -25869,15 +25874,15 @@
       ]
     },
     {
-      "id": "VS-176416750ab7c58e",
+      "id": "VS-f2c10dc5c6513433",
       "site": {
         "path": "packages/coding-agent/src/utils/clipboard.ts",
-        "line": 16,
+        "line": 20,
         "column": 23,
-        "endLine": 16,
+        "endLine": 20,
         "endColumn": 49,
-        "start": 548,
-        "end": 574,
+        "start": 705,
+        "end": 731,
         "kind": "output:process.stdout.write",
         "nodeSha256": "36cd29de4c82e8148c0f7e6cbe1a000161e02cd1c076bb18cc789388edcd6ca8"
       },
