@@ -30,7 +30,7 @@
 (test built-in-provider-registry-is-complete
   (let ((ids (mapcar #'cadr-ai:provider-definition-id
                      (cadr-ai:list-provider-definitions))))
-    (is (= 40 (length ids)))
+    (is (= 41 (length ids)))
     (is (member :amazon-bedrock ids))
     (is (member :google-vertex ids))
     (is (member :radius ids))

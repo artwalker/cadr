@@ -165,8 +165,8 @@
                             definition)))))))
 
 (test goal14-provider-declarations-own-runtime-decisions-once
-  (is (= 40 (length cadr-ai::*built-in-provider-definition-rows*)))
-  (is (= 40 (length (cadr-ai:list-provider-definitions))))
+  (is (= 41 (length cadr-ai::*built-in-provider-definition-rows*)))
+  (is (= 41 (length (cadr-ai:list-provider-definitions))))
   (let* ((definitions (cadr-ai:list-provider-definitions))
          (declared
            (sort

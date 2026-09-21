@@ -91,7 +91,7 @@
           (cadr-ai:make-built-in-models-runtime
            :environment '(("RADIUS_GATEWAY_URL" . "https://radius.test")))))
     (dolist (provider-id
-             '(:anthropic :github-copilot :kimi-coding :openai-codex
+             '(:anthropic :github-copilot :kimi-coding :meta :openai-codex
                :openrouter :radius :xai))
       (let ((provider (cadr-ai:models-runtime-provider runtime provider-id)))
         (is (functionp

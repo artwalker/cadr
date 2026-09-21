@@ -64,6 +64,7 @@
                               :pathname "oauth/providers"
                               :serial t
                               :components ((:file "xai")
+                                           (:file "meta")
                                            (:file "kimi")
                                            (:file "github-copilot")
                                            (:file "openrouter")
@@ -83,6 +84,7 @@
                                            (:file "vertex")
                                            (:file "bedrock")
                                            (:file "pi-messages")
+                                           (:file "meta")
                                            (:file "definitions")
                                            (:file "registry")
                                            (:file "runtime-projection")))
@@ -137,7 +139,8 @@
                              (:file "goal12-codex-websocket-test")
                              (:file "goal20-websocket-test")
                              (:file "goal20-stream-accumulation-test")
-                             (:file "goal20-json-parse-windows-test"))))
+                             (:file "goal20-json-parse-windows-test")
+                             (:file "meta-provider-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-ai/tests :run-tests)

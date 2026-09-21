@@ -29,6 +29,7 @@
     (:groq . 7)
     (:huggingface . 71)
     (:kimi-coding . 4)
+    (:meta . 5)
     (:minimax . 3)
     (:minimax-cn . 3)
     (:mistral . 32)
@@ -60,7 +61,7 @@
       :azure-openai-responses :baseten :cerebras
       :cloudflare-ai-gateway :cloudflare-workers-ai :deepseek
       :fireworks :github-copilot :google :google-vertex :groq
-      :huggingface :kimi-coding :minimax :minimax-cn :mistral
+      :huggingface :kimi-coding :meta :minimax :minimax-cn :mistral
       :moonshotai :moonshotai-cn :nvidia :openai :openai-codex
       :opencode :opencode-go :openrouter :qwen-token-plan
       :qwen-token-plan-cn :qwen-token-plan-individual :radius
@@ -73,7 +74,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1354 (length (cadr-ai:list-model-metadata))))
+  (is (= 1359 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
