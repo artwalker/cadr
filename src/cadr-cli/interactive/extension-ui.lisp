@@ -13,6 +13,10 @@
   ((title
     :initarg :title
     :reader extension-input-dialog-title)
+   (description
+    :initarg :description
+    :initform nil
+    :reader extension-input-dialog-description)
    (input
     :initarg :input
     :reader extension-input-dialog-input)
@@ -23,11 +27,16 @@
     :initform 80
     :accessor extension-input-dialog-input-width)))
 
-(defun make-extension-input-dialog (title)
+(defun make-extension-input-dialog
+    (title &key description initial-value)
   (make-instance
    'extension-input-dialog
    :title title
-   :input (cadr-tui:make-single-line-input :prompt "> ")))
+   :description description
+   :input
+   (cadr-tui:make-single-line-input
+    :prompt "> "
+    :value (or initial-value ""))))
 
 (defparameter *extension-dialog-border-by-width*
   (make-hash-table :test #'eql))
@@ -77,21 +86,38 @@
       (cadr-tui:render-single-line-input
        (extension-input-dialog-input dialog)
        width)
-    (multiple-value-bind (lines row column)
-        (extension-dialog-chrome
-         (extension-input-dialog-title dialog)
-         width input-lines input-row input-column
-         (format
-          nil "~A  ~A"
-          (selector-keybinding-hint
-           (cadr-tui:get-keybindings)
-           "tui.select.confirm" "submit")
-          (selector-keybinding-hint
-           (cadr-tui:get-keybindings)
-           "tui.select.cancel" "cancel")))
-      (setf (extension-input-dialog-input-origin dialog) row
-            (extension-input-dialog-input-width dialog) (max 1 width))
-      (values lines row column))))
+    (let* ((description
+             (extension-input-dialog-description dialog))
+           (desc-lines
+             (when (and description (plusp (length description)))
+               (append
+                (mapcar
+                 (lambda (line)
+                   (selector-component-text-line
+                    (cadr-tui:theme-foreground
+                     :dim line :enabled-p t)
+                    width))
+                 (uiop:split-string
+                  description :separator '(#\Newline)))
+                (list ""))))
+           (body (append desc-lines input-lines))
+           (body-row (+ (length desc-lines) input-row)))
+      (multiple-value-bind (lines row column)
+          (extension-dialog-chrome
+           (extension-input-dialog-title dialog)
+           width body body-row input-column
+           (format
+            nil "~A  ~A"
+            (selector-keybinding-hint
+             (cadr-tui:get-keybindings)
+             "tui.select.confirm" "submit")
+            (selector-keybinding-hint
+             (cadr-tui:get-keybindings)
+             "tui.select.cancel" "cancel")))
+        (setf (extension-input-dialog-input-origin dialog) row
+              (extension-input-dialog-input-width dialog)
+              (max 1 width))
+        (values lines row column)))))
 
 (defmethod cadr-tui:component-handle-event
     ((dialog extension-input-dialog) event)
@@ -756,6 +782,7 @@ injects the TUI render request when the component is shown."))
       ((typep component 'extension-input-dialog)
        (list :input-dialog
              (extension-input-dialog-title component)
+             (extension-input-dialog-description component)
              (cadr-tui:single-line-input-value
               (extension-input-dialog-input component))))
       ((typep component 'extension-editor-dialog)
