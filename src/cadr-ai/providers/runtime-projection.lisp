@@ -233,18 +233,26 @@ which auth strategies are structured."
           append (list key value)))
 
 (defun make-built-in-runtime-provider (definition &optional environment)
-  (let ((provider-id
-          (provider-definition-id definition))
-        (radius-gateway
-          (normalize-radius-gateway
-           (or (environment-value environment "RADIUS_GATEWAY_URL")
-               (provider-definition-base-url definition)))))
-    (make-runtime-provider
+  (let* ((provider-id
+           (provider-definition-id definition))
+         (radius-gateway
+           (normalize-radius-gateway
+            (or (environment-value environment "RADIUS_GATEWAY_URL")
+                (provider-definition-base-url definition))))
+         (radius-parts
+           (when (eq provider-id :radius)
+             (make-radius-runtime-provider-parts
+              definition environment radius-gateway))))
+    (apply
+     #'make-runtime-provider
      :id provider-id
      :name (provider-definition-name definition)
      :oauth-metadata
      (provider-definition-oauth-metadata definition)
-     :models (provider-runtime-models provider-id)
+     :models
+     (if radius-parts
+         nil
+         (provider-runtime-models provider-id))
      :api-key-auth-p
      (not
       (null
@@ -277,7 +285,8 @@ which auth strategies are structured."
      :stream-function
      (lambda (model context on-event &rest options)
        (built-in-runtime-dispatch
-        definition model context options t on-event)))))
+        definition model context options t on-event))
+     radius-parts)))
 
 (defun make-built-in-models-runtime
     (&key credential-store model-store environment)

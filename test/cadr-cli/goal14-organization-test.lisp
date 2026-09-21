@@ -1445,7 +1445,11 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +5 Goal 24: Radius offline catalog helpers
+              ;; (#:load-radius-gateway-config #:+default-radius-gateway+
+              ;; #:normalize-radius-gateway #:merge-radius-models
+              ;; #:radius-baseline-models).
+              "dd14f2ce6405f7e0b8f9cf258733e09dc89fca231fcf9b0c1820f454803df7db"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

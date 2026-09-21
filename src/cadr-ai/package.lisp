@@ -471,6 +471,11 @@
    #:radius-authorization-url
    #:materialize-cloudflare-url
    #:radius-models-from-config
+   #:load-radius-gateway-config
+   #:+default-radius-gateway+
+   #:normalize-radius-gateway
+   #:merge-radius-models
+   #:radius-baseline-models
    #:build-request
    #:parse-complete-response
    #:complete-chat
