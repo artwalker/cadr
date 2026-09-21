@@ -73,6 +73,14 @@
       (uiop:string-prefix-p
        "arn:aws-us-gov:" (string-downcase (model-id model)))))
 
+(defun bedrock-cache-write-1h-tokens (usage)
+  (let ((details (json-get usage "cacheDetails")))
+    (if (not (vectorp details))
+        0
+        (loop for detail across details
+              when (string= (json-get detail "ttl") "1h")
+                sum (or (json-get detail "inputTokens") 0)))))
+
 (defun bedrock-effort (model reasoning)
   (cond
     ((and (eq reasoning :xhigh)
@@ -880,6 +888,10 @@
               (json-get usage "cacheWriteInputTokens")
               nil
               (json-get usage "totalTokens"))
+             (setf
+              (usage-cache-write-1h
+               (assistant-message-usage message))
+              (bedrock-cache-write-1h-tokens usage))
              (apply-known-model-cost message))))))))
 
 (defmethod parse-complete-response
@@ -925,7 +937,11 @@
          (json-get usage "inputTokens")
          (json-get usage "outputTokens")
          (json-get usage "cacheReadInputTokens")
-         (json-get usage "cacheWriteInputTokens"))))
+         (json-get usage "cacheWriteInputTokens"))
+        (setf
+         (usage-cache-write-1h
+          (assistant-message-usage message))
+         (bedrock-cache-write-1h-tokens usage))))
     (when (tool-call-present-p message)
       (setf (assistant-message-stop-reason message) :tool-use))
     (apply-known-model-cost message)))
