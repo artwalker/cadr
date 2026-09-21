@@ -26,8 +26,8 @@ git diff --stat \
 | 面 | 处置 |
 |---|---|
 | Meta Muse：`/login meta` 与 `META_API_KEY` | https://github.com/artwalker/cadr/pull/754 |
-| `/bug` 保留粘贴诊断里的换行 | https://github.com/artwalker/cadr/pull/755 。交互界面还没有调用 `bug-report-hint`，取消和可重试失败的提示抑制还不会出现在屏幕上 |
-| 用户取消和可重试的 provider 失败不提示 `/bug` | 决策在 https://github.com/artwalker/cadr/pull/755 。调用点未接 |
+| `/bug` 保留粘贴诊断里的换行 | https://github.com/artwalker/cadr/pull/755 |
+| 用户取消和可重试的 provider 失败不提示 `/bug` | https://github.com/artwalker/cadr/pull/755 。正在流式输出的助手错误结束时，每个交互模式只显示一行淡色提示。取消、可重试失败、以及没有流式条目的 message-end 不显示 |
 | 无显示环境的剪贴板回退到 OSC 52 | https://github.com/artwalker/cadr/pull/753 |
 | 继承的 z.ai `Prompt too long` 视为上下文溢出 | https://github.com/artwalker/cadr/pull/751 |
 | Cerebras 不再宣称 `supportsStrictMode` | https://github.com/artwalker/cadr/pull/752 |
