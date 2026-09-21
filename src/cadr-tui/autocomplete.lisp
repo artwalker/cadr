@@ -68,9 +68,20 @@
    :should-trigger-file-completion-function
    should-trigger-file-completion-function))
 
+(defun autocomplete-cjk-punctuation-p (character)
+  (find character
+        "，．：；！？（）［］｛｝“”‘’…—。、「」『』《》【】"))
+
+(defun autocomplete-separator-p (character)
+  (or (member character
+              '(#\Space #\Tab #\Newline #\Return #\Page)
+              :test #'char=)
+      (char= character (code-char #x3000))
+      (autocomplete-cjk-punctuation-p character)))
+
 (defun autocomplete-delimiter-p (character)
-  (member character
-          '(#\Space #\Tab #\" #\' #\=)))
+  (or (member character '(#\" #\' #\=))
+      (autocomplete-separator-p character)))
 
 (defun last-autocomplete-delimiter (text)
   (position-if #'autocomplete-delimiter-p
@@ -157,7 +168,8 @@
 (defun autocomplete-quote-value
     (path at-prefix-p quoted-p)
   (let* ((needs-quotes-p
-           (or quoted-p (find #\Space path)))
+           (or quoted-p
+               (find-if #'autocomplete-separator-p path)))
          (prefix (if at-prefix-p "@" "")))
     (if needs-quotes-p
         (format nil "~A\"~A\"" prefix path)
