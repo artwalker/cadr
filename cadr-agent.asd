@@ -86,6 +86,7 @@
                              (:file "session-test")
                              (:file "session-v2-test")
                              (:file "session-v3-test")
+                             (:file "goal24-session-usage-test")
                              (:file "compaction-test")
                              (:file "goal12-core-capabilities-test")
                              (:file "storage-test")

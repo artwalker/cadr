@@ -273,6 +273,8 @@
    #:session-entry-thinking-level
    #:session-entry-provider
    #:session-entry-model-id
+   #:session-entry-kind
+   #:session-entry-note
    #:session-entry-active-tool-names
    #:session-entry-from-id
    #:session-entry-details
@@ -312,6 +314,7 @@
    #:session-append-compaction
    #:session-append-thinking-level-change
    #:session-append-model-change
+   #:session-append-usage
    #:session-append-branch-summary
    #:session-append-custom
    #:session-append-custom-message
