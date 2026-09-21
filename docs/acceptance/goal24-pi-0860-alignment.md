@@ -51,7 +51,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | https://github.com/artwalker/cadr/pull/758 |
 | `user_bash` 失败即停。`undefined` 才继续传播 | https://github.com/artwalker/cadr/pull/757 |
 | 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
-| `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | 工具结果类型 |
+| `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | https://github.com/artwalker/cadr/pull/772 |
 | 压缩、分支摘要、重试的 spinner 进入编辑器边框 | https://github.com/artwalker/cadr/pull/767 |
 | 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | https://github.com/artwalker/cadr/pull/760 |
 | Bash / PowerShell 时长至少一分钟时写成「分 + 秒」 | https://github.com/artwalker/cadr/pull/756 |
