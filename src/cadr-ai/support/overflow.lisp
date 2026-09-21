@@ -59,8 +59,10 @@
         (contains-ci-p
          fragment (assistant-message-error-message message)))
       +overflow-fragments+)
-     (bare-overflow-http-status-p
-      (assistant-message-error-message message))))
+     (and
+      (eq (assistant-message-provider message) :cerebras)
+      (bare-overflow-http-status-p
+       (assistant-message-error-message message)))))
    (and
     context-window
     (eq :stop (assistant-message-stop-reason message))
