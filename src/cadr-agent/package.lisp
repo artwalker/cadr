@@ -143,6 +143,7 @@
    #:define-rich-tool
    #:define-command
    #:define-event-hook
+   #:extension-on
    #:define-prompt-template
    #:define-provider
    #:define-native-provider

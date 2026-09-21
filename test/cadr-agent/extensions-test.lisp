@@ -1064,3 +1064,144 @@
         (is (string= "new"
                      (text-content-text
                       (first new-content))))))))
+
+(defun emit-test-agent-end (host)
+  (cadr-agent::run-extension-lifecycle-hooks host :agent-end))
+
+(defun test-agent-end-handler (function)
+  (lambda (event context)
+    (declare (ignore event context))
+    (funcall function)
+    nil))
+
+(test extension-on-unsubscribe-applies-on-the-next-dispatch
+  (let ((calls nil))
+    (flet ((note (name)
+             (setf calls (nconc calls (list name)))))
+      (let* ((stop-a nil)
+             (bundle
+               (make-test-extension-bundle
+                "extension-on-self-removal"
+                (lambda ()
+                  (setf stop-a
+                        (cadr-agent:extension-on
+                         :agent-end
+                         (test-agent-end-handler
+                          (lambda ()
+                            (note "A")
+                            (funcall stop-a)))))
+                  (cadr-agent:extension-on
+                   :agent-end
+                   (test-agent-end-handler
+                    (lambda ()
+                      (note "B")))))))
+             (host (make-test-extension-host (list bundle))))
+        (emit-test-agent-end host)
+        (emit-test-agent-end host)
+        (is (equal '("A" "B" "B") calls))))
+    (let ((calls nil))
+      (flet ((note (name)
+               (setf calls (nconc calls (list name)))))
+        (let* ((stop-b nil)
+               (bundle
+                 (make-test-extension-bundle
+                  "extension-on-pending-removal"
+                  (lambda ()
+                    (cadr-agent:extension-on
+                     :agent-end
+                     (test-agent-end-handler
+                      (lambda ()
+                        (note "A")
+                        (funcall stop-b))))
+                    (setf stop-b
+                          (cadr-agent:extension-on
+                           :agent-end
+                           (test-agent-end-handler
+                            (lambda ()
+                              (note "B")))))
+                    (cadr-agent:extension-on
+                     :agent-end
+                     (test-agent-end-handler
+                      (lambda ()
+                        (note "C")))))))
+               (host (make-test-extension-host (list bundle))))
+          (emit-test-agent-end host)
+          (emit-test-agent-end host)
+          (is (equal '("A" "B" "C" "A" "C") calls)))))
+    (let ((calls nil))
+      (flet ((note (name)
+               (setf calls (nconc calls (list name)))))
+        (let* ((bundle
+                 (make-test-extension-bundle
+                  "extension-on-deferred-add"
+                  (lambda ()
+                    (cadr-agent:extension-on
+                     :agent-end
+                     (test-agent-end-handler
+                      (lambda ()
+                        (note "A")
+                        (cadr-agent:extension-on
+                         :agent-end
+                         (test-agent-end-handler
+                          (lambda ()
+                            (note "C")))))))
+                    (cadr-agent:extension-on
+                     :agent-end
+                     (test-agent-end-handler
+                      (lambda ()
+                        (note "B")))))))
+               (host (make-test-extension-host (list bundle))))
+          (emit-test-agent-end host)
+          (emit-test-agent-end host)
+          (is (equal '("A" "B" "A" "B" "C") calls)))))
+    (let ((calls nil))
+      (flet ((note (name)
+               (setf calls (nconc calls (list name)))))
+        (let* ((stop-a nil)
+               (stop-b nil)
+               (bundle
+                 (make-test-extension-bundle
+                  "extension-on-nested-dispatch"
+                  (lambda ()
+                    (setf stop-a
+                          (cadr-agent:extension-on
+                           :agent-end
+                           (test-agent-end-handler
+                            (lambda ()
+                              (note "A")
+                              (funcall stop-a)
+                              (funcall stop-b)
+                              (cadr-agent:extension-on
+                               :agent-end
+                               (test-agent-end-handler
+                                (lambda ()
+                                  (note "C"))))
+                              (emit-test-agent-end
+                               cadr-agent::*extension-registration-host*)))))
+                    (setf stop-b
+                          (cadr-agent:extension-on
+                           :agent-end
+                           (test-agent-end-handler
+                            (lambda ()
+                              (note "B"))))))))
+               (host (make-test-extension-host (list bundle))))
+          (emit-test-agent-end host)
+          (is (equal '("A" "C" "B") calls))))
+    (let* ((stop nil)
+           (bundle
+             (make-test-extension-bundle
+              "extension-on-last-handler"
+              (lambda ()
+                (setf stop
+                      (cadr-agent:extension-on
+                       :agent-end
+                       (test-agent-end-handler
+                        (lambda ()
+                          nil)))))))
+           (host (make-test-extension-host (list bundle))))
+      (funcall stop)
+      (funcall stop)
+      (is (null
+           (gethash :agent-end
+                    (cadr-agent::extension-snapshot-hooks
+                     (cadr-agent::extension-host-snapshot host)))))))))

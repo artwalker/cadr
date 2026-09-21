@@ -97,7 +97,7 @@
             (acquire-extension-snapshot
              host snapshot)))
       (unwind-protect
-           (sb-thread:with-mutex
+           (sb-thread:with-recursive-lock
                ((extension-host-hook-lock host))
              (dolist (definition definitions)
                (handler-case

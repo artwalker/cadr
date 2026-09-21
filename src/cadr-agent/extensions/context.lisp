@@ -2,6 +2,7 @@
 
 (defvar *extension-registration-bundle* nil)
 (defvar *extension-registration-api* nil)
+(defvar *extension-registration-host* nil)
 
 ;;; Immutable effective registry containers
 

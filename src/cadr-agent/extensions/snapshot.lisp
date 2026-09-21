@@ -299,7 +299,8 @@ types add a method here instead of a second etypecase."))
       (dolist (bundle
                (extension-snapshot-bundles snapshot))
         (incf
-         (extension-bundle-snapshot-references bundle)))
+         (extension-bundle-snapshot-references bundle))
+        (note-extension-bundle-host bundle host))
       (setf old (extension-host-snapshot host)
             (extension-host-snapshot host) snapshot)
       (dolist (flag (extension-snapshot-flags snapshot))
@@ -390,6 +391,9 @@ types add a method here instead of a second etypecase."))
               (extension-tool-renderer-definition
                :tool-renderer)))))
     (unwind-protect
-         (funcall function context)
+         (let ((*extension-registration-bundle*
+                 (extension-definition-bundle definition))
+               (*extension-registration-host* host))
+           (funcall function context))
       (setf (%extension-context-active-p context) nil)
       (release-acquired-extension-snapshot host held))))

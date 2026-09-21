@@ -22,7 +22,8 @@
   (entry-renderers nil :type list)
   (tool-renderers nil :type list)
   (hidden-p nil :type boolean)
-  (snapshot-references 0 :type (integer 0 *)))
+  (snapshot-references 0 :type (integer 0 *))
+  (hosts nil :type list))
 
 (defstruct extension-tool-definition
   name
@@ -116,6 +117,7 @@
 
 (defun call-with-extension-load (host bundle function)
   (let ((*extension-registration-bundle* bundle)
+        (*extension-registration-host* host)
         (*extension-registration-api*
           (%make-extension-api
            :host host
@@ -403,6 +405,54 @@
          event)
         event)))
 
+(defun note-extension-bundle-host (bundle host)
+  (when (and bundle host)
+    (pushnew host (extension-bundle-hosts bundle) :test #'eq)))
+
+(defun remember-live-extension-hook (host definition)
+  (let* ((snapshot (extension-host-snapshot host))
+         (event (extension-hook-definition-event definition))
+         (hooks (and snapshot (extension-snapshot-hooks snapshot))))
+    (when hooks
+      (setf (gethash event hooks)
+            (append (gethash event hooks)
+                    (list definition))))))
+
+(defun forget-live-extension-hook (host definition)
+  (let* ((snapshot (extension-host-snapshot host))
+         (hooks (and snapshot (extension-snapshot-hooks snapshot))))
+    (when hooks
+      (let* ((event (extension-hook-definition-event definition))
+             (remaining
+               (delete definition
+                       (gethash event hooks)
+                       :count 1
+                       :test #'eq)))
+        (if remaining
+            (setf (gethash event hooks) remaining)
+            (remhash event hooks))))))
+
+(defun unsubscribe-extension-hook (definition)
+  (let* ((bundle (extension-hook-definition-bundle definition))
+         (hosts (or (extension-bundle-hosts bundle)
+                    (and *extension-registration-host*
+                         (list *extension-registration-host*)))))
+    (if hosts
+        (dolist (host hosts)
+          (sb-thread:with-recursive-lock
+              ((extension-host-hook-lock host))
+            (setf (extension-bundle-hooks bundle)
+                  (delete definition
+                          (extension-bundle-hooks bundle)
+                          :count 1
+                          :test #'eq))
+            (forget-live-extension-hook host definition)))
+        (setf (extension-bundle-hooks bundle)
+              (delete definition
+                      (extension-bundle-hooks bundle)
+                      :count 1
+                      :test #'eq)))))
+
 (defun register-extension-hook
     (event &key (priority 0) handler)
   (let ((bundle (require-extension-registration-bundle))
@@ -421,18 +471,33 @@
       (error
        'extension-registration-error
        :message "Extension hook handler must be a function"))
-    (setf
-     (extension-bundle-hooks bundle)
-     (nconc
-      (extension-bundle-hooks bundle)
-      (list
-       (make-extension-hook-definition
-        :event event
-        :priority priority
-        :handler handler
-        :bundle bundle
-        :order (length (extension-bundle-hooks bundle)))))))
-  event)
+    (let ((definition
+            (make-extension-hook-definition
+             :event event
+             :priority priority
+             :handler handler
+             :bundle bundle
+             :order (length (extension-bundle-hooks bundle)))))
+      (flet ((install ()
+               (setf (extension-bundle-hooks bundle)
+                     (nconc (extension-bundle-hooks bundle)
+                            (list definition)))
+               (when *extension-registration-host*
+                 (note-extension-bundle-host
+                  bundle *extension-registration-host*)
+                 (remember-live-extension-hook
+                  *extension-registration-host* definition))))
+        (if *extension-registration-host*
+            (sb-thread:with-recursive-lock
+                ((extension-host-hook-lock
+                  *extension-registration-host*))
+              (install))
+            (install)))
+      (lambda ()
+        (unsubscribe-extension-hook definition)))))
+
+(defun extension-on (event handler)
+  (register-extension-hook event :handler handler))
 
 (defun register-extension-template
     (name &key description argument-hint template)
