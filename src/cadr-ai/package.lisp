@@ -30,6 +30,7 @@
    #:model-supports-images-p
    #:model-supports-tools-p
    #:model-reasoning-p
+   #:model-prompt-cache
    #:text-content
    #:make-text-content
    #:text-content-text
@@ -236,6 +237,7 @@
    #:model-metadata-thinking-level-map
    #:model-metadata-headers
    #:model-metadata-compat
+   #:model-metadata-prompt-cache
    #:model-metadata-input-price
    #:model-metadata-output-price
    #:model-metadata-cache-read-price

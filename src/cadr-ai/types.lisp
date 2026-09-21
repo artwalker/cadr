@@ -41,7 +41,8 @@
   (reasoning-p nil :type boolean)
   (thinking-level-map nil :type list)
   (headers nil :type list)
-  (compat nil :type list))
+  (compat nil :type list)
+  (prompt-cache nil :type list))
 
 (cadr-core:define-redacted-print-object (model value stream)
   (format stream "~A/~A :headers [REDACTED]"
