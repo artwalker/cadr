@@ -373,6 +373,38 @@
             info)))
     (error () nil)))
 
+(defun find-session-path-by-id
+    (id &key
+        (directory (default-session-directory))
+        cwd)
+  ;; pi@ecac0a9c4 SessionManager.findById: header-only exact id match.
+  (let* ((session-directory
+           (uiop:ensure-directory-pathname directory))
+         (canonical-cwd
+           (and cwd (canonical-session-cwd cwd))))
+    (unless (probe-file session-directory)
+      (return-from find-session-path-by-id nil))
+    (dolist
+        (path
+         (directory
+          (merge-pathnames
+           "*.jsonl" session-directory)))
+      (let ((header
+              (handler-case
+                  (read-session-header-for-discovery path)
+                (error () nil))))
+        (when
+            (and
+             header
+             (string= id (session-file-header-id header))
+             (or
+              (null canonical-cwd)
+              (string=
+               canonical-cwd
+               (or (session-file-header-cwd header) ""))))
+          (return-from find-session-path-by-id path))))
+    nil))
+
 (defun list-session-infos (&key
                                  (directory
                                    (default-session-directory))
@@ -458,13 +490,11 @@
 
 (defun resume-session
     (id &key (directory (default-session-directory)))
-  (let ((info
-          (find id
-                (list-session-infos :directory directory)
-                :key #'session-list-info-id
-                :test #'string=)))
-    (if info
-        (load-session (session-list-info-path info))
+  (let ((path
+          (find-session-path-by-id
+           id :directory directory)))
+    (if path
+        (load-session path)
         (session-failure
          (uiop:ensure-directory-pathname directory)
          nil

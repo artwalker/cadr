@@ -49,7 +49,8 @@
 
 (defun resolve-session-reference
     (argument directory cwd)
-  ;; Baseline main.ts resolveSessionPath: path, local, then global;
+  ;; Baseline main.ts resolveSessionPath: path, exact header id,
+  ;; then full-metadata prefix (local cwd, then global).
   ;; NIL when nothing matches (callers own the not-found message).
   (if (session-argument-path-p argument)
       (cadr-agent:load-session
@@ -57,6 +58,16 @@
         (pathname argument)
         (uiop:ensure-directory-pathname cwd)))
       (or
+       (let ((path
+               (or
+                (cadr-agent:find-session-path-by-id
+                 argument
+                 :directory directory
+                 :cwd cwd)
+                (cadr-agent:find-session-path-by-id
+                 argument
+                 :directory directory))))
+         (and path (cadr-agent:load-session path)))
        (find-session-by-id-or-prefix
         argument
         (cadr-agent:list-session-infos
@@ -189,12 +200,10 @@
        (when
            (and
             session-id
-            (find
+            (cadr-agent:find-session-path-by-id
              session-id
-             (cadr-agent:list-session-infos
-              :directory directory :cwd cwd)
-             :key #'cadr-agent:session-list-info-id
-             :test #'string=))
+             :directory directory
+             :cwd cwd))
          (error
           'cadr-ai:configuration-error
           :message
@@ -292,17 +301,13 @@
       (cadr-agent:create-session
        :directory directory :cwd cwd)))
     (session-id
-     (let ((info
-             (find
+     (let ((path
+             (cadr-agent:find-session-path-by-id
               session-id
-              (cadr-agent:list-session-infos
-               :directory directory :cwd cwd)
-              :key #'cadr-agent:session-list-info-id
-              :test #'string=)))
+              :directory directory
+              :cwd cwd)))
        (or
-        (and info
-             (cadr-agent:load-session
-              (cadr-agent:session-list-info-path info)))
+        (and path (cadr-agent:load-session path))
         (progn
           ;; Baseline main.ts:393-399 — yellow warning on stderr.
           (format
