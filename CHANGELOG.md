@@ -12,13 +12,17 @@ tag/Release step.
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
   Not full v0.86.1 alignment. `version.sexp` stays `0.2.0`.
 
+- Goal 24: persist structured crash records (`crashes.json`) for `/bug`
+  diagnostics and announce unnotified crashes on TUI start. Summary
+  generation for `/bug` remains open.
+
 - Goal 24: `/bug` consent via extension UI (`:input` / `:select`),
   Radius multipart upload to `/v1/bug-reports`, and zip export with
-  baseline status copy. Session transcript optional; summary and crash
-  announcement remain open. Custom entry type stays `pi.bug-report`.
-  `/session` prints the baseline Cache Warming block as inactive
-  (`streaming` / `waiting for first request`) without warmer dispatch.
-  Hotkey help uses `Copy selection or last assistant message` for Ctrl+X.
+  baseline status copy. Session transcript optional. Custom entry type
+  stays `pi.bug-report`. `/session` prints the baseline Cache Warming
+  block as inactive (`streaming` / `waiting for first request`) without
+  warmer dispatch. Hotkey help uses
+  `Copy selection or last assistant message` for Ctrl+X.
 
 - Goal 24: pin fixed pi baseline from v0.85.1 (`d981de122`) to
   v0.86.0 (`ecac0a9c4`). Release identity is
