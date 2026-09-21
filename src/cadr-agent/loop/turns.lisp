@@ -267,6 +267,19 @@
                :timeout remaining)
             (return t)))))))
 
+(defun finish-agent-cancelled-retry (agent)
+  ;; Baseline agent-session.ts _finishCancelledRetry (#9340).
+  (when (plusp (agent-retry-attempt agent))
+    (let ((attempt
+            (agent-retry-attempt agent)))
+      (setf (agent-retry-attempt agent) 0)
+      (emit-agent-event
+       agent :auto-retry-end
+       :success nil
+       :attempt attempt
+       :final-error "Retry cancelled")))
+  agent)
+
 (defun prepare-agent-retry (agent message)
   (unless (agent-will-retry-p agent message)
     (return-from prepare-agent-retry nil))
@@ -303,12 +316,7 @@
          (agent-retry-in-progress-p agent) nil
          (agent-retry-abort-requested-p agent) nil))
       (unless completed-p
-        (setf (agent-retry-attempt agent) 0)
-        (emit-agent-event
-         agent :auto-retry-end
-         :success nil
-         :attempt attempt
-         :final-error "Retry cancelled"))
+        (finish-agent-cancelled-retry agent))
       completed-p)))
 
 (defun finish-agent-retry-failure (agent message)
@@ -337,6 +345,11 @@
                0 :adjustable t :fill-pointer 0)))
         (run-agent-loop agent messages))
     do
+    ;; Baseline _handlePostAgentRun: abort clears in-flight retry and
+    ;; skips post-run threshold compaction (#9340).
+    (when (agent-abort-requested-p agent)
+      (finish-agent-cancelled-retry agent)
+      (return result))
     (cond
       ((context-overflow-message-p result)
        (cond
@@ -374,7 +387,10 @@
               (return result)))))
       ((and
         (retryable-assistant-error-p result)
-        (prepare-agent-retry agent result)))
+        (prepare-agent-retry agent result))
+       (when (agent-abort-requested-p agent)
+         (finish-agent-cancelled-retry agent)
+         (return result)))
       ((and
         (typep result 'cadr-ai:assistant-message)
         (eq :error
@@ -386,7 +402,8 @@
          (unless
              (or
               (context-overflow-message-p final)
-              (agent-shutdown-p agent))
+              (agent-shutdown-p agent)
+              (agent-abort-requested-p agent))
            (maybe-compact-agent agent))
          (return final)))
       (t
@@ -396,6 +413,7 @@
              (typep result 'cadr-ai:assistant-message)
              (eq :aborted
                  (cadr-ai:assistant-message-stop-reason result)))
-            (agent-shutdown-p agent))
+            (agent-shutdown-p agent)
+            (agent-abort-requested-p agent))
          (maybe-compact-agent agent))
        (return result)))))

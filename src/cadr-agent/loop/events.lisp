@@ -39,7 +39,10 @@
           text)))))))
 
 (defun agent-will-retry-p (agent message)
+  ;; Baseline agent-session.ts _willRetryAfterAgentEnd: abort requested
+  ;; during the run suppresses retry advertisement (#9340).
   (and
+   (not (agent-abort-requested-p agent))
    (agent-auto-retry-p agent)
    (< (agent-retry-attempt agent)
       (agent-auto-retry-max-attempts agent))
