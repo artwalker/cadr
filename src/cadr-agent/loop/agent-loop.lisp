@@ -355,7 +355,13 @@
         (values nil nil t)))
     (multiple-value-bind (final-text final-images)
         (user-message-input-values final-message)
-      (let* ((before-result
+      (let* ((prompt-options
+               (copy-tree
+                (agent-system-prompt-options agent)))
+             (selected-before
+               (copy-list
+                (getf prompt-options :selected-tools)))
+             (before-result
                (run-agent-lifecycle
                 agent :before-agent-start
                 (list
@@ -363,25 +369,54 @@
                  :images final-images
                  :system-prompt
                  (agent-system-prompt agent)
-                 :system-prompt-options
-                 (copy-tree
-                  (agent-system-prompt-options agent))))))
-        (values
-         (nconc
-          (drain-agent-queue agent :next-turn)
-          (list final-message)
-          (copy-list
-           (getf before-result :messages))
-          (drain-agent-queue agent :steering))
-         (let ((sentinel (list :missing)))
-           (let ((system-prompt
-                   (getf
-                    before-result
-                    :system-prompt sentinel)))
-             (if (eq system-prompt sentinel)
-                 (agent-system-prompt agent)
-                 system-prompt)))
-         nil)))))
+                 :system-prompt-options prompt-options)))
+             (handler-edited-tools-p
+               (let ((after
+                       (getf prompt-options
+                             :selected-tools)))
+                 (or
+                  (/= (length after)
+                      (length selected-before))
+                  (notevery
+                   #'string=
+                   after selected-before)))))
+        (unless handler-edited-tools-p
+          (setf
+           (getf prompt-options :selected-tools)
+           (mapcar
+            #'cadr-ai:tool-name
+            (registry-tools
+             (agent-tool-registry agent)))))
+        (let* ((pending
+                 (nconc
+                  (drain-agent-queue agent :next-turn)
+                  (list final-message)
+                  (copy-list
+                   (getf before-result :messages))
+                  (drain-agent-queue agent :steering)))
+               (loadout
+                 (agent-prepare-prompt-loadout-function
+                  agent))
+               (update
+                 (when loadout
+                   (funcall
+                    loadout
+                    agent
+                    prompt-options
+                    (agent-messages agent)))))
+          (when update
+            (setf pending (cons update pending)))
+          (values
+           pending
+           (let ((sentinel (list :missing)))
+             (let ((system-prompt
+                     (getf
+                      before-result
+                      :system-prompt sentinel)))
+               (if (eq system-prompt sentinel)
+                   (agent-system-prompt agent)
+                   system-prompt)))
+           nil))))))
 
 (defun agent-prompt
     (agent prompt

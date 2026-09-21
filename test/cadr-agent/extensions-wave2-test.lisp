@@ -1454,7 +1454,9 @@
       (is (null notifications)
           "Unexpected hook failure: ~S"
           notifications)
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-false (tool-result-message-is-error result))
         (is (string= "good" (text-result result)))))))
 
@@ -1632,6 +1634,8 @@
         (nreverse sequence)))
       (is (= 1 (count :tool-execution-start events)))
       (is (= 1 (count :tool-execution-end events)))
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-false (tool-result-message-is-error result))
         (is (string= "valid" (text-result result)))))))

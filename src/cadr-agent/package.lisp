@@ -11,6 +11,8 @@
    #:agent-session
    #:agent-prompt
    #:agent-continue
+   #:declare-tool-changes
+   #:agent-prepare-prompt-loadout-function
    #:agent-steer
    #:agent-follow-up
    #:agent-next-turn
@@ -472,6 +474,7 @@
    #:make-tool-registry
    #:register-tool
    #:find-tool
+   #:registry-tools
    #:validate-tool-arguments))
 
 (in-package #:cadr-agent)
