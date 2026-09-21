@@ -28,7 +28,7 @@ git diff --stat \
 | Meta Muse：`/login meta` 与 `META_API_KEY` | 未做 |
 | `/bug` 保留粘贴诊断里的换行 | 未做 |
 | 用户取消和可重试的 provider 失败不提示 `/bug` | 未做 |
-| 无显示环境的剪贴板回退到 OSC 52 | 未做 |
+| 无显示环境的剪贴板回退到 OSC 52 | https://github.com/artwalker/cadr/pull/753 |
 | 继承的 z.ai `Prompt too long` 视为上下文溢出 | https://github.com/artwalker/cadr/pull/751 |
 | Cerebras 不再宣称 `supportsStrictMode` | https://github.com/artwalker/cadr/pull/752 |
 | Node compile cache | 不移植。没有对应的 Lisp 行为 |
