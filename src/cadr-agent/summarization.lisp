@@ -36,7 +36,7 @@
    :stop-reason :aborted))
 
 (defun complete-summarization
-    (agent context max-tokens source &key reason)
+    (agent context max-tokens source &key reason reasoning)
   "The single owner of retry, cache, and routing policy for summary requests."
   (let ((session-id (make-session-id))
         (no-response-p nil))
@@ -46,7 +46,7 @@
                (if (agent-aborted-p agent)
                    (make-empty-aborted-summary-response agent)
                    (or
-                    (funcall
+                    (apply
                      (agent-stream-function agent)
                      (agent-provider agent)
                      (agent-model agent)
@@ -55,7 +55,8 @@
                      :max-tokens max-tokens
                      :cache-retention :none
                      :session-id session-id
-                     :abort-p (lambda () (agent-aborted-p agent)))
+                     :abort-p (lambda () (agent-aborted-p agent))
+                     (and reasoning (list :reasoning reasoning)))
                     (progn
                       (setf no-response-p t)
                       (make-empty-aborted-summary-response agent)))))
