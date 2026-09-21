@@ -867,3 +867,77 @@
                 (model-registry-%available-models-key registry)
                 cache-key))
         (copy-list models))))))
+
+(defun model-registry-coerce-stream-context (context)
+  (cond
+    ((typep context 'cadr-ai:context) context)
+    ((hash-table-p context)
+     (cadr-ai:make-context
+      :messages
+      (or (gethash "messages" context)
+          (gethash :messages context)
+          (gethash "Messages" context))))
+    ((and (listp context) (getf context :messages))
+     (cadr-ai:make-context :messages (getf context :messages)))
+    ((listp context)
+     (cadr-ai:make-context :messages context))
+    (t (cadr-ai:make-context))))
+
+(defun model-registry-stream-api-key (registry model)
+  (let* ((runtime (model-registry-native-runtime registry))
+         (provider-id (cadr-ai:model-provider model))
+         (configured (configured-model-api-key registry provider-id))
+         (auth
+           (and runtime
+                (model-registry-native-provider-p registry provider-id)
+                (cadr-ai:models-runtime-auth
+                 runtime model :api-key configured)))
+         (stored
+           (and runtime
+                (cadr-ai::runtime-credential runtime provider-id))))
+    (or configured
+        (and auth (cadr-ai:runtime-auth-result-api-key auth))
+        (and (typep stored 'cadr-ai:api-key-credential)
+             (cadr-ai:api-key-credential-key stored)))))
+
+(defun model-registry-stream
+    (registry model context &key simple-p &allow-other-keys)
+  ;; pi@ecac0a9c4 ModelRegistry.stream / streamSimple: both resolve
+  ;; auth then call the native runtime stream. SIMPLE-P is API parity.
+  (declare (ignore simple-p))
+  (let* ((runtime (model-registry-native-runtime registry))
+         (provider-id (cadr-ai:model-provider model))
+         (stream-context
+           (model-registry-coerce-stream-context context))
+         (api-key (model-registry-stream-api-key registry model))
+         (event-stream
+           (cadr-ai:make-event-stream
+            :complete-p
+            (lambda (event)
+              (member (cadr-ai:stream-event-type event)
+                      '(:done :error)))
+            :result-function #'cadr-ai:stream-event-message)))
+    (unless runtime
+      (error 'cadr-ai:configuration-error
+             :message "Model registry has no native runtime"))
+    (unless
+        (or api-key
+            (and (model-registry-native-provider-p
+                  registry provider-id)
+                 (cadr-ai:models-runtime-auth runtime model)))
+      (error
+       'cadr-ai:configuration-error
+       :message
+       (format nil
+               "No authentication configured for provider ~A"
+               (provider-key provider-id))))
+    (let ((result
+            (apply
+             #'cadr-ai:models-runtime-stream
+             runtime model stream-context
+             (lambda (event)
+               (cadr-ai:event-stream-push event-stream event))
+             (and api-key (list :api-key api-key)))))
+      (unless (cadr-ai::event-stream-result-ready-p event-stream)
+        (cadr-ai:event-stream-end event-stream result))
+      event-stream)))

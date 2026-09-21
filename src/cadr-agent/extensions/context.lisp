@@ -280,6 +280,18 @@
     (context model)
   (invoke-extension-action context :model-registry-resolve-auth model))
 
+(defun extension-context-model-registry-stream
+    (context model stream-context &rest options)
+  (apply #'invoke-extension-action
+         context :model-registry-stream
+         model stream-context options))
+
+(defun extension-context-model-registry-stream-simple
+    (context model stream-context &rest options)
+  (apply #'invoke-extension-action
+         context :model-registry-stream-simple
+         model stream-context options))
+
 (defun extension-context-idle-p (context)
   (let ((agent (extension-context-agent context)))
     (or (null agent)

@@ -1208,7 +1208,8 @@
     ;; +2 Goal 28: extension host helpers added in B9 owners.
     ;; +2 duplicate command invocation names.
     ;; +1 extension resource source labels.
-    (is (= 263 definition-count)
+    ;; +2 Goal 24: model-registry stream / stream-simple wrappers.
+    (is (= 265 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1256,7 +1257,7 @@
              "    :ui-prompt-end))")))
       (is (and exports
                (string=
-                "61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18"
+                "917c9d936e0adc1dad881577a5882878831e6b44a42ee4b0661dd90f2d05a3c1"
                 (goal14-sha256 exports)))
           "B9 changed the frozen extension export text")
       (is (and events

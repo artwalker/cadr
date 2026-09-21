@@ -38,6 +38,7 @@
    #:refresh-model-registry
    #:model-registry-all
    #:model-registry-find
+   #:model-registry-stream
    #:model-registry-error
    #:provider-default-model-id
    #:classify-post-login-model

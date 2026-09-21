@@ -2133,6 +2133,13 @@
               (provider-config-for-model
                model-registry (first arguments)
                :allow-missing-auth-p nil))
+             (:model-registry-stream
+              (apply #'model-registry-stream
+                     model-registry arguments))
+             (:model-registry-stream-simple
+              (apply #'model-registry-stream
+                     model-registry
+                     (append arguments '(:simple-p t))))
              (:commands (extension-command-records))
              (:all-tools (extension-tool-records))
              (:set-thinking-level
