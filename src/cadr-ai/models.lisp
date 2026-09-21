@@ -270,12 +270,21 @@
              (round-model-cost (* cache-write 2d0)))))))))
   row)
 
+(defun apply-vercel-ai-gateway-empty-signature (row)
+  (when (eq (getf row :provider) :vercel-ai-gateway)
+    (let ((compat (getf row :compat)))
+      (unless (get-properties compat '(:allow-empty-signature))
+        (setf (getf row :compat)
+              (list* :allow-empty-signature t compat)))))
+  row)
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-gpt-5-6-pricing-override
-             (copy-list row))))
+            (apply-vercel-ai-gateway-empty-signature
+             (apply-gpt-5-6-pricing-override
+              (copy-list row)))))
       (setf
        (getf copy :cost-tiers)
        (mapcar

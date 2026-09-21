@@ -620,3 +620,70 @@
     (is (cadr-ai::json-present-p zero-payload "priority"))
     (is (= 0 (cadr-ai::json-get zero-payload "priority")))
     (is (not (cadr-ai::json-present-p unset-payload "priority")))))
+
+(test goal24-vercel-models-allow-empty-thinking-signature
+  (let ((rows (cadr-ai:list-model-metadata :vercel-ai-gateway))
+        (openai
+          (cadr-ai:find-model-metadata :openai "gpt-4o")))
+    (is (plusp (length rows)))
+    (is (every
+         (lambda (metadata)
+           (eq t
+               (getf (cadr-ai:model-metadata-compat metadata)
+                     :allow-empty-signature)))
+         rows))
+    (is (equal
+         '(:allow-empty-signature t :force-adaptive-thinking t)
+         (cadr-ai:model-metadata-compat
+          (cadr-ai:find-model-metadata
+           :vercel-ai-gateway "anthropic/claude-fable-5"))))
+    (is (not (member :allow-empty-signature
+                     (cadr-ai:model-metadata-compat openai))))))
+
+(test goal24-vercel-unsigned-thinking-replays-as-thinking
+  (let* ((metadata
+           (cadr-ai:find-model-metadata
+            :vercel-ai-gateway "alibaba/qwen-3-14b"))
+         (model (cadr-ai::model-from-metadata metadata))
+         (context
+           (make-context
+            :messages
+            (list
+             (cadr-ai:make-assistant-message
+              :content
+              (list
+               (cadr-ai:make-thinking-content
+                :thinking "internal reasoning"
+                :signature nil)
+               (cadr-ai:make-text-content :text "answer"))
+              :api (cadr-ai:model-metadata-api metadata)
+              :provider (cadr-ai:model-metadata-provider metadata)
+              :model (cadr-ai:model-metadata-id metadata)))))
+         (payload
+           (request-spec-payload
+            (build-request
+             (make-anthropic-provider :api-key "key")
+             model
+             context)))
+         (content
+           (cadr-ai::json-get
+            (find-if
+             (lambda (message)
+               (string= "assistant"
+                        (cadr-ai::json-get message "role")))
+             (cadr-ai::json-get payload "messages"))
+            "content")))
+    (is (some
+         (lambda (block)
+           (and (string= "thinking"
+                         (cadr-ai::json-get block "type"))
+                (string= ""
+                         (cadr-ai::json-get block "signature"))))
+         content))
+    (is (not
+         (some
+          (lambda (block)
+            (and (string= "text" (cadr-ai::json-get block "type"))
+                 (string= "internal reasoning"
+                          (cadr-ai::json-get block "text"))))
+          content)))))
