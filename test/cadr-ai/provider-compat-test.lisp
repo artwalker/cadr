@@ -620,3 +620,94 @@
     (is (cadr-ai::json-present-p zero-payload "priority"))
     (is (= 0 (cadr-ai::json-get zero-payload "priority")))
     (is (not (cadr-ai::json-present-p unset-payload "priority")))))
+
+(test openrouter-completions-sends-x-session-id-without-catalog-flag
+  (let* ((model
+           (compat-model
+            :id "openrouter-completions"
+            :provider :openrouter
+            :api :openai-completions
+            :base-url "https://openrouter.ai/api/v1"
+            :max-tokens 4096))
+         (headers
+           (request-spec-headers
+            (build-request
+             (cadr-ai:make-openai-completions-provider :api-key "key")
+             model
+             (sample-context)
+             :stream-p t
+             :cache-retention :short
+             :session-id "or-session-1"))))
+    (is (string=
+         "or-session-1"
+         (cdr (assoc "x-session-id" headers :test #'string-equal))))
+    (is (null (assoc "x-session-affinity" headers :test #'string-equal)))
+    (is (null (assoc "session_id" headers :test #'string-equal)))))
+
+(test openrouter-anthropic-sends-x-session-id-not-affinity
+  (let* ((model
+           (compat-model
+            :id "openrouter-anthropic"
+            :provider :openrouter
+            :api :anthropic-messages
+            :base-url "https://openrouter.ai/api"
+            :max-tokens 4096))
+         (headers
+           (request-spec-headers
+            (build-request
+             (make-anthropic-provider :api-key "key")
+             model
+             (sample-context)
+             :stream-p t
+             :cache-retention :short
+             :session-id "or-session-2"))))
+    (is (string=
+         "or-session-2"
+         (cdr (assoc "x-session-id" headers :test #'string-equal))))
+    (is (null (assoc "x-session-affinity" headers :test #'string-equal)))))
+
+(test openrouter-session-affinity-explicit-opt-out
+  (let* ((completions-model
+           (compat-model
+            :id "openrouter-completions"
+            :provider :openrouter
+            :api :openai-completions
+            :base-url "https://openrouter.ai/api/v1"
+            :max-tokens 4096
+            :compat '(:send-session-affinity-headers nil)))
+         (anthropic-model
+           (compat-model
+            :id "openrouter-anthropic"
+            :provider :openrouter
+            :api :anthropic-messages
+            :base-url "https://openrouter.ai/api"
+            :max-tokens 4096
+            :compat '(:send-session-affinity-headers nil)))
+         (completions-headers
+           (request-spec-headers
+            (build-request
+             (cadr-ai:make-openai-completions-provider :api-key "key")
+             completions-model
+             (sample-context)
+             :stream-p t
+             :cache-retention :short
+             :session-id "opt-out-completions")))
+         (anthropic-headers
+           (request-spec-headers
+            (build-request
+             (make-anthropic-provider :api-key "key")
+             anthropic-model
+             (sample-context)
+             :stream-p t
+             :cache-retention :short
+             :session-id "opt-out-anthropic"))))
+    (is (null (assoc "x-session-id" completions-headers
+                     :test #'string-equal)))
+    (is (null (assoc "x-session-affinity" completions-headers
+                     :test #'string-equal)))
+    (is (null (assoc "session_id" completions-headers
+                     :test #'string-equal)))
+    (is (null (assoc "x-session-id" anthropic-headers
+                     :test #'string-equal)))
+    (is (null (assoc "x-session-affinity" anthropic-headers
+                     :test #'string-equal)))))

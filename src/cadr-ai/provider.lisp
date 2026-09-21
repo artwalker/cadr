@@ -170,6 +170,11 @@ completed assistant message."))
       (plist-entry (model-compat model) key)
     (if present-p value default)))
 
+(defun model-openrouter-p (model)
+  (or (eq (model-provider model) :openrouter)
+      (not (null (search "openrouter.ai"
+                         (or (model-base-url model) ""))))))
+
 (defun model-thinking-level-value (model level)
   (cdr (assoc level
               (model-thinking-level-map model)

@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: OpenRouter Completions and Anthropic Messages send
+  `x-session-id` from `sessionId` when prompt caching is enabled,
+  via runtime OpenRouter detection (not catalog row flags). Explicit
+  compat opt-out still wins (#9102).
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
