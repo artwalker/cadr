@@ -449,6 +449,7 @@
    #:harness-session-append-message
    #:harness-session-append-thinking-level
    #:harness-session-append-model
+   #:harness-session-append-usage
    #:harness-session-append-active-tools
    #:harness-session-append-compaction
    #:harness-session-append-custom

@@ -1046,7 +1046,9 @@
     ;; inMemory session entry owners land in B8 session/loop files.
     ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
     ;; adjacent session/codec helpers landed in B8 owners.
-    (is (= 341 definition-count)
+    ;; +2 Goal 24 type:usage append: session-append-usage (journal) and
+    ;; harness-session-append-usage (storage/harness).
+    (is (= 343 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
