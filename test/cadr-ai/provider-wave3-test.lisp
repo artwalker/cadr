@@ -44,7 +44,7 @@
     (:qwen-token-plan-cn . 18)
     (:qwen-token-plan-individual . 9)
     (:together . 21)
-    (:vercel-ai-gateway . 237)
+    (:vercel-ai-gateway . 236)
     (:xai . 3)
     (:xiaomi . 3)
     (:xiaomi-token-plan-ams . 2)
@@ -72,8 +72,24 @@
   (signals cadr-ai:configuration-error
     (cadr-ai:find-provider-definition :ollama)))
 
+(test vercel-ai-gateway-catalog-allows-empty-signatures
+  (let ((models (cadr-ai:list-model-metadata :vercel-ai-gateway))
+        (flash
+          (cadr-ai:find-model-metadata
+           :vercel-ai-gateway "deepseek/deepseek-v4.1-flash")))
+    (is (= 236 (length models)))
+    (is-true
+     (every (lambda (metadata)
+              (eq t
+                  (getf (cadr-ai:model-metadata-compat metadata)
+                        :allow-empty-signature)))
+            models))
+    (is-true
+     (getf (cadr-ai:model-metadata-compat flash)
+           :allow-empty-signature))))
+
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1354 (length (cadr-ai:list-model-metadata))))
+  (is (= 1353 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
