@@ -428,3 +428,70 @@
            (cadr-ai::json-object "reasoning" "plain"))
         (is (string= "plain" text))
         (is (string= "reasoning" signature))))))
+
+(defun completions-advertised-strict (provider base-url &optional compat)
+  (let* ((model
+           (cadr-ai:make-model
+            :id "gpt-oss-120b"
+            :provider provider
+            :api :openai-completions
+            :base-url base-url
+            :max-tokens 4096
+            :compat compat))
+         (request
+           (cadr-ai:build-request
+            (cadr-ai:make-openai-completions-provider :api-key "key")
+            model
+            (cadr-ai:make-context
+             :messages
+             (list (cadr-ai:make-user-message :content "Inspect."))
+             :tools
+             (list
+              (cadr-ai:make-tool
+               :name "read"
+               :description "Read a file."
+               :parameters (sample-schema)
+               :constrained-sampling
+               '(:type :json-schema :strict :prefer))))
+            :stream-p nil))
+         (function
+           (cadr-ai::json-get
+            (aref
+             (cadr-ai::json-get
+              (cadr-ai:request-spec-payload request)
+              "tools")
+             0)
+            "function")))
+    (values
+     (cadr-ai::json-present-p function "strict")
+     (cadr-ai::json-get function "strict"))))
+
+(test cerebras-completions-do-not-advertise-strict-mode
+  ;; pi@af7359b904 openai-completions.ts detectCompat. supportsStrictMode
+  ;; is false when the provider is cerebras or the base URL contains
+  ;; cerebras.ai. An explicit compat value still overrides detection.
+  (dolist (case '((:cerebras "https://api.cerebras.ai/v1")
+                  (:cerebras "https://example.invalid/v1")
+                  (:openai "https://proxy.example/cerebras.ai/v1")))
+    (multiple-value-bind (present-p strict)
+        (completions-advertised-strict (first case) (second case))
+      (is (not present-p)
+          "~A ~A advertised strict ~A"
+          (first case) (second case) strict)))
+  (multiple-value-bind (present-p strict)
+      (completions-advertised-strict :deepseek "https://api.deepseek.com")
+    (is (and present-p (eq t strict))
+        "deepseek lost strict mode: present ~A value ~A"
+        present-p strict))
+  (multiple-value-bind (present-p strict)
+      (completions-advertised-strict
+       :moonshotai "https://api.moonshot.ai/v1")
+    (is (not present-p)
+        "moonshot advertised strict ~A" strict))
+  (multiple-value-bind (present-p strict)
+      (completions-advertised-strict
+       :cerebras "https://api.cerebras.ai/v1"
+       '(:supports-strict-mode t))
+    (is (and present-p (eq t strict))
+        "explicit compat no longer overrides detection: present ~A value ~A"
+        present-p strict)))
