@@ -30,7 +30,7 @@ git diff --stat \
 | 用户取消和可重试的 provider 失败不提示 `/bug` | 未做 |
 | 无显示环境的剪贴板回退到 OSC 52 | 未做 |
 | 继承的 z.ai `Prompt too long` 视为上下文溢出 | https://github.com/artwalker/cadr/pull/751 |
-| Cerebras 不再宣称 `supportsStrictMode` | 未做 |
+| Cerebras 不再宣称 `supportsStrictMode` | https://github.com/artwalker/cadr/pull/752 |
 | Node compile cache | 不移植。没有对应的 Lisp 行为 |
 
 Goal 24 在 v0.86.0 上还没勾完的用户可见缺口仍然有效。本钉点不把它们勾掉。
