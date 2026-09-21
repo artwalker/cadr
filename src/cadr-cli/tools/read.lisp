@@ -175,7 +175,7 @@
      "limit"
      (number-property "Maximum number of lines to read"))
     '("path"))
-   :constrained-sampling (experimental-tool-sampling)
+   :constrained-sampling (builtin-tool-sampling)
    :execution-mode :parallel
    :executor
    (lambda (call-id arguments)

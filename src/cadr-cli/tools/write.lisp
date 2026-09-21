@@ -36,7 +36,7 @@
      "content"
      (string-property "Content to write to the file"))
     '("path" "content"))
-   :constrained-sampling (experimental-tool-sampling)
+   :constrained-sampling (builtin-tool-sampling)
    :execution-mode :sequential
    :executor
    (lambda (call-id arguments)

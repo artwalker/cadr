@@ -538,19 +538,25 @@
            (cadr-agent::agent-tool-registry
             agent)))))))
 
-(test experimental-tool-sampling-follows-the-env-flag
-  ;; Mirrors experimental-tool-strict-mode.test.ts (v0.84.2): the four
-  ;; built-in tools carry strict-prefer sampling only under the
-  ;; experimental flag.
+(test builtin-tools-prefer-strict-sampling
+  ;; Baseline builtin-tool-strict-mode.test.ts at ecac0a9c4: the five
+  ;; built-in tools always prefer strict sampling. CADR_EXPERIMENTAL
+  ;; no longer gates it. grep / find / ls stay unset.
   (sb-posix:unsetenv "CADR_EXPERIMENTAL")
-  (let ((plain (cadr-cli::make-read-tool "/tmp")))
-    (is (null (cadr-ai:tool-constrained-sampling plain))))
-  (sb-posix:setenv "CADR_EXPERIMENTAL" "1" 1)
+  (dolist (tool (list (cadr-cli::make-read-tool "/tmp")
+                       (cadr-cli::make-bash-tool "/tmp")
+                       (cadr-cli::make-powershell-tool "/tmp")
+                       (cadr-cli::make-edit-tool "/tmp")
+                       (cadr-cli::make-write-tool "/tmp")))
+    (is (equal '(:type :json-schema :strict :prefer)
+               (cadr-ai:tool-constrained-sampling tool))))
+  (dolist (tool (list (cadr-cli::make-grep-tool "/tmp")
+                       (cadr-cli::make-find-tool "/tmp")
+                       (cadr-cli::make-ls-tool "/tmp")))
+    (is (null (cadr-ai:tool-constrained-sampling tool))))
+  (sb-posix:setenv "CADR_EXPERIMENTAL" "0" 1)
   (unwind-protect
-       (dolist (tool (list (cadr-cli::make-read-tool "/tmp")
-                           (cadr-cli::make-bash-tool "/tmp")
-                           (cadr-cli::make-edit-tool "/tmp")
-                           (cadr-cli::make-write-tool "/tmp")))
-         (is (equal '(:type :json-schema :strict :prefer)
-                    (cadr-ai:tool-constrained-sampling tool))))
+       (is (equal '(:type :json-schema :strict :prefer)
+                  (cadr-ai:tool-constrained-sampling
+                   (cadr-cli::make-read-tool "/tmp"))))
     (sb-posix:unsetenv "CADR_EXPERIMENTAL")))
