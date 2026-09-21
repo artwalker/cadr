@@ -1,13 +1,14 @@
 (in-package #:cadr-ai)
 
 (defun mistral-reasoning-effort-model-p (model)
-  (member
-   (model-id model)
-   '("mistral-small-2603"
-     "mistral-small-latest"
-     "mistral-medium-3.5"
-     "zai-glm-5-2")
-   :test #'string=))
+  ;; Baseline mistral-conversations.ts usesReasoningEffort (#8700).
+  (let ((id (model-id model)))
+    (or (member id
+                '("mistral-small-2603"
+                  "mistral-small-latest"
+                  "zai-glm-5-2")
+                :test #'string=)
+        (uiop:string-prefix-p "mistral-medium-" id))))
 
 (defun derive-mistral-tool-call-id (id attempt)
   (let ((normalized

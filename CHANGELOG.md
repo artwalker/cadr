@@ -7,6 +7,9 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: send `reasoning_effort` for every `mistral-medium-*` id
+  instead of `prompt_mode` (#8700).
+
 - Fixed Mistral-hosted GLM-5.2 (`zai-glm-5-2`) sending `reasoning_effort`
   instead of ignored `prompt_mode` (#9375).
 
