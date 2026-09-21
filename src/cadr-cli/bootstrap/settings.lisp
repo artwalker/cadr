@@ -250,6 +250,8 @@
        (eq t (field "enabled" t))
        :max-retries (field "maxRetries" 3)
        :base-delay-ms (field "baseDelayMs" 2000)
+       :max-agent-delay-ms
+       (field "maxAgentDelayMs" 60000)
        :max-retry-delay-ms
        (field "maxRetryDelayMs" 60000)
        :timeout-ms (field "timeoutMs" nil)))))

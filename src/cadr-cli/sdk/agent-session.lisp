@@ -477,6 +477,8 @@
               (getf retry-settings :max-retries)
               :auto-retry-base-delay
               (/ (getf retry-settings :base-delay-ms) 1000)
+              :auto-retry-max-delay
+              (/ (getf retry-settings :max-agent-delay-ms) 1000)
               :on-event
               (lambda (event)
                 (sdk-agent-session-dispatch

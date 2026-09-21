@@ -90,6 +90,7 @@
                          (auto-retry-p t)
                          (auto-retry-max-attempts 3)
                          (auto-retry-base-delay 2)
+                         (auto-retry-max-delay 60)
                          abort-p)
   (let* ((initial-messages
            (copy-list
@@ -122,6 +123,7 @@
            :auto-retry-p auto-retry-p
            :auto-retry-max-attempts auto-retry-max-attempts
            :auto-retry-base-delay auto-retry-base-delay
+           :auto-retry-max-delay auto-retry-max-delay
            :abort-p abort-p)))
     (when extension-host
       (attach-extension-host extension-host agent))

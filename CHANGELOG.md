@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Fixed
+
+- Goal 24: cap agent-level retry backoff at `retry.maxAgentDelayMs`
+  (default 60s) so long retry runs stay responsive during prolonged
+  transient outages (upstream 8826).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

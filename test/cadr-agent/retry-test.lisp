@@ -266,3 +266,34 @@
         "Retry cancelled"
         (cadr-agent::agent-event-final-error
          final))))))
+
+(test prepare-agent-retry-emits-capped-delay-ms
+  (let* ((events nil)
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :on-event
+            (lambda (event)
+              (push event events)))))
+    (setf
+     (cadr-agent::agent-auto-retry-max-attempts agent)
+     10
+     (cadr-agent::agent-auto-retry-base-delay agent)
+     2
+     (cadr-agent::agent-auto-retry-max-delay agent)
+     0.05d0
+     (cadr-agent::agent-retry-attempt agent)
+     5)
+    (is
+     (cadr-agent::prepare-agent-retry
+      agent
+      (retry-error-message "overloaded_error")))
+    (let ((start
+            (find
+             :auto-retry-start events
+             :key #'agent-event-type)))
+      (is (not (null start)))
+      (is (= 6 (cadr-agent::agent-event-attempt start)))
+      (is (= 50
+             (cadr-agent::agent-event-delay-ms start))))))

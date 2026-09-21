@@ -58,7 +58,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `--resume` 按 mtime 渐进列出。`--continue` 读到最新匹配头即停 | session 列表 |
 | 剪贴板改为捆绑的异步辅助程序，保留平台命令与 OSC 52 | 行为对齐。不移植 `.node` |
 | Codex 选择里去掉 GPT-5.4 与 GPT-5.4 mini | catalog |
-| 发布说明里的 provider / session / compaction / RPC 修复 | 枚举后按条处置 |
+| 发布说明里的 provider / session / compaction / RPC 修复 | 枚举后按条处置。本刀：`retry.maxAgentDelayMs` 封顶（upstream 8826） |
 
 Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，不按文件抄。对应的用户可见行为仍走上表。
 

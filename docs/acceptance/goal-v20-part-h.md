@@ -13806,14 +13806,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **299 files / 137,863 lines**
+Denominator: **299 files / 137,910 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 111,152 | 80.6% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 111,168 | 80.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,676 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,876 | 13.7% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 30 | 18,907 | 13.7% | on a named paired thunk; no own bench |
 | `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
@@ -13861,11 +13861,11 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/loop/agent-loop.lisp` | 457 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 496 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/loop/turns.lisp` | 401 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/turns.lisp` | 403 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 261 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
-| `src/cadr-agent/runtime.lisp` | 479 | `agent_tool_loop.runtime` |
+| `src/cadr-agent/runtime.lisp` | 481 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,188 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 483 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
@@ -13877,8 +13877,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/storage/jsonl.lisp` | 538 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/memory.lisp` | 378 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
-| `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
-| `src/cadr-agent/tool.lisp` | 330 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/summarization.lisp` | 88 | `session_compact.compact` |
+| `src/cadr-agent/tool.lisp` | 332 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 806 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
@@ -13934,10 +13934,10 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/websocket.lisp` | 657 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/auth.lisp` | 189 | `cli_bootstrap_sessions.bootstrap_auth` |
-| `src/cadr-cli/bootstrap/commands.lisp` | 2,822 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
+| `src/cadr-cli/bootstrap/commands.lisp` | 2,824 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/sessions.lisp` | 2,237 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
-| `src/cadr-cli/bootstrap/settings.lisp` | 1,243 | `settings_load.http_idle` |
+| `src/cadr-cli/bootstrap/settings.lisp` | 1,245 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 106 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/config.lisp` | 331 | `settings_load.config_paths`, `settings_load.configured_provider_name`, `settings_load.environment_value`, `settings_load.oauth_login_function`, `settings_load.oauth_refresh_function`, `settings_load.parse_auth_provider`, `settings_load.provider_default_model`, `settings_load.provider_settings`, `settings_load.provider_symbol`, `settings_load.split_command_line`, `settings_load.stored_auth_secrets`, `settings_load.read_cli_config`, `settings_load.provider_config_secrets`, `settings_load.resolve_provider_config` |
 | `src/cadr-cli/extensions/commands.lisp` | 76 | `cli_extensions_install.handle_plain`, `cli_extensions_install.handle_unknown`, `cli_extensions_install.split_command` |
@@ -14005,13 +14005,13 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id`, `package_manager.git_output`, `package_manager.records_project_first`, `package_manager.candidate_record`, `package_manager.update_offline`, `package_manager.remote_ref`, `package_manager.update_record_result` |
 | `src/cadr-cli/repl.lisp` | 112 | `cli_bootstrap_sessions.pb_ok`, `cli_bootstrap_sessions.rt_ok`, `cli_bootstrap_sessions.dp_ok` |
 | `src/cadr-cli/resource-loader.lisp` | 524 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
-| `src/cadr-cli/sdk/agent-session.lisp` | 535 | `cli_sdk.agent_session` |
+| `src/cadr-cli/sdk/agent-session.lisp` | 537 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
 | `src/cadr-cli/sdk/resource-service.lisp` | 378 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 133 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
-| `src/cadr-cli/sdk/settings-service.lisp` | 281 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled`, `settings_load.sdk_make_manager`, `settings_load.sdk_make_memory`, `settings_load.sdk_effective_thinking_level` |
+| `src/cadr-cli/sdk/settings-service.lisp` | 283 | `settings_load.sdk_default_provider`, `settings_load.sdk_default_model`, `settings_load.sdk_retry_settings`, `settings_load.sdk_http_idle_timeout`, `settings_load.sdk_apply_overrides`, `settings_load.sdk_model_thinking_level`, `settings_load.sdk_settings_value`, `settings_load.sdk_default_thinking_level`, `settings_load.sdk_drain_errors`, `settings_load.sdk_effective_object`, `settings_load.sdk_settings_set`, `settings_load.sdk_settings_remove`, `settings_load.sdk_settings_reload`, `settings_load.sdk_settings_flush`, `settings_load.sdk_compaction_enabled`, `settings_load.sdk_make_manager`, `settings_load.sdk_make_memory`, `settings_load.sdk_effective_thinking_level` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 224 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
 | `src/cadr-cli/settings/manager.lisp` | 643 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
@@ -14107,10 +14107,10 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/package.lisp` | 484 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/package.lisp` | 488 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 18 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/support/retry.lisp` | 205 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/types.lisp` | 208 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |

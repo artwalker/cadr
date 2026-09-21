@@ -1390,7 +1390,9 @@
     ;; +2 Goal 20 floor: *cadr-cli-source-directory* + cadr-cli-source-directory
     ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
     ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
-    (is (= 279 definition-count)
+    ;; +3 Goal 24 upstream 8826: +default-max-agent-retry-delay-ms+,
+    ;; retry-delay-milliseconds, retry-delay-seconds.
+    (is (= 282 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1445,7 +1447,9 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +4 Goal 24 upstream 8826: max-agent-delay slot accessor, default
+              ;; constant, retry-delay-milliseconds, retry-delay-seconds.
+              "5b1e3eea228f6d3c9eea47bc1a10046e10c68aeae90198f3ebccefd54a8c4a81"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

@@ -274,8 +274,10 @@
   (let* ((attempt
            (agent-retry-attempt agent))
          (delay
-           (* (agent-auto-retry-base-delay agent)
-              (expt 2 (1- attempt))))
+           (cadr-ai:retry-delay-seconds
+            (agent-auto-retry-base-delay agent)
+            attempt
+            (agent-auto-retry-max-delay agent)))
          (delay-ms
            (round (* delay 1000))))
     (remove-retry-error-from-agent-state agent)
