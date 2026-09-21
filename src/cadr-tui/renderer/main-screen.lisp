@@ -79,22 +79,50 @@
      stream)))
 
 (defun render-frame-line
-    (stream lines row line)
+    (stream lines row line &key (clear-p t))
   (ansi-position stream row 0)
-  (format stream "~C[2K" #\Escape)
-  (let ((reserved
-          (min
-           (kitty-image-rows line)
-           (- (length lines) row))))
-    (when (> reserved 1)
-      (loop for offset from 1 below reserved
-            do
-            (ansi-position stream
-                           (+ row offset) 0)
-            (format stream "~C[2K" #\Escape))
-      (ansi-position stream row 0))
-    (write-string line stream)
-    (format stream "~C[0m" #\Escape)))
+  (when clear-p
+    (format stream "~C[2K" #\Escape)
+    (let ((reserved
+            (min
+             (kitty-image-rows line)
+             (- (length lines) row))))
+      (when (> reserved 1)
+        (loop for offset from 1 below reserved
+              do
+              (ansi-position stream
+                             (+ row offset) 0)
+              (format stream "~C[2K" #\Escape))
+        (ansi-position stream row 0))))
+  (write-string line stream)
+  (format stream "~C[0m" #\Escape))
+
+(defun clear-frame-row (stream row)
+  (ansi-position stream row 0)
+  (format stream "~C[2K" #\Escape))
+
+(defun wezterm-session-p
+    (&optional (environment nil))
+  (flet ((env (name)
+           (if environment
+               (cdr (assoc name environment
+                           :test #'string=))
+               (uiop:getenv name))))
+    (or (let ((pane (env "WEZTERM_PANE")))
+          (and pane (plusp (length pane))))
+        (string-equal
+         "wezterm"
+         (or (env "TERM_PROGRAM") "")))))
+
+(defun wezterm-kitty-clear-before-draw-p
+    (renderer current redraw-images-p
+     &optional environment)
+  (and redraw-images-p
+       (eq :kitty
+           (terminal-renderer-image-protocol
+            renderer))
+       (some #'image-line-p current)
+       (wezterm-session-p environment)))
 
 (defun ansi-position (stream row column)
   (format stream "~C[~D;~DH"

@@ -609,20 +609,57 @@
                         (write-string
                          (delete-all-kitty-images)
                          stream)))))
-               (loop for row below height
-                     for new-tail = current then (cdr new-tail)
-                     for old-tail = previous then (cdr old-tail)
-                     for new = (if new-tail (car new-tail) "")
-                     for old = (and old-tail (car old-tail))
-                     when
-                     (or
-                      full-p
-                      image-change-p
-                      (null old)
-                      (not (string= new old)))
-                       do
-                       (render-frame-line
-                        stream current row new))
+               (let* ((redraw-images-p
+                        (or full-p image-change-p))
+                      (clear-before-draw-p
+                        (wezterm-kitty-clear-before-draw-p
+                         renderer current
+                         redraw-images-p)))
+                 (when clear-before-draw-p
+                   (loop for row below height
+                         for new-tail = current
+                           then (cdr new-tail)
+                         for old-tail = previous
+                           then (cdr old-tail)
+                         for new =
+                           (if new-tail
+                               (car new-tail)
+                               "")
+                         for old =
+                           (and old-tail
+                                (car old-tail))
+                         when
+                         (or
+                          full-p
+                          image-change-p
+                          (null old)
+                          (not (string= new old)))
+                           do
+                           (clear-frame-row
+                            stream row)))
+                 (loop for row below height
+                       for new-tail = current
+                         then (cdr new-tail)
+                       for old-tail = previous
+                         then (cdr old-tail)
+                       for new =
+                         (if new-tail
+                             (car new-tail)
+                             "")
+                       for old =
+                         (and old-tail
+                              (car old-tail))
+                       when
+                       (or
+                        full-p
+                        image-change-p
+                        (null old)
+                        (not (string= new old)))
+                         do
+                         (render-frame-line
+                          stream current row new
+                          :clear-p
+                          (not clear-before-draw-p))))
                (if cursor-visible-p
                    (progn
                      (ansi-position
