@@ -1,12 +1,11 @@
 (in-package #:cadr-ai)
 
 (defun mistral-reasoning-effort-model-p (model)
-  (member
-   (model-id model)
-   '("mistral-small-2603"
-     "mistral-small-latest"
-     "mistral-medium-3.5")
-   :test #'string=))
+  (let ((id (model-id model)))
+    (or (string= id "mistral-small-2603")
+        (string= id "mistral-small-latest")
+        (uiop:string-prefix-p "mistral-medium-" id)
+        (string= id "zai-glm-5-2"))))
 
 (defun derive-mistral-tool-call-id (id attempt)
   (let ((normalized

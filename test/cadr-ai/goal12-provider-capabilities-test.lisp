@@ -400,3 +400,37 @@
     (is (= 9 (length call-id)))
     (is (every #'alphanumericp call-id))
     (is (string= call-id result-id))))
+
+(test goal24-mistral-medium-and-zai-send-reasoning-effort
+  (let ((provider (cadr-ai:make-mistral-provider :api-key "key"))
+        (context
+          (make-context
+           :messages
+           (list (make-user-message :content "hi" :timestamp 1)))))
+    (dolist (id '("mistral-medium-2508"
+                  "mistral-medium-3.5"
+                  "zai-glm-5-2"))
+      (let ((payload
+              (request-spec-payload
+               (cadr-ai:build-request
+                provider
+                (make-model
+                 :id id :provider :mistral
+                 :api :mistral-conversations
+                 :base-url "https://api.mistral.ai")
+                context :reasoning :high :stream-p t))))
+        (is (string= "high"
+                     (cadr-ai::json-get payload "reasoning_effort")))
+        (is (not (cadr-ai::json-present-p payload "prompt_mode")))))
+    (let ((payload
+            (request-spec-payload
+             (cadr-ai:build-request
+              provider
+              (make-model
+               :id "mistral-large-latest" :provider :mistral
+               :api :mistral-conversations
+               :base-url "https://api.mistral.ai")
+              context :reasoning :high :stream-p t))))
+      (is (string= "reasoning"
+                   (cadr-ai::json-get payload "prompt_mode")))
+      (is (not (cadr-ai::json-present-p payload "reasoning_effort"))))))
