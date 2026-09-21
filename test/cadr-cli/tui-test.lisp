@@ -4196,6 +4196,43 @@
       (is (search "⠹ Compacting context..."
                   screen)))))
 
+(test goal24-session-status-spinners-embed-in-editor-border
+  ;; pi@ecac0a9c4 setActiveStatusIndicator: compaction, branch summary,
+  ;; and retry labels sit in the editor border, once.
+  (let ((editor (cadr-tui:make-multiline-editor))
+        (state (cadr-cli::make-tui-state :model "mock")))
+    (dolist (message '("Compacting context..."
+                       "Summarizing branch..."
+                       "Retrying (1/3) in 2s..."))
+      (setf (cadr-cli::tui-state-status-message state) message)
+      (let ((lines
+              (cadr-cli::render-tui-state
+               state editor 80 12 :spinner-frame "⠹")))
+        (is (= 1
+               (count-if
+                (lambda (line) (search message line))
+                lines)))
+        (is (find-if
+             (lambda (line)
+               (and (search message line)
+                    (search "─" line)))
+             lines))))
+    (cadr-tui:editor-set-embed-working-status editor nil)
+    (setf (cadr-cli::tui-state-status-message state)
+          "Compacting context...")
+    (let ((lines
+            (cadr-cli::render-tui-state
+             state editor 80 12 :spinner-frame "⠹")))
+      (is (find-if
+           (lambda (line) (search "Compacting context..." line))
+           lines))
+      (is (not
+           (find-if
+            (lambda (line)
+              (and (search "Compacting context..." line)
+                   (search "─" line)))
+            lines))))))
+
 (test goal9-startup-header-precedes-chat-and-expands-with-tools
   (let* ((version-line
            (format nil "cadr v~A" (cadr-ai::cadr-version)))

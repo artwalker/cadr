@@ -70,65 +70,76 @@
            (and (typep editor 'cadr-tui:multiline-editor)
                 (cadr-tui:multiline-editor-embed-working-status-p
                  editor)))
+         (status-message
+           (tui-state-status-message state))
+         ;; pi@ecac0a9c4 setActiveStatusIndicator: compaction, branch
+         ;; summary, and retry share the editor border with Working...
+         (embedded-status-message
+           (and embed-working-p status-message))
          (embedded-working-message
            (and embed-working-p
-                (null (tui-state-status-message state))
+                (null status-message)
                 busy-p
                 (tui-state-working-visible-p state)
                 (or (tui-state-working-message state)
                     "Working...")))
+         (embedded-border-message
+           (or embedded-status-message
+               embedded-working-message))
          (embedded-working-spinner-frame
-           (when embedded-working-message
-             (let ((frames
-                     (tui-state-working-indicator-frames state)))
-               (if (consp frames)
-                   (nth
-                    (mod
-                     (floor
-                      (* now 1000)
-                      (or
-                       (tui-state-working-indicator-interval-ms state)
-                       80))
-                     (length frames))
-                    frames)
-                   spinner-frame)))))
+           (when embedded-border-message
+             (if embedded-status-message
+                 spinner-frame
+                 (let ((frames
+                         (tui-state-working-indicator-frames state)))
+                   (if (consp frames)
+                       (nth
+                        (mod
+                         (floor
+                          (* now 1000)
+                          (or
+                           (tui-state-working-indicator-interval-ms state)
+                           80))
+                         (length frames))
+                        frames)
+                       spinner-frame))))))
     (multiple-value-bind
           (editor-lines editor-row editor-column)
         (render-editor-component editor width rows (null overlay)
-         :working-message embedded-working-message
+         :working-message embedded-border-message
          :working-spinner-frame embedded-working-spinner-frame)
       (let* ((pending-message-lines
                (render-tui-pending-message-lines
                 state width))
              (status-indicator
-               (or
-                (render-tui-status-indicator
-                 (tui-state-status-message state)
-                 width :reserve-idle-p nil
-                 :spinner-frame spinner-frame)
-                (and
-                 (not embedded-working-message)
-                 busy-p
-                 (tui-state-working-visible-p state)
-                 (render-tui-status-indicator
-                  (or (tui-state-working-message state)
-                      "Working...") width
-                  :reserve-idle-p nil
-                  :spinner-frame
-                  (let ((frames
-                          (tui-state-working-indicator-frames state)))
-                    (if (consp frames)
-                        (nth
-                         (mod
-                          (floor
-                           (* now 1000)
-                           (or
-                            (tui-state-working-indicator-interval-ms state)
-                            80))
-                          (length frames))
-                         frames)
-                        spinner-frame))))
-                nil))
+               (unless embedded-border-message
+                 (or
+                  (render-tui-status-indicator
+                   (tui-state-status-message state)
+                   width :reserve-idle-p nil
+                   :spinner-frame spinner-frame)
+                  (and
+                   busy-p
+                   (tui-state-working-visible-p state)
+                   (render-tui-status-indicator
+                    (or (tui-state-working-message state)
+                        "Working...") width
+                    :reserve-idle-p nil
+                    :spinner-frame
+                    (let ((frames
+                            (tui-state-working-indicator-frames state)))
+                      (if (consp frames)
+                          (nth
+                           (mod
+                            (floor
+                             (* now 1000)
+                             (or
+                              (tui-state-working-indicator-interval-ms state)
+                              80))
+                            (length frames))
+                           frames)
+                          spinner-frame))))
+                  nil)))
            (header-lines
              (and (tui-state-header-component state)
                   (cadr-tui:component-render
