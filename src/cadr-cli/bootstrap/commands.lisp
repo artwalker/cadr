@@ -2720,15 +2720,20 @@
            ;; Baseline interactive-mode.ts:910-911 — the SDK's
            ;; modelFallbackMessage is a startup warning; with no
            ;; authenticated model it is formatNoModelsAvailableMessage
-           ;; (sdk.ts:217-219).
+           ;; (sdk.ts:217-219). Crash notice matches takeUnnotifiedCrash
+           ;; (interactive-mode.ts:1128-1133).
            (let ((fallback
                    (and bare-sentinel-p
                         (cadr-ai::no-models-available-message)))
                  (warning
-                   (anthropic-warning)))
+                   (anthropic-warning))
+                 (crash
+                   (take-unnotified-crash)))
              (append
               (and fallback (list fallback))
-              (and warning (list warning))))
+              (and warning (list warning))
+              (and crash
+                   (list (crash-announcement-text crash)))))
            :initial-statuses
            (let ((status
                    (session-compaction-status
