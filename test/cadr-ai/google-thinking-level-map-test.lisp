@@ -83,3 +83,25 @@
          (cadr-ai::json-get
           (cadr-ai::json-get payload "thinkingConfig")
           "thinkingLevel")))))
+
+(test google-disabled-thinking-avoids-unsupported-minimal-on-gemini-3.8
+  (let* ((model
+           (cadr-ai::model-from-metadata
+            (cadr-ai:find-model-metadata :google "gemini-3.8-flash")))
+         (config (cadr-ai::google-thinking-config model nil)))
+    (is (null (cadr-ai::json-get config "thinkingBudget")))
+    (is (string= "LOW" (cadr-ai::json-get config "thinkingLevel"))))
+  (let* ((legacy
+           (google-thinking-test-model
+            "gemini-3.6-flash"
+            '((:off)
+              (:minimal . "minimal")
+              (:low . "low")
+              (:medium . "medium")
+              (:high . "high"))))
+         (config (cadr-ai::google-thinking-config legacy nil)))
+    (is (string= "MINIMAL" (cadr-ai::json-get config "thinkingLevel"))))
+  (let* ((budget-model
+           (google-thinking-test-model "gemini-2.5-flash"))
+         (config (cadr-ai::google-thinking-config budget-model nil)))
+    (is (= 0 (cadr-ai::json-get config "thinkingBudget")))))

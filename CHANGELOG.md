@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: clamp disabled Google thinking from each model map so
+  gemini-3.8-flash and peers send LOW (or thinkingBudget 0) instead of
+  unsupported MINIMAL (#9455).
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
