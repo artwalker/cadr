@@ -500,7 +500,9 @@
             :bundle bundle)))
     (validate-extension-resource-name "tool" name)
     (validate-extension-schema
-     name (cadr-ai:tool-parameters tool))
+     name
+     (cadr-ai:tool-parameters tool)
+     (extension-bundle-path bundle))
     (unless (and (stringp (or label name))
                  (or (null prompt-snippet) (stringp prompt-snippet))
                  (listp prompt-guidelines)

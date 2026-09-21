@@ -165,13 +165,23 @@
              kind name)))
   name)
 
-(defun validate-extension-schema (name schema)
+(defun extension-schema-registration-path (&optional path)
+  (or path
+      (and *extension-registration-bundle*
+           (extension-bundle-path *extension-registration-bundle*))
+      "<unknown>"))
+
+(defun validate-extension-schema (name schema &optional path)
+  ;; pi #9300 / acaa253cc: reject non-object parameters at registration
+  ;; so malformed tools never reach provider request serialization.
   (unless (hash-table-p schema)
     (error
      'extension-registration-error
      :message
-     (format nil "Tool ~A parameters must be a JSON Schema hash-table"
-             name)))
+     (format nil
+             "Tool ~S registered by extension ~S must define an object parameter schema."
+             name
+             (extension-schema-registration-path path))))
   (handler-case
       (validate-json-schema-definition schema)
     (error (condition)
