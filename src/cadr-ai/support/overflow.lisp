@@ -2,6 +2,7 @@
 
 (defparameter +overflow-fragments+
   '("prompt is too long"
+    "prompt too long"
     "request_too_large"
     "input is too long for requested model"
     "exceeds the context window"
