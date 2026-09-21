@@ -29,7 +29,7 @@ git diff --stat \
 | `/bug` 保留粘贴诊断里的换行 | 未做 |
 | 用户取消和可重试的 provider 失败不提示 `/bug` | 未做 |
 | 无显示环境的剪贴板回退到 OSC 52 | 未做 |
-| 继承的 z.ai `Prompt too long` 视为上下文溢出 | 未做 |
+| 继承的 z.ai `Prompt too long` 视为上下文溢出 | https://github.com/artwalker/cadr/pull/751 |
 | Cerebras 不再宣称 `supportsStrictMode` | 未做 |
 | Node compile cache | 不移植。没有对应的 Lisp 行为 |
 
@@ -39,7 +39,7 @@ Goal 24 在 v0.86.0 上还没勾完的用户可见缺口仍然有效。本钉点
 
 一刀一个 PR。聚焦测试加上这刀碰到的门禁。完整 `./scripts/verify.sh` 只在钉点提交和一轮刀收束时跑，不在每一刀上跑。性能证据文件的 `source_revision` 随钉点改戳，数字没有按 v0.86.1 重测。
 
-2026-09-21 用户要求按团队并行。编排手册对六个单位的仪式比直接做更慢，所以不建 orch 仓库。四个写者，各一块工作树，从钉点提交切出。`CHANGELOG.md`、`BASELINE`、账本、`version.sexp` 只由主执行者改。不合并 PR。
+2026-09-21 用户要求按团队并行。编排手册对这几个单位的仪式比直接做更慢，所以不建 orch 仓库。五个写者，各一块工作树，从钉点提交切出。`CHANGELOG.md`、`BASELINE`、账本、`version.sexp` 只由主执行者改。不合并 PR。
 
 | 单位 | 分支 | 可写 | 不可写 |
 |---|---|---|---|
