@@ -38,6 +38,7 @@ second" (cadr-ai:content-text content)))
   (dolist
       (text
        '("overloaded_error"
+         "520 status code (no body)"
          "524 status code (no body)"
          "getaddrinfo ENOTFOUND api.example.com"
          "The socket connection was closed unexpectedly"

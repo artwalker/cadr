@@ -12,7 +12,7 @@
 
 (defparameter +retryable-assistant-error-patterns+
   '("overloaded" "rate.?limit" "too many requests"
-    "429" "500" "502" "503" "504" "524"
+    "429" "500" "502" "503" "504" "520" "524"
     "service.?unavailable" "server.?error" "internal.?error"
     "provider.?returned.?error"
     "exceeded request buffer limit while retrying upstream"
