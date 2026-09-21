@@ -236,6 +236,63 @@
   (/ (round (* value 1000000d0))
      1000000d0))
 
+(defun apply-fireworks-effort-override (row)
+  (unless (eq (getf row :provider) :fireworks)
+    (return-from apply-fireworks-effort-override row))
+  (labels ((plist-key-p (plist key)
+             (loop for (candidate) on plist by #'cddr
+                   thereis (eq candidate key)))
+           (copy-map (map)
+             (mapcar (lambda (entry)
+                       (cons (car entry) (cdr entry)))
+                     map))
+           (clear-levels (levels)
+             (let ((map (copy-map (getf row :thinking-level-map))))
+               (dolist (level levels)
+                 (let ((entry (assoc level map :test #'eq)))
+                   (when entry
+                     (setf (cdr entry) nil))))
+               (setf (getf row :thinking-level-map) map))))
+    (let ((id (getf row :id))
+          (deepseek-map
+            '((:off . "none") (:minimal) (:medium)
+              (:max . "max") (:xhigh)))
+          (qwen-map
+            '((:off . "none") (:minimal) (:high)
+              (:max) (:xhigh . "xhigh"))))
+      (when (and (eq (getf row :api) :anthropic-messages)
+                 (not (plist-key-p (getf row :compat)
+                                   :allow-empty-signature)))
+        (setf (getf row :compat)
+              (list* :allow-empty-signature t (getf row :compat))))
+      (let ((adaptive
+              (cond
+                ((member id
+                         '("accounts/fireworks/models/deepseek-v4-flash-0731"
+                           "accounts/fireworks/models/deepseek-v4-flash-vision-exp"
+                           "accounts/fireworks/models/deepseek-v4-pro-0813")
+                         :test #'string=)
+                 deepseek-map)
+                ((member id
+                         '("accounts/fireworks/models/qwen3p8-max"
+                           "accounts/fireworks/models/qwen3p8-2p4t-a95b")
+                         :test #'string=)
+                 qwen-map))))
+        (when adaptive
+          (unless (plist-key-p (getf row :compat)
+                               :force-adaptive-thinking)
+            (setf (getf row :compat)
+                  (list* :force-adaptive-thinking t
+                         (getf row :compat))))
+          (when (null (getf row :thinking-level-map))
+            (setf (getf row :thinking-level-map)
+                  (copy-map adaptive)))))
+      (when (search "glm-5p2" id)
+        (clear-levels '(:low :medium)))
+      (when (search "kimi-k3" id)
+        (clear-levels '(:medium)))))
+  row)
+
 (defun apply-gpt-5-6-pricing-override (row)
   (when
       (member
@@ -274,8 +331,9 @@
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-gpt-5-6-pricing-override
-             (copy-list row))))
+            (apply-fireworks-effort-override
+             (apply-gpt-5-6-pricing-override
+              (copy-list row)))))
       (setf
        (getf copy :cost-tiers)
        (mapcar

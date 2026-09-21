@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: Fireworks Messages models replay unsigned thinking and send
+  verified adaptive effort, and GLM 5.2 / Kimi K3 no longer expose aliased
+  effort levels.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
