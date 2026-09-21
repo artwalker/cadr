@@ -42,6 +42,20 @@
        (cadr-tui:fuzzy-match
         "codex52" "gpt-5.2-codex"))))
 
+(test fuzzy-match-long-haystack-early-miss
+  (let ((haystack
+          (concatenate
+           'string
+           (make-string 4096 :initial-element #\a)
+           "xyz")))
+    (is (not (nth-value
+              0
+              (cadr-tui:fuzzy-match "q" haystack))))
+    (multiple-value-bind (matched-p score)
+        (cadr-tui:fuzzy-match "xyz" haystack)
+      (is (not (null matched-p)))
+      (is (> score 0d0)))))
+
 (test fuzzy-filter-orders-and-tokenizes
   (is
    (equal

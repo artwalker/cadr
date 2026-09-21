@@ -19,33 +19,34 @@
         (score 0d0)
         (last-match -1)
         (consecutive 0))
-    (loop for index below (length normalized-text)
-          while (< query-index
+    (loop while (< query-index
                    (length normalized-query))
-          when
-            (char=
-             (char normalized-text index)
-             (char normalized-query query-index))
-            do
-            (if (= last-match (1- index))
-                (progn
-                  (incf consecutive)
-                  (decf score (* consecutive 5)))
-                (progn
-                  (setf consecutive 0)
-                  (when (>= last-match 0)
-                    (incf score
-                          (* (- index last-match 1)
-                             2)))))
-            (when (fuzzy-boundary-p
-                   normalized-text index)
-              (decf score 10))
-            (incf score (* index 0.1d0))
-            (setf last-match index)
-            (incf query-index))
-    (when (< query-index (length normalized-query))
-      (return-from fuzzy-match-normalized
-        (values nil 0d0)))
+          for index
+            = (position
+               (char normalized-query query-index)
+               normalized-text
+               :start (1+ last-match)
+               :test #'char=)
+          do
+          (unless index
+            (return-from fuzzy-match-normalized
+              (values nil 0d0)))
+          (if (= last-match (1- index))
+              (progn
+                (incf consecutive)
+                (decf score (* consecutive 5)))
+              (progn
+                (setf consecutive 0)
+                (when (>= last-match 0)
+                  (incf score
+                        (* (- index last-match 1)
+                           2)))))
+          (when (fuzzy-boundary-p
+                 normalized-text index)
+            (decf score 10))
+          (incf score (* index 0.1d0))
+          (setf last-match index)
+          (incf query-index))
     (when (string= normalized-query normalized-text)
       (decf score 100))
     (values t score)))
