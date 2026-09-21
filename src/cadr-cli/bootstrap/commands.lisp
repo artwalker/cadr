@@ -1181,7 +1181,9 @@
          (refresh-auth (provider action)
            (let ((previous-auth-source
                    (provider-config-auth-source
-                    config)))
+                    config))
+                 (previous-model
+                   (provider-config-model config)))
              (refresh-available-models)
              (if
                  (and
@@ -1192,10 +1194,21 @@
                     (eq
                      provider
                      (cadr-ai:model-provider
-                      (provider-config-model
-                       config))))))
+                      previous-model)))))
+                 ;; pi 9767ba275: if the snapshot still lacks the
+                 ;; default after the first refresh, wait for one more
+                 ;; catalog refresh before erroring. Skip selection when
+                 ;; the session model changed mid-refresh.
                  (post-login-selection-result
-                  provider available-models #'select-model)
+                  provider available-models #'select-model
+                  :refresh-models-function
+                  (lambda (provider-id)
+                    (declare (ignore provider-id))
+                    (refresh-available-models))
+                  :model-unchanged-p
+                  (lambda ()
+                    (eq (provider-config-model config)
+                        previous-model)))
                  (let ((updated
                          (resolve-provider-config
                           :provider

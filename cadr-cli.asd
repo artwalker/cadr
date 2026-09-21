@@ -211,6 +211,7 @@
                              (:file "goal28-cli-flags-test")
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
+                             (:file "goal24-post-login-catalog-wait-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")
