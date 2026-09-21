@@ -42,7 +42,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 |---|---|
 | Prompt cache warming（长工具运行，以及可选的空闲刷新） | https://github.com/artwalker/cadr/pull/771 。全局 `cacheWarming`（默认 `streaming`）。预热调度、转录提示、`cache_warming_decision` 仍 open |
 | `/bug`。脱敏诊断、可选转录或 ZIP、Radius 上传或导出、`pi.bug-report` 条目、崩溃公告 | partial：注册 + 脱敏 + 本地 ZIP（FiveAM）。Consent / Radius / 崩溃公告仍 open |
-| 转录保留中途 system prompt 与 tool 变更（`before_agent_start`） | session 条目与恢复 |
+| 转录保留中途 system prompt 与 tool 变更（`before_agent_start`） | https://github.com/artwalker/cadr/pull/774 。replay helpers。session 条目与恢复仍 open |
 | 离线 Radius 模型目录。缓存与在线目录可叠加。默认 `balanced` | https://github.com/artwalker/cadr/pull/773 |
 | 按模型的 `reserveTokens` / `keepRecentTokens`（`compaction.modelOverrides`） | https://github.com/artwalker/cadr/pull/765 |
 | 分支摘要、压缩摘要、skill 调用条目的点击折叠 | https://github.com/artwalker/cadr/pull/768 |
@@ -50,7 +50,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `compat.allowedFallbackModels` | https://github.com/artwalker/cadr/pull/759 、https://github.com/artwalker/cadr/pull/766 。自定义模型请求名单；内置 `modelOverrides` 替换目录字段 |
 | `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | https://github.com/artwalker/cadr/pull/758 |
 | `user_bash` 失败即停。`undefined` 才继续传播 | https://github.com/artwalker/cadr/pull/757 |
-| 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
+| 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界。structs / `normalize-context` 已在 https://github.com/artwalker/cadr/pull/774 |
 | `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | https://github.com/artwalker/cadr/pull/772 |
 | 压缩、分支摘要、重试的 spinner 进入编辑器边框 | https://github.com/artwalker/cadr/pull/767 |
 | 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | https://github.com/artwalker/cadr/pull/760 |
