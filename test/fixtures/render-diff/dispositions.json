@@ -7981,8 +7981,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "64cee72cffa4ac0af495c58a748eeaa4239ac7eba9a7b5e63f127d706d2b2c5d",
-          "cadr": "64cee72cffa4ac0af495c58a748eeaa4239ac7eba9a7b5e63f127d706d2b2c5d"
+          "pi": "ec0a6bfcf84e04144de1e614c6a17db26cd40948221e156dec18f6a9dc091113",
+          "cadr": "ec0a6bfcf84e04144de1e614c6a17db26cd40948221e156dec18f6a9dc091113"
         }
       },
       "note": "At commands-informational/slash-session [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
@@ -7998,8 +7998,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c0131d608a564d3e03c8814017747b90801181e1c377f509cc087a17b46e743c",
-          "cadr": "c0131d608a564d3e03c8814017747b90801181e1c377f509cc087a17b46e743c"
+          "pi": "a05df448bde6b95d9259258e40b2c1164359a547351c13cc10b39b0aaa4e6229",
+          "cadr": "a05df448bde6b95d9259258e40b2c1164359a547351c13cc10b39b0aaa4e6229"
         }
       },
       "note": "At commands-informational/slash-name [wide] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
@@ -8683,8 +8683,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ca319ba22b043d903c453fbfd2e21a600d3ea9f8fcb9c07bb4183f0398c29c62",
-          "cadr": "ca319ba22b043d903c453fbfd2e21a600d3ea9f8fcb9c07bb4183f0398c29c62"
+          "pi": "237c03d70e1b626b5140b3d5c73109d7ea190e16eacd9588146a8731593175c4",
+          "cadr": "237c03d70e1b626b5140b3d5c73109d7ea190e16eacd9588146a8731593175c4"
         }
       },
       "note": "At commands-informational/slash-session [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
@@ -8700,8 +8700,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "be2de5a80d3ff649798a08176a8ae29c5425b6af0dce16f493ed9c1c4799b54b",
-          "cadr": "be2de5a80d3ff649798a08176a8ae29c5425b6af0dce16f493ed9c1c4799b54b"
+          "pi": "f20bde25d14409d181a0ef53f71e278a48425b0fa18ca7d034094822b47c7190",
+          "cadr": "f20bde25d14409d181a0ef53f71e278a48425b0fa18ca7d034094822b47c7190"
         }
       },
       "note": "At commands-informational/slash-name [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."

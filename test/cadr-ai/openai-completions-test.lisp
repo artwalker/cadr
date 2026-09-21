@@ -4,7 +4,7 @@
 (defun completions-provider-and-model ()
   (values
    (cadr-ai:make-openai-completions-provider :api-key "deepseek-test")
-   (cadr-ai:make-model :id "deepseek-v4-flash"
+   (cadr-ai:make-model :id "deepseek-flash"
                      :provider :deepseek
                      :api :openai-completions
                      :base-url "https://api.deepseek.com"
@@ -94,7 +94,7 @@
                   :arguments (cadr-ai::json-object "path" "README.md")))
                 :api :openai-completions
                 :provider :deepseek
-                :model "deepseek-v4-flash"
+                :model "deepseek-flash"
                 :stop-reason :tool-use)
                (cadr-ai:make-tool-result-message
                 :tool-call-id "call-1"

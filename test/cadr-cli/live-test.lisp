@@ -66,7 +66,7 @@
             (run-isolated-live-cli
              directory
              '("--provider" "deepseek"
-               "--model" "deepseek-v4-flash"
+               "--model" "deepseek-flash"
                "--print"
                "--no-session"
                "--no-tools"

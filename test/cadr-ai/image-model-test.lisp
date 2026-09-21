@@ -96,8 +96,28 @@
        (cadr-ai:make-openai-completions-provider :api-key "key")
        model (image-context) :stream-p nil))))
 
+(test deepseek-provider-catalog-ships-canonical-flash
+  (let ((flash
+          (cadr-ai:find-model-metadata :deepseek "deepseek-flash"))
+        (pro
+          (cadr-ai:find-model-metadata :deepseek "deepseek-v4-pro")))
+    (is (string= "DeepSeek V4.1 Flash"
+                 (cadr-ai:model-metadata-name flash)))
+    (is-true (cadr-ai:model-metadata-supports-images-p flash))
+    (is (= 0.3d0 (cadr-ai:model-metadata-input-price flash)))
+    (is (= 1.2d0 (cadr-ai:model-metadata-output-price flash)))
+    (is (= 0.006d0 (cadr-ai:model-metadata-cache-read-price flash)))
+    (is (= 1.32d0 (cadr-ai:model-metadata-input-price pro)))
+    (is (= 3.96d0 (cadr-ai:model-metadata-output-price pro)))
+    (is (= 0.044d0 (cadr-ai:model-metadata-cache-read-price pro)))
+    (signals cadr-ai:configuration-error
+      (cadr-ai:find-model-metadata :deepseek "deepseek-v4-flash"))
+    (signals cadr-ai:configuration-error
+      (cadr-ai:find-model-metadata
+       :deepseek "deepseek-v4-flash-vision-exp"))))
+
 (test static-model-catalog-calculates-cost
-  (let* ((metadata (cadr-ai:find-model-metadata :deepseek "deepseek-v4-flash"))
+  (let* ((metadata (cadr-ai:find-model-metadata :deepseek "deepseek-flash"))
          (usage (cadr-ai:make-usage :input 1000000
                                   :output 2000000
                                   :cache-read 500000)))
@@ -166,6 +186,6 @@
     (is (equal '(:medium :high :xhigh)
                (levels :openai "gpt-5.5-pro")))
     (is (equal '(:off :low :high :max)
-               (levels :deepseek "deepseek-v4-flash")))
+               (levels :deepseek "deepseek-flash")))
     (is (equal '(:low :high :max)
                (levels :kimi-coding "k3")))))

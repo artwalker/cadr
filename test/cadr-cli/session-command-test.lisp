@@ -707,7 +707,7 @@
         :content (list (cadr-ai:make-text-content :text "three"))
         :api :openai-completions
         :provider :deepseek
-        :model "deepseek-v4-flash"
+        :model "deepseek-flash"
         :usage
         (cadr-ai:make-usage
          :input 0 :output 400 :cache-read 3000
@@ -743,7 +743,7 @@
         (is (search "Status: Inactive (waiting for first request)" plain))
         (is (search "openai-codex/gpt-5.6-luna-2026-07-01: $0.110 (101k tokens)" plain))
         (is (search "openai-codex/gpt-5.6-luna: $0.085 (112k tokens)" plain))
-        (is (search "deepseek/deepseek-v4-flash: $0.004 (3.4k tokens)" plain))
+        (is (search "deepseek/deepseek-flash: $0.004 (3.4k tokens)" plain))
         (is (search "Tools/summaries: $0.002 (600 tokens)" plain))
         (is (search "Cache Re-billed: $0.045 (50,000 tokens, 1 miss)" plain))
         (is (search (format nil "~C[1mSession Info" #\Escape) styled))

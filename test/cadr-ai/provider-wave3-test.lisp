@@ -21,7 +21,7 @@
     (:cerebras . 2)
     (:cloudflare-ai-gateway . 50)
     (:cloudflare-workers-ai . 18)
-    (:deepseek . 3)
+    (:deepseek . 2)
     (:fireworks . 20)
     (:github-copilot . 28)
     (:google . 22)
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1354 (length (cadr-ai:list-model-metadata))))
+  (is (= 1353 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))

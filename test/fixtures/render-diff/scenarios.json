@@ -5205,7 +5205,7 @@
             "role": "assistant",
             "text": "third cost answer",
             "provider": "deepseek",
-            "model": "deepseek-v4-flash",
+            "model": "deepseek-flash",
             "usage": {
               "output": 400,
               "cacheRead": 3000,

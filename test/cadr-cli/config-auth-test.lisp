@@ -30,11 +30,11 @@
       (let ((config
               (cadr-cli:resolve-provider-config
                :provider "deepseek"
-               :model "deepseek-v4-flash"
+               :model "deepseek-flash"
                :base-url "https://cli.example"
                :config-path config-path
                :auth-path auth-path)))
-        (is (string= "deepseek-v4-flash"
+        (is (string= "deepseek-flash"
                      (cadr-ai:model-id
                       (cadr-cli:provider-config-model config))))
         (is (string= "https://cli.example"
