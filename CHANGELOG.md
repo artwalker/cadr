@@ -7,6 +7,8 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: Codex requests send the model's Off reasoning effort instead of omitting it, and still omit it when the Off mapping is null.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
