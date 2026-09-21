@@ -1847,3 +1847,52 @@
         (is-true (cadr-agent:agent-event-aborted end)))
       (is (zerop (cadr-agent::agent-operation-count agent)))
       (is (null (cadr-agent::agent-compaction-cancellation agent))))))
+
+(test goal24-compaction-cut-point-keeps-tool-call-before-oversized-trailing-result
+  ;; Baseline pi #9740 / 8bdcd4498: when trailing tool results alone exceed
+  ;; keep-recent, cut at the preceding assistant tool-call instead of
+  ;; skipping compaction (nil cut) or falling back to the first message.
+  (flet ((entry (message)
+           (cadr-agent::make-session-entry
+            :type :message
+            :message message)))
+    (let* ((entries
+             (list
+              (entry (cadr-ai:make-user-message :content "old history"))
+              (entry
+               (cadr-ai:make-assistant-message
+                :content
+                (list (cadr-ai:make-text-content :text "old answer"))
+                :api :openai-responses
+                :provider :openai
+                :model "m"))
+              (entry
+               (cadr-ai:make-user-message :content "read the large file"))
+              (entry
+               (cadr-ai:make-assistant-message
+                :content
+                (list
+                 (cadr-ai:make-tool-call
+                  :id "call-1"
+                  :name "read"
+                  :arguments
+                  (cadr-ai::json-object "path" "big.txt")))
+                :stop-reason :tool-use
+                :api :openai-responses
+                :provider :openai
+                :model "m"))
+              (entry
+               (cadr-ai:make-tool-result-message
+                :tool-call-id "call-1"
+                :tool-name "read"
+                :content
+                (list
+                 (cadr-ai:make-text-content
+                  :text
+                  (make-string 8000 :initial-element #\x)))))))
+           (cut
+             (cadr-agent::compaction-cut-point entries 1000)))
+      (is (= 3 cut))
+      (is (typep
+           (cadr-agent:session-entry-message (nth cut entries))
+           'cadr-ai:assistant-message)))))
