@@ -39,4 +39,16 @@ Goal 24 在 v0.86.0 上还没勾完的用户可见缺口仍然有效。本钉点
 
 一刀一个 PR。聚焦测试加上这刀碰到的门禁。完整 `./scripts/verify.sh` 只在钉点提交和一轮刀收束时跑，不在每一刀上跑。性能证据文件的 `source_revision` 随钉点改戳，数字没有按 v0.86.1 重测。
 
+2026-09-21 用户要求按团队并行。编排手册对六个单位的仪式比直接做更慢，所以不建 orch 仓库。四个写者，各一块工作树，从钉点提交切出。`CHANGELOG.md`、`BASELINE`、账本、`version.sexp` 只由主执行者改。不合并 PR。
+
+| 单位 | 分支 | 可写 | 不可写 |
+|---|---|---|---|
+| Cerebras 不宣称 strict | `goal25-cerebras-strict` | `src/cadr-ai/providers/openai-completions.lisp` 与对应测试 | 其他生产文件，账本 |
+| z.ai `Prompt too long` | `goal25-zai-overflow` | `src/cadr-ai/support/overflow.lisp` 与对应测试 | 其他生产文件，账本 |
+| `/bug` 换行和提示抑制 | `goal25-bug-report` | `src/cadr-cli/support/bug-report.lisp`，`src/cadr-cli/bootstrap/sessions.lisp`，对应测试 | `clipboard.lisp`，账本 |
+| 无显示环境 OSC 52 | `goal25-clipboard-osc52` | `src/cadr-cli/interactive/clipboard.lisp` 与对应测试 | `sessions.lisp`，账本 |
+| Meta Muse | `goal25-meta-muse` | 新的 meta provider / oauth 文件，`definitions.lisp`，环境键，对应测试 | `openai-completions.lisp`，`overflow.lisp`，账本 |
+
+Node compile cache 不设写者。没有对应的 Lisp 行为。
+
 模型数据包 `@earendil-works/pi-ai@0.86.1`，tarball SHA-256 `f3c35bf3c606b09f62ba92d2c7c89e63e0ca18075470102d5565684c524b7efd`。
