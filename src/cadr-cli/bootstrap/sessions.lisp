@@ -681,12 +681,16 @@ interrupt (baseline selectSession onExit: silent exit 0)."
 
 Unlike SESSION-MESSAGES, this projection is display-facing: branch and
 compaction summaries retain their component types instead of being converted
-to provider-facing user messages containing <summary> wrappers."
+to provider-facing user messages containing <summary> wrappers.
+
+Matches pi renderSessionEntries: after a compaction or branch_summary that
+has usage, append a compaction-cost-notice (not a persisted session entry)."
   (when session
     (loop
       for entry in (cadr-agent::session-context-entries session)
+      for type = (cadr-agent:session-entry-type entry)
       for message =
-        (case (cadr-agent:session-entry-type entry)
+        (case type
           (:message
            (cadr-agent:session-entry-message entry))
           (:custom-message
@@ -717,7 +721,16 @@ to provider-facing user messages containing <summary> wrappers."
             (cadr-agent:session-entry-tokens-before entry)
             :timestamp
             (cadr-agent:session-entry-timestamp entry))))
-      when message collect message)))
+      when message
+        collect message
+      when (and message
+                (member type '(:compaction :branch-summary))
+                (cadr-agent:session-entry-usage entry))
+        collect
+          (make-compaction-cost-notice
+           :kind type
+           :usage
+           (cadr-agent:session-entry-usage entry)))))
 
 (defun session-compaction-display-state (session)
   "Return the compaction-aware transcript projection consumed by the TUI.

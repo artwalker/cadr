@@ -212,6 +212,7 @@
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
                              (:file "goal24-cache-miss-notices-test")
+                             (:file "goal24-compaction-cost-notices-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")

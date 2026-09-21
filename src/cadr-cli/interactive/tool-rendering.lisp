@@ -979,7 +979,11 @@
                (reset-tui-messages
                 state display-messages
                 :preserve-usage-p t
-                :context-unknown-p t))
+                :context-unknown-p t
+                :show-cache-miss-notices-p
+                (and show-cache-miss-notices-function
+                     (funcall
+                      show-cache-miss-notices-function))))
              (if compaction-summary
                  (append-tui-entry
                   state

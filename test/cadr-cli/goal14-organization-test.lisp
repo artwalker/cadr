@@ -653,7 +653,13 @@
     ;; +2 builtin command conflict diagnostics.
     ;; +2 overlay input press: extension-input-dialog-handle-mouse
     ;; and runtime-auth-input-handle-mouse.
-    (is (= 325 definition-count)
+    ;; +2 Goal 24 cache-miss notices: add-cache-miss-notice and
+    ;; maybe-show-cache-miss-notice (interactive/entries.lisp).
+    ;; +4 Goal 24 compaction cost notices: compaction-cost-notice,
+    ;; compaction-cost-notice-token-count,
+    ;; format-compaction-cost-notice-text, and
+    ;; add-compaction-cost-notice (interactive/entries.lisp).
+    (is (= 331 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

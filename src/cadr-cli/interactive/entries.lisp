@@ -167,6 +167,51 @@
       :model-price-function model-price-function)))
   state)
 
+(defstruct (compaction-cost-notice
+            (:constructor make-compaction-cost-notice))
+  "Pi RenderSessionItem compaction_cost: derived billing notice, not persisted."
+  (kind :compaction)
+  usage)
+
+(defun compaction-cost-notice-token-count (usage)
+  (+ (cadr-ai:usage-input usage)
+     (cadr-ai:usage-output usage)
+     (cadr-ai:usage-cache-read usage)
+     (cadr-ai:usage-cache-write usage)))
+
+(defun format-compaction-cost-notice-text (kind usage)
+  "Pi addCompactionCostNotice label + formatTokens + optional ~~$ cost."
+  (let* ((tokens (compaction-cost-notice-token-count usage))
+         (total
+           (cadr-ai:cost-total
+            (cadr-ai:usage-cost usage)))
+         (cost-suffix
+           (if (>= total 0.01d0)
+               (format nil " (~~$~,2F)" total)
+               ""))
+         (label
+           (if (eq kind :branch-summary)
+               "Branch summary"
+               "Compaction")))
+    (format
+     nil
+     "~A: ~A tokens billed~A"
+     label
+     (cadr-tui::format-footer-tokens tokens)
+     cost-suffix)))
+
+(defun add-compaction-cost-notice
+    (state kind usage &key show-p)
+  "Pi addCompactionCostNotice: warning notice when showCacheMissNotices is on."
+  (when (and show-p usage)
+    (add-tui-notice
+     state
+     (cadr-tui:theme-foreground
+      :warning
+      (format-compaction-cost-notice-text kind usage)
+      :enabled-p t)))
+  state)
+
 (defun add-tui-error (state text)
   (add-tui-message-entry state :error text))
 

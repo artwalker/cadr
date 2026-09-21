@@ -224,7 +224,8 @@
                             thinking)))))))))))
     result))
 
-(defun seed-tui-message (state message)
+(defun seed-tui-message
+    (state message &key show-cache-miss-notices-p)
   (typecase message
     (cadr-ai:user-message
      (append-tui-user-message
@@ -308,7 +309,13 @@
        (cadr-agent::compaction-summary-agent-message-summary message)
        :tokens-before
        (cadr-agent::compaction-summary-agent-message-tokens-before message)
-       :expanded-p (tui-state-tools-expanded-p state)))))
+       :expanded-p (tui-state-tools-expanded-p state))))
+    (compaction-cost-notice
+     (add-compaction-cost-notice
+      state
+      (compaction-cost-notice-kind message)
+      (compaction-cost-notice-usage message)
+      :show-p show-cache-miss-notices-p)))
   state)
 
 (defun append-tui-user-message (state text)
@@ -343,7 +350,8 @@
 
 (defun reset-tui-messages
     (state messages &key preserve-usage-p
-                         context-unknown-p)
+                         context-unknown-p
+                         show-cache-miss-notices-p)
   (let ((saved-usage
           (and
            preserve-usage-p
@@ -369,7 +377,10 @@
      (tui-state-cost state) 0d0
      (tui-state-cost-known-p state) nil)
     (dolist (message messages)
-      (seed-tui-message state message))
+      (seed-tui-message
+       state message
+       :show-cache-miss-notices-p
+       show-cache-miss-notices-p))
     (when saved-usage
       (setf
        (tui-state-input-tokens state)

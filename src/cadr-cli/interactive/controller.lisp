@@ -1980,7 +1980,12 @@ interactive-mode.ts:5956-5960).")
             (tui-state-cost-known-p state)
            nil)
            (dolist (message selected-messages)
-             (seed-tui-message state message))
+             (seed-tui-message
+              state message
+              :show-cache-miss-notices-p
+              (and show-cache-miss-notices-function
+                   (funcall
+                    show-cache-miss-notices-function))))
            (refresh-footer-state))
          (submit (line)
            (let ((trimmed
@@ -2983,7 +2988,12 @@ interactive-mode.ts:5956-5960).")
             (funcall tool-ensure-function)
           (condition () nil)))
       (dolist (message messages)
-        (seed-tui-message state message))
+        (seed-tui-message
+         state message
+         :show-cache-miss-notices-p
+         (and show-cache-miss-notices-function
+              (funcall
+               show-cache-miss-notices-function))))
       ;; Baseline interactive-mode.ts: rebind/renderInitialMessages first,
       ;; then modelFallbackMessage via showWarning (appends after transcript).
       ;; Trust warning is also appended after session entries.

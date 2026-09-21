@@ -104,7 +104,8 @@
        (auto-compact-p t)
        (context-window 0)
        (mermaid-mode "streaming")
-       (code-block-indent "  "))
+       (code-block-indent "  ")
+       show-cache-miss-notices-p)
   (let ((state
           (%make-tui-state
            :model model
@@ -134,7 +135,10 @@
            (or code-block-indent "  ")
            :session session)))
     (dolist (message messages)
-      (seed-tui-message state message))
+      (seed-tui-message
+       state message
+       :show-cache-miss-notices-p
+       show-cache-miss-notices-p))
     state))
 
 (defun apply-tui-footer-state (state values)
