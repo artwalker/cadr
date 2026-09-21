@@ -19,6 +19,10 @@
    (cwd
     :initarg :cwd
     :reader agent-session-cwd)
+   (cache-warmer
+    :initarg :cache-warmer
+    :initform nil
+    :accessor agent-session-cache-warmer)
    (listeners
     :initarg :listeners
     :accessor agent-session-listeners)
@@ -129,8 +133,12 @@
   (unless (agent-session-disposed-p session)
     (setf (agent-session-disposed-p session) t)
     (let* ((agent (agent-session-agent session))
+           (warmer (agent-session-cache-warmer session))
            (host
              (cadr-agent::agent-extension-host agent)))
+      (when warmer
+        (cache-warmer-cancel warmer)
+        (setf (agent-session-cache-warmer session) nil))
       (when host
         (cadr-agent::run-extension-lifecycle-hooks
          host :session-shutdown
@@ -140,6 +148,17 @@
         ((agent-session-listener-lock session))
       (setf (agent-session-listeners session) nil)))
   nil)
+
+(defun agent-session-cache-warming-status (session)
+  (let ((warmer (agent-session-cache-warmer session)))
+    (and warmer (cache-warmer-status warmer))))
+
+(defun agent-session-set-cache-warming-mode (session mode)
+  (assert-agent-session-live session)
+  (set-cache-warming-mode
+   (agent-session-settings-manager session)
+   mode
+   (agent-session-cache-warmer session)))
 
 (defun sdk-session-restored-selection
     (persistent model-runtime)
@@ -403,7 +422,9 @@
            (sb-thread:make-mutex
             :name "cadr SDK subscribers"))
          (wrapper nil)
-         (wrapper-cell (cons nil nil)))
+         (wrapper-cell (cons nil nil))
+         (agent-cell (cons nil nil))
+         (cache-warmer nil))
     (declare (ignore _loader))
     (multiple-value-setq (selected-model fallback)
       (sdk-select-initial-model
@@ -434,6 +455,54 @@
                loader selected-tools resolved-cwd)))
            (retry-settings
              (sdk-settings-retry-settings settings))
+           (inner-stream
+             (stream-function-with-provider-retry
+              (stream-function-with-http-proxy
+               (stream-function-with-http-idle-timeout
+                (stream-function-with-websocket-connect-timeout
+                 (stream-function-with-thinking-budgets
+                  (or stream-function
+                      (sdk-model-runtime-stream-function
+                       runtime))
+                  (lambda ()
+                    (sdk-settings-thinking-budgets settings)))
+                 (lambda ()
+                   (sdk-settings-websocket-connect-timeout-ms
+                    settings)))
+                 (lambda ()
+                   (sdk-settings-http-idle-timeout-ms
+                    settings)))
+                (lambda ()
+                  (sdk-settings-http-proxy settings)))
+               (lambda ()
+                 (sdk-settings-retry-settings settings))))
+           (warmer
+             (make-live-cache-warmer
+              settings
+              (lambda () (car agent-cell))
+              (lambda ()
+                (let* ((agent (car agent-cell))
+                       (session
+                         (and agent
+                              (cadr-agent:agent-session
+                               agent))))
+                  (and session
+                       (cadr-agent:session-entries
+                        session))))
+              inner-stream))
+           (wrapped-stream
+             (wrap-stream-function-with-cache-warmer
+              warmer
+              (lambda ()
+                (let* ((agent (car agent-cell))
+                       (session
+                         (and agent
+                              (cadr-agent:agent-session
+                               agent))))
+                  (and session
+                       (cadr-agent:session-id session))))
+              (lambda () (car agent-cell))
+              inner-stream))
            (agent
              (cadr-agent:make-agent
               :provider
@@ -450,27 +519,7 @@
               :tool-filter-function tool-filter
               :extension-host extension-host
               :session persistent
-              :stream-function
-              (stream-function-with-provider-retry
-               (stream-function-with-http-proxy
-                (stream-function-with-http-idle-timeout
-                 (stream-function-with-websocket-connect-timeout
-                  (stream-function-with-thinking-budgets
-                  (or stream-function
-                      (sdk-model-runtime-stream-function
-                       runtime))
-                  (lambda ()
-                    (sdk-settings-thinking-budgets settings)))
-                 (lambda ()
-                   (sdk-settings-websocket-connect-timeout-ms
-                    settings)))
-                 (lambda ()
-                   (sdk-settings-http-idle-timeout-ms
-                    settings)))
-                (lambda ()
-                  (sdk-settings-http-proxy settings)))
-               (lambda ()
-                 (sdk-settings-retry-settings settings)))
+              :stream-function wrapped-stream
               :auto-retry-p
               (getf retry-settings :enabled-p)
               :auto-retry-max-attempts
@@ -479,11 +528,16 @@
               (/ (getf retry-settings :base-delay-ms) 1000)
               :on-event
               (lambda (event)
+                (when (eq (cadr-agent:agent-event-type event)
+                          :agent-settled)
+                  (cache-warmer-on-agent-settled warmer))
                 (sdk-agent-session-dispatch
                  event on-event listener-lock
                  (or (car wrapper-cell) listeners)
                  (and (car wrapper-cell)
                       #'agent-session-listeners))))))
+      (setf cache-warmer warmer
+            (car agent-cell) agent)
       (when extension-host
         (setf
          (cadr-agent::extension-host-reload-function extension-host)
@@ -511,6 +565,7 @@
              :resource-loader loader
              :model-runtime runtime
              :cwd resolved-cwd
+             :cache-warmer cache-warmer
              :listeners listeners
              :listener-lock listener-lock)
             (car wrapper-cell) wrapper)
@@ -519,6 +574,9 @@
       (setf
        (cadr-agent::agent-on-event agent)
        (lambda (event)
+         (when (eq (cadr-agent:agent-event-type event)
+                   :agent-settled)
+           (cache-warmer-on-agent-settled warmer))
          (sdk-agent-session-dispatch
           event on-event listener-lock wrapper
           #'agent-session-listeners)))

@@ -777,28 +777,14 @@
              selected-baseline-tools cwd)))
          (retry-settings
            (settings-retry-settings settings-manager))
-        (agent
-          (cadr-agent:make-agent
-           :provider (provider-config-provider config)
-           :model
-           (and
-            (not bare-sentinel-p)
-            (provider-config-model config))
-            :system-prompt
-            (first system-prompt-values)
-            :system-prompt-options
-            (second system-prompt-values)
-            :tools baseline-tools
-            :tool-filter-function tool-filter
-            :extension-host
-            (cli-extension-manager-host
-             extension-manager)
-            :stream-function
-            (stream-function-with-provider-retry
-             (stream-function-with-http-proxy
-              (stream-function-with-http-idle-timeout
-               (stream-function-with-websocket-connect-timeout
-                (stream-function-with-thinking-budgets
+         (agent-cell (cons nil nil))
+         (cache-warmer nil)
+         (inner-stream
+           (stream-function-with-provider-retry
+            (stream-function-with-http-proxy
+             (stream-function-with-http-idle-timeout
+              (stream-function-with-websocket-connect-timeout
+               (stream-function-with-thinking-budgets
                 (make-extension-aware-stream-function
                  (cli-extension-manager-host
                   extension-manager)
@@ -818,31 +804,77 @@
               (lambda ()
                 (settings-http-proxy settings-manager)))
              (lambda ()
-               (settings-retry-settings settings-manager)))
-            :session session
-            :auto-retry-p
-            (getf retry-settings :enabled-p)
-            :auto-retry-max-attempts
-            (getf retry-settings :max-retries)
-            :auto-retry-base-delay
-            (/ (getf retry-settings :base-delay-ms) 1000)
-            :auto-compact-p
-            (settings-boolean-value
-             settings-manager
-             "compaction" t "enabled")
-            :abort-p
-            (lambda () abort-requested-p)
-            :on-event
-            (lambda (event)
-              (when event-consumer
-                (funcall event-consumer event)))))
-         (anthropic-warning-state
-           (make-anthropic-warning-state)))
+               (settings-retry-settings settings-manager))))
+         (warmer
+           (make-live-cache-warmer
+            settings-manager
+            (lambda () (car agent-cell))
+            (lambda ()
+              (let* ((agent (car agent-cell))
+                     (active
+                       (and agent
+                            (cadr-agent:agent-session agent))))
+                (and active
+                     (cadr-agent:session-entries active))))
+            inner-stream))
+         (agent
+           (cadr-agent:make-agent
+            :provider (provider-config-provider config)
+            :model
+            (and
+             (not bare-sentinel-p)
+             (provider-config-model config))
+             :system-prompt
+             (first system-prompt-values)
+             :system-prompt-options
+             (second system-prompt-values)
+             :tools baseline-tools
+             :tool-filter-function tool-filter
+             :extension-host
+             (cli-extension-manager-host
+              extension-manager)
+             :stream-function
+             (wrap-stream-function-with-cache-warmer
+              warmer
+              (lambda ()
+                (let* ((agent (car agent-cell))
+                       (active
+                         (and agent
+                              (cadr-agent:agent-session
+                               agent))))
+                  (and active
+                       (cadr-agent:session-id active))))
+              (lambda () (car agent-cell))
+              inner-stream)
+             :session session
+             :auto-retry-p
+             (getf retry-settings :enabled-p)
+             :auto-retry-max-attempts
+             (getf retry-settings :max-retries)
+             :auto-retry-base-delay
+             (/ (getf retry-settings :base-delay-ms) 1000)
+             :auto-compact-p
+             (settings-boolean-value
+              settings-manager
+              "compaction" t "enabled")
+             :abort-p
+             (lambda () abort-requested-p)
+             :on-event
+             (lambda (event)
+               (when (eq (cadr-agent:agent-event-type event)
+                         :agent-settled)
+                 (cache-warmer-on-agent-settled warmer))
+               (when event-consumer
+                 (funcall event-consumer event)))))
+          (anthropic-warning-state
+            (make-anthropic-warning-state)))
     (declare
      (ignore _extension-report
              _package-extension-report
              _startup-model-config
              _scope-diagnostic-report))
+    (setf cache-warmer warmer
+          (car agent-cell) agent)
     (when (and tui-p *pending-deprecation-warnings*)
       ;; Baseline main.ts:837-839 — deprecated-directory warnings are
       ;; shown before the TUI takes over, interactive mode only.
@@ -1368,6 +1400,10 @@
              :output frontend-output
              :status-function status-consumer
              :ansi-theme-p tui-p
+             :cache-warming-mode
+             (%read-cache-warming-mode settings-manager)
+             :cache-warming-status
+             (and warmer (cache-warmer-status warmer))
              :model-price-function
              (lambda (provider model-id)
                (handler-case
@@ -1835,12 +1871,16 @@
                    "trusted"
                    "untrusted"))))
            (getf selection :trusted-p))
-         (confirm-import (line &key cwd-confirm)
+           (confirm-import (line &key cwd-confirm)
            (handle-session-command
             line agent
             :directory session-directory
             :cwd cwd
             :output frontend-output
+            :cache-warming-mode
+            (%read-cache-warming-mode settings-manager)
+            :cache-warming-status
+            (and warmer (cache-warmer-status warmer))
             :confirm-function
             (lambda (title message)
               (declare (ignore title message))
@@ -2113,7 +2153,10 @@
                :abort-function
                (lambda () (cadr-agent:agent-abort agent))))
              (:abort (cadr-agent:agent-abort agent))
-             (:shutdown (cadr-agent:agent-shutdown agent))
+             (:shutdown
+              (when warmer
+                (cache-warmer-cancel warmer))
+              (cadr-agent:agent-shutdown agent))
              (:has-pending-messages-p
               (or (cadr-agent::agent-steering-queue agent)
                   (cadr-agent::agent-follow-up-queue agent)
@@ -2187,7 +2230,8 @@
          (call-with-cli-signal-handlers
           agent
           (lambda ()
-            (case mode
+            (unwind-protect
+                (case mode
            (:tui
             (setf
              startup-scope-line
@@ -2819,4 +2863,6 @@
                  settings-manager)
                 :shell-path
                 (settings-shell-path
-                 settings-manager)))))))))))
+                 settings-manager)))
+              (when warmer
+                (cache-warmer-cancel warmer)))))))))))

@@ -12,6 +12,10 @@ tag/Release step.
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
   Not full v0.86.1 alignment. `version.sexp` stays `0.2.0`.
 
+- Goal 24: wire live `cache-warmer` settle/stream dispatch in CLI
+  bootstrap and SDK `agent-session`. Session `:usage` append and
+  settings UI remain open (#771).
+
 - Goal 24: add `cache-warmer` economics, schedule helpers, and
   `format-cache-warming-status` for `/session`. Mode is injected
   (default `streaming`); live settle/stream dispatch stays open.
