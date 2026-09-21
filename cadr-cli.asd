@@ -213,6 +213,7 @@
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
                              (:file "goal24-cache-warming-settings-test")
+                             (:file "goal24-cache-warming-settings-wire-test")
                              (:file "goal24-cache-warmer-test")
                              (:file "goal24-cache-warmer-dispatch-test")
                              (:file "goal28-registries-test")
