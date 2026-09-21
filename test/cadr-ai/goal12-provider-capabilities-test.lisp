@@ -401,7 +401,6 @@
     (is (every #'alphanumericp call-id))
     (is (string= call-id result-id))))
 
-<<<<<<< ours
 (test mistral-zai-glm-5-2-sends-reasoning-effort-not-prompt-mode
   ;; Upstream #9375: Mistral-hosted GLM-5.2 ignores prompt_mode.
   (let* ((model
@@ -442,8 +441,7 @@
     (is (string= "reasoning"
                  (cadr-ai::json-get payload "prompt_mode")))
     (is (not (cadr-ai::json-present-p payload "reasoning_effort")))))
-||||||| base
-=======
+
 (test mistral-medium-ids-send-reasoning-effort-not-prompt-mode
   (dolist (id '("mistral-medium-2604"
                 "mistral-medium-latest"
@@ -488,4 +486,3 @@
     (is (string= "reasoning"
                  (cadr-ai::json-get payload "prompt_mode")))
     (is-false (cadr-ai::json-present-p payload "reasoning_effort"))))
->>>>>>> theirs
