@@ -48,7 +48,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | 分支摘要、压缩摘要、skill 调用条目的点击折叠 | TUI |
 | `ctx.modelRegistry.stream()` / `streamSimple()` | extension API |
 | `compat.allowedFallbackModels` | Anthropic 兼容设置 |
-| `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | extension 事件 |
+| `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | https://github.com/artwalker/cadr/pull/758 |
 | `user_bash` 失败即停。`undefined` 才继续传播 | https://github.com/artwalker/cadr/pull/757 |
 | 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
 | `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | 工具结果类型 |
