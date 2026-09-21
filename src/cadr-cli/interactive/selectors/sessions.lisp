@@ -802,9 +802,10 @@
   selector)
 
 (defun session-selector-note-load-progress
-    (selector token loaded total)
-  ;; pi@13cbf77df session-selector.ts onProgress: progress is applied
-  ;; only while the same load is current.
+    (selector token loaded total
+     &optional (partial-records nil partial-p) (target :all))
+  ;; pi@ecac0a9c4 session-selector.ts onProgress: progress and optional
+  ;; partialSessions apply only while the same load is current.
   (when
       (= token
          (session-selector-state-all-load-sequence
@@ -813,7 +814,35 @@
      (session-selector-state-load-progress-loaded selector)
      loaded
      (session-selector-state-load-progress-total selector)
-     total))
+     total)
+    (when partial-p
+      (ecase target
+        (:all
+         (setf
+          (session-selector-state-all-sessions selector)
+          (copy-list partial-records)))
+        (:current
+         (setf
+          (session-selector-state-current-sessions selector)
+          (copy-list partial-records))))
+      (session-selector-clamp-selected selector)))
+  selector)
+
+(defun session-selector-note-current-load-progress
+    (selector loaded total
+     &optional (partial-records nil partial-p))
+  ;; Resume / current-scope load has no all-load token; counts and
+  ;; partials still feed the header and list the same way.
+  (setf
+   (session-selector-state-load-progress-loaded selector)
+   loaded
+   (session-selector-state-load-progress-total selector)
+   total)
+  (when partial-p
+    (setf
+     (session-selector-state-current-sessions selector)
+     (copy-list partial-records))
+    (session-selector-clamp-selected selector))
   selector)
 
 (defun delete-last-query-word (query)
@@ -1283,8 +1312,13 @@
                "Resume Session (All)"))
          (scope-text
            (cond
-             ((session-selector-state-all-loading-p
-               selector)
+             ((or
+               (session-selector-state-all-loading-p
+                selector)
+               (session-selector-state-load-progress-loaded
+                selector)
+               (session-selector-state-load-progress-total
+                selector))
               (concatenate
                'string
                (cadr-tui:theme-foreground

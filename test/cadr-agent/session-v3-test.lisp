@@ -247,6 +247,55 @@
             :key #'cadr-agent:session-list-info-id
             :test #'string=))))))))
 
+(test goal24-list-session-infos-publishes-partial-every-10
+  ;; pi@ecac0a9c4 listSessionsFromDir CURRENT_SESSION_LIST_PUBLISH_INTERVAL:
+  ;; partialSessions on loaded=1, every 10, and last (cwd-filtered listing).
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (dotimes (index 25)
+      (let ((session
+              (cadr-agent:create-session
+               :directory sessions
+               :cwd cwd
+               :id (format nil "s~2,'0D" index)
+               :timestamp (+ 1000 index))))
+        (cadr-agent:session-append-message
+         session
+         (cadr-ai:make-assistant-message
+          :content
+          (list
+           (cadr-ai:make-text-content
+            :text (format nil "body-~D" index)))
+          :api :openai-responses
+          :provider :openai
+          :model "mock"
+          :stop-reason :stop
+          :timestamp (+ 2000 index)))))
+    (let ((partial-at nil)
+          (progress-at nil))
+      (cadr-agent:list-session-infos
+       :directory sessions
+       :cwd cwd
+       :progress-function
+       (lambda (loaded total &optional (partial-infos nil partial-p))
+         (push loaded progress-at)
+         (is (= 25 total))
+         (when partial-p
+           (push loaded partial-at)
+           (is
+            (equal
+             partial-infos
+             (sort
+              (copy-list partial-infos)
+              #'>
+              :key #'cadr-agent:session-list-info-modified)))
+           (is (= loaded (length partial-infos))))))
+      (is
+       (equal
+        (loop for i from 25 downto 1 collect i)
+        progress-at))
+      (is (equal '(25 20 10 1) partial-at)))))
+
 (test session-v3-writes-reference-header-and-all-entry-envelopes
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
