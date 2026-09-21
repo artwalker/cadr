@@ -126,6 +126,38 @@
   '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
     "thinkingFormat"))
 
+(defun fallback-cost-number (cost name)
+  (let ((value (cadr-ai::json-get cost name)))
+    (unless (numberp value)
+      (error "allowedFallbackModels cost ~A must be a number" name))
+    value))
+
+(defun parse-allowed-fallback-model (item)
+  (unless (hash-table-p item)
+    (error "allowedFallbackModels entries must be objects"))
+  (let ((provider (cadr-ai::json-get item "provider"))
+        (model (cadr-ai::json-get item "model"))
+        (cost (cadr-ai::json-get item "cost")))
+    (unless (and (stringp provider) (plusp (length provider))
+                 (stringp model) (plusp (length model)))
+      (error "allowedFallbackModels entries require provider and model"))
+    (unless (hash-table-p cost)
+      (error "allowedFallbackModels cost must be an object"))
+    (list :provider provider
+          :model model
+          :cost
+          (list :input (fallback-cost-number cost "input")
+                :output (fallback-cost-number cost "output")
+                :cache-read (fallback-cost-number cost "cacheRead")
+                :cache-write (fallback-cost-number cost "cacheWrite")))))
+
+(defun parse-allowed-fallback-models (value)
+  (unless (or (vectorp value) (listp value))
+    (error "allowedFallbackModels must be an array"))
+  (when (> (length value) 3)
+    (error "allowedFallbackModels accepts at most 3 models"))
+  (map 'list #'parse-allowed-fallback-model value))
+
 (defun parse-model-compat (object)
   ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum
   ;; compat keys from models.json.  The routing-object keys
@@ -145,6 +177,9 @@
             ((and (string= key "vllmPriority")
                   (numberp value))
              (list :vllm-priority value))
+            ((string= key "allowedFallbackModels")
+             (list :allowed-fallback-models
+                   (parse-allowed-fallback-models value)))
             (t nil)))))
 
 (defun json-model (provider object base-url

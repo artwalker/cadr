@@ -620,3 +620,91 @@
     (is (cadr-ai::json-present-p zero-payload "priority"))
     (is (= 0 (cadr-ai::json-get zero-payload "priority")))
     (is (not (cadr-ai::json-present-p unset-payload "priority")))))
+
+(test anthropic-allowed-fallback-models-go-on-the-request
+  (let* ((model
+           (compat-model
+            :id "claude-fable-5"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url "https://api.anthropic.com"
+            :max-tokens 4096
+            :compat
+            '(:allowed-fallback-models
+              ((:provider "anthropic"
+                :model "claude-opus-5"
+                :cost (:input 5 :output 25 :cache-read 0.5 :cache-write 6.25))
+               (:provider "anthropic"
+                :model "claude-opus-4-8"
+                :cost (:input 4 :output 20 :cache-read 0.4 :cache-write 5))))))
+         (request
+           (build-request
+            (make-anthropic-provider :api-key "key")
+            model
+            (sample-context)
+            :stream-p t))
+         (payload (request-spec-payload request))
+         (fallbacks (cadr-ai::json-get payload "fallbacks"))
+         (headers (request-spec-headers request))
+         (beta (cdr (assoc "anthropic-beta" headers :test #'string-equal))))
+    (is (= 2 (length fallbacks)))
+    (is (string= "claude-opus-5"
+                 (cadr-ai::json-get (aref fallbacks 0) "model")))
+    (is (string= "claude-opus-4-8"
+                 (cadr-ai::json-get (aref fallbacks 1) "model")))
+    (is (search "server-side-fallback-2026-07-01" beta))
+    (let* ((plain
+             (compat-model
+              :id "claude-fable-5"
+              :provider :anthropic
+              :api :anthropic-messages
+              :base-url "https://api.anthropic.com"
+              :max-tokens 4096))
+           (plain-payload
+             (request-spec-payload
+              (build-request
+               (make-anthropic-provider :api-key "key")
+               plain
+               (sample-context)
+               :stream-p t))))
+      (is (not (cadr-ai::json-present-p plain-payload "fallbacks"))))))
+
+(test anthropic-fallback-block-waits-until-output-starts
+  (let* ((model
+           (compat-model
+            :id "claude-fable-5"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url "https://api.anthropic.com"
+            :max-tokens 4096))
+         (provider (make-anthropic-provider :api-key "key"))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model))))
+    (cadr-ai::reduce-provider-sse-event
+     provider state
+     (cadr-ai::make-sse-event
+      :data "{\"type\":\"message_start\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-5\",\"usage\":{\"input_tokens\":1,\"output_tokens\":0}}}")
+     (lambda (event) (declare (ignore event))))
+    (is (string= "claude-opus-5"
+                 (cadr-ai:assistant-message-response-model
+                  (cadr-ai::provider-stream-state-message state))))
+    (cadr-ai::reduce-provider-sse-event
+     provider state
+     (cadr-ai::make-sse-event
+      :data "{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"fallback\"}}")
+     (lambda (event) (declare (ignore event))))
+    (is (null
+         (cadr-ai:assistant-message-content
+          (cadr-ai::provider-stream-state-message state))))
+    (cadr-ai::reduce-provider-sse-event
+     provider state
+     (cadr-ai::make-sse-event
+      :data "{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\"}}")
+     (lambda (event) (declare (ignore event))))
+    (signals cadr-ai:sse-protocol-error
+      (cadr-ai::reduce-provider-sse-event
+       provider state
+       (cadr-ai::make-sse-event
+        :data "{\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"fallback\"}}")
+       (lambda (event) (declare (ignore event)))))))

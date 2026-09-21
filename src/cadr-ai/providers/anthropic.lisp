@@ -360,6 +360,11 @@
          (model-thinking-level-value model :off))
      (values (json-object "type" "disabled") nil))))
 
+(defun anthropic-allowed-fallbacks (model)
+  (let ((fallbacks
+          (model-compat-value model :allowed-fallback-models nil)))
+    (and (consp fallbacks) fallbacks)))
+
 (defun anthropic-tool-choice (choice)
   (if (stringp choice)
       (json-object "type" choice)
@@ -439,6 +444,15 @@
       (when (stringp user-id)
         (json-put payload "metadata"
                   (json-object "user_id" user-id))))
+    (let ((fallbacks (anthropic-allowed-fallbacks model)))
+      (when fallbacks
+        (json-put
+         payload "fallbacks"
+         (list-json-array
+          (mapcar
+           (lambda (fallback)
+             (json-object "model" (getf fallback :model)))
+           fallbacks)))))
     (make-request-spec
      :url (format nil "~A/v1/messages"
                   (strip-trailing-slash (model-base-url model)))
@@ -452,6 +466,8 @@
                           (model-compat-value
                            model :supports-eager-tool-input-streaming t)))
                 '("fine-grained-tool-streaming-2025-05-14"))
+              (when (anthropic-allowed-fallbacks model)
+                '("server-side-fallback-2026-07-01"))
               (when (model-compat-value
                      model :supports-mid-convo-effort nil)
                 '("mid-conversation-output-config-2026-07-01"
@@ -575,12 +591,24 @@
          (let ((upstream (json-get payload "message")))
            (setf (assistant-message-response-id message)
                  (json-get upstream "id"))
+           (let ((response-model (json-get upstream "model")))
+             (when (and (non-empty-string-p response-model)
+                        (not (string= response-model
+                                      (assistant-message-model message))))
+               (setf (assistant-message-response-model message)
+                     response-model)))
            (update-anthropic-usage message (json-get upstream "usage"))))
         ((string= type "content_block_start")
          (let* ((provider-index (json-get payload "index"))
                 (block-data (json-get payload "content_block"))
-                (block-type (json-get block-data "type"))
-                (block
+                (block-type (json-get block-data "type")))
+           (when (string= block-type "fallback")
+             (when (assistant-message-content message)
+               (error 'sse-protocol-error
+                      :message
+                      "Anthropic performed an unsupported mid-output model fallback"))
+             (return-from reduce-provider-sse-event nil))
+           (let* ((block
                   (cond
                     ((string= block-type "text")
                      (make-text-content))
@@ -618,7 +646,7 @@
                              (provider-stream-state-partial-json state))
                     "")
               (emit-event emit :tool-call-start message
-                          :content-index content-index)))))
+                          :content-index content-index))))))
         ((string= type "content_block_delta")
          (let* ((provider-index (json-get payload "index"))
                 (delta (json-get payload "delta"))

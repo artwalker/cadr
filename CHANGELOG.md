@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: an Anthropic model with `allowedFallbackModels` sends
+  those models as `fallbacks` and the server-side fallback beta.
+  A fallback content block before any output is skipped. One after
+  output has started is an error.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.

@@ -1016,3 +1016,25 @@
         (is (= 0
                (cadr-ai::model-compat-value
                 model :vllm-priority nil)))))))
+
+(test model-compat-parses-allowed-fallback-models
+  (let ((compat
+          (cadr-cli::parse-model-compat
+           (cadr-ai::parse-json
+            "{\"allowedFallbackModels\":[{\"provider\":\"anthropic\",\"model\":\"claude-opus-5\",\"cost\":{\"input\":5,\"output\":25,\"cacheRead\":0.5,\"cacheWrite\":6.25}}]}"))))
+    (is (string=
+         "claude-opus-5"
+         (getf (first (getf compat :allowed-fallback-models)) :model)))
+    (is (= 5
+           (getf
+            (getf (first (getf compat :allowed-fallback-models)) :cost)
+            :input))))
+  (let ((empty
+          (cadr-cli::parse-model-compat
+           (cadr-ai::parse-json "{\"allowedFallbackModels\":[]}"))))
+    (is (member :allowed-fallback-models empty))
+    (is (null (getf empty :allowed-fallback-models))))
+  (signals error
+    (cadr-cli::parse-model-compat
+     (cadr-ai::parse-json
+      "{\"allowedFallbackModels\":[{\"provider\":\"anthropic\",\"model\":\"a\",\"cost\":{\"input\":1,\"output\":1,\"cacheRead\":0,\"cacheWrite\":0}},{\"provider\":\"anthropic\",\"model\":\"b\",\"cost\":{\"input\":1,\"output\":1,\"cacheRead\":0,\"cacheWrite\":0}},{\"provider\":\"anthropic\",\"model\":\"c\",\"cost\":{\"input\":1,\"output\":1,\"cacheRead\":0,\"cacheWrite\":0}},{\"provider\":\"anthropic\",\"model\":\"d\",\"cost\":{\"input\":1,\"output\":1,\"cacheRead\":0,\"cacheWrite\":0}}]}"))))
