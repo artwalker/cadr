@@ -36,7 +36,7 @@
     (:moonshotai-cn . 10)
     (:nvidia . 20)
     (:openai . 39)
-    (:openai-codex . 8)
+    (:openai-codex . 6)
     (:opencode . 68)
     (:opencode-go . 27)
     (:openrouter . 366)
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1354 (length (cadr-ai:list-model-metadata))))
+  (is (= 1352 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
