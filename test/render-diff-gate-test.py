@@ -817,7 +817,7 @@ class RenderDiffGateTest(unittest.TestCase):
         # stack gray. The 39m closer lands mid-path and would leave the
         # driver line number in the I04 screen.
         colored = (
-            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-ecac0a9c4/"
+            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-13cbf77df/"
             b"packages/coding-agent/\x1b[39mtest/goal15-render-driver.ts:1068:12"
             b"\x1b[90m)\x1b[39m\n"
             b"\x1b[90m    at listOnTimeout (node:internal/timers:588:17)\x1b[39m"
@@ -857,7 +857,7 @@ class RenderDiffGateTest(unittest.TestCase):
             b"ome/.cadr/agent/crash/cadr-crash-3994918403-1601836-0.\nlog"
         )
         pi = (
-            b"    at Object.crash (/tmp/cadr-render-diff-pi-ecac0a9c4/"
+            b"    at Object.crash (/tmp/cadr-render-diff-pi-13cbf77df/"
             b"packages/coding-agent/test/goal15-rend\n"
             b"er-driver.ts:756:11)"
         )
@@ -1058,7 +1058,7 @@ class RenderDiffGateTest(unittest.TestCase):
         RENDER_DIFF.validate_visible_string_inventory(
             inventory, manifest["baselineCommit"]
         )
-        # Locked to tip baseline-visible-strings.json after the v0.86.0
+        # Locked to tip baseline-visible-strings.json after the v0.86.1
         # pin inventory refresh. Recount from the fixture:
         # 549 sites, 1221 branches, 1158 printable-visible, 63
         # terminal-protocol, 268 source-inventory entries.

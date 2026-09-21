@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
+  v0.86.1 (`13cbf77df`). Release identity is
+  `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
+  Not full v0.86.1 alignment. `version.sexp` stays `0.2.0`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

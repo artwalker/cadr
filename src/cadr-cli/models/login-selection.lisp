@@ -1,7 +1,7 @@
 (in-package #:cadr-cli)
 
 ;;; Post-login model selection. Baseline interactive-mode.ts
-;;; completeProviderAuthentication (ecac0a9c4:5424-5445) has four
+;;; completeProviderAuthentication (13cbf77df:5424-5445) has four
 ;;; failure branches plus success. cadr used to collapse the first two
 ;;; into :no-default-model, so xAI (which has default-model grok-4.5)
 ;;; printed "no default model is configured" when the snapshot was empty.

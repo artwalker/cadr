@@ -713,7 +713,7 @@
                     "[compaction: 42k tokens]")))
                (goal13-note-semantic-probe
                 seen (first probe) (second probe) (third probe))))
-           ;; v0.86.0 search highlight tokens style the alt-screen find bar.
+           ;; v0.86.1 search highlight tokens style the alt-screen find bar.
            (goal13-note-semantic-probe
             seen :search-match-bg
             (cadr-tui::style-search-match-text "find" nil)
@@ -1107,7 +1107,7 @@
             "Obsolete ledger count remains: ~A" obsolete)))
     (is
      (search
-      "GOAL13_PRESENTATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
+      "GOAL13_PRESENTATION_LEDGER baseline=13cbf77df2396303013a41646bcfa77b4271ae56 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
       presentation))
     (is
      (search

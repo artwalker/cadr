@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc",
+  "baselineCommit": "13cbf77df2396303013a41646bcfa77b4271ae56",
   "classes": {
     "I01": {
       "kind": "intentional-difference",
@@ -25,7 +25,7 @@
     "I05": {
       "kind": "intentional-difference",
       "textCovering": true,
-      "summary": "Login-cancel only (textCovering). User-approved goal 13 ruling: cancelling /login is a normal user action and must not produce error-level output. pi v0.86.0 (ecac0a9c4) regressed this path: packages/coding-agent/src/utils/abort.ts:3 throws Error('The operation was aborted'), while packages/coding-agent/src/modes/interactive/interactive-mode.ts:5666 only suppresses errorMsg === 'Login cancelled', so Escape-cancel of OAuth/device-code/loopback/API-key login now renders a red 'Error: Failed to login to ... / Failed to save API key for ...: This operation was aborted' line. cadr keeps the approved suppression (docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Retires when the upstream regression is fixed; then reverts to byte-for-byte alignment."
+      "summary": "Login-cancel only (textCovering). User-approved goal 13 ruling: cancelling /login is a normal user action and must not produce error-level output. pi v0.86.1 (13cbf77df) regressed this path: packages/coding-agent/src/utils/abort.ts:3 throws Error('The operation was aborted'), while packages/coding-agent/src/modes/interactive/interactive-mode.ts:5666 only suppresses errorMsg === 'Login cancelled', so Escape-cancel of OAuth/device-code/loopback/API-key login now renders a red 'Error: Failed to login to ... / Failed to save API key for ...: This operation was aborted' line. cadr keeps the approved suppression (docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Retires when the upstream regression is fixed; then reverts to byte-for-byte alignment."
     }
   },
   "entries": [
@@ -359,7 +359,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] pi v0.86.0 renders a red 'Error: Failed to save API key for Render Auth: This operation was aborted' line above the three probe turns after cancelling the API-key login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] pi v0.86.1 renders a red 'Error: Failed to save API key for Render Auth: This operation was aborted' line above the three probe turns after cancelling the API-key login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -378,7 +378,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-api-key/process-exit [wide] pi v0.86.0 keeps the red 'Error: Failed to save API key for Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-api-key/process-exit [wide] pi v0.86.1 keeps the red 'Error: Failed to save API key for Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -402,7 +402,7 @@
           "cadr": "6c0dd094b964b5b6bb123590ec6d334fc9431f1573af0f01cb7e1e51615d8000"
         }
       },
-      "note": "At overlays-auth-oauth/login-cancelled [wide+narrow] pi v0.86.0 renders a red 'Error: Failed to login to Render Auth: This operation was aborted' line after Escape cancels the OAuth login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/login-cancelled [wide+narrow] pi v0.86.1 renders a red 'Error: Failed to login to Render Auth: This operation was aborted' line after Escape cancels the OAuth login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -421,7 +421,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-oauth/login-post-cancel [wide] pi v0.86.0 retains the red 'Error: Failed to login to Render Auth: This operation was aborted' line above the three probe turns after cancelling the OAuth login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/login-post-cancel [wide] pi v0.86.1 retains the red 'Error: Failed to login to Render Auth: This operation was aborted' line above the three probe turns after cancelling the OAuth login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -440,7 +440,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-oauth/process-exit [wide] pi v0.86.0 keeps the red 'Error: Failed to login to Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/process-exit [wide] pi v0.86.1 keeps the red 'Error: Failed to login to Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -487,7 +487,7 @@
           "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
         }
       },
-      "note": "At overlays-auth-device-code/login-device-cancelled [wide+narrow] pi v0.86.0 renders a red 'Error: Failed to login to Render Device: This operation was aborted' line after Escape cancels the device-code login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/login-device-cancelled [wide+narrow] pi v0.86.1 renders a red 'Error: Failed to login to Render Device: This operation was aborted' line after Escape cancels the device-code login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -506,7 +506,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] pi v0.86.0 retains the red 'Error: Failed to login to Render Device: This operation was aborted' line above the three probe turns after cancelling the device-code login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] pi v0.86.1 retains the red 'Error: Failed to login to Render Device: This operation was aborted' line above the three probe turns after cancelling the device-code login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -525,7 +525,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-device-code/process-exit [wide] pi v0.86.0 keeps the red 'Error: Failed to login to Render Device: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/process-exit [wide] pi v0.86.1 keeps the red 'Error: Failed to login to Render Device: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -729,7 +729,7 @@
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] pi v0.86.0 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] pi v0.86.1 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -748,7 +748,7 @@
           "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] pi v0.86.0 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] pi v0.86.1 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -767,7 +767,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] pi v0.86.0 retains the red 'Error: Failed to login to Render Loopback: This operation was aborted' line above the three probe turns after cancelling the loopback login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] pi v0.86.1 retains the red 'Error: Failed to login to Render Loopback: This operation was aborted' line above the three probe turns after cancelling the loopback login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -786,7 +786,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-browser-callback/process-exit [wide] pi v0.86.0 keeps the red 'Error: Failed to login to Render Loopback: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/process-exit [wide] pi v0.86.1 keeps the red 'Error: Failed to login to Render Loopback: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback-complete",
@@ -2354,7 +2354,7 @@
           "cadr": "3c3afd8605f0cba3804540323a48be95e2c014b719aafd5c21ca588dc1c8ba9e"
         }
       },
-      "note": "At tool-bash-abort/bash-tool-aborted [narrow] under pi v0.86.0 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi byte-for-byte including the Error line; only the raw ANSI segmentation differs (I01)."
+      "note": "At tool-bash-abort/bash-tool-aborted [narrow] under pi v0.86.1 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi byte-for-byte including the Error line; only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2372,7 +2372,7 @@
           "cadr": "586865f95c8f86eadc3b1ca19149f4103c8eb4d088d2a78aa23285853c6854ad"
         }
       },
-      "note": "At tool-bash-abort/bash-tool-aborted [wide] under pi v0.86.0 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At tool-bash-abort/bash-tool-aborted [wide] under pi v0.86.1 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2389,7 +2389,7 @@
           "cadr": "d1dccacbc5ebc90f49cb538627fe9a39d8978a2b54d81528c07cabcd826f973d"
         }
       },
-      "note": "At tool-bash-abort/process-exit [narrow] under pi v0.86.0 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi byte-for-byte through the exit teardown; only the raw ANSI segmentation differs (I01)."
+      "note": "At tool-bash-abort/process-exit [narrow] under pi v0.86.1 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi byte-for-byte through the exit teardown; only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2407,7 +2407,7 @@
           "cadr": "58e6b0632d43a2e44d3f622ee51f007ea3921839be4f2863bf84971647e9d0a8"
         }
       },
-      "note": "At tool-bash-abort/process-exit [wide] under pi v0.86.0 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At tool-bash-abort/process-exit [wide] under pi v0.86.1 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
     },
     {
       "scenario": "tools-render-branch-sweep",
@@ -2607,7 +2607,7 @@
           "cadr": "3894bd9801a01585e24f900ddb3aa86cc0d750554ef39c03e2dd6e2e961c009f"
         }
       },
-      "note": "At process exit the same narrow-viewport consequence holds: the approved longer cadr changelog URL (I04) wraps to two rows and the 'Release note' line sits above the frame; teardown state matches pi. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.0 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
+      "note": "At process exit the same narrow-viewport consequence holds: the approved longer cadr changelog URL (I04) wraps to two rows and the 'Release note' line sits above the frame; teardown state matches pi. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.1 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "update-notifications",
@@ -2630,7 +2630,7 @@
           "cadr": "55427a6a90ad30ab8670e3d6fb2c71349904ee8eb2c786771a0dbf6d5248514c"
         }
       },
-      "note": "cadr's approved changelog URL (github.com/artwalker/cadr/blob/main/CHANGELOG.md, I04) wraps to two rows in the narrow dimension where pi.dev/changelog fits on one, so the 'Release note' line scrolls above the captured viewport; every visible line is otherwise identical modulo the I04 identity tokens (Run cadr update, cadr links). Raw ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.0 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
+      "note": "cadr's approved changelog URL (github.com/artwalker/cadr/blob/main/CHANGELOG.md, I04) wraps to two rows in the narrow dimension where pi.dev/changelog fits on one, so the 'Release note' line scrolls above the captured viewport; every visible line is otherwise identical modulo the I04 identity tokens (Run cadr update, cadr links). Raw ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.1 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "update-notifications-no-hyperlinks",
@@ -2653,7 +2653,7 @@
           "cadr": "06ebd733560d7f62369567faa0b1d9f5233cb1cb50005605aef3b731961f05ab"
         }
       },
-      "note": "At process exit, the hyperlink-free variant shows the same narrow-viewport consequence: the approved longer cadr changelog URL (I04) wraps and the 'Release note' line sits above the frame. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.0 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
+      "note": "At process exit, the hyperlink-free variant shows the same narrow-viewport consequence: the approved longer cadr changelog URL (I04) wraps and the 'Release note' line sits above the frame. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.1 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "update-notifications-no-hyperlinks",
@@ -2676,7 +2676,7 @@
           "cadr": "b7b77535fec50809c6a3ed1efd846d2dea2d8bb9b66f77cdc1f1dcb93cd6b2e3"
         }
       },
-      "note": "Same as update-notifications: the longer approved cadr changelog URL (I04) wraps in narrow and pushes the 'Release note' line above the viewport; no hyperlink escape sequences in this variant. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.0 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
+      "note": "Same as update-notifications: the longer approved cadr changelog URL (I04) wraps in narrow and pushes the 'Release note' line above the viewport; no hyperlink escape sequences in this variant. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.86.1 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3882,7 +3882,7 @@
           "cadr": "c8f4169779c35dc967bbd88b8172cb4104659d8514277338417b102c6f33c284"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.86.0 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.86.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -4367,7 +4367,7 @@
           "cadr": "532dfb41e4aca5081908cfcb641c541f127d70bb906caf8f5e72c433cbbdf5f4"
         }
       },
-      "note": "At example-bookmark/bookmark-labeled both sides show Bookmarked as: first after a faux assistant turn. Residual deltas are startup Extensions listing, I04 identity wrapping, and I01 ANSI segmentation. [narrow now screen-equal after v0.86.0 fd/rg Warning: parity; residual raw ANSI only (I01).]"
+      "note": "At example-bookmark/bookmark-labeled both sides show Bookmarked as: first after a faux assistant turn. Residual deltas are startup Extensions listing, I04 identity wrapping, and I01 ANSI segmentation. [narrow now screen-equal after v0.86.1 fd/rg Warning: parity; residual raw ANSI only (I01).]"
     },
     {
       "scenario": "example-bookmark",
@@ -4403,7 +4403,7 @@
           "cadr": "2f8cc5445bb7a3aa08787461550dc8ba96e3ad453d336a7380eca1502d837705"
         }
       },
-      "note": "At example-bookmark/process-exit the bookmark notify is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the label. [narrow now screen-equal after v0.86.0 fd/rg Warning: parity; residual raw ANSI only (I01).]"
+      "note": "At example-bookmark/process-exit the bookmark notify is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the label. [narrow now screen-equal after v0.86.1 fd/rg Warning: parity; residual raw ANSI only (I01).]"
     },
     {
       "scenario": "example-commands",
@@ -4600,7 +4600,7 @@
           "cadr": "0a8268deaa827d267f3e3b579df7c10ee34d52d7eb770090c09153504a36f323"
         }
       },
-      "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.86.0. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
+      "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.86.1. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-custom-header",
@@ -5518,7 +5518,7 @@
           "cadr": "ee612db238360be96d75fa29b469109b18a59fbc2ffcedbe60e5e5857c7c3015"
         }
       },
-      "note": "At autocomplete-surfaces/autocomplete-path [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At autocomplete-surfaces/autocomplete-path [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -5541,7 +5541,7 @@
           "cadr": "a83ece972ba945f317aa652658dfe91be913a982aee47445055a2cf45aeac461"
         }
       },
-      "note": "At autocomplete-surfaces/autocomplete-slash [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At autocomplete-surfaces/autocomplete-slash [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -5564,7 +5564,7 @@
           "cadr": "143dc5d63e3d8c644f2fa32931b4822f05ff48960280effec41006dce2d5f6b5"
         }
       },
-      "note": "At autocomplete-surfaces/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At autocomplete-surfaces/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -5582,7 +5582,7 @@
           "cadr": "1d32d9f64f2eef117bd20c4ae48a823957608d2b42abeb2525662d44f6ee050e"
         }
       },
-      "note": "At commands-empty-lifecycle/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At commands-empty-lifecycle/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -5605,7 +5605,7 @@
           "cadr": "a2a39ff4d0beaa7ad71e71c851e22068827971c944b4b8a28edf6908327867fe"
         }
       },
-      "note": "At commands-empty-lifecycle/slash-compact [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At commands-empty-lifecycle/slash-compact [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -5628,7 +5628,7 @@
           "cadr": "944c420d9443cd66a4486c96e502914b1bc487e59a254def2f20b2a6935c846c"
         }
       },
-      "note": "At commands-empty-lifecycle/slash-copy [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At commands-empty-lifecycle/slash-copy [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -5651,7 +5651,7 @@
           "cadr": "70e8ba4263c0f3df18ab82b2f3f53d3927933195dd7bcc3ceb1df484c76c07e5"
         }
       },
-      "note": "At commands-empty-lifecycle/slash-import [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At commands-empty-lifecycle/slash-import [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -5668,7 +5668,7 @@
           "cadr": "9f6fa73a4e169fc41e6a869af950a6ec6e31d6bf8e4bd16e167b551b4b8d5bd2"
         }
       },
-      "note": "At commands-empty-lifecycle/slash-new [narrow] semantic screens match under product-identity placeholders; remaining raw ANSI / teardown delta is I01. (split from mixed-equality entry) Prior: At commands-empty-lifecycle/slash-new [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At commands-empty-lifecycle/slash-new [narrow] semantic screens match under product-identity placeholders; remaining raw ANSI / teardown delta is I01. (split from mixed-equality entry) Prior: At commands-empty-lifecycle/slash-new [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -5686,7 +5686,7 @@
           "cadr": "aff1c0a66cd8e2cee253c5bfde9c7cc641676c79c7ead277d64c6d3715b2964d"
         }
       },
-      "note": "At commands-empty-lifecycle/slash-new [wide] At commands-empty-lifecycle/slash-new [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At commands-empty-lifecycle/slash-new [wide] At commands-empty-lifecycle/slash-new [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -5704,7 +5704,7 @@
           "cadr": "6f23d4f1bb3df5a299002a208e743f96dd5cb095832ec4a932cecba613f85028"
         }
       },
-      "note": "At commands-informational/slash-clone [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At commands-informational/slash-clone [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "compaction-status-manual",
@@ -5727,7 +5727,7 @@
           "cadr": "8d9e3ad4d1096fdadfd6e9d0ef488f438d0d2e0cb5b91601e7478e0d28dfb7c0"
         }
       },
-      "note": "At compaction-status-manual/compaction-manual [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At compaction-status-manual/compaction-manual [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "compaction-status-manual",
@@ -5750,7 +5750,7 @@
           "cadr": "fac346c5d0f2ad50206f69b5e09aa2ba6f3305738fe363f1686fa4da8bbc61dc"
         }
       },
-      "note": "At compaction-status-manual/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-manual/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "compaction-status-overflow",
@@ -5773,7 +5773,7 @@
           "cadr": "9ae358fbbd0229a4422679b79e61f0003c003521f0ef90fac3e7a0e2d7ac3c92"
         }
       },
-      "note": "At compaction-status-overflow/compaction-overflow [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-overflow/compaction-overflow [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "compaction-status-overflow",
@@ -5796,7 +5796,7 @@
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
-      "note": "At compaction-status-overflow/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-overflow/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -5819,7 +5819,7 @@
           "cadr": "f1fb76897d9c0beb25244bd976794bb62410eb6346e8e8d059a5f9e330de8e7c"
         }
       },
-      "note": "At compaction-status-threshold/compaction-threshold [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At compaction-status-threshold/compaction-threshold [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -5842,7 +5842,7 @@
           "cadr": "9f615f32cea67934c86fe59733a6e3365e77d5477489a893203ab55f33dbd28e"
         }
       },
-      "note": "At compaction-status-threshold/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-threshold/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "conversation-content",
@@ -5865,7 +5865,7 @@
           "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
         }
       },
-      "note": "At conversation-content/plain [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At conversation-content/plain [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "conversation-mermaid",
@@ -5888,7 +5888,7 @@
           "cadr": "b0557dede851e60a8bc3153e6e1497067de723f7ab0f80370a744565321c5f31"
         }
       },
-      "note": "At conversation-mermaid/mermaid-absent [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At conversation-mermaid/mermaid-absent [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "conversation-mermaid",
@@ -5906,7 +5906,7 @@
           "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
         }
       },
-      "note": "At conversation-mermaid/mermaid-rendered [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At conversation-mermaid/mermaid-rendered [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "extension-surfaces",
@@ -5929,7 +5929,7 @@
           "cadr": "82e2082d6f6e0a168ced2afb69003054ef90b9953ea8f72c275039ab43d55996"
         }
       },
-      "note": "At extension-surfaces/extension-editor [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At extension-surfaces/extension-editor [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "extension-surfaces",
@@ -5952,7 +5952,7 @@
           "cadr": "2655a3c8d5e76a74ef2f122c9b6a67fc9ff70a33583e400064219f69a6f624d3"
         }
       },
-      "note": "At extension-surfaces/extension-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At extension-surfaces/extension-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "extension-surfaces",
@@ -5975,7 +5975,7 @@
           "cadr": "79ae7c33447c06db072cc3717ea828cf4ec33609ca67534d27457f8a124dee17"
         }
       },
-      "note": "At extension-surfaces/extension-select [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At extension-surfaces/extension-select [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "extension-surfaces",
@@ -5998,7 +5998,7 @@
           "cadr": "66c94c5b23c7ed478e84f43dcf5642037fde48780f3b5f03cc0d299ca75a69bf"
         }
       },
-      "note": "At extension-surfaces/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At extension-surfaces/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-auth",
@@ -6021,7 +6021,7 @@
           "cadr": "ac77c0f0fd42a341c22d7f2dab03376fedb5d16ddf2018416251193762162620"
         }
       },
-      "note": "At overlays-auth/auth-method-generic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-auth/auth-method-generic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-auth",
@@ -6039,7 +6039,7 @@
           "cadr": "11a934ea4a5e2d15fc219e7f23de1d3022b519d7ed14383c3bd8d4a329e0119b"
         }
       },
-      "note": "At overlays-auth/login-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth/login-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -6057,7 +6057,7 @@
           "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
         }
       },
-      "note": "At overlays-auth/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -6080,7 +6080,7 @@
           "cadr": "8a12bb772505388aba95cf34267023be6f1d1474e8d4d33223522ca836f03f93"
         }
       },
-      "note": "At overlays-auth-api-key/api-key-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-auth-api-key/api-key-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -6098,7 +6098,7 @@
           "cadr": "5ed1d061ccaa67bbbe41307e29a8b13282fb8e8f41eac4e4fba17fc22f5cee48"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback-complete",
@@ -6116,7 +6116,7 @@
           "cadr": "3df25d03fab45b8b51454a7c611b623a16610ef1a3cb94d1ec332265360309e6"
         }
       },
-      "note": "At overlays-auth-browser-callback-complete/login-loopback-completed [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-completed [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback-complete",
@@ -6134,7 +6134,7 @@
           "cadr": "5ed1d061ccaa67bbbe41307e29a8b13282fb8e8f41eac4e4fba17fc22f5cee48"
         }
       },
-      "note": "At overlays-auth-browser-callback-complete/login-loopback-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback-complete",
@@ -6152,7 +6152,7 @@
           "cadr": "7a1ade2b2de148e01aa877628158de387115e3c829cd15481c4cfcf1860cbc73"
         }
       },
-      "note": "At overlays-auth-browser-callback-complete/login-loopback-post-complete [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-post-complete [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback-complete",
@@ -6170,7 +6170,7 @@
           "cadr": "02733b854de6027dc56215ce377fe9790c7471cc6a08305176e38112c8cdb344"
         }
       },
-      "note": "At overlays-auth-browser-callback-complete/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-browser-callback-complete/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-manual-code-complete",
@@ -6188,7 +6188,7 @@
           "cadr": "770a8d55439a82e7a055fa3a01b06be7d5fc670b8742c68073ebbc7232c3ba14"
         }
       },
-      "note": "At overlays-auth-manual-code-complete/login-manual-completed [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-manual-code-complete/login-manual-completed [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-manual-code-complete",
@@ -6211,7 +6211,7 @@
           "cadr": "3211762d92614aeffe763380d81ec3b913bd372017a078f10fd663c50907ac63"
         }
       },
-      "note": "At overlays-auth-manual-code-complete/login-manual-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-auth-manual-code-complete/login-manual-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-auth-manual-code-complete",
@@ -6229,7 +6229,7 @@
           "cadr": "7426a038ca1b966255922a3967279076516d1c830f0bc1139d6dbfb1ecccf083"
         }
       },
-      "note": "At overlays-auth-manual-code-complete/login-manual-post-complete [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-manual-code-complete/login-manual-post-complete [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-manual-code-complete",
@@ -6247,7 +6247,7 @@
           "cadr": "f984a0c119448f65fdc3d6a8b272589ad701aeea6dfa36cb3713f465e3430485"
         }
       },
-      "note": "At overlays-auth-manual-code-complete/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth-manual-code-complete/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -6270,7 +6270,7 @@
           "cadr": "2425366b556c64358220c55ec0c0d422c9a82243d357ec53b24db3f7dc5183ff"
         }
       },
-      "note": "At overlays-auth-oauth/auth-method-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-auth-oauth/auth-method-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -6293,7 +6293,7 @@
           "cadr": "3211762d92614aeffe763380d81ec3b913bd372017a078f10fd663c50907ac63"
         }
       },
-      "note": "At overlays-auth-oauth/login-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-auth-oauth/login-dialog [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-core",
@@ -6311,7 +6311,7 @@
           "cadr": "c0d2ac921b317b3dbb9139ab8048c89569c70b1d54ca5e919849e52e43371ead"
         }
       },
-      "note": "At overlays-core/overlay-tree-initial [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-core/overlay-tree-initial [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-logout",
@@ -6334,7 +6334,7 @@
           "cadr": "5adbea3cba5916a30819c964d013fbb397385703753aed90a945867024dd4719"
         }
       },
-      "note": "At overlays-logout/logout-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-logout/logout-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-logout",
@@ -6357,7 +6357,7 @@
           "cadr": "3fafe6cb22ed51e145d95b502b6f8ecaf70e49b45b15216af7bceb77082b66b0"
         }
       },
-      "note": "At overlays-logout/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-logout/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-secondary",
@@ -6375,7 +6375,7 @@
           "cadr": "ae729e0b4428d0fa2251005ad97031e18411d2f295b74a0d17664db855a2b9ef"
         }
       },
-      "note": "At overlays-secondary/import-confirmation [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-secondary/import-confirmation [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -6393,7 +6393,7 @@
           "cadr": "c9e5d3d088905c7461d4dad8e7b6c7183b67f6593d7e08e751c0164df93decdf"
         }
       },
-      "note": "At overlays-secondary/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-secondary/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -6416,7 +6416,7 @@
           "cadr": "d2e97ef90ae108a93c7fa423ba9fc2f96a92ae24f50aebd31f793636067f0af0"
         }
       },
-      "note": "At overlays-secondary/settings-theme [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-secondary/settings-theme [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-secondary",
@@ -6434,7 +6434,7 @@
           "cadr": "d2eb4dc5065b58336bce22823e2f50065a8d7d7d0536cd993fc8168e5cdb6664"
         }
       },
-      "note": "At overlays-secondary/settings-theme-automatic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-secondary/settings-theme-automatic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -6457,7 +6457,7 @@
           "cadr": "24a85b1a2aa0d205b8b1d55ed0264611c49fae0c07d14200a0c05b629dd4e94e"
         }
       },
-      "note": "At overlays-secondary/settings-theme-dark [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-secondary/settings-theme-dark [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-secondary",
@@ -6480,7 +6480,7 @@
           "cadr": "8e7f69a87ee2ec4367f5ea78b572635a03ad0aab87294ab1f98d6762edb2fe44"
         }
       },
-      "note": "At overlays-secondary/settings-theme-light [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-secondary/settings-theme-light [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "overlays-secondary",
@@ -6503,7 +6503,7 @@
           "cadr": "8f06e5dcfa986d74d4e483ea4a2e351512f17182f85e24eb044ded6073c74f27"
         }
       },
-      "note": "At overlays-secondary/settings-warnings [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-secondary/settings-warnings [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "provider-error",
@@ -6526,7 +6526,7 @@
           "cadr": "5b13680a8ce656a1207f329b38e7d664d446347594ebddeeeceee88a04e8d10c"
         }
       },
-      "note": "At provider-error/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At provider-error/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "provider-error",
@@ -6549,7 +6549,7 @@
           "cadr": "316904de4cd869412ca2458059d1a7c8f3c642b2e99aae04c036a326cf84e201"
         }
       },
-      "note": "At provider-error/provider-error [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At provider-error/provider-error [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "selector-trust-inherited",
@@ -6567,7 +6567,7 @@
           "cadr": "4a330c2e63748ee7556909d53f03ade754c495faceb529a4153700f97327a9ff"
         }
       },
-      "note": "At selector-trust-inherited/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At selector-trust-inherited/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "selector-trust-inherited",
@@ -6590,7 +6590,7 @@
           "cadr": "844a20f8928752cacf33db0c46f0e7aac981ed7d5829d579b0c0ba59d2d3e85e"
         }
       },
-      "note": "At selector-trust-inherited/trust-inherited-from-parent [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At selector-trust-inherited/trust-inherited-from-parent [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "startup-existing",
@@ -6613,7 +6613,7 @@
           "cadr": "b78b051fbcb7b68f2a8825f7c01e6d5e7f5c4b378cdae52ccac93a18685b30b1"
         }
       },
-      "note": "At startup-existing/existing-session [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At startup-existing/existing-session [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "startup-first",
@@ -6682,7 +6682,7 @@
           "cadr": "0d43e2297d5721f7c4fa9904e467b617715cd551d4a6f844c8b907d10200f2c2"
         }
       },
-      "note": "At stream-interrupt-queue/busy-queue [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). The gray Working status rule is canonicalized to one spinner frame and one ellipsis, so that animation is not a residual. Also covers narrow after theme-cache SHA refresh."
+      "note": "At stream-interrupt-queue/busy-queue [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). The gray Working status rule is canonicalized to one spinner frame and one ellipsis, so that animation is not a residual. Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "stream-interrupt-queue",
@@ -6700,7 +6700,7 @@
           "cadr": "7e22923a0a7a7d4f19eb760012e384101ac57eb3f9f7e5476a13b799ab344408"
         }
       },
-      "note": "At stream-interrupt-queue/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At stream-interrupt-queue/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "stream-interrupt-queue",
@@ -6723,7 +6723,7 @@
           "cadr": "cbaad341202f1b8617e9244c9b769ca38f3d755d459ce0f1b552b64f3a43d07c"
         }
       },
-      "note": "At stream-interrupt-queue/stream-aborted [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At stream-interrupt-queue/stream-aborted [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
     },
     {
       "scenario": "tools-failure",
@@ -6741,7 +6741,7 @@
           "cadr": "346fc45d377dd77e940c568e5a8351eec27fd20d7bc2cfead42f04b9e026f29c"
         }
       },
-      "note": "At tools-failure/tool-failure [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-failure/tool-failure [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -6764,7 +6764,7 @@
           "cadr": "17a9fa52dda437a28c0a57750db207edd70c8a13aa6ccffcb7a0d4e96a0ff192"
         }
       },
-      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-significant-states/find-invalid-arguments [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-significant-states/find-invalid-arguments [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -6787,7 +6787,7 @@
           "cadr": "0608c103326a2bedf0acb72f5ddbd51ecd32165f7b9581a6ba8f96384948aab6"
         }
       },
-      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-significant-states/parallel-tool-calls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-significant-states/parallel-tool-calls [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -6810,7 +6810,7 @@
           "cadr": "a6b05544ece7beee662615b80412adfecf7d98e154153c29cc0c54a07c4fa8db"
         }
       },
-      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-significant-states/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-significant-states/process-exit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6833,7 +6833,7 @@
           "cadr": "43db59559ba6822d074dcd6c6f3d9572b0a0a260410612e64b334fe296669722"
         }
       },
-      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-success/bash-long-command [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-success/bash-long-command [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -6851,7 +6851,7 @@
           "cadr": "f8707ea8392c22ef9620a1969512b80517634f0fb1cc109b2e02195ade13f80d"
         }
       },
-      "note": "At tools-success/bash-multiline [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At tools-success/bash-multiline [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -7054,7 +7054,7 @@
           "cadr": "33d1fb9b179dc5870633ced12b935c74993139756dc0f55c1010cb9f8117e6d6"
         }
       },
-      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-success/read-offset-without-limit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-success/read-offset-without-limit [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "tools-success",
@@ -7077,7 +7077,7 @@
           "cadr": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8"
         }
       },
-      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-success/tree-rich-tools [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "Semantic screens now match under product-identity placeholders (I04 cleared); At tools-success/tree-rich-tools [narrow+wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.86.1 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -7618,7 +7618,7 @@
           "cadr": "acd5d7a1e49a144b5802e2245f0d89fb2706fa6bd84dc1cfd0227fe892d5e319"
         }
       },
-      "note": "At overlays-core/overlay-session-delete [wide] after selecting the non-active 'other' session, the delete confirm chrome matches; remaining visible delta is Goal 16 product-identity wrap/padding on the startup banner (<PRODUCT>/<VERSION> vs pi v0.86.0) (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-core/overlay-session-delete [wide] after selecting the non-active 'other' session, the delete confirm chrome matches; remaining visible delta is Goal 16 product-identity wrap/padding on the startup banner (<PRODUCT>/<VERSION> vs pi v0.86.1) (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-core",

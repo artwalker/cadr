@@ -3,17 +3,17 @@
 (defvar *tui-mode-switch-hook* nil
   "When bound, called with the new tuiMode settings value to
 live-switch the running renderer; returns true when the switch
-happened.  pi@ecac0a9c4 interactive-mode.ts:4557-4567
+happened.  pi@13cbf77df interactive-mode.ts:4557-4567
 onTuiModeChange.")
 
 (defvar *fullscreen-copy-on-select-hook* nil
   "When bound, called with the new fullscreenCopyOnSelect boolean so
 the running alt-screen renderer can update copyOnSelect
-(pi@ecac0a9c4 interactive-mode.ts:4584).")
+(pi@13cbf77df interactive-mode.ts:4584).")
 
 (defvar *alt-screen-flash-function* nil
   "When non-nil, called with a message string to show a transient
-fullscreen flash instead of a status line (pi@ecac0a9c4
+fullscreen flash instead of a status line (pi@13cbf77df
 interactive-mode.ts:5956-5960).")
 
 (defun should-use-tui-p
@@ -165,7 +165,7 @@ interactive-mode.ts:5956-5960).")
    :exit-output-mode exit-output-mode
    :copy-on-select-p copy-on-select-p
    :copy-selection-function
-   ;; v0.86.0 tui-alt-screen.ts copySelection: the native/platform
+   ;; v0.86.1 tui-alt-screen.ts copySelection: the native/platform
    ;; clipboard with a verified success path, OSC 52 as its own
    ;; fallback inside copy-to-clipboard.
    (lambda (text)
@@ -175,7 +175,7 @@ interactive-mode.ts:5956-5960).")
    :open-url-function
    #'open-tui-url
    :scroll-to-end-indicator-function
-   ;; pi@ecac0a9c4 tui-renderer.ts scrollToEndIndicator
+   ;; pi@13cbf77df tui-renderer.ts scrollToEndIndicator
    (when alt-p
      (lambda ()
        (let* ((shortcut
@@ -2279,7 +2279,7 @@ interactive-mode.ts:5956-5960).")
                            (oauth-selector-option-id value))
                         (declare (ignore provider))
                         (if sync-error
-                            ;; pi@ecac0a9c4 interactive-mode.ts:5399 —
+                            ;; pi@13cbf77df interactive-mode.ts:5399 —
                             ;; the synchronization failure replaces the
                             ;; success status.
                             (show-error
@@ -2315,7 +2315,7 @@ interactive-mode.ts:5956-5960).")
                            provider
                            (getf value :key))
                         (if sync-error
-                            ;; pi@ecac0a9c4 interactive-mode.ts:5548 —
+                            ;; pi@13cbf77df interactive-mode.ts:5548 —
                             ;; the synchronization failure replaces the
                             ;; success status.
                             (show-error
@@ -2500,7 +2500,7 @@ interactive-mode.ts:5956-5960).")
                   (format nil "~A" condition)))))
            (refresh-footer-state))
          (switch-tui-mode (mode)
-           ;; pi@ecac0a9c4 interactive-mode.ts:788-832 switchTuiMode +
+           ;; pi@13cbf77df interactive-mode.ts:788-832 switchTuiMode +
            ;; :4557-4567 onTuiModeChange.  The baseline guard ("Close
            ;; active overlays before changing TUI mode") requires a
            ;; stacked overlay above the settings selector; cadr's

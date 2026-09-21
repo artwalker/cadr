@@ -155,7 +155,7 @@
         (is (= 1 (count :agent-end (event-types events))))))))
 
 (test goal17-terminal-abort-preserves-last-partial-content-and-usage
-  ;; Fixed pi@ecac0a9c4 faux.ts:288-297,313-344 turns the last partial into
+  ;; Fixed pi@13cbf77df faux.ts:288-297,313-344 turns the last partial into
   ;; the aborted terminal message.  Providers may return a sparse terminal
   ;; object, so the agent must preserve content and usage already observed.
   (let* ((partial

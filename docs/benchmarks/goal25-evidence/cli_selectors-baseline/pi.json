@@ -2,9 +2,9 @@
   "schema_version": 1,
   "kind": "pi-goal20-part-h-paired-paths",
   "provenance": {
-    "source_revision": "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc",
+    "source_revision": "13cbf77df2396303013a41646bcfa77b4271ae56",
     "source_revision_from": ".goal15-render-baseline",
-    "baseline_directory": "/tmp/cadr-render-diff-pi-ecac0a9c4",
+    "baseline_directory": "/tmp/cadr-render-diff-pi-13cbf77df",
     "fixture_sha256": {
       "auth.json": "ddeb81361b0104333a06cbf1c34c431426e1f3abcd46959ff18f4d710e1eb9e9",
       "cli-argv.json": "dddcd05e4a41038330dd314a6aae981cd066882a5a63d39a7b533f58e509a5bd",

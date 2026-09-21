@@ -702,7 +702,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.0 (+0, ecac0a9c4)`.",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.1 (+0, 13cbf77df)`.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2822,7 +2822,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.86.0 (+0, ecac0a9c4)**",
+      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.86.1 (+0, 13cbf77df)**",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -2870,7 +2870,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "[`earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`](https://github.com/earendil-works/pi/tree/ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc),",
+      "line": "[`earendil-works/pi@13cbf77df2396303013a41646bcfa77b4271ae56`](https://github.com/earendil-works/pi/tree/13cbf77df2396303013a41646bcfa77b4271ae56),",
       "occurrences": 2,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -2990,7 +2990,7 @@
       "path": "README.md",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "[`earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`](https://github.com/earendil-works/pi/tree/ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc),",
+      "line": "[`earendil-works/pi@13cbf77df2396303013a41646bcfa77b4271ae56`](https://github.com/earendil-works/pi/tree/13cbf77df2396303013a41646bcfa77b4271ae56),",
       "occurrences": 2,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -4862,7 +4862,7 @@
       "path": "scripts/goal20-paired-paths.mjs",
       "kind": "pi-token",
       "token": "pi",
-      "line": "\t\t\t\"goal20 paired paths: sqlite_session ingest not ported for pi v0.86.0; set GOAL20_ALLOW_SQLITE_STUB=1 only for floor_slice remesure\",",
+      "line": "\t\t\t\"goal20 paired paths: sqlite_session ingest not ported for pi v0.86.1; set GOAL20_ALLOW_SQLITE_STUB=1 only for floor_slice remesure\",",
       "occurrences": 1,
       "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
     },
@@ -9134,7 +9134,7 @@
       "path": "src/cadr-agent/extensions/context.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 extensions/runner.ts withUIPrompt: nest prompts, emit",
+      "line": "  ;; pi@13cbf77df extensions/runner.ts withUIPrompt: nest prompts, emit",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -9142,7 +9142,7 @@
       "path": "src/cadr-agent/extensions/lifecycle.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                         ;; pi@ecac0a9c4 extensions/types.ts:1075-1079 \u2014 the",
+      "line": "                         ;; pi@13cbf77df extensions/types.ts:1075-1079 \u2014 the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9150,7 +9150,7 @@
       "path": "src/cadr-agent/extensions/providers.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 agent-session.ts #8537: context-only custom messages",
+      "line": "  ;; pi@13cbf77df agent-session.ts #8537: context-only custom messages",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -9158,7 +9158,7 @@
       "path": "src/cadr-agent/extensions/snapshot.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 extensions/loader.ts:205-218,410-424 \u2014 invalidating",
+      "line": "    ;; pi@13cbf77df extensions/loader.ts:205-218,410-424 \u2014 invalidating",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9166,7 +9166,7 @@
       "path": "src/cadr-agent/loop/agent-loop.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        ;; pi@ecac0a9c4 agent-loop.ts #8782: compact before the next",
+      "line": "        ;; pi@13cbf77df agent-loop.ts #8782: compact before the next",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -9182,7 +9182,7 @@
       "path": "src/cadr-agent/loop/tool-execution.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "normalize image blocks entering session history (pi@ecac0a9c4",
+      "line": "normalize image blocks entering session history (pi@13cbf77df",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9190,7 +9190,7 @@
       "path": "src/cadr-agent/loop/turns.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                 ;; pi@ecac0a9c4 \u2014 an abort already pending when the",
+      "line": "                 ;; pi@13cbf77df \u2014 an abort already pending when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9198,7 +9198,7 @@
       "path": "src/cadr-agent/loop/turns.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@ecac0a9c4 agent-loop.ts:295 converts agent-level",
+      "line": "         ;; pi@13cbf77df agent-loop.ts:295 converts agent-level",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9206,7 +9206,7 @@
       "path": "src/cadr-agent/session/discovery.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 SessionManager.list onProgress: invoked per",
+      "line": "           ;; pi@13cbf77df SessionManager.list onProgress: invoked per",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9238,7 +9238,7 @@
       "path": "src/cadr-agent/session/migration.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 session-manager.ts #8345: after a valid load, append a",
+      "line": "  ;; pi@13cbf77df session-manager.ts #8345: after a valid load, append a",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9246,7 +9246,7 @@
       "path": "src/cadr-agent/tool.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@ecac0a9c4 agent-loop.ts:637-640 \u2014 a before-hook",
+      "line": "              ;; pi@13cbf77df agent-loop.ts:637-640 \u2014 a before-hook",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9310,7 +9310,7 @@
       "path": "src/cadr-ai/oauth/pkce.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/ai/src/auth/oauth/*.ts \u2014 subscription-backed",
+      "line": "  ;; pi@13cbf77df packages/ai/src/auth/oauth/*.ts \u2014 subscription-backed",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9398,7 +9398,7 @@
       "path": "src/cadr-ai/providers/definitions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 core/model-runtime.ts:462-464 isUsingSubscription:",
+      "line": "  ;; pi@13cbf77df core/model-runtime.ts:462-464 isUsingSubscription:",
       "occurrences": 1,
       "reason": "Slot-exclusion note names the pi source line the metadata points at; not Cadr identity."
     },
@@ -9406,7 +9406,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@ecac0a9c4 api/openai-completions.ts:779-793 \u2014 chat",
+      "line": "       ;; pi@13cbf77df api/openai-completions.ts:779-793 \u2014 chat",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9414,7 +9414,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 api/openai-completions.ts:847-866 \u2014 vLLM caps",
+      "line": "    ;; pi@13cbf77df api/openai-completions.ts:847-866 \u2014 vLLM caps",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9422,7 +9422,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 openai-completions.ts:838 \u2014 omit tool_choice when",
+      "line": "    ;; pi@13cbf77df openai-completions.ts:838 \u2014 omit tool_choice when",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9430,7 +9430,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 api/openai-completions.ts:892-940 \u2014 each entry",
+      "line": "  ;; pi@13cbf77df api/openai-completions.ts:892-940 \u2014 each entry",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9678,7 +9678,7 @@
       "path": "src/cadr-cli/arguments.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                      ;; pi@ecac0a9c4 cli/args.ts:180-191 \u2014 space form",
+      "line": "                      ;; pi@13cbf77df cli/args.ts:180-191 \u2014 space form",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9694,7 +9694,7 @@
       "path": "src/cadr-cli/arguments.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 cli/args.ts:180-186: --tui-mode replaces --alt;",
+      "line": "  ;; pi@13cbf77df cli/args.ts:180-186: --tui-mode replaces --alt;",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9702,7 +9702,7 @@
       "path": "src/cadr-cli/bootstrap/auth.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "             ;; pi@ecac0a9c4 interactive-mode.ts:5548,5662 \u2014 when the",
+      "line": "             ;; pi@13cbf77df interactive-mode.ts:5548,5662 \u2014 when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9710,7 +9710,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@ecac0a9c4 footer.ts:139-141 \u2014 Kimi Coding is",
+      "line": "              ;; pi@13cbf77df footer.ts:139-141 \u2014 Kimi Coding is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9718,7 +9718,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            ;; pi@ecac0a9c4 model-runtime.ts:532 \u2014 non-nil when the",
+      "line": "            ;; pi@13cbf77df model-runtime.ts:532 \u2014 non-nil when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9726,7 +9726,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 interactive-mode.ts:530-531 \u2014 the CLI flag",
+      "line": "           ;; pi@13cbf77df interactive-mode.ts:530-531 \u2014 the CLI flag",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9734,7 +9734,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 utils/tool-result-images.ts via",
+      "line": "           ;; pi@13cbf77df utils/tool-result-images.ts via",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9742,7 +9742,7 @@
       "path": "src/cadr-cli/bootstrap/main.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 cli.ts:13-15 \u2014 the running agent publishes its",
+      "line": "  ;; pi@13cbf77df cli.ts:13-15 \u2014 the running agent publishes its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9750,7 +9750,7 @@
       "path": "src/cadr-cli/bootstrap/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                   ;; pi@ecac0a9c4 interactive-mode.ts:5956-5960 \u2014",
+      "line": "                   ;; pi@13cbf77df interactive-mode.ts:5956-5960 \u2014",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9758,7 +9758,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 settings-selector.ts:539-546",
+      "line": "           ;; pi@13cbf77df settings-selector.ts:539-546",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9766,7 +9766,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 settings-selector.ts:634-646",
+      "line": "           ;; pi@13cbf77df settings-selector.ts:634-646",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9774,7 +9774,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "          ;; pi@ecac0a9c4 interactive-mode.ts:4557-4567: switch the",
+      "line": "          ;; pi@13cbf77df interactive-mode.ts:4557-4567: switch the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9782,7 +9782,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts getFullscreenCopyOnSelect: default true.",
+      "line": "  ;; pi@13cbf77df settings-manager.ts getFullscreenCopyOnSelect: default true.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9790,7 +9790,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts getTerminalCapabilityOverrides.",
+      "line": "  ;; pi@13cbf77df settings-manager.ts getTerminalCapabilityOverrides.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9798,7 +9798,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1093-1099 gives an explicit setting",
+      "line": "  ;; pi@13cbf77df settings-manager.ts:1093-1099 gives an explicit setting",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9806,7 +9806,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1128-1130 \u2014 only the exact string",
+      "line": "  ;; pi@13cbf77df settings-manager.ts:1128-1130 \u2014 only the exact string",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9814,7 +9814,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1138-1141 \u2014 \"always\"/\"hidden\" pass",
+      "line": "  ;; pi@13cbf77df settings-manager.ts:1138-1141 \u2014 \"always\"/\"hidden\" pass",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9822,7 +9822,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1252-1255 \u2014 markdown.mermaid is",
+      "line": "  ;; pi@13cbf77df settings-manager.ts:1252-1255 \u2014 markdown.mermaid is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9854,7 +9854,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            ;; pi@ecac0a9c4 interactive-mode.ts:5399 \u2014",
+      "line": "                            ;; pi@13cbf77df interactive-mode.ts:5399 \u2014",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9862,7 +9862,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            ;; pi@ecac0a9c4 interactive-mode.ts:5548 \u2014",
+      "line": "                            ;; pi@13cbf77df interactive-mode.ts:5548 \u2014",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9870,7 +9870,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 interactive-mode.ts:788-832 switchTuiMode +",
+      "line": "           ;; pi@13cbf77df interactive-mode.ts:788-832 switchTuiMode +",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9878,7 +9878,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "   ;; pi@ecac0a9c4 tui-renderer.ts scrollToEndIndicator",
+      "line": "   ;; pi@13cbf77df tui-renderer.ts scrollToEndIndicator",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9886,7 +9886,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "(pi@ecac0a9c4 interactive-mode.ts:4584).\")",
+      "line": "(pi@13cbf77df interactive-mode.ts:4584).\")",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9894,7 +9894,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "fullscreen flash instead of a status line (pi@ecac0a9c4",
+      "line": "fullscreen flash instead of a status line (pi@13cbf77df",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9902,7 +9902,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "happened.  pi@ecac0a9c4 interactive-mode.ts:4557-4567",
+      "line": "happened.  pi@13cbf77df interactive-mode.ts:4557-4567",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9910,7 +9910,7 @@
       "path": "src/cadr-cli/interactive/images.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 utils/tool-result-images.ts \u2014 normalize image blocks",
+      "line": "  ;; pi@13cbf77df utils/tool-result-images.ts \u2014 normalize image blocks",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9934,7 +9934,7 @@
       "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 session-selector.ts onProgress: progress is applied",
+      "line": "  ;; pi@13cbf77df session-selector.ts onProgress: progress is applied",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9942,7 +9942,7 @@
       "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 session-selector.ts:140-143 \u2014 incremental load",
+      "line": "  ;; pi@13cbf77df session-selector.ts:140-143 \u2014 incremental load",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9966,7 +9966,7 @@
       "path": "src/cadr-cli/interactive/themes.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@ecac0a9c4 theme.ts:326-332 \u2014 optional scrollbarThumb",
+      "line": "       ;; pi@13cbf77df theme.ts:326-332 \u2014 optional scrollbarThumb",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9982,7 +9982,7 @@
       "path": "src/cadr-cli/interactive/user-bash.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; Fixed pi@ecac0a9c4 BashExecutionComponent is deliberately separate from",
+      "line": "  ;; Fixed pi@13cbf77df BashExecutionComponent is deliberately separate from",
       "occurrences": 1,
       "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
@@ -10086,7 +10086,7 @@
       "path": "src/cadr-cli/models/registry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; (pi@ecac0a9c4 model registry provider then id).",
+      "line": "  ;; (pi@13cbf77df model registry provider then id).",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     },
@@ -10150,7 +10150,7 @@
       "path": "src/cadr-cli/resource-loader.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 core/resource-loader.ts:118-155: global agent-dir",
+      "line": "  ;; pi@13cbf77df core/resource-loader.ts:118-155: global agent-dir",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10158,7 +10158,7 @@
       "path": "src/cadr-cli/settings/manager.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 agent-session.ts _addPersistedDefaultToNonEmptyScope:",
+      "line": "  ;; pi@13cbf77df agent-session.ts _addPersistedDefaultToNonEmptyScope:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -10206,7 +10206,7 @@
       "path": "src/cadr-cli/tools/bash.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; Fixed pi@ecac0a9c4 agent-session.ts:2803-2824 records the direct shell",
+      "line": "  ;; Fixed pi@13cbf77df agent-session.ts:2803-2824 records the direct shell",
       "occurrences": 1,
       "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
@@ -10214,7 +10214,7 @@
       "path": "src/cadr-cli/tools/edit.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/coding-agent/src/core/tools/edit-diff.ts:286-293",
+      "line": "  ;; pi@13cbf77df packages/coding-agent/src/core/tools/edit-diff.ts:286-293",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -10574,7 +10574,7 @@
       "path": "src/cadr-tui/components/markdown.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                 ;; pi@ecac0a9c4 components/markdown.ts:102-119,505-514",
+      "line": "                 ;; pi@13cbf77df components/markdown.ts:102-119,505-514",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10582,7 +10582,7 @@
       "path": "src/cadr-tui/components/markdown.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; pi@ecac0a9c4 components/markdown.ts:25-122 \u2014 inline and block",
+      "line": ";;; pi@13cbf77df components/markdown.ts:25-122 \u2014 inline and block",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10598,7 +10598,7 @@
       "path": "src/cadr-tui/editor.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "      ;; pi@ecac0a9c4 components/editor.ts:768-777 \u2014 the dedicated",
+      "line": "      ;; pi@13cbf77df components/editor.ts:768-777 \u2014 the dedicated",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10606,7 +10606,7 @@
       "path": "src/cadr-tui/editor.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/tui/src/components/editor.ts:466 stores",
+      "line": "  ;; pi@13cbf77df packages/tui/src/components/editor.ts:466 stores",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10614,7 +10614,7 @@
       "path": "src/cadr-tui/input-component.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/tui/src/input.ts Input reset sites.",
+      "line": "  ;; pi@13cbf77df packages/tui/src/input.ts Input reset sites.",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -10622,7 +10622,7 @@
       "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 tui/keybindings.ts:154-178 \u2014 the alt-screen",
+      "line": "    ;; pi@13cbf77df tui/keybindings.ts:154-178 \u2014 the alt-screen",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10630,7 +10630,7 @@
       "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 tui/keybindings.ts:68-75 \u2014 prompt history",
+      "line": "    ;; pi@13cbf77df tui/keybindings.ts:68-75 \u2014 prompt history",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10638,7 +10638,7 @@
       "path": "src/cadr-tui/keys.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 tui/keybindings.ts:170-175 \u2014 the prompt-jump",
+      "line": "    ;; pi@13cbf77df tui/keybindings.ts:170-175 \u2014 the prompt-jump",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10662,7 +10662,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/tui/src/latex.ts layoutNodes.push \u2014 O(1) append",
+      "line": "  ;; pi@13cbf77df packages/tui/src/latex.ts layoutNodes.push \u2014 O(1) append",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -10670,7 +10670,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";; generated from pi@ecac0a9c4 packages/tui/src/latex.ts data tables",
+      "line": ";; generated from pi@13cbf77df packages/tui/src/latex.ts data tables",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -10678,7 +10678,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; pi@ecac0a9c4 packages/tui/src/latex.ts \u2014 terminal-friendly Unicode",
+      "line": ";;; pi@13cbf77df packages/tui/src/latex.ts \u2014 terminal-friendly Unicode",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -10686,7 +10686,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "             ;; pi@ecac0a9c4 tui-alt-screen.ts:969-981",
+      "line": "             ;; pi@13cbf77df tui-alt-screen.ts:969-981",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10694,7 +10694,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/scroll-view.ts:62-70 \u2014 \"always\" whenever a",
+      "line": "  ;; pi@13cbf77df components/scroll-view.ts:62-70 \u2014 \"always\" whenever a",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10702,7 +10702,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 layout.ts:249-327 \u2014 the last-column cell keeps its",
+      "line": "  ;; pi@13cbf77df layout.ts:249-327 \u2014 the last-column cell keeps its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10710,7 +10710,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 layout.ts:309-327 \u2014 paint every track row; thumb",
+      "line": "  ;; pi@13cbf77df layout.ts:309-327 \u2014 paint every track row; thumb",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10718,7 +10718,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:1618-1635 \u2014 when follow-end is",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:1618-1635 \u2014 when follow-end is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10726,7 +10726,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            ;; pi@ecac0a9c4 tui-alt-screen.ts:896 \u2014 the fullscreen",
+      "line": "            ;; pi@13cbf77df tui-alt-screen.ts:896 \u2014 the fullscreen",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10734,7 +10734,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 tui-alt-screen.ts:665-684",
+      "line": "           ;; pi@13cbf77df tui-alt-screen.ts:665-684",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10742,7 +10742,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@ecac0a9c4 tui-alt-screen.ts:813-833 \u2014 word/line ranges",
+      "line": "         ;; pi@13cbf77df tui-alt-screen.ts:813-833 \u2014 word/line ranges",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10750,7 +10750,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@ecac0a9c4 tui-alt-screen.ts:435-441",
+      "line": "       ;; pi@13cbf77df tui-alt-screen.ts:435-441",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10758,7 +10758,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "      ;; pi@ecac0a9c4 handleScrollToEndIndicatorMouseEvent",
+      "line": "      ;; pi@13cbf77df handleScrollToEndIndicatorMouseEvent",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10766,7 +10766,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; (pi@ecac0a9c4 interactive-mode.ts:788-832 switchTuiMode).",
+      "line": "  ;; (pi@13cbf77df interactive-mode.ts:788-832 switchTuiMode).",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10774,7 +10774,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/alt-screen-flash.ts \u2014 transient",
+      "line": "  ;; pi@13cbf77df components/alt-screen-flash.ts \u2014 transient",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10782,7 +10782,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/alt-screen-flash.ts:20-38 \u2014 transient",
+      "line": "  ;; pi@13cbf77df components/alt-screen-flash.ts:20-38 \u2014 transient",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10790,7 +10790,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/scroll-view.ts:140-150 \u2014 scroll activity",
+      "line": "  ;; pi@13cbf77df components/scroll-view.ts:140-150 \u2014 scroll activity",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10798,7 +10798,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/scroll-view.ts:62-70 \u2014 :auto shows the",
+      "line": "  ;; pi@13cbf77df components/scroll-view.ts:62-70 \u2014 :auto shows the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10806,7 +10806,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts TERMINAL_WORD_SELECTION_JOINERS:",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts TERMINAL_WORD_SELECTION_JOINERS:",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10814,7 +10814,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts scrollToEndIndicator \u2014 when the",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts scrollToEndIndicator \u2014 when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10822,7 +10822,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:147-149 \u2014 multi-click selection",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:147-149 \u2014 multi-click selection",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10830,7 +10830,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:236-247 \u2014 multiplexers lag when",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:236-247 \u2014 multiplexers lag when",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10838,7 +10838,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:366-378 \u2014 scan the scroll content",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:366-378 \u2014 scan the scroll content",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10846,7 +10846,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:56 \u2014 /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:56 \u2014 /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10854,7 +10854,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:687-713 getClickCount: the count",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:687-713 getClickCount: the count",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10862,7 +10862,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:855-869 \u2014 a boundary end (word or",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:855-869 \u2014 a boundary end (word or",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10870,7 +10870,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:968-970 \u2014 SGR bit 3 (value 8) is Alt.",
+      "line": "  ;; pi@13cbf77df tui-alt-screen.ts:968-970 \u2014 SGR bit 3 (value 8) is Alt.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10878,7 +10878,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "'/' (pi@ecac0a9c4 tui-alt-screen.ts:835-868).\"",
+      "line": "'/' (pi@13cbf77df tui-alt-screen.ts:835-868).\"",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10886,7 +10886,7 @@
       "path": "src/cadr-tui/terminal-image.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 terminal-image.ts:139-141 \u2014 only \"1\" and \"0\" override;",
+      "line": "  ;; pi@13cbf77df terminal-image.ts:139-141 \u2014 only \"1\" and \"0\" override;",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -10894,7 +10894,7 @@
       "path": "src/cadr-tui/terminal-image.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 terminal-image.ts:179-189 \u2014 skip work when the three",
+      "line": "  ;; pi@13cbf77df terminal-image.ts:179-189 \u2014 skip work when the three",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     }

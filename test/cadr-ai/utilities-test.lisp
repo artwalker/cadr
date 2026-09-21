@@ -104,7 +104,7 @@ second" (cadr-ai:content-text content)))
       (utility-error-message text)))))
 
 (test context-token-estimation-rejects-usage-older-than-a-prefix-message
-  ;; pi@ecac0a9c4 packages/ai/src/utils/estimate.ts:63-84 treats a newer
+  ;; pi@13cbf77df packages/ai/src/utils/estimate.ts:63-84 treats a newer
   ;; prefix message (for example, a compaction summary) as invalidating usage
   ;; reported by an older assistant response.
   (let* ((old

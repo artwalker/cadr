@@ -1,6 +1,6 @@
 # harness_storage.open_walk fair ruler
 
-Goal 23 baseline pi v0.86.0 (`ecac0a9c4`) dropped the Pair 26 adapter. `JsonlSessionRepo` takes `fileSystem` plus `Context`. Session write/read is `createBranch` / `insertEntry` / `findEntries` / `Branch.findEntries`. The mill used `fs` / `appendEntry` / `getLeafId` / `findEntriesOnBranch`, so ingest died on `absolutePath` and the walk never timed.
+Goal 23 baseline pi v0.86.1 (`13cbf77df`) dropped the Pair 26 adapter. `JsonlSessionRepo` takes `fileSystem` plus `Context`. Session write/read is `createBranch` / `insertEntry` / `findEntries` / `Branch.findEntries`. The mill used `fs` / `appendEntry` / `getLeafId` / `findEntriesOnBranch`, so ingest died on `absolutePath` and the walk never timed.
 
 ## What both sides pay
 

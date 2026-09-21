@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "baselineCommit": "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc",
+  "baselineCommit": "13cbf77df2396303013a41646bcfa77b4271ae56",
   "policy": "Entries are exact scenario/mode/ordinal/pointer/kind/value-hash matches. Wildcards and stale entries fail closed.",
   "entries": []
 }

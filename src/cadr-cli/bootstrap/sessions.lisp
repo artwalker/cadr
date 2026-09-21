@@ -2101,7 +2101,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
              (handler-case
                  (progn
                    (funcall copy-function text)
-                   ;; pi@ecac0a9c4 interactive-mode.ts:5956-5960 —
+                   ;; pi@13cbf77df interactive-mode.ts:5956-5960 —
                    ;; fullscreen flashes; regular mode keeps the status.
                    (if *alt-screen-flash-function*
                        (funcall *alt-screen-flash-function*

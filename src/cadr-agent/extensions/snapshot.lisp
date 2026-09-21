@@ -316,7 +316,7 @@ types add a method here instead of a second etypecase."))
              (extension-flag-definition-default flag)))))
       (setf (extension-snapshot-retired-p old) t)
       (maybe-release-extension-snapshot old))
-    ;; pi@ecac0a9c4 extensions/loader.ts:205-218,410-424 — invalidating
+    ;; pi@13cbf77df extensions/loader.ts:205-218,410-424 — invalidating
     ;; stale extension contexts eagerly unsubscribes their event-bus
     ;; listeners; prune every listener whose bundle left the snapshot.
     (let ((live-bundles
