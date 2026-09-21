@@ -2448,7 +2448,7 @@ user question"
                    (nth (- (length plain) 3)
                         plain)))
       (is (search
-           "to set as default"
+           "Enter to select"
            (nth (- (length plain) 2) plain)))
       (is (search
            (format nil "~C[38;2;138;190;183m"
