@@ -51,6 +51,16 @@
 (defun event-types (events)
   (mapcar #'agent-event-type events))
 
+(defun agent-messages-without-system (agent)
+  (remove-if #'cadr-ai:system-message-p
+             (agent-messages agent)))
+
+(defun first-tool-result-message (messages)
+  (find-if
+   (lambda (message)
+     (typep message 'cadr-ai:tool-result-message))
+   messages))
+
 (defun text-result (message)
   (text-content-text
    (first (tool-result-message-content message))))
