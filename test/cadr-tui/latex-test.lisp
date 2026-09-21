@@ -42,3 +42,41 @@
                       text))
                     :test #'string=)))
       (is (equal '("1" "─" "2") trimmed)))))
+
+(test goal24-latex-legacy-font-switches
+  (is
+   (string=
+    "diag(-1/2,1,1), F_intrinsic(λ)"
+    (cadr-tui:render-latex
+     "\\mathrm{diag}(-1/2,1,1),\\quad F_{\\rm intrinsic}(\\lambda)")))
+  (is
+   (string=
+    "hello+world+x+roman+bold+italic+sans+mono+calligraphic+slanted"
+    (cadr-tui:render-latex
+     "\\textnormal{hello}+\\mbox{world}+\\boldsymbol{x}+{\\rm roman}+{\\bf bold}+{\\it italic}+{\\sf sans}+{\\tt mono}+{\\cal calligraphic}+{\\sl slanted}"))))
+
+(test goal24-latex-centered-cases
+  (is
+   (string=
+    (format nil "       ⎧ a if x < 0~%f(x) = ⎨ b if x = 0~%       ⎩ c otherwise")
+    (cadr-tui:render-latex
+     "f(x)=\\begin{cases}a & x<0 \\\\ b & \\text{if }x=0 \\\\ c & \\text{otherwise}\\end{cases}")))
+  (is
+   (string=
+    (format nil "       ⎧ x² if x ≥ 0~%f(x) = ⎨~%       ⎩ -x if x < 0")
+    (cadr-tui:render-latex
+     "f(x) = \\begin{cases} x^{2} & x \\geq 0 \\\\ -x & x < 0 \\end{cases}"))))
+
+(test goal24-latex-nested-display-scripts
+  (is
+   (string=
+    (format nil "                            2~%                    -A-1   n~%∂ₜU₂(t,0) = Aj (1-t)    . x  +x~%              *                i~%                                j")
+    (cadr-tui:render-latex
+     "\\partial_tU_2(t,0)=Aj_*(1-t)^{-A-1}.\\qquad x^{n^2}+x_{i_j}"
+     :display-p t)))
+  (is
+   (string=
+    "e^(1/2)+1/2"
+    (cadr-tui:render-latex
+     "e^{\\frac{1}{2}}+\\tfrac{1}{2}"
+     :display-p t))))

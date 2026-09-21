@@ -556,6 +556,8 @@
    "negthickspace"
    "negthinspace"
    ))
+(defparameter +latex-font-switch-commands+
+  (list "bf" "cal" "it" "rm" "sf" "sl" "tt"))
 (defparameter +latex-ignored-commands+
   (list
    "displaystyle"
@@ -686,15 +688,20 @@
              (write-string replacement result))
     (get-output-stream-string result)))
 
+(defun latex-normalize-script-value (value)
+  (cl-ppcre:regex-replace-all
+   "\\s*([=+-])\\s*" (latex-trim value) "\\1"))
+
+(defun latex-format-unicode-script (value kind)
+  (latex-replace-characters
+   (latex-normalize-script-value value)
+   (if (eq kind :sub)
+       +latex-subscripts+
+       +latex-superscripts+)))
+
 (defun latex-format-script (value kind)
-  (setf value (latex-trim value))
-  (let ((unicode
-          (latex-replace-characters
-           (cl-ppcre:regex-replace-all
-            "\\s*([=+-])\\s*" value "\\1")
-           (if (eq kind :sub)
-               +latex-subscripts+
-               +latex-superscripts+))))
+  (setf value (latex-normalize-script-value value))
+  (let ((unicode (latex-format-unicode-script value kind)))
     (when unicode
       (return-from latex-format-script unicode)))
   (let ((prefix (if (eq kind :sub) "_" "^")))
@@ -810,6 +817,10 @@
 (defstruct (latex-operator-node
             (:constructor make-latex-operator-node))
   operator lower upper)
+
+(defstruct (latex-script-node
+            (:constructor make-latex-script-node))
+  lower upper)
 
 (defstruct (latex-matrix-node
             (:constructor make-latex-matrix-node))
@@ -1053,6 +1064,43 @@
                      :baseline
                      (if (latex-operator-node-upper node) 1 0))
                     layouts)))
+                ((typep node 'latex-script-node)
+                 (let* ((upper
+                          (and (latex-script-node-upper node)
+                               (latex-render-layout
+                                (latex-script-node-upper node)
+                                nodes)))
+                        (lower
+                          (and (latex-script-node-lower node)
+                               (latex-render-layout
+                                (latex-script-node-lower node)
+                                nodes)))
+                        (width
+                          (max (if upper (latex-layout-width upper) 0)
+                               (if lower (latex-layout-width lower) 0))))
+                   (push
+                    (make-latex-layout
+                     :lines
+                     (latex-as-line-vector
+                      (append
+                       (when upper
+                         (map 'list
+                              (lambda (line)
+                                (latex-pad-layout-line line width))
+                              (latex-layout-lines upper)))
+                       (list (make-string width
+                                          :initial-element #\Space))
+                       (when lower
+                         (map 'list
+                              (lambda (line)
+                                (latex-pad-layout-line line width))
+                              (latex-layout-lines lower)))))
+                     :width width
+                     :baseline
+                     (if upper
+                         (length (latex-layout-lines upper))
+                         0))
+                    layouts)))
                 (t
                  (let ((width
                          (max 0
@@ -1114,7 +1162,8 @@
   (display-p nil :type boolean)
   (position 0 :type integer)
   (supported-p t :type boolean)
-  (stack-fractions-p t :type boolean))
+  (stack-fractions-p t :type boolean)
+  (script-depth 0 :type integer))
 
 (defun make-latex-parser (source layout-nodes display-p)
   (%make-latex-parser
@@ -1200,9 +1249,7 @@
                     (latex-trim-end
                      (get-output-stream-string result)))
                   (script
-                    (latex-format-script
-                     (latex-parse-required-argument parser nil)
-                     (if (char= character #\_) :sub :sup))))
+                    (latex-parse-scripts parser character)))
              (if (latex-ends-with-p
                   current +latex-operator-end+)
                  (write-string
@@ -1268,6 +1315,88 @@
                     (latex-parser-position parser)))))))))
     (get-output-stream-string result)))
 
+(defun latex-script-layout-exempt-char-p (character)
+  (or (and (char>= character #\A) (char<= character #\Z))
+      (char= character #\*)
+      (char= character #\∗)))
+
+(defun latex-script-value-blocks-layout-p (value)
+  (and value
+       (or (find #\/ value :test #'char=)
+           (and (not (find (code-char #xf000) value :test #'char=))
+                (> (length value) 1)
+                (not (find-if #'latex-script-layout-exempt-char-p
+                              value))))))
+
+(defun latex-parse-scripts (parser initial-marker)
+  (let ((scripts (list :sub nil :sup nil))
+        (order nil))
+    (labels ((parse-one (marker)
+               (let ((kind (if (char= marker #\_) :sub :sup)))
+                 (incf (latex-parser-script-depth parser))
+                 (unwind-protect
+                      (setf (getf scripts kind)
+                            (latex-parse-required-argument
+                             parser nil))
+                   (decf (latex-parser-script-depth parser)))
+                 (setf order (nconc order (list kind))))))
+      (parse-one initial-marker)
+      (let ((next-position (latex-parser-position parser))
+            (source (latex-parser-source parser)))
+        (loop while (and (< next-position (length source))
+                         (js-whitespace-p
+                          (char source next-position)))
+              do (incf next-position))
+        (let ((next-marker
+                (and (< next-position (length source))
+                     (char source next-position))))
+          (when (and next-marker
+                     (or (char= next-marker #\^)
+                         (char= next-marker #\_))
+                     (char/= next-marker initial-marker))
+            (setf (latex-parser-position parser)
+                  (1+ next-position))
+            (parse-one next-marker))))
+      (let* ((sub (getf scripts :sub))
+             (sup (getf scripts :sup))
+             (sub-unicode
+               (and sub (latex-format-unicode-script sub :sub)))
+             (sup-unicode
+               (and sup (latex-format-unicode-script sup :sup)))
+             (can-use-layout-p
+               (not (or (latex-script-value-blocks-layout-p sub)
+                        (latex-script-value-blocks-layout-p
+                         sup))))
+             (needs-layout-p
+               (and (latex-parser-display-p parser)
+                    can-use-layout-p
+                    (or (plusp (latex-parser-script-depth parser))
+                        (and sub (null sub-unicode))
+                        (and sup (null sup-unicode))))))
+        (if (not needs-layout-p)
+            (format nil "~{~A~}"
+                    (mapcar
+                     (lambda (kind)
+                       (if (eq kind :sub)
+                           (or sub-unicode
+                               (latex-format-script
+                                (or sub "") kind))
+                           (or sup-unicode
+                               (latex-format-script
+                                (or sup "") kind))))
+                     order))
+            (let ((index
+                    (latex-push-layout-node
+                     parser
+                     (make-latex-script-node
+                      :lower
+                      (and sub (latex-normalize-output sub))
+                      :upper
+                      (and sup (latex-normalize-output sup))))))
+              (format nil "~C~D~C"
+                      (code-char #xf000) index
+                      (code-char #xf001))))))))
+
 (defun latex-parse-whitespace (parser)
   (loop while (and (not (latex-parser-done-p parser))
                    (js-whitespace-p
@@ -1319,6 +1448,12 @@
       ((member command +latex-negative-spacing-commands+
                :test #'string=)
        +latex-negative-space+)
+      ((member command +latex-font-switch-commands+ :test #'string=)
+       (loop while (and (not (latex-parser-done-p parser))
+                        (js-whitespace-p
+                         (latex-parser-peek parser)))
+             do (incf (latex-parser-position parser)))
+       "")
       ((member command +latex-ignored-commands+ :test #'string=)
        "")
       ((member command '("{" "}" "$" "%" "#" "_" "&")
@@ -1766,42 +1901,7 @@
                        (latex-split-environment-rows
                         aligned-body))))))
           ((member environment '("cases" "cases*") :test #'string=)
-           (let ((rows
-                   (remove-if-not
-                    (lambda (row) (some #'plusp (mapcar #'length row)))
-                    (mapcar
-                     (lambda (row)
-                       (mapcar
-                        (lambda (cell)
-                          (latex-trim
-                           (latex-render-nested
-                            parser cell nil)))
-                        (cl-ppcre:split "&" row)))
-                     (latex-split-environment-rows body)))))
-             (format nil "~{~A~^~%~}"
-                     (loop for row in rows
-                           for index from 0
-                           for value =
-                             (cl-ppcre:regex-replace
-                               ",\\s*$" (or (first row) "") "")
-                           for condition = (or (second row) "")
-                           for delimiter =
-                             (cond
-                               ((zerop index) "⎧")
-                               ((= index (1- (length rows))) "⎩")
-                               (t "⎨"))
-                           collect
-                           (format nil "~A ~A~A"
-                                   delimiter value
-                                   (if (plusp (length condition))
-                                       (format nil "~A~A"
-                                               (if (cl-ppcre:scan
-                                                     "(?i)^(if|when|for|otherwise)\\b"
-                                                    condition)
-                                                   " "
-                                                   " if ")
-                                               condition)
-                                       ""))))))
+           (latex-render-cases parser body))
           ((member environment
                    '("array" "matrix" "smallmatrix" "pmatrix"
                      "bmatrix" "Bmatrix" "vmatrix" "Vmatrix")
@@ -1816,6 +1916,87 @@
           (t
            (setf (latex-parser-supported-p parser) nil)
            body))))))
+
+(defun latex-render-cases (parser body)
+  (let* ((rows
+           (remove-if-not
+            (lambda (row) (some #'plusp (mapcar #'length row)))
+            (mapcar
+             (lambda (row)
+               (mapcar
+                (lambda (cell)
+                  (latex-trim
+                   (latex-render-nested parser cell nil)))
+                (cl-ppcre:split "&" row)))
+             (latex-split-environment-rows body))))
+         (value-width
+           (max 0
+                (reduce #'max
+                        (mapcar
+                         (lambda (row)
+                           (visible-width
+                            (cl-ppcre:regex-replace
+                             ",\\s*$" (or (first row) "") "")))
+                         rows)
+                        :initial-value 0)))
+         (contents
+           (mapcar
+            (lambda (row)
+              (let* ((value
+                       (cl-ppcre:regex-replace
+                        ",\\s*$" (or (first row) "") ""))
+                     (condition (or (second row) "")))
+                (if (zerop (length condition))
+                    value
+                    (format nil "~A~A~A~A"
+                            value
+                            (make-string
+                             (max 0
+                                  (- value-width
+                                     (visible-width value)))
+                             :initial-element
+                             (code-char #xf002))
+                            (if (cl-ppcre:scan
+                                 "(?i)^(if|when|for|otherwise)\\b"
+                                 condition)
+                                " "
+                                " if ")
+                            condition))))
+            rows)))
+    (cond
+      ((null contents) "")
+      ((null (rest contents))
+       (format nil "⎧ ~A" (first contents)))
+      (t
+       (let* ((middle (floor (length contents) 2))
+              (visual-rows (copy-list contents)))
+         (when (evenp (length contents))
+           (setf visual-rows
+                 (append (subseq visual-rows 0 middle)
+                         (list nil)
+                         (subseq visual-rows middle))))
+         (let* ((lines
+                  (loop for content in visual-rows
+                        for index from 0
+                        for delimiter =
+                          (cond
+                            ((zerop index) "⎧")
+                            ((= index (1- (length visual-rows)))
+                             "⎩")
+                            (t "⎨"))
+                        collect
+                        (if content
+                            (format nil "~A ~A" delimiter content)
+                            delimiter)))
+                (index
+                  (latex-push-layout-node
+                   parser
+                   (make-latex-matrix-node
+                    :lines (latex-as-line-vector lines)
+                    :baseline middle))))
+           (format nil "~C~D~C"
+                   (code-char #xf000) index
+                   (code-char #xf001))))))))
 
 (defun latex-render-matrix (parser environment body)
   (let* ((matrix

@@ -409,7 +409,7 @@ at :4. No rewrite invented. Report:
 | `src/cadr-tui/undo-stack.lisp` | 20 | 5 | Implement undo-stack push/pop/clear operations. | pass | no-rewrite | Unconditional copy-tree on push (:8) is what undo correctness requires over the mutable paste tree; textbook defstruct stack. | 20 |
 | `src/cadr-tui/unicode.lisp` | 1,302 | 54 | Implement terminal Unicode/grapheme/ANSI width, slicing, truncation, and wrapping semantics. | pass · large | done | extract/wrap streams. I0: no per-cluster concatenate. | 20 |
 | `src/cadr-tui/word-navigation.lisp` | 118 | 10 | Move over whitespace, punctuation, CJK, and editor-atomic word segments. | pass | done | scan-word-while. I0: one mirrored scan. | 20 |
-| `src/cadr-tui/latex.lisp` | 1,948 | 66 | Render basic LaTeX math to terminal-friendly Unicode, ported from the fixed baseline LatexParser. | pass · large | done | layout/node vectors. I0: aref / vector-push-extend. | 20 |
+| `src/cadr-tui/latex.lisp` | 2,168 | 66 | Render basic LaTeX math to terminal-friendly Unicode, ported from the fixed baseline LatexParser. | pass · large | done | layout/node vectors. I0: aref / vector-push-extend. | 20 |
 
 Part K8 (2026-08-18): 29 needs-rewrite rows done. `mermaid/width-data.lisp`
 untouched. Report: `docs/acceptance/goal-v20-part-k8.md`.
