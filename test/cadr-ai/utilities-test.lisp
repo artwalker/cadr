@@ -324,6 +324,43 @@ second" (cadr-ai:content-text content)))
     (is (char= #\7 (char second 14)))
     (is (not (string= first second)))))
 
+(test opencode-request-headers-match-baseline-session-presence
+  ;; packages/ai/test/opencode-provider-headers.test.ts at pin ecac0a9c4:
+  ;; emit only when sessionId present; never fabricate.
+  (flet ((header (name headers)
+           (cdr (assoc name headers :test #'string-equal))))
+    (let ((with-id
+            (cadr-ai::opencode-request-headers
+             :provider :opencode
+             :session-id "conversation-1"))
+          (absent
+            (cadr-ai::opencode-request-headers
+             :provider :opencode-go))
+          (empty
+            (cadr-ai::opencode-request-headers
+             :provider :opencode
+             :session-id ""))
+          (by-host
+            (cadr-ai::opencode-request-headers
+             :provider :openai
+             :base-url "https://opencode.ai/zen/v1"
+             :session-id "host-session"))
+          (other
+            (cadr-ai::opencode-request-headers
+             :provider :openai
+             :session-id "ignored")))
+      (is (string= "conversation-1"
+                   (header "x-opencode-session" with-id)))
+      (is (string= "cadr"
+                   (header "x-opencode-client" with-id)))
+      (is (null absent))
+      (is (null empty))
+      (is (string= "host-session"
+                   (header "x-opencode-session" by-host)))
+      (is (string= "cadr"
+                   (header "x-opencode-client" by-host)))
+      (is (null other)))))
+
 (test retry-abort-during-wait-uses-one-owner
   (let ((calls 0)
         (finished nil))

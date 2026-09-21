@@ -53,12 +53,11 @@
                (search "opencode.ai"
                        (or base-url ""))))
          (session
-           (when opencode-p
-             (let ((id (or session-id
-                           (cadr-ai:uuid-v7))))
-               `(("x-opencode-session" . ,id)
-                 ("x-opencode-client" .
-                  ,(cadr-ai::cadr-product-slug)))))))
+           (when (and opencode-p
+                      (cadr-ai::non-empty-string-p session-id))
+             `(("x-opencode-session" . ,session-id)
+               ("x-opencode-client" .
+                ,(cadr-ai::cadr-product-slug))))))
     (merge-header-sources
      session defaults provider-headers
      request-headers)))
