@@ -1016,3 +1016,58 @@
         (is (= 0
                (cadr-ai::model-compat-value
                 model :vllm-priority nil)))))))
+
+(test goal24-builtin-model-overrides-replace-catalog-fields
+  ;; pi@ecac0a9c4 applyModelOverride: models.json modelOverrides replace
+  ;; a built-in model by id, including compat.allowedFallbackModels.
+  (with-test-directory (root)
+    (let ((models-path
+            (merge-pathnames "agent/models.json" root)))
+      (write-json
+       models-path
+       (args
+        "providers"
+        (args
+         "anthropic"
+         (args
+          "modelOverrides"
+          (args
+           "claude-opus-4-8"
+           (args
+            "name" "Opus Override"
+            "contextWindow" 32000
+            "maxTokens" 2048
+            "reasoning" nil
+            "compat"
+            (args
+             "allowedFallbackModels"
+             (vector
+              (args
+               "provider" "anthropic"
+               "model" "claude-haiku-4-5"
+               "cost"
+               (args
+                "input" 1
+                "output" 2
+                "cacheRead" 0
+                "cacheWrite" 0))))))))))
+      (let* ((registry
+               (cadr-cli:make-model-registry
+                :path models-path))
+             (model
+               (cadr-cli:model-registry-find
+                registry :anthropic "claude-opus-4-8"))
+             (fallbacks
+               (cadr-ai::model-compat-value
+                model :allowed-fallback-models nil)))
+        (is (null (cadr-cli:model-registry-error registry)))
+        (is (string= "Opus Override" (cadr-ai::model-name model)))
+        (is (= 32000 (cadr-ai:model-context-window model)))
+        (is (= 2048 (cadr-ai:model-max-tokens model)))
+        (is (null (cadr-ai:model-reasoning-p model)))
+        (is (eq t
+                (cadr-ai::model-compat-value
+                 model :force-adaptive-thinking nil)))
+        (is (= 1 (length fallbacks)))
+        (is (string= "claude-haiku-4-5"
+                     (getf (first fallbacks) :model)))))))

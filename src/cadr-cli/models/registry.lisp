@@ -350,7 +350,27 @@
                               :key #'cadr-ai:model-id
                               :test #'string=
                               :count 1))
-                       (push model models)))))
+                       (push model models)))
+               (let ((overrides
+                       (cadr-ai::json-get
+                        config "modelOverrides")))
+                 (when (hash-table-p overrides)
+                   (setf
+                    models
+                    (mapcar
+                     (lambda (model)
+                       (if (eq provider
+                               (cadr-ai:model-provider model))
+                           (let ((override
+                                   (cadr-ai::json-get
+                                    overrides
+                                    (cadr-ai:model-id model))))
+                             (if (hash-table-p override)
+                                 (apply-model-json-override
+                                  model override)
+                                 model))
+                           model))
+                     models))))))
            providers))
         (setf
          (model-registry-models registry)

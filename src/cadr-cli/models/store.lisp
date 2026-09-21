@@ -126,6 +126,38 @@
   '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
     "thinkingFormat"))
 
+(defun fallback-cost-number (cost name)
+  (let ((value (cadr-ai::json-get cost name)))
+    (unless (numberp value)
+      (error "allowedFallbackModels cost ~A must be a number" name))
+    value))
+
+(defun parse-allowed-fallback-model (item)
+  (unless (hash-table-p item)
+    (error "allowedFallbackModels entries must be objects"))
+  (let ((provider (cadr-ai::json-get item "provider"))
+        (model (cadr-ai::json-get item "model"))
+        (cost (cadr-ai::json-get item "cost")))
+    (unless (and (stringp provider) (plusp (length provider))
+                 (stringp model) (plusp (length model)))
+      (error "allowedFallbackModels entries require provider and model"))
+    (unless (hash-table-p cost)
+      (error "allowedFallbackModels cost must be an object"))
+    (list :provider provider
+          :model model
+          :cost
+          (list :input (fallback-cost-number cost "input")
+                :output (fallback-cost-number cost "output")
+                :cache-read (fallback-cost-number cost "cacheRead")
+                :cache-write (fallback-cost-number cost "cacheWrite")))))
+
+(defun parse-allowed-fallback-models (value)
+  (unless (or (vectorp value) (listp value))
+    (error "allowedFallbackModels must be an array"))
+  (when (> (length value) 3)
+    (error "allowedFallbackModels accepts at most 3 models"))
+  (map 'list #'parse-allowed-fallback-model value))
+
 (defun parse-model-compat (object)
   ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum
   ;; compat keys from models.json.  The routing-object keys
@@ -145,7 +177,52 @@
             ((and (string= key "vllmPriority")
                   (numberp value))
              (list :vllm-priority value))
+            ((string= key "allowedFallbackModels")
+             (list :allowed-fallback-models
+                   (parse-allowed-fallback-models value)))
             (t nil)))))
+
+(defun merge-model-compat (base override)
+  (let ((merged (copy-list base)))
+    (loop for (key value) on override by #'cddr
+          do (setf (getf merged key) value))
+    merged))
+
+(defun apply-model-json-override (model override)
+  ;; pi@ecac0a9c4 applyModelOverride: per-id replacement on a built-in
+  ;; or custom model. Fields the model struct does not carry (cost,
+  ;; samplingParams, promptCache) stay on the catalog record as-is.
+  (let ((copy (cadr-ai::copy-model model))
+        (name (cadr-ai::json-get override "name" :missing))
+        (reasoning (cadr-ai::json-get override "reasoning" :missing))
+        (context (cadr-ai::json-get override "contextWindow" :missing))
+        (max-tokens (cadr-ai::json-get override "maxTokens" :missing))
+        (input (cadr-ai::json-get override "input" :missing))
+        (compat
+          (parse-model-compat
+           (cadr-ai::json-get override "compat"))))
+    (when (stringp name)
+      (setf (cadr-ai::model-name copy) name))
+    (unless (eq reasoning :missing)
+      (setf (cadr-ai:model-reasoning-p copy) (eq t reasoning)))
+    (unless (eq context :missing)
+      (unless (and (integerp context) (plusp context))
+        (error "invalid contextWindow"))
+      (setf (cadr-ai:model-context-window copy) context))
+    (unless (eq max-tokens :missing)
+      (unless (and (integerp max-tokens) (plusp max-tokens))
+        (error "invalid maxTokens"))
+      (setf (cadr-ai:model-max-tokens copy) max-tokens))
+    (unless (eq input :missing)
+      (setf (cadr-ai:model-supports-images-p copy)
+            (and (find "image" (coerce input 'list) :test #'equal)
+                 t)))
+    (when compat
+      (setf (cadr-ai::model-compat copy)
+            (merge-model-compat
+             (cadr-ai::model-compat copy)
+             compat)))
+    copy))
 
 (defun json-model (provider object base-url
                    provider-api provider-headers)
