@@ -87,6 +87,7 @@
                              (:file "session-v2-test")
                              (:file "session-v3-test")
                              (:file "compaction-test")
+                             (:file "goal24-tree-during-compaction-test")
                              (:file "goal12-core-capabilities-test")
                              (:file "storage-test")
                              (:file "sqlite-storage-test")

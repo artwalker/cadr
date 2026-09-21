@@ -157,7 +157,12 @@
        (error
         'agent-busy-error
         :message
-        "Cannot navigate the session tree while the agent is running"))
+        "Wait for the current response to finish before navigating the session tree."))
+     (when (agent-compacting-p agent)
+       (error
+        'agent-busy-error
+        :message
+        "Wait for the current compaction or tree navigation to finish before navigating the session tree."))
      (let ((session (agent-session agent)))
        (unless session
          (error
@@ -186,94 +191,127 @@
                      :replace-instructions-p
                      (not (null replace-instructions-p))
                      :label label))
-                  (before
-                    (run-agent-lifecycle
-                     agent :session-before-tree
-                     (list
-                      :preparation preparation
-                      :signal
-                      (make-extension-cancellation-signal)))))
-         (when (getf before :cancel-p)
-           (return-from agent-navigate-tree
-             (values nil t nil nil)))
-         (let* ((summary-text (getf before :summary))
-                (summary-details (getf before :details))
-                (summary-usage (getf before :usage))
-                (from-hook-p (not (null summary-text))))
-           (when (and (null summary-text) summarize-p entries)
-             (let ((result
-                     (generate-branch-summary
-                      agent entries
-                      :custom-instructions
-                      (or (getf before :custom-instructions)
-                          custom-instructions)
-                      :replace-instructions-p
-                      (if (member :replace-instructions-p before)
-                          (getf before :replace-instructions-p)
-                          replace-instructions-p)
-                      :reserve-tokens reserve-tokens)))
-               (unless result
-                 (return-from agent-navigate-tree
-                   (values nil t nil nil)))
-               (setf summary-text (branch-summary-result-summary result)
-                     summary-usage (branch-summary-result-usage result)
-                     summary-details
-                     (list :read-files
-                           (branch-summary-result-read-files result)
-                           :modified-files
-                           (branch-summary-result-modified-files result)))))
-         (assert-agent-not-shutdown agent)
-         (let* ((user-target-p
-                  (and (eq :message (session-entry-type target-entry))
-                       (typep (session-entry-message target-entry)
-                              'cadr-ai:user-message)))
-                (custom-target-p
-                  (eq :custom-message (session-entry-type target-entry)))
-                (new-leaf-id
-                  (if (or user-target-p custom-target-p)
-                      (session-entry-parent-id target-entry)
-                      entry-id))
-                (editor-text
-                  (cond
-                    (user-target-p
-                     (content-text
-                      (cadr-ai:user-message-content
-                       (session-entry-message target-entry)) ""))
-                    (custom-target-p
-                     (content-text (session-entry-content target-entry) ""))))
-                (summary-entry nil))
-         (if new-leaf-id
-             (session-branch session new-leaf-id)
-             (setf (session-leaf-id session) nil))
-         (when (and summary-text
-                    (plusp (length summary-text)))
-           (let ((summary-id
-                   (session-append-branch-summary
-                    session old-leaf-id summary-text
-                    :details summary-details
-                    :usage summary-usage
-                    :from-hook-p from-hook-p)))
-             (setf summary-entry (session-entry-at session summary-id))))
-         (setf
-          (agent-messages agent)
-          (session-messages session))
-         (run-agent-lifecycle
-          agent :session-tree
-          (list
-           :target-id entry-id
-           :new-leaf-id (session-leaf-id session)
-           :old-leaf-id old-leaf-id
-           :summary-entry summary-entry
-           :from-hook-p from-hook-p
-           :messages
-           (copy-list
-            (agent-messages agent))))
-         (values
-          (copy-list
-           (agent-messages agent))
-          nil
-          editor-text
-          summary-entry))))))))))
+                  (signal
+                    (make-extension-cancellation-signal)))
+             ;; Baseline #9179: install the tree-navigation abort
+             ;; controller before session_before_tree so concurrent
+             ;; navigateTree sees isCompacting.
+             (sb-thread:with-mutex
+                 ((agent-state-lock agent))
+               (when (or (agent-compaction-cancellation agent)
+                         (agent-tree-navigation-cancellation agent))
+                 (error
+                  'agent-busy-error
+                  :message
+                  "Wait for the current compaction or tree navigation to finish before navigating the session tree."))
+               (setf (agent-tree-navigation-cancellation agent)
+                     signal))
+             (unwind-protect
+                  (progn
+                    (let ((before
+                            (run-agent-lifecycle
+                             agent :session-before-tree
+                             (list
+                              :preparation preparation
+                              :signal signal))))
+                      (when (getf before :cancel-p)
+                        (return-from agent-navigate-tree
+                          (values nil t nil nil)))
+                      (let* ((summary-text (getf before :summary))
+                             (summary-details (getf before :details))
+                             (summary-usage (getf before :usage))
+                             (from-hook-p (not (null summary-text))))
+                        (when (and (null summary-text) summarize-p entries)
+                          (let ((result
+                                  (generate-branch-summary
+                                   agent entries
+                                   :custom-instructions
+                                   (or (getf before :custom-instructions)
+                                       custom-instructions)
+                                   :replace-instructions-p
+                                   (if (member :replace-instructions-p before)
+                                       (getf before :replace-instructions-p)
+                                       replace-instructions-p)
+                                   :reserve-tokens reserve-tokens)))
+                            (unless result
+                              (return-from agent-navigate-tree
+                                (values nil t nil nil)))
+                            (setf summary-text
+                                  (branch-summary-result-summary result)
+                                  summary-usage
+                                  (branch-summary-result-usage result)
+                                  summary-details
+                                  (list
+                                   :read-files
+                                   (branch-summary-result-read-files result)
+                                   :modified-files
+                                   (branch-summary-result-modified-files
+                                    result)))))
+                        (assert-agent-not-shutdown agent)
+                        (let* ((user-target-p
+                                 (and (eq :message
+                                          (session-entry-type target-entry))
+                                      (typep
+                                       (session-entry-message target-entry)
+                                       'cadr-ai:user-message)))
+                               (custom-target-p
+                                 (eq :custom-message
+                                     (session-entry-type target-entry)))
+                               (new-leaf-id
+                                 (if (or user-target-p custom-target-p)
+                                     (session-entry-parent-id target-entry)
+                                     entry-id))
+                               (editor-text
+                                 (cond
+                                   (user-target-p
+                                    (content-text
+                                     (cadr-ai:user-message-content
+                                      (session-entry-message target-entry))
+                                     ""))
+                                   (custom-target-p
+                                    (content-text
+                                     (session-entry-content target-entry)
+                                     ""))))
+                               (summary-entry nil))
+                          (if new-leaf-id
+                              (session-branch session new-leaf-id)
+                              (setf (session-leaf-id session) nil))
+                          (when (and summary-text
+                                     (plusp (length summary-text)))
+                            (let ((summary-id
+                                    (session-append-branch-summary
+                                     session old-leaf-id summary-text
+                                     :details summary-details
+                                     :usage summary-usage
+                                     :from-hook-p from-hook-p)))
+                              (setf summary-entry
+                                    (session-entry-at session summary-id))))
+                          (setf
+                           (agent-messages agent)
+                           (session-messages session))
+                          (run-agent-lifecycle
+                           agent :session-tree
+                           (list
+                            :target-id entry-id
+                            :new-leaf-id (session-leaf-id session)
+                            :old-leaf-id old-leaf-id
+                            :summary-entry summary-entry
+                            :from-hook-p from-hook-p
+                            :messages
+                            (copy-list
+                             (agent-messages agent))))
+                          (values
+                           (copy-list
+                            (agent-messages agent))
+                           nil
+                           editor-text
+                           summary-entry)))))
+               (sb-thread:with-mutex
+                   ((agent-state-lock agent))
+                 (when (eq (agent-tree-navigation-cancellation agent)
+                           signal)
+                   (setf (agent-tree-navigation-cancellation agent)
+                         nil)))))))))))
 
 (defun user-message-input-values (message)
   (let ((content

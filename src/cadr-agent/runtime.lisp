@@ -48,6 +48,7 @@
   abort-p
   (abort-requested-p nil :type boolean)
   compaction-cancellation
+  tree-navigation-cancellation
   (tool-cancellations nil :type list)
   (busy-p nil :type boolean)
   (shutdown-p nil :type boolean)
@@ -360,6 +361,14 @@
      (agent-abort-requested-p agent))
    (let ((predicate (agent-abort-p agent)))
      (and predicate (funcall predicate)))))
+
+(defun agent-compacting-p (agent)
+  ;; Baseline agent-session.ts isCompacting: any in-flight manual /
+  ;; auto compaction or tree-navigation abort controller (#9179).
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (or (agent-compaction-cancellation agent)
+        (agent-tree-navigation-cancellation agent))))
 
 (defun agent-abort-compaction (agent)
   ;; Baseline agent-session.ts abortCompaction: wake waiters on the

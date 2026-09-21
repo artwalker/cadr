@@ -8,6 +8,7 @@
    #:agent-system-prompt-options
    #:agent-messages
    #:agent-busy-p
+   #:agent-compacting-p
    #:agent-session
    #:agent-prompt
    #:agent-continue
