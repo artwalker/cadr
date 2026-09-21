@@ -30,6 +30,15 @@
 (define-condition extension-execution-error
     (cadr-ai:cadr-error) ())
 
+(define-condition user-bash-hook-failed (cadr-ai:cadr-error)
+  ((cause
+    :initarg :cause
+    :reader user-bash-hook-failed-cause))
+  (:report
+   (lambda (condition stream)
+     (format stream "~A"
+             (user-bash-hook-failed-cause condition)))))
+
 (define-condition stale-extension-context
     (cadr-ai:cadr-error) ())
 

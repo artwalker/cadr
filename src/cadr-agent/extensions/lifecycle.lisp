@@ -806,7 +806,10 @@
                (condition (condition)
                  (notify-extension-failure
                   host definition "Lifecycle hook"
-                  condition)))))
+                  condition)
+                 (when (eq event :user-bash)
+                   (error 'user-bash-hook-failed
+                          :cause condition))))))
       (release-acquired-extension-snapshot host held))
     (finalize-lifecycle-state
      event state last-result)))

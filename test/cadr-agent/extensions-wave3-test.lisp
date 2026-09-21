@@ -714,6 +714,42 @@
               :cwd "/project"))))
       (is (not late-called-p)))))
 
+(test user-bash-handler-error-stops-propagation
+  (let ((late-called-p nil)
+        (failed nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "bash-fail"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (error "boom")))
+                (cadr-agent:define-event-hook
+                 :user-bash
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (setf late-called-p t)
+                   nil)))))
+           (host
+             (make-test-extension-host
+              (list bundle))))
+      (handler-case
+          (cadr-agent::run-extension-lifecycle-hooks
+           host :user-bash
+           :payload
+           '(:command "pwd"
+             :exclude-from-context-p nil
+             :cwd "/project"))
+        (cadr-agent:user-bash-hook-failed (condition)
+          (setf failed condition)))
+      (is (typep failed 'cadr-agent:user-bash-hook-failed))
+      (is (not late-called-p))
+      (is (search "boom" (princ-to-string failed))))))
+
 (test g22-ui-prompt-events-wrap-the-outermost-extension-prompt
   (let* ((seen nil)
          (bundle

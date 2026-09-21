@@ -138,6 +138,7 @@
    #:session-error-line
    #:extension-registration-error
    #:extension-execution-error
+   #:user-bash-hook-failed
    #:stale-extension-context
    #:define-tool
    #:define-rich-tool

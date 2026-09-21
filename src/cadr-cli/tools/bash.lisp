@@ -142,6 +142,8 @@
        command exclude-from-context-p
        (user-bash-aborted-content condition)
        (user-bash-aborted-details condition)))
+    (cadr-agent:user-bash-hook-failed ()
+      nil)
     (error (condition)
       (let ((message (format nil "~A" condition)))
         (if (or (string= message "Command aborted")
