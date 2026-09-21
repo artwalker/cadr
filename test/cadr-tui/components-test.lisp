@@ -132,6 +132,23 @@
                block 60 :now 99d0)))))
       (is (search "Took 0.0s" finished)))))
 
+(test goal24-shell-duration-uses-minutes-after-one-minute
+  (labels ((screen (name start end)
+             (cadr-tui:strip-terminal-sequences
+              (format
+               nil "~{~A~%~}"
+               (cadr-tui:render-tool-block
+                (cadr-tui:make-tool-block
+                 :name name
+                 :summary "sleep"
+                 :status :complete
+                 :started-at start
+                 :ended-at end)
+                60)))))
+    (is (search "Took 1m 30s" (screen "bash" 0d0 90d0)))
+    (is (search "Took 1h 1m 1s" (screen "powershell" 0d0 3661d0)))
+    (is (search "Took 59.9s" (screen "bash" 0d0 59.94d0)))))
+
 (test status-bar-and-select-list
   (is (search "↑12"
               (cadr-tui:render-status-bar

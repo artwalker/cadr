@@ -529,6 +529,19 @@
            :enabled-p ansi-theme-p)
           content-width "...")))))))
 
+(defun format-shell-tool-duration (seconds)
+  (let ((seconds (max 0d0 (float seconds 1d0))))
+    (if (< seconds 60d0)
+        (format nil "~,1Fs" seconds)
+        (multiple-value-bind (minutes remainder)
+            (floor (floor seconds) 60)
+          (if (< minutes 60)
+              (format nil "~Dm ~Ds" minutes remainder)
+              (format nil "~Dh ~Dm ~Ds"
+                      (floor minutes 60)
+                      (mod minutes 60)
+                      remainder))))))
+
 (defun render-tool-block
     (block width &key (ansi-theme-p nil) now)
   (multiple-value-bind
@@ -562,8 +575,10 @@
                 ansi-theme-p)))
            (timing-line
              (and
-              (string-equal
-               (tool-block-name block) "bash")
+              (member
+               (string-downcase (tool-block-name block))
+               '("bash" "powershell")
+               :test #'string=)
               (tool-block-started-at block)
               (let* ((running-p
                        (eq (tool-block-status block)
@@ -580,9 +595,9 @@
                            (tool-block-started-at block)))))
                 (theme-foreground
                  :muted
-                 (format nil "~A ~,1Fs"
+                 (format nil "~A ~A"
                          (if running-p "Elapsed" "Took")
-                         elapsed)
+                         (format-shell-tool-duration elapsed))
                  :enabled-p ansi-theme-p))))
            (box-lines
              (append
