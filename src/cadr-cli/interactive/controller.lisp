@@ -346,6 +346,7 @@ interactive-mode.ts:5956-5960).")
        startup-compact-lines
        startup-expanded-lines
        hide-thinking-block-p
+       show-cache-miss-notices-p
        (context-window 0)
        session
        messages
@@ -407,6 +408,8 @@ interactive-mode.ts:5956-5960).")
             startup-expanded-lines
             :context-window context-window
             :hide-thinking-block-p hide-thinking-block-p
+            :show-cache-miss-notices-p
+            show-cache-miss-notices-p
             :mermaid-mode
             (if mermaid-mode-function
                 (or (funcall mermaid-mode-function) "streaming")

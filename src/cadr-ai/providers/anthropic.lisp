@@ -560,6 +560,21 @@
                        (provider-stream-state-message state))))
             content-index)))
 
+(defun parse-anthropic-input-transformations (value)
+  (when (or (vectorp value) (listp value))
+    (map 'list
+         (lambda (item)
+           (list :type (json-get item "type")
+                 :path (json-get item "path")
+                 :reason (json-get item "reason")))
+         value)))
+
+(defun capture-anthropic-input-transformations (state value)
+  (let ((parsed (parse-anthropic-input-transformations value)))
+    (when parsed
+      (setf (provider-stream-state-input-transformations state)
+            parsed))))
+
 (defmethod reduce-provider-sse-event ((provider anthropic-provider)
                                       state event emit)
   (declare (ignore provider))
@@ -575,7 +590,10 @@
          (let ((upstream (json-get payload "message")))
            (setf (assistant-message-response-id message)
                  (json-get upstream "id"))
-           (update-anthropic-usage message (json-get upstream "usage"))))
+           (update-anthropic-usage message (json-get upstream "usage"))
+           (capture-anthropic-input-transformations
+            state
+            (json-get upstream "input_transformations"))))
         ((string= type "content_block_start")
          (let* ((provider-index (json-get payload "index"))
                 (block-data (json-get payload "content_block"))
@@ -688,6 +706,9 @@
         ((string= type "message_delta")
          (let* ((delta (json-get payload "delta"))
                 (raw-stop (json-get delta "stop_reason")))
+           (capture-anthropic-input-transformations
+            state
+            (json-get payload "input_transformations"))
            (when (non-empty-string-p raw-stop)
              (setf (assistant-message-raw-stop-reason message) raw-stop
                    (assistant-message-stop-reason message)
@@ -710,5 +731,8 @@
                      "thinking_tokens")
                     (usage-reasoning old)))))))
         ((string= type "message_stop")
+         (append-anthropic-input-transformations-diagnostic
+          message
+          (provider-stream-state-input-transformations state))
          (setf (provider-stream-state-terminal-p state) t)))))
   nil)
