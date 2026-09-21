@@ -64,7 +64,8 @@
              (:custom-message "custom_message")
              (:label "label")
              (:session-info "session_info")
-             (:leaf "leaf"))
+             (:leaf "leaf")
+             (:usage "usage"))
            "id" (session-entry-id entry)
            "parentId"
            (or
@@ -164,7 +165,20 @@
       base "targetId"
       (or
        (session-entry-target-id entry)
-       'null))))
+       'null)))
+    (:usage
+     (cadr-ai::json-put
+      base "kind" (session-entry-kind entry))
+     (cadr-ai::json-put
+      base "provider" (session-entry-provider entry))
+     (cadr-ai::json-put
+      base "model" (session-entry-model-id entry))
+     (cadr-ai::json-put
+      base "usage"
+      (usage-to-json (session-entry-usage entry)))
+     (when (session-entry-note entry)
+       (cadr-ai::json-put
+        base "note" (session-entry-note entry)))))
     base))
 
 (defun session-header-to-json (session)
@@ -440,6 +454,31 @@
     (setf
      (session-entry-provider entry) provider
      (session-entry-model-id entry) model-id)
+    (append-session-entry session entry)))
+
+(defun session-append-usage
+    (session kind provider model usage &key note)
+  (unless
+      (and
+       (stringp kind)
+       (plusp (length kind))
+       (stringp provider)
+       (plusp (length provider))
+       (stringp model)
+       (plusp (length model))
+       (typep usage 'cadr-ai:usage)
+       (or (null note) (stringp note)))
+    (session-failure
+     (session-path session) nil
+     "Usage entry requires non-empty kind, provider, model, and a usage object"))
+  (let ((entry
+          (make-session-child-entry session :usage)))
+    (setf
+     (session-entry-kind entry) kind
+     (session-entry-provider entry) provider
+     (session-entry-model-id entry) model
+     (session-entry-usage entry) usage
+     (session-entry-note entry) note)
     (append-session-entry session entry)))
 
 (defun session-append-branch-summary

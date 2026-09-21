@@ -60,6 +60,8 @@
          ((or (eq key "message") (string= key "message"))
           (setf (session-entry-message entry) value))
          ((string= key "modelId")
+          (setf (session-entry-model-id entry) value))
+         ((or (eq key "model") (string= key "model"))
           (setf (session-entry-model-id entry) value))))
       (#\s
        (cond
@@ -100,9 +102,15 @@
       (#\l
        (when (or (eq key "label") (string= key "label"))
          (setf (session-entry-label entry) value)))
+      (#\k
+       (when (or (eq key "kind") (string= key "kind"))
+         (setf (session-entry-kind entry) value)))
       (#\n
-       (when (or (eq key "name") (string= key "name"))
-         (setf (session-entry-name entry) value)))
+       (cond
+         ((or (eq key "name") (string= key "name"))
+          (setf (session-entry-name entry) value))
+         ((or (eq key "note") (string= key "note"))
+          (setf (session-entry-note entry) value))))
       (#\r
        (when (string= key "retainedTail")
          (setf (session-entry-retained-tail entry) value))))))
@@ -1477,6 +1485,15 @@
                (#x765646f6d
                 (setf (session-entry-model-id entry)
                       (parse-string-value)))
+               (#x565646f6d
+                (setf (session-entry-model-id entry)
+                      (parse-string-value)))
+               (#x4646e696b
+                (setf (session-entry-kind entry)
+                      (parse-string-value)))
+               (#x465746f6e
+                (setf (session-entry-note entry)
+                      (parse-string-value)))
                (#xf69746361
                 (setf (session-entry-active-tool-names entry)
                       (parse-generic)))
@@ -2278,6 +2295,7 @@
     ((or (eq raw "session_info") (string= raw "session_info"))
      :session-info)
     ((or (eq raw "leaf") (string= raw "leaf")) :leaf)
+    ((or (eq raw "usage") (string= raw "usage")) :usage)
     ((stringp raw)
      (intern
       (string-upcase (substitute #\- #\_ raw))
@@ -2324,7 +2342,8 @@
             :custom-message
             :label
             :session-info
-            :leaf))
+            :leaf
+            :usage))
          (stringp id)
          (or (null parent-id)
              (stringp parent-id)))
@@ -2581,7 +2600,40 @@
               line-number))
            (setf
             (session-entry-target-id entry)
-            target-id))))
+            target-id)))
+        (:usage
+         (let ((kind
+                 (require-session-slot
+                  (session-entry-kind entry)
+                  "kind" path line-number))
+               (provider
+                 (require-session-slot
+                  (session-entry-provider entry)
+                  "provider" path line-number))
+               (model-id
+                 (require-session-slot
+                  (session-entry-model-id entry)
+                  "model" path line-number))
+               (note
+                 (json-null-to-nil
+                  (session-entry-note entry))))
+           (unless
+               (and
+                (stringp kind)
+                (stringp provider)
+                (stringp model-id)
+                (or (null note) (stringp note))
+                usage-object)
+             (session-failure
+              path line-number
+              "Invalid usage entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-usage entry)
+            (if (hash-table-p usage-object)
+                (usage-from-json usage-object)
+                usage-object)
+            (session-entry-note entry) note))))
       (setf (gethash id by-id) entry)
       entry)))
 
