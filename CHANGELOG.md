@@ -7,27 +7,6 @@ tag/Release step.
 
 ## [Unreleased]
 
-- Goal 24: `stream-chat` / `complete-chat` normalize `Context` into
-  `TranscriptContext` before `build-request`. Wire adapters project
-  back via `coerce-provider-request-context` until they speak
-  transcript natively.
-
-- Goal 24: emit mid-conversation `system-message` section and tool
-  deltas on turn prep (`prepare-prompt-and-tool-loadout`,
-  `declare-tool-changes`) so agent.messages and session JSONL retain
-  `before_agent_start` / tool-loadout changes.
-
-- Goal 24: `build-system-prompt-sections` and `diff-system-prompt-sections`
-  for ordered, tag-wrapped prompt sections (`preamble` untagged).
-
-- Goal 24: session codec round-trips `role:"system"` messages with
-  `sections` / `toolsAdded` / `toolsRemoved` so mid-conversation
-  prompt and tool deltas survive JSONL restore.
-
-- Goal 24: port transcript-backed system-message and tool-declaration
-  helpers (`normalize-context`, `get-current-tools`,
-  `get-current-system-prompt`, section collapse).
-
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
