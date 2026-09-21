@@ -244,7 +244,8 @@ completed assistant message."))
   (partial-json (make-hash-table) :type hash-table)
   (terminal-p nil :type boolean)
   (current-block-index nil :type (or null (integer 0 *)))
-  (json-scratch nil :type (or null json-parse-scratch)))
+  (json-scratch nil :type (or null json-parse-scratch))
+  (model nil :type (or null model)))
 
 (defun nappend-string (buffer chunk)
   "Append CHUNK onto BUFFER in amortized linear time.
@@ -705,7 +706,7 @@ string. Returns the buffer to store back. Per-delta
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
   (let* ((message (empty-assistant-message model reasoning))
-         (state (make-provider-stream-state :message message))
+         (state (make-provider-stream-state :message message :model model))
          (saw-provider-event-p nil)
          (response-request-id nil)
          (timeout-seconds

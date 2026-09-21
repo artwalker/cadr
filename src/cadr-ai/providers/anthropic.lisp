@@ -531,10 +531,54 @@
                "thinking_tokens"))
     (apply-known-model-cost message)))
 
+(defun record-anthropic-response-model (message requested reported)
+  (when (and (stringp reported)
+             (not (string= reported (model-id requested))))
+    (setf (assistant-message-response-model message) reported))
+  message)
+
+(defun price-anthropic-usage (message requested reported)
+  (labels ((provider-token (value)
+             (cond
+               ((symbolp value) (symbol-name value))
+               ((stringp value) value)
+               (t "")))
+           (price (value)
+             (coerce (or value 0) 'double-float)))
+    (let* ((usage (assistant-message-usage message))
+           (cost
+             (and (stringp reported)
+                  (not (string= reported (model-id requested)))
+                  (loop for row in (model-compat-value
+                                    requested
+                                    :allowed-fallback-models
+                                    nil)
+                        when (and (listp row)
+                                  (string-equal
+                                   (provider-token (getf row :provider))
+                                   (provider-token
+                                    (model-provider requested)))
+                                  (stringp (getf row :model))
+                                  (string= (getf row :model) reported))
+                          return (getf row :cost)))))
+      (if cost
+          (calculate-usage-cost
+           usage
+           (make-model-metadata
+            :provider (model-provider requested)
+            :id reported
+            :input-price (price (getf cost :input))
+            :output-price (price (getf cost :output))
+            :cache-read-price (price (getf cost :cache-read))
+            :cache-write-price (price (getf cost :cache-write))))
+          (apply-known-model-cost message))))
+  message)
+
 (defmethod parse-complete-response ((provider anthropic-provider)
                                     model response)
   (declare (ignore provider))
   (let* ((raw-stop (or (json-get response "stop_reason") "end_turn"))
+         (reported (json-get response "model"))
          (message
            (make-assistant-message
             :content (parse-anthropic-content (json-get response "content"))
@@ -544,7 +588,9 @@
             :response-id (json-get response "id")
             :raw-stop-reason raw-stop
             :stop-reason (map-simple-stop-reason raw-stop))))
+    (record-anthropic-response-model message model reported)
     (update-anthropic-usage message (json-get response "usage"))
+    (price-anthropic-usage message model reported)
     (when (and (eq :stop (assistant-message-stop-reason message))
                (tool-call-present-p message))
       (setf (assistant-message-stop-reason message) :tool-use))
@@ -572,10 +618,17 @@
            (message (provider-stream-state-message state)))
       (cond
         ((string= type "message_start")
-         (let ((upstream (json-get payload "message")))
+         (let ((upstream (json-get payload "message"))
+               (requested (provider-stream-state-model state)))
            (setf (assistant-message-response-id message)
                  (json-get upstream "id"))
-           (update-anthropic-usage message (json-get upstream "usage"))))
+           (when requested
+             (record-anthropic-response-model
+              message requested (json-get upstream "model")))
+           (update-anthropic-usage message (json-get upstream "usage"))
+           (when requested
+             (price-anthropic-usage
+              message requested (json-get upstream "model")))))
         ((string= type "content_block_start")
          (let* ((provider-index (json-get payload "index"))
                 (block-data (json-get payload "content_block"))
@@ -585,7 +638,12 @@
                     ((string= block-type "text")
                      (make-text-content))
                     ((string= block-type "thinking")
-                     (make-thinking-content))
+                     (make-thinking-content
+                      :thinking (or (json-get block-data "thinking") "")
+                      :signature
+                      (let ((signature (json-get block-data "signature")))
+                        (when (stringp signature)
+                          signature))))
                     ((string= block-type "redacted_thinking")
                      (make-thinking-content
                       :thinking "[Reasoning redacted]"
@@ -708,7 +766,13 @@
                 (or (json-get
                      (json-get usage "output_tokens_details")
                      "thinking_tokens")
-                    (usage-reasoning old)))))))
+                    (usage-reasoning old)))))
+           (when (and (provider-stream-state-model state)
+                      (assistant-message-response-model message))
+             (price-anthropic-usage
+              message
+              (provider-stream-state-model state)
+              (assistant-message-response-model message)))))
         ((string= type "message_stop")
          (setf (provider-stream-state-terminal-p state) t)))))
   nil)
