@@ -870,3 +870,18 @@
              (cadr-tui::selection-word-range "foo-bar" 3)))
   (is (equal '(0 . 3)
              (cadr-tui::selection-word-range "a/b" 0))))
+
+(test goal24-copy-selection-flash-names-the-backend-error
+  (multiple-value-bind (message duration)
+      (cadr-tui::renderer-copy-selection-flash t)
+    (is (string= "Copied!" message))
+    (is (= 1000 duration)))
+  (multiple-value-bind (message duration)
+      (cadr-tui::renderer-copy-selection-flash
+       "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access")
+    (is (search "xclip" message))
+    (is (= 5000 duration)))
+  (multiple-value-bind (message duration)
+      (cadr-tui::renderer-copy-selection-flash nil)
+    (is (string= "Copy failed" message))
+    (is (= 5000 duration))))

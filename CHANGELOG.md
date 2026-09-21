@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: a failed local clipboard write no longer falls back to OSC 52.
+  The error names the missing backend (`wl-copy`, `xclip`/`xsel`,
+  Termux:API, or no display). A selection-copy string flashes for 5s.
+  OSC 52 still runs when the session is remote, or when fullscreen copy
+  has no host clipboard function.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
