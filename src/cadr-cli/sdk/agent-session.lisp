@@ -277,31 +277,32 @@
 
 (defun sdk-apply-agent-settings
     (agent settings)
-  (setf
-   (cadr-agent::agent-auto-compact-p agent)
-   (sdk-settings-compaction-enabled-p settings)
-   (cadr-agent::agent-compaction-keep-recent-tokens
-    agent)
-   (sdk-settings-compaction-keep-recent-tokens
-    settings)
-   (cadr-agent::agent-compaction-reserve-tokens
-    agent)
-   (sdk-settings-compaction-reserve-tokens
-    settings)
-   (cadr-agent:agent-steering-mode agent)
-   (if (string=
-        "all"
-        (sdk-settings-value
-         settings "steeringMode"
-         "one-at-a-time"))
-       :all :one-at-a-time)
-   (cadr-agent:agent-follow-up-mode agent)
-   (if (string=
-        "all"
-        (sdk-settings-value
-         settings "followUpMode"
-         "one-at-a-time"))
-       :all :one-at-a-time))
+  (let ((model (cadr-agent:agent-model agent)))
+    (setf
+     (cadr-agent::agent-auto-compact-p agent)
+     (sdk-settings-compaction-enabled-p settings)
+     (cadr-agent::agent-compaction-keep-recent-tokens
+      agent)
+     (sdk-settings-compaction-keep-recent-tokens
+      settings model)
+     (cadr-agent::agent-compaction-reserve-tokens
+      agent)
+     (sdk-settings-compaction-reserve-tokens
+      settings model)
+     (cadr-agent:agent-steering-mode agent)
+     (if (string=
+          "all"
+          (sdk-settings-value
+           settings "steeringMode"
+           "one-at-a-time"))
+         :all :one-at-a-time)
+     (cadr-agent:agent-follow-up-mode agent)
+     (if (string=
+          "all"
+          (sdk-settings-value
+           settings "followUpMode"
+           "one-at-a-time"))
+         :all :one-at-a-time)))
   agent)
 
 (defun sdk-agent-session-dispatch

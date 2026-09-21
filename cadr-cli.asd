@@ -189,6 +189,7 @@
                              (:file "part-b-utilities-test")
                              (:file "part-b-config-test")
                              (:file "goal28-compaction-settings-test")
+                             (:file "goal24-compaction-model-overrides-test")
                              (:file "goal28-branch-summary-settings-test")
                              (:file "goal28-shell-settings-test")
                              (:file "goal28-session-dir-settings-test")

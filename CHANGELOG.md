@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: `compaction.modelOverrides` resolve `reserveTokens` /
+  `keepRecentTokens` per exact `provider/modelId` (slashes in the id
+  allowed). Sync and model select refresh the agent slots. FiveAM
+  `goal24-compaction-model-overrides-resolve-per-field`.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.

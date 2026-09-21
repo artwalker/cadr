@@ -922,6 +922,16 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      (cadr-agent:agent-model agent) selected
      (cadr-agent::agent-thinking-level agent)
      thinking)
+    (when settings-manager
+      (setf
+       (cadr-agent::agent-compaction-keep-recent-tokens
+        agent)
+       (settings-compaction-keep-recent-tokens
+        settings-manager selected)
+       (cadr-agent::agent-compaction-reserve-tokens
+        agent)
+       (settings-compaction-reserve-tokens
+        settings-manager selected)))
     (when host
       (setf
        (cadr-agent::extension-host-base-agent-provider

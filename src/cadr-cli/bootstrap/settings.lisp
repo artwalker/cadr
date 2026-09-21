@@ -66,15 +66,45 @@
         value
         default)))
 
+(defun settings-compaction-model-key (model)
+  (when model
+    (model-setting-key
+     (cadr-ai:model-provider model)
+     (cadr-ai:model-id model))))
+
+(defun settings-compaction-token-setting
+    (manager field default &optional model)
+  ;; pi@ecac0a9c4 getCompactionTokenSetting: override for
+  ;; "provider/modelId", else ordinary compaction field, else default.
+  (let* ((ordinary
+           (settings-positive-integer-value
+            manager "compaction" field default))
+         (key (settings-compaction-model-key model))
+         (overrides
+           (settings-nested-value
+            manager "compaction" "modelOverrides"
+            (empty-json-object)))
+         (entry
+           (and key
+                (hash-table-p overrides)
+                (cadr-ai::json-get overrides key))))
+    (if (hash-table-p entry)
+        (let ((override
+                (cadr-ai::json-get entry field :missing)))
+          (if (and (integerp override) (plusp override))
+              override
+              ordinary))
+        ordinary)))
+
 (defun settings-compaction-keep-recent-tokens
-    (manager)
-  (settings-positive-integer-value
-   manager "compaction" "keepRecentTokens" 20000))
+    (manager &optional model)
+  (settings-compaction-token-setting
+   manager "keepRecentTokens" 20000 model))
 
 (defun settings-compaction-reserve-tokens
-    (manager)
-  (settings-positive-integer-value
-   manager "compaction" "reserveTokens" 16384))
+    (manager &optional model)
+  (settings-compaction-token-setting
+   manager "reserveTokens" 16384 model))
 
 (defun settings-branch-summary-reserve-tokens
     (manager)
@@ -534,39 +564,40 @@
 
 (defun sync-agent-settings-from-manager
     (agent settings-manager)
-  (setf
-   (cadr-agent::agent-auto-compact-p agent)
-   (settings-boolean-value
-    settings-manager
-    "compaction" t "enabled")
-   (cadr-agent::agent-compaction-keep-recent-tokens
-    agent)
-   (settings-compaction-keep-recent-tokens
-    settings-manager)
-   (cadr-agent::agent-compaction-reserve-tokens
-    agent)
-   (settings-compaction-reserve-tokens
-    settings-manager)
-   (cadr-agent:agent-steering-mode agent)
-   (if
-       (string=
-        "all"
-        (settings-choice-value
-         settings-manager "steeringMode"
-         '("one-at-a-time" "all")
-         "one-at-a-time"))
-       :all
-       :one-at-a-time)
-   (cadr-agent:agent-follow-up-mode agent)
-   (if
-       (string=
-        "all"
-        (settings-choice-value
-         settings-manager "followUpMode"
-         '("one-at-a-time" "all")
-         "one-at-a-time"))
-       :all
-       :one-at-a-time))
+  (let ((model (cadr-agent:agent-model agent)))
+    (setf
+     (cadr-agent::agent-auto-compact-p agent)
+     (settings-boolean-value
+      settings-manager
+      "compaction" t "enabled")
+     (cadr-agent::agent-compaction-keep-recent-tokens
+      agent)
+     (settings-compaction-keep-recent-tokens
+      settings-manager model)
+     (cadr-agent::agent-compaction-reserve-tokens
+      agent)
+     (settings-compaction-reserve-tokens
+      settings-manager model)
+     (cadr-agent:agent-steering-mode agent)
+     (if
+         (string=
+          "all"
+          (settings-choice-value
+           settings-manager "steeringMode"
+           '("one-at-a-time" "all")
+           "one-at-a-time"))
+         :all
+         :one-at-a-time)
+     (cadr-agent:agent-follow-up-mode agent)
+     (if
+         (string=
+          "all"
+          (settings-choice-value
+           settings-manager "followUpMode"
+           '("one-at-a-time" "all")
+           "one-at-a-time"))
+         :all
+         :one-at-a-time)))
   agent)
 
 (defun reload-cli-runtime

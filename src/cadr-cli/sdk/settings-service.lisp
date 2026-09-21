@@ -155,15 +155,42 @@
         value
         default)))
 
+(defun sdk-settings-compaction-token-setting
+    (manager field default &optional model)
+  ;; pi@ecac0a9c4 getCompactionTokenSetting via SDK settings.
+  (let* ((ordinary
+           (sdk-settings-positive-integer
+            manager "compaction" field default))
+         (key (settings-compaction-model-key model))
+         (compaction
+           (sdk-settings-value
+            manager "compaction" (empty-json-object)))
+         (overrides
+           (and (hash-table-p compaction)
+                (cadr-ai::json-get
+                 compaction "modelOverrides"
+                 (empty-json-object))))
+         (entry
+           (and key
+                (hash-table-p overrides)
+                (cadr-ai::json-get overrides key))))
+    (if (hash-table-p entry)
+        (let ((override
+                (cadr-ai::json-get entry field :missing)))
+          (if (and (integerp override) (plusp override))
+              override
+              ordinary))
+        ordinary)))
+
 (defun sdk-settings-compaction-keep-recent-tokens
-    (manager)
-  (sdk-settings-positive-integer
-   manager "compaction" "keepRecentTokens" 20000))
+    (manager &optional model)
+  (sdk-settings-compaction-token-setting
+   manager "keepRecentTokens" 20000 model))
 
 (defun sdk-settings-compaction-reserve-tokens
-    (manager)
-  (sdk-settings-positive-integer
-   manager "compaction" "reserveTokens" 16384))
+    (manager &optional model)
+  (sdk-settings-compaction-token-setting
+   manager "reserveTokens" 16384 model))
 
 (defun sdk-settings-branch-summary-reserve-tokens
     (manager)
