@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 24: classify Cloudflare HTTP 520 and Azure peak-load capacity
+  errors as retryable (`#9627`, `#9669`), matching
+  `packages/ai/src/utils/retry.ts` at pin `ecac0a9c4`.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.

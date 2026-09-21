@@ -39,6 +39,8 @@ second" (cadr-ai:content-text content)))
       (text
        '("overloaded_error"
          "524 status code (no body)"
+         "520 status code (no body)"
+         "The system is currently experiencing high demand and cannot process your request. Your request exceeds the maximum usage size allowed during peak load. For improved capacity reliability, consider switching to Provisioned Throughput."
          "getaddrinfo ENOTFOUND api.example.com"
          "The socket connection was closed unexpectedly"
          "OpenAI Responses stream ended before a terminal response event"
