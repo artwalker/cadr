@@ -329,6 +329,12 @@
                   (completions-supports-reasoning-effort-p model))
          (json-put payload "reasoning_effort"
                    (openai-reasoning-value model reasoning))))
+      (:qwen-chat-template
+       (json-put
+        payload "chat_template_kwargs"
+        (json-object
+         "enable_thinking" (not (null reasoning))
+         "preserve_thinking" t)))
       (:deepseek
        (when (or reasoning
                  (not (and

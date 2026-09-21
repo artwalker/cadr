@@ -41,7 +41,21 @@
 (defun llama-positive-number (value)
   (and (numberp value) (plusp value) value))
 
-(defun llama-model (info server-url)
+(defparameter +llama-thinking-level-map+
+  '((:off . "off")
+    (:minimal)
+    (:low)
+    (:medium . "medium")
+    (:high)
+    (:xhigh)))
+
+(defun llama-template-reasoning-p (chat-template)
+  (and (stringp chat-template)
+       (not
+        (null
+         (search "enable_thinking" chat-template)))))
+
+(defun llama-model (info server-url &optional chat-template)
   (let ((context-window
           (or
            (llama-positive-number
@@ -49,14 +63,18 @@
            (llama-positive-number
             (llama-model-info-training-context-window
              info))
-           128000)))
+           128000))
+        (reasoning-p
+          (llama-template-reasoning-p chat-template)))
     (cadr-ai:make-model
      :id (llama-model-info-id info)
      :name (llama-model-info-id info)
      :provider +llama-provider-id+
      :api :openai-completions
      :base-url (llama-inference-url server-url)
-     :reasoning-p nil
+     :reasoning-p reasoning-p
+     :thinking-level-map
+     (when reasoning-p +llama-thinking-level-map+)
      :supports-images-p
      (not
       (null
@@ -68,12 +86,15 @@
      :context-window context-window
      :max-tokens context-window
      :compat
-     '(:supports-store nil
-       :supports-developer-role nil
-       :supports-reasoning-effort nil
-       :supports-usage-in-streaming t
-       :supports-strict-mode nil
-       :max-tokens-field :max-tokens))))
+     (append
+      '(:supports-store nil
+        :supports-developer-role nil
+        :supports-reasoning-effort nil
+        :supports-usage-in-streaming t
+        :supports-strict-mode nil
+        :max-tokens-field :max-tokens)
+      (when reasoning-p
+        '(:thinking-format :qwen-chat-template))))))
 
 (defun llama-model-selectable-p (info &optional router-autoload-p)
   (let ((status (llama-model-info-status info)))
@@ -108,6 +129,66 @@
             (normalize-llama-server-url
              server-url))))
   controller)
+
+(defun llama-loaded-chat-template (client info)
+  (handler-case
+      (getf
+       (llama-client-props
+        client :model (llama-model-info-id info))
+       :chat-template)
+    (cadr-ai:request-aborted (condition)
+      (error condition))
+    (error ()
+      nil)))
+
+(defun llama-collect-refreshed-models
+    (client catalog server-url router-autoload-p context)
+  (let ((normalized
+          (normalize-llama-server-url server-url))
+        (models nil))
+    (dolist (info catalog)
+      (when (cadr-ai:runtime-refresh-context-aborted-p
+             context)
+        (return-from llama-collect-refreshed-models
+          (values nil nil)))
+      (when (llama-model-selectable-p
+             info router-autoload-p)
+        (let ((template
+                (when (eq :loaded
+                          (llama-model-info-status info))
+                  (llama-loaded-chat-template
+                   client info))))
+          (when (cadr-ai:runtime-refresh-context-aborted-p
+                 context)
+            (return-from llama-collect-refreshed-models
+              (values nil nil)))
+          (push
+           (llama-model info normalized template)
+           models))))
+    (values (nreverse models) t)))
+
+(defun llama-publish-refreshed-catalog
+    (controller client catalog server-url
+     router-autoload-p context)
+  (when (cadr-ai:runtime-refresh-context-aborted-p context)
+    (return-from llama-publish-refreshed-catalog nil))
+  (multiple-value-bind (models complete-p)
+      (llama-collect-refreshed-models
+       client catalog server-url
+       router-autoload-p context)
+    (when (and complete-p
+               (not
+                (cadr-ai:runtime-refresh-context-aborted-p
+                 context)))
+      (setf
+       (cadr-ai:runtime-provider-models
+        (llama-provider-controller-provider controller))
+       models)
+      (funcall
+       (cadr-ai:runtime-refresh-context-store context)
+       :write
+       (copy-list models))))
+  nil)
 
 (defun llama-runtime-request-options (options)
   (loop for (key value) on options by #'cddr
@@ -316,22 +397,15 @@
                              (and
                               (plusp (length key))
                               key)))))
-                       (catalog (llama-client-list client))
-                       (autoload
-                         (llama-router-autoload-enabled-p
-                          client catalog)))
-                  (llama-provider-set-catalog
-                   controller catalog server-url
-                   :router-autoload-p autoload)
+                       (catalog (llama-client-list client)))
                   (unless
                       (cadr-ai:runtime-refresh-context-aborted-p
                        context)
-                    (funcall
-                     store :write
-                     (copy-list
-                      (cadr-ai:runtime-provider-models
-                       (llama-provider-controller-provider
-                        controller)))))))))))
+                    (llama-publish-refreshed-catalog
+                     controller client catalog server-url
+                     (llama-router-autoload-enabled-p
+                      client catalog)
+                     context))))))))
       :complete-function #'llama-runtime-complete
       :stream-function #'llama-runtime-stream))
     controller))

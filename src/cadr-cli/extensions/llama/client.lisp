@@ -208,14 +208,31 @@
      (let ((source (cadr-ai::json-get object "source")))
        (and (stringp source) source)))))
 
-(defun llama-client-props (client)
-  (let ((payload (llama-request-json client "/props")))
-    (if (hash-table-p payload)
-        (list
-         :models-autoload
-         (eq t
-             (cadr-ai::json-get payload "models_autoload")))
-        nil)))
+(defun llama-props-path (model)
+  (if (and (stringp model) (plusp (length model)))
+      (format nil "/props?model=~A&autoload=false"
+              (cadr-ai::percent-encode model))
+      "/props"))
+
+(defun parse-llama-server-props (payload)
+  (unless (hash-table-p payload)
+    (return-from parse-llama-server-props nil))
+  (let ((props nil))
+    (when (cadr-ai::json-present-p payload "models_autoload")
+      (let ((value
+              (cadr-ai::json-get payload "models_autoload")))
+        (when (member value '(t nil) :test #'eq)
+          (setf props
+                (list* :models-autoload value props)))))
+    (let ((template
+            (cadr-ai::json-get payload "chat_template")))
+      (when (stringp template)
+        (setf props (list* :chat-template template props))))
+    props))
+
+(defun llama-client-props (client &key model)
+  (parse-llama-server-props
+   (llama-request-json client (llama-props-path model))))
 
 (defun llama-client-list
     (client &key reload-p)

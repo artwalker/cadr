@@ -72,7 +72,7 @@
 
 (defun llama-model-json
     (id status &key context-window training-context-window
-       image-p)
+       image-p source)
   (let ((model
           (cadr-ai::json-object
            "id" id
@@ -90,6 +90,8 @@
        (cadr-ai::json-object
         "input_modalities"
         (vector "text" "image"))))
+    (when source
+      (cadr-ai::json-put model "source" source))
     model))
 
 (test llama-bundled-extension-registers-native-provider-and-command
@@ -197,20 +199,28 @@
                       force-binary))
              (incf calls)
              (is (string=
-                  "http://router.test/models"
-                  url))
-             (is (string=
                   "Bearer secret"
                   (cdr
                    (assoc "authorization" headers
                           :test #'string-equal))))
-             (llama-json-response
-              (llama-catalog-json
-               (llama-model-json
-                "loaded" "loaded"
-                :context-window 32768)
-               (llama-model-json
-                "unloaded" "unloaded")))))
+             (cond
+               ((string=
+                 "http://router.test/models" url)
+                (llama-json-response
+                 (llama-catalog-json
+                  (llama-model-json
+                   "loaded" "loaded"
+                   :context-window 32768)
+                  (llama-model-json
+                   "unloaded" "unloaded"))))
+               ((string=
+                 "http://router.test/props?model=loaded&autoload=false"
+                 url)
+                (llama-json-response
+                 (cadr-ai::json-object
+                  "chat_template" "plain template")))
+               (t
+                (error "Unexpected llama request ~A" url)))))
          (credentials
            (cadr-ai:make-memory-credential-store))
          (model-store (make-hash-table))
@@ -235,7 +245,7 @@
      (cadr-cli::llama-provider-controller-provider
       first))
     (cadr-ai:models-runtime-refresh runtime)
-    (is (= 1 calls))
+    (is (= 2 calls))
     (is (equal
          '("loaded")
          (mapcar
@@ -250,7 +260,7 @@
         second))
       (cadr-ai:models-runtime-refresh
        runtime :allow-network nil)
-      (is (= 1 calls))
+      (is (= 2 calls))
       (is (equal
            '("loaded")
            (mapcar
@@ -267,6 +277,251 @@
            "http://router.test/v1"
            (cadr-ai:runtime-auth-result-base-url
             auth))))))
+
+(defun llama-info (id status &key source)
+  (cadr-cli::make-llama-model-info
+   :id id :status status :source source))
+
+(test llama-enable-thinking-template-sets-reasoning-map-and-format
+  (let* ((model
+           (cadr-cli::llama-model
+            (llama-info "qwen" :loaded)
+            "http://127.0.0.1:8080"
+            "{% if enable_thinking %}"))
+         (compat (cadr-ai::model-compat model))
+         (provider
+           (cadr-ai:make-openai-completions-provider
+            :api-key "local"))
+         (context
+           (cadr-ai:make-context
+            :messages
+            (list (cadr-ai:make-user-message :content "hi"))))
+         (on
+           (cadr-ai:request-spec-payload
+            (cadr-ai:build-request
+             provider model context
+             :reasoning :medium :max-tokens 32)))
+         (kwargs
+           (cadr-ai::json-get on "chat_template_kwargs"))
+         (off
+           (cadr-ai:request-spec-payload
+            (cadr-ai:build-request
+             provider model context
+             :max-tokens 32))))
+    (is (eq t (cadr-ai:model-reasoning-p model)))
+    (is (equal
+         '((:off . "off")
+           (:minimal)
+           (:low)
+           (:medium . "medium")
+           (:high)
+           (:xhigh))
+         (cadr-ai::model-thinking-level-map model)))
+    (is (eq :qwen-chat-template
+            (getf compat :thinking-format)))
+    (is (member :supports-store compat))
+    (is (eq :max-tokens (getf compat :max-tokens-field)))
+    (is (eq t (cadr-ai::json-get kwargs "enable_thinking")))
+    (is (eq t (cadr-ai::json-get kwargs "preserve_thinking")))
+    (is (not (cadr-ai::json-present-p on "reasoning_effort")))
+    (is (not (cadr-ai::json-present-p on "enable_thinking")))
+    (let ((off-kwargs
+            (cadr-ai::json-get off "chat_template_kwargs")))
+      (is (cadr-ai::json-present-p
+           off-kwargs "enable_thinking"))
+      (is (null
+           (cadr-ai::json-get off-kwargs "enable_thinking")))
+      (is (eq t
+              (cadr-ai::json-get
+               off-kwargs "preserve_thinking"))))))
+
+(test llama-template-without-enable-thinking-is-not-reasoning
+  (dolist (template (list nil "chat template without the flag"))
+    (let* ((model
+             (cadr-cli::llama-model
+              (llama-info "plain" :loaded)
+              "http://127.0.0.1:8080"
+              template))
+           (compat (cadr-ai::model-compat model)))
+      (is (null (cadr-ai:model-reasoning-p model)))
+      (is (null (cadr-ai::model-thinking-level-map model)))
+      (is (not (member :thinking-format compat)))
+      (is (member :supports-store compat))
+      (is (eq :max-tokens (getf compat :max-tokens-field))))))
+
+(test llama-client-props-returns-autoload-and-chat-template
+  (let ((cadr-ai:*http-request-function*
+          (lambda (url &key method headers content
+                       connect-timeout read-timeout want-stream
+                       force-string force-binary)
+            (declare
+             (ignore method headers content connect-timeout
+                     read-timeout want-stream force-string
+                     force-binary))
+            (cond
+              ((string= "http://router.test/props" url)
+               (llama-json-response
+                (cadr-ai::json-object
+                 "models_autoload" t
+                 "chat_template" 12)))
+              ((string=
+                "http://router.test/props?model=owner%2Frepo%3AQ4&autoload=false"
+                url)
+               (llama-json-response
+                (cadr-ai::json-object
+                 "models_autoload" nil
+                 "chat_template" "{% if enable_thinking %}")))
+              (t
+               (error "Unexpected llama request ~A" url))))))
+    (let ((client
+            (cadr-cli::make-llama-client
+             :server-url "http://router.test")))
+      (let ((router (cadr-cli::llama-client-props client)))
+        (is (eq t (getf router :models-autoload)))
+        (is (not (member :chat-template router))))
+      (let ((props
+              (cadr-cli::llama-client-props
+               client :model "owner/repo:Q4")))
+        (is (null (getf props :models-autoload)))
+        (is (member :models-autoload props))
+        (is (string=
+             "{% if enable_thinking %}"
+             (getf props :chat-template)))))))
+
+(test llama-refresh-classifies-loaded-templates-only
+  (let* ((urls nil)
+         (cadr-ai:*http-request-function*
+           (lambda (url &key method headers content
+                        connect-timeout read-timeout want-stream
+                        force-string force-binary)
+             (declare
+              (ignore method headers content connect-timeout
+                      read-timeout want-stream force-string
+                      force-binary))
+             (push url urls)
+             (cond
+               ((string= "http://router.test/models" url)
+                (llama-json-response
+                 (llama-catalog-json
+                  (llama-model-json "think" "loaded")
+                  (llama-model-json "plain" "loaded")
+                  (llama-model-json "asleep" "sleeping")
+                  (llama-model-json
+                   "preset" "unloaded" :source "preset"))))
+               ((string= "http://router.test/props" url)
+                (llama-json-response
+                 (cadr-ai::json-object "models_autoload" t)))
+               ((string=
+                 "http://router.test/props?model=think&autoload=false"
+                 url)
+                (llama-json-response
+                 (cadr-ai::json-object
+                  "chat_template"
+                  "template enable_thinking here")))
+               ((string=
+                 "http://router.test/props?model=plain&autoload=false"
+                 url)
+                (values "{\"error\":\"down\"}" 500
+                        '(("content-type"
+                           . "application/json"))))
+               (t
+                (error "Unexpected llama request ~A" url)))))
+         (credentials (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-models-runtime
+            :credential-store credentials
+            :model-store (make-hash-table))))
+    (cadr-ai:credential-store-modify
+     credentials :llama.cpp
+     (lambda (old)
+       (declare (ignore old))
+       (cadr-ai:make-api-key-credential
+        :provider :llama.cpp
+        :key "secret"
+        :environment
+        '(("LLAMA_BASE_URL" . "http://router.test")))))
+    (cadr-ai:models-runtime-set-provider
+     runtime
+     (cadr-cli::llama-provider-controller-provider
+      (cadr-cli::make-llama-provider-controller)))
+    (cadr-ai:models-runtime-refresh runtime)
+    (is (null
+         (find-if
+          (lambda (url)
+            (or (search "model=asleep" url)
+                (search "model=preset" url)))
+          urls)))
+    (let ((models
+            (cadr-ai:models-runtime-models
+             runtime :llama.cpp)))
+      (is (equal
+           '("think" "plain" "asleep" "preset")
+           (mapcar #'cadr-ai:model-id models)))
+      (is (eq t
+              (cadr-ai:model-reasoning-p (first models))))
+      (is (eq :qwen-chat-template
+              (getf (cadr-ai::model-compat (first models))
+                    :thinking-format)))
+      (is (null (cadr-ai:model-reasoning-p (second models))))
+      (is (not
+           (member :thinking-format
+                   (cadr-ai::model-compat (second models)))))
+      (is (null (cadr-ai:model-reasoning-p (third models))))
+      (is (null (cadr-ai:model-reasoning-p (fourth models)))))))
+
+(test llama-refresh-stops-between-models-when-aborted
+  (let* ((abort nil)
+         (urls nil)
+         (cadr-ai:*http-request-function*
+           (lambda (url &key method headers content
+                        connect-timeout read-timeout want-stream
+                        force-string force-binary)
+             (declare
+              (ignore method headers content connect-timeout
+                      read-timeout want-stream force-string
+                      force-binary))
+             (push url urls)
+             (cond
+               ((string= "http://router.test/models" url)
+                (llama-json-response
+                 (llama-catalog-json
+                  (llama-model-json "first" "loaded")
+                  (llama-model-json "second" "loaded"))))
+               ((string=
+                 "http://router.test/props?model=first&autoload=false"
+                 url)
+                (setf abort t)
+                (llama-json-response
+                 (cadr-ai::json-object
+                  "chat_template" "enable_thinking")))
+               (t
+                (error "Unexpected llama request ~A" url)))))
+         (credentials (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-models-runtime
+            :credential-store credentials
+            :model-store (make-hash-table))))
+    (cadr-ai:credential-store-modify
+     credentials :llama.cpp
+     (lambda (old)
+       (declare (ignore old))
+       (cadr-ai:make-api-key-credential
+        :provider :llama.cpp
+        :key "secret"
+        :environment
+        '(("LLAMA_BASE_URL" . "http://router.test")))))
+    (cadr-ai:models-runtime-set-provider
+     runtime
+     (cadr-cli::llama-provider-controller-provider
+      (cadr-cli::make-llama-provider-controller)))
+    (cadr-ai:models-runtime-refresh
+     runtime :abort-p (lambda () abort))
+    (is (null
+         (cadr-ai:models-runtime-models runtime :llama.cpp)))
+    (is (not
+         (find-if
+          (lambda (url) (search "model=second" url))
+          urls)))))
 
 (test hugging-face-client-groups-gguf-quantizations-and-gated-metadata
   (let* ((requests nil)
