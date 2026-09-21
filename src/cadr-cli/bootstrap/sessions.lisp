@@ -1980,9 +1980,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                  :schema-version +bug-report-schema-version+
                  :id id
                  :created-at (cadr-core:current-utc-iso8601)
-                 :hint (and argument
-                            (plusp (length argument))
-                            argument)
+                 :hint (bug-report-description argument)
                  :environment
                  (bug-report-collect-environment)
                  :session
