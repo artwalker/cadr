@@ -199,6 +199,14 @@ second" (cadr-ai:content-text content)))
      :usage (cadr-ai:make-usage :input 1000 :output 4096))
     200000)))
 
+(test zai-prompt-too-long-is-context-overflow
+  (is-true
+   (cadr-ai:context-overflow-p
+    (utility-error-message "Prompt too long")))
+  (is-true
+   (cadr-ai:context-overflow-p
+    (utility-error-message "prompt is too long"))))
+
 (test grammar-input-json-deltas-are-append-only
   (let ((buffer (cadr-ai:make-grammar-json-buffer)))
     (let ((first
