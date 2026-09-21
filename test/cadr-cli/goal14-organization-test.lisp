@@ -1451,7 +1451,10 @@
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
               ;; +40 Goal 24: transcript-backed system-message replay exports.
-              "455239c7099c028683a575050074d50da30cb9749b1ab74ae456945f5af52b44"
+              ;; +3 Goal 24: ensure-transcript-context /
+              ;; transcript-context-as-request-context /
+              ;; coerce-provider-request-context.
+              "d514409179bd223d2fea40fd2627ec211572484d327135ef4b2c3a83d2da57ab"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

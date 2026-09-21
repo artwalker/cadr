@@ -640,7 +640,8 @@ string. Returns the buffer to store back. Per-delta
   (handler-case
       (progn
         (check-abort abort-p)
-        (let* ((request (build-request provider model context
+        (let* ((transcript (ensure-transcript-context context))
+               (request (build-request provider model transcript
                                        :stream-p nil
                                        :max-tokens max-tokens
                                        :temperature temperature
@@ -704,7 +705,8 @@ string. Returns the buffer to store back. Per-delta
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
-  (let* ((message (empty-assistant-message model reasoning))
+  (let* ((transcript (ensure-transcript-context context))
+         (message (empty-assistant-message model reasoning))
          (state (make-provider-stream-state :message message))
          (saw-provider-event-p nil)
          (response-request-id nil)
@@ -714,7 +716,7 @@ string. Returns the buffer to store back. Per-delta
     (handler-case
         (progn
           (check-abort abort-p)
-          (let ((request (build-request provider model context
+          (let ((request (build-request provider model transcript
                                         :stream-p t
                                         :max-tokens max-tokens
                                         :temperature temperature
@@ -729,7 +731,7 @@ string. Returns the buffer to store back. Per-delta
              on-payload transform-headers)
             (multiple-value-bind (handled-p websocket-message)
                 (try-provider-websocket-stream
-                 provider model context request state on-event
+                 provider model transcript request state on-event
                  :transport transport
                  :session-id session-id
                  :abort-p abort-p

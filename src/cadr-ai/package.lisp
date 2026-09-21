@@ -139,6 +139,9 @@
    #:transcript-tools-anchors-additions
    #:create-initial-system-message
    #:normalize-context
+   #:ensure-transcript-context
+   #:transcript-context-as-request-context
+   #:coerce-provider-request-context
    #:get-initial-system-message
    #:without-initial-system-message
    #:get-current-tools
