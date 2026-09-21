@@ -87,6 +87,8 @@
   working-indicator-interval-ms
   hidden-thinking-label
   (hide-thinking-block-p nil :type boolean)
+  (show-cache-miss-notices-p nil :type boolean)
+  (last-thinking-drop-count 0 :type (integer 0 *))
   status-message
   (mermaid-mode "streaming" :type string)
   (code-block-indent "  " :type string))
@@ -101,6 +103,7 @@
        startup-expanded-lines
        session messages
        hide-thinking-block-p
+       show-cache-miss-notices-p
        (auto-compact-p t)
        (context-window 0)
        (mermaid-mode "streaming")
@@ -128,6 +131,8 @@
            (not (null auto-compact-p))
            :hide-thinking-block-p
            (not (null hide-thinking-block-p))
+           :show-cache-miss-notices-p
+           (not (null show-cache-miss-notices-p))
            :mermaid-mode
            (or mermaid-mode "streaming")
            :code-block-indent

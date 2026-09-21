@@ -760,6 +760,12 @@
               (tui-entry-streaming-p entry)
               nil))))
          (accumulate-message-usage state message)
+         (unless
+             (member
+              (cadr-ai:assistant-message-stop-reason message)
+              '(:error :aborted)
+              :test #'eq)
+           (maybe-show-thinking-drop-notice state message))
          (setf
           (tui-state-current-assistant state)
           nil)))

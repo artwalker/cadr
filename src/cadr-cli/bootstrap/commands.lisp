@@ -2656,6 +2656,10 @@
              (if model
                  (cadr-ai:model-context-window model)
                  0))
+           :show-cache-miss-notices-p
+           (settings-boolean-value
+            settings-manager
+            "showCacheMissNotices" nil)
            :session
            (and
             (cadr-agent:agent-session agent)

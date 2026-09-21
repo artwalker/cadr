@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc files=299 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=152 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc files=300 lines=128919 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=153 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -21,11 +21,11 @@ owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 299 current files.
+goal is supposed to police, so this ledger covers all 300 current files.
 
 - 293 Lisp files, 121,105 lines, 4,976 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 299 production files and 125,380 physical lines in total.
+- 300 production files and 125,432 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `pass` means one predictable responsibility; `pass · large` means the same but
@@ -220,6 +220,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/interactive/transcript.lisp` | 1,070 | 30 | Project every session entry and assistant/user/custom transcript component. | pass · large | done | wrap-transcript-lines. I0: one OSC-133 splice. | 20 |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | 24 | Project agent tool calls/results and reduce agent events into TUI state. | pass · large | done | kebab-keyword-to-camel. I0: one key mapping. | 20 |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | 36 | Own append, replacement, invalidation, and status-entry mutation. | pass | done | +startup-expanded-help+. I0: text and style one table. | 20 |
+| `src/cadr-cli/interactive/thinking-drop-notice.lisp` | 52 | 4 | Emit short Anthropic thinking-drop transcript warnings with dedupe. | pass | done | count/gate/text. I0: one notice decision. | 20 |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | 3 | Render and restore queued steering and follow-up input. | pass | no-rewrite | Most TS-like: twin mapcar blocks at 44-49 and 50-55 differing only in the "Steering:"/"Follow-up:" label, but the shared decision is already factored once into the flet pending-line (37-41) and the two literals are baseline-mandated copy over two distinct state queues, so a data table would only relocate literals; typecase (4-9) and format ~{~A~^...~} (15) are idiomatic. | 20 |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | 3 | Compose transcript, status, widgets, overlays, editor, and footer into one frame. | pass | no-rewrite | Most TS-like: the 13-branch hand-rolled type dispatch at 4-35, but its t-fallback (35) is load-bearing — plain select-list overlays (built at controller.lisp:1577-1583, e.g. the /model fallback) render through it — branch signatures are heterogeneous (:now passed only at 32-33), and cond→typecase/defgeneric over the same defstruct predicates adds no machine-checked invariant, failing the project's own checkable-benefit test. | 20 |
 | `src/cadr-cli/interactive/extension-ui.lisp` | 756 | 35 | Bridge extension UI requests and custom components into the live TUI. | pass | done | extension-dialog-chrome. I0: one border/title/footer. | 20 |
@@ -439,14 +440,14 @@ unified requirements 7–9.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 28 | 13 | 0 | 0 | 41 |
 | `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
-| `cadr-cli` | 90 | 27 | 0 | 0 | 117 |
+| `cadr-cli` | 90 | 28 | 0 | 0 | 118 |
 | `cadr-core` | 7 | 0 | 0 | 0 | 7 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 30 | 19 | 0 | 0 | 49 |
-| **Total** | **215** | **85** | **0** | **0** | **299** |
+| **Total** | **215** | **86** | **0** | **0** | **300** |
 
 No production file remains in `should split` or `should merge`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This
@@ -461,7 +462,7 @@ the tests reject a missing owner or a surviving mixed file.
 | `cadr-tui` | 0 | 0 | +0 |
 | **Total** | **0** | **0** | **+0** |
 
-At current boundaries the physical distribution is 166 files below 300 lines,
+At current boundaries the physical distribution is 167 files below 300 lines,
 81 at 300–699, 28 at 700–999, and 23 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000. Average file
 size is now 420.0 lines and the under-300 share is about 55.7%. The modest

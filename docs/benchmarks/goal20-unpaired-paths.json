@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 299,
-    "lines": 137863
+    "files": 300,
+    "lines": 137972
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -1674,6 +1674,13 @@
       "metrics": [
         "goal11.mouse_drag",
         "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/thinking-drop-notice.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
         "goal11.continuous_alt_input"
       ]
     },

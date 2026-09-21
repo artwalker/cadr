@@ -144,6 +144,7 @@
                               :serial t
                               :components ((:file "state")
                                            (:file "entries")
+                                           (:file "thinking-drop-notice")
                                            (:file "status")
                                            (:file "extension-ui")
                                            (:file "user-bash")
@@ -211,6 +212,7 @@
                              (:file "goal28-cli-flags-test")
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
+                             (:file "goal24-thinking-drop-notice-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")

@@ -7,6 +7,12 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Fixed
+
+- Goal 24: show a short transcript warning when Anthropic drops thinking
+  blocks via `input_transformations`, gated by `showCacheMissNotices`
+  (upstream 9391).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

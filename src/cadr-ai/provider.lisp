@@ -244,7 +244,22 @@ completed assistant message."))
   (partial-json (make-hash-table) :type hash-table)
   (terminal-p nil :type boolean)
   (current-block-index nil :type (or null (integer 0 *)))
-  (json-scratch nil :type (or null json-parse-scratch)))
+  (json-scratch nil :type (or null json-parse-scratch))
+  (input-transformations nil :type list))
+
+(defun append-anthropic-input-transformations-diagnostic
+    (message transformations)
+  (when transformations
+    (setf
+     (assistant-message-diagnostics message)
+     (append
+      (assistant-message-diagnostics message)
+      (list
+       (make-assistant-message-diagnostic
+        :type :anthropic-input-transformations
+        :details
+        (list :transformations transformations))))))
+  message)
 
 (defun nappend-string (buffer chunk)
   "Append CHUNK onto BUFFER in amortized linear time.
