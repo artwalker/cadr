@@ -71,6 +71,9 @@
   (widgets-above nil :type list)
   (widgets-below nil :type list)
   (tools-expanded-p nil :type boolean)
+  ;; Line ranges from the last paint, in full-frame coordinates.
+  ;; Each item is (entry start end) for a left-click toggle.
+  (summary-click-ranges nil :type list)
   header-component
   footer-component
   (working-visible-p t :type boolean)

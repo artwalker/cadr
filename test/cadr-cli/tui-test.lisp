@@ -5904,3 +5904,60 @@
              (when (and answer warning)
                (is (< answer warning)))))
       (cadr-tui:set-keybindings previous))))
+
+(test goal24-summary-entries-toggle-on-left-click
+  ;; pi@ecac0a9c4 MouseRegion: left click expands and collapses a
+  ;; compaction summary, branch summary, or skill invocation.
+  (let* ((compaction
+           (cadr-cli::make-tui-entry
+            :type :compaction-summary
+            :text "compaction details"
+            :tokens-before 1234))
+         (branch
+           (cadr-cli::make-tui-entry
+            :type :branch-summary
+            :text "branch details"))
+         (skill
+           (cadr-cli::make-tui-entry
+            :type :skill-invocation
+            :text "skill details"
+            :label "example-skill"))
+         (state (cadr-cli::make-tui-state :model "mock"))
+         (editor (cadr-tui:make-multiline-editor))
+         (click (list :type :click :button :left))
+         (right (list :type :click :button :right)))
+    (dolist (entry (list compaction branch skill))
+      (cadr-cli::append-tui-entry state entry))
+    (cadr-cli::render-tui-state state editor 80 24)
+    (dolist (entry (list compaction branch skill))
+      (let ((range
+              (find entry
+                    (cadr-cli::tui-state-summary-click-ranges state)
+                    :key #'first)))
+        (is (not (null range)))
+        (is (not (cadr-cli::tui-entry-expanded-p entry)))
+        (is (not (search
+                  (cadr-cli::tui-entry-text entry)
+                  (format nil "~{~A~^~%~}"
+                          (cadr-cli::render-tui-entry entry 80)))))
+        (is (null
+             (cadr-cli::transcript-summary-click
+              state right (second range))))
+        (is (not (cadr-cli::tui-entry-expanded-p entry)))
+        (is (cadr-cli::transcript-summary-click
+             state click (second range)))
+        (is (cadr-cli::tui-entry-expanded-p entry))
+        (is (search
+             (cadr-cli::tui-entry-text entry)
+             (format nil "~{~A~^~%~}"
+                     (cadr-cli::render-tui-entry entry 80))))
+        (cadr-cli::render-tui-state state editor 80 24)
+        (let ((again
+                (find entry
+                      (cadr-cli::tui-state-summary-click-ranges state)
+                      :key #'first)))
+          (is (cadr-cli::transcript-summary-click
+               state click (second again))))
+        (is (not (cadr-cli::tui-entry-expanded-p entry)))))
+    (is (null
+         (cadr-cli::transcript-summary-click state click -1)))))
