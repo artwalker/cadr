@@ -178,10 +178,11 @@
   (model-compat-value
    model :supports-strict-mode
    (not
-    (member (model-provider model)
-            '(:minimax :minimax-cn :moonshotai :moonshotai-cn
-              :together)
-            :test #'eq))))
+    (or (member (model-provider model)
+                '(:minimax :minimax-cn :moonshotai :moonshotai-cn
+                  :together :cerebras)
+                :test #'eq)
+        (search "cerebras.ai" (or (model-base-url model) ""))))))
 
 (defun openai-chat-tools (model tools)
   (list-json-array

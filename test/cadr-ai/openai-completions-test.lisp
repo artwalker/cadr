@@ -428,3 +428,31 @@
            (cadr-ai::json-object "reasoning" "plain"))
         (is (string= "plain" text))
         (is (string= "reasoning" signature))))))
+
+(test goal24-cerebras-omits-tool-strict
+  (let* ((model
+           (cadr-ai:make-model
+            :id "gpt-oss-120b"
+            :provider :cerebras
+            :api :openai-completions
+            :base-url "https://api.cerebras.ai/v1"
+            :max-tokens 4096
+            :supports-tools-p t))
+         (tools
+           (list
+            (cadr-ai:make-tool
+             :name "t1"
+             :description "strict tool"
+             :parameters (sample-schema)
+             :constrained-sampling
+             '(:type :json-schema :strict :prefer))
+            (cadr-ai:make-tool
+             :name "t2"
+             :description "non-strict tool"
+             :parameters (sample-schema))))
+         (payload-tools
+           (cadr-ai::openai-chat-tools model tools)))
+    (is (= 2 (length payload-tools)))
+    (loop for tool across payload-tools
+          for function = (cadr-ai::json-get tool "function")
+          do (is (not (cadr-ai::json-present-p function "strict"))))))
