@@ -2473,6 +2473,24 @@
                             name)))))
            :session-state-function
            #'current-session-display-state
+           :show-cache-miss-notices-function
+           (lambda ()
+             (settings-boolean-value
+              settings-manager
+              "showCacheMissNotices" nil))
+           :session-entries-function
+           (lambda ()
+             (let ((session
+                     (cadr-agent:agent-session agent)))
+               (and session
+                    (cadr-agent:session-entries session))))
+           :model-price-function
+           (lambda (provider model-id)
+             (handler-case
+                 (cadr-ai:model-metadata-cache-read-price
+                  (cadr-ai:find-model-metadata
+                   provider model-id))
+               (cadr-ai:configuration-error () 0d0)))
            :debug-messages-function
            (lambda ()
              (with-output-to-string (out)
