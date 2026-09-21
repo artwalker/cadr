@@ -19,7 +19,7 @@
     "too large for model with"
     "configured context size"
     "model_context_window_exceeded"
-    "prompt too long; exceeded"
+    "prompt too long"
     "range of input length should be"
     "context_length_exceeded"
     "context length exceeded"

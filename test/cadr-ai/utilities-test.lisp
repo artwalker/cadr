@@ -163,6 +163,7 @@ second" (cadr-ai:content-text content)))
   (dolist
       (text
        '("400 `prompt too long; exceeded max context length by 100918 tokens`"
+         "400 {\"code\":\"1261\",\"message\":\"Prompt too long\"}"
          "400 The input (516368 tokens) is longer than the model's context length (262144 tokens)."
          "Requested token count exceeds the model's maximum context length of 131072 tokens."
          "Input length (265330) exceeds model's maximum context length (262144)."
