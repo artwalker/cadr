@@ -758,7 +758,12 @@
                  message))
              (setf
               (tui-entry-streaming-p entry)
-              nil))))
+              nil)
+             (let ((hint (bug-report-hint message)))
+               (when (and (not (tui-state-bug-report-hint-shown-p state))
+                          (stringp hint))
+                 (add-tui-notice state hint)
+                 (setf (tui-state-bug-report-hint-shown-p state) t))))))
          (accumulate-message-usage state message)
          (setf
           (tui-state-current-assistant state)

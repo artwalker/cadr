@@ -163,3 +163,63 @@ stack trace")
             (cadr-cli::bug-report-hint
              (message "Unexpected internal state"))))
       (is (and (stringp hint) (search "/bug" hint))))))
+
+(test bug-report-hint-shows-once-on-message-end
+  (labels ((message (text)
+             (cadr-ai:make-assistant-message
+              :api :faux
+              :provider :faux
+              :model "faux-1"
+              :stop-reason :error
+              :error-message text))
+           (end (state text)
+             (cadr-cli::tui-handle-agent-event
+              state
+              (cadr-agent::make-agent-event
+               :type :message-end
+               :message (message text))))
+           (turn (state text)
+             (let ((msg (message text)))
+               (cadr-cli::tui-handle-agent-event
+                state
+                (cadr-agent::make-agent-event
+                 :type :message-start
+                 :message msg))
+               (cadr-cli::tui-handle-agent-event
+                state
+                (cadr-agent::make-agent-event
+                 :type :message-end
+                 :message msg))))
+           (bug-notices (state)
+             (remove-if-not
+              (lambda (entry)
+                (and (eq :notice
+                         (cadr-cli::tui-entry-type entry))
+                     (search "/bug"
+                             (cadr-cli::tui-entry-text entry))))
+              (cadr-cli::tui-state-entries state))))
+    (let ((state (cadr-cli::make-tui-state)))
+      (end state "Unexpected internal state")
+      (is (null (bug-notices state)))
+      (is (null
+           (cadr-cli::tui-state-bug-report-hint-shown-p state))))
+    (let ((state (cadr-cli::make-tui-state)))
+      (turn state "Unexpected internal state")
+      (is (= 1 (length (bug-notices state))))
+      (is (eq t
+              (cadr-cli::tui-state-bug-report-hint-shown-p state)))
+      (turn state "Unexpected internal state")
+      (is (= 1 (length (bug-notices state)))))
+    (dolist (text '("Request cancelled"
+                    "503 Service Unavailable"))
+      (let ((state (cadr-cli::make-tui-state)))
+        (turn state text)
+        (is (null (bug-notices state)))
+        (is (null
+             (cadr-cli::tui-state-bug-report-hint-shown-p state)))))
+    (let ((state (cadr-cli::make-tui-state)))
+      (turn state "Request cancelled")
+      (turn state "Unexpected internal state")
+      (is (= 1 (length (bug-notices state))))
+      (is (eq t
+              (cadr-cli::tui-state-bug-report-hint-shown-p state))))))

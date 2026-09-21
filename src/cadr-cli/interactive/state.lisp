@@ -89,7 +89,8 @@
   (hide-thinking-block-p nil :type boolean)
   status-message
   (mermaid-mode "streaming" :type string)
-  (code-block-indent "  " :type string))
+  (code-block-indent "  " :type string)
+  (bug-report-hint-shown-p nil :type boolean))
 
 (defun make-tui-state
     (&key model provider thinking cwd branch
