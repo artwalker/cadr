@@ -50,7 +50,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `compat.allowedFallbackModels` | https://github.com/artwalker/cadr/pull/759 、https://github.com/artwalker/cadr/pull/766 。自定义模型请求名单；内置 `modelOverrides` 替换目录字段 |
 | `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | https://github.com/artwalker/cadr/pull/758 |
 | `user_bash` 失败即停。`undefined` 才继续传播 | https://github.com/artwalker/cadr/pull/757 |
-| 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界。structs / `normalize-context` 已在 https://github.com/artwalker/cadr/pull/774 |
+| 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | https://github.com/artwalker/cadr/pull/777 （structs / normalize 见 https://github.com/artwalker/cadr/pull/774）。wire 适配器暂经 `coerce-provider-request-context` 投影 |
 | `ToolCall.arguments` 与 `ToolResultMessage.details` 限 JSON 值 | https://github.com/artwalker/cadr/pull/772 |
 | 压缩、分支摘要、重试的 spinner 进入编辑器边框 | https://github.com/artwalker/cadr/pull/767 |
 | 内置 `read` / `bash` / `powershell` / `edit` / `write` 默认 strict-prefer JSON schema。扩展可关 | https://github.com/artwalker/cadr/pull/760 |
