@@ -8,16 +8,16 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=299 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=300 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 299 Lisp files.  The form inventory below is
+The audited tree contains 300 Lisp files.  The form inventory below is
 syntactic evidence, not a quality score.  Line totals below are the last
 measured audit snapshot; only the file counts are suite-locked.
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `cadr-core` | 7 | 471 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 62 | 26,375 | 46 | 13 | 6 | 34 | 1 | 66 | 2 | 0 |
+| `cadr-ai` | 63 | 30,221 | 46 | 13 | 6 | 34 | 1 | 66 | 2 | 0 |
 | `cadr-agent` | 37 | 16,281 | 49 | 7 | 23 | 35 | 15 | 54 | 3 | 1 |
 | `cadr-cli` | 117 | 48,671 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
 | `cadr-tui` | 50 | 23,711 | 40 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
@@ -138,6 +138,7 @@ as permanent:
 |---|---|---|
 | `src/cadr-ai/crash.lisp` | shared pre-unwind fatal boundary, exact redaction and private crash log | keep the `handler-bind` boundary and redacted `print-object` methods; both directly encode the failure-site and secrecy invariants |
 | `src/cadr-ai/{capabilities,transport,runtime,support}/*.lisp` | separate streaming/grammar/image capabilities, native transports, model/faux runtime, and closed support policies into exact owners | keep the existing value functions, stream protocol, and B3 compatibility delegates; B10 changed ownership only and introduced no new dispatch surface |
+| `src/cadr-ai/support/transcript.lisp` | give transcript-backed system-message replay and tool-declaration helpers one owner | keep pure structs plus ordered section alists; no polymorphic protocol |
 | `src/cadr-ai/{auth,oauth,providers}/*.lisp` | give every provider protocol, authentication mechanism, OAuth flow, declaration table, registry, and runtime projection one exact owner | keep external wire/tag dispatch explicit; B11 centralizes all static provider fields and callback identities in one validated declaration while leaving protocol implementations as cohesive native functions |
 | `src/cadr-cli/crash.lisp` | apply the shared boundary to CLI entrypoints | keep as a thin boundary adapter; no owned polymorphic protocol exists |
 | `src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp` | give each interactive leaf service one exact output or data owner before selector convergence | keep the plain closed state/value functions; the extraction adds no polymorphic protocol and leaves selectors together until `selector-frame` owns their shared behavior |

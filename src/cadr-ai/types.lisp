@@ -156,14 +156,36 @@
   (name "" :type string)
   (description "" :type string)
   (parameters (make-hash-table :test #'equal) :type hash-table)
-  (constrained-sampling nil :type list)
+  ;; nil = absent; :false = JSON false; cons = sampling config plist.
+  (constrained-sampling nil :type (or null cons (member :false)))
   (execution-mode :parallel :type symbol)
   (executor nil :type (or null function)))
+
+(defstruct tool-reference
+  (name "" :type string))
+
+(defstruct system-message
+  (content "" :type (or string list vector))
+  (sections nil :type list)
+  (tools-added nil :type list)
+  (tools-removed nil :type list)
+  (timestamp 0 :type integer))
 
 (defstruct context
   (system-prompt nil :type (or null string))
   (messages nil :type list)
   (tools nil :type list))
+
+(defstruct transcript-context
+  (messages nil :type list))
+
+(defstruct tool-state-changes
+  (tools-added nil :type list)
+  (tools-removed nil :type list))
+
+(defstruct transcript-tools
+  (request-tools nil :type list)
+  (anchors-additions nil :type boolean))
 
 (defstruct image-model
   (id "" :type string)
