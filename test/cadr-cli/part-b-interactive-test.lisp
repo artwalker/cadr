@@ -2445,8 +2445,11 @@ user question"
             (first lines))))
       (is (string= "" (second plain)))
       (is (string= ""
-                   (nth (- (length plain) 2)
+                   (nth (- (length plain) 3)
                         plain)))
+      (is (search
+           "to set as default"
+           (nth (- (length plain) 2) plain)))
       (is (search
            (format nil "~C[38;2;138;190;183m"
                    #\Escape)
