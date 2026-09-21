@@ -50,6 +50,9 @@
    #:tool-call-arguments
    #:tool-call-thought-signature
    #:tool-call-namespace
+   #:json-value-p
+   #:ensure-json-value
+   #:coerce-json-value
    #:cost
    #:make-cost
    #:cost-input

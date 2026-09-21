@@ -64,6 +64,8 @@
 (defstruct tool-call
   (id "" :type string)
   (name "" :type string)
+  ;; JsonObject at the wire boundary (ensure-json-value / session encode).
+  ;; In-memory callers may still use keyword plists for getf.
   (arguments (make-hash-table :test #'equal))
   (thought-signature nil :type (or null string))
   ;; OpenAI Responses namespace for calls to dynamically loaded or
@@ -147,6 +149,7 @@
   (tool-call-id "" :type string)
   (tool-name "" :type string)
   (content nil :type list)
+  ;; JsonValue | nil at the wire boundary. In-memory may use plists.
   details
   (added-tool-names nil :type list)
   (is-error nil :type boolean)

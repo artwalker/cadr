@@ -1445,7 +1445,10 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +3 Goal 24: #:json-value-p #:ensure-json-value
+              ;; #:coerce-json-value (ToolCall.arguments /
+              ;; ToolResultMessage.details JsonValue boundary).
+              "6aa9b64bc065a35941c0257d2e4804d099261662b4ea0f069039c4387304f12b"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
