@@ -7,6 +7,9 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Fixed Mistral-hosted GLM-5.2 (`zai-glm-5-2`) sending `reasoning_effort`
+  instead of ignored `prompt_mode` (#9375).
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

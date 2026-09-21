@@ -5,7 +5,8 @@
    (model-id model)
    '("mistral-small-2603"
      "mistral-small-latest"
-     "mistral-medium-3.5")
+     "mistral-medium-3.5"
+     "zai-glm-5-2")
    :test #'string=))
 
 (defun derive-mistral-tool-call-id (id attempt)
