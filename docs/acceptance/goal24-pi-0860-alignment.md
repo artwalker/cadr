@@ -44,7 +44,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | `/bug`。脱敏诊断、可选转录或 ZIP、Radius 上传或导出、`pi.bug-report` 条目、崩溃公告 | partial：注册 + 脱敏 + 本地 ZIP（FiveAM）。Consent / Radius / 崩溃公告仍 open |
 | 转录保留中途 system prompt 与 tool 变更（`before_agent_start`） | session 条目与恢复 |
 | 离线 Radius 模型目录。缓存与在线目录可叠加。默认 `balanced` | catalog |
-| 按模型的 `reserveTokens` / `keepRecentTokens`（`compaction.modelOverrides`） | compaction 设置 |
+| 按模型的 `reserveTokens` / `keepRecentTokens`（`compaction.modelOverrides`） | https://github.com/artwalker/cadr/pull/765 |
 | 分支摘要、压缩摘要、skill 调用条目的点击折叠 | TUI |
 | `ctx.modelRegistry.stream()` / `streamSimple()` | extension API |
 | `compat.allowedFallbackModels` | https://github.com/artwalker/cadr/pull/759 。自定义模型会把名单放进请求。内置模型的 `modelOverrides` 替换仍 open |
