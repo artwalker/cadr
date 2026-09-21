@@ -289,6 +289,9 @@ interactive-mode.ts:5956-5960).")
        set-theme-function
        preview-theme-function
        session-state-function
+       show-cache-miss-notices-function
+       session-entries-function
+       model-price-function
        debug-messages-function
        busy-input-function
        follow-up-input-function
@@ -1513,10 +1516,22 @@ interactive-mode.ts:5956-5960).")
                       compaction-summary
                       :compaction-tokens-before
                       compaction-tokens-before
+                      :show-cache-miss-notices-function
+                      show-cache-miss-notices-function
+                      :session-entries-function
+                      session-entries-function
+                      :model-price-function
+                      model-price-function
                       :clock-function clock-function))
                    (tui-handle-agent-event
                     state event
                     :extension-host extension-host
+                    :show-cache-miss-notices-function
+                    show-cache-miss-notices-function
+                    :session-entries-function
+                    session-entries-function
+                    :model-price-function
+                    model-price-function
                     :clock-function clock-function)))
              ;; MESSAGE-END is emitted before Cadr persists the final
              ;; assistant message.  Preserve the event-local usage until the

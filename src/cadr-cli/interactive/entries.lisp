@@ -136,12 +136,42 @@
   ;; as baseline status text, but must not coalesce adjacent lines.
   (add-tui-message-entry state :notice text))
 
+(defun add-cache-miss-notice (state miss)
+  "Pi addCacheMissNotice: warning-styled transcript notice (not persisted)."
+  (when (and miss (cache-miss-notice-significant-p miss))
+    (add-tui-notice
+     state
+     (cadr-tui:theme-foreground
+      :warning
+      (format-cache-miss-notice-text miss)
+      :enabled-p t)))
+  state)
+
+(defun maybe-show-cache-miss-notice
+    (state message
+     &key show-p session-entries model-price-function)
+  "Pi maybeShowCacheMissNotice on assistant message-end."
+  (when
+      (and
+       show-p
+       (typep message 'cadr-ai:assistant-message)
+       (not
+        (member
+         (cadr-ai:assistant-message-stop-reason message)
+         '(:aborted :error))))
+    (add-cache-miss-notice
+     state
+     (detect-cache-miss-from-entries
+      (or session-entries '())
+      message
+      :model-price-function model-price-function)))
+  state)
+
 (defun add-tui-error (state text)
   (add-tui-message-entry state :error text))
 
 (defun add-tui-warning (state text)
   (add-tui-message-entry state :warning text))
-
 (defun add-tui-project-trust-warning (state text)
   (add-tui-message-entry state :project-trust-warning text))
 

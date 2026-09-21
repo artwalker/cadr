@@ -1,5 +1,8 @@
 (in-package #:cadr-cli)
 
+;;; Anthropic default prompt-cache TTL (pi CACHE_TTL_MS).
+(defparameter +cache-ttl-ms+ (* 5 60 1000))
+
 (defstruct cache-miss
   (missed-tokens 0 :type (integer 0 *))
   (missed-cost 0d0 :type double-float)
@@ -141,6 +144,74 @@
                 (cadr-ai:assistant-message-model
                  current-message))))
              :message current-message)))))))
+
+(defun detect-cache-miss-from-entries
+    (entries message &key model-price-function)
+  "Pi detectCacheMiss(entries, message, models). ENTRIES must not yet
+contain MESSAGE (message-end fires before persistence)."
+  (let ((previous nil)
+        (any-reported-cache-p nil))
+    (dolist (item entries)
+      (cond
+        ((or
+          (member item '(:compaction :branch-summary))
+          (and
+           (typep item 'cadr-agent:session-entry)
+           (member
+            (cadr-agent:session-entry-type item)
+            '(:compaction :branch-summary))))
+         (setf previous nil
+               any-reported-cache-p nil))
+        (t
+         (let ((prior
+                 (if (typep item 'cadr-agent:session-entry)
+                     (cadr-agent:session-entry-message item)
+                     item)))
+           (when (typep prior 'cadr-ai:assistant-message)
+             (setf any-reported-cache-p
+                   (or any-reported-cache-p
+                       (assistant-reported-cache-p prior))
+                   previous prior))))))
+    (detect-cache-miss
+     nil message
+     :previous previous
+     :any-reported-cache-p any-reported-cache-p
+     :model-price-function model-price-function)))
+
+(defun cache-miss-notice-significant-p (miss)
+  "Pi addCacheMissNotice threshold: show unless both below floor."
+  (not
+   (and
+    (< (cache-miss-missed-tokens miss) 20000)
+    (< (cache-miss-missed-cost miss) 0.1d0))))
+
+(defun format-cache-miss-notice-text (miss)
+  (let* ((cost (cache-miss-missed-cost miss))
+         (cost-suffix
+           (if (>= cost 0.01d0)
+               (format nil " (~~$~,2F)" cost)
+               ""))
+         (re-billed
+           (format
+            nil
+            "~A tokens re-billed~A"
+            (cadr-tui::format-footer-tokens
+             (cache-miss-missed-tokens miss))
+            cost-suffix))
+         (label
+           (cond
+             ((cache-miss-model-changed-p miss)
+              "Cache miss after model switch")
+             ((>= (cache-miss-idle-milliseconds miss)
+                  +cache-ttl-ms+)
+              (format
+               nil
+               "Cache miss after ~Dm idle"
+               (round
+                (/ (cache-miss-idle-milliseconds miss)
+                   60000))))
+             (t "Cache miss"))))
+    (format nil "~A: ~A" label re-billed)))
 
 (defun compute-cache-waste
     (items &key model-price-function)
