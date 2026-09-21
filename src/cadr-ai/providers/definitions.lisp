@@ -712,7 +712,7 @@
      :protocols (:pi-messages)
      :base-url "https://radius.pi.dev"
      :auth-types (:api-key :oauth)
-     :default-model "auto"
+     :default-model "balanced"
      :key-environment "RADIUS_API_KEY"
      :required-environment nil
      :dynamic-models-p t
