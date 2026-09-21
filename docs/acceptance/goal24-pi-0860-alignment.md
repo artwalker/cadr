@@ -47,7 +47,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 | 按模型的 `reserveTokens` / `keepRecentTokens`（`compaction.modelOverrides`） | https://github.com/artwalker/cadr/pull/765 |
 | 分支摘要、压缩摘要、skill 调用条目的点击折叠 | TUI |
 | `ctx.modelRegistry.stream()` / `streamSimple()` | extension API |
-| `compat.allowedFallbackModels` | https://github.com/artwalker/cadr/pull/759 。自定义模型会把名单放进请求。内置模型的 `modelOverrides` 替换仍 open |
+| `compat.allowedFallbackModels` | https://github.com/artwalker/cadr/pull/759 、https://github.com/artwalker/cadr/pull/766 。自定义模型请求名单；内置 `modelOverrides` 替换目录字段 |
 | `pi.on()` 返回取消订阅。派发中增删的处理器作用于下一次派发 | https://github.com/artwalker/cadr/pull/758 |
 | `user_bash` 失败即停。`undefined` 才继续传播 | https://github.com/artwalker/cadr/pull/757 |
 | 自定义 provider 的流输入从 `Context` 改为 `TranscriptContext` | provider 边界 |
