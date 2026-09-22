@@ -428,3 +428,38 @@
            (cadr-ai::json-object "reasoning" "plain"))
         (is (string= "plain" text))
         (is (string= "reasoning" signature))))))
+
+(test unknown-openai-completions-endpoint-is-not-strict
+  (let ((unknown
+          (cadr-ai:make-model
+           :id "local-model"
+           :provider :local-compat
+           :api :openai-completions
+           :base-url "http://127.0.0.1:9/v1"
+           :max-tokens 1024))
+        (builtin
+          (cadr-ai:make-model
+           :id "deepseek-v4-flash"
+           :provider :deepseek
+           :api :openai-completions
+           :base-url "https://api.deepseek.com"
+           :max-tokens 1024))
+        (advertised
+          (cadr-ai:make-model
+           :id "local-model"
+           :provider :local-compat
+           :api :openai-completions
+           :base-url "http://127.0.0.1:9/v1"
+           :max-tokens 1024
+           :compat '(:supports-strict-mode t)))
+        (cerebras
+          (cadr-ai:make-model
+           :id "llama"
+           :provider :cerebras
+           :api :openai-completions
+           :base-url "https://api.cerebras.ai"
+           :max-tokens 1024)))
+    (is (null (cadr-ai::completions-strict-mode-p unknown)))
+    (is (eq t (cadr-ai::completions-strict-mode-p builtin)))
+    (is (eq t (cadr-ai::completions-strict-mode-p advertised)))
+    (is (null (cadr-ai::completions-strict-mode-p cerebras)))))
