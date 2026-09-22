@@ -364,6 +364,7 @@
     :before-agent-start
     :agent-start
     :agent-end
+    :agent-before-settle
     :agent-settled
     :message-start
     :message-update

@@ -186,29 +186,212 @@
     (begin-agent-turn-message
      agent turn-index message)))
 
+(defun agent-activity-outcome (message)
+  (cond
+    ((and
+      (typep message 'cadr-ai:assistant-message)
+      (eq :aborted
+          (cadr-ai:assistant-message-stop-reason message)))
+     :aborted)
+    ((and
+      (typep message 'cadr-ai:assistant-message)
+      (eq :error
+          (cadr-ai:assistant-message-stop-reason message)))
+     :error)
+    (t :completed)))
+
+(defun allocate-boundary-entry-ids (session count)
+  (let ((seen (make-hash-table :test #'equal)))
+    (loop repeat count
+          collect
+          (loop
+            for id = (make-session-entry-id
+                      (session-by-id session))
+            unless (gethash id seen)
+              do (setf (gethash id seen) t)
+              and return id))))
+
+(defun agent-has-queued-messages-p (agent)
+  (or (agent-steering-queue agent)
+      (agent-follow-up-queue agent)
+      (agent-next-turn-queue agent)))
+
+(defun boundary-message-role (message)
+  (cond
+    ((typep message 'cadr-ai:user-message) :user)
+    ((typep message 'cadr-ai:assistant-message) :assistant)
+    ((typep message 'cadr-ai:tool-result-message) :tool-result)
+    (t nil)))
+
+(defun boundary-can-continue-p (agent boundary)
+  (let* ((messages (agent-messages agent))
+         (last (car (last messages)))
+         (role (and last (boundary-message-role last)))
+         (context-can-continue-p
+           (and messages (not (eq role :assistant))))
+         (queued-p (agent-has-queued-messages-p agent)))
+    (or context-can-continue-p
+        (if (eq boundary :turn-end)
+            queued-p
+            (and (eq role :assistant) queued-p)))))
+
+(defun report-invalid-boundary-continuation (agent event)
+  (let ((host (agent-extension-host agent)))
+    (when host
+      (funcall
+       (extension-host-notify-function host)
+       (format nil
+               "~A requested continuation without runnable model context"
+               event)
+       :error))))
+
+(defun apply-boundary-drafts (agent drafts)
+  (when drafts
+    (let ((session (agent-session agent)))
+      (unless session
+        (session-failure
+         nil nil
+         "Boundary entries require a session"))
+      (dolist (draft drafts)
+        (ecase (getf draft :type)
+          (:custom
+           (session-append-custom
+            session
+            (getf draft :custom-type)
+            (getf draft :data)))
+          (:custom-message
+           (session-append-custom-message
+            session
+            (getf draft :custom-type)
+            (getf draft :content)
+            :details (getf draft :details)
+            :display-p (getf draft :display-p)))
+          (:context-edit
+           (session-append-context-edit
+            session
+            (getf draft :target-id)
+            (getf draft :replacement)))
+          (:compaction
+           (session-append-compaction
+            session
+            (getf draft :summary)
+            nil
+            (getf draft :first-kept-id)
+            0
+            :details (getf draft :details)
+            :usage (getf draft :usage)
+            :from-hook-p t))))
+      (setf (agent-messages agent)
+            (session-messages session))))
+  drafts)
+
+(defun extension-host-has-hook-p (host event)
+  (and
+   host
+   (gethash
+    event
+    (extension-snapshot-hooks
+     (extension-host-current-snapshot host)))))
+
+(defun continue-after-before-settle-p (agent message)
+  (let ((host (agent-extension-host agent)))
+    (unless (extension-host-has-hook-p
+             host :agent-before-settle)
+      (return-from continue-after-before-settle-p
+        (agent-has-queued-messages-p agent)))
+    (let ((result
+            (run-extension-lifecycle-hooks
+             host :agent-before-settle
+             :payload
+             (list
+              :outcome
+              (agent-activity-outcome message)))))
+      (handler-case
+          (apply-boundary-drafts
+           agent (getf result :entries))
+        (condition (condition)
+          (funcall
+           (extension-host-notify-function host)
+           (format nil
+                   "agent_before_settle invalid boundary entries: ~A"
+                   condition)
+           :error)
+          (return-from continue-after-before-settle-p nil)))
+      (let ((should-continue-p
+              (or (getf result :continue)
+                  (agent-has-queued-messages-p agent))))
+        (cond
+          ((and
+            should-continue-p
+            (not
+             (boundary-can-continue-p
+              agent :agent-before-settle)))
+           (when (getf result :continue)
+             (report-invalid-boundary-continuation
+              agent "agent_before_settle"))
+           nil)
+          (t should-continue-p))))))
+
+(defun accept-turn-boundary (agent entries continue-p)
+  (handler-case
+      (apply-boundary-drafts agent entries)
+    (condition (condition)
+      (let ((host (agent-extension-host agent)))
+        (when host
+          (funcall
+           (extension-host-notify-function host)
+           (format nil
+                   "turn_end invalid boundary entries: ~A"
+                   condition)
+           :error)))
+      (return-from accept-turn-boundary nil)))
+  (cond
+    ((not continue-p) nil)
+    ((boundary-can-continue-p agent :turn-end) t)
+    (t
+     (report-invalid-boundary-continuation
+      agent "turn_end")
+     nil)))
+
 (defun run-turn-end-hooks
-    (agent turn-index message results)
+    (agent turn-index message results
+     &key message-entry-id tool-result-entry-ids)
   (if (not (agent-extension-host agent))
-      (values message nil)
+      (values message nil nil nil)
       (multiple-value-bind
-            (replacement appended blocked-p reason)
+            (replacement appended blocked-p reason
+             terminate-p terminate-supplied-p
+             entries continue-p)
           (run-extension-hooks
            (agent-extension-host agent)
            :turn-end
            :turn-index turn-index
            :message message
-           :tool-results results)
-        (declare (ignore blocked-p reason))
-        (values replacement appended))))
+           :tool-results results
+           :outcome (agent-activity-outcome message)
+           :message-entry-id message-entry-id
+           :tool-result-entry-ids tool-result-entry-ids)
+        (declare
+         (ignore blocked-p reason terminate-p
+                 terminate-supplied-p))
+        (values
+         (or replacement message)
+         appended
+         entries
+         continue-p))))
 
 (defun commit-agent-turn
     (agent message results
-     tool-hook-messages turn-hook-messages)
+     tool-hook-messages turn-hook-messages
+     &key message-id result-ids)
   ;; The assistant stream already emitted its message lifecycle. Hooks run
   ;; before this function so only the final payload reaches the session.
-  (append-agent-message agent message)
-  (dolist (result results)
-    (append-agent-message agent result))
+  (append-agent-message agent message :id message-id)
+  (loop for result in results
+        for id in (or result-ids
+                      (make-list (length results)
+                                 :initial-element nil))
+        do (append-agent-message agent result :id id))
   (append-agent-messages-with-events
    agent tool-hook-messages)
   (append-agent-messages-with-events
@@ -388,7 +571,10 @@
               (context-overflow-message-p final)
               (agent-shutdown-p agent))
            (maybe-compact-agent agent))
-         (return final)))
+         (let ((settled
+                 (finish-agent-run agent final)))
+           (when settled
+             (return settled)))))
       (t
        (unless
            (or
@@ -398,4 +584,20 @@
                  (cadr-ai:assistant-message-stop-reason result)))
             (agent-shutdown-p agent))
          (maybe-compact-agent agent))
-       (return result)))))
+       (let ((settled
+               (finish-agent-run agent result)))
+         (when settled
+           (return settled)))))))
+
+(defun finish-agent-run (agent result)
+  (cond
+    ((or
+      (agent-shutdown-p agent)
+      (and
+       (typep result 'cadr-ai:assistant-message)
+       (eq :aborted
+           (cadr-ai:assistant-message-stop-reason result))))
+     result)
+    ((continue-after-before-settle-p agent result)
+     nil)
+    (t result)))

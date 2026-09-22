@@ -148,7 +148,11 @@
   (block-p nil :type boolean)
   reason
   terminate-p
-  (terminate-supplied-p nil :type boolean))
+  (terminate-supplied-p nil :type boolean)
+  entries
+  (entries-supplied-p nil :type boolean)
+  (continue-p nil :type boolean)
+  (continue-supplied-p nil :type boolean))
 
 (defstruct extension-event-listener
   name
@@ -167,7 +171,9 @@
        append-messages
        block-p
        reason
-       (terminate-p nil terminate-supplied-p))
+       (terminate-p nil terminate-supplied-p)
+       (entries nil entries-supplied-p)
+       (continue nil continue-supplied-p))
   (%make-extension-hook-result
    :replacement replacement
    :replacement-p replacement-p
@@ -175,7 +181,11 @@
    :block-p (not (null block-p))
    :reason reason
    :terminate-p (not (null terminate-p))
-   :terminate-supplied-p terminate-supplied-p))
+   :terminate-supplied-p terminate-supplied-p
+   :entries entries
+   :entries-supplied-p entries-supplied-p
+   :continue-p (not (null continue))
+   :continue-supplied-p continue-supplied-p))
 
 (defun assert-active-extension-context (context)
   (unless

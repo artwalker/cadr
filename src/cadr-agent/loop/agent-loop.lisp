@@ -25,13 +25,14 @@
         (when (> turn (agent-max-turns agent))
           (let ((message (turn-limit-message agent)))
             (multiple-value-bind
-                  (final-message appended)
+                  (final-message appended entries)
                 (run-turn-end-hooks
                  agent turn message nil)
               (append-agent-message-with-events
                agent final-message)
               (append-agent-messages-with-events
                agent appended)
+              (accept-turn-boundary agent entries nil)
               (emit-agent-event
                agent :turn-end
                :message final-message
@@ -73,51 +74,74 @@
               (when (or abort-from-tool-p
                         terminate-from-tool-p)
                 (setf terminal-p t))))
-          (multiple-value-bind
-                (message turn-hook-messages)
-              (run-turn-end-hooks
-               agent turn streamed-message results)
-            (commit-agent-turn
-             agent message results
-             tool-hook-messages
-             turn-hook-messages)
-            ;; pi@16787ad5b agent-loop.ts — finishTurn runs before
-            ;; turn_end. Error and abort stay hard exits. :end stops
-            ;; even when tool results would otherwise continue. :continue
-            ;; requests one more provider turn when nothing else would.
-            (let ((decision
-                    (agent-finish-turn-decision
-                     agent message results)))
-              (emit-agent-event
-               agent :turn-end
-               :message message
-               :tool-results results)
-              (flush-agent-pending-custom-messages agent)
-              (if terminal-p
-                  (progn
-                    (emit-agent-end agent)
-                    (return-from run-agent-loop message))
-                  (cond
-                    ((eq decision :end)
-                     (emit-agent-end agent)
-                     (return-from run-agent-loop message))
-                    (t
-                     (let ((steering
-                             (drain-agent-queue
-                              agent :steering)))
-                       (if (or calls steering)
-                           (begin-agent-turn
-                            agent (1+ turn) steering)
-                           (let ((follow-up
-                                   (drain-agent-queue
-                                    agent :follow-up)))
-                             (cond
-                               (follow-up
-                                (begin-agent-turn
-                                 agent (1+ turn) follow-up))
-                               ((eq decision :continue)
-                                (begin-agent-turn
-                                 agent (1+ turn) nil))
+          (let* ((session (agent-session agent))
+                 (boundary-ids
+                   (and session
+                        (allocate-boundary-entry-ids
+                         session (1+ (length results)))))
+                 (message-entry-id (first boundary-ids))
+                 (tool-result-entry-ids
+                   (rest boundary-ids)))
+            (multiple-value-bind
+                  (message turn-hook-messages entries
+                   continue-p)
+                (run-turn-end-hooks
+                 agent turn streamed-message results
+                 :message-entry-id message-entry-id
+                 :tool-result-entry-ids
+                 tool-result-entry-ids)
+              (commit-agent-turn
+               agent message results
+               tool-hook-messages
+               turn-hook-messages
+               :message-id message-entry-id
+               :result-ids tool-result-entry-ids)
+              ;; pi@16787ad5b agent-session.ts finishTurn wrapper:
+              ;; turn_end entries commit first. :end still wins.
+              ;; :continue or a valid boundary continue asks for one
+              ;; more provider turn when tools and steering would not.
+              (let ((decision
+                      (agent-finish-turn-decision
+                       agent message results))
+                    (boundary-continue-p
+                      (accept-turn-boundary
+                       agent entries continue-p)))
+                (emit-agent-event
+                 agent :turn-end
+                 :message message
+                 :tool-results results)
+                (flush-agent-pending-custom-messages agent)
+                (when (agent-session agent)
+                  (setf (agent-messages agent)
+                        (session-messages
+                         (agent-session agent))))
+                (if terminal-p
+                    (progn
+                      (emit-agent-end agent)
+                      (return-from run-agent-loop message))
+                    (cond
+                      ((eq decision :end)
+                       (emit-agent-end agent)
+                       (return-from run-agent-loop message))
+                      (t
+                       (let ((steering
+                               (drain-agent-queue
+                                agent :steering)))
+                         (if (or calls steering)
+                             (begin-agent-turn
+                              agent (1+ turn) steering)
+                             (let ((follow-up
+                                     (drain-agent-queue
+                                      agent :follow-up)))
+                               (cond
+                                 (follow-up
+                                  (begin-agent-turn
+                                   agent (1+ turn) follow-up))
+                                 ((or
+                                   (eq decision :continue)
+                                   boundary-continue-p)
+                                  (begin-agent-turn
+                                   agent (1+ turn) nil))
                                (t
                                 (emit-agent-end agent)
                                 (let ((late-follow-up
@@ -129,7 +153,7 @@
                                        late-follow-up)
                                       (return-from
                                           run-agent-loop
-                                        message))))))))))))))))
+                                        message)))))))))))))))))
 
 (defun call-with-agent-run (agent function)
     (sb-thread:with-mutex
