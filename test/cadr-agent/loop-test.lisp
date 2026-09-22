@@ -94,6 +94,51 @@
                      (assistant-message-content
                       (second (agent-messages agent))))))))))
 
+(test finish-turn-end-stops-the-run
+  (let ((*responses*
+          (list
+           (assistant (list (make-text-content :text "one")))
+           (assistant (list (make-text-content :text "two")))))
+        (*contexts* nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :finish-turn-function
+             (lambda (agent message results)
+               (declare (ignore agent message results))
+               :end))))
+      (agent-prompt agent "Hi")
+      (is (= 1 (length *responses*)))
+      (is (= 2 (length (agent-messages agent)))))))
+
+(test finish-turn-continue-requests-another-provider-turn
+  (let ((*responses*
+          (list
+           (assistant (list (make-text-content :text "one")))
+           (assistant (list (make-text-content :text "two")))))
+        (*contexts* nil)
+        (calls 0))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :finish-turn-function
+             (lambda (agent message results)
+               (declare (ignore agent message results))
+               (incf calls)
+               (when (= calls 1) :continue)))))
+      (agent-prompt agent "Hi")
+      (is (null *responses*))
+      (is (= 3 (length (agent-messages agent))))
+      (is (= 2 calls)))))
+
 (test goal17-agent-end-messages-exclude-preexisting-context
   (let* ((old-user
            (cadr-ai:make-user-message :content "old request"))
