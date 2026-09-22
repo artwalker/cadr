@@ -241,7 +241,8 @@
     (setf (extension-host-pending-custom-messages host) nil)
     (when agent
       (dolist (message pending)
-        (append-extension-custom-message host agent message)))))
+        (append-extension-custom-message host agent message)))
+    pending))
 
 (defun flush-agent-pending-custom-messages (agent)
   (when agent

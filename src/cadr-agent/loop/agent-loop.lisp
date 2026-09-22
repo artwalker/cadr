@@ -110,11 +110,17 @@
                  agent :turn-end
                  :message message
                  :tool-results results)
-                (flush-agent-pending-custom-messages agent)
-                (when (agent-session agent)
-                  (setf (agent-messages agent)
-                        (session-messages
-                         (agent-session agent))))
+                (let ((flushed
+                        (flush-agent-pending-custom-messages
+                         agent)))
+                  ;; Replacing the message spine drops conses that
+                  ;; eval harnesses still hold. Refresh only after a
+                  ;; boundary draft or a flushed custom message.
+                  (when (and (agent-session agent)
+                             (or entries flushed))
+                    (setf (agent-messages agent)
+                          (session-messages
+                           (agent-session agent)))))
                 (if terminal-p
                     (progn
                       (emit-agent-end agent)
