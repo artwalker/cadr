@@ -33,7 +33,7 @@ git diff --stat \
 | 按模型配置图片输入缩放 | 未开始 |
 | 去掉 `shouldStopAfterTurn`，改用 `finishTurn` | 未开始 |
 | `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | 未开始。与 v0.86.1 上未落地的 system-message 栈一起做 |
-| 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | 进行中 |
+| 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | https://github.com/artwalker/cadr/pull/856 。`unknown-openai-completions-endpoint-is-not-strict`。未知 provider 默认不发 strict；内置厂商保持原默认；显式 `:supports-strict-mode` 仍优先 |
 | `/bug` 离线只写本地 zip，不上传 | 未开始 |
 | 过期的 prompt-cache warming 不再补刷新 | 未开始 |
 | 崩溃栈里标出已加载扩展 | 未开始 |
