@@ -115,6 +115,7 @@
   ],
   "extensionEvents": [
     "after_provider_response",
+    "agent_before_settle",
     "agent_end",
     "agent_settled",
     "agent_start",
@@ -123,6 +124,7 @@
     "before_provider_request",
     "cache_warming_decision",
     "context",
+    "context_with_system",
     "input",
     "message_end",
     "message_start",

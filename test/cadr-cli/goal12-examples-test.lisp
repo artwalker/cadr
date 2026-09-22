@@ -102,7 +102,7 @@
            (goal12-read-project-file
             "docs/acceptance/goal-v12-extension-event-dispatch.md"))
          (events cadr-agent::+extension-hook-events+))
-    (is (= 37 (length events)))
+    (is (= 39 (length events)))
     (dolist (event events)
       (let* ((prefix (format nil "| `:~(~A~)` |" (symbol-name event)))
              (start (search prefix audit))
@@ -161,7 +161,7 @@
               (string-downcase (symbol-name event)))
             cadr-agent::+extension-hook-events+)
            #'string<)))
-    (is (= 37 (length baseline)))
+    (is (= 39 (length baseline)))
     (is (equal expected actual)
         "cadr extension events drifted from the derived baseline set")))
 
