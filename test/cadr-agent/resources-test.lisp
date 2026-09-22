@@ -283,3 +283,29 @@
       (is (string=
            "/missing"
            (cadr-ai:user-message-content plain-message))))))
+
+(test malformed-prompt-frontmatter-is-a-resource-warning
+  (with-session-directories (sessions cwd other-cwd)
+    (values sessions other-cwd)
+    (let ((prompts (merge-pathnames "prompts/" cwd)))
+      (ensure-directories-exist prompts)
+      (with-open-file
+          (stream (merge-pathnames "bad.md" prompts)
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (write-string
+         (format nil "---~%description~%---~%body~%")
+         stream))
+      (multiple-value-bind (templates diagnostics)
+          (cadr-agent::load-prompt-templates (list prompts))
+        (is (null templates))
+        (is (= 1 (length diagnostics)))
+        (let ((diagnostic (first diagnostics)))
+          (is (eq :parse-failed
+                  (cadr-agent::resource-diagnostic-code diagnostic)))
+          (is (search
+               "Invalid frontmatter"
+               (cadr-agent::resource-diagnostic-message
+                diagnostic))))))))
