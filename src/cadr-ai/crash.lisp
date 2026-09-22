@@ -151,6 +151,7 @@
                  secrets
                  (redactor #'redact-secrets)
                  (user-message-function #'default-fatal-user-message)
+                 (diagnostic-annotation nil)
                  (exit-function #'uiop:quit))
   (if *handling-fatal-condition-p*
       (funcall exit-function 1)
@@ -170,8 +171,15 @@
          :program-name program-name
          :type-name (fatal-condition-type-name condition)
          :user-message
-         (funcall user-message-function
-                  condition all-secrets redactor)
+         (let ((base
+                 (funcall user-message-function
+                          condition all-secrets redactor))
+               (extra
+                 (and diagnostic-annotation
+                      (funcall diagnostic-annotation diagnostic))))
+           (if (and (stringp extra) (plusp (length extra)))
+               (format nil "~A~%~%~A" base extra)
+               base))
          :log-path path))))
 
 (defun emit-fatal-condition-report
@@ -198,6 +206,7 @@
                  secrets
                  (redactor #'redact-secrets)
                  (user-message-function #'default-fatal-user-message)
+                 (diagnostic-annotation nil)
                  (exit-function #'uiop:quit))
   (emit-fatal-condition-report
    (prepare-fatal-condition-report
@@ -207,6 +216,7 @@
     :secrets secrets
     :redactor redactor
     :user-message-function user-message-function
+    :diagnostic-annotation diagnostic-annotation
     :exit-function exit-function)
    :exit-function exit-function))
 
@@ -217,6 +227,7 @@
                 secrets
                 (redactor #'redact-secrets)
                 (user-message-function #'default-fatal-user-message)
+                (diagnostic-annotation nil)
                 (exit-function #'uiop:quit))
   ;; SBCL-only tree. The old #-sbcl branch copied this boundary
   ;; without *invoke-debugger-hook*.
@@ -231,6 +242,7 @@
                  :secrets secrets
                  :redactor redactor
                  :user-message-function user-message-function
+                 :diagnostic-annotation diagnostic-annotation
                  :exit-function exit-function))))
       (multiple-value-bind (marker values-or-report)
           (block fatal-boundary

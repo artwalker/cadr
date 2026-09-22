@@ -921,3 +921,33 @@
           (bytes "GIF is not an image"))))
     (is (null
          (cadr-cli::detect-image-mime-type (bytes "GIF8"))))))
+
+(test crash-stack-names-the-loaded-extension
+  (let* ((memory
+           (cadr-cli::make-crash-extension
+            :path "/mods/memory/index.ts"
+            :resolved-path "/mods/memory/index.ts"
+            :origin "package"
+            :source "npm:memory"
+            :base-dir "/mods/memory"))
+         (other
+           (cadr-cli::make-crash-extension
+            :path "/mods/other/index.ts"
+            :resolved-path "/mods/other/index.ts"
+            :origin "package"
+            :source "npm:other"
+            :base-dir "/mods/other"))
+         (stack
+           (format nil
+                   "Error: failed to read /mods/memory/index.ts~%    at run (/mods/memory/src/worker.ts:4:2)")))
+    (is (equal '("npm:memory")
+               (cadr-cli::find-extension-stack-matches
+                stack (list memory other))))
+    (is (null
+         (cadr-cli::find-extension-stack-matches
+          (format nil "Error: failed to read /mods/memory/index.ts~%    at run (/opt/cadr/core.lisp:4)")
+          (list memory))))
+    (let ((hint
+            (cadr-cli::format-crash-extension-hint '("npm:memory"))))
+      (is (search "npm:memory" hint))
+      (is (search "cadr -ne" hint)))))
