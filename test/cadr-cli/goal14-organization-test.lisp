@@ -1046,7 +1046,9 @@
     ;; inMemory session entry owners land in B8 session/loop files.
     ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
     ;; adjacent session/codec helpers landed in B8 owners.
-    (is (= 341 definition-count)
+    ;; +16 Goal 26: system-message replay and turn-boundary helpers
+    ;; in messages.lisp and loop/turns.lisp.
+    (is (= 357 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1208,7 +1210,8 @@
     ;; +2 Goal 28: extension host helpers added in B9 owners.
     ;; +2 duplicate command invocation names.
     ;; +1 extension resource source labels.
-    (is (= 263 definition-count)
+    ;; +2 Goal 26: context-transform-message-p and valid-boundary-draft-p.
+    (is (= 265 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1261,9 +1264,9 @@
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "61428b4487f768838bc1d660490d9957337c308c9e57be4c5a651548483b6e07"
+                "4d2da6f6f30bc239d90b8a93018eb26727d2a705bcef1fc2289f27e1da2f8fcb"
                 (goal14-sha256 events)))
-          "B9 changed the frozen 37-event source block"))))
+          "B9 changed the frozen 39-event source block"))))
 
 (test goal14-b9-asdf-loads-extension-host-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-agent"))
@@ -1445,7 +1448,8 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +1 Goal 26: #:model-input-limits.
+              "529accc08f6c48d38d75a358aa99cdfde2758888dd19be3817383627abba36a9"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
