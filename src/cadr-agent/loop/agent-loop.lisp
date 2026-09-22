@@ -1,5 +1,21 @@
 (in-package #:cadr-agent)
 
+(defun normalize-finish-turn-decision (value)
+  (cond
+    ((or (null value) (eq value :end) (eq value :continue))
+     value)
+    ((and (listp value)
+          (member (getf value :action) '(:end :continue)))
+     (getf value :action))
+    (t nil)))
+
+(defun agent-finish-turn-decision (agent message results)
+  (let ((function (agent-finish-turn-function agent)))
+    (if (not function)
+        nil
+        (normalize-finish-turn-decision
+         (funcall function agent message results)))))
+
 (defun run-agent-loop (agent initial-messages)
   (run-agent-lifecycle agent :agent-start)
   (emit-agent-event agent :agent-start)
@@ -65,41 +81,55 @@
              agent message results
              tool-hook-messages
              turn-hook-messages)
-            (emit-agent-event
-             agent :turn-end
-             :message message
-             :tool-results results)
-            (flush-agent-pending-custom-messages agent)
-            ;; Early terminal exit. LOOP's RETURN would leave the
-            ;; whole loop; fall through to the next turn instead.
-            (if terminal-p
-                (progn
-                  (emit-agent-end agent)
-                  (return-from run-agent-loop message))
-                (let ((steering
-                        (drain-agent-queue
-                         agent :steering)))
-                  (if (or calls steering)
-                      (begin-agent-turn
-                       agent (1+ turn) steering)
-                      (let ((follow-up
-                              (drain-agent-queue
-                               agent :follow-up)))
-                        (if follow-up
-                            (begin-agent-turn
-                             agent (1+ turn) follow-up)
-                            (progn
-                              (emit-agent-end agent)
-                              (let ((late-follow-up
-                                      (drain-agent-queue
-                                       agent :follow-up)))
-                                (if late-follow-up
-                                    (begin-agent-turn
-                                     agent (1+ turn)
-                                     late-follow-up)
-                                    (return-from
-                                        run-agent-loop
-                                      message)))))))))))))
+            ;; pi@16787ad5b agent-loop.ts — finishTurn runs before
+            ;; turn_end. Error and abort stay hard exits. :end stops
+            ;; even when tool results would otherwise continue. :continue
+            ;; requests one more provider turn when nothing else would.
+            (let ((decision
+                    (agent-finish-turn-decision
+                     agent message results)))
+              (emit-agent-event
+               agent :turn-end
+               :message message
+               :tool-results results)
+              (flush-agent-pending-custom-messages agent)
+              (if terminal-p
+                  (progn
+                    (emit-agent-end agent)
+                    (return-from run-agent-loop message))
+                  (cond
+                    ((eq decision :end)
+                     (emit-agent-end agent)
+                     (return-from run-agent-loop message))
+                    (t
+                     (let ((steering
+                             (drain-agent-queue
+                              agent :steering)))
+                       (if (or calls steering)
+                           (begin-agent-turn
+                            agent (1+ turn) steering)
+                           (let ((follow-up
+                                   (drain-agent-queue
+                                    agent :follow-up)))
+                             (cond
+                               (follow-up
+                                (begin-agent-turn
+                                 agent (1+ turn) follow-up))
+                               ((eq decision :continue)
+                                (begin-agent-turn
+                                 agent (1+ turn) nil))
+                               (t
+                                (emit-agent-end agent)
+                                (let ((late-follow-up
+                                        (drain-agent-queue
+                                         agent :follow-up)))
+                                  (if late-follow-up
+                                      (begin-agent-turn
+                                       agent (1+ turn)
+                                       late-follow-up)
+                                      (return-from
+                                          run-agent-loop
+                                        message))))))))))))))))
 
 (defun call-with-agent-run (agent function)
     (sb-thread:with-mutex

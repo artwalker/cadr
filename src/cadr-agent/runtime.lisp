@@ -46,6 +46,7 @@
   (compaction-keep-recent-tokens 20000
                                  :type (integer 1 *))
   abort-p
+  finish-turn-function
   (abort-requested-p nil :type boolean)
   compaction-cancellation
   (tool-cancellations nil :type list)

@@ -10,6 +10,7 @@
    #:agent-busy-p
    #:agent-session
    #:agent-prompt
+   #:agent-finish-turn-function
    #:agent-continue
    #:agent-steer
    #:agent-follow-up
