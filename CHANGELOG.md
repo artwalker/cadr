@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 26: pin fixed pi baseline from v0.86.1 (`13cbf77df`) to
+  v0.87.0 (`16787ad5b`). Release identity is
+  `cadr 0.2.0 · aligned with pi v0.87.0 (+0, 16787ad5b)`.
+  Not full v0.87.0 alignment. `version.sexp` stays `0.2.0`.
+
 - Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
   v0.86.1 (`13cbf77df`). Release identity is
   `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.

@@ -1,9 +1,9 @@
 # Presentation parity ledger
 
-<!-- GOAL13_PRESENTATION_LEDGER baseline=13cbf77df2396303013a41646bcfa77b4271ae56 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4 -->
+<!-- GOAL13_PRESENTATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4 -->
 <!-- GOAL13_OUTPUT_CHANNELS total=18 covered=18 pending=0 -->
 
-Fixed baseline: `earendil-works/pi@13cbf77df2396303013a41646bcfa77b4271ae56`.
+Fixed baseline: `earendil-works/pi@16787ad5b2dc748047f314ca1bfe7708f30f54f3`.
 Audit point: Cadr `e04d9230f` (Goal 13 Part A complete).  This ledger audits
 the independent **presentation axis** only. Tool results sent to the model,
 provider payloads, event sequences, and session data belong to the behavior
@@ -76,7 +76,7 @@ jq -r '[.entries[] | select(.sink.channel == "printable-visible")] as $p |
   test/fixtures/render-diff/baseline-visible-strings.json
 ```
 
-2026-09-20 recount (v0.86.1 pin + `/bug` inventory): core 62/122, full 73/144, sites 515, branches 836.
+2026-09-20 recount (v0.87.0 pin + `/bug` inventory): core 62/122, full 73/144, sites 515, branches 836.
 
 ### Exceptional-path closure
 

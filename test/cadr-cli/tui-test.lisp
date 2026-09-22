@@ -1598,7 +1598,7 @@
      '("--model" "--continue"))))
 
 (test tui-mode-flag-matches-the-baseline-diagnostics
-  ;; pi@13cbf77df cli/args.ts:180-191: valid values are consumed; a
+  ;; pi@16787ad5b cli/args.ts:180-191: valid values are consumed; a
   ;; missing or dash-prefixed value errors without consuming; anything
   ;; else is consumed and rejected by name.
   (let ((arguments
@@ -1647,7 +1647,7 @@
           (cadr-cli::render-tui-state
            state editor 40 8 :full-document-p t)
         (declare (ignore main-column alt-column))
-        ;; pi@13cbf77df root composition is a natural document in both main
+        ;; pi@16787ad5b root composition is a natural document in both main
         ;; and alt modes.  Only the renderer selects a viewport.  Pi's Text
         ;; component pads notice lines to the full width, so document-content
         ;; assertions must ignore only that baseline-owned right padding.
@@ -2945,7 +2945,7 @@
        (cadr-cli::render-tui-entry entry 80))))))
 
 (test goal17-operation-aborted-padding-is-outside-error-color-span
-  ;; Fixed pi@13cbf77df assistant-message.ts:194 constructs
+  ;; Fixed pi@16787ad5b assistant-message.ts:194 constructs
   ;; Text(theme.fg("error", message), outputPad=1, 0): Text owns the
   ;; padding, so the leading/trailing cells are not part of the red span.
   (let* ((entry
@@ -2977,7 +2977,7 @@
                    (char abort-line after-prefix)))))))
 
 (test goal17-transcript-text-entries-use-baseline-text-component-padding
-  ;; Fixed pi@13cbf77df interactive-mode.ts:3244,3918-3924 and
+  ;; Fixed pi@16787ad5b interactive-mode.ts:3244,3918-3924 and
   ;; 5915-5917 render these transcript messages through Text.  Text owns
   ;; full-width padding outside the themed content; hand-built lines do not.
   (dolist (spec
@@ -3018,7 +3018,7 @@
         (is (= width (cadr-tui:visible-width content)))))))
 
 (test goal17-oauth-provider-status-span-owns-its-leading-space
-  ;; Fixed pi@13cbf77df oauth-selector.ts:98-151 includes the separator space
+  ;; Fixed pi@16787ad5b oauth-selector.ts:98-151 includes the separator space
   ;; inside every status span.  It never inserts an unstyled gap between the
   ;; provider label and status.
   (let ((caps
@@ -3099,7 +3099,7 @@
          state))))))
 
 (test goal17-fork-help-wrap-keeps-text-padding-inside-muted-span
-  ;; Fixed pi@13cbf77df user-message-selector.ts:123-130 renders the help as
+  ;; Fixed pi@16787ad5b user-message-selector.ts:123-130 renders the help as
   ;; Text(theme.fg("muted", ...), 1, 0).  The ANSI-aware wrapper therefore
   ;; carries the muted span through intermediate-line padding, while the final
   ;; line resets at the end of the actual text before Text adds its padding.
@@ -3147,7 +3147,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-session-delete-confirmation-keeps-key-and-row-error-styles
-  ;; Fixed pi@13cbf77df session-selector.ts:158-161,448-509 preserves the
+  ;; Fixed pi@16787ad5b session-selector.ts:158-161,448-509 preserves the
   ;; nested keyHint dim/muted styles inside the error prompt and marks both
   ;; the selected session label and its right metadata as error while delete
   ;; confirmation is active.
@@ -3219,7 +3219,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-extension-selector-keeps-unselected-prefix-outside-text-color
-  ;; Fixed pi@13cbf77df extension-selector.ts:92-95 constructs unselected
+  ;; Fixed pi@16787ad5b extension-selector.ts:92-95 constructs unselected
   ;; rows as a plain two-cell prefix followed by only the themed label.  Text
   ;; then adds its own plain one-cell margin and full-width padding.
   (let* ((width 40)
@@ -3244,7 +3244,7 @@
     (is (= width (cadr-tui:visible-width beta-line)))))
 
 (test goal17-extension-confirm-renders-title-and-message-as-one-multiline-text
-  ;; Fixed pi@13cbf77df interactive-mode.ts:2299-2305 passes one multiline
+  ;; Fixed pi@16787ad5b interactive-mode.ts:2299-2305 passes one multiline
   ;; title to ExtensionSelectorComponent.  The first physical line therefore
   ;; keeps the outer accent active through Text's trailing padding, while the
   ;; countdown is appended after the final message line.
@@ -3283,7 +3283,7 @@
       (is (null (search "Import session (3s)" title-line))))))
 
 (test goal17-settings-submenu-uses-select-list-and-text-width-contracts
-  ;; Fixed pi@13cbf77df settings-selector.ts:191-218 uses natural-width
+  ;; Fixed pi@16787ad5b settings-selector.ts:191-218 uses natural-width
   ;; SelectList rows, but Automatic Theme diagnostics are Text components and
   ;; therefore pad to the full viewport width.
   (let ((state
@@ -5193,7 +5193,7 @@
     (cadr-cli::tui-handle-agent-event
      state
      (cadr-agent::make-agent-event :type :agent-end))
-    ;; pi@13cbf77df interactive-mode.ts:3088-3100 clears the working status
+    ;; pi@16787ad5b interactive-mode.ts:3088-3100 clears the working status
     ;; on agent_end; agent_settled is reserved for shutdown coordination.
     (is (null (cadr-cli::tui-state-agent-working-p state)))
     (cadr-cli::tui-handle-agent-event
@@ -5202,7 +5202,7 @@
     (is (null (cadr-cli::tui-state-agent-working-p state)))))
 
 (test goal18-message-end-render-suppression-covers-the-settle-window
-  ;; pi@13cbf77df interactive-mode.ts:3001-3042 finalizes the streaming
+  ;; pi@16787ad5b interactive-mode.ts:3001-3042 finalizes the streaming
   ;; component at message_end and :3088-3102 removes the working
   ;; indicator at agent_end — one synchronous event chain its
   ;; timer-driven renderer cannot observe.  Cadr renders from a
@@ -5631,7 +5631,7 @@
     (is (null (search "Error:" screen)))))
 
 (test goal17-footer-provider-label-follows-the-live-scoped-model-projection
-  ;; pi@13cbf77df interactive-mode.ts:4406-4414 and footer.ts:190-198
+  ;; pi@16787ad5b interactive-mode.ts:4406-4414 and footer.ts:190-198
   ;; derive the optional provider badge from the live scoped-model projection.
   ;; Narrowing two providers to one must remove the badge immediately.
   (let* ((screen nil)
@@ -5706,7 +5706,7 @@
     (is (null (search "(faux) faux-1" screen)))))
 
 (test goal17-terminal-assistant-usage-does-not-replace-valid-context-state
-  ;; pi@13cbf77df agent-session.ts:3164-3207 rejects error/aborted usage as
+  ;; pi@16787ad5b agent-session.ts:3164-3207 rejects error/aborted usage as
   ;; context evidence.  footer.ts:87-104 still counts its billed totals.
   (dolist (reason '(:error :aborted))
     (let* ((state
@@ -5741,7 +5741,7 @@
              (cadr-cli::tui-state-context-percent state))))))
 
 (test goal17-message-end-usage-survives-the-pre-persistence-footer-refresh
-  ;; pi@13cbf77df agent.ts:529-575 updates Agent state before message_end
+  ;; pi@16787ad5b agent.ts:529-575 updates Agent state before message_end
   ;; listeners run.  Cadr persistence follows message_end, so a stale external
   ;; footer snapshot must not erase the final usage before turn_end catches up.
   (let ((event-consumer nil)

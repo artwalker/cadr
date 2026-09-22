@@ -27,7 +27,7 @@
 
 (defun single-line-input-clear-action (input)
   ;; One owner for the 3-form reset (action + yank span).
-  ;; pi@13cbf77df packages/tui/src/input.ts Input reset sites.
+  ;; pi@16787ad5b packages/tui/src/input.ts Input reset sites.
   (setf (single-line-input-last-action input) nil)
   (single-line-input-reset-yank input))
 

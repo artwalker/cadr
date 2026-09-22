@@ -116,7 +116,7 @@
   (multiline-editor-text editor))
 
 (defun split-editor-lines (text)
-  ;; pi@13cbf77df packages/tui/src/components/editor.ts:466 stores
+  ;; pi@16787ad5b packages/tui/src/components/editor.ts:466 stores
   ;; state.lines as an array. cadr keeps one string; this split is
   ;; the per-keystroke cost. Count first so the result is a
   ;; simple-vector: per-line AREF is O(1), and there is no
@@ -1498,7 +1498,7 @@
       (:word-right (editor-move-word-forward editor))
       (:up (editor-move-vertical editor -1))
       (:down (editor-move-vertical editor 1))
-      ;; pi@13cbf77df components/editor.ts:768-777 — the dedicated
+      ;; pi@16787ad5b components/editor.ts:768-777 — the dedicated
       ;; history actions always browse entries (never move the
       ;; cursor) and cancel autocomplete first.
       (:history-previous

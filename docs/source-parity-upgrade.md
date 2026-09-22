@@ -234,7 +234,7 @@ v0.86.0 file dispositions (four-column TSV; gate run green): 220 rows at
 `test/fixtures/source-parity/g23-0851-dispositions.tsv`. Named-set deltas are
 locked in `test/fixtures/source-parity/g23-0851-enumeration.json` and exercised
 by `test/goal23-source-parity-test.py`. Live `GOAL12_LEDGER` baseline is
-`13cbf77df…`; the sorted 686-path manifest digest is unchanged from v0.84.4
+`16787ad5b…`; the sorted 686-path manifest digest is unchanged from v0.84.4
 (`ba7e18fc…`) because deferred package trees are not added to the Goal 12
 source inventory.
 

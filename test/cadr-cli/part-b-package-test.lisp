@@ -441,7 +441,7 @@
         (is (= 1 (length (getf paths :extensions))))))))
 
 (test goal17-installed-git-package-update-check-matches-the-baseline-contract
-  ;; pi@13cbf77df package-manager.ts:1159-1221 checks every unpinned,
+  ;; pi@16787ad5b package-manager.ts:1159-1221 checks every unpinned,
   ;; materialized package and compares local HEAD with the remote upstream.
   (with-test-directory (root)
     (let* ((path (merge-pathnames "github.com/user/repo/" root))
@@ -580,7 +580,7 @@
                 (list record) :runner #'failed-runner))))))))
 
 (test goal17-package-update-checks-are-project-first-bounded-and-stable
-  ;; pi@13cbf77df package-manager.ts:1164-1221 queues project packages before
+  ;; pi@16787ad5b package-manager.ts:1164-1221 queues project packages before
   ;; user packages, runs at most four checks, and stores results by input index.
   ;; Semaphores force reverse completion without relying on scheduler timing.
   (with-test-directory (root)
@@ -910,7 +910,7 @@
           (is (string= (second plain) (car (last plain)))))))))
 
 (test goal17-config-selector-uses-the-baseline-border-color
-  ;; Fixed pi@13cbf77df config-selector.ts:900-903,928-930 constructs plain
+  ;; Fixed pi@16787ad5b config-selector.ts:900-903,928-930 constructs plain
   ;; DynamicBorder components.  dynamic-border.ts:14 defaults those to the
   ;; semantic border color, not accent.
   (with-test-directory (root)
@@ -1017,7 +1017,7 @@
           (is (search "+/" stored)))))))
 
 (test goal17-config-selector-resolves-configured-package-and-custom-resources
-  ;; pi@13cbf77df package-manager-cli.ts:646-670 passes two independently
+  ;; pi@16787ad5b package-manager-cli.ts:646-670 passes two independently
   ;; resolved resource sets into ConfigSelector.  Package resources and custom
   ;; paths therefore remain visible with their persisted enabled and project
   ;; override state; scanning only the top-level .cadr directories cannot

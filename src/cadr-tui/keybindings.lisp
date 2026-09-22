@@ -26,7 +26,7 @@
     ("app.session.resume" . nil)
     ("tui.editor.cursorUp" . ("up"))
     ("tui.editor.cursorDown" . ("down"))
-    ;; pi@13cbf77df tui/keybindings.ts:68-75 — prompt history
+    ;; pi@16787ad5b tui/keybindings.ts:68-75 — prompt history
     ;; navigation is registered with empty defaults (bindable through
     ;; keybindings.json, unbound by default).
     ("tui.editor.historyPrevious" . nil)
@@ -66,14 +66,14 @@
     ("tui.select.pageDown" . ("pageDown"))
     ("tui.select.confirm" . ("enter"))
     ("tui.select.cancel" . ("escape" "ctrl+c"))
-    ;; pi@13cbf77df tui/keybindings.ts:154-178 — the alt-screen
+    ;; pi@16787ad5b tui/keybindings.ts:154-178 — the alt-screen
     ;; viewport keys moved off the shift/ctrl modifiers and gained
     ;; half-page and prompt-jump actions.
     ("tui.altScreen.pageUp" . ("pageUp"))
     ("tui.altScreen.pageDown" . ("pageDown"))
     ("tui.altScreen.halfPageUp" . nil)
     ("tui.altScreen.halfPageDown" . nil)
-    ;; v0.86.1: one-line scrolling and transcript search actions.
+    ;; v0.87.0: one-line scrolling and transcript search actions.
     ("tui.altScreen.lineUp" . nil)
     ("tui.altScreen.lineDown" . nil)
     ("tui.altScreen.previousPrompt" . ("ctrl+shift+up"))

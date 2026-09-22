@@ -280,7 +280,7 @@
            (string-downcase (symbol-name reasoning)))))
 
 (defun resolve-chat-template-args (model reasoning values)
-  ;; pi@13cbf77df api/openai-completions.ts:892-940 — each entry
+  ;; pi@16787ad5b api/openai-completions.ts:892-940 — each entry
   ;; resolves a scalar verbatim or a $var reference to the current
   ;; thinking state; omitWhenOff drops the entry with no reasoning
   ;; active; an empty result omits the request field entirely.
@@ -394,7 +394,7 @@
          (when (stringp value)
            (json-put payload "thinking" value))))
       (:baseten
-       ;; pi@13cbf77df api/openai-completions.ts:779-793 — chat
+       ;; pi@16787ad5b api/openai-completions.ts:779-793 — chat
        ;; template args carry the thinking toggle, and reasoning_effort
        ;; follows only when the model supports it.
        (let ((args
@@ -488,13 +488,13 @@
     (when active-tools
       (json-put payload "tools"
                 (openai-chat-tools model active-tools)))
-    ;; pi@13cbf77df openai-completions.ts:838 — omit tool_choice when
+    ;; pi@16787ad5b openai-completions.ts:838 — omit tool_choice when
     ;; the request has no tools (#8607). Compaction no longer passes
     ;; toolChoice: "none" (6b36eb592).
     (when (and tool-choice active-tools)
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
-    ;; pi@13cbf77df api/openai-completions.ts:847-866 — vLLM caps
+    ;; pi@16787ad5b api/openai-completions.ts:847-866 — vLLM caps
     ;; reasoning with a top-level thinking_token_budget, independent of
     ;; thinkingFormat; reasoning and the answer share max_tokens, so an
     ;; uncapped reasoning phase can consume the whole response.  The

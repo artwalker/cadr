@@ -98,18 +98,18 @@ rpcMethods	set_thinking_level	name-present	open	rpc-handle-command type dispatch
 rpcMethods	steer	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
 rpcMethods	switch_session	name-present	open	rpc-handle-command type dispatch in src/cadr-cli/modes/rpc/commands.lisp
 toolFiles	bash.ts	name-present	open	+builtin-coding-tool-names+ 'bash' in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	edit-diff.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	edit-diff.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	edit.ts	name-present	open	+builtin-coding-tool-names+ 'edit' in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	file-mutation-queue.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	file-mutation-queue.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	find.ts	name-present	open	+builtin-coding-tool-names+ 'find' in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	grep.ts	name-present	open	+builtin-coding-tool-names+ 'grep' in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	index.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	index.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	ls.ts	name-present	open	+builtin-coding-tool-names+ 'ls' in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	output-accumulator.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	path-utils.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	output-accumulator.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	path-utils.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	powershell.ts	name-present	open	+builtin-coding-tool-names+ 'powershell' in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	read.ts	name-present	open	+builtin-coding-tool-names+ 'read' in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	render-utils.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	tool-definition-wrapper.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
-toolFiles	truncate.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 13cbf77df2396303013a41646bcfa77b4271ae56; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	render-utils.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	tool-definition-wrapper.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
+toolFiles	truncate.ts	extractor-noise	open	not user-invocable; pi allToolNames in packages/coding-agent/src/core/tools/index.ts at 16787ad5b2dc748047f314ca1bfe7708f30f54f3; cadr +builtin-coding-tool-names+ in src/cadr-cli/bootstrap/tools.lisp
 toolFiles	write.ts	name-present	open	+builtin-coding-tool-names+ 'write' in src/cadr-cli/bootstrap/tools.lisp
