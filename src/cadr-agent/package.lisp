@@ -76,6 +76,11 @@
    #:call-with-file-mutation-queue
    #:custom-agent-message
    #:make-custom-agent-message
+   #:agent-system-message
+   #:make-agent-system-message
+   #:agent-system-message-p
+   #:agent-system-message-content
+   #:agent-system-message-tools-added
    #:branch-summary-message
    #:make-branch-summary-message
    #:compaction-summary-agent-message

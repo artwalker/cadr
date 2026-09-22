@@ -361,6 +361,7 @@
     :session-before-tree
     :session-tree
     :context
+    :context-with-system
     :before-agent-start
     :agent-start
     :agent-end

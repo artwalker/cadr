@@ -10,13 +10,19 @@
     :user-bash))
 
 (test goal10-extension-event-set-is-refrozen-at-thirty-five
-  (is (= 37
+  (is (= 39
          (length
           cadr-agent::+extension-hook-events+)))
-  (is (= 37
+  (is (= 39
          (length
           (remove-duplicates
            cadr-agent::+extension-hook-events+))))
+  (is (member
+       :agent-before-settle
+       cadr-agent::+extension-hook-events+))
+  (is (member
+       :context-with-system
+       cadr-agent::+extension-hook-events+))
   (is (member
        :session-compact-failed
        cadr-agent::+extension-hook-events+))

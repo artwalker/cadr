@@ -39,6 +39,22 @@
             message))
       message))
 
+(defun request-prompt-and-tools (agent original final)
+  (cond
+    ((agent-system-message-p (first final))
+     (let ((head (current-system-message final)))
+       (values
+        (agent-system-message-content head)
+        (or
+         (agent-system-message-tools-added head)
+         (registry-tools (agent-tool-registry agent))))))
+    ((some #'agent-system-message-p original)
+     (values nil nil))
+    (t
+     (values
+      (current-agent-system-prompt agent)
+      (registry-tools (agent-tool-registry agent))))))
+
 (defun stream-assistant (agent)
   (let* ((started-p nil)
          (last-partial nil)
@@ -47,6 +63,14 @@
            (run-agent-lifecycle
             agent :context
             (list :messages messages)))
+         (after-context
+           (or (getf context-result :messages) messages))
+         (system-result
+           (run-agent-lifecycle
+            agent :context-with-system
+            (list :messages after-context)))
+         (final-messages
+           (or (getf system-result :messages) after-context))
          ;; pi@16787ad5b agent-loop.ts:295 converts agent-level
          ;; messages to LLM messages when building the provider
          ;; context (config.convertToLlm).  Without the conversion,
@@ -55,9 +79,7 @@
          ;; invisible to the model and to faux usage accounting.
          (request-messages
            (convert-agent-messages-to-llm
-            (or
-             (getf context-result :messages)
-             messages))))
+            (conversation-messages final-messages))))
     (let* ((callback
              (lambda (event)
                (case (cadr-ai:stream-event-type event)
@@ -96,14 +118,15 @@
                   :model (cadr-ai:model-id (agent-model agent))
                   :stop-reason :error
                   :error-message "This operation was aborted")
-                 (let ((context
-                         (cadr-ai:make-context
-                          :system-prompt
-                          (current-agent-system-prompt agent)
-                          :messages request-messages
-                          :tools
-                          (registry-tools
-                           (agent-tool-registry agent)))))
+                 (multiple-value-bind
+                       (prompt tools)
+                     (request-prompt-and-tools
+                      agent messages final-messages)
+                   (let ((context
+                           (cadr-ai:make-context
+                            :system-prompt prompt
+                            :messages request-messages
+                            :tools tools)))
                    ;; abort-p is a keyword on the stream call, not a
                    ;; one-field plist built to be read back (TS
                    ;; object-literal leftover).
@@ -123,7 +146,7 @@
                         context callback
                         :reasoning
                         (agent-thinking-level agent)
-                        :abort-p abort-p))))))
+                        :abort-p abort-p)))))))
       (let ((final
               (merge-terminal-assistant-partial
                message last-partial)))
