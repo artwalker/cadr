@@ -149,7 +149,8 @@ async function runScenario(workspace: string, scenario: Scenario) {
 					message.role === "assistant" ||
 					message.role === "toolResult",
 			) as Message[],
-		shouldStopAfterTurn: ({ toolResults }) => toolResults.length > 0,
+		finishTurn: async ({ toolResults }) =>
+			toolResults.length > 0 ? { action: "end" as const } : undefined,
 	};
 	const response = assistant(scenario);
 	const stream = agentLoop(
