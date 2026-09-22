@@ -175,13 +175,20 @@
     (list-json-array (nreverse messages))))
 
 (defun completions-strict-mode-p (model)
+  ;; pi@16787ad5b openai-completions.ts detectCompat defaults
+  ;; supportsStrictMode to false. Built-in catalogs still advertise
+  ;; the capability. An unknown provider id must not inherit it.
   (model-compat-value
    model :supports-strict-mode
-   (not
-    (member (model-provider model)
-            '(:minimax :minimax-cn :moonshotai :moonshotai-cn
-              :together)
-            :test #'eq))))
+   (let ((provider (model-provider model)))
+     (and (gethash provider *provider-definitions*)
+          (not
+           (member provider
+                   '(:minimax :minimax-cn
+                     :moonshotai :moonshotai-cn
+                     :together :nvidia :cerebras
+                     :cloudflare-ai-gateway)
+                   :test #'eq))))))
 
 (defun openai-chat-tools (model tools)
   (list-json-array
