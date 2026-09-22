@@ -1,0 +1,4 @@
+status	old_path	new_path	decision
+A	-	packages/chord/src/state/diff.ts	chord state replication added in 10d1ad621; outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/state/draft.ts	chord state replication added in 10d1ad621; outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/state/value.ts	chord state replication added in 10d1ad621; outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
