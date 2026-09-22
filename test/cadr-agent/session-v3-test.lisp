@@ -247,6 +247,27 @@
             :key #'cadr-agent:session-list-info-id
             :test #'string=))))))))
 
+(test compaction-null-keep-boundary-uses-its-own-id
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "null-keep"
+              :timestamp 100))
+           (entry-id
+             (cadr-agent:session-append-compaction
+              session "summary" nil nil 12))
+           (entry
+             (gethash
+              entry-id
+              (cadr-agent::session-by-id session))))
+      (is (stringp entry-id))
+      (is (string=
+           entry-id
+           (cadr-agent:session-entry-first-kept-id entry))))))
+
 (test session-v3-writes-reference-header-and-all-entry-envelopes
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
