@@ -1060,15 +1060,15 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         # Locked to tip baseline-visible-strings.json after the v0.87.0
         # pin inventory refresh. Recount from the fixture:
-        # 549 sites, 1221 branches, 1158 printable-visible, 63
+        # 552 sites, 1234 branches, 1171 printable-visible, 63
         # terminal-protocol, 269 source-inventory entries.
-        self.assertEqual(549, len(inventory["entries"]))
+        self.assertEqual(552, len(inventory["entries"]))
         self.assertEqual(
-            1221,
+            1234,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1158,
+            1171,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
