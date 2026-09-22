@@ -40,6 +40,7 @@
   (supports-tools-p t :type boolean)
   (reasoning-p nil :type boolean)
   (thinking-level-map nil :type list)
+  (input-limits nil :type list)
   (headers nil :type list)
   (compat nil :type list))
 

@@ -85,7 +85,8 @@ pipeline lives.")
                (and content
                     (funcall
                      *tool-result-image-normalize-function*
-                     content))))
+                     content
+                     (agent-model agent)))))
         (when (and normalized
                    (not (eq normalized content)))
           (setf

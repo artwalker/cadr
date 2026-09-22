@@ -473,12 +473,13 @@
            (progn
              (setf
               cadr-agent::*tool-result-image-normalize-function*
-              (lambda (content)
+              (lambda (content &optional model)
                 (normalize-tool-result-images
                  content
                  :auto-resize-p
                  (settings-auto-resize-images-p
-                  settings-manager))))
+                  settings-manager)
+                 :model model)))
              t))
          (available-models
            (model-registry-available-models

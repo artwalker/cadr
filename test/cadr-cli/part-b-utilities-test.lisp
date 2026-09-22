@@ -951,3 +951,48 @@
             (cadr-cli::format-crash-extension-hint '("npm:memory"))))
       (is (search "npm:memory" hint))
       (is (search "cadr -ne" hint)))))
+
+(test model-image-input-limits-shrink-tool-result-images
+  (multiple-value-bind (width height bytes quality)
+      (cadr-cli::image-input-resize-limits
+       (cadr-ai:make-model
+        :input-limits
+        '(:images (:resize (:max-width 32
+                            :max-height 16
+                            :max-bytes 1000
+                            :jpeg-quality 50)))))
+    (is (= 32 width))
+    (is (= 16 height))
+    (is (= 1000 bytes))
+    (is (= 50 quality)))
+  (multiple-value-bind (width height)
+      (cadr-cli::image-input-resize-limits nil)
+    (is (= 2000 width))
+    (is (= 2000 height)))
+  (let* ((png
+           (cadr-cli::encode-rgba-png
+            #(255 0 0 255
+              0 255 0 255
+              0 0 255 255
+              255 255 255 255)
+            2 2))
+         (original
+           (cadr-cli::encode-base64-bytes png))
+         (model
+           (cadr-ai:make-model
+            :input-limits
+            '(:images (:resize (:max-width 1 :max-height 1)))))
+         (normalized
+           (cadr-cli::normalize-tool-result-images
+            (list
+             (cadr-ai:make-image-content
+              :data original
+              :mime-type "image/png"))
+            :model model))
+         (image
+           (find-if
+            (lambda (block)
+              (typep block 'cadr-ai:image-content))
+            normalized)))
+    (is (typep image 'cadr-ai:image-content))
+    (is (not (string= original (cadr-ai:image-content-data image))))))
