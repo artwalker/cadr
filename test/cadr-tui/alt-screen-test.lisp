@@ -686,6 +686,44 @@
         (1+ (getf rect :row))))
       (is (cadr-tui:renderer-following-output-p renderer)))))
 
+(test alt-screen-jump-label-column-ignores-scrollbar-visibility
+  ;; pi@16787ad5b tui-alt-screen.ts — auto scrollbar hide must not
+  ;; move the jump-to-end label (#9136).
+  (let* ((label " ↓ Jump to latest message · End ")
+         (lines
+           (loop for index from 1 to 20
+                 collect (format nil "line ~D" index)))
+         (hidden
+           (cadr-tui:make-terminal-renderer
+            (make-alt-recording-terminal :rows 4 :columns 48)
+            :alt-p t
+            :scrollbar-mode :hidden
+            :scroll-to-end-indicator-function (lambda () label)))
+         (shown
+           (cadr-tui:make-terminal-renderer
+            (make-alt-recording-terminal :rows 4 :columns 48)
+            :alt-p t
+            :scrollbar-mode :always
+            :scroll-to-end-indicator-function (lambda () label))))
+    (cadr-tui:renderer-start hidden)
+    (cadr-tui:renderer-start shown)
+    (alt-render hidden lines)
+    (alt-render shown lines)
+    (cadr-tui:renderer-scroll-to-top hidden)
+    (cadr-tui:renderer-scroll-to-top shown)
+    (alt-render hidden lines)
+    (alt-render shown lines)
+    (let ((hidden-rect
+            (cadr-tui::terminal-renderer-scroll-to-end-indicator-rect
+             hidden))
+          (shown-rect
+            (cadr-tui::terminal-renderer-scroll-to-end-indicator-rect
+             shown)))
+      (is (not (null hidden-rect)))
+      (is (not (null shown-rect)))
+      (is (= (getf hidden-rect :column)
+             (getf shown-rect :column))))))
+
 (test alt-screen-restores-terminal-before-exit-and-prints-document
   (let* ((terminal
            (make-alt-recording-terminal :rows 3))
