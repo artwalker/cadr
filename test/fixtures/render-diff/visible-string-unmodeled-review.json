@@ -33,47 +33,47 @@
       "reason": "The CLI-argument diagnostics printer emits the same 'Error: '/'Warning: ' prefixes as the modeled reportDiagnostics site at main.ts:97; the byte parity of both is locked by the cli-error-sweep scenario."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/bug-report.ts:172",
+      "site": "packages/coding-agent/src/modes/interactive/bug-report.ts:174",
       "verdict": "covered-by-nested-site",
       "reason": "showLoader wraps BorderedLoader for the upload spinner; the fixed 'Uploading bug report...' text rides the already-modeled loader component path, not a new presentation sink."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/bug-report.ts:57",
+      "site": "packages/coding-agent/src/modes/interactive/bug-report.ts:59",
       "verdict": "covered-by-nested-site",
       "reason": "showLoader wraps BorderedLoader; the summary progress string is a runtime template over the session model name, and the loader component is already modeled under extension/UI construction captures."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2799",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2812",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showExtensionNotify; the matched quotes are the 'info'|'warning'|'error' type literals."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:3130",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:3143",
       "verdict": "control-token-not-presentation",
       "reason": "The 'logout' literal is a mode token selecting the selector variant; the presented strings live inside showOAuthSelector's modeled construction."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5667",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5679",
       "verdict": "covered-by-nested-site",
       "reason": "showSelector callback; the presentation strings are the nested selector/component constructions on following lines, which are modeled."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5692",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5704",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showLoginProviderSelector; matched quotes belong to the parameter type annotation."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5705",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5717",
       "verdict": "covered-by-nested-site",
       "reason": "showSelector callback; the presentation strings are the nested selector/component constructions on following lines, which are modeled."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5735",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5747",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showOAuthSelector; matched quotes belong to the mode parameter type annotation."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5968",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5980",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showAuthSelect; no presentation literal on the declaration line."
     },
