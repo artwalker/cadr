@@ -38,7 +38,7 @@ git diff --stat \
 | 过期的 prompt-cache warming 不再补刷新 | 未开始 |
 | 崩溃栈里标出已加载扩展 | 未开始 |
 | 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | cadr 的 `src/cadr-cli/media.lisp` 已要求完整签名 |
-| 坏掉的 prompt template frontmatter 要报资源警告 | 未开始 |
+| 坏掉的 prompt template frontmatter 要报资源警告 | `malformed-prompt-frontmatter-is-a-resource-warning`。缺冒号的 frontmatter 不加载模板，并给出 `:parse-failed` |
 | compaction 可用 `null` keep 边界 | 未开始 |
 | 滚动条隐藏时 jump-to-end 标签不移位 | 未开始 |
 
