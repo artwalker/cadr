@@ -1048,7 +1048,8 @@
     ;; adjacent session/codec helpers landed in B8 owners.
     ;; +16 Goal 26: system-message replay and turn-boundary helpers
     ;; in messages.lisp and loop/turns.lisp.
-    (is (= 357 definition-count)
+    ;; +1 Goal 26: declare-turn-system-message in loop/turns.lisp.
+    (is (= 358 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
