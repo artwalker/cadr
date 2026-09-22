@@ -40,6 +40,6 @@ git diff --stat \
 | 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | cadr 的 `src/cadr-cli/media.lisp` 已要求完整签名 |
 | 坏掉的 prompt template frontmatter 要报资源警告 | `malformed-prompt-frontmatter-is-a-resource-warning`。缺冒号的 frontmatter 不加载模板，并给出 `:parse-failed` |
 | compaction 可用 `null` keep 边界 | 未开始 |
-| 滚动条隐藏时 jump-to-end 标签不移位 | 未开始 |
+| 滚动条隐藏时 jump-to-end 标签不移位 | `alt-screen-jump-label-column-ignores-scrollbar-visibility`。标签按整行居中，滚动条只裁切末列 |
 
 v0.86.0 与 v0.86.1 上尚未落地的缺口仍然有效。

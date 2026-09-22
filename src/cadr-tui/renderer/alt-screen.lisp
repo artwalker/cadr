@@ -189,9 +189,9 @@
 
 (defun composite-scroll-to-end-indicator
     (renderer lines width height)
-  ;; pi@16787ad5b tui-alt-screen.ts:1618-1635 — when follow-end is
-  ;; armed but the viewport is not at the bottom, center the jump
-  ;; label on the last transcript row (leaving the scrollbar column).
+  ;; pi@16787ad5b tui-alt-screen.ts:1618-1645 — center the jump
+  ;; label on the full transcript width. Scrollbar visibility clips the
+  ;; drawn text before the last column and does not move the column.
   (setf (terminal-renderer-scroll-to-end-indicator-rect renderer)
         nil)
   (let ((indicator
@@ -206,26 +206,29 @@
       (return-from composite-scroll-to-end-indicator lines))
     (let* ((row (1- (min height (length lines))))
            (line (nth row lines))
-           (available-width
-             (if (alt-scrollbar-visible-p
-                  renderer
-                  (terminal-renderer-content-line-count renderer)
-                  height)
-                 (max 0 (1- width))
-                 width)))
-      (when (or (null line) (image-line-p line)
-                (<= available-width 0))
+           (scrollbar-p
+             (alt-scrollbar-visible-p
+              renderer
+              (terminal-renderer-content-line-count renderer)
+              height)))
+      (when (or (null line) (image-line-p line) (<= width 0))
         (return-from composite-scroll-to-end-indicator lines))
       (let* ((raw (funcall indicator))
-             (text
+             (label
                (if (stringp raw)
-                   (truncate-to-width raw available-width "")
+                   (truncate-to-width raw width "")
                    ""))
-             (text-width (visible-width text)))
-        (when (zerop text-width)
+             (label-width (visible-width label)))
+        (when (zerop label-width)
           (return-from composite-scroll-to-end-indicator lines))
-        (let ((column
-                (floor (- available-width text-width) 2)))
+        (let* ((column (floor (- width label-width) 2))
+               (right-edge (if scrollbar-p (1- width) width))
+               (text
+                 (truncate-to-width
+                  label (max 0 (- right-edge column)) ""))
+               (text-width (visible-width text)))
+          (when (zerop text-width)
+            (return-from composite-scroll-to-end-indicator lines))
           (setf (nth row lines)
                 (concatenate
                  'string
