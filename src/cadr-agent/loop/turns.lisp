@@ -55,7 +55,25 @@
       (current-agent-system-prompt agent)
       (registry-tools (agent-tool-registry agent))))))
 
+(defun declare-turn-system-message (agent)
+  ;; pi@16787ad5b agent-loop.ts declareToolChanges. The declaration
+  ;; lives on the in-memory transcript for this turn. It is not a
+  ;; session entry: idle history must not pick up the live tool set.
+  (let ((messages (agent-messages agent)))
+    (when (and messages
+               (not (some #'agent-system-message-p messages)))
+      (setf (agent-messages agent)
+            (cons
+             (make-agent-system-message
+              :content (or (current-agent-system-prompt agent) "")
+              :tools-added
+              (copy-list
+               (registry-tools (agent-tool-registry agent)))
+              :timestamp (cadr-ai::unix-milliseconds))
+             messages)))))
+
 (defun stream-assistant (agent)
+  (declare-turn-system-message agent)
   (let* ((started-p nil)
          (last-partial nil)
          (messages (copy-list (agent-messages agent)))

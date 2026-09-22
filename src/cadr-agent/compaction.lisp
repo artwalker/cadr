@@ -63,6 +63,16 @@
      ((typep message 'compaction-summary-agent-message)
       (utf16-code-unit-length
        (compaction-summary-agent-message-summary message)))
+     ((typep message 'agent-system-message)
+      (+ (utf16-code-unit-length
+          (agent-system-message-content message))
+         (if (agent-system-message-tools-added message)
+             (utf16-code-unit-length
+              (cadr-ai::stringify-json
+               (cadr-ai::list-json-array
+                (mapcar #'declared-tool-json
+                        (agent-system-message-tools-added message)))))
+             0)))
      (t 0))
    4))
 
@@ -115,19 +125,12 @@
         (cadr-ai::list-json-array
          (mapcar #'declared-tool-json tools))))))
 
-(defun projected-context-tokens (messages prompt tools)
+(defun projected-context-tokens (messages)
   ;; pi@16787ad5b compaction.ts estimateProjectedContextTokens.
-  ;; With no applicable assistant usage the folded system message,
-  ;; including tool declarations, is part of the context count.
-  (let ((tokens (context-estimated-tokens messages)))
-    (cond
-      ((some #'valid-assistant-usage-p messages) tokens)
-      ((null messages) tokens)
-      ((some #'agent-system-message-p messages) tokens)
-      (t
-       (+ tokens
-          (text-estimated-tokens (or prompt ""))
-          (declared-tools-estimated-tokens tools))))))
+  ;; Tool declarations count only once a system message carries them.
+  ;; A transcript that has not started a provider turn stays on the
+  ;; message text alone.
+  (context-estimated-tokens messages))
 
 (defun compaction-field
     (from-extension-p extension key fallback)

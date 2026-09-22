@@ -1010,11 +1010,7 @@
                   (1+ compaction-position)))
                (let ((estimate
                        (cadr-agent::projected-context-tokens
-                        (cadr-agent:agent-messages agent)
-                        (cadr-agent::agent-system-prompt agent)
-                        (cadr-agent::registry-tools
-                         (cadr-agent::agent-tool-registry
-                          agent)))))
+                        (cadr-agent:agent-messages agent))))
                  (* 100d0
                     (/ estimate window))))))
          (current-cache-hit-rate ()
