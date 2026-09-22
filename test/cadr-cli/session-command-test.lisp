@@ -978,3 +978,30 @@
            (cadr-cli::clone-agent-session
             agent directory)
            'cadr-agent:session)))))
+
+(test offline-bug-report-writes-a-local-zip
+  (with-test-directory (root)
+    (let ((agent
+            (cadr-agent:make-agent
+             :provider :mock
+             :model (cli-mock-model)))
+          (output (make-string-output-stream))
+          (previous (uiop:getenv "CADR_OFFLINE")))
+      (unwind-protect
+           (uiop:with-current-directory (root)
+             (setf (uiop:getenv "CADR_OFFLINE") "1")
+             (is (cadr-cli::handle-session-command
+                  "/bug" agent
+                  :cwd root
+                  :output output))
+             (let ((zips
+                     (directory
+                      (merge-pathnames
+                       "cadr-bug-report-*.zip" root))))
+               (is (= 1 (length zips))))
+             (let ((text (get-output-stream-string output)))
+               (is (search "Bug report written:" text))
+               (is (null (search "Upload" text)))))
+        (if previous
+            (setf (uiop:getenv "CADR_OFFLINE") previous)
+            (sb-posix:unsetenv "CADR_OFFLINE"))))))
