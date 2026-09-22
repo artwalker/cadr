@@ -27,7 +27,7 @@ git diff --stat \
 
 | 面 | 处置 |
 |---|---|
-| 追加式 context edit，省略或替换单条消息而不改写历史 | 未开始 |
+| 追加式 context edit，省略或替换单条消息而不改写历史 | `context-edit-omits-a-message-without-rewriting-history`。`session-append-context-edit` 追加编辑；nil 从后续 `session-messages` 省略，字符串替换内容；原条目仍在 |
 | `turn_end` 与 `agent_before_settle` 可返回 entries 并要求下一轮请求 | 未开始 |
 | `context_with_system` 在完整转录上变换 system 消息 | 未开始 |
 | 按模型配置图片输入缩放 | 未开始 |

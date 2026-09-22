@@ -268,6 +268,66 @@
            entry-id
            (cadr-agent:session-entry-first-kept-id entry))))))
 
+(test context-edit-omits-a-message-without-rewriting-history
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "context-edit"
+              :timestamp 100))
+           (message-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "secret"
+               :timestamp 101)))
+           (kept
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "kept"
+               :timestamp 102))))
+      (cadr-agent:session-append-context-edit
+       session message-id nil)
+      (is (string=
+           "secret"
+           (cadr-ai:user-message-content
+            (cadr-agent:session-entry-message
+             (gethash message-id
+                      (cadr-agent::session-by-id session))))))
+      (is (equal
+           '("kept")
+           (mapcar #'cadr-ai:user-message-content
+                   (cadr-agent:session-messages session))))
+      (cadr-agent:session-append-context-edit
+       session kept "replaced")
+      (is (equal
+           '("replaced")
+           (mapcar #'cadr-ai:user-message-content
+                   (cadr-agent:session-messages session))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "ok"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 103))
+      (let ((reloaded
+              (cadr-agent:load-session
+               (cadr-agent:session-path session))))
+        (is (equal
+             '("replaced")
+             (mapcar #'cadr-ai:user-message-content
+                     (remove-if-not
+                      (lambda (message)
+                        (typep message 'cadr-ai:user-message))
+                      (cadr-agent:session-messages reloaded)))))))))
+
 (test session-v3-writes-reference-header-and-all-entry-envelopes
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)

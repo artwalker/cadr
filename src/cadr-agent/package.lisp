@@ -311,6 +311,7 @@
    #:session-branch
    #:session-append-message
    #:session-append-compaction
+   #:session-append-context-edit
    #:session-append-thinking-level-change
    #:session-append-model-change
    #:session-append-branch-summary

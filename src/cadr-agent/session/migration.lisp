@@ -104,8 +104,11 @@
        (when (or (eq key "name") (string= key "name"))
          (setf (session-entry-name entry) value)))
       (#\r
-       (when (string= key "retainedTail")
-         (setf (session-entry-retained-tail entry) value))))))
+       (cond
+         ((string= key "retainedTail")
+          (setf (session-entry-retained-tail entry) value))
+         ((string= key "replacement")
+          (setf (session-entry-data entry) value)))))))
 
 (defconstant +swar-lsb+ #x01010101)
 (defconstant +swar-msb+ #x80808080)
@@ -1860,7 +1863,18 @@
              ((or (eq key "arguments") (string= key "arguments"))
               (visit-arguments))
              ((or (eq key "content") (string= key "content"))
-              (values #'visit-content-block nil :array)))))
+              (values #'visit-content-block nil :array))
+             ((string= key "replacement")
+              (let ((content nil)
+                    (seen nil))
+                (values
+                 (lambda (field value)
+                   (when (or (eq field "content")
+                             (string= field "content"))
+                     (setf content value
+                           seen t)))
+                 (lambda ()
+                   (if seen content 'null))))))))
       (if octet-p
           (cadr-ai::parse-json-octets
            line
@@ -2274,6 +2288,8 @@
     ((or (eq raw "custom") (string= raw "custom")) :custom)
     ((or (eq raw "custom_message") (string= raw "custom_message"))
      :custom-message)
+    ((or (eq raw "context_edit") (string= raw "context_edit"))
+     :context-edit)
     ((or (eq raw "label") (string= raw "label")) :label)
     ((or (eq raw "session_info") (string= raw "session_info"))
      :session-info)
@@ -2322,6 +2338,7 @@
             :branch-summary
             :custom
             :custom-message
+            :context-edit
             :label
             :session-info
             :leaf))
@@ -2520,6 +2537,40 @@
               (t
                (content-blocks-from-json
                 content))))))
+        (:context-edit
+         (let ((target-id
+                 (progn
+                   (unless
+                       (session-seen-p
+                        entry +session-seen-target-id+)
+                     (session-failure
+                      path line-number
+                      "Session record is missing targetId"))
+                   (session-entry-target-id entry))))
+           (unless
+               (and (stringp target-id)
+                    (gethash target-id by-id))
+             (session-failure
+              path line-number
+              "Invalid context edit at line ~D"
+              line-number))
+           (let ((content (session-entry-content entry)))
+             (unless
+                 (or
+                  (not
+                   (session-seen-p
+                    entry +session-seen-content+))
+                  (stringp content))
+               (session-failure
+                path line-number
+                "Invalid context edit at line ~D"
+                line-number))
+             (setf (session-entry-target-id entry) target-id
+                   (session-entry-data entry)
+                   (if (session-seen-p
+                        entry +session-seen-content+)
+                       content
+                       :omit)))))
         (:label
          (let ((target-id
                  (progn
