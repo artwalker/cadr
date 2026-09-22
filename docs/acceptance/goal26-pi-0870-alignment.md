@@ -35,7 +35,7 @@ git diff --stat \
 | `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | https://github.com/artwalker/cadr/pull/867 。`context-handler-omits-system-messages-and-restores-the-request`。切片后的对话仍带上重放后的 prompt 和工具 |
 | 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | https://github.com/artwalker/cadr/pull/856 。`unknown-openai-completions-endpoint-is-not-strict`。未知 provider 默认不发 strict；内置厂商保持原默认；显式 `:supports-strict-mode` 仍优先 |
 | `/bug` 离线只写本地 zip，不上传 | https://github.com/artwalker/cadr/pull/865 。`offline-bug-report-writes-a-local-zip`。`CADR_OFFLINE=1` 时 `/bug` 仍写出本地 zip，状态是 `Bug report written` |
-| 过期的 prompt-cache warming 不再补刷新 | 未开始 |
+| 过期的 prompt-cache warming 不再补刷新 | `late-cache-refresh-is-not-sent` 与 `late-cache-refresh-is-rechecked-after-the-extension-decision`。超过 refresh deadline 的补刷新不发出，状态是 `cache refresh deadline missed` |
 | 崩溃栈里标出已加载扩展 | `crash-stack-names-the-loaded-extension`。致命错误的用户消息附上 `cadr -ne` 提示 |
 | 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | `gif-image-detection-requires-a-complete-signature`。`detect-image-mime-type` 只认完整签名 |
 | 坏掉的 prompt template frontmatter 要报资源警告 | `malformed-prompt-frontmatter-is-a-resource-warning`。缺冒号的 frontmatter 不加载模板，并给出 `:parse-failed` |

@@ -86,6 +86,11 @@
    #:compaction-summary-agent-message
    #:make-compaction-summary-agent-message
    #:convert-agent-messages-to-llm
+   #:make-cache-warmer
+   #:cache-warmer-start
+   #:refresh-cache-warmer
+   #:cache-warmer-status
+   #:get-cache-warming-delay-ms
    #:file-operations
    #:make-file-operations
    #:file-operations-read

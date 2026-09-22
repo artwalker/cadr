@@ -476,5 +476,126 @@
               do
               (sb-thread:condition-wait
                (agent-idle-condition agent)
-               (agent-state-lock agent))))))
-  nil)
+               (agent-state-lock agent)))))))
+
+(defparameter +max-warming-age-ms+ (* 60 60000))
+(defparameter +max-idle-warming-age-ms+ (* 30 60000))
+
+(defstruct cache-warm-run
+  (ttl-ms 0 :type integer)
+  (delay-ms 0 :type integer)
+  (refresh-deadline-at 0 :type integer)
+  (next-warm-at 0 :type integer)
+  (started-at 0 :type integer)
+  (phase :streaming :type keyword)
+  (current-p (lambda () t) :type function))
+
+(defstruct cache-warmer
+  (run nil)
+  (inactive-reason "waiting for first request" :type string)
+  (inactive-p t :type boolean)
+  (now-function
+   (lambda () (cadr-core:unix-milliseconds))
+   :type function)
+  (warm-function
+   (lambda (run) (declare (ignore run)) nil)
+   :type function)
+  (decide-function nil)
+  (mode-function (lambda () :streaming) :type function))
+
+(defun cache-warmer-now (warmer)
+  (funcall (cache-warmer-now-function warmer)))
+
+(defun get-cache-warming-delay-ms (ttl-ms)
+  (when (> ttl-ms 10000)
+    (max 1
+         (floor
+          (min (* ttl-ms 0.9)
+               (- ttl-ms 10000))))))
+
+(defun stop-cache-warmer (warmer reason)
+  (setf (cache-warmer-run warmer) nil
+        (cache-warmer-inactive-p warmer) t
+        (cache-warmer-inactive-reason warmer) reason)
+  warmer)
+
+(defun cache-warmer-status (warmer)
+  (if (or (cache-warmer-inactive-p warmer)
+          (null (cache-warmer-run warmer)))
+      (list :state :inactive
+            :reason (cache-warmer-inactive-reason warmer))
+      (list :state :scheduled
+            :next-warm-at
+            (cache-warm-run-next-warm-at
+             (cache-warmer-run warmer)))))
+
+(defun schedule-cache-warm-run (warmer run)
+  (let* ((now (cache-warmer-now warmer))
+         (delay (cache-warm-run-delay-ms run))
+         (next (+ now delay))
+         (age-limit
+           (+ (cache-warm-run-started-at run)
+              (if (eq (cache-warm-run-phase run) :idle)
+                  +max-idle-warming-age-ms+
+                  +max-warming-age-ms+))))
+    (setf (cache-warm-run-next-warm-at run) next
+          ;; Half the pre-expiry margin remains for a late timer.
+          ;; Past that, a refresh is a full-price cache write.
+          (cache-warm-run-refresh-deadline-at run)
+          (+ next
+             (floor
+              (- (cache-warm-run-ttl-ms run) delay)
+              2)))
+    (when (or (> next age-limit) (>= now age-limit))
+      (stop-cache-warmer
+       warmer
+       (if (eq (cache-warm-run-phase run) :idle)
+           "30-minute idle safety limit reached"
+           "one-hour safety limit reached"))))
+  run)
+
+(defun cache-refresh-deadline-missed (warmer run)
+  (cond
+    ((<= (cache-warmer-now warmer)
+         (cache-warm-run-refresh-deadline-at run))
+     nil)
+    (t
+     (stop-cache-warmer warmer "cache refresh deadline missed")
+     t)))
+
+(defun refresh-cache-warmer (warmer run)
+  (unless (eq (cache-warmer-run warmer) run)
+    (return-from refresh-cache-warmer nil))
+  (when (cache-refresh-deadline-missed warmer run)
+    (return-from refresh-cache-warmer nil))
+  (let ((action :warm))
+    (when (cache-warmer-decide-function warmer)
+      (handler-case
+          (setf action
+                (funcall (cache-warmer-decide-function warmer)))
+        (condition ()
+          (setf action :warm))))
+    (when (or (not (eq (cache-warmer-run warmer) run))
+              (cache-refresh-deadline-missed warmer run))
+      (return-from refresh-cache-warmer nil))
+    (when (eq action :warm)
+      (funcall (cache-warmer-warm-function warmer) run))
+    (when (eq (cache-warmer-run warmer) run)
+      (schedule-cache-warm-run warmer run)))
+  run)
+
+(defun cache-warmer-start (warmer &key ttl-ms (current-p (lambda () t)))
+  (let ((delay (get-cache-warming-delay-ms ttl-ms)))
+    (unless delay
+      (return-from cache-warmer-start
+        (stop-cache-warmer warmer "cache lifetime unavailable")))
+    (let ((run
+            (make-cache-warm-run
+             :ttl-ms ttl-ms
+             :delay-ms delay
+             :started-at (cache-warmer-now warmer)
+             :current-p current-p)))
+      (setf (cache-warmer-run warmer) run
+            (cache-warmer-inactive-p warmer) nil)
+      (schedule-cache-warm-run warmer run)
+      run)))
