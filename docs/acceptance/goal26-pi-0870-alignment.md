@@ -34,7 +34,7 @@ git diff --stat \
 | 去掉 `shouldStopAfterTurn`，改用 `finishTurn` | `finish-turn-end-stops-the-run` 与 `finish-turn-continue-requests-another-provider-turn`。`:end` 停住；`:continue` 在没有工具和 steering 时再请求一轮；错误和中止仍直接结束 |
 | `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | 未开始。与 v0.86.1 上未落地的 system-message 栈一起做 |
 | 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | https://github.com/artwalker/cadr/pull/856 。`unknown-openai-completions-endpoint-is-not-strict`。未知 provider 默认不发 strict；内置厂商保持原默认；显式 `:supports-strict-mode` 仍优先 |
-| `/bug` 离线只写本地 zip，不上传 | 未开始 |
+| `/bug` 离线只写本地 zip，不上传 | `offline-bug-report-writes-a-local-zip`。`CADR_OFFLINE=1` 时 `/bug` 仍写出本地 zip，状态是 `Bug report written` |
 | 过期的 prompt-cache warming 不再补刷新 | 未开始 |
 | 崩溃栈里标出已加载扩展 | `crash-stack-names-the-loaded-extension`。致命错误的用户消息附上 `cadr -ne` 提示 |
 | 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | `gif-image-detection-requires-a-complete-signature`。`detect-image-mime-type` 只认完整签名 |
