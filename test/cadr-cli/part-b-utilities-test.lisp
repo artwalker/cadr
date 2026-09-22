@@ -905,3 +905,19 @@
      (lambda (path)
        (write-text path "ignored")
        1)))))
+
+(test gif-image-detection-requires-a-complete-signature
+  ;; pi@16787ad5b mime.ts — "GIF" alone is text, not an image (#9755).
+  (flet ((bytes (text)
+           (map '(vector (unsigned-byte 8)) #'char-code text)))
+    (is (string=
+         "image/gif"
+         (cadr-cli::detect-image-mime-type (bytes "GIF87a"))))
+    (is (string=
+         "image/gif"
+         (cadr-cli::detect-image-mime-type (bytes "GIF89a"))))
+    (is (null
+         (cadr-cli::detect-image-mime-type
+          (bytes "GIF is not an image"))))
+    (is (null
+         (cadr-cli::detect-image-mime-type (bytes "GIF8"))))))
