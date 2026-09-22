@@ -1957,8 +1957,11 @@ render loopback login received
                     (context-percent
                       (* 100d0
                          (/
-                          (cadr-agent::context-estimated-tokens
-                           (cadr-agent:agent-messages agent))
+                          (cadr-agent::projected-context-tokens
+                           (cadr-agent:agent-messages agent)
+                           (cadr-agent::agent-system-prompt agent)
+                           (cadr-agent::registry-tools
+                            (cadr-agent::agent-tool-registry agent)))
                           (cadr-ai:model-context-window
                            current-model)))))
                (append

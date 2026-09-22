@@ -286,11 +286,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "027d3ac9536fe857f52b290095314153711da6290897ff6c97200ae21a318e42",
+          "pi": "0e59fbb06ec4db5534832288c522b9d65be2e7310d146089d2793f39ea7358ac",
           "cadr": "15d83eafe4fc0cc5eb671fb6fbbda5b9c9f0ae0f81f615d113ee727b29e1a28d"
         },
         "narrow": {
-          "pi": "ca68c64ab71fa9cf1b6c54dcb60240eaf4c44c79ef41d14807eb48adec75012d",
+          "pi": "b574e12c60ca8c07ada2073abd8e117db706015cff00c959b1fd530393e3db80",
           "cadr": "8befc1e641a828b04cba1ae0a4d82ad8851dc0206f2d4c68d1671ca1e017f6f0"
         }
       },
@@ -4200,8 +4200,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "44157ecb8b88ce3687e6977846f188e6a4895e0e22165d3e876fde96b5d9b83a",
-          "cadr": "50daec9b45b9b87d1f56a07c4f12b7fb2504b621bf14cff1b3f0cf46cb014f31"
+          "pi": "78e146cce166e4946311963c095bb1675fd295d6c98c5de4a75a01cd634d2c3e",
+          "cadr": "5e070cb005a0235728afa04188832057ddca50600e142799be90d3cea8eccfe7"
         }
       },
       "note": "At example-tic-tac-toe/ttt-played [wide] both overlays show X in the center cell, Turn: O (Agent), Agent is thinking, the empty-faux-queue error, and the same 1.7k footer. The semantic residual is the startup-chrome scroll offset (I04 surfaces): pi's top row is the tic-tac-toe.ts extension line and the Player X separator, while cadr still shows the tail of the user-move prompt. I01 raw segmentation remains."
@@ -4217,8 +4217,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "dad5f996c27f716a020c0f0cab7ce4160c4223913f875f3cdea71b1af73b1e98",
-          "cadr": "dad5f996c27f716a020c0f0cab7ce4160c4223913f875f3cdea71b1af73b1e98"
+          "pi": "231b94a7a7c56295f9ba7a2ece371b119646741cdcd7235dd927b4c84be99542",
+          "cadr": "231b94a7a7c56295f9ba7a2ece371b119646741cdcd7235dd927b4c84be99542"
         }
       },
       "note": "At example-tic-tac-toe/ttt-played [narrow] the semantic screens match, including the center X, the agent-turn status, Agent is thinking, and the empty-faux-queue error. Only raw ANSI segmentation differs (I01)."
@@ -4323,12 +4323,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "656494e9a90e342ec097be393aca71187771cf78b5c94674f89d1b3fdf3f616f",
-          "cadr": "a9f64bbc9945c85c9bdd631e129bae26e522774ad4a29ee76af53ba6f19b551c"
+          "pi": "48a3f44236a50452d1ce24f537be96f4a8afe423f068d5df014958753f2bf1fd",
+          "cadr": "b7a4b04334eaa3bf1bd403050e89d4f48ab55a086656de9713ad7f1ff1da091c"
         },
         "narrow": {
-          "pi": "b2803a48c3fcc693f7fc4a7f2540d4550505c0a1ba69c738831b40a22bd9251a",
-          "cadr": "310fd0c3b2bcbdc427b95c14db61cfc1ae44e8408f6f6dfbc04e7a84eabb445f"
+          "pi": "56bc3cc00d1a373f2fdf1643a982a5e59666cc59260308cee4cfed883d57124c",
+          "cadr": "ef261d5e436afb7882df64f6545ab3edeb943a17f67d6c6a6b67fc71b3181a07"
         }
       },
       "note": "At example-tic-tac-toe/process-exit the overlay is gone and both sides show the empty-faux-queue error with matching 1.7k footers. The residual is the startup-chrome scroll offset (I04 surfaces): wide, pi's top row is the tic-tac-toe.ts line plus the Player X separator while cadr still shows the user-move prompt tail; narrow, pi retains the startup help and [Extensions] line while cadr retains the text board summary and the same prompt. I01 teardown remains."
@@ -6518,12 +6518,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e141c237131e71aa63221d9122dcd5443816f6302d39237f878730b789b87178",
-          "cadr": "ee63e33a5d02edd8683f0747d26d694ce86abc5070e1ac4cc6867fba2c8bb8d5"
+          "pi": "c3db35578eb29f97a90084bb9556a82dcafefc41d17df99da980bfc8161e4069",
+          "cadr": "7ad1466c1ddf4b9954412043f6ceebbdbdd73dfeab5f634bf7e779957bcc16aa"
         },
         "narrow": {
-          "pi": "cc75b88627bf468b9ae1f39a1cd1a704f98e5251d7a08d9af6a002f9b7d57345",
-          "cadr": "5b13680a8ce656a1207f329b38e7d664d446347594ebddeeeceee88a04e8d10c"
+          "pi": "b6a86110eafaa7e4721b63bb687d7691e7e4c53b307c8dea3dc2dbdd22c6e36f",
+          "cadr": "c1b85737f7b6ded6eab0d7b285643b6cb4c6d423b237828092107bee488145b8"
         }
       },
       "note": "At provider-error/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.87.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
@@ -6541,12 +6541,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0203dffa68455f8025f6f1e4ec90e0000265da8b20296be18b76c8b4f760a9c1",
-          "cadr": "570c21f50a0215fffcdc963455d77c855fe66ccc92fe21b11b2e8c1958efe27a"
+          "pi": "f4f7c44146c3ec89dd59cf2cd04126e44931e40b24c1aa4558bfda69396298ff",
+          "cadr": "5bab335c2245193a21bcb98f27d9b3db61e77eeb03e6ad285e283b0bc44d9287"
         },
         "narrow": {
-          "pi": "1fbbce59fa528e739243e3f6b3a24c5d71abb8f88166c2fafb9474f18cecd4f7",
-          "cadr": "316904de4cd869412ca2458059d1a7c8f3c642b2e99aae04c036a326cf84e201"
+          "pi": "7c30db5ce93be0bdec04d5180951446fb8a87dbade28fcf86de846238d107dbb",
+          "cadr": "9bf30f009a8b0ae723071c6aaf1d770febbd5d60e8495aa56350e2d69bce9712"
         }
       },
       "note": "At provider-error/provider-error [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.87.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
@@ -6674,12 +6674,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d9488d704460629381d7e6fb966a624d258341e57163653abef60b61ca9f960a",
-          "cadr": "03c7b1023b27eb9d2032cb5ca26c92cadab96d4ea858f33f7e3f8d5fa4d9f382"
+          "pi": "5bdb066335bc33239491180a2303ce53b60ffdcecb8f9a39483ddaa5d825bd3c",
+          "cadr": "d8badcb09a9a08ebd6e5e1b22dde60a9ab591a4dea67682315cce33af0746425"
         },
         "narrow": {
-          "pi": "6283fb11564b3936b7c14c891a37262ac9b23879e016baf5d8a72d3875fd5556",
-          "cadr": "0d43e2297d5721f7c4fa9904e467b617715cd551d4a6f844c8b907d10200f2c2"
+          "pi": "da9a2f0ada0e2f4d44f5f182ff0292f41f14c979973b9f0f9ac60fb85f165cb5",
+          "cadr": "42ac75842abd819c3dd751714f5625868b93ab2eef64743bdd7698b507ae0e82"
         }
       },
       "note": "At stream-interrupt-queue/busy-queue [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.87.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). The gray Working status rule is canonicalized to one spinner frame and one ellipsis, so that animation is not a residual. Also covers narrow after theme-cache SHA refresh."
@@ -6715,12 +6715,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0601368bee2106248d755dc800278d79c27cf5c7c509765e55e19ce3b7353d02",
-          "cadr": "952c1a4418e3b4e5306355d1ea248486e1c797031ae534b962d8982ebc9a0d21"
+          "pi": "16fea56f590f7d98b245fe39783ce33bcf6126aaeed21014b1afbe9395ef2f10",
+          "cadr": "d59e211395175e5c6746ff7af32aa42de8682494c69385b0e82637b5f87f2dd2"
         },
         "narrow": {
-          "pi": "4e9c20cf39fc3a17fafdbd20a6e450aafcf018d7ce09a99262848710b54ef49f",
-          "cadr": "cbaad341202f1b8617e9244c9b769ca38f3d755d459ce0f1b552b64f3a43d07c"
+          "pi": "166607a70f386850b521e597682fdd375845c74ec98e0c1475c9edfb2c410447",
+          "cadr": "984edc3bf267297a775262b6d51df23790ec8bd6fb84b0f85ffe2766913c3184"
         }
       },
       "note": "At stream-interrupt-queue/stream-aborted [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v0.87.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
