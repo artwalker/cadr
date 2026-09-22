@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1481,
+  "expected_findings": 1483,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -9147,6 +9147,14 @@
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
     {
+      "path": "src/cadr-agent/compaction.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@16787ad5b compaction.ts estimateProjectedContextTokens.",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
       "path": "src/cadr-agent/export-html/template.js",
       "kind": "pi-token",
       "token": "pi",
@@ -9239,6 +9247,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "         ;; pi@16787ad5b agent-loop.ts:295 converts agent-level",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/loop/turns.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@16787ad5b agent-loop.ts declareToolChanges. The declaration is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
