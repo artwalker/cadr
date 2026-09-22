@@ -23,4 +23,23 @@ git diff --stat \
 
 机械钉点先落地。用户可见增量与枚举仍待跟进。v0.86.0 与 v0.86.1 上尚未落地的缺口仍然有效。本钉点不把它们勾掉。不新造 intentional-difference 类。不追 `main`。
 
-发布说明是 [v0.87.0](https://github.com/earendil-works/pi/releases/tag/v0.87.0)。
+发布说明是 [v0.87.0](https://github.com/earendil-works/pi/releases/tag/v0.87.0)。下表是必须跟进的面。完整增量以机械枚举为准。
+
+| 面 | 处置 |
+|---|---|
+| 追加式 context edit，省略或替换单条消息而不改写历史 | 未开始 |
+| `turn_end` 与 `agent_before_settle` 可返回 entries 并要求下一轮请求 | 未开始 |
+| `context_with_system` 在完整转录上变换 system 消息 | 未开始 |
+| 按模型配置图片输入缩放 | 未开始 |
+| 去掉 `shouldStopAfterTurn`，改用 `finishTurn` | 未开始 |
+| `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | 未开始。与 v0.86.1 上未落地的 system-message 栈一起做 |
+| 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | 进行中 |
+| `/bug` 离线只写本地 zip，不上传 | 未开始 |
+| 过期的 prompt-cache warming 不再补刷新 | 未开始 |
+| 崩溃栈里标出已加载扩展 | 未开始 |
+| 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | cadr 的 `src/cadr-cli/media.lisp` 已要求完整签名 |
+| 坏掉的 prompt template frontmatter 要报资源警告 | 未开始 |
+| compaction 可用 `null` keep 边界 | 未开始 |
+| 滚动条隐藏时 jump-to-end 标签不移位 | 未开始 |
+
+v0.86.0 与 v0.86.1 上尚未落地的缺口仍然有效。
