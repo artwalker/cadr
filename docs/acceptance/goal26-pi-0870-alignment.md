@@ -28,7 +28,7 @@ git diff --stat \
 | 面 | 处置 |
 |---|---|
 | 追加式 context edit，省略或替换单条消息而不改写历史 | `context-edit-omits-a-message-without-rewriting-history`。`session-append-context-edit` 追加编辑；nil 从后续 `session-messages` 省略，字符串替换内容；原条目仍在 |
-| `turn_end` 与 `agent_before_settle` 可返回 entries 并要求下一轮请求 | `turn-end-boundary-entries-request-another-provider-turn` 与 `agent-before-settle-entries-request-another-provider-turn`。条目写入会话后，能继续时再请求一轮；不能继续时停住 |
+| `turn_end` 与 `agent_before_settle` 可返回 entries 并要求下一轮请求 | https://github.com/artwalker/cadr/pull/866 。`turn-end-boundary-entries-request-another-provider-turn` 与 `agent-before-settle-entries-request-another-provider-turn`。条目写入会话后，能继续时再请求一轮；不能继续时停住 |
 | `context_with_system` 在完整转录上变换 system 消息 | 未开始 |
 | 按模型配置图片输入缩放 | https://github.com/artwalker/cadr/pull/864 。`model-image-input-limits-shrink-tool-result-images`。`input-limits` 的 resize 覆盖 2000x2000 默认，并用于进入历史的工具图片 |
 | 去掉 `shouldStopAfterTurn`，改用 `finishTurn` | `finish-turn-end-stops-the-run` 与 `finish-turn-continue-requests-another-provider-turn`。`:end` 停住；`:continue` 在没有工具和 steering 时再请求一轮；错误和中止仍直接结束 |
