@@ -46,4 +46,4 @@ v0.86.0 与 v0.86.1 上尚未落地的缺口仍然有效。
 
 核心 render-diff 的可见字符串清单已按 v0.87.0 重抽（552 个位点，1234 个分支）。unmodeled-sink 审查里 9 个位点只是行号平移，原文判定没变。173 个检查点的语义屏哈希更新，是因为横幅、changelog 和自定义标题里的版本从 v0.86.1 换成 v0.87.0。I04 仍只覆盖产品身份换行。
 
-页脚上下文百分比还没对齐。`stream-interrupt-queue`、`provider-error`、`example-tic-tac-toe` 上 pi 从 `0.0%` 或 `0.1%` 变成 `1.0%` 或 `1.3%`，cadr 仍是旧数字。这不是产品身份差，不能写进 I04。`fatal-crash` 的栈路径要走 9 位缓存名 `cadr-render-diff-pi-16787ad5b`，规范化才认 `<PI_BASELINE>`。
+页脚上下文百分比的估算已跟上。没有可用 assistant usage 时，`projected-context-tokens` 把系统提示和工具声明算进去。默认七个工具加固定提示是 1262 token，128k 窗口上显示 `1.0%`，与 v0.87.0 的 `estimateProjectedContextTokens` 一致。测试是 `projected-context-tokens-count-tool-declarations-without-usage`。渲染屏还没按这个估算重抓。`fatal-crash` 的栈路径要走 9 位缓存名 `cadr-render-diff-pi-16787ad5b`，规范化才认 `<PI_BASELINE>`。

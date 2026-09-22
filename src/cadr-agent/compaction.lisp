@@ -96,6 +96,39 @@
                 :key #'message-estimated-tokens
                 :initial-value 0))))
 
+(defun declared-tool-json (tool)
+  (let ((object
+          (cadr-ai::json-object
+           "description" (cadr-ai:tool-description tool)
+           "name" (cadr-ai:tool-name tool)
+           "parameters" (cadr-ai:tool-parameters tool))))
+    (when (cadr-ai:tool-constrained-sampling tool)
+      (setf (gethash "constrainedSampling" object)
+            (cadr-ai:tool-constrained-sampling tool)))
+    object))
+
+(defun declared-tools-estimated-tokens (tools)
+  (if (null tools)
+      0
+      (text-estimated-tokens
+       (cadr-ai::stringify-json
+        (cadr-ai::list-json-array
+         (mapcar #'declared-tool-json tools))))))
+
+(defun projected-context-tokens (messages prompt tools)
+  ;; pi@16787ad5b compaction.ts estimateProjectedContextTokens.
+  ;; With no applicable assistant usage the folded system message,
+  ;; including tool declarations, is part of the context count.
+  (let ((tokens (context-estimated-tokens messages)))
+    (cond
+      ((some #'valid-assistant-usage-p messages) tokens)
+      ((null messages) tokens)
+      ((some #'agent-system-message-p messages) tokens)
+      (t
+       (+ tokens
+          (text-estimated-tokens (or prompt ""))
+          (declared-tools-estimated-tokens tools))))))
+
 (defun compaction-field
     (from-extension-p extension key fallback)
   ;; One owner of the extension-vs-generated pick. Five copies
