@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1475,
+  "expected_findings": 1481,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -703,6 +703,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.0 (+0, ecac0a9c4)`.",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.1 (+0, 13cbf77df)`.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2599,6 +2607,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "- Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 26: pin fixed pi baseline from v0.86.1 (`13cbf77df`) to",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -7926,7 +7942,7 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_PACKAGE",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.86.1\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.87.0\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -7942,7 +7958,7 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_SHA256",
-      "line": "PI_AI_MODEL_DATA_SHA256 = \"f3c35bf3c606b09f62ba92d2c7c89e63e0ca18075470102d5565684c524b7efd\"",
+      "line": "PI_AI_MODEL_DATA_SHA256 = \"f2adf9de809d035f76f8dadf3d148720ebeef4606a848ab36ee834d895ae812f\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -8790,7 +8806,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.86.1\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.87.0\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -8838,7 +8854,7 @@
       "path": "scripts/render-diff.py",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.86.1\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.87.0\"",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
@@ -9182,6 +9198,14 @@
       "path": "src/cadr-agent/loop/agent-loop.lisp",
       "kind": "pi-token",
       "token": "pi",
+      "line": "              ;; pi@16787ad5b agent-session.ts finishTurn wrapper:",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-agent/loop/agent-loop.lisp",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "        ;; pi@16787ad5b agent-loop.ts #8782: compact before the next",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
@@ -9231,6 +9255,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; pi SessionManager.getEntries().length",
+      "occurrences": 1,
+      "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-agent/session/journal.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@16787ad5b session-manager.ts appendCompaction \u2014 a null keep",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9447,6 +9479,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; pi@16787ad5b api/openai-completions.ts:892-940 \u2014 each entry",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@16787ad5b openai-completions.ts detectCompat defaults",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9919,6 +9959,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "happened.  pi@16787ad5b interactive-mode.ts:4557-4567",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/images.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@16787ad5b ModelImageResizeOptions. Absent fields keep the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10734,7 +10782,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@16787ad5b tui-alt-screen.ts:1618-1635 \u2014 when follow-end is",
+      "line": "  ;; pi@16787ad5b tui-alt-screen.ts:1618-1645 \u2014 center the jump",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
