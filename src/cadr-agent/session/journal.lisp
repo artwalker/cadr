@@ -370,33 +370,39 @@
     (session-failure
      (session-path session) nil
      "Compaction summary must be a string"))
-  (unless (and (stringp first-kept-id)
-               (gethash first-kept-id
-                        (session-by-id session)))
-    (session-failure
-     (session-path session) nil
-     "Compaction first-kept entry does not exist: ~S"
-     first-kept-id))
-  (dolist (id source-ids)
-    (unless (gethash id (session-by-id session))
-      (session-failure
-       (session-path session) nil
-       "Compaction source entry does not exist: ~S" id)))
-  (append-session-entry
-   session
-   (make-session-entry
-    :type :compaction
-    :id (make-session-entry-id
-         (session-by-id session))
-    :parent-id (session-leaf-id session)
-    :timestamp (cadr-ai::unix-milliseconds)
-    :summary summary
-    :source-ids (copy-list source-ids)
-    :first-kept-id first-kept-id
-    :tokens-before tokens-before
-    :details details
-    :usage usage
-    :from-hook-p (not (null from-hook-p)))))
+  ;; pi@16787ad5b session-manager.ts appendCompaction — a null keep
+  ;; boundary stores this compaction entry's own id.
+  (let ((id (make-session-entry-id (session-by-id session))))
+    (cond
+      ((null first-kept-id)
+       (setf first-kept-id id))
+      ((and (stringp first-kept-id)
+            (gethash first-kept-id (session-by-id session)))
+       nil)
+      (t
+       (session-failure
+        (session-path session) nil
+        "Compaction first-kept entry does not exist: ~S"
+        first-kept-id)))
+    (dolist (source-id source-ids)
+      (unless (gethash source-id (session-by-id session))
+        (session-failure
+         (session-path session) nil
+         "Compaction source entry does not exist: ~S" source-id)))
+    (append-session-entry
+     session
+     (make-session-entry
+      :type :compaction
+      :id id
+      :parent-id (session-leaf-id session)
+      :timestamp (cadr-ai::unix-milliseconds)
+      :summary summary
+      :source-ids (copy-list source-ids)
+      :first-kept-id first-kept-id
+      :tokens-before tokens-before
+      :details details
+      :usage usage
+      :from-hook-p (not (null from-hook-p))))))
 
 (defun make-session-child-entry (session type)
   (make-session-entry
