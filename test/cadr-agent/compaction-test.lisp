@@ -1868,6 +1868,9 @@
     (is (= 14
            (cadr-agent::projected-context-tokens
             (list declared user))))
+    (is (= 14
+           (cadr-agent::projected-context-tokens
+            (list user) declared)))
     (is (= 80
            (cadr-agent::projected-context-tokens
             (list

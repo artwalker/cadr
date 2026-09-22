@@ -82,7 +82,8 @@
   (retry-condition
     (sb-thread:make-waitqueue :name "cadr-agent-retry"))
   (event-lock
-    (sb-thread:make-mutex :name "cadr-agent-events")))
+    (sb-thread:make-mutex :name "cadr-agent-events"))
+  (declared-system-message nil))
 
 (defun emit-agent-event (agent type
                          &key

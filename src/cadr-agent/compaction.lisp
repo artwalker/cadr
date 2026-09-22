@@ -125,12 +125,15 @@
         (cadr-ai::list-json-array
          (mapcar #'declared-tool-json tools))))))
 
-(defun projected-context-tokens (messages)
+(defun projected-context-tokens (messages &optional declared)
   ;; pi@16787ad5b compaction.ts estimateProjectedContextTokens.
-  ;; Tool declarations count only once a system message carries them.
-  ;; A transcript that has not started a provider turn stays on the
-  ;; message text alone.
-  (context-estimated-tokens messages))
+  ;; Tool declarations count only after this turn has declared them.
+  ;; Idle history has no declaration and stays on the message text.
+  (context-estimated-tokens
+   (if (and declared
+            (not (some #'agent-system-message-p messages)))
+       (cons declared messages)
+       messages)))
 
 (defun compaction-field
     (from-extension-p extension key fallback)
