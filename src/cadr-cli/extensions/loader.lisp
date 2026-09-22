@@ -673,6 +673,7 @@ Returns (values any-error-p any-extension-load-failure-p)."
                (cadr-agent::replace-extension-bundles
                 (cli-extension-manager-host manager)
                 bundles))))
+        (note-loaded-crash-extensions bundles)
         (dolist (conflict conflicts)
           (extension-manager-notify
            manager conflict :warning))

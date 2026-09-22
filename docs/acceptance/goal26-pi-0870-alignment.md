@@ -36,7 +36,7 @@ git diff --stat \
 | 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | https://github.com/artwalker/cadr/pull/856 。`unknown-openai-completions-endpoint-is-not-strict`。未知 provider 默认不发 strict；内置厂商保持原默认；显式 `:supports-strict-mode` 仍优先 |
 | `/bug` 离线只写本地 zip，不上传 | 未开始 |
 | 过期的 prompt-cache warming 不再补刷新 | 未开始 |
-| 崩溃栈里标出已加载扩展 | 未开始 |
+| 崩溃栈里标出已加载扩展 | `crash-stack-names-the-loaded-extension`。致命错误的用户消息附上 `cadr -ne` 提示 |
 | 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | `gif-image-detection-requires-a-complete-signature`。`detect-image-mime-type` 只认完整签名 |
 | 坏掉的 prompt template frontmatter 要报资源警告 | `malformed-prompt-frontmatter-is-a-resource-warning`。缺冒号的 frontmatter 不加载模板，并给出 `:parse-failed` |
 | compaction 可用 `null` keep 边界 | `compaction-null-keep-boundary-uses-its-own-id`。`first-kept-id` 为 nil 时记下本条 compaction 的 id |
