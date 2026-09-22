@@ -148,10 +148,10 @@
         (agent-messages-tail-head agent) messages))))
   (agent-messages-tail agent))
 
-(defun append-agent-message (agent message)
+(defun append-agent-message (agent message &key id)
   (when (agent-session agent)
     (session-append-message
-     (agent-session agent) message))
+     (agent-session agent) message :id id))
   (let ((cell (list message)))
     (if (agent-messages agent)
         (setf

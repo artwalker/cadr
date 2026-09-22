@@ -309,3 +309,175 @@
   (let ((user (cadr-ai:make-user-message :content "hi")))
     (is (eq user (cadr-agent::agent-message-to-llm user)))
     (is (cadr-agent::llm-passthrough-message-p user))))
+
+(defun call-with-boundary-session (function)
+  (let* ((root
+           (uiop:ensure-directory-pathname
+            (format nil "/tmp/cadr-boundary-~A/"
+                    (cadr-ai:uuid-v7))))
+         (sessions (merge-pathnames "sessions/" root))
+         (cwd (merge-pathnames "project/" root)))
+    (ensure-directories-exist
+     (merge-pathnames "anchor" sessions))
+    (ensure-directories-exist
+     (merge-pathnames "anchor" cwd))
+    (unwind-protect
+         (funcall
+          function
+          (cadr-agent:create-session
+           :directory sessions
+           :cwd cwd
+           :timestamp 1))
+      (uiop:delete-directory-tree
+       root :validate t :if-does-not-exist :ignore))))
+
+(test turn-end-boundary-entries-request-another-provider-turn
+  (call-with-boundary-session
+   (lambda (session)
+     (let* ((turn-ends 0)
+            (provider-calls 0)
+            (bundle
+              (make-test-extension-bundle
+               "turn-boundary"
+               (lambda ()
+                 (cadr-agent:define-event-hook
+                  :turn-end
+                  :handler
+                  (lambda (event context)
+                    (declare (ignore context))
+                    (incf turn-ends)
+                    (let ((payload
+                            (cadr-agent:extension-event-payload
+                             event)))
+                      (is (stringp
+                           (getf payload :message-entry-id)))
+                      (when (= turn-ends 1)
+                        (cadr-agent:make-extension-hook-result
+                         :entries
+                         '((:type :custom-message
+                            :custom-type "note"
+                            :content "please continue"))
+                         :continue t))))))))
+            (host (make-test-extension-host (list bundle)))
+            (*responses*
+              (list
+               (assistant
+                (list (make-text-content :text "one")))
+               (assistant
+                (list (make-text-content :text "two")))))
+            (*contexts* nil)
+            (stream (faux-stream '*responses* '*contexts*))
+            (agent
+              (make-agent
+               :provider :mock
+               :model (mock-model)
+               :session session
+               :extension-host host
+               :stream-function
+               (lambda (&rest arguments)
+                 (incf provider-calls)
+                 (apply stream arguments)))))
+       (declare (special *responses* *contexts*))
+       (agent-prompt agent "Hi")
+       (is (= 2 provider-calls))
+       (is (find "please continue"
+                 (agent-messages agent)
+                 :key (lambda (message)
+                        (and (typep message 'cadr-ai:user-message)
+                             (cadr-ai:user-message-content message)))
+                 :test #'equal))))))
+
+(test turn-end-continue-without-context-does-not-start-another-turn
+  (call-with-boundary-session
+   (lambda (session)
+     (let* ((*notifications* nil)
+            (provider-calls 0)
+            (bundle
+              (make-test-extension-bundle
+               "turn-boundary-invalid"
+               (lambda ()
+                 (cadr-agent:define-event-hook
+                  :turn-end
+                  :handler
+                  (lambda (event context)
+                    (declare (ignore event context))
+                    (cadr-agent:make-extension-hook-result
+                     :continue t))))))
+            (host
+              (make-test-extension-host
+               (list bundle)
+               :notifications '*notifications*))
+            (*responses*
+              (list
+               (assistant
+                (list (make-text-content :text "one")))
+               (assistant
+                (list (make-text-content :text "two")))))
+            (*contexts* nil)
+            (stream (faux-stream '*responses* '*contexts*))
+            (agent
+              (make-agent
+               :provider :mock
+               :model (mock-model)
+               :session session
+               :extension-host host
+               :stream-function
+               (lambda (&rest arguments)
+                 (incf provider-calls)
+                 (apply stream arguments)))))
+       (declare (special *responses* *contexts* *notifications*))
+       (agent-prompt agent "Hi")
+       (is (= 1 provider-calls))
+       (is (search
+            "turn_end requested continuation without runnable model context"
+            (second (first *notifications*))))))))
+
+(test agent-before-settle-entries-request-another-provider-turn
+  (call-with-boundary-session
+   (lambda (session)
+     (let* ((settles 0)
+            (provider-calls 0)
+            (bundle
+              (make-test-extension-bundle
+               "settle-boundary"
+               (lambda ()
+                 (cadr-agent:define-event-hook
+                  :agent-before-settle
+                  :handler
+                  (lambda (event context)
+                    (declare (ignore event context))
+                    (incf settles)
+                    (when (= settles 1)
+                      '(:entries
+                        ((:type :custom-message
+                          :custom-type "note"
+                          :content "settle continue"))
+                        :continue t)))))))
+            (host (make-test-extension-host (list bundle)))
+            (*responses*
+              (list
+               (assistant
+                (list (make-text-content :text "one")))
+               (assistant
+                (list (make-text-content :text "two")))))
+            (*contexts* nil)
+            (stream (faux-stream '*responses* '*contexts*))
+            (agent
+              (make-agent
+               :provider :mock
+               :model (mock-model)
+               :session session
+               :extension-host host
+               :stream-function
+               (lambda (&rest arguments)
+                 (incf provider-calls)
+                 (apply stream arguments)))))
+       (declare (special *responses* *contexts*))
+       (agent-prompt agent "Hi")
+       (is (= 2 provider-calls))
+       (is (find "settle continue"
+                 (agent-messages agent)
+                 :key (lambda (message)
+                        (and (typep message 'cadr-ai:user-message)
+                             (cadr-ai:user-message-content message)))
+                 :test #'equal))))))

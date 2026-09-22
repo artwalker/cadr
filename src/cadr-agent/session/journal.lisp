@@ -361,13 +361,18 @@
           activity)))))
   (session-entry-id entry))
 
-(defun session-append-message (session message)
+(defun session-append-message (session message &key id)
+  (when (and id (gethash id (session-by-id session)))
+    (session-failure
+     (session-path session) nil
+     "Session entry id already exists: ~A" id))
   (append-session-entry
    session
    (make-session-entry
     :type :message
-    :id (make-session-entry-id
-         (session-by-id session))
+    :id (or id
+            (make-session-entry-id
+             (session-by-id session)))
     :parent-id (session-leaf-id session)
     :timestamp (message-timestamp message)
     :message message)))
