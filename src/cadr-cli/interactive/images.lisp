@@ -107,6 +107,17 @@
     (t
      (values nil nil nil))))
 
+(defun image-input-resize-limits (model)
+  ;; pi@16787ad5b ModelImageResizeOptions. Absent fields keep the
+  ;; global 2000x2000 and 4.5MiB inline defaults.
+  (let* ((limits (and model (cadr-ai:model-input-limits model)))
+         (resize (getf (getf limits :images) :resize)))
+    (values
+     (or (getf resize :max-width) 2000)
+     (or (getf resize :max-height) 2000)
+     (or (getf resize :max-bytes) (* 9 512 1024))
+     (or (getf resize :jpeg-quality) 80))))
+
 (defun process-image-bytes
     (bytes mime-type
      &key (auto-resize-p t)
@@ -225,7 +236,7 @@
                      "[Image omitted: could not be resized below the inline image size limit.]"))))))))
 
 (defun normalize-tool-result-images
-    (content &key (auto-resize-p t))
+    (content &key (auto-resize-p t) model)
   ;; pi@16787ad5b utils/tool-result-images.ts — normalize image blocks
   ;; once as tool results enter history.  Processing failures keep the
   ;; original block (the tool produced it; a missing backend must not
@@ -247,11 +258,19 @@
                  (processed
                    (and bytes
                         (handler-case
-                            (process-image-bytes
-                             bytes
-                             (cadr-ai:image-content-mime-type
-                              block)
-                             :auto-resize-p auto-resize-p)
+                            (multiple-value-bind
+                                  (max-width max-height
+                                   max-bytes jpeg-quality)
+                                (image-input-resize-limits model)
+                              (process-image-bytes
+                               bytes
+                               (cadr-ai:image-content-mime-type
+                                block)
+                               :auto-resize-p auto-resize-p
+                               :max-width max-width
+                               :max-height max-height
+                               :max-bytes max-bytes
+                               :jpeg-quality jpeg-quality))
                           (condition () nil)))))
             (if (or (null bytes) (null processed))
                 (push block normalized)

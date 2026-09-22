@@ -30,6 +30,7 @@
    #:model-supports-images-p
    #:model-supports-tools-p
    #:model-reasoning-p
+   #:model-input-limits
    #:text-content
    #:make-text-content
    #:text-content-text
