@@ -1849,47 +1849,46 @@
       (is (null (cadr-agent::agent-compaction-cancellation agent))))))
 
 (test projected-context-tokens-count-tool-declarations-without-usage
-  ;; pi@16787ad5b estimateProjectedContextTokens fallback. The seven
-  ;; default tools plus the fixed render prompt land in the 1.0%
-  ;; bucket; this fixture locks the same addition with a literal.
+  ;; pi@16787ad5b estimateProjectedContextTokens. Tools count only
+  ;; when a system message carries them. Bare history stays on its text.
   (let* ((tool
            (cadr-ai:make-tool
             :name "t"
             :description "d"
             :parameters (make-hash-table :test #'equal)))
-         (messages
-           (list
-            (cadr-ai:make-user-message :content "abcd")))
-         (tokens
-           (cadr-agent::projected-context-tokens
-            messages "hi" (list tool))))
-    (is (= 14 tokens))
+         (declared
+           (cadr-agent:make-agent-system-message
+            :content "hi"
+            :tools-added (list tool)))
+         (user (cadr-ai:make-user-message :content "abcd")))
+    (is (= 1
+           (cadr-agent::projected-context-tokens (list user))))
     (is (= 0
+           (cadr-agent::projected-context-tokens nil)))
+    (is (= 14
            (cadr-agent::projected-context-tokens
-            nil "hi" (list tool))))
+            (list declared user))))
     (is (= 80
            (cadr-agent::projected-context-tokens
             (list
-             (cadr-ai:make-user-message :content "abcd")
+             declared
+             user
              (cadr-ai:make-assistant-message
               :content nil
               :api :openai-responses
               :provider :openai
               :model "tiny"
               :usage (cadr-ai:make-usage :input 60 :output 20 :total 80)
-              :stop-reason :stop))
-            "hi"
-            (list tool))))
+              :stop-reason :stop)))))
     (is (= 14
            (cadr-agent::projected-context-tokens
             (list
-             (cadr-ai:make-user-message :content "abcd")
+             declared
+             user
              (cadr-ai:make-assistant-message
               :content nil
               :api :openai-responses
               :provider :openai
               :model "tiny"
               :usage (cadr-ai:make-usage :input 60 :output 20 :total 80)
-              :stop-reason :error))
-            "hi"
-            (list tool))))))
+              :stop-reason :error)))))))

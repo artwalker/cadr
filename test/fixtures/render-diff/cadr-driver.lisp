@@ -1958,10 +1958,7 @@ render loopback login received
                       (* 100d0
                          (/
                           (cadr-agent::projected-context-tokens
-                           (cadr-agent:agent-messages agent)
-                           (cadr-agent::agent-system-prompt agent)
-                           (cadr-agent::registry-tools
-                            (cadr-agent::agent-tool-registry agent)))
+                           (cadr-agent:agent-messages agent))
                           (cadr-ai:model-context-window
                            current-model)))))
                (append
