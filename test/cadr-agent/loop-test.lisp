@@ -481,3 +481,152 @@
                         (and (typep message 'cadr-ai:user-message)
                              (cadr-ai:user-message-content message)))
                  :test #'equal))))))
+
+(defun prompt-context (agent)
+  (agent-prompt agent "Hi")
+  (first *contexts*))
+
+(test context-handler-omits-system-messages-and-restores-the-request
+  (let* ((declared
+           (make-tool :name "declared" :description "from the transcript"))
+         (registry-tool
+           (make-tool :name "registry" :description "executable"))
+         (system
+           (cadr-agent:make-agent-system-message
+            :content "transcript prompt"
+            :tools-added (list declared)))
+         (seen nil)
+         (bundle
+           (make-test-extension-bundle
+            "context-restore"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :context
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (setf seen
+                       (getf
+                        (cadr-agent:extension-event-payload event)
+                        :messages))
+                 (list :messages (last seen)))))))
+         (host (make-test-extension-host (list bundle)))
+         (*responses*
+           (list
+            (assistant
+             (list (make-text-content :text "ok")))))
+         (*contexts* nil)
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :system-prompt "agent prompt"
+            :tools (list registry-tool)
+            :messages (list system)
+            :extension-host host
+            :stream-function
+            (faux-stream '*responses* '*contexts*))))
+    (declare (special *responses* *contexts*))
+    (let ((context (prompt-context agent)))
+    (is (every
+         (lambda (message)
+           (not (cadr-agent:agent-system-message-p message)))
+         seen))
+    (is (string=
+         "transcript prompt"
+         (cadr-ai:context-system-prompt context)))
+    (is (equal
+         '("declared")
+         (mapcar #'cadr-ai:tool-name
+                 (cadr-ai:context-tools context)))))))
+
+(test context-with-system-replaces-the-request-prompt
+  (let* ((system
+           (cadr-agent:make-agent-system-message
+            :content "original prompt"))
+         (bundle
+           (make-test-extension-bundle
+            "context-with-system"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :context-with-system
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (let ((messages
+                         (getf
+                          (cadr-agent:extension-event-payload
+                           event)
+                          :messages)))
+                   (is (cadr-agent:agent-system-message-p (first messages)))
+                   (list
+                    :messages
+                    (cons
+                     (cadr-agent:make-agent-system-message
+                      :content "replaced prompt")
+                     (rest messages)))))))))
+         (host (make-test-extension-host (list bundle)))
+         (*responses*
+           (list
+            (assistant
+             (list (make-text-content :text "ok")))))
+         (*contexts* nil)
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :system-prompt "agent prompt"
+            :messages (list system)
+            :extension-host host
+            :stream-function
+            (faux-stream '*responses* '*contexts*))))
+    (declare (special *responses* *contexts*))
+    (is (string=
+         "replaced prompt"
+         (cadr-ai:context-system-prompt (prompt-context agent))))))
+
+(test context-with-system-drop-reports-a-missing-prompt
+  (let* ((*notifications* nil)
+         (system
+           (cadr-agent:make-agent-system-message
+            :content "original prompt"))
+         (bundle
+           (make-test-extension-bundle
+            "context-drop-system"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :context-with-system
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (list
+                  :messages
+                  (cadr-agent::conversation-messages
+                   (getf
+                    (cadr-agent:extension-event-payload event)
+                    :messages))))))))
+         (host
+           (make-test-extension-host
+            (list bundle)
+            :notifications '*notifications*))
+         (*responses*
+           (list
+            (assistant
+             (list (make-text-content :text "ok")))))
+         (*contexts* nil)
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :system-prompt "agent prompt"
+            :messages (list system)
+            :extension-host host
+            :stream-function
+            (faux-stream '*responses* '*contexts*))))
+    (declare (special *notifications* *responses* *contexts*))
+    (let ((context (prompt-context agent)))
+    (is (null (cadr-ai:context-system-prompt context)))
+    (is (null (cadr-ai:context-tools context)))
+    (is (search
+         "leading system message"
+         (second (first *notifications*)))))))

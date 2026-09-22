@@ -29,10 +29,10 @@ git diff --stat \
 |---|---|
 | 追加式 context edit，省略或替换单条消息而不改写历史 | `context-edit-omits-a-message-without-rewriting-history`。`session-append-context-edit` 追加编辑；nil 从后续 `session-messages` 省略，字符串替换内容；原条目仍在 |
 | `turn_end` 与 `agent_before_settle` 可返回 entries 并要求下一轮请求 | https://github.com/artwalker/cadr/pull/866 。`turn-end-boundary-entries-request-another-provider-turn` 与 `agent-before-settle-entries-request-another-provider-turn`。条目写入会话后，能继续时再请求一轮；不能继续时停住 |
-| `context_with_system` 在完整转录上变换 system 消息 | 未开始 |
+| `context_with_system` 在完整转录上变换 system 消息 | `context-with-system-replaces-the-request-prompt`。它看见完整转录，返回值原样成为请求 |
 | 按模型配置图片输入缩放 | https://github.com/artwalker/cadr/pull/864 。`model-image-input-limits-shrink-tool-result-images`。`input-limits` 的 resize 覆盖 2000x2000 默认，并用于进入历史的工具图片 |
 | 去掉 `shouldStopAfterTurn`，改用 `finishTurn` | `finish-turn-end-stops-the-run` 与 `finish-turn-continue-requests-another-provider-turn`。`:end` 停住；`:continue` 在没有工具和 steering 时再请求一轮；错误和中止仍直接结束 |
-| `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | 未开始。与 v0.86.1 上未落地的 system-message 栈一起做 |
+| `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | `context-handler-omits-system-messages-and-restores-the-request`。切片后的对话仍带上重放后的 prompt 和工具 |
 | 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | https://github.com/artwalker/cadr/pull/856 。`unknown-openai-completions-endpoint-is-not-strict`。未知 provider 默认不发 strict；内置厂商保持原默认；显式 `:supports-strict-mode` 仍优先 |
 | `/bug` 离线只写本地 zip，不上传 | https://github.com/artwalker/cadr/pull/865 。`offline-bug-report-writes-a-local-zip`。`CADR_OFFLINE=1` 时 `/bug` 仍写出本地 zip，状态是 `Bug report written` |
 | 过期的 prompt-cache warming 不再补刷新 | 未开始 |

@@ -8,6 +8,11 @@
    (typep value 'cadr-ai:assistant-message)
    (typep value 'cadr-ai:tool-result-message)))
 
+(defun context-transform-message-p (value)
+  (or
+   (extension-message-p value)
+   (agent-system-message-p value)))
+
 (defun assistant-tool-call-signature (message)
   (loop
     for block in
@@ -426,7 +431,7 @@
             (error
              ":TOOL-CALL-ERROR :ACTION must be :RETRY, :SKIP, or :ABORT")))))
      result)
-    ((eq event :context)
+    ((member event '(:context :context-with-system))
      (when result
        (validate-lifecycle-result-keys
         event result '(:messages))
@@ -434,9 +439,10 @@
          (unless
              (and
               (listp messages)
-              (every #'extension-message-p messages))
+              (every #'context-transform-message-p messages))
            (error
-            ":CONTEXT :MESSAGES must be a list of CADR-AI messages"))))
+            "~S :MESSAGES must be a list of conversation or system messages"
+            event))))
      result)
     ((eq event :before-agent-start)
      (when result
@@ -601,6 +607,10 @@
     (:tool-call-error
      (copy-extension-value original))
     (:context
+     (list
+      :messages
+      (conversation-messages (getf state :messages))))
+    (:context-with-system
      (list :messages (copy-list (getf state :messages))))
     (:before-agent-start
      (let ((copy (copy-list original)))
@@ -636,6 +646,8 @@
 (defun initial-lifecycle-state (event payload)
   (case event
     (:context
+     (list :messages (copy-list (getf payload :messages))))
+    (:context-with-system
      (list :messages (copy-list (getf payload :messages))))
     (:before-agent-start
      (list
@@ -673,6 +685,18 @@
       :session-before-tree)
      result)
     (:context
+     (when result
+       (let ((visible
+               (conversation-messages
+                (getf state :messages))))
+         (setf
+          (getf state :messages)
+          (restore-system-messages
+           (getf state :messages)
+           visible
+           (getf result :messages)))))
+     state)
+    (:context-with-system
      (when result
        (setf
         (getf state :messages)
@@ -766,7 +790,7 @@
       :session-before-tree)
      last-result)
     (:tool-call-error last-result)
-    (:context
+    ((:context :context-with-system)
      (list :messages (copy-list (getf state :messages))))
     (:before-agent-start
      (let ((result nil))
@@ -862,12 +886,31 @@
                               context)))))
                    (validate-lifecycle-result
                     event result handler-payload)
-                   (when result
-                     (setf last-result result))
-                   (setf
-                    state
-                    (merge-lifecycle-result
-                     event state result))
+                   (let ((leading-system-p
+                           (and
+                            (eq event :context-with-system)
+                            (agent-system-message-p
+                             (first
+                              (getf state :messages))))))
+                     (when result
+                       (setf last-result result))
+                     (setf
+                      state
+                      (merge-lifecycle-result
+                       event state result))
+                     (when
+                         (and
+                          leading-system-p
+                          (not
+                           (agent-system-message-p
+                            (first
+                             (getf state :messages)))))
+                       (notify-extension-failure
+                        host definition "Hook"
+                        (make-condition
+                         'simple-error
+                         :format-control
+                         "Handler removed the leading system message; the request has no prompt or initial tool declarations."))))
                    (when
                        (and
                         (eq event :resources-discover)
