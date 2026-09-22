@@ -62,6 +62,7 @@
              (:branch-summary "branch_summary")
              (:custom "custom")
              (:custom-message "custom_message")
+             (:context-edit "context_edit")
              (:label "label")
              (:session-info "session_info")
              (:leaf "leaf"))
@@ -146,6 +147,14 @@
         base "details"
         (json-safe-value
          (session-entry-details entry)))))
+    (:context-edit
+     (cadr-ai::json-put
+      base "targetId"
+      (session-entry-target-id entry))
+     (unless (eq (session-entry-data entry) :omit)
+       (cadr-ai::json-put
+        base "content"
+        (session-entry-data entry))))
     (:label
      (cadr-ai::json-put
       base "targetId"
@@ -660,6 +669,52 @@
            (session-entry-summary entry))
    :timestamp (session-entry-timestamp entry)))
 
+(defun context-edit-message (message replacement)
+  (let ((copy (copy-structure message)))
+    (etypecase copy
+      (cadr-ai:user-message
+       (setf (cadr-ai:user-message-content copy) replacement))
+      (cadr-ai:assistant-message
+       (setf (cadr-ai:assistant-message-content copy)
+             (list (cadr-ai:make-text-content :text replacement))))
+      (cadr-ai:tool-result-message
+       (setf (cadr-ai:tool-result-message-content copy)
+             (list (cadr-ai:make-text-content :text replacement)))))
+    copy))
+
+(defun session-append-context-edit
+    (session target-id replacement)
+  (let ((target
+          (gethash target-id (session-by-id session))))
+    (unless target
+      (session-failure
+       (session-path session) nil
+       "Entry ~A not found" target-id))
+    (unless
+        (and (eq (session-entry-type target) :message)
+             (typep (session-entry-message target)
+                    '(or cadr-ai:user-message
+                      cadr-ai:assistant-message
+                      cadr-ai:tool-result-message)))
+      (session-failure
+       (session-path session) nil
+       "Entry ~A does not contribute editable model content"
+       target-id))
+    (unless
+        (or (null replacement) (stringp replacement))
+      (session-failure
+       (session-path session) nil
+       "Context edit replacement must be null or a string"))
+    (append-session-entry
+     session
+     (make-session-entry
+      :type :context-edit
+      :id (make-session-entry-id (session-by-id session))
+      :parent-id (session-leaf-id session)
+      :timestamp (cadr-ai::unix-milliseconds)
+      :target-id target-id
+      :data (if replacement replacement :omit)))))
+
 (defun session-messages (session &optional
                                    (leaf-id
                                      (session-leaf-id session)))
@@ -667,32 +722,50 @@
              (equal leaf-id (session-%messages-leaf session)))
     (return-from session-messages
       (copy-list (session-%messages-cache session))))
-  (let ((messages
-          (loop for entry in
-                  (session-context-entries session leaf-id)
-                append
-                (case (session-entry-type entry)
-                  (:message
-                   (list (session-entry-message entry)))
-                  (:compaction
-                   (list (compaction-summary-message entry)))
-                  (:branch-summary
-                   (list
-                    (cadr-ai:make-user-message
-                     :content
-                     (format nil
-                             "The following is a summary of a branch that this conversation came back from:~%~%<summary>~%~A~%</summary>"
-                             (session-entry-summary entry))
-                     :timestamp
-                     (session-entry-timestamp entry))))
-                  (:custom-message
-                   (list
-                    (cadr-ai:make-user-message
-                     :content
-                     (session-entry-content entry)
-                     :timestamp
-                     (session-entry-timestamp entry))))
-                  (otherwise nil)))))
-    (setf (session-%messages-leaf session) leaf-id
-          (session-%messages-cache session) messages)
-    (copy-list messages)))
+  (let* ((entries (session-context-entries session leaf-id))
+         (edits (make-hash-table :test #'equal)))
+    (dolist (entry entries)
+      (when (eq (session-entry-type entry) :context-edit)
+        (setf (gethash (session-entry-target-id entry) edits)
+              entry)))
+    (let ((messages
+            (loop for entry in entries
+                  append
+                  (case (session-entry-type entry)
+                    (:message
+                     (let ((edit
+                             (gethash
+                              (session-entry-id entry) edits))
+                           (message
+                             (session-entry-message entry)))
+                       (cond
+                         ((null edit) (list message))
+                         ((eq (session-entry-data edit) :omit)
+                          nil)
+                         (t
+                          (list
+                           (context-edit-message
+                            message
+                            (session-entry-data edit)))))))
+                    (:compaction
+                     (list (compaction-summary-message entry)))
+                    (:branch-summary
+                     (list
+                      (cadr-ai:make-user-message
+                       :content
+                       (format nil
+                               "The following is a summary of a branch that this conversation came back from:~%~%<summary>~%~A~%</summary>"
+                               (session-entry-summary entry))
+                       :timestamp
+                       (session-entry-timestamp entry))))
+                    (:custom-message
+                     (list
+                      (cadr-ai:make-user-message
+                       :content
+                       (session-entry-content entry)
+                       :timestamp
+                       (session-entry-timestamp entry))))
+                    (otherwise nil)))))
+      (setf (session-%messages-leaf session) leaf-id
+            (session-%messages-cache session) messages)
+      (copy-list messages))))
