@@ -31,8 +31,7 @@
           "required": [
             "path"
           ]
-        },
-        "strict": false
+        }
       }
     }
   ]
