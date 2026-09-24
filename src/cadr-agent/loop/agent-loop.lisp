@@ -218,6 +218,11 @@
         'agent-busy-error
         :message
         "Cannot navigate the session tree while the agent is running"))
+     (when (agent-compacting-p agent)
+       (error
+        'agent-busy-error
+        :message
+        "Wait for the current compaction or tree navigation to finish before navigating the session tree."))
      (let ((session (agent-session agent)))
        (unless session
          (error

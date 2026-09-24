@@ -379,6 +379,9 @@
       (abort-extension-cancellation-signal signal)))
   agent)
 
+(defun agent-compacting-p (agent)
+  (not (null (agent-compaction-cancellation agent))))
+
 (defun note-tool-cancellation (agent signal)
   (sb-thread:with-mutex
       ((agent-state-lock agent))

@@ -1904,3 +1904,16 @@
               :model "tiny"
               :usage (cadr-ai:make-usage :input 60 :output 20 :total 80)
               :stop-reason :error)))))))
+
+(test navigate-tree-waits-while-compaction-is-in-flight
+  (let ((agent
+          (cadr-agent:make-agent
+           :provider :mock
+           :model nil))
+        (message nil))
+    (setf (cadr-agent::agent-compaction-cancellation agent) t)
+    (handler-case
+        (cadr-agent:agent-navigate-tree agent "missing")
+      (cadr-ai:cadr-error (condition)
+        (setf message (cadr-ai:cadr-error-message condition))))
+    (is (search "current compaction" message))))

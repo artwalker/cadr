@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **299 files / 139,084 lines**
+Denominator: **299 files / 139,093 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,015 | 80.5% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,024 | 80.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,019 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,891 | 13.6% | on a named paired thunk; no own bench |
 | `needs-pair` | 1 | 159 | 0.1% | must get an H pair; not a file-level idle bench |
@@ -13858,14 +13858,14 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/execution-env.lisp` | 878 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
 | `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue`, `file_mutation_queue.queue_key`, `file_mutation_queue.lock`, `file_mutation_queue.register`, `file_mutation_queue.wait_turn`, `file_mutation_queue.release_turn`, `file_mutation_queue.ensure_state`, `file_mutation_queue.call_with`, `file_mutation_queue.make_state`, `file_mutation_queue.state_key`, `file_mutation_queue.pending_count`, `file_mutation_queue.next_ticket`, `file_mutation_queue.serving_ticket`, `file_mutation_queue.waitqueue`, `file_mutation_queue.registry`, `file_mutation_queue.state_p` |
 | `src/cadr-agent/harness-events.lisp` | 75 | `harness_events.emit`, `harness_events.on`, `harness_events.watch`, `harness_events.make_start`, `harness_events.make_end`, `harness_events.event_type`, `harness_events.make_bus` |
-| `src/cadr-agent/loop/agent-loop.lisp` | 517 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/agent-loop.lisp` | 522 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 497 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 797 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 312 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
-| `src/cadr-agent/runtime.lisp` | 607 | `agent_tool_loop.runtime` |
+| `src/cadr-agent/runtime.lisp` | 610 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,188 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 483 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
@@ -13989,7 +13989,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/models/registry.lisp` | 869 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 201 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/modes/print.lisp` | 629 | `cli_print_rpc.jsonl_line` |
-| `src/cadr-cli/modes/rpc/commands.lisp` | 474 | `cli_print_rpc.asst_text`, `cli_print_rpc.cmd_list`, `cli_print_rpc.queue_parse` |
+| `src/cadr-cli/modes/rpc/commands.lisp` | 475 | `cli_print_rpc.asst_text`, `cli_print_rpc.cmd_list`, `cli_print_rpc.queue_parse` |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 125 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/modes/rpc/mode.lisp` | 100 | `cli_print_rpc.array_line`, `cli_print_rpc.bad_line`, `cli_print_rpc.ui_absent` |
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
