@@ -47,17 +47,25 @@
                   (cadr-ai::default-crash-directory))
                 secrets
                 (exit-function #'uiop:quit))
-  (cadr-ai::call-with-fatal-condition-boundary
-   function
-   :program-name program-name
-   :crash-directory crash-directory
-   :secrets
-   (remove-duplicates
-    (append secrets (crash-known-secrets))
-    :test #'string=)
-   :redactor #'redact-crash-diagnostic
-   :diagnostic-annotation #'crash-extension-diagnostic-annotation
-   :exit-function exit-function))
+  (let ((cadr-ai::*fatal-condition-side-effect*
+          (lambda (report)
+            (record-crash
+             :kind "fatal_error"
+             :message
+             (cadr-ai::fatal-condition-report-user-message
+              report)
+             :cwd (uiop:getcwd)))))
+    (cadr-ai::call-with-fatal-condition-boundary
+     function
+     :program-name program-name
+     :crash-directory crash-directory
+     :secrets
+     (remove-duplicates
+      (append secrets (crash-known-secrets))
+      :test #'string=)
+     :redactor #'redact-crash-diagnostic
+     :diagnostic-annotation #'crash-extension-diagnostic-annotation
+     :exit-function exit-function)))
 
 (defparameter *crash-extensions* nil
   "Loaded extensions whose paths may appear in a fatal backtrace.")

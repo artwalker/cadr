@@ -19,6 +19,7 @@
                               :components ((:file "threads")
                                            (:file "atomic-write")
                                            (:file "changelog-share")
+                                           (:file "crash-log")
                                            (:file "bug-report")
                                            (:file "html")
                                            (:file "resume-version-git")

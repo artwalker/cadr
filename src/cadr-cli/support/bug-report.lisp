@@ -404,7 +404,9 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
             (and agent
                  (cadr-agent::agent-thinking-level agent))))
          (diagnostics
-           (collect-bug-report-diagnostics session)))
+           (collect-bug-report-diagnostics
+            session
+            (crash-log-for-diagnostics))))
     (list
      :metadata metadata
      :diagnostics diagnostics
@@ -639,7 +641,9 @@ with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:~%~
          :summary-included
          (getf (getf metadata :session) :summary-included)
          :delivery delivery)
-        (and path (list :path (uiop:native-namestring path))))))))
+        (and path (list :path (uiop:native-namestring path)))))))
+  (when (getf (getf bundle :diagnostics) :crashes)
+    (clear-crash-log)))
 
 (defun bug-report-export-zip
     (agent bundle

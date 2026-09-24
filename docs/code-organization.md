@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 files=300 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=153 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 files=301 lines=129068 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=154 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -182,6 +182,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/support/atomic-write.lisp` | 7 | 1 | Retain the CLI compatibility entry point while delegating atomic replacement to `cadr-core`. | pass | done | core default, no restated :flush. I0: wrapper owns nothing extra. | 20 |
 | `src/cadr-cli/support/bug-report.lisp` | 159 | 10 | Redact diagnostics and write the local `/bug` ZIP archive. | pass | done | redact-url + redact-json-value. I0: CADR_* env only. | 20 |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | 10 | Strip terminal styling, parse changelogs, and publish the resulting session share. | pass | no-rewrite | Most TS-like: the hand-indexed strip-ansi scanner (lines 9-79, incf/length poking), but byte-exact strip parity on adversarial edges (unterminated OSC keeps ESC, lines 52-56; C1 0x9B introducer, line 14) is the output contract, and baseline implements it as a chalk-derived regex (pi utils/ansi.ts:29-42) whose CSI-final set deliberately differs from line 63's #x40-#x7E — swapping in cl-ppcre would be a parity risk, not a checkable improvement; the (condition () nil) parse swallows (line 245) mirror baseline failure->null. | 20 |
+| `src/cadr-cli/support/crash-log.lisp` | 201 | 13 | Persist recent fatal crashes and announce one of them at the next startup. | pass | done | crashes.json round trip. I0: five records, seven days. | 26 |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | 5 | Own the process-local event bus and its error sink. | pass | no-rewrite | Most TS-like: string-keyed channels with append-ordered handler lists (lines 4, 12-16), a JS Map | 20 |
 | `src/cadr-cli/support/external-editor.lisp` | 20 | 1 | Round-trip text through the configured external editor. | pass | no-rewrite | Most TS-like: integer-exit-status runner with zerop branch (line 15) and manual probe/delete cleanup (lines 19-20), but exit codes are inherently integers and fallback-to-original-content on nonzero exit is the baseline contract; uiop:with-temporary-file + unwind-protect + chmod #o600 (lines 4-14) is already the Lisp-native form. | 20 |
 | `src/cadr-cli/support/file-watcher.lisp` | 69 | 6 | Poll one file signature and close its worker through bounded cleanup. | pass | no-rewrite | Most TS-like: catch-all (error () (funcall on-error)) swallows (lines 39-41, 67-69), try/catch->callback style, but errors-via-callback across the watcher thread boundary is the baseline semantics; the mutex + waitqueue condition-wait poll loop (lines 53-63) and :change keyword event (line 37) are already idiomatic CL. | 20 |

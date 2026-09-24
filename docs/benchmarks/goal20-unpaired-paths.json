@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 300,
-    "lines": 140886
+    "files": 301,
+    "lines": 141110
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -1299,6 +1299,11 @@
     },
     {
       "prefix": "src/cadr-cli/support/bug-report.lisp",
+      "class": "needs-pair",
+      "hole": "cli_support"
+    },
+    {
+      "prefix": "src/cadr-cli/support/crash-log.lisp",
       "class": "needs-pair",
       "hole": "cli_support"
     },

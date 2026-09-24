@@ -194,3 +194,29 @@
              (directory
               (merge-pathnames "cadr-bug-report-*.zip"
                                root))))))))
+
+(test crash-log-round-trips-and-announces
+  (with-test-directory (root)
+    (let* ((agent-dir (merge-pathnames "agent/" root))
+           (path (merge-pathnames "crashes.json" agent-dir)))
+      (ensure-directories-exist agent-dir)
+      (let ((record
+              (cadr-cli::record-crash
+               :kind "fatal_error"
+               :message "boom from test"
+               :cwd root
+               :path path)))
+        (is (string= "boom from test" (getf record :message)))
+        (is (probe-file path))
+        (let ((taken
+                (cadr-cli::take-unnotified-crash path)))
+          (is (string= "boom from test" (getf taken :message)))
+          (is (search
+               "Run /bug to report it"
+               (cadr-cli::crash-announcement-text taken))))
+        (is (null (cadr-cli::take-unnotified-crash path)))
+        (let ((diag (cadr-cli::crash-log-for-diagnostics path)))
+          (is (= 1 (length diag)))
+          (is (null (getf (first diag) :notified))))
+        (cadr-cli::clear-crash-log path)
+        (is (null (probe-file path)))))))
