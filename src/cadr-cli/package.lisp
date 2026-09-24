@@ -335,6 +335,15 @@
    #:get-prompt-cache-ttl-ms
    #:is-replayable
    #:format-cache-warming-status
-   #:format-cache-warming-usage))
+   #:format-cache-warming-usage
+   #:model-as-cache-warm-model
+   #:set-cache-warming-mode
+   #:cache-context-is-current
+   #:wrap-stream-function-with-cache-warmer
+   #:make-live-cache-warmer
+   #:make-cache-warmer-stream-simple
+   #:agent-session-cache-warmer
+   #:agent-session-cache-warming-status
+   #:agent-session-set-cache-warming-mode))
 
 (in-package #:cadr-cli)

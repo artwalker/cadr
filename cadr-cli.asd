@@ -214,6 +214,7 @@
                              (:file "goal24-bug-report-test")
                              (:file "goal24-cache-warming-settings-test")
                              (:file "goal24-cache-warmer-test")
+                             (:file "goal24-cache-warmer-dispatch-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")

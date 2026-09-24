@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **300 files / 139,843 lines**
+Denominator: **300 files / 140,152 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,069 | 80.1% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,173 | 80.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,019 | 5.7% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,925 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 2 | 830 | 0.6% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 30 | 18,934 | 13.5% | on a named paired thunk; no own bench |
+| `needs-pair` | 2 | 1,026 | 0.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 80.1% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.9% of lines.
+- **Falsifiable vs baseline:** 80.0% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13934,7 +13934,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/websocket.lisp` | 657 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/auth.lisp` | 189 | `cli_bootstrap_sessions.bootstrap_auth` |
-| `src/cadr-cli/bootstrap/commands.lisp` | 2,825 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
+| `src/cadr-cli/bootstrap/commands.lisp` | 2,871 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/sessions.lisp` | 2,250 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 1,275 | `settings_load.http_idle` |
@@ -14005,7 +14005,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/update-checks.lisp` | 293 | `package_manager.update_argv`, `package_manager.update_env`, `package_manager.git_object_id`, `package_manager.git_output`, `package_manager.records_project_first`, `package_manager.candidate_record`, `package_manager.update_offline`, `package_manager.remote_ref`, `package_manager.update_record_result` |
 | `src/cadr-cli/repl.lisp` | 112 | `cli_bootstrap_sessions.pb_ok`, `cli_bootstrap_sessions.rt_ok`, `cli_bootstrap_sessions.dp_ok` |
 | `src/cadr-cli/resource-loader.lisp` | 524 | `resource_loader.reload`, `resource_loader.dedupe_by_name`, `resource_loader.context_from_dir`, `resource_loader.project_context`, `resource_loader.nearest_config` |
-| `src/cadr-cli/sdk/agent-session.lisp` | 535 | `cli_sdk.agent_session` |
+| `src/cadr-cli/sdk/agent-session.lisp` | 593 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
 | `src/cadr-cli/sdk/resource-service.lisp` | 378 | `skill_prompt_load.sdk_get_skills`, `skill_prompt_load.sdk_get_prompts`, `skill_prompt_load.sdk_get_themes` |
@@ -14114,7 +14114,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/types.lisp` | 210 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/package.lisp` | 340 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/package.lisp` | 349 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-core/atomic-file.lisp` | 106 | `evals_harness.artifact_persist` |
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
@@ -14141,7 +14141,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_cache_warmer` | 1 | 671 |
+| `cli_cache_warmer` | 1 | 867 |
 | `cli_support` | 1 | 159 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
