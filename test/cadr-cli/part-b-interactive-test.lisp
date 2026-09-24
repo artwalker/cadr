@@ -1127,6 +1127,7 @@
                 "hello"
                 :platform :linux
                 :x11-display-p t
+                :wsl-p nil
                 :command-runner (lambda (argv input)
                                   (declare (ignore argv input))
                                   nil)
@@ -1143,6 +1144,7 @@
               "hello"
               :platform :linux
               :wayland-display-p t
+              :wsl-p nil
               :command-runner (lambda (argv input)
                                 (declare (ignore argv input))
                                 nil))
@@ -1157,19 +1159,7 @@
               "hello"
               :platform :linux
               :termux-p t
-              :command-runner (lambda (argv input)
-                                (declare (ignore argv input))
-                                nil))
-             "")
-         (cadr-ai:configuration-error (condition)
-           (cadr-ai:cadr-error-message condition)))))
-  (is (string=
-       "Clipboard unavailable: no Wayland or X11 display detected"
-       (handler-case
-           (progn
-             (cadr-cli::copy-to-clipboard
-              "hello"
-              :platform :linux
+              :wsl-p nil
               :command-runner (lambda (argv input)
                                 (declare (ignore argv input))
                                 nil))
@@ -1286,6 +1276,276 @@
            "powershell.exe" calls
            :key #'first
            :test #'string=)))))
+
+(defun clipboard-test-hello-osc52 ()
+  (format nil "~C]52;c;aGVsbG8=~C"
+          #\Escape (code-char 7)))
+
+(defun clipboard-test-error-message
+    (text &rest args)
+  (let ((output (make-string-output-stream)))
+    (handler-case
+        (progn
+          (apply #'cadr-cli::copy-to-clipboard text
+                 :output output args)
+          nil)
+      (cadr-ai:configuration-error (condition)
+        (values
+         (cadr-ai:cadr-error-message condition)
+         (get-output-stream-string output))))))
+
+(test clipboard-without-a-display-uses-osc52
+  (let ((commands nil)
+        (output (make-string-output-stream)))
+    (is (eq :osc52
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :wsl-p nil
+             :windows-terminal-p nil
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (declare (ignore input))
+               (push argv commands)
+               nil))))
+    (is (null commands))
+    (is (string=
+         (clipboard-test-hello-osc52)
+         (get-output-stream-string output)))))
+
+(test clipboard-with-a-working-display-skips-osc52
+  (let ((commands nil)
+        (output (make-string-output-stream)))
+    (is (eq :shell
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :x11-display-p t
+             :wsl-p nil
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (push (list argv input) commands)
+               t))))
+    (is (equal
+         '((("xclip" "-selection" "clipboard") "hello"))
+         commands))
+    (is (string=
+         ""
+         (get-output-stream-string output)))))
+
+(test clipboard-display-failure-does-not-report-osc52-success
+  (let ((commands nil))
+    (multiple-value-bind (message output)
+        (clipboard-test-error-message
+         "hello"
+         :platform :linux
+         :x11-display-p t
+         :wsl-p nil
+         :command-runner
+         (lambda (argv input)
+           (declare (ignore input))
+           (push (first argv) commands)
+           nil))
+      (is (string=
+           "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access"
+           message))
+      (is (equal '("xsel" "xclip") commands))
+      (is (string= "" output))))
+  (let ((commands nil))
+    (multiple-value-bind (message output)
+        (clipboard-test-error-message
+         "hello"
+         :platform :linux
+         :wayland-p t
+         :wayland-display-p t
+         :x11-display-p t
+         :wsl-p nil
+         :command-runner
+         (lambda (argv input)
+           (declare (ignore input))
+           (push (first argv) commands)
+           nil))
+      (is (string=
+           "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access"
+           message))
+      (is (equal '("xsel" "xclip" "wl-copy") commands))
+      (is (string= "" output))))
+  (multiple-value-bind (message output)
+      (clipboard-test-error-message
+       (make-string 80000 :initial-element #\x)
+       :platform :linux
+       :wsl-p nil
+       :command-runner
+       (lambda (argv input)
+         (declare (ignore argv input))
+         nil))
+    (is (string=
+         "Clipboard unavailable: text exceeds the OSC 52 size limit"
+         message))
+    (is (string= "" output))))
+
+(test clipboard-wsl-without-display-uses-windows-clipboard
+  (with-test-directory (root)
+    (let* ((temporary
+             (merge-pathnames "cadr-wsl-clip-test.txt" root))
+           (commands nil)
+           (written nil)
+           (output (make-string-output-stream)))
+      (is (eq :shell
+              (cadr-cli::copy-to-clipboard
+               "héllo"
+               :platform :linux
+               :wsl-p t
+               :windows-terminal-p nil
+               :output output
+               :temporary-path-provider (lambda () temporary)
+               :command-runner
+               (lambda (argv input)
+                 (declare (ignore input))
+                 (push argv commands)
+                 (cond
+                   ((equal (first argv) "wslpath")
+                    (setf written
+                          (uiop:read-file-string
+                           (third argv)
+                           :external-format :utf-8))
+                    (is (= #o600
+                           (logand
+                            #o777
+                            (sb-posix:stat-mode
+                             (sb-posix:stat
+                              (namestring (third argv)))))))
+                    (values
+                     t
+                     (format nil "\\\\wsl.localhost\\Ubuntu\\tmp\\clip.txt~%")))
+                   ((equal (first argv) "powershell.exe")
+                    t)
+                   (t nil))))))
+      (is (string= "héllo" written))
+      (is (null (probe-file temporary)))
+      (is (string= "" (get-output-stream-string output)))
+      (is (equal "wslpath" (first (first (last commands)))))
+      (is (equal
+           "powershell.exe"
+           (first (first commands))))
+      (is (search
+           "Set-Clipboard"
+           (fourth (first commands))))
+      (is (search
+           "'\\\\wsl.localhost\\Ubuntu\\tmp\\clip.txt'"
+           (fourth (first commands)))))))
+
+(test clipboard-wsl-without-windows-interop-uses-osc52
+  (with-test-directory (root)
+    (let ((temporary
+            (merge-pathnames "cadr-wsl-clip-test.txt" root))
+          (commands nil)
+          (output (make-string-output-stream)))
+      (is (eq :osc52
+              (cadr-cli::copy-to-clipboard
+               "hello"
+               :platform :linux
+               :wsl-p t
+               :windows-terminal-p nil
+               :output output
+               :temporary-path-provider (lambda () temporary)
+               :command-runner
+               (lambda (argv input)
+                 (declare (ignore input))
+                 (push (first argv) commands)
+                 nil))))
+      (is (equal '("wslpath") commands))
+      (is (null (probe-file temporary)))
+      (is (string=
+           (clipboard-test-hello-osc52)
+           (get-output-stream-string output))))))
+
+(test clipboard-wsl-windows-terminal-prefers-osc52
+  (let ((commands nil)
+        (output (make-string-output-stream)))
+    (is (eq :osc52
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :wsl-p t
+             :windows-terminal-p t
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (declare (ignore input))
+               (push argv commands)
+               t))))
+    (is (null commands))
+    (is (string=
+         (clipboard-test-hello-osc52)
+         (get-output-stream-string output))))
+  (let ((commands nil)
+        (output (make-string-output-stream)))
+    (is (eq :osc52
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :wsl-p t
+             :windows-terminal-p t
+             :remote-p t
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (declare (ignore input))
+               (push argv commands)
+               t))))
+    (is (null commands))
+    (is (string=
+         (clipboard-test-hello-osc52)
+         (get-output-stream-string output))))
+  (with-test-directory (root)
+    (let ((temporary
+            (merge-pathnames "cadr-wsl-clip-test.txt" root))
+          (commands nil)
+          (output (make-string-output-stream)))
+      (is (eq :shell
+              (cadr-cli::copy-to-clipboard
+               (make-string 80000 :initial-element #\x)
+               :platform :linux
+               :wsl-p t
+               :windows-terminal-p t
+               :output output
+               :temporary-path-provider (lambda () temporary)
+               :command-runner
+               (lambda (argv input)
+                 (declare (ignore input))
+                 (push (first argv) commands)
+                 (if (equal (first argv) "wslpath")
+                     (values t "C:\\clip.txt")
+                     t)))))
+      (is (equal '("powershell.exe" "wslpath") commands))
+      (is (string= "" (get-output-stream-string output)))
+      (is (null (probe-file temporary))))))
+
+(test clipboard-wsl-with-a-display-prefers-linux-tools
+  (let ((commands nil)
+        (output (make-string-output-stream)))
+    (is (eq :shell
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :wsl-p t
+             :windows-terminal-p nil
+             :wayland-p t
+             :wayland-display-p t
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (push (list argv input) commands)
+               (equal (first argv) "wl-copy")))))
+    (is (equal
+         '((("wl-copy") "hello"))
+         commands))
+    (is (string=
+         ""
+         (get-output-stream-string output)))))
 
 (test goal16-default-wsl-clipboard-path-uses-cadr-identity
   (let ((name

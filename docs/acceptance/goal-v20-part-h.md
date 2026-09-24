@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **300 files / 140,155 lines**
+Denominator: **300 files / 140,264 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,198 | 80.1% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,307 | 80.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,019 | 5.7% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,934 | 13.5% | on a named paired thunk; no own bench |
 | `needs-pair` | 2 | 1,004 | 0.7% | must get an H pair; not a file-level idle bench |
@@ -13950,7 +13950,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 | `cli_extensions_install.llama_context_label`, `cli_extensions_install.llama_model_description`, `cli_extensions_install.llama_compact_count`, `cli_extensions_install.llama_format_context`, `cli_extensions_install.llama_js_to_fixed`, `cli_extensions_install.llama_search_exact`, `cli_extensions_install.llama_search_status`, `cli_extensions_install.llama_search_filter`, `cli_extensions_install.llama_view_width` |
 | `src/cadr-cli/extensions/loader.lisp` | 703 | `cli_extensions_install.http_timeout_p`, `cli_extensions_install.inline_factory`, `cli_extensions_install.local_system_name`, `cli_extensions_install.manager_notify`, `cli_extensions_install.output_boundary`, `cli_extensions_install.package_fragment`, `cli_extensions_install.quiet_manager`, `cli_extensions_install.same_source`, `cli_extensions_install.startup_issues` |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 574 | `cli_interactive_controller.auth_type` |
-| `src/cadr-cli/interactive/clipboard.lisp` | 469 | `cli_interactive_controller.wayland` |
+| `src/cadr-cli/interactive/clipboard.lisp` | 578 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | `cli_interactive_controller.announcement_make`, `cli_interactive_controller.announcement_url`, `cli_interactive_controller.announcement_title` |
 | `src/cadr-cli/interactive/components/armin.lisp` | 294 | `cli_selectors.armin_cell`, `cli_selectors.armin_copy_cell`, `cli_selectors.armin_copy_grid`, `cli_selectors.armin_copy_row`, `cli_selectors.armin_grid_height`, `cli_selectors.armin_make_grid`, `cli_selectors.armin_pixel`, `cli_selectors.armin_rotate_row`, `cli_selectors.armin_row_string` |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | `cli_selectors.countdown_dispose`, `cli_selectors.countdown_render`, `cli_selectors.countdown_seconds`, `cli_selectors.countdown_start_guard`, `cli_selectors.countdown_tick`, `cli_selectors.countdown_unstarted` |

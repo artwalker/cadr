@@ -45,30 +45,103 @@
 
 (defun default-clipboard-copy-runner (argv input)
   (handler-case
-      (progn
-        (uiop:run-program
-         argv
-         :input
-         (make-string-input-stream input)
-         :output nil
-         :error-output nil)
-        t)
+      (let ((stream
+              (make-string-input-stream (or input ""))))
+        (if (member (first argv)
+                    '("wslpath" "powershell.exe")
+                    :test #'string=)
+            (values
+             t
+             (uiop:run-program
+              argv
+              :input stream
+              :output :string
+              :error-output nil))
+            (progn
+              (uiop:run-program
+               argv
+               :input stream
+               :output nil
+               :error-output nil)
+              t)))
     (condition () nil)))
 
+(defun default-clipboard-text-temporary-path ()
+  (merge-pathnames
+   (format nil "cadr-wsl-clip-~A.txt"
+           (cadr-ai:uuid-v7))
+   (uiop:temporary-directory)))
+
+(defun copy-text-via-windows-clipboard
+    (text command-runner temporary-path-provider)
+  (let ((temporary (funcall temporary-path-provider)))
+    (unwind-protect
+         (handler-case
+             (progn
+               (ensure-directories-exist temporary)
+               (with-open-file
+                   (stream temporary
+                           :direction :output
+                           :if-exists :supersede
+                           :if-does-not-exist :create
+                           :external-format :utf-8)
+                 (write-string text stream))
+               (sb-posix:chmod
+                (namestring temporary) #o600)
+               (multiple-value-bind (ok output)
+                   (funcall
+                    command-runner
+                    (list "wslpath" "-w"
+                          (namestring temporary))
+                    "")
+                 (let ((windows-path
+                         (string-trim
+                          '(#\Space #\Tab #\Newline #\Return)
+                          (or output ""))))
+                   (when (or (not ok)
+                             (zerop (length windows-path)))
+                     (return-from
+                         copy-text-via-windows-clipboard
+                       nil))
+                   (funcall
+                    command-runner
+                    (list
+                     "powershell.exe" "-NoProfile" "-Command"
+                     (format
+                      nil
+                      "Set-Clipboard -Value ([System.IO.File]::ReadAllText('~A', [System.Text.Encoding]::UTF8))"
+                      (powershell-single-quote
+                       windows-path)))
+                    ""))))
+           (condition () nil))
+      (when (probe-file temporary)
+        (delete-file temporary)))))
+
+(defun emit-clipboard-osc52 (text output)
+  (let ((sequence (osc52-copy-sequence text)))
+    (when sequence
+      (write-string sequence output)
+      (finish-output output)
+      sequence)))
+
 (defun clipboard-unavailable-message
-    (&key platform termux-p wayland-display-p x11-display-p)
-  ;; A failed local write names the missing backend.
-  (if (eq platform :linux)
-      (cond
-        (termux-p
-         "Clipboard unavailable: install the Termux:API app and `termux-api` package")
-        (wayland-display-p
-         "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access")
-        (x11-display-p
-         "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access")
-        (t
-         "Clipboard unavailable: no Wayland or X11 display detected"))
-      "Clipboard unavailable"))
+    (&key platform termux-p wayland-display-p x11-display-p oversized-p)
+  ;; A failed local write names the missing backend. Headless and
+  ;; remote paths use OSC 52. This message is only for backends that
+  ;; were attempted and failed.
+  (cond
+    (oversized-p
+     "Clipboard unavailable: text exceeds the OSC 52 size limit")
+    ((eq platform :linux)
+     (cond
+       (termux-p
+        "Clipboard unavailable: install the Termux:API app and `termux-api` package")
+       (wayland-display-p
+        "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access")
+       (x11-display-p
+        "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access")
+       (t "Clipboard unavailable")))
+    (t "Clipboard unavailable")))
 
 (defun copy-to-clipboard
     (text
@@ -79,13 +152,37 @@
        wayland-display-p
        x11-display-p
        remote-p
+       (wsl-p nil wsl-p-supplied-p)
+       (windows-terminal-p nil windows-terminal-p-supplied-p)
+       environment
        native-setter
        (command-runner
          #'default-clipboard-copy-runner)
+       (temporary-path-provider
+         #'default-clipboard-text-temporary-path)
        (output *standard-output*))
-  (let ((copied-p nil)
-        (native-p nil)
-        (shell-p nil))
+  (let* ((wsl-session-p
+           (and (eq platform :linux)
+                (if wsl-p-supplied-p
+                    wsl-p
+                    (clipboard-wsl-p environment))))
+         (windows-terminal-session-p
+           (if windows-terminal-p-supplied-p
+               windows-terminal-p
+               (not
+                (null
+                 (clipboard-environment-value
+                  environment "WT_SESSION")))))
+         (headless-p
+           (and (eq platform :linux)
+                (not termux-p)
+                (not wayland-display-p)
+                (not x11-display-p)))
+         (copied-p nil)
+         (native-p nil)
+         (shell-p nil)
+         (osc52 nil)
+         (oversized-p nil))
     (when (and native-setter
                (not (eq platform :linux)))
       (handler-case
@@ -113,29 +210,41 @@
           (setf copied-p t
                 shell-p t)
           (return))))
-    (let ((osc52
-            (and remote-p
-                 (osc52-copy-sequence text))))
-      (when osc52
-        (write-string osc52 output)
-        (finish-output output)
-        (setf copied-p t))
+    (when (and (not copied-p) wsl-session-p)
+      (when (and windows-terminal-session-p
+                 (emit-clipboard-osc52 text output))
+        (setf osc52 t
+              copied-p t))
       (unless copied-p
-        (error
-         'cadr-ai:configuration-error
-         :message
-         (clipboard-unavailable-message
-          :platform platform
-          :termux-p termux-p
-          :wayland-display-p wayland-display-p
-          :x11-display-p x11-display-p)))
-      (cond
-        ((and native-p osc52) :native+osc52)
-        ((and shell-p osc52) :shell+osc52)
-        (native-p :native)
-        (shell-p :shell)
-        (osc52 :osc52)
-        (t :unknown)))))
+        (when (copy-text-via-windows-clipboard
+               text command-runner
+               temporary-path-provider)
+          (setf copied-p t
+                shell-p t))))
+    (unless osc52
+      (when (or remote-p
+                (and (not copied-p) headless-p))
+        (if (emit-clipboard-osc52 text output)
+            (setf osc52 t
+                  copied-p t)
+            (setf oversized-p t))))
+    (unless copied-p
+      (error
+       'cadr-ai:configuration-error
+       :message
+       (clipboard-unavailable-message
+        :platform platform
+        :termux-p termux-p
+        :wayland-display-p wayland-display-p
+        :x11-display-p x11-display-p
+        :oversized-p oversized-p)))
+    (cond
+      ((and native-p osc52) :native+osc52)
+      ((and shell-p osc52) :shell+osc52)
+      (native-p :native)
+      (shell-p :shell)
+      (osc52 :osc52)
+      (t :unknown))))
 
 (defstruct clipboard-image
   bytes
