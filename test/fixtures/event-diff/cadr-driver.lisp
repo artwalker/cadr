@@ -215,10 +215,7 @@
      (cadr-agent:make-agent
       :provider :faux
       :model (cadr-ai:faux-get-model handle)
-      :system-prompt
-      (format nil
-              "Event differential fixed system prompt.~%Current working directory: ~A~%"
-              (string-right-trim "/" (namestring cwd)))
+      :system-prompt "Event differential fixed system prompt."
       :tools (list (fixture-tool))
       :extension-host host
       :session session

@@ -1049,7 +1049,11 @@
     ;; +16 Goal 26: system-message replay and turn-boundary helpers
     ;; in messages.lisp and loop/turns.lisp.
     ;; +1 Goal 26: declare-turn-system-message in loop/turns.lisp.
-    (is (= 358 definition-count)
+    ;; +4 Goal 26: rendered-provider-prompt, declared-system-sections,
+    ;; emit-declared-system-message, omit-recovery-attempt.
+    ;; +4 Goal 26: the overflow cut and its helpers live with the turn
+    ;; that records the omission, so compaction.lisp stays under 1000 lines.
+    (is (= 366 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1394,7 +1398,8 @@
     ;; +2 Goal 20 floor: *cadr-cli-source-directory* + cadr-cli-source-directory
     ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
     ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
-    (is (= 279 definition-count)
+    ;; +2 Goal 26: faux-system-line and faux-message-line.
+    (is (= 281 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

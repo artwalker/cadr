@@ -167,35 +167,6 @@
    :key #'compaction-entry-estimated-tokens
    :initial-value 0))
 
-(defun compaction-cut-point (entries keep-recent-tokens)
-  ;; Reverse-then-forward is the same walk as the old (nth index …)
-  ;; downfrom loop, in O(n) instead of O(n·k) (goal 20, 12F-3).
-  (let ((accumulated 0)
-        (candidate nil)
-        (entry-count (length entries)))
-    (loop for entry in (reverse entries)
-          for reverse-index from 0
-          for index = (- (1- entry-count) reverse-index)
-          do
-          (incf accumulated
-                (compaction-entry-estimated-tokens entry))
-          (when
-              (and (eq :message
-                       (session-entry-type entry))
-                   (let ((message
-                           (session-entry-message entry)))
-                     (or
-                      (typep message 'cadr-ai:user-message)
-                      (typep message
-                             'cadr-ai:assistant-message))))
-            (setf candidate index))
-          (when (and candidate
-                     (>= accumulated keep-recent-tokens))
-            (return)))
-    (and candidate
-         (> candidate 0)
-         candidate)))
-
 (defun truncate-summary-tool-result (text)
   (let ((total-units (utf16-code-unit-length text)))
     (if (<= total-units 2000)
@@ -756,7 +727,12 @@ Be concise. Focus on what's needed to understand the kept suffix.")
       (return-from %compact-agent nil))
     (let* ((messages (session-messages session))
            (tokens-before
-             (context-estimated-tokens messages))
+             (let ((estimated
+                     (context-estimated-tokens messages)))
+               (if (some #'valid-assistant-usage-p messages)
+                   estimated
+                   (+ estimated
+                      (declared-system-cut-tokens agent)))))
            (reserve
              (agent-compaction-reserve-tokens agent))
            (keep-recent
@@ -770,7 +746,11 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                (session-context-entries session))
              (cut-point
                (compaction-cut-point
-                entries keep-recent)))
+                entries keep-recent
+                :system-tokens
+                (declared-system-cut-tokens agent)
+                :system-index
+                (agent-system-cut-index agent))))
         (unless cut-point
           (return-from %compact-agent nil))
         (let* ((source-entries
@@ -909,7 +889,8 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                          :first-kept-entry-id first-kept-entry-id
                          :tokens-before effective-tokens-before
                          :estimated-tokens-after
-                         (session-context-estimated-tokens session)
+                         (+ (session-context-estimated-tokens session)
+                            (declared-system-cut-tokens agent))
                          :usage usage
                          :details details)))
                   (emit-agent-event

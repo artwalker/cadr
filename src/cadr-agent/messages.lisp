@@ -28,6 +28,7 @@
 (defstruct agent-system-message
   (content "" :type string)
   (tools-added nil :type list)
+  (sections nil :type (or null hash-table))
   (timestamp 0 :type integer))
 
 (defun conversation-messages (messages)

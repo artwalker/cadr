@@ -39,6 +39,17 @@
             message))
       message))
 
+(defun rendered-provider-prompt (agent prompt)
+  (let* ((message (agent-declared-system-message agent))
+         (sections
+           (and message
+                (agent-system-message-sections message)))
+         (cwd (and sections (gethash "cwd" sections))))
+    (if (and (stringp prompt) (plusp (length prompt))
+             (stringp cwd) (plusp (length cwd)))
+        (format nil "~A~%~%~A" prompt cwd)
+        prompt)))
+
 (defun request-prompt-and-tools (agent original final)
   (cond
     ((agent-system-message-p (first final))
@@ -55,18 +66,45 @@
       (current-agent-system-prompt agent)
       (registry-tools (agent-tool-registry agent))))))
 
+(defun declared-system-sections (agent prompt)
+  (let ((sections (make-hash-table :test #'equal))
+        (session (agent-session agent)))
+    (when (and (stringp prompt) (plusp (length prompt)))
+      (setf (gethash "preamble" sections) prompt))
+    (when session
+      (setf (gethash "cwd" sections)
+            (format nil "<cwd>~%~A~%</cwd>"
+                    (string-right-trim
+                     "/"
+                     (substitute #\/ #\\
+                                 (namestring
+                                  (session-cwd session)))))))
+    sections))
+
 (defun declare-turn-system-message (agent)
-  ;; pi@16787ad5b agent-loop.ts declareToolChanges. The declaration is
-  ;; a turn fact for the context estimate. It stays off agent-messages
-  ;; so the transcript scroll does not grow by an undisplayed row.
-  (when (and (agent-messages agent)
-             (null (agent-declared-system-message agent)))
-    (setf (agent-declared-system-message agent)
-          (make-agent-system-message
-           :content (or (current-agent-system-prompt agent) "")
-           :tools-added
-           (copy-list (registry-tools (agent-tool-registry agent)))
-           :timestamp (cadr-ai::unix-milliseconds)))))
+  (when (null (agent-declared-system-message agent))
+    (let* ((prompt (or (current-agent-system-prompt agent) ""))
+           (tools
+             (copy-list
+              (registry-tools (agent-tool-registry agent))))
+           (sections (declared-system-sections agent prompt)))
+      (when (or (plusp (length prompt))
+                tools
+                (plusp (hash-table-count sections)))
+        (setf (agent-declared-system-message agent)
+              (make-agent-system-message
+               :content prompt
+               :sections sections
+               :tools-added tools
+               :timestamp (cadr-ai::unix-milliseconds)))))))
+
+(defun emit-declared-system-message (agent)
+  (when (null (agent-declared-system-message agent))
+    (declare-turn-system-message agent)
+    (let ((message (agent-declared-system-message agent)))
+      (when message
+        (emit-message-start agent message)
+        (emit-message-end agent message)))))
 
 (defun stream-assistant (agent)
   (declare-turn-system-message agent)
@@ -138,9 +176,14 @@
                       agent messages final-messages)
                    (let ((context
                            (cadr-ai:make-context
-                            :system-prompt prompt
+                            :system-prompt
+                            (rendered-provider-prompt agent prompt)
                             :messages request-messages
-                            :tools tools)))
+                            :tools tools
+                            :system-prompt-index
+                            (shiftf
+                             (agent-prompt-insert-index agent)
+                             nil))))
                    ;; abort-p is a keyword on the stream call, not a
                    ;; one-field plist built to be read back (TS
                    ;; object-literal leftover).
@@ -214,14 +257,23 @@
 (defun begin-agent-turn
     (agent turn-index messages)
   (emit-agent-event agent :turn-start)
-  (dolist
-      (message
-       (cond
-         ((null messages) nil)
-         ((listp messages) messages)
-         (t (list messages))))
-    (begin-agent-turn-message
-     agent turn-index message)))
+  (emit-declared-system-message agent)
+  (let ((turn-messages
+          (cond
+            ((null messages) nil)
+            ((listp messages) messages)
+            (t (list messages)))))
+    (when turn-messages
+      (let ((session (agent-session agent)))
+        (setf (agent-prompt-insert-index agent)
+              (length (agent-messages agent))
+              (agent-system-cut-index agent)
+              (if session
+                  (session-entry-count session)
+                  (length (agent-messages agent))))))
+    (dolist (message turn-messages)
+      (begin-agent-turn-message
+       agent turn-index message))))
 
 (defun agent-activity-outcome (message)
   (cond
@@ -450,6 +502,111 @@
       agent
       (last-agent-assistant-message agent)))))
 
+(defun declared-system-cut-tokens (agent)
+  (let ((message (agent-declared-system-message agent))
+        (chars 0))
+    (unless message
+      (return-from declared-system-cut-tokens 0))
+    (let ((sections (agent-system-message-sections message)))
+      (when sections
+        (maphash
+         (lambda (name text)
+           (declare (ignore name))
+           (when (stringp text)
+             (incf chars (length text))))
+         sections)))
+    (when (agent-system-message-tools-added message)
+      (incf chars
+            (length
+             (cadr-ai::stringify-json
+              (cadr-ai::list-json-array
+               (mapcar #'declared-tool-json
+                       (agent-system-message-tools-added
+                        message)))))))
+    (ceiling chars 4)))
+
+(defun entry-omitted-p (entries entry)
+  (let ((id (session-entry-id entry)))
+    (some
+     (lambda (edit)
+       (and (eq :context-edit (session-entry-type edit))
+            (equal (session-entry-target-id edit) id)
+            (eq (session-entry-data edit) :omit)))
+     entries)))
+
+(defun recovery-omission-suffix-p (entries cut)
+  (let ((suffix (nthcdr (1+ cut) entries)))
+    (and
+     suffix
+     (some
+      (lambda (entry)
+        (and (eq :message (session-entry-type entry))
+             (typep (session-entry-message entry)
+                    'cadr-ai:assistant-message)
+             (entry-omitted-p entries entry)))
+      suffix)
+     (every
+      (lambda (entry)
+        (or (eq :context-edit (session-entry-type entry))
+            (entry-omitted-p entries entry)))
+      suffix))))
+
+(defun compaction-cut-point
+    (entries keep-recent-tokens
+     &key system-tokens system-index)
+  ;; Reverse-then-forward is the same walk as the old (nth index …)
+  ;; downfrom loop, in O(n) instead of O(n·k) (goal 20, 12F-3).
+  (let ((accumulated 0)
+        (candidate nil)
+        (entry-count (length entries)))
+    (loop for entry in (reverse entries)
+          for reverse-index from 0
+          for index = (- (1- entry-count) reverse-index)
+          do
+          (incf accumulated
+                (compaction-entry-estimated-tokens entry))
+          (when
+              (and (eq :message
+                       (session-entry-type entry))
+                   (plusp
+                    (compaction-entry-estimated-tokens entry))
+                   (let ((message
+                           (session-entry-message entry)))
+                     (or
+                      (typep message 'cadr-ai:user-message)
+                      (typep message
+                             'cadr-ai:assistant-message))))
+            (setf candidate index))
+          (when (and system-index
+                     (= index system-index)
+                     system-tokens)
+            (incf accumulated system-tokens))
+          (when (and candidate
+                     (>= accumulated keep-recent-tokens))
+            (return)))
+    (when (and candidate
+               (recovery-omission-suffix-p entries candidate))
+      (incf candidate))
+    (and candidate
+         (> candidate 0)
+         (< candidate entry-count)
+         candidate)))
+
+(defun omit-recovery-attempt (agent message)
+  (let ((session (agent-session agent)))
+    (when (and session (typep message 'cadr-ai:assistant-message))
+      (let ((target-id
+              (loop for entry in (session-entries session)
+                    when (and (eq (session-entry-type entry) :message)
+                              (eq (session-entry-message entry) message))
+                      return (session-entry-id entry))))
+        (when target-id
+          (let* ((edit-id
+                   (session-append-context-edit session target-id nil))
+                 (entry (gethash edit-id (session-by-id session))))
+            (emit-agent-event agent :entry-appended :entry entry))))))
+  agent)
+
 (defun remove-retry-error-from-agent-state (agent)
   (let ((messages (agent-messages agent)))
     (when
@@ -515,6 +672,7 @@
       (cadr-ai:assistant-message-error-message
        message)
       "Unknown error"))
+    (omit-recovery-attempt agent message)
     (let ((completed-p
             (wait-for-agent-retry agent delay)))
       (sb-thread:with-mutex
@@ -583,8 +741,7 @@
           (return result))
          (t
           (setf overflow-recovery-attempted-p t)
-          ;; The failed assistant message remains durable in the session, but
-          ;; baseline continuation removes it from the live provider context.
+          (omit-recovery-attempt agent result)
           (remove-retry-error-from-agent-state agent)
           (if (%compact-agent
                agent :force-p t

@@ -164,7 +164,8 @@
 (defstruct context
   (system-prompt nil :type (or null string))
   (messages nil :type list)
-  (tools nil :type list))
+  (tools nil :type list)
+  (system-prompt-index nil :type (or null integer)))
 
 (defstruct image-model
   (id "" :type string)

@@ -21,7 +21,8 @@
   success
   final-error
   source
-  reason)
+  reason
+  entry)
 
 (defstruct (agent
             (:constructor %make-agent))
@@ -83,7 +84,9 @@
     (sb-thread:make-waitqueue :name "cadr-agent-retry"))
   (event-lock
     (sb-thread:make-mutex :name "cadr-agent-events"))
-  (declared-system-message nil))
+  (declared-system-message nil)
+  (prompt-insert-index nil :type (or null integer))
+  (system-cut-index nil :type (or null integer)))
 
 (defun emit-agent-event (agent type
                          &key
@@ -106,7 +109,8 @@
                            success
                            final-error
                            source
-                           reason)
+                           reason
+                           entry)
   (let ((event
           (make-agent-event
            :type type
@@ -129,7 +133,8 @@
            :success success
            :final-error final-error
            :source source
-           :reason reason)))
+           :reason reason
+           :entry entry)))
     (when (agent-on-event agent)
       (sb-thread:with-recursive-lock
           ((agent-event-lock agent))

@@ -460,7 +460,7 @@
         (is-false (cadr-agent:agent-busy-p agent))
         (is
          (string=
-          "Context overflow recovery failed: Turn prefix summarization failed: summary provider failed"
+          "Context overflow recovery failed: Summarization failed: summary provider failed"
           (cadr-agent:agent-event-error-message
            (find
             :compaction-end events
@@ -832,6 +832,15 @@
                :content
                (list
                 (cadr-ai:make-text-content
+                 :text "prefix"))
+               :api :openai-responses
+               :provider :openai
+               :model "tiny"
+               :stop-reason :stop)
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
                  :text "recovered"))
                :api :openai-responses
                :provider :openai
@@ -896,10 +905,10 @@
         (is-true (getf after-payload :will-retry-p))
         (is-false (getf after-payload :from-extension-p))
         (is (null *responses*))
-        (is (= 3 (length *contexts*)))
+        (is (= 4 (length *contexts*)))
         (is (not
              (context-contains-text-p
-              (third (nreverse *contexts*))
+              (first *contexts*)
               "context_length_exceeded")))
         (let ((entries
                 (cadr-agent:session-entries session)))
@@ -1579,7 +1588,7 @@
                     (cadr-ai:assistant-message-stop-reason result))))
              (is
               (string=
-               "Context overflow recovery failed after one compact-and-retry attempt. Try reducing context or switching to a larger-context model."
+               "Context overflow recovery failed: Turn prefix summarization failed: context_length_exceeded"
                (cadr-agent:agent-event-error-message
                 (find :compaction-end events
                       :key #'cadr-agent:agent-event-type)))))

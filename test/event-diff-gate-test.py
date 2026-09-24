@@ -199,7 +199,7 @@ class EventDiffGateTest(unittest.TestCase):
         rules = json.loads((fixture_dir / "normalization-rules.json").read_text())["rules"]
         dispositions = json.loads((fixture_dir / "dispositions.json").read_text())
 
-        self.assertEqual(len(rules), 40)
+        self.assertEqual(len(rules), 72)
         self.assertEqual(dispositions["entries"], [])
         for rule in rules:
             self.assertIn(
@@ -216,6 +216,14 @@ class EventDiffGateTest(unittest.TestCase):
                     "/12/result/firstKeptEntryId",
                     "/13/result/firstKeptEntryId",
                     "/15/result/firstKeptEntryId",
+                    "/11/entry/id",
+                    "/11/entry/parentId",
+                    "/11/entry/targetId",
+                    "/11/entry/timestamp",
+                    "/12/entry/id",
+                    "/12/entry/parentId",
+                    "/12/entry/targetId",
+                    "/12/entry/timestamp",
                 },
             )
             self.assertNotIn("*", rule["pointer"])

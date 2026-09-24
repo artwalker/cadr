@@ -377,15 +377,12 @@
             :tools (list tool)))
          (expected-prompt
            (format
-            nil "system:S~%~%user:U~%~%tools:~A"
+            nil "system:S~%tool+:~A~%~%user:U"
             (cadr-ai::stringify-json
-             (cadr-ai::list-json-array
-              (list
-               (cadr-ai::json-object
-                "name" "read"
-                "label" "read"
-                "description" "Read file"
-                "parameters" parameters))))))
+             (cadr-ai::json-object
+              "description" "Read file"
+              "name" "read"
+              "parameters" parameters))))
          (handle (cadr-ai:make-faux-provider)))
     (cadr-ai:faux-set-responses
      handle (list (cadr-ai:faux-assistant-message "ok")))

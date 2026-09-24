@@ -157,8 +157,30 @@
         (getf result :details))))
     object))
 
+(defun wire-system-message-to-json (message)
+  (let ((object
+          (cadr-ai::json-object
+           "role" "system"
+           "content" ""
+           "timestamp"
+           (cadr-agent::agent-system-message-timestamp message))))
+    (let ((sections
+            (cadr-agent::agent-system-message-sections message)))
+      (when sections
+        (cadr-ai::json-put object "sections" sections)))
+    (let ((tools
+            (cadr-agent::agent-system-message-tools-added message)))
+      (when tools
+        (cadr-ai::json-put
+         object "toolsAdded"
+         (cadr-ai::list-json-array
+          (mapcar #'cadr-agent::declared-tool-json tools)))))
+    object))
+
 (defun wire-message-to-json (message)
   (cond
+    ((typep message 'cadr-agent:agent-system-message)
+     (wire-system-message-to-json message))
     ((typep message 'cadr-ai:user-message)
      (let ((content (cadr-ai:user-message-content message)))
        (cadr-ai::json-object
@@ -345,6 +367,13 @@
           object "reason"
           (json-event-type-name
            (cadr-agent:agent-event-reason event)))))
+      (:entry-appended
+       (let* ((entry (cadr-agent::agent-event-entry event))
+              (payload
+                (cadr-agent::session-entry-to-json entry)))
+         (when (eq (cadr-agent::session-entry-data entry) :omit)
+           (cadr-ai::json-put payload "replacement" 'null))
+         (cadr-ai::json-put object "entry" payload)))
       (:compaction-start
        (cadr-ai::json-put
         object "reason"
