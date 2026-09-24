@@ -13806,7 +13806,7 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **300 files / 140,152 lines**
+Denominator: **300 files / 140,130 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
@@ -13814,7 +13814,7 @@ Denominator: **300 files / 140,152 lines**
 | `paired` | 244 | 112,173 | 80.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,019 | 5.7% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,934 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 2 | 1,026 | 0.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 2 | 1,004 | 0.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 80.0% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
@@ -14141,7 +14141,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_cache_warmer` | 1 | 867 |
+| `cli_cache_warmer` | 1 | 845 |
 | `cli_support` | 1 | 159 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

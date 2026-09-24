@@ -49,11 +49,10 @@
 
 (defun goal24-dispatch-fixture
     (&key (mode "streaming") (session-id "sess-dispatch-1"))
-  (let* ((settings
-           (cadr-cli::make-memory-settings-manager
-            (let ((obj (cadr-cli::empty-json-object)))
-              (cadr-ai::json-put obj "cacheWarming" mode)
-              obj)))
+  (let* ((settings (cadr-cli::make-memory-settings-manager))
+         (_set
+           (cadr-cli::settings-set-cache-warming-mode
+            settings mode))
          (clock (goal24-dispatch-fake-clock))
          (model (goal24-dispatch-anthropic-model))
          (messages
@@ -121,7 +120,7 @@
             (lambda () (car session-id-cell))
             (lambda () (car agent-cell))
             inner)))
-    (declare (ignore _set-messages))
+    (declare (ignore _set _set-messages))
     (setf (car agent-cell) agent
           (cadr-agent::agent-stream-function agent) wrapped)
     (list

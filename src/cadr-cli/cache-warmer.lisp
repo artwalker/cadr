@@ -672,14 +672,12 @@
 
 ;;; Live dispatch helpers (sdk.ts streamFn + agent-session settle/dispose).
 
-(defparameter +cache-warming-mode-values+
-  '("off" "streaming" "idle"))
-
 (defparameter +anthropic-prompt-cache+
   '(:short 300 :long 3600))
 
 (defun %settings-backend (manager)
   (cond
+    ((null manager) nil)
     ((settings-manager-p manager) manager)
     (t
      (let* ((class-name
@@ -692,40 +690,20 @@
        (if (and class reader (fboundp reader)
                 (typep manager class))
            (funcall (symbol-function reader) manager)
-           manager)))))
-
-(defun %cache-warming-mode-from-global (manager)
-  ;; Mirrors #771 settings-cache-warming-mode: globalSettings only.
-  (let ((mode
-          (cadr-ai::json-get
-           (settings-manager-global
-            (%settings-backend manager))
-           "cacheWarming"
-           :missing)))
-    (if (and (not (eq mode :missing))
-             (member mode +cache-warming-mode-values+
-                     :test #'equal))
-        mode
-        "streaming")))
+           nil)))))
 
 (defun %read-cache-warming-mode (manager)
+  ;; Settings manager owns mode; absent manager stays streaming.
   (let ((backend (%settings-backend manager)))
-    (if (fboundp 'settings-cache-warming-mode)
-        (funcall
-         (symbol-function 'settings-cache-warming-mode)
-         backend)
-        (%cache-warming-mode-from-global manager))))
+    (if (settings-manager-p backend)
+        (settings-cache-warming-mode backend)
+        "streaming")))
 
 (defun set-cache-warming-mode (manager mode &optional warmer)
-  (unless (member mode +cache-warming-mode-values+ :test #'equal)
-    (error "Invalid cacheWarming mode ~S" mode))
   (let ((backend (%settings-backend manager)))
-    (if (fboundp 'settings-set-cache-warming-mode)
-        (funcall
-         (symbol-function 'settings-set-cache-warming-mode)
-         backend mode)
-        (settings-set
-         backend "cacheWarming" mode :scope :global)))
+    (unless (settings-manager-p backend)
+      (error "cacheWarming requires a settings manager"))
+    (settings-set-cache-warming-mode backend mode))
   (when warmer
     (cache-warmer-on-mode-changed warmer))
   mode)
