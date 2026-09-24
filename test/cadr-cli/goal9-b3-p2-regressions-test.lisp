@@ -209,14 +209,15 @@
            (make-string width :initial-element #\─))
          (options
            (cadr-cli::settings-selector-state-options state)))
-    (is (= 30 (length options)))
+    (is (= 31 (length options)))
     (is
      (equal
       '("autocompact" "auto-resize-images" "block-images"
         "skill-commands" "show-hardware-cursor" "editor-padding"
         "output-padding" "autocomplete-max-visible" "clear-on-shrink"
         "terminal-progress" "steering-mode" "follow-up-mode" "transport"
-        "http-idle-timeout" "hide-thinking" "mermaid-rendering"
+        "http-idle-timeout" "cache-warming-mode" "hide-thinking"
+        "mermaid-rendering"
         "cache-miss-notices" "collapse-changelog" "quiet-startup"
         "install-telemetry" "default-project-trust" "double-escape-action"
         "tree-filter-mode" "warnings" "model-thinking"
@@ -246,7 +247,7 @@
        "  Autocomplete max items          5"
        "  Clear on shrink                 false"
        "  Terminal progress               false"
-       "  (1/30)"
+       "  (1/31)"
        ""
        "  Automatically compact context when it gets too large"
        ""
@@ -385,7 +386,7 @@
            (cadr-cli::make-cli-settings-selector-state
             manager agent (cadr-cli::make-resource-snapshot)
             :supports-images-p t)))
-    (is (= 32
+    (is (= 33
            (length
             (cadr-cli::settings-selector-state-options with-images))))
     (is

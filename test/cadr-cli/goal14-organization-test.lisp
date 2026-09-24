@@ -440,7 +440,9 @@
     ;; (bootstrap/sessions.lisp, baseline importFromJsonl).
     ;; +1 unflushed fork: refuse-unflushed-persisted-fork
     ;; (bootstrap/sessions.lisp, baseline existsSync before branch).
-    (is (= 177 definition-count)
+    ;; +3 Goal 26: cache warming mode parameter and global reader/writer
+    ;; (bootstrap/settings.lisp).
+    (is (= 180 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

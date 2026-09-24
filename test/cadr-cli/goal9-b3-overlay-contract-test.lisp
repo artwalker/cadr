@@ -275,7 +275,7 @@
      (">" "→ Auto-compact" "Auto-resize images" "Block images"
       "Skill commands" "Show hardware cursor" "Editor padding"
       "Output padding" "Autocomplete max items" "Clear on shrink"
-      "Terminal progress" "(1/30)"
+      "Terminal progress" "(1/31)"
       "Automatically compact context when it gets too large"
       "Type to search · Enter/Space to change · Esc to cancel"))
     ("resume"
@@ -400,7 +400,7 @@
   (let ((expected
           '(("model" . "828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869")
             ("model-scoped" . "9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1")
-            ("settings" . "BEBF2D0C4FFB197A65CE953AECB2B542A2AB2B72E0A5F52115DF0211F4A24FC6")
+            ("settings" . "1ACEFE94C7BA50C5014929EF7BD97C9EC431BCD3B249214ACBBCB1DCCCAB6808")
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
             ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")
