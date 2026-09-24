@@ -301,6 +301,40 @@
    #:native-image-save-arguments
    #:active-agent
    #:executable-main
-   #:main))
+   #:main
+   #:cache-warm-model
+   #:make-cache-warm-model
+   #:cache-warming-decision
+   #:make-cache-warming-decision
+   #:cache-warming-decision-phase
+   #:cache-warming-decision-warm-cost
+   #:cache-warming-decision-miss-cost
+   #:cache-warming-decision-continuation-probability
+   #:cache-warming-decision-expected-savings
+   #:cache-warming-decision-economics-available
+   #:cache-warming-decision-action
+   #:cache-warming-status
+   #:make-cache-warming-status
+   #:cache-warming-status-state
+   #:cache-warming-status-reason
+   #:cache-warming-status-next-warm-at
+   #:cache-warming-status-decision
+   #:cache-warming-status-extension-override
+   #:cache-warm-request
+   #:make-cache-warm-request
+   #:cache-warm-usage-entry
+   #:make-cache-warm-usage-entry
+   #:cache-warmer
+   #:make-cache-warmer
+   #:cache-warmer-status
+   #:cache-warmer-start
+   #:cache-warmer-on-agent-settled
+   #:cache-warmer-on-mode-changed
+   #:cache-warmer-cancel
+   #:get-cache-warming-delay-ms
+   #:get-prompt-cache-ttl-ms
+   #:is-replayable
+   #:format-cache-warming-status
+   #:format-cache-warming-usage))
 
 (in-package #:cadr-cli)

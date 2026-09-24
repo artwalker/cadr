@@ -31,6 +31,7 @@
                                            (:file "paths")
                                            (:file "shell-process")))
                              (:file "tool-manager")
+                             (:file "cache-warmer")
                              (:file "config")
                              (:module "settings"
                               :serial t
@@ -212,6 +213,7 @@
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
                              (:file "goal24-cache-warming-settings-test")
+                             (:file "goal24-cache-warmer-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")

@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 files=299 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=152 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 files=300 lines=128867 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=153 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -193,6 +193,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/support/shell-process.lisp` | 132 | 12 | Discover shell configuration and manage detached process trees. | pass | done | ProgramFiles loop. I0: one getenv-then-format. | 20 |
 | `src/cadr-cli/support/threads.lisp` | 7 | 1 | Retain the CLI cleanup entry point while delegating policy to `cadr-core`. | pass | done | apply core cleanup. I0: no restated 0.5d0/t. | 20 |
 | `src/cadr-cli/support/timings.lisp` | 45 | 6 | Record and print opt-in startup timing namespaces. | pass | done | push + nreverse at print. I0: printed order unchanged. | 20 |
+| `src/cadr-cli/cache-warmer.lisp` | 671 | 43 | Decide whether a prompt-cache warm is worth its cost and report that status on the session. | pass | done | decisions and status only; live settle dispatch is the next owner step. | 26 |
 | `src/cadr-cli/crash.lisp` | 59 | 4 | Bind CLI-specific secret discovery and redaction into the fatal-condition boundary. | pass | no-rewrite | most TS-like is the dotted-pair redaction-rule table walked with car/cdr and a setf accumulator (L31-40), but dolist-over-alist is the native idiom and the regex/replacement literals are byte-level crash-log contract text; the crash path must stay minimal and total. | 20 |
 | `src/cadr-cli/extensions/commands.lisp` | 56 | 3 | Dispatch extension commands and prompt-template expansion. | pass | no-rewrite | Most TS-shaped is the string= "/reload" dispatch (line 28), but slash-command names are the baseline wire format (extension commands register by string name), and split-extension-command properly returns multiple values (14-22). | 20 |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | 11 | Define extension source/manager records and discover precedence-ordered sources. | pass | no-rewrite | Most TS-shaped is the catch-all (condition (c) (push (princ-to-string c) errors)) at 165/184, but per-source failure isolation collected as message strings is the baseline reportDiagnostics contract; scopes are keywords and dedupe is a hash-table (117-143). | 20 |

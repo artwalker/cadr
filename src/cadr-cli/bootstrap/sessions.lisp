@@ -1401,7 +1401,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
 
 (defun write-session-command-info
     (session output
-     &key ansi-theme-p model-price-function)
+     &key ansi-theme-p model-price-function
+       (cache-warming-mode "streaming")
+       cache-warming-status)
   (let* ((stats
            (session-command-stats session))
          (input
@@ -1417,7 +1419,14 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
            (compute-cache-waste
             (cadr-agent:session-entries session)
             :model-price-function
-            model-price-function)))
+            model-price-function))
+         (warming-mode
+           (or cache-warming-mode "streaming"))
+         (warming-status-text
+           (if cache-warming-status
+               (format-cache-warming-status
+                cache-warming-status)
+               "Inactive (waiting for first request)")))
     (format output "~A~%~%"
             (session-info-style
              "Session Info" :heading ansi-theme-p))
@@ -1483,17 +1492,17 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      (getf stats :output)
      (session-info-style "Total:" :label ansi-theme-p)
      total)
-    ;; Baseline interactive-mode.ts:6387-6390 — /session always prints the
-    ;; Cache Warming block. Goal 24 defers the warmer dispatch; the inactive
-    ;; default matches the baseline CacheWarmer before the first request.
+    ;; Baseline interactive-mode.ts — /session always prints Cache Warming.
+    ;; Mode defaults to streaming (CacheWarmer getMode); status uses the
+    ;; warmer formatter when a status exists, else the pre-first-request idle.
     (format
      output
      "~%~A~%~A ~A~%~A ~A~%"
      (session-info-style "Cache Warming" :heading ansi-theme-p)
      (session-info-style "Mode:" :label ansi-theme-p)
-     "streaming"
+     warming-mode
      (session-info-style "Status:" :label ansi-theme-p)
-     "Inactive (waiting for first request)")
+     warming-status-text)
     (when
         (or
          (plusp (getf stats :cost))
@@ -1895,6 +1904,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        export-options-function
        ansi-theme-p
        model-price-function
+       (cache-warming-mode "streaming")
+       cache-warming-status
        (confirm-function
          (lambda (title message)
            (declare (ignore title message))
@@ -1949,7 +1960,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
         (cadr-agent:agent-session agent)
         output
         :ansi-theme-p ansi-theme-p
-        :model-price-function model-price-function)
+        :model-price-function model-price-function
+        :cache-warming-mode cache-warming-mode
+        :cache-warming-status cache-warming-status)
        (finish-output output)
        t)
       ((string= command "/share")

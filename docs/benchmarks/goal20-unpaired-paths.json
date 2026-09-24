@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 299,
-    "lines": 139125
+    "files": 300,
+    "lines": 139843
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -1301,6 +1301,11 @@
       "prefix": "src/cadr-cli/support/bug-report.lisp",
       "class": "needs-pair",
       "hole": "cli_support"
+    },
+    {
+      "prefix": "src/cadr-cli/cache-warmer.lisp",
+      "class": "needs-pair",
+      "hole": "cli_cache_warmer"
     },
     {
       "prefix": "src/cadr-server/",
