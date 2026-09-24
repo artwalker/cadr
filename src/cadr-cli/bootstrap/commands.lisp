@@ -1407,6 +1407,17 @@
              (%read-cache-warming-mode settings-manager)
              :cache-warming-status
              (and warmer (cache-warmer-status warmer))
+             :ui-function
+             (or
+              (cadr-agent::extension-host-ui-function
+               (cli-extension-manager-host
+                extension-manager))
+              (let ((host
+                      (cadr-agent::agent-extension-host
+                       agent)))
+                (and host
+                     (cadr-agent::extension-host-ui-function
+                      host))))
              :model-price-function
              (lambda (provider model-id)
                (handler-case

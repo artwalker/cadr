@@ -1000,7 +1000,7 @@
                        "cadr-bug-report-*.zip" root))))
                (is (= 1 (length zips))))
              (let ((text (get-output-stream-string output)))
-               (is (search "Bug report written:" text))
+               (is (search "Bug report exported to:" text))
                (is (null (search "Upload" text)))))
         (if previous
             (setf (uiop:getenv "CADR_OFFLINE") previous)

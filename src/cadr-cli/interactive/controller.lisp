@@ -1254,6 +1254,9 @@ interactive-mode.ts:5956-5960).")
               (show-extension-selection
                (getf arguments :title)
                (getf arguments :options)
+               :message
+               (or (getf arguments :message)
+                   (getf arguments :description))
                :signal (getf arguments :signal)
                :timeout-ms (getf arguments :timeout-ms)))
              (:confirm
@@ -1282,7 +1285,12 @@ interactive-mode.ts:5956-5960).")
              (:input
               (let* ((component
                        (make-extension-input-dialog
-                        (getf arguments :title)))
+                        (getf arguments :title)
+                        :description
+                        (getf arguments :description)
+                        :initial-value
+                        (or (getf arguments :initial-value)
+                            (getf arguments :placeholder))))
                      (custom-state
                        (make-extension-custom-ui-state
                         :component component

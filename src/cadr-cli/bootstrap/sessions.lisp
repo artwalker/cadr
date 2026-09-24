@@ -1910,7 +1910,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
          (lambda (title message)
            (declare (ignore title message))
            t))
-       cwd-confirm-function)
+       cwd-confirm-function
+       ui-function)
   (multiple-value-bind (command argument)
       (split-command line)
     (cond
@@ -1983,64 +1984,13 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        (finish-output output)
        t)
       ((string= command "/bug")
-       (let* ((id (cadr-ai:uuid-v7))
-              (path
-                (merge-pathnames
-                 (bug-report-archive-file-name id)
-                 (uiop:getcwd)))
-              (metadata
-                (list
-                 :schema-version +bug-report-schema-version+
-                 :id id
-                 :created-at (cadr-core:current-utc-iso8601)
-                 :hint (and argument
-                            (plusp (length argument))
-                            argument)
-                 :environment
-                 (bug-report-collect-environment)
-                 :session
-                 (list
-                  :id
-                  (and (cadr-agent:agent-session agent)
-                       (cadr-agent:session-id
-                        (cadr-agent:agent-session agent)))
-                  :included nil
-                  :summary-included nil)))
-              (diagnostics
-                (list
-                 :schema-version +bug-report-schema-version+
-                 :session-id
-                 (getf (getf metadata :session) :id)
-                 :entry-count 0
-                 :assistant-message-count 0
-                 :assistant nil
-                 :crashes nil)))
-         (bug-report-write-zip
-          path
-          (list
-           (cons
-            "report.json"
-            (with-output-to-string (out)
-              (cadr-ai::write-json-value
-               (cadr-agent::json-safe-value metadata)
-               out)
-              (terpri out)))
-           (cons
-            "diagnostics.json"
-            (with-output-to-string (out)
-              (cadr-ai::write-json-value
-               (cadr-agent::json-safe-value diagnostics)
-               out)
-              (terpri out)))))
-         (if status-function
-             (funcall
-              status-function
-              (format nil "Bug report written: ~A" path)
-              :success)
-             (format output "Bug report written: ~A~%"
-                     (uiop:native-namestring path)))
-         (finish-output output)
-         t))
+       (run-bug-report
+        agent
+        :initial-hint argument
+        :ui-function ui-function
+        :status-function status-function
+        :output output)
+       t)
       ((string= command "/changelog")
        (let ((entries
                (parse-changelog
