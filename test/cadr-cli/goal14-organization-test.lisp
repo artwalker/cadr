@@ -858,7 +858,9 @@
     ;; +4 list hover stays off the selection: centered-list-mouse,
     ;; select-list-handle-mouse, settings-list-handle-mouse,
     ;; renderer-deliver-component-mouse.
-    (is (= 349 definition-count)
+    ;; +1 Goal 24 clipboard fail-naming: renderer-copy-selection-flash
+    ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
+    (is (= 350 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

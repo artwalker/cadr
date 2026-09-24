@@ -1118,6 +1118,64 @@
        nil)
      :output
      (make-string-output-stream)))
+  (let ((output (make-string-output-stream)))
+    (is (string=
+         "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access"
+         (handler-case
+             (progn
+               (cadr-cli::copy-to-clipboard
+                "hello"
+                :platform :linux
+                :x11-display-p t
+                :command-runner (lambda (argv input)
+                                  (declare (ignore argv input))
+                                  nil)
+                :output output)
+               "")
+           (cadr-ai:configuration-error (condition)
+             (cadr-ai:cadr-error-message condition)))))
+    (is (string= "" (get-output-stream-string output))))
+  (is (string=
+       "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access"
+       (handler-case
+           (progn
+             (cadr-cli::copy-to-clipboard
+              "hello"
+              :platform :linux
+              :wayland-display-p t
+              :command-runner (lambda (argv input)
+                                (declare (ignore argv input))
+                                nil))
+             "")
+         (cadr-ai:configuration-error (condition)
+           (cadr-ai:cadr-error-message condition)))))
+  (is (string=
+       "Clipboard unavailable: install the Termux:API app and `termux-api` package"
+       (handler-case
+           (progn
+             (cadr-cli::copy-to-clipboard
+              "hello"
+              :platform :linux
+              :termux-p t
+              :command-runner (lambda (argv input)
+                                (declare (ignore argv input))
+                                nil))
+             "")
+         (cadr-ai:configuration-error (condition)
+           (cadr-ai:cadr-error-message condition)))))
+  (is (string=
+       "Clipboard unavailable: no Wayland or X11 display detected"
+       (handler-case
+           (progn
+             (cadr-cli::copy-to-clipboard
+              "hello"
+              :platform :linux
+              :command-runner (lambda (argv input)
+                                (declare (ignore argv input))
+                                nil))
+             "")
+         (cadr-ai:configuration-error (condition)
+           (cadr-ai:cadr-error-message condition)))))
   (let ((calls nil))
     (let ((image
             (cadr-cli::read-clipboard-image

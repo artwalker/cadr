@@ -55,6 +55,21 @@
         t)
     (condition () nil)))
 
+(defun clipboard-unavailable-message
+    (&key platform termux-p wayland-display-p x11-display-p)
+  ;; A failed local write names the missing backend.
+  (if (eq platform :linux)
+      (cond
+        (termux-p
+         "Clipboard unavailable: install the Termux:API app and `termux-api` package")
+        (wayland-display-p
+         "Clipboard unavailable: install `wl-clipboard` (`wl-copy`) or check Wayland access")
+        (x11-display-p
+         "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access")
+        (t
+         "Clipboard unavailable: no Wayland or X11 display detected"))
+      "Clipboard unavailable"))
+
 (defun copy-to-clipboard
     (text
      &key
@@ -99,10 +114,8 @@
                 shell-p t)
           (return))))
     (let ((osc52
-            (and
-             (or remote-p
-                 (not copied-p))
-             (osc52-copy-sequence text))))
+            (and remote-p
+                 (osc52-copy-sequence text))))
       (when osc52
         (write-string osc52 output)
         (finish-output output)
@@ -110,7 +123,12 @@
       (unless copied-p
         (error
          'cadr-ai:configuration-error
-         :message "Failed to copy to clipboard"))
+         :message
+         (clipboard-unavailable-message
+          :platform platform
+          :termux-p termux-p
+          :wayland-display-p wayland-display-p
+          :x11-display-p x11-display-p)))
       (cond
         ((and native-p osc52) :native+osc52)
         ((and shell-p osc52) :shell+osc52)
