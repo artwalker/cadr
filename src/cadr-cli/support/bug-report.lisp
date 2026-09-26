@@ -80,6 +80,34 @@
      (mapcar #'bug-report-redact-json-value value))
     (t value)))
 
+(defparameter +bug-report-cancel-pattern+
+  (cl-ppcre:create-scanner
+   "\\b(?:abort(?:ed)?|cancel(?:l?ed)?)\\b"
+   :case-insensitive-mode t))
+
+(defun bug-report-description (text)
+  (when (stringp text)
+    (let ((trimmed
+            (string-trim
+             '(#\Space #\Tab #\Newline)
+             (cl-ppcre:regex-replace-all
+              "\\r\\n?" text (string #\Newline)))))
+      (and (plusp (length trimmed)) trimmed))))
+
+(defun bug-report-hint (message)
+  (let ((text
+          (or (cadr-ai:assistant-message-error-message message)
+              "")))
+    (when (and (eq :error
+                   (cadr-ai:assistant-message-stop-reason message))
+               (not (cadr-ai:retryable-assistant-error-p message))
+               (not (cl-ppcre:scan
+                     +bug-report-cancel-pattern+
+                     text)))
+      (format nil
+              "If this looks like a ~A bug, /bug sends a report to the developers."
+              (cadr-ai::cadr-product-slug)))))
+
 (defun bug-report-archive-file-name (id)
   (format nil "~A-bug-report-~A.zip"
           (cadr-ai::cadr-product-slug)
@@ -239,12 +267,7 @@ Do not include file contents, secrets, or credentials from the transcript; refer
        (extension-errors nil)
        global-settings
        project-settings)
-  (let ((trimmed
-          (and hint
-               (let ((text (string-trim
-                            '(#\Space #\Tab #\Newline #\Return)
-                            hint)))
-                 (and (plusp (length text)) text)))))
+  (let ((trimmed (bug-report-description hint)))
     (list
      :schema-version +bug-report-schema-version+
      :id (or id (cadr-ai:uuid-v7))
@@ -612,10 +635,7 @@ Do not include file contents, secrets, or credentials from the transcript; refer
               (return-from prompt-bug-report-options nil))
             (setf include-summary
                   (not (string= summary-choice "No")))))
-        (let* ((description
-                 (string-trim
-                  '(#\Space #\Tab #\Newline #\Return)
-                  hint))
+        (let* ((description (or (bug-report-description hint) ""))
                (gateway (bug-report-gateway-url))
                (delivery
                  (bug-report-ui-select
@@ -889,10 +909,7 @@ Do not include file contents, secrets, or credentials from the transcript; refer
                :model
                (and agent (cadr-agent:agent-model agent)))
               (list
-               :hint
-               (and initial-hint
-                    (plusp (length initial-hint))
-                    initial-hint)
+               :hint (bug-report-description initial-hint)
                :include-session nil
                :include-summary nil
                :delivery :zip))))

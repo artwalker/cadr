@@ -13806,15 +13806,15 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **301 files / 141,300 lines**
+Denominator: **301 files / 141,325 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,309 | 79.5% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,317 | 79.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,033 | 5.7% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,934 | 13.4% | on a named paired thunk; no own bench |
-| `needs-pair` | 3 | 2,024 | 1.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 3 | 2,041 | 1.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 79.5% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
@@ -13972,13 +13972,13 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/selectors/thinking.lisp` | 493 | `cli_selectors.make_thinking_selector_state`, `cli_selectors.render_thinking_selector`, `cli_selectors.thinking_level_description_line`, `cli_selectors.thinking_level_label`, `cli_selectors.thinking_level_search_text`, `cli_selectors.thinking_selector_apply_filter`, `cli_selectors.thinking_selector_clamp_selected`, `cli_selectors.thinking_selector_handle_event`, `cli_selectors.thinking_selector_handle_raw_input`, `cli_selectors.thinking_selector_key_p`, `cli_selectors.thinking_selector_keybindings`, `cli_selectors.thinking_selector_move`, `cli_selectors.thinking_selector_select_current`, `cli_selectors.thinking_selector_selected_level`, `cli_selectors.thinking_selector_set_query` |
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,931 | `cli_selectors.tree_entry_filtered` |
 | `src/cadr-cli/interactive/selectors/trust.lisp` | 347 | `cli_selectors.make_trust_selector_state`, `cli_selectors.project_trust_options`, `cli_selectors.render_trust_selector`, `cli_selectors.trust_decision_description`, `cli_selectors.trust_option_saved_p`, `cli_selectors.trust_selector_handle_event`, `cli_selectors.trust_selector_handle_raw_input`, `cli_selectors.trust_selector_move`, `cli_selectors.trust_selector_selection`, `cli_selectors.trust_selector_ui_state` |
-| `src/cadr-cli/interactive/state.lisp` | 308 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/state.lisp` | 309 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
 | `src/cadr-cli/interactive/theme.lisp` | 215 | `cli_interactive_controller.parse_auto_theme`, `cli_interactive_controller.resolve_theme` |
 | `src/cadr-cli/interactive/themes.lisp` | 428 | `cli_interactive_controller.apply_tui_theme_summary`, `cli_interactive_controller.load_tui_theme_file`, `cli_interactive_controller.theme_object_overrides`, `cli_interactive_controller.theme_get`, `cli_interactive_controller.theme_kind`, `cli_interactive_controller.theme_ok`, `cli_interactive_controller.theme_prim`, `cli_interactive_controller.theme_res`, `cli_interactive_controller.theme_val` |
 | `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | `cli_interactive_controller.sess_draw`, `cli_interactive_controller.sess_make`, `cli_interactive_controller.sess_new`, `cli_interactive_controller.sess_out`, `cli_interactive_controller.sess_set`, `cli_interactive_controller.sess_upd` |
-| `src/cadr-cli/interactive/tool-rendering.lisp` | 1,027 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 1,034 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/transcript.lisp` | 1,278 | `cli_interactive_controller.accumulate_usage`, `cli_interactive_controller.append_user_message`, `cli_interactive_controller.assistant_display_blocks`, `cli_interactive_controller.assistant_has_tools`, `cli_interactive_controller.assistant_price_known`, `cli_interactive_controller.assistant_stop_error`, `cli_interactive_controller.cache_ok`, `cli_interactive_controller.cache_p`, `cli_interactive_controller.pad_sp`, `cli_interactive_controller.pad_str`, `cli_interactive_controller.render_assistant_blocks`, `cli_interactive_controller.render_assistant_lines`, `cli_interactive_controller.render_package_notification`, `cli_interactive_controller.render_transcript_summary`, `cli_interactive_controller.render_tui_entries`, `cli_interactive_controller.render_tui_entry`, `cli_interactive_controller.render_tui_entry_uncached`, `cli_interactive_controller.render_user_lines`, `cli_interactive_controller.render_version_notification`, `cli_interactive_controller.reset_tui_messages`, `cli_interactive_controller.seed_tui_message`, `cli_interactive_controller.syntax_highlight`, `cli_interactive_controller.theme_message_background`, `cli_interactive_controller.transcript_summary_label`, `cli_interactive_controller.transcript_summary_text`, `cli_interactive_controller.transform_tui_markdown`, `cli_interactive_controller.update_notification_border`, `cli_interactive_controller.update_notification_text`, `cli_interactive_controller.wrap_ln`, `cli_interactive_controller.wrap_osc` |
 | `src/cadr-cli/interactive/user-bash.lisp` | 213 | `cli_interactive_controller.append_output`, `cli_interactive_controller.bash_append_running`, `cli_interactive_controller.bash_complete_string`, `cli_interactive_controller.bash_stop_entry`, `cli_interactive_controller.complete_entry`, `cli_interactive_controller.make_entry` |
 | `src/cadr-cli/media.lisp` | 1,331 | `image_runtime.mime_type` |
@@ -14141,7 +14141,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_support` | 2 | 1,179 |
+| `cli_support` | 2 | 1,196 |
 | `cli_cache_warmer` | 1 | 845 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

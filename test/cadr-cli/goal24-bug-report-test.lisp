@@ -560,3 +560,149 @@ Do NOT continue the conversation. Do NOT respond to any questions in the convers
           (is (null (getf (first diag) :notified))))
         (cadr-cli::clear-crash-log path)
         (is (null (probe-file path)))))))
+
+(test bug-report-payload-keeps-multiline-diagnostics
+  (with-test-directory (root)
+    (uiop:with-current-directory (root)
+      (let* ((sessions (merge-pathnames "sessions/" root))
+             (cwd (merge-pathnames "cwd/" root))
+             (_
+               (progn
+                 (ensure-directories-exist sessions)
+                 (ensure-directories-exist cwd)))
+             (session
+               (cadr-agent:create-session
+                :directory sessions
+                :cwd cwd
+                :id "bug-lines"
+                :timestamp 1))
+             (agent
+               (cadr-agent:make-agent
+                :session session
+                :provider nil
+                :model nil))
+             (diagnostic
+               (format nil
+                       "Request failed~C~%  ↳ pi exiting...~C~%stack trace"
+                       #\Return #\Return))
+             (expected
+               "Request failed
+  ↳ pi exiting...
+stack trace")
+             (out (make-string-output-stream)))
+        (declare (ignore _))
+        (is (eq t
+                (cadr-cli::handle-session-command
+                 (format nil "/bug ~A" diagnostic)
+                 agent
+                 :directory sessions
+                 :cwd cwd
+                 :output out)))
+        (let* ((text (get-output-stream-string out))
+               (start (search "Bug report exported to: " text))
+               (path
+                 (and start
+                      (let* ((rest
+                               (subseq text
+                                       (+ start
+                                          (length
+                                           "Bug report exported to: "))))
+                             (end
+                               (or (position #\Newline rest)
+                                   (length rest))))
+                        (string-trim
+                         '(#\Space #\Tab #\Newline #\Return)
+                         (subseq rest 0 end)))))
+               (report
+                 (and path
+                      (cadr-ai::parse-json
+                       (uiop:run-program
+                        (list "unzip" "-p"
+                              (uiop:native-namestring path)
+                              "report.json")
+                        :output :string))))
+               (hint (and report (cadr-ai::json-get report "hint"))))
+          (is (and path (probe-file path)))
+          (is (string= expected hint)))))))
+
+(test bug-report-hint-skips-cancel-and-retryable-failures
+  (labels ((message (text &optional (reason :error))
+             (cadr-ai:make-assistant-message
+              :api :faux
+              :provider :faux
+              :model "faux-1"
+              :stop-reason reason
+              :error-message text)))
+    (dolist (text '("This operation was aborted"
+                    "Request cancelled"
+                    "503 Service Unavailable"))
+      (is (null
+           (cadr-cli::bug-report-hint (message text)))))
+    (is (null
+         (cadr-cli::bug-report-hint
+          (message nil :aborted))))
+    (let ((hint
+            (cadr-cli::bug-report-hint
+             (message "Unexpected internal state"))))
+      (is (and (stringp hint) (search "/bug" hint))))))
+
+(test bug-report-hint-shows-once-on-message-end
+  (labels ((message (text)
+             (cadr-ai:make-assistant-message
+              :api :faux
+              :provider :faux
+              :model "faux-1"
+              :stop-reason :error
+              :error-message text))
+           (end (state text)
+             (cadr-cli::tui-handle-agent-event
+              state
+              (cadr-agent::make-agent-event
+               :type :message-end
+               :message (message text))))
+           (turn (state text)
+             (let ((msg (message text)))
+               (cadr-cli::tui-handle-agent-event
+                state
+                (cadr-agent::make-agent-event
+                 :type :message-start
+                 :message msg))
+               (cadr-cli::tui-handle-agent-event
+                state
+                (cadr-agent::make-agent-event
+                 :type :message-end
+                 :message msg))))
+           (bug-notices (state)
+             (remove-if-not
+              (lambda (entry)
+                (and (eq :notice
+                         (cadr-cli::tui-entry-type entry))
+                     (search "/bug"
+                             (cadr-cli::tui-entry-text entry))))
+              (cadr-cli::tui-state-entries state))))
+    (let ((state (cadr-cli::make-tui-state)))
+      (end state "Unexpected internal state")
+      (is (null (bug-notices state)))
+      (is (null
+           (cadr-cli::tui-state-bug-report-hint-shown-p state))))
+    (let ((state (cadr-cli::make-tui-state)))
+      (turn state "Unexpected internal state")
+      (is (= 1 (length (bug-notices state))))
+      (is (eq t
+              (cadr-cli::tui-state-bug-report-hint-shown-p state)))
+      (turn state "Unexpected internal state")
+      (is (= 1 (length (bug-notices state)))))
+    (dolist (text '("Request cancelled"
+                    "503 Service Unavailable"))
+      (let ((state (cadr-cli::make-tui-state)))
+        (turn state text)
+        (is (null (bug-notices state)))
+        (is (null
+             (cadr-cli::tui-state-bug-report-hint-shown-p state)))))
+    (let ((state (cadr-cli::make-tui-state)))
+      (turn state "Request cancelled")
+      (turn state "Unexpected internal state")
+      (is (= 1 (length (bug-notices state))))
+      (is (eq t
+              (cadr-cli::tui-state-bug-report-hint-shown-p
+               state))))))
