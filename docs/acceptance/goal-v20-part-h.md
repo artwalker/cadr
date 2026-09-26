@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **301 files / 141,110 lines**
+Denominator: **301 files / 141,300 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,308 | 79.6% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,309 | 79.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,033 | 5.7% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 18,934 | 13.4% | on a named paired thunk; no own bench |
-| `needs-pair` | 3 | 1,835 | 1.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 3 | 2,024 | 1.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.6% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.3% of lines.
+- **Falsifiable vs baseline:** 79.5% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13877,7 +13877,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/storage/jsonl.lisp` | 538 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/memory.lisp` | 378 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
-| `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
+| `src/cadr-agent/summarization.lisp` | 87 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 332 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 806 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
@@ -14141,7 +14141,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_support` | 2 | 990 |
+| `cli_support` | 2 | 1,179 |
 | `cli_cache_warmer` | 1 | 845 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

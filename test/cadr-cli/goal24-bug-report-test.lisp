@@ -195,6 +195,346 @@
               (merge-pathnames "cadr-bug-report-*.zip"
                                root))))))))
 
+(defun bug-summary-condition-text (function)
+  (handler-case
+      (progn (funcall function) nil)
+    (error (condition)
+      (princ-to-string condition))))
+
+(defun bug-summary-user-message (text)
+  (cadr-ai:make-user-message :content text))
+
+(defun bug-summary-agent
+    (response &key (context-window 128000) (max-tokens 4096)
+               (name "Summary Model") messages abort-p
+               (reasoning-p nil) seen)
+  (cadr-agent:make-agent
+   :model
+   (cadr-ai:make-model
+    :id "summary-model"
+    :name name
+    :provider :test
+    :api :openai-completions
+    :max-tokens max-tokens
+    :context-window context-window
+    :reasoning-p reasoning-p)
+   :messages messages
+   :abort-p abort-p
+   :auto-retry-p nil
+   :stream-function
+   (lambda (provider model context callback
+            &key max-tokens cache-retention session-id abort-p
+              reasoning
+            &allow-other-keys)
+     (declare (ignore provider model callback abort-p))
+     (when seen
+       (setf (gethash :context seen) context
+             (gethash :max-tokens seen) max-tokens
+             (gethash :cache-retention seen) cache-retention
+             (gethash :session-id seen) session-id
+             (gethash :reasoning seen) reasoning))
+     response)))
+
+(test bug-report-select-messages-keeps-newest-within-budget
+  (let* ((messages
+           (mapcar #'bug-summary-user-message
+                   '("aaaa" "bbbb" "cccc" "dddd")))
+         (selected
+           (cadr-cli::bug-report-select-messages messages 2)))
+    (is (equal '("cccc" "dddd")
+               (mapcar #'cadr-ai:user-message-content selected)))))
+
+(test bug-report-summary-returns-markdown-and-baseline-prompt
+  (let* ((seen (make-hash-table))
+         (messages
+           (mapcar #'bug-summary-user-message
+                   '("aaaa" "bbbb" "cccc" "dddd" "eeee" "ffff")))
+         (agent
+           (bug-summary-agent
+            (cadr-ai:make-assistant-message
+             :content
+             (list
+              (cadr-ai:make-text-content
+               :text
+               (format nil "  ## What the user was doing~%Saved.~%")))
+             :stop-reason :stop)
+            :context-window 8
+            :max-tokens 100
+            :reasoning-p t
+            :messages messages
+            :seen seen))
+         (text
+           (progn
+             (setf (cadr-agent::agent-thinking-level agent) :high)
+             (cadr-cli::generate-bug-report-summary
+              agent messages :hint "  save crashed  "))))
+    (is (eq :high (gethash :reasoning seen)))
+    (is (string=
+         (format nil "## What the user was doing~%Saved.")
+         text))
+    (is (eql 100 (gethash :max-tokens seen)))
+    (is (eq :none (gethash :cache-retention seen)))
+    (is (and (stringp (gethash :session-id seen))
+             (plusp (length (gethash :session-id seen)))))
+    (let* ((context (gethash :context seen))
+           (prompt
+             (cadr-ai:user-message-content
+              (first (cadr-ai:context-messages context)))))
+      (is (string=
+           "You are helping a user file a bug report about cadr, the coding agent they are talking to. You will be shown the conversation transcript. Write a report for the cadr developers describing what the user was doing and what went wrong.
+
+Do NOT continue the conversation. Do NOT respond to any questions in the conversation. ONLY output the report."
+           (cadr-ai:context-system-prompt context)))
+      (is (search
+           "Note: only the last 4 of 6 messages are shown."
+           prompt))
+      (is (search
+           (format nil "<user-report>~%save crashed~%</user-report>")
+           prompt))
+      (is (search "[User]: cccc" prompt))
+      (is (not (search "[User]: aaaa" prompt)))
+      (is (search "## What the user was doing" prompt))
+      (is (search "## What went wrong" prompt))
+      (is (search "## Steps to reproduce" prompt))
+      (is (search "## Relevant details" prompt))
+      (is (search
+           "Do not include file contents, secrets, or credentials"
+           prompt)))))
+
+(test bug-report-summary-default-window-keeps-short-transcript
+  (let* ((seen (make-hash-table))
+         (messages
+           (mapcar #'bug-summary-user-message '("aaaa" "bbbb")))
+         (agent
+           (bug-summary-agent
+            (cadr-ai:make-assistant-message
+             :content
+             (list (cadr-ai:make-text-content :text "kept"))
+             :stop-reason :stop)
+            :context-window 0
+            :messages messages
+            :seen seen)))
+    (is (string=
+         "kept"
+         (cadr-cli::generate-bug-report-summary agent messages)))
+    (is (not
+         (search
+          "messages are shown."
+          (cadr-ai:user-message-content
+           (first
+            (cadr-ai:context-messages
+             (gethash :context seen)))))))))
+
+(test bug-report-summary-rejects-empty-tool-call-abort-and-error
+  (let ((messages (list (bug-summary-user-message "aaaa"))))
+    (is (string=
+         "Bug report summary was empty"
+         (bug-summary-condition-text
+          (lambda ()
+            (cadr-cli::generate-bug-report-summary
+             (bug-summary-agent
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text (format nil "  ~%")))
+               :stop-reason :stop))
+             messages)))))
+    (is (string=
+         "Bug report summary attempted to call a tool"
+         (bug-summary-condition-text
+          (lambda ()
+            (cadr-cli::generate-bug-report-summary
+             (bug-summary-agent
+              (cadr-ai:make-assistant-message
+               :content
+               (list (cadr-ai:make-tool-call :id "call-1" :name "bash"))
+               :stop-reason :stop))
+             messages)))))
+    (is (string=
+         "Bug report summary was cancelled"
+         (bug-summary-condition-text
+          (lambda ()
+            (cadr-cli::generate-bug-report-summary
+             (bug-summary-agent
+              (cadr-ai:make-assistant-message
+               :content nil
+               :stop-reason :aborted))
+             messages)))))
+    (is (string=
+         "Bug report summary failed: provider exploded"
+         (bug-summary-condition-text
+          (lambda ()
+            (cadr-cli::generate-bug-report-summary
+             (bug-summary-agent
+              (cadr-ai:make-assistant-message
+               :content nil
+               :stop-reason :error
+               :error-message "provider exploded"))
+             messages)))))))
+
+(test bug-report-with-summary-writes-summary-md
+  (with-test-directory (root)
+    (uiop:with-current-directory (root)
+      (let* ((sessions (merge-pathnames "sessions/" root))
+             (cwd (merge-pathnames "cwd/" root))
+             (_
+               (progn
+                 (ensure-directories-exist sessions)
+                 (ensure-directories-exist cwd)))
+             (session
+               (cadr-agent:create-session
+                :directory sessions
+                :cwd cwd
+                :id "bug-summary"
+                :timestamp 1))
+             (markdown "The save button crashed.")
+             (agent
+               (bug-summary-agent
+                (cadr-ai:make-assistant-message
+                 :content
+                 (list (cadr-ai:make-text-content :text markdown))
+                 :stop-reason :stop)
+                :name "Summary Model"
+                :messages
+                (list (bug-summary-user-message "save crashed"))))
+             (out (make-string-output-stream))
+             (step 0)
+             (ui
+               (lambda (method arguments)
+                 (declare (ignore arguments))
+                 (ecase method
+                   (:input "save crashed")
+                   (:select
+                    (incf step)
+                    (case step
+                      (1 "No")
+                      (2 "Yes, generate a summary")
+                      (3 "Export as Zip")))))))
+        (declare (ignore _))
+        (setf (cadr-agent:agent-session agent) session)
+        (is (eq t
+                (cadr-cli::run-bug-report
+                 agent
+                 :initial-hint "save crashed"
+                 :ui-function ui
+                 :output out)))
+        (let* ((text (get-output-stream-string out))
+               (path
+                 (let ((start
+                         (search "Bug report exported to: " text)))
+                   (and start
+                        (let* ((rest
+                                 (subseq
+                                  text
+                                  (+ start
+                                     (length
+                                      "Bug report exported to: "))))
+                               (end
+                                 (or (position #\Newline rest)
+                                     (length rest))))
+                          (string-trim
+                           '(#\Space #\Tab #\Newline #\Return)
+                           (subseq rest 0 end)))))))
+          (is (search "Writing summary with Summary Model..." text))
+          (is (not (search "not available yet" text)))
+          (is (and path (probe-file path)))
+          (when path
+            (let ((summary
+                    (uiop:run-program
+                     (list "unzip" "-p"
+                           (uiop:native-namestring path)
+                           "summary.md")
+                     :output :string)))
+              (is (search "The save button crashed." summary)))))))))
+
+(test bug-report-summary-failure-and-abort-skip-the-archive
+  (with-test-directory (root)
+    (uiop:with-current-directory (root)
+      (let* ((sessions (merge-pathnames "sessions/" root))
+             (cwd (merge-pathnames "cwd/" root))
+             (_
+               (progn
+                 (ensure-directories-exist sessions)
+                 (ensure-directories-exist cwd)))
+             (session
+               (cadr-agent:create-session
+                :directory sessions
+                :cwd cwd
+                :id "bug-summary-fail"
+                :timestamp 1))
+             (agent
+               (bug-summary-agent
+                (cadr-ai:make-assistant-message
+                 :content nil
+                 :stop-reason :error
+                 :error-message "provider exploded")))
+             (out (make-string-output-stream))
+             (step 0)
+             (ui
+               (lambda (method arguments)
+                 (declare (ignore arguments))
+                 (ecase method
+                   (:input "save crashed")
+                   (:select
+                    (incf step)
+                    (case step
+                      (1 "No")
+                      (2 "Yes, generate a summary")
+                      (3 "Export as Zip")))))))
+        (declare (ignore _))
+        (setf (cadr-agent:agent-session agent) session)
+        (is (eq t
+                (cadr-cli::run-bug-report
+                 agent
+                 :ui-function ui
+                 :output out)))
+        (is (search
+             "Failed to write bug report summary: Bug report summary failed: provider exploded"
+             (get-output-stream-string out)))
+        (is (null
+             (directory
+              (merge-pathnames "cadr-bug-report-*.zip" root)))))
+      (let* ((session
+               (cadr-agent:create-session
+                :directory (merge-pathnames "sessions/" root)
+                :cwd (merge-pathnames "cwd/" root)
+                :id "bug-summary-abort"
+                :timestamp 2))
+             (agent
+               (bug-summary-agent
+                (cadr-ai:make-assistant-message
+                 :content
+                 (list (cadr-ai:make-text-content :text "should not run"))
+                 :stop-reason :stop)))
+             (out (make-string-output-stream))
+             (step 0)
+             (ui
+               (lambda (method arguments)
+                 (declare (ignore arguments))
+                 (ecase method
+                   (:input "save crashed")
+                   (:select
+                    (incf step)
+                    (case step
+                      (1 "No")
+                      (2 "Yes, generate a summary")
+                      (3 "Export as Zip"))))))
+             (text nil))
+        (setf (cadr-agent:agent-session agent) session)
+        (is (eq t
+                (cadr-cli::run-bug-report
+                 agent
+                 :ui-function ui
+                 :output out
+                 :abort-p (lambda () t))))
+        (setf text (get-output-stream-string out))
+        (is (search "Bug report cancelled" text))
+        (is (not (search "Failed to write bug report summary" text)))
+        (is (null
+             (directory
+              (merge-pathnames "cadr-bug-report-*.zip" root))))))))
+
 (test crash-log-round-trips-and-announces
   (with-test-directory (root)
     (let* ((agent-dir (merge-pathnames "agent/" root))
