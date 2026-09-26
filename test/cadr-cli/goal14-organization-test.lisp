@@ -656,7 +656,9 @@
     ;; +2 builtin command conflict diagnostics.
     ;; +2 overlay input press: extension-input-dialog-handle-mouse
     ;; and runtime-auth-input-handle-mouse.
-    (is (= 325 definition-count)
+    ;; +1 Goal 26 left-click summary toggle: transcript-summary-click
+    ;; (interactive/transcript.lisp).
+    (is (= 326 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

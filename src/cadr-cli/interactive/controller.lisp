@@ -3026,6 +3026,11 @@ interactive-mode.ts:5956-5960).")
                (lambda (gesture)
                  (let* ((origin list-mouse-origin)
                         (y (getf gesture :y))
+                        (content-line
+                          (and y
+                               (+ (cadr-tui::terminal-renderer-scroll-top
+                                   renderer)
+                                  y)))
                         (local
                           (and origin
                                (- (+ (cadr-tui::terminal-renderer-scroll-top
@@ -3033,6 +3038,12 @@ interactive-mode.ts:5956-5960).")
                                      y)
                                   origin))))
                    (cond
+                     ((and content-line
+                           (not (overlay-captures-input-p))
+                           (transcript-summary-click
+                            state gesture content-line))
+                      (request-render)
+                      t)
                      ((or (null local) (minusp local))
                       nil)
                      ((settings-selector-state-p overlay)

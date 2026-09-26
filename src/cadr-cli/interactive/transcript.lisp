@@ -1254,25 +1254,56 @@ lines that embed OSC-8."
                         hidden-thinking-label
                         (mermaid-mode "streaming")
                         (code-block-indent "  "))
-  (loop
-    for entry in entries
-    for index from 0
-    for rendered =
-      (render-tui-entry
-       entry width
-       :extension-host extension-host
-       :now now
-       :hide-thinking-block-p hide-thinking-block-p
-       :hidden-thinking-label hidden-thinking-label
-       :mermaid-mode mermaid-mode
-       :code-block-indent code-block-indent)
-    append
-      (if
-          (and
-           (plusp index)
-           (member
-            (tui-entry-type entry)
-            '(:user :branch-summary :compaction-summary)
-            :test #'eq))
-          (cons "" rendered)
-          rendered)))
+  ;; Second value: (entry start end) ranges inside the returned lines
+  ;; for branch, compaction, and skill entries. The leading blank
+  ;; between entries is not part of the click target.
+  (let ((lines nil)
+        (hits nil)
+        (row 0))
+    (loop for entry in entries
+          for index from 0
+          for type = (tui-entry-type entry)
+          for rendered =
+            (render-tui-entry
+             entry width
+             :extension-host extension-host
+             :now now
+             :hide-thinking-block-p hide-thinking-block-p
+             :hidden-thinking-label hidden-thinking-label
+             :mermaid-mode mermaid-mode
+             :code-block-indent code-block-indent)
+          do (when (and (plusp index)
+                        (member type
+                                '(:user :branch-summary
+                                  :compaction-summary)
+                                :test #'eq))
+               (push "" lines)
+               (incf row))
+             (when (member type
+                           '(:skill-invocation :branch-summary
+                             :compaction-summary)
+                           :test #'eq)
+               (push (list entry row (+ row (length rendered)))
+                     hits))
+             (dolist (line rendered)
+               (push line lines)
+               (incf row)))
+    (values (nreverse lines) (nreverse hits))))
+
+(defun transcript-summary-click (state gesture line)
+  ;; A left click toggles that entry only.
+  (when (and (integerp line)
+             (eq (getf gesture :type) :click)
+             (eq (getf gesture :button) :left))
+    (let ((hit
+            (find-if
+             (lambda (range)
+               (and (<= (second range) line)
+                    (< line (third range))))
+             (tui-state-summary-click-ranges state))))
+      (when hit
+        (let ((entry (first hit)))
+          (setf (tui-entry-expanded-p entry)
+                (not (tui-entry-expanded-p entry)))
+          (invalidate-tui-entry-render-cache entry))
+        t))))
