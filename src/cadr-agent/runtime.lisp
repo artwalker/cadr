@@ -36,6 +36,7 @@
   (base-tools nil :type list)
   tool-registry
   (tool-filter-function #'identity :type function)
+  prepare-prompt-loadout-function
   extension-host
   session
   stream-function

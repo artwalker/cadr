@@ -10,7 +10,10 @@
    :api :openai-responses
    :base-url "https://example.invalid"
    :max-tokens 1024
-   :context-window 8192
+   ;; Large enough that turn-prep system-message sections in the
+   ;; transcript do not trip auto-compaction in facade tests (baseline
+   ;; coding-agent Agent also retains those sections).
+   :context-window 200000
    :supports-tools-p t))
 
 (defun goal12-sdk-stream
@@ -84,8 +87,10 @@
         (is (member :message-update types))
         (is (= 2
                (length
-                (cadr-cli::agent-session-messages
-                 session))))
+                (remove-if
+                 #'cadr-ai:system-message-p
+                 (cadr-cli::agent-session-messages
+                  session)))))
         (funcall unsubscribe)
         (cadr-cli::agent-session-dispose session)
         (is

@@ -1062,7 +1062,9 @@
     ;; that records the omission, so compaction.lisp stays under 1000 lines.
     ;; +9 Goal 24: system-message session JSON codec helpers in
     ;; session/codec.lisp (sections/toolsAdded/toolsRemoved round-trip).
-    (is (= 375 definition-count)
+    ;; +2 Goal 24: declare-tool-changes and
+    ;; %system-message-with-tool-changes (loop/turns.lisp).
+    (is (= 377 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

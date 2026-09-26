@@ -38,11 +38,11 @@
              :on-event (lambda (event) (push event events)))))
       (agent-prompt agent "echo")
       (is (equal '("hello") executed))
-      (is (= 4 (length (agent-messages agent))))
-      (is (typep (third (agent-messages agent))
-                 'tool-result-message))
-      (is (not (tool-result-message-is-error
-                (third (agent-messages agent)))))
+      (let ((transcript (agent-messages-without-system agent)))
+        (is (= 4 (length transcript)))
+        (is (typep (third transcript) 'tool-result-message))
+        (is (not (tool-result-message-is-error
+                  (third transcript)))))
       (setf events (nreverse events))
       (is (equal
            '(:agent-start :turn-start
@@ -105,7 +105,7 @@
              :stream-function
              (faux-stream '*responses* '*contexts*))))
       (agent-prompt agent "echo")
-      (let* ((messages (agent-messages agent))
+      (let* ((messages (agent-messages-without-system agent))
              (result (third messages))
              (last (car (last messages))))
         (is (string= "hello" executed))
@@ -155,7 +155,9 @@
                  :stream-function
                  (faux-stream '*responses* '*contexts*))))
           (agent-prompt agent "run")
-          (let ((result (third (agent-messages agent))))
+          (let ((result
+                  (first-tool-result-message
+                   (agent-messages agent))))
             (is (tool-result-message-is-error result))
             (is (plusp (length (text-result result))))))))
     (is (= 0 executions))))
@@ -447,7 +449,9 @@
       (is-true cleanup-ran-p)
       (is (equal '("bad" "good")
                  (nreverse attempts)))
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-false (tool-result-message-is-error result))
         (is (string= "good" (text-result result)))))))
 
@@ -502,7 +506,9 @@
               (faux-stream '*responses* '*contexts*))))
       (declare (special *responses* *contexts*))
       (agent-prompt agent "run")
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-true (tool-result-message-is-error result))
         (is (string= condition-message
                      (text-result result)))))))
@@ -562,7 +568,9 @@
       (declare (special *responses* *contexts*))
       (agent-prompt agent "run")
       (is (= 1 provider-calls))
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-true (tool-result-message-is-error result))
         (is (string= "stopped by host"
                      (text-result result)))))))
