@@ -379,7 +379,9 @@
                     '("One concise answer." "Working..."
                       "────────────────" "/tmp/project"))))
              (is (= 2 (- (second positions)
-                         (first positions))))))
+                         (first positions))))
+             ;; Status shares the editor top border, not a free line.
+             (is (find #\─ (nth (second positions) natural)))))
           ((string= name "above-widget")
            (let ((positions
                    (goal9-b3-assert-screen-lines-in-order
@@ -460,6 +462,9 @@
      :spacer-when-empty-p nil :leading-spacer-p nil))))
 
 (test goal9-b3-base-screen-status-widget-editor-footer-order-is-exact
+  ;; pi@13cbf77df setActiveStatusIndicator: session status embeds in the
+  ;; editor top border when embedWorkingStatus is on, so widgets-above sit
+  ;; directly above that border rather than below a free-standing status line.
   (let* ((state
            (goal9-b3-base-screen-state
             :entries
@@ -479,10 +484,8 @@
            (editor-top
              (position-if
               (lambda (line)
-                (and (plusp (length line))
-                     (every (lambda (character)
-                              (char= character #\─))
-                            line)))
+                (and (search "Working..." line)
+                     (find #\─ line)))
               plain :start (1+ answer)))
            (editor-bottom
              (position-if
@@ -494,13 +497,9 @@
               plain :start (1+ editor-top))))
       (is
        (equal
-        (list
-         ""
-         (concatenate
-          'string " ⠋ Working..."
-          (make-string 47 :initial-element #\Space))
-         "" "above widget")
+        '("" "above widget")
         (subseq plain (1+ answer) editor-top)))
+      (is (search "── ⠋ Working..." (nth editor-top plain)))
       (is (string= "below widget"
                    (nth (1+ editor-bottom) plain)))
       (is
@@ -599,7 +598,7 @@
             ("thinking" . "029DB78936CC5F7F1A549ADBF4F6DA50F9968AD81F1398C6FD1672ED96BACD4F")
             ("tool-collapsed" . "A8341C5D2224C729E2677BB66550C9CF9165850CDA7DA87CE454DAC40F91B557")
             ("tool-expanded" . "200859C6BA14DE80DD2C7F432BEDD659C66B7A9B58EE5A50410A6E6AC59E03AF")
-            ("active-status" . "0B5F0BE1E3198B974634214CCB4C2E37360C834FDA34D8D1AE68EDF9B23E207C")
+            ("active-status" . "BA6B9926CB43D750C8250862C5D3602AD4D087F98FAD5715BCBADC9402762B23")
             ("above-widget" . "1B2E5A37C04D1A3621244D7F2E094C5C7340772CB0C39A15F05D38A5B9A6C406")
             ("below-widget" . "D6303174613AA56EACF5A0F79927B771449EDCB93CBCED5F5B66AC124C537A40")
             ("overflow-scrolled-to-top" . "B18C207459A71545C6C17E34D3F7A5D7CFD14B379BF8D0FA6E9DBFFD24B0CE3E")
