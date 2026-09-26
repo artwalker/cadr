@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 files=301 lines=129068 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=154 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 files=303 lines=129419 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=148 in-progress=0 done=155 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -129,6 +129,8 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | 7 | Implement OpenAI Codex device authorization, polling, and runtime login selection. | pass | no-rewrite | string= on OpenAI wire error codes at :116-123 is the baseline-verbatim contract; cancellation via dynamic binding is already Lisp-native. | 20 |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | 7 | Implement OpenRouter PKCE login, key exchange, and refresh. | pass | no-rewrite | Empty-string-as-null at :42-43 is forced by the shared auth.json round-trip contract. | 20 |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | 7 | Implement Radius browser/device login and gateway-scoped credential refresh. | pass | done | parse-device-authorization. I0: fourth copy gone. | 20 |
+| `src/cadr-ai/providers/radius-catalog.lisp` | 156 | 13 | Keep an offline Radius public catalog and merge it with a live gateway list. | pass | done | default gateway models, then live rows replace the same id. I0: balanced stays the default. | 26 |
+| `src/cadr-ai/providers/radius.models.generated.lisp` | 195 | 1 | Hold the generated offline Radius public model rows. | pass | no-rewrite | Generated catalog pinned to the baseline radius.json digest; shape belongs to the generator. | 26 |
 | `src/cadr-ai/oauth/providers/xai.lisp` | 184 | 17 | Implement xAI device authorization, polling, and refresh over the shared OAuth request boundary. | pass | no-rewrite | member/string= over wire error lists at :112-120 are protocol constants; file already uses dynamic vars and &key test seams. | 20 |
 | `src/cadr-ai/package.lisp` | 480 | 2 | Declare the public `cadr-ai` package surface and HTTP injection seam. | pass | no-rewrite | The export barrel mirrors index.ts, but one defpackage is CL's one-owner API inventory; scattering :export would create N owners. | 20 |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | 12 | Resolve Bedrock credentials, profiles, regions, and ARN-derived configuration. | pass | done | destructuring-bind ARN parts. I0: no nth 2/3. | 20 |

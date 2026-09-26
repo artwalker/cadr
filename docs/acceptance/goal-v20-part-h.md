@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **301 files / 141,397 lines**
+Denominator: **303 files / 141,770 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,389 | 79.5% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,406 | 79.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,033 | 5.7% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,934 | 13.4% | on a named paired thunk; no own bench |
-| `needs-pair` | 3 | 2,041 | 1.4% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 30 | 18,939 | 13.4% | on a named paired thunk; no own bench |
+| `needs-pair` | 5 | 2,392 | 1.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.5% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.2% of lines.
+- **Falsifiable vs baseline:** 79.3% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 85.0% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13905,7 +13905,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | `oauth_pkce_device.kimi_host_default`, `oauth_pkce_device.kimi_host_code`, `oauth_pkce_device.kimi_host_trim` |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | `oauth_pkce_device.json_copy`, `oauth_pkce_device.interval_seconds`, `oauth_pkce_device.device_start` |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange`, `oauth_pkce_device.openrouter_login`, `oauth_pkce_device.openrouter_login_fail`, `oauth_pkce_device.openrouter_login_miss` |
-| `src/cadr-ai/oauth/providers/radius.lisp` | 116 | `oauth_pkce_device.radius_gateway` |
+| `src/cadr-ai/oauth/providers/radius.lisp` | 124 | `oauth_pkce_device.radius_gateway` |
 | `src/cadr-ai/oauth/providers/xai.lisp` | 184 | `oauth_pkce_device.error_detail`, `oauth_pkce_device.ensure_success`, `oauth_pkce_device.notify_device`, `oauth_pkce_device.xai_login`, `oauth_pkce_device.xai_login_fail`, `oauth_pkce_device.xai_refresh` |
 | `src/cadr-ai/provider.lisp` | 906 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 714 | `provider_anthropic.stream_roundtrip` |
@@ -13919,7 +13919,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/openai.lisp` | 839 | `provider_openai_responses.stream_roundtrip` |
 | `src/cadr-ai/providers/pi-messages.lisp` | 331 | `provider_pi_messages.stream_roundtrip` |
 | `src/cadr-ai/providers/registry.lisp` | 157 | `provider_registry_defs.protocol_provider`, `provider_registry_defs.protocol_provider_anthropic`, `provider_registry_defs.instantiate_provider` |
-| `src/cadr-ai/providers/runtime-projection.lisp` | 297 | `provider_registry_defs.api_key_auth`, `provider_registry_defs.api_key_login_function`, `provider_registry_defs.api_key_strategy`, `provider_registry_defs.merge_environment`, `provider_registry_defs.model_filter_function`, `provider_registry_defs.oauth_login_function`, `provider_registry_defs.oauth_refresh_function`, `provider_registry_defs.oauth_to_auth`, `provider_registry_defs.provider_options`, `provider_registry_defs.runtime_models`, `provider_registry_defs.strip_runtime_options`, `provider_registry_defs.structured_api_key_login`, `provider_registry_defs.runtime_provider`, `provider_registry_defs.runtime_provider_copilot`, `provider_registry_defs.models_runtime` |
+| `src/cadr-ai/providers/runtime-projection.lisp` | 306 | `provider_registry_defs.api_key_auth`, `provider_registry_defs.api_key_login_function`, `provider_registry_defs.api_key_strategy`, `provider_registry_defs.merge_environment`, `provider_registry_defs.model_filter_function`, `provider_registry_defs.oauth_login_function`, `provider_registry_defs.oauth_refresh_function`, `provider_registry_defs.oauth_to_auth`, `provider_registry_defs.provider_options`, `provider_registry_defs.runtime_models`, `provider_registry_defs.strip_runtime_options`, `provider_registry_defs.structured_api_key_login`, `provider_registry_defs.runtime_provider`, `provider_registry_defs.runtime_provider_copilot`, `provider_registry_defs.models_runtime` |
 | `src/cadr-ai/providers/vertex.lisp` | 135 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 625 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
@@ -14107,7 +14107,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/package.lisp` | 485 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/package.lisp` | 490 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 18 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
@@ -14143,6 +14143,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 |---|---:|---:|
 | `cli_support` | 2 | 1,196 |
 | `cli_cache_warmer` | 1 | 845 |
+| `ai_radius_catalog` | 2 | 351 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

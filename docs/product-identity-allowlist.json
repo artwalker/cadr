@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1482,
+  "expected_findings": 1538,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -9411,6 +9411,38 @@
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     },
     {
+      "path": "src/cadr-ai/providers/radius-catalog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +default-radius-gateway+ \"https://radius.pi.dev\")",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/radius-catalog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "               (eq :pi-messages (model-api model))))",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/radius.models.generated.lisp",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "  :PI-MESSAGES :BASE-URL \"https://radius.pi.dev/v1\"",
+      "occurrences": 27,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/radius.models.generated.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  :PI-MESSAGES :BASE-URL \"https://radius.pi.dev/v1\"",
+      "occurrences": 27,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
       "path": "src/cadr-ai/providers/definitions.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -10976,6 +11008,11 @@
       "path": "src/cadr-agent/export-html/vendor/highlight.min.js",
       "sha256": "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846",
       "reason": "Exact vendored Highlight.js 11.9.0 bytes contain pi only in Lua and R mathematical builtin lists; digest lock prevents this exemption from covering any asset change."
+    },
+    {
+      "path": "src/cadr-ai/providers/data/radius.json",
+      "sha256": "17863cffc194be9cb7f5d411a1f0422b38abcc2359f53b493c9c97248d4733d6",
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     }
   ]
 }

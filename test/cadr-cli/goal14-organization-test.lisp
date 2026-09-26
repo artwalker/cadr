@@ -1462,7 +1462,11 @@
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
               ;; +1 Goal 26: #:model-input-limits.
-              "529accc08f6c48d38d75a358aa99cdfde2758888dd19be3817383627abba36a9"
+              ;; +5 Goal 24: Radius offline catalog helpers
+              ;; (#:load-radius-gateway-config #:+default-radius-gateway+
+              ;; #:normalize-radius-gateway #:merge-radius-models
+              ;; #:radius-baseline-models).
+              "f6a039f32cb2b82eb5384747384cc24fdd36e38e6f22beb2cb939ee999ee7f40"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

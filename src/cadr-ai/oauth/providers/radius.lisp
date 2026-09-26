@@ -7,7 +7,15 @@
    :auth-url-instructions "Continue in your browser."))
 
 (defun normalize-radius-gateway (gateway)
-  (string-right-trim "/" gateway))
+  (let* ((raw (or gateway ""))
+         (with-scheme
+           (if (or (and (>= (length raw) 7)
+                        (string-equal "http://" raw :end2 7))
+                   (and (>= (length raw) 8)
+                        (string-equal "https://" raw :end2 8)))
+               raw
+               (concatenate 'string "https://" raw))))
+    (string-right-trim "/" with-scheme)))
 
 (defun radius-token-credential (gateway fields)
   (multiple-value-bind (response status)

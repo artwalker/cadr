@@ -934,7 +934,7 @@
         "api-key",
         "oauth"
       ],
-      "defaultModel": "auto",
+      "defaultModel": "balanced",
       "keyEnvironment": "RADIUS_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": true,
