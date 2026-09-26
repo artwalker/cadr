@@ -1435,6 +1435,7 @@
                    "support/threads.lisp" "support/release.lisp"
                    "support/retry.lisp" "support/token-estimation.lisp"
                    "support/overflow.lisp" "support/grammar-coercion.lisp"
+                   "support/transcript.lisp"
                    "support/uuid.lisp")
                  collect
                  (goal14-b1-source root (format nil "src/cadr-ai/~A" relative)))))
@@ -1466,7 +1467,7 @@
               ;; (#:load-radius-gateway-config #:+default-radius-gateway+
               ;; #:normalize-radius-gateway #:merge-radius-models
               ;; #:radius-baseline-models).
-              "f6a039f32cb2b82eb5384747384cc24fdd36e38e6f22beb2cb939ee999ee7f40"
+              "848433f387fb3746db343c82c812dfeb548ee025e6237cd2974ae58537b11bd1"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
@@ -1486,6 +1487,7 @@
              "(:file \"threads\")" "(:file \"release\")"
              "(:file \"retry\")" "(:file \"token-estimation\")"
              "(:file \"overflow\")" "(:file \"grammar-coercion\")"
+             "(:file \"transcript\")"
              "(:file \"uuid\")"
              "(:module \"capabilities\""
              "(:file \"streaming-json\")" "(:file \"event-stream\")"

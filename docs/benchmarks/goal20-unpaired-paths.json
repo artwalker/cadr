@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 303,
-    "lines": 141770
+    "files": 304,
+    "lines": 142071
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -1321,6 +1321,11 @@
       "prefix": "src/cadr-ai/providers/radius.models.generated.lisp",
       "class": "needs-pair",
       "hole": "ai_radius_catalog"
+    },
+    {
+      "prefix": "src/cadr-ai/support/transcript.lisp",
+      "class": "needs-pair",
+      "hole": "ai_transcript_replay"
     },
     {
       "prefix": "src/cadr-server/",

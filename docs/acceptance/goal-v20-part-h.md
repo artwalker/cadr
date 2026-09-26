@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **303 files / 141,770 lines**
+Denominator: **304 files / 142,071 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 112,406 | 79.3% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 112,406 | 79.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,033 | 5.7% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 18,939 | 13.4% | on a named paired thunk; no own bench |
-| `needs-pair` | 5 | 2,392 | 1.7% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 30 | 19,001 | 13.4% | on a named paired thunk; no own bench |
+| `needs-pair` | 6 | 2,631 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.3% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 85.0% of lines.
+- **Falsifiable vs baseline:** 79.1% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -14107,11 +14107,11 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/package.lisp` | 490 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/package.lisp` | 530 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 18 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/types.lisp` | 210 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
+| `src/cadr-ai/types.lisp` | 232 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/package.lisp` | 349 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -14144,6 +14144,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_support` | 2 | 1,196 |
 | `cli_cache_warmer` | 1 | 845 |
 | `ai_radius_catalog` | 2 | 351 |
+| `ai_transcript_replay` | 1 | 239 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

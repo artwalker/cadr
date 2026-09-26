@@ -22,6 +22,7 @@
                                            (:file "token-estimation")
                                            (:file "overflow")
                                            (:file "grammar-coercion")
+                                           (:file "transcript")
                                            (:file "uuid")
                                            (:file "attribution")))
                              (:module "capabilities"
@@ -140,7 +141,8 @@
                              (:file "goal12-codex-websocket-test")
                              (:file "goal20-websocket-test")
                              (:file "goal20-stream-accumulation-test")
-                             (:file "goal20-json-parse-windows-test"))))
+                             (:file "goal20-json-parse-windows-test")
+                             (:file "goal24-system-message-replay-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-ai/tests :run-tests)
