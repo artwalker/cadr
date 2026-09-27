@@ -149,6 +149,7 @@
     (branch-summary-message-to-llm message))
   (:method ((message compaction-summary-agent-message))
     (compaction-summary-agent-message-to-llm message))
+  (:method ((message cadr-ai:system-message)) message)
   (:method ((message cadr-ai:user-message)) message)
   (:method ((message cadr-ai:assistant-message)) message)
   (:method ((message cadr-ai:tool-result-message)) message)
@@ -157,7 +158,8 @@
 
 (defun llm-passthrough-message-p (message)
   (typep message
-         '(or cadr-ai:user-message
+         '(or cadr-ai:system-message
+           cadr-ai:user-message
            cadr-ai:assistant-message
            cadr-ai:tool-result-message)))
 

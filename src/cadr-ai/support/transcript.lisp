@@ -102,6 +102,25 @@
     (make-transcript-context
      :messages (if head (cons head rest) rest))))
 
+(defun project-forced-system-prompt (messages forced)
+  "Send FORCED as the provider's leading system prompt without recording it.
+
+Matches AgentSession._installAgentForcedPromptProjection: mid-conversation
+system messages collapse into one head holding the forced text and the
+current tools. The structured section trail stays in the transcript."
+  (let ((current (get-current-system-message messages)))
+    (cons
+     (make-system-message
+      :content forced
+      :tools-added
+      (when current
+        (copy-list (system-message-tools-added current)))
+      :timestamp
+      (if current
+          (system-message-timestamp current)
+          (unix-milliseconds)))
+     (remove-if #'system-message-p messages))))
+
 (defun resolve-transcript (context supports-mid-convo-system-messages)
   (if supports-mid-convo-system-messages
       context

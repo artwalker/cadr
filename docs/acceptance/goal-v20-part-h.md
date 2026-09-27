@@ -13806,15 +13806,15 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 142,793 lines**
+Denominator: **304 files / 142,851 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,089 | 79.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 113,127 | 79.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,033 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 19,013 | 13.3% | on a named paired thunk; no own bench |
-| `needs-pair` | 6 | 2,658 | 1.9% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 30 | 19,014 | 13.3% | on a named paired thunk; no own bench |
+| `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 79.2% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
@@ -13858,11 +13858,11 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/execution-env.lisp` | 878 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
 | `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue`, `file_mutation_queue.queue_key`, `file_mutation_queue.lock`, `file_mutation_queue.register`, `file_mutation_queue.wait_turn`, `file_mutation_queue.release_turn`, `file_mutation_queue.ensure_state`, `file_mutation_queue.call_with`, `file_mutation_queue.make_state`, `file_mutation_queue.state_key`, `file_mutation_queue.pending_count`, `file_mutation_queue.next_ticket`, `file_mutation_queue.serving_ticket`, `file_mutation_queue.waitqueue`, `file_mutation_queue.registry`, `file_mutation_queue.state_p` |
 | `src/cadr-agent/harness-events.lisp` | 75 | `harness_events.emit`, `harness_events.on`, `harness_events.watch`, `harness_events.make_start`, `harness_events.make_end`, `harness_events.event_type`, `harness_events.make_bus` |
-| `src/cadr-agent/loop/agent-loop.lisp` | 557 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/agent-loop.lisp` | 567 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/events.lisp` | 173 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 497 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/loop/turns.lisp` | 890 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/messages.lisp` | 312 | `session_compact.compact` |
+| `src/cadr-agent/loop/turns.lisp` | 912 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/messages.lisp` | 314 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
 | `src/cadr-agent/runtime.lisp` | 611 | `agent_tool_loop.runtime` |
@@ -14107,7 +14107,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/package.lisp` | 533 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/package.lisp` | 534 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 18 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
@@ -14144,7 +14144,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_support` | 2 | 1,196 |
 | `cli_cache_warmer` | 1 | 845 |
 | `ai_radius_catalog` | 2 | 351 |
-| `ai_transcript_replay` | 1 | 266 |
+| `ai_transcript_replay` | 1 | 285 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

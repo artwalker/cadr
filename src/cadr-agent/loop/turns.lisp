@@ -131,7 +131,11 @@
          ;; invisible to the model and to faux usage accounting.
          (request-messages
            (convert-agent-messages-to-llm
-            (conversation-messages final-messages))))
+            (conversation-messages final-messages)))
+         (forced *agent-run-force-system-prompt*)
+         (has-system-p
+           (find-if #'cadr-ai:system-message-p
+                    request-messages)))
     (let* ((callback
              (lambda (event)
                (case (cadr-ai:stream-event-type event)
@@ -170,20 +174,38 @@
                   :model (cadr-ai:model-id (agent-model agent))
                   :stop-reason :error
                   :error-message "This operation was aborted")
-                 (multiple-value-bind
-                       (prompt tools)
-                     (request-prompt-and-tools
-                      agent messages final-messages)
-                   (let ((context
-                           (cadr-ai:make-context
-                            :system-prompt
-                            (rendered-provider-prompt agent prompt)
-                            :messages request-messages
-                            :tools tools
-                            :system-prompt-index
-                            (shiftf
-                             (agent-prompt-insert-index agent)
-                             nil))))
+                 (let ((context
+                         (cond
+                           ((and has-system-p forced)
+                            (cadr-ai:make-context
+                             :system-prompt nil
+                             :messages
+                             (cadr-ai:project-forced-system-prompt
+                              request-messages forced)
+                             :tools nil))
+                           (has-system-p
+                            (cadr-ai:make-context
+                             :system-prompt nil
+                             :messages request-messages
+                             :tools nil
+                             :system-prompt-index
+                             (shiftf
+                              (agent-prompt-insert-index agent)
+                              nil)))
+                           (t
+                            (multiple-value-bind
+                                  (prompt tools)
+                                (request-prompt-and-tools
+                                 agent messages final-messages)
+                              (cadr-ai:make-context
+                               :system-prompt
+                               (rendered-provider-prompt agent prompt)
+                               :messages request-messages
+                               :tools tools
+                               :system-prompt-index
+                               (shiftf
+                                (agent-prompt-insert-index agent)
+                                nil)))))))
                    ;; abort-p is a keyword on the stream call, not a
                    ;; one-field plist built to be read back (TS
                    ;; object-literal leftover).
@@ -203,7 +225,7 @@
                         context callback
                         :reasoning
                         (agent-thinking-level agent)
-                        :abort-p abort-p)))))))
+                        :abort-p abort-p))))))
       (let ((final
               (merge-terminal-assistant-partial
                message last-partial)))

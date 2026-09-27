@@ -852,6 +852,7 @@
                  (mapcar
                   (lambda (message)
                     (typecase message
+                      (cadr-ai:system-message :system)
                       (cadr-ai:user-message :user)
                       (cadr-ai:assistant-message :assistant)
                       (cadr-ai:tool-result-message :tool)
@@ -909,7 +910,10 @@
                       'cadr-ai:tool-result-message))
                    (cadr-agent:session-messages source)))
                  (cadr-agent:agent-prompt agent "next prompt")
-                 (is (equal '(:user) (first captured))))))
+                 ;; Replacement session is empty of conversation turns;
+                 ;; the tools-only system head still leads the provider
+                 ;; request (mid-convo convert passthrough).
+                 (is (equal '(:system :user) (first captured))))))
         (cadr-agent:agent-shutdown agent)))))
 
 (test unflushed-persisted-fork-waits-for-the-first-assistant
