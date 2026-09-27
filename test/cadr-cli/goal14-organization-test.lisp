@@ -869,7 +869,9 @@
     ;; renderer-deliver-component-mouse.
     ;; +1 Goal 24 clipboard fail-naming: renderer-copy-selection-flash
     ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
-    (is (= 350 definition-count)
+    ;; +3 Goal 24 WezTerm Kitty clear: clear-frame-row, wezterm-session-p,
+    ;; wezterm-kitty-clear-before-draw-p (renderer/main-screen.lisp).
+    (is (= 353 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

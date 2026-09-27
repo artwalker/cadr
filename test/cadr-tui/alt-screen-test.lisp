@@ -923,3 +923,64 @@
       (cadr-tui::renderer-copy-selection-flash nil)
     (is (string= "Copy failed" message))
     (is (= 5000 duration))))
+
+(test goal24-wezterm-clears-before-kitty-draw
+  (let ((previous-pane (uiop:getenv "WEZTERM_PANE")))
+    (unwind-protect
+         (progn
+           (setf (uiop:getenv "WEZTERM_PANE") "1")
+           (cadr-tui:reset-terminal-capabilities)
+           (cadr-tui:set-terminal-capabilities
+            (cadr-tui:make-terminal-capabilities
+             :images :kitty
+             :true-color-p t
+             :hyperlinks-p t))
+           (let* ((terminal
+                    (make-alt-recording-terminal
+                     :columns 20 :rows 3))
+                  (renderer
+                    (cadr-tui:make-terminal-renderer
+                     terminal :alt-p t))
+                  (image
+                    (cadr-tui:encode-kitty-image
+                     "AAAA"
+                     :columns 2 :rows 1
+                     :image-id 42
+                     :move-cursor-p nil)))
+             (cadr-tui:register-kitty-image-metadata
+              :image-id 42 :columns 2 :rows 1
+              :width-px 20 :height-px 10)
+             (cadr-tui:renderer-start renderer)
+             (alt-render
+              renderer (list image "text" "end")
+              :cursor-row 2 :cursor-column 0)
+             (let* ((payload
+                      (with-output-to-string (out)
+                        (dolist
+                            (event
+                             (alt-recording-events
+                              terminal))
+                          (when
+                              (and
+                               (eq :write
+                                   (getf event :type))
+                               (stringp
+                                (getf event :data)))
+                            (write-string
+                             (getf event :data)
+                             out)))))
+                    (last-clear
+                      (search
+                       (format nil "~C[2K" #\Escape)
+                       payload
+                       :from-end t))
+                    (image-mark
+                      (search "i=42" payload)))
+               (is (not (null last-clear)))
+               (is (not (null image-mark)))
+               (is (< last-clear image-mark)))))
+      (if previous-pane
+          (setf (uiop:getenv "WEZTERM_PANE")
+                previous-pane)
+          (sb-posix:unsetenv "WEZTERM_PANE"))
+      (cadr-tui:reset-terminal-capabilities))))
