@@ -279,13 +279,24 @@
     (setf (getf row :prompt-cache) '(:short 300 :long 3600)))
   row)
 
+(defun apply-fireworks-tool-references-override (row)
+  (when (and (eq (getf row :provider) :fireworks)
+             (eq (getf row :api) :anthropic-messages))
+    (let ((compat (getf row :compat)))
+      (unless (loop for (key) on compat by #'cddr
+                    thereis (eq key :supports-tool-references))
+        (setf (getf row :compat)
+              (list* :supports-tool-references t compat)))))
+  row)
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-anthropic-prompt-cache-override
-             (apply-gpt-5-6-pricing-override
-              (copy-list row)))))
+            (apply-fireworks-tool-references-override
+             (apply-anthropic-prompt-cache-override
+              (apply-gpt-5-6-pricing-override
+               (copy-list row))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
