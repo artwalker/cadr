@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,269 lines**
+Denominator: **304 files / 143,365 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,518 | 79.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 113,611 | 79.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 19,029 | 13.3% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 30 | 19,032 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 79.2% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
+- **K-advanceable** (paired ∪ unpairable): 84.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13867,11 +13867,11 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
 | `src/cadr-agent/runtime.lisp` | 612 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
-| `src/cadr-agent/session/codec.lisp` | 1,373 | `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/codec.lisp` | 1,375 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 483 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 744 | `session_export_html.to_html` |
-| `src/cadr-agent/session/journal.lisp` | 778 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/migration.lisp` | 2,932 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-agent/session/journal.lisp` | 817 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/migration.lisp` | 2,984 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
 | `src/cadr-agent/storage/harness.lisp` | 476 | `harness_storage.open_walk` |
 | `src/cadr-agent/storage/jsonl.lisp` | 538 | `harness_storage.open_walk` |
@@ -14103,7 +14103,7 @@ On a named paired thunk. No own bench (G.12).
 
 | file | lines | parent metrics |
 |---|---:|---|
-| `src/cadr-agent/package.lisp` | 492 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/package.lisp` | 495 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |

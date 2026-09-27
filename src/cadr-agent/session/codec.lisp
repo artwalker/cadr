@@ -16,6 +16,8 @@
   thinking-level
   provider
   model-id
+  kind
+  note
   active-tool-names
   from-id
   details
