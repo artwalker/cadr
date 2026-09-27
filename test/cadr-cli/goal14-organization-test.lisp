@@ -1228,7 +1228,8 @@
     ;; +2 duplicate command invocation names.
     ;; +1 extension resource source labels.
     ;; +2 Goal 26: context-transform-message-p and valid-boundary-draft-p.
-    (is (= 265 definition-count)
+    ;; +1 Goal 24: extension-schema-registration-path (registration.lisp).
+    (is (= 266 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))

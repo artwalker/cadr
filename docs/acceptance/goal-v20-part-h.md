@@ -13806,13 +13806,13 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 142,851 lines**
+Denominator: **304 files / 142,863 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
 | `paired` | 244 | 113,127 | 79.2% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 8,033 | 5.6% | single reference vs previous cadr |
+| `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 19,014 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |

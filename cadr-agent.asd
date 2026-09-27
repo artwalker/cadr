@@ -101,6 +101,7 @@
                              (:file "extensions-wave2-test")
                              (:file "extensions-wave3-test")
                              (:file "goal12-extension-api-test")
+                             (:file "goal24-extension-tool-schema-test")
                              (:file "harness-events-test")
                              (:file "shutdown-test")
                              (:file "cache-warmer-test"))))
