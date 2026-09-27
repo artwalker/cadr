@@ -281,3 +281,46 @@
         (is (= 1
                (count :agent-settled events
                       :key #'cadr-agent:agent-event-type)))))))
+
+(test goal24-bash-signal-exit-codes
+  (with-test-directory (directory)
+    (let ((tool (make-bash-tool directory)))
+      (dolist (case '(("KILL" 137) ("TERM" 143)))
+        (destructuring-bind (signal expected) case
+          (let ((condition
+                  (handler-case
+                      (progn
+                        (invoke-tool
+                         tool
+                         (args
+                          "command"
+                          (format nil
+                                  "printf 'before-~A~%'; kill -~A $$"
+                                  signal signal)))
+                        nil)
+                    (error (condition)
+                      condition))))
+            (is (not (null condition)))
+            (when condition
+              (let ((message (princ-to-string condition)))
+                (is (search (format nil "before-~A" signal) message))
+                (is (search
+                     (format nil "Command exited with code ~D" expected)
+                     message))))))))))
+
+(test goal24-bash-null-exit-code-is-a-tool-error
+  (let ((condition
+          (handler-case
+              (progn
+                (cadr-cli::normalized-extension-bash-result
+                 '(:output "partial" :exit-code nil))
+                nil)
+            (error (condition)
+              condition))))
+    (is (not (null condition)))
+    (when condition
+      (let ((message (princ-to-string condition)))
+        (is (search "partial" message))
+        (is (search
+             "Command terminated without an exit code"
+             message))))))
