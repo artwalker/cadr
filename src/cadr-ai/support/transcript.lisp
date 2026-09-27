@@ -22,6 +22,11 @@
                (copy-list (context-messages context)))))
     (make-transcript-context :messages messages)))
 
+(defun ensure-transcript-context (value)
+  (etypecase value
+    (transcript-context value)
+    (context (normalize-context value))))
+
 (defun get-initial-system-message (messages)
   (let ((first (first messages)))
     (when (system-message-p first)
@@ -237,3 +242,25 @@
              (format nil "Updated system prompt section ~S:~%~%~A" name value))
          parts)))
     (format nil "~{~A~^~%~%~}" (nreverse parts))))
+
+(defun transcript-context-as-request-context (model transcript)
+  ;; Project a messages-only transcript back to Context for wire
+  ;; adapters until each provider speaks TranscriptContext natively.
+  (let* ((resolved
+           (resolve-transcript
+            transcript
+            (model-compat-value
+             model :supports-mid-convo-system-messages nil)))
+         (messages (transcript-context-messages resolved))
+         (prompt (get-current-system-prompt messages))
+         (tools (get-current-tools messages)))
+    (make-context
+     :system-prompt (when (plusp (length prompt)) prompt)
+     :messages (without-initial-system-message messages)
+     :tools tools)))
+
+(defun coerce-provider-request-context (model context)
+  (etypecase context
+    (context context)
+    (transcript-context
+     (transcript-context-as-request-context model context))))

@@ -59,10 +59,12 @@
 
 (defmethod build-request :around
     ((provider provider) model context &rest args)
-  (let* ((resolved-model (cloudflare-model provider model))
+  (let* ((request-context
+           (coerce-provider-request-context model context))
+         (resolved-model (cloudflare-model provider model))
          (request
            (apply #'call-next-method
-                  provider resolved-model context args))
+                  provider resolved-model request-context args))
          (provider-id (model-provider model))
          (headers (request-spec-headers request)))
     (case provider-id
@@ -77,7 +79,7 @@
               (format nil "Bearer ~A"
                       (require-api-key provider)))))
       (:github-copilot
-       (dolist (header (copilot-request-headers context))
+       (dolist (header (copilot-request-headers request-context))
          (setf headers
                (set-header headers
                            (car header) (cdr header)))))

@@ -545,8 +545,12 @@ NIL means that the caller must send the original, uncompressed body."
 
 (defmethod build-request :around
     ((provider openai-codex-provider) model context
-     &key &allow-other-keys)
-  (let* ((request (call-next-method))
+     &rest args &key &allow-other-keys)
+  (let* ((request-context
+           (coerce-provider-request-context model context))
+         (request
+           (apply #'call-next-method
+                  provider model request-context args))
          (payload (request-spec-payload request))
          (input (json-get payload "input" #()))
          (first (and (plusp (length input)) (aref input 0))))
@@ -555,7 +559,7 @@ NIL means that the caller must send the original, uncompressed body."
                        :test #'string=))
       (json-put payload "input" (subseq input 1)))
     (json-put payload "instructions"
-              (or (context-system-prompt context)
+              (or (context-system-prompt request-context)
                   "You are a helpful assistant."))
     (json-put payload "text" (json-object "verbosity" "low"))
     (json-put payload "include" (json-array "reasoning.encrypted_content"))

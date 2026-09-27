@@ -1471,7 +1471,11 @@
               ;; (#:load-radius-gateway-config #:+default-radius-gateway+
               ;; #:normalize-radius-gateway #:merge-radius-models
               ;; #:radius-baseline-models).
-              "848433f387fb3746db343c82c812dfeb548ee025e6237cd2974ae58537b11bd1"
+              ;; +40 Goal 24: transcript-backed system-message replay exports.
+              ;; +3 Goal 24: ensure-transcript-context /
+              ;; transcript-context-as-request-context /
+              ;; coerce-provider-request-context.
+              "583f33706fa700dc0570040d637555478f7fc2f53574e4e60a964c7dc376300e"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
