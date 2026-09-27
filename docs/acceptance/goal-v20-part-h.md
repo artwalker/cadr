@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,266 lines**
+Denominator: **304 files / 143,267 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,515 | 79.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 113,516 | 79.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 19,029 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
@@ -14070,7 +14070,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/composition/settings-list.lisp` | 515 | `tui_settings_list.apply_filter` |
 | `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/editor.lisp` | 2,224 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/fuzzy.lisp` | 134 | `tui_editor_helpers.fuzzy_match` |
+| `src/cadr-tui/fuzzy.lisp` | 135 | `tui_editor_helpers.fuzzy_match` |
 | `src/cadr-tui/input-component.lisp` | 440 | `tui_input_component.edit` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keybindings.lisp` | 270 | `tui_keybindings.resolve_match` |
