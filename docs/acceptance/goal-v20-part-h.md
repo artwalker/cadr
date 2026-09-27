@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,439 lines**
+Denominator: **304 files / 143,479 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,660 | 79.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 113,699 | 79.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 19,057 | 13.3% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 30 | 19,058 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 79.2% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
+- **K-advanceable** (paired ∪ unpairable): 84.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13858,14 +13858,14 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/execution-env.lisp` | 878 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
 | `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue`, `file_mutation_queue.queue_key`, `file_mutation_queue.lock`, `file_mutation_queue.register`, `file_mutation_queue.wait_turn`, `file_mutation_queue.release_turn`, `file_mutation_queue.ensure_state`, `file_mutation_queue.call_with`, `file_mutation_queue.make_state`, `file_mutation_queue.state_key`, `file_mutation_queue.pending_count`, `file_mutation_queue.next_ticket`, `file_mutation_queue.serving_ticket`, `file_mutation_queue.waitqueue`, `file_mutation_queue.registry`, `file_mutation_queue.state_p` |
 | `src/cadr-agent/harness-events.lisp` | 75 | `harness_events.emit`, `harness_events.on`, `harness_events.watch`, `harness_events.make_start`, `harness_events.make_end`, `harness_events.event_type`, `harness_events.make_bus` |
-| `src/cadr-agent/loop/agent-loop.lisp` | 567 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/agent-loop.lisp` | 600 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 176 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 497 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 930 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 314 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 875 | `resource_loader.reload` |
-| `src/cadr-agent/runtime.lisp` | 612 | `agent_tool_loop.runtime` |
+| `src/cadr-agent/runtime.lisp` | 618 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,375 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 483 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
@@ -14103,7 +14103,7 @@ On a named paired thunk. No own bench (G.12).
 
 | file | lines | parent metrics |
 |---|---:|---|
-| `src/cadr-agent/package.lisp` | 496 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/package.lisp` | 497 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 309 | `cli_dispatch.list_models_registry` |

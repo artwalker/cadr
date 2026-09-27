@@ -122,7 +122,7 @@
                 "isStreaming"
                 (cadr-agent:agent-busy-p agent)
                 "isCompacting"
-                (cadr-agent::agent-compacting-p agent)
+                (cadr-agent:agent-compacting-p agent)
                 "steeringMode"
                 (rpc-symbol-name
                  (cadr-agent:agent-steering-mode

@@ -94,6 +94,7 @@
                              (:file "compaction-test")
                              (:file "goal24-compaction-auth-abort-test")
                              (:file "goal24-compaction-cancel-races-test")
+                             (:file "goal24-tree-during-compaction-test")
                              (:file "goal12-core-capabilities-test")
                              (:file "storage-test")
                              (:file "sqlite-storage-test")
