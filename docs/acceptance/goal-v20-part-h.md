@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,210 lines**
+Denominator: **304 files / 143,266 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,459 | 79.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 113,515 | 79.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 19,029 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
@@ -13934,7 +13934,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/websocket.lisp` | 661 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/auth.lisp` | 189 | `cli_bootstrap_sessions.bootstrap_auth` |
-| `src/cadr-cli/bootstrap/commands.lisp` | 2,916 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
+| `src/cadr-cli/bootstrap/commands.lisp` | 2,929 | `cli_bootstrap_sessions.cycle_wrap`, `cli_bootstrap_sessions.file_tags`, `cli_bootstrap_sessions.scope_hint` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/sessions.lisp` | 2,213 | `cli_bootstrap_sessions.assistant_tool_call_only`, `cli_bootstrap_sessions.last_assistant_text`, `cli_bootstrap_sessions.path_argument`, `cli_bootstrap_sessions.session_compaction_status`, `cli_bootstrap_sessions.session_entry_user_text`, `cli_bootstrap_sessions.session_export_basename`, `cli_bootstrap_sessions.session_path`, `cli_bootstrap_sessions.session_user_messages_for_forking`, `cli_bootstrap_sessions.session_command_stats`, `cli_bootstrap_sessions.session_usage_breakdown`, `cli_bootstrap_sessions.session_tree_label_timestamps`, `cli_bootstrap_sessions.session_tree_tool_calls`, `cli_bootstrap_sessions.session_compaction_display_state`, `cli_bootstrap_sessions.write_hotkeys_command`, `cli_bootstrap_sessions.find_session_by_id_or_prefix`, `cli_bootstrap_sessions.session_display_messages`, `cli_bootstrap_sessions.session_tree_selector_data`, `cli_bootstrap_sessions.validate_cli_session_flags`, `cli_bootstrap_sessions.session_entry_tree_selector_data`, `cli_bootstrap_sessions.session_restored_model`, `cli_bootstrap_sessions.split_command`, `cli_bootstrap_sessions.cli_platform`, `cli_bootstrap_sessions.session_info_style`, `cli_bootstrap_sessions.default_changelog_path` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 1,275 | `settings_load.http_idle` |
@@ -13984,7 +13984,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/media.lisp` | 1,331 | `image_runtime.mime_type` |
 | `src/cadr-cli/migration.lisp` | 512 | `cli_bootstrap_sessions.data_directory`, `cli_bootstrap_sessions.legacy_data_directory`, `cli_bootstrap_sessions.manual_migration_command`, `cli_bootstrap_sessions.managed_binary_names`, `cli_bootstrap_sessions.migration_guide_url`, `cli_bootstrap_sessions.extensions_doc_url` |
 | `src/cadr-cli/models/credential-print.lisp` | 613 | `cli_models_rest.auth_command` |
-| `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
+| `src/cadr-cli/models/login-selection.lisp` | 118 | `cli_models_rest.login_selection` |
 | `src/cadr-cli/models/matching.lisp` | 396 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 874 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 201 | `cli_dispatch.list_models_registry` |
