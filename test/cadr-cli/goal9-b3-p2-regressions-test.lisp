@@ -53,6 +53,9 @@
        ""
        (goal9-b3-full-width-line "  Model Name: Faux Model" width)
        ""
+       (goal9-b3-full-width-line
+        "  Enter to select · Ctrl+S to set as default · Escape/Ctrl+C to cancel"
+        width)
        border)
       plain))))
 

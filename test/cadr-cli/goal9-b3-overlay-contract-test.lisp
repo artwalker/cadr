@@ -235,13 +235,13 @@
             :show-hardware-cursor-p t)))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-overlay-lines overlay 80 0d0)
-      (is (= 21 (length lines)))
+      (is (= 22 (length lines)))
       (is (= 4 row))
       (let ((output
               (cadr-tui:render-frame
                renderer lines
                :cursor-row row :cursor-column column)))
-        (is (= 11 (cadr-tui:renderer-viewport-top renderer)))
+        (is (= 12 (cadr-tui:renderer-viewport-top renderer)))
         (is (search (format nil "~C[?25l" #\Escape) output))
         (is (null (search (format nil "~C[?25h" #\Escape) output)))
         (is
@@ -398,8 +398,8 @@
 
 (test goal9-b3-every-overlay-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
-          '(("model" . "828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869")
-            ("model-scoped" . "9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1")
+          '(            ("model" . "EC38393C54D8BCF85F2B6C43D29C28BD2B587C00D7CE674D04A29763FD3D7A4C")
+            ("model-scoped" . "36A1D3104EDAA3B46E2A1E930125148A641118756FD2E4C2B0C6F621687025C1")
             ("settings" . "1ACEFE94C7BA50C5014929EF7BD97C9EC431BCD3B249214ACBBCB1DCCCAB6808")
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
@@ -446,7 +446,11 @@
             (goal9-b3-overlay-text-line "→ one [faux] ✓" width)
             (goal9-b3-overlay-text-line "  two [other]" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width)
-            "" border)
+            ""
+            (goal9-b3-overlay-text-line
+             "  Enter to select · Ctrl+S to set as default · Escape/Ctrl+C to cancel"
+             width)
+            border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-model-selector
         (cadr-cli::make-model-selector-state
@@ -462,7 +466,11 @@
             (goal9-b3-overlay-text-line "→ one [faux] ✓" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
             (goal9-b3-overlay-text-line "  Model catalogs refreshed." width)
-            "" border)
+            ""
+            (goal9-b3-overlay-text-line
+             "  Enter to select · Ctrl+S to set as default · Escape/Ctrl+C to cancel"
+             width)
+            border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-model-selector
         (cadr-cli::make-model-selector-state

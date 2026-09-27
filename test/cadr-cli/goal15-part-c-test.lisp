@@ -341,7 +341,7 @@
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-overlay-lines
            scoped-overlay width 0d0)
-        (is (= 22 (length lines)))
+        (is (= 23 (length lines)))
         (is (= 5 row))
         (is (= 7 column))
         (is
@@ -356,7 +356,7 @@
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-overlay-lines
            unscoped-overlay width 0d0)
-        (is (= 21 (length lines)))
+        (is (= 22 (length lines)))
         (is (= 4 row))
         (is (= 2 column))
         (is

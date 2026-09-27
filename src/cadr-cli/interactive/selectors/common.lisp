@@ -243,6 +243,11 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
   (format-key-text*
    (cadr-tui:keybinding-keys manager name)))
 
+(defun selector-keybinding-display-text (manager name)
+  (format-key-text*
+   (cadr-tui:keybinding-keys manager name)
+   :capitalize-p t))
+
 (defun selector-keybinding-hint
     (manager name description)
   (with-output-to-string (out)
