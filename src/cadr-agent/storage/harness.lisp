@@ -218,6 +218,34 @@
     (harness-session-append-entry
      session entry)))
 
+(defun harness-session-append-usage
+    (session kind provider model usage &key note)
+  (unless
+      (and
+       (stringp kind)
+       (plusp (length kind))
+       (stringp provider)
+       (plusp (length provider))
+       (stringp model)
+       (plusp (length model))
+       (typep usage 'cadr-ai:usage)
+       (or (null note) (stringp note)))
+    (storage-failure
+     (harness-session-storage session)
+     "Usage entry requires non-empty kind, provider, model, and a usage object"))
+  (let ((entry
+          (make-storage-child-entry
+           (harness-session-storage session)
+           :usage)))
+    (setf
+     (session-entry-kind entry) kind
+     (session-entry-provider entry) provider
+     (session-entry-model-id entry) model
+     (session-entry-usage entry) usage
+     (session-entry-note entry) note)
+    (harness-session-append-entry
+     session entry)))
+
 (defun harness-session-append-active-tools
     (session active-tool-names)
   (unless (every #'stringp

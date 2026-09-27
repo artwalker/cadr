@@ -1072,7 +1072,8 @@
     ;; %system-message-with-tool-changes (loop/turns.lisp).
     ;; +1 Goal 24: *agent-run-force-system-prompt* (loop/events.lisp).
     ;; +1 Goal 24: session-append-usage (session/journal.lisp).
-    (is (= 379 definition-count)
+    ;; +1 Goal 24: harness-session-append-usage (storage/harness.lisp).
+    (is (= 380 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
