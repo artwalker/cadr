@@ -93,6 +93,7 @@
                              (:file "goal24-harness-append-usage-test")
                              (:file "compaction-test")
                              (:file "goal24-compaction-auth-abort-test")
+                             (:file "goal24-compaction-cancel-races-test")
                              (:file "goal12-core-capabilities-test")
                              (:file "storage-test")
                              (:file "sqlite-storage-test")

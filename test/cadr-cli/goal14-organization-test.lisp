@@ -1073,7 +1073,8 @@
     ;; +1 Goal 24: *agent-run-force-system-prompt* (loop/events.lisp).
     ;; +1 Goal 24: session-append-usage (session/journal.lisp).
     ;; +1 Goal 24: harness-session-append-usage (storage/harness.lisp).
-    (is (= 380 definition-count)
+    ;; +1 Goal 24: finish-agent-cancelled-retry (loop/turns.lisp).
+    (is (= 381 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
