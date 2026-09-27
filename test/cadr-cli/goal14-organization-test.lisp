@@ -1486,7 +1486,8 @@
               ;; transcript-context-as-request-context /
               ;; coerce-provider-request-context.
               ;; +1 Goal 24: #:project-forced-system-prompt.
-              "f45cef4dc16747272b0dc57d09ca4c93ae7c5023da6b75c544e71e4315cb4949"
+              ;; +1 Goal 24: #:model-prompt-cache.
+              "37f9220cd9c6857451e4c76009bbee6b471cc12e27e8f7b2044435a8dda6c047"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

@@ -21,6 +21,7 @@
   (thinking-level-map nil :type list)
   (headers nil :type list)
   (compat nil :type list)
+  (prompt-cache nil :type list)
   (input-price 0d0 :type double-float)
   (output-price 0d0 :type double-float)
   (cache-read-price 0d0 :type double-float)
@@ -183,7 +184,8 @@
    :reasoning-p (model-metadata-reasoning-p metadata)
    :thinking-level-map (model-metadata-thinking-level-map metadata)
    :headers (model-metadata-headers metadata)
-   :compat (model-metadata-compat metadata)))
+   :compat (model-metadata-compat metadata)
+   :prompt-cache (model-metadata-prompt-cache metadata)))
 
 (defparameter +extended-thinking-levels+
   '(:off :minimal :low :medium :high :xhigh :max))
@@ -270,12 +272,20 @@
              (round-model-cost (* cache-write 2d0)))))))))
   row)
 
+(defun apply-anthropic-prompt-cache-override (row)
+  (when (and (eq (getf row :provider) :anthropic)
+             (eq (getf row :api) :anthropic-messages)
+             (null (get-properties row '(:prompt-cache))))
+    (setf (getf row :prompt-cache) '(:short 300 :long 3600)))
+  row)
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-gpt-5-6-pricing-override
-             (copy-list row))))
+            (apply-anthropic-prompt-cache-override
+             (apply-gpt-5-6-pricing-override
+              (copy-list row)))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
