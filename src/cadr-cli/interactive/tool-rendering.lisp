@@ -566,6 +566,9 @@
        display-messages
        compaction-summary
        compaction-tokens-before
+       show-cache-miss-notices-function
+       session-entries-function
+       model-price-function
        (clock-function #'tui-monotonic-seconds))
   (let ((type (cadr-agent:agent-event-type event))
         (message (cadr-agent:agent-event-message event))
@@ -767,6 +770,15 @@
                  (setf (tui-state-bug-report-hint-shown-p state)
                        t))))))
          (accumulate-message-usage state message)
+         (maybe-show-cache-miss-notice
+          state message
+          :show-p
+          (and show-cache-miss-notices-function
+               (funcall show-cache-miss-notices-function))
+          :session-entries
+          (and session-entries-function
+               (funcall session-entries-function))
+          :model-price-function model-price-function)
          (setf
           (tui-state-current-assistant state)
           nil)))

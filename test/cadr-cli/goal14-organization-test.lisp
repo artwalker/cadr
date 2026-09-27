@@ -658,7 +658,9 @@
     ;; and runtime-auth-input-handle-mouse.
     ;; +1 Goal 26 left-click summary toggle: transcript-summary-click
     ;; (interactive/transcript.lisp).
-    (is (= 326 definition-count)
+    ;; +2 Goal 24 cache-miss notices: add-cache-miss-notice and
+    ;; maybe-show-cache-miss-notice (interactive/entries.lisp).
+    (is (= 328 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

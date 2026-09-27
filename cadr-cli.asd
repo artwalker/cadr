@@ -220,6 +220,7 @@
                              (:file "goal24-system-prompt-sections-test")
                              (:file "goal24-prepare-prompt-loadout-test")
                              (:file "goal24-selector-save-keybindings-test")
+                             (:file "goal24-cache-miss-notices-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")
