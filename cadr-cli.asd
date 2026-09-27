@@ -223,6 +223,7 @@
                              (:file "goal24-cache-miss-notices-test")
                              (:file "goal24-compaction-cost-notices-test")
                              (:file "goal24-post-login-catalog-wait-test")
+                             (:file "goal24-steer-input-hooks-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
                              (:file "goal28-remaining-surfaces-test")

@@ -42,18 +42,20 @@
 
 (defun agent-session-prompt
     (session prompt
-     &key (streaming-behavior :prompt))
+     &key (streaming-behavior :prompt)
+          (source :interactive))
   (assert-agent-session-live session)
   (ecase streaming-behavior
     (:prompt
      (cadr-agent:agent-prompt
-      (agent-session-agent session) prompt))
-    (:steer
-     (cadr-agent:agent-steer
-      (agent-session-agent session) prompt))
-    (:follow-up
-     (cadr-agent:agent-follow-up
-      (agent-session-agent session) prompt))
+      (agent-session-agent session) prompt
+      :source source))
+    ((:steer :follow-up)
+     ;; Reuse apply-input-or-queue so SDK steer and follow-up run
+     ;; :input hooks the same way as the interactive TUI and RPC.
+     (apply-input-or-queue
+      (agent-session-agent session)
+      prompt source streaming-behavior))
     (:next-turn
      (cadr-agent:agent-next-turn
       (agent-session-agent session) prompt))))
