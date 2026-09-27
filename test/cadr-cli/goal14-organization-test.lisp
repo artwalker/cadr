@@ -660,7 +660,11 @@
     ;; (interactive/transcript.lisp).
     ;; +2 Goal 24 cache-miss notices: add-cache-miss-notice and
     ;; maybe-show-cache-miss-notice (interactive/entries.lisp).
-    (is (= 328 definition-count)
+    ;; +4 Goal 24 compaction cost notices: compaction-cost-notice,
+    ;; compaction-cost-notice-token-count,
+    ;; format-compaction-cost-notice-text, and
+    ;; add-compaction-cost-notice (interactive/entries.lisp).
+    (is (= 332 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
