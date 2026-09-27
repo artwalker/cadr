@@ -359,7 +359,13 @@
 
 (defun models-runtime-auth
     (runtime provider-or-model
-     &key api-key environment)
+     &key api-key environment abort-p)
+  ;; Baseline Models.getAuth(..., { signal }): abort-p ends in-flight
+  ;; credential resolution (compaction summarization auth, #9777).
+  (when (cadr-core:cancellation-predicate-aborted-p abort-p)
+    (error 'models-runtime-error
+           :code :auth
+           :message "Authentication aborted"))
   (let* ((provider-id
            (if (typep provider-or-model 'model)
                (model-provider provider-or-model)
@@ -387,6 +393,11 @@
                      (if (oauth-credential-expiring-p credential)
                          (runtime-refresh-oauth runtime provider)
                          credential)))
+               (when (cadr-core:cancellation-predicate-aborted-p
+                      abort-p)
+                 (error 'models-runtime-error
+                        :code :auth
+                        :message "Authentication aborted"))
                (when effective
                  (if (runtime-provider-oauth-to-auth-function
                       provider)
@@ -403,6 +414,10 @@
             runtime provider credential
             (list :api-key api-key
                   :environment environment))))
+      (when (cadr-core:cancellation-predicate-aborted-p abort-p)
+        (error 'models-runtime-error
+               :code :auth
+               :message "Authentication aborted"))
       (when (and result
                  (typep provider-or-model 'model)
                  (model-headers provider-or-model))

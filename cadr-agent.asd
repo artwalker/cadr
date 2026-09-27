@@ -90,6 +90,7 @@
                              (:file "goal24-declare-tool-changes-test")
                              (:file "goal24-force-system-prompt-test")
                              (:file "compaction-test")
+                             (:file "goal24-compaction-auth-abort-test")
                              (:file "goal12-core-capabilities-test")
                              (:file "storage-test")
                              (:file "sqlite-storage-test")

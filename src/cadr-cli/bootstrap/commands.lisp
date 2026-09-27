@@ -847,6 +847,17 @@
                        (cadr-agent:session-id active))))
               (lambda () (car agent-cell))
               inner-stream)
+             :summarization-auth-function
+             (lambda (agent model signal)
+               (declare (ignore agent))
+               (when model
+                 (provider-config-for-model
+                  model-registry model
+                  :allow-missing-auth-p t
+                  :abort-p
+                  (lambda ()
+                    (cadr-agent:extension-cancellation-aborted-p
+                     signal)))))
              :session session
              :auto-retry-p
              (getf retry-settings :enabled-p)

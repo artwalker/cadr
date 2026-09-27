@@ -637,7 +637,11 @@
      &key api-key base-url
        (config-path (default-config-path))
        (auth-path (default-auth-path))
-       allow-missing-auth-p)
+       allow-missing-auth-p
+       abort-p)
+  (when (cadr-core:cancellation-predicate-aborted-p abort-p)
+    (error 'cadr-ai:configuration-error
+           :message "Authentication aborted"))
   (let* ((provider
            (cadr-ai:model-provider model))
          (provider-name
@@ -664,7 +668,8 @@
                 (model-registry-native-runtime
                  registry)
                 model
-                :api-key effective-key)))
+                :api-key effective-key
+                :abort-p abort-p)))
          (when
              (and
               (null auth)
