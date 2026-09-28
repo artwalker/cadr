@@ -188,7 +188,10 @@
                      :moonshotai :moonshotai-cn
                      :together :nvidia :cerebras
                      :cloudflare-ai-gateway)
-                   :test #'eq))))))
+                   :test #'eq))
+          (not
+           (search "cerebras.ai"
+                   (or (model-base-url model) "")))))))
 
 (defun openai-chat-tools (model tools)
   (list-json-array
