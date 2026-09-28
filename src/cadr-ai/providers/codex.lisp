@@ -26,9 +26,6 @@
              :tool-choice tool-choice
              :metadata metadata
              :thinking-budgets thinking-budgets)))
-      (unless reasoning
-        (remhash "reasoning"
-                 (request-spec-payload request)))
       ;; The fixed Codex Responses baseline has no max_output_tokens field.  The
       ;; ChatGPT backend rejects the ordinary Responses parameter.
       (remhash "max_output_tokens"
