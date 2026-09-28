@@ -300,6 +300,38 @@
                  (autocomplete-provider-commands"
           source)))))
 
+(test goal24-cjk-punctuation-ends-autocomplete-path-prefix
+  (is (string=
+       "./文档/"
+       (cadr-tui::autocomplete-path-prefix
+        (concatenate 'string "查看，" "./文档/")
+        t)))
+  (is (string=
+       "src/"
+       (cadr-tui::autocomplete-path-prefix
+        (concatenate 'string
+                     "查看"
+                     (string (code-char #x3000))
+                     "src/")
+        t)))
+  (is (string=
+       "文档src/"
+       (cadr-tui::autocomplete-path-prefix "文档src/" t))))
+
+(test goal24-cjk-path-requires-quotes
+  (is (string=
+       "文档/备份"
+       (cadr-tui::autocomplete-quote-value
+        "文档/备份" nil nil)))
+  (is (string=
+       "src/main.lisp"
+       (cadr-tui::autocomplete-quote-value
+        "src/main.lisp" nil nil)))
+  (is (string=
+       "\"查看，src\""
+       (cadr-tui::autocomplete-quote-value
+        "查看，src" nil nil))))
+
 (test at-file-keeps-shallow-match-when-recursive-fd-is-flooded
   (let* ((root
            (merge-pathnames
