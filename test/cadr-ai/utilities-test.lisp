@@ -42,7 +42,8 @@ second" (cadr-ai:content-text content)))
          "getaddrinfo ENOTFOUND api.example.com"
          "The socket connection was closed unexpectedly"
          "OpenAI Responses stream ended before a terminal response event"
-         "ResourceExhausted: Worker request limit"))
+         "ResourceExhausted: Worker request limit"
+         "The system is currently experiencing high demand and cannot process your request. Your request exceeds the maximum usage size allowed during peak load. For improved capacity reliability, consider switching to Provisioned Throughput."))
     (is (cadr-ai:retryable-assistant-error-p
          (utility-error-message text))))
   (dolist
