@@ -13806,18 +13806,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,810 lines**
+Denominator: **304 files / 143,819 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,972 | 79.3% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 113,972 | 79.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
-| `covered-as-callee` | 30 | 19,116 | 13.3% | on a named paired thunk; no own bench |
+| `covered-as-callee` | 30 | 19,125 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.3% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 79.2% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -14106,7 +14106,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-agent/package.lisp` | 497 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 10,075 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/models.lisp` | 367 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/models.lisp` | 376 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/package.lisp` | 536 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 824 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 18 | `provider_stream.stream_roundtrip` |
