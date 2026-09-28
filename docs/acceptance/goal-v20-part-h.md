@@ -13806,18 +13806,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,816 lines**
+Denominator: **304 files / 143,881 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 113,969 | 79.2% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 114,034 | 79.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 19,125 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 79.2% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 79.3% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 84.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -13907,8 +13907,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | `oauth_pkce_device.openrouter_input`, `oauth_pkce_device.openrouter_refresh`, `oauth_pkce_device.openrouter_exchange`, `oauth_pkce_device.openrouter_login`, `oauth_pkce_device.openrouter_login_fail`, `oauth_pkce_device.openrouter_login_miss` |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 124 | `oauth_pkce_device.radius_gateway` |
 | `src/cadr-ai/oauth/providers/xai.lisp` | 184 | `oauth_pkce_device.error_detail`, `oauth_pkce_device.ensure_success`, `oauth_pkce_device.notify_device`, `oauth_pkce_device.xai_login`, `oauth_pkce_device.xai_login_fail`, `oauth_pkce_device.xai_refresh` |
-| `src/cadr-ai/provider.lisp` | 908 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/providers/anthropic.lisp` | 714 | `provider_anthropic.stream_roundtrip` |
+| `src/cadr-ai/provider.lisp` | 909 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/providers/anthropic.lisp` | 778 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 225 | `provider_azure_openai.stream_roundtrip` |
 | `src/cadr-ai/providers/bedrock.lisp` | 931 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 34 | `provider_codex.stream_roundtrip` |
