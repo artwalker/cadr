@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,881 lines**
+Denominator: **304 files / 143,896 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 114,034 | 79.3% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 114,049 | 79.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 19,125 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
@@ -13910,7 +13910,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/provider.lisp` | 909 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 778 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 225 | `provider_azure_openai.stream_roundtrip` |
-| `src/cadr-ai/providers/bedrock.lisp` | 931 | `provider_bedrock.stream_roundtrip` |
+| `src/cadr-ai/providers/bedrock.lisp` | 946 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 34 | `provider_codex.stream_roundtrip` |
 | `src/cadr-ai/providers/definitions.lisp` | 1,091 | `provider_registry_defs.lookup` |
 | `src/cadr-ai/providers/google.lisp` | 472 | `provider_google.stream_roundtrip` |

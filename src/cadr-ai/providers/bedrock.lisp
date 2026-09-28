@@ -732,6 +732,15 @@
 (defun parse-partial-json-object (text)
   (parse-streaming-json text))
 
+(defun bedrock-cache-write-1h-tokens (usage)
+  (let ((details (json-get usage "cacheDetails")))
+    (if (vectorp details)
+        (loop for detail across details
+              when (string= (json-get detail "ttl" "") "1h")
+                sum (let ((tokens (json-get detail "inputTokens")))
+                      (if (integerp tokens) tokens 0)))
+        0)))
+
 (defmethod reduce-provider-sse-event
     ((provider bedrock-provider) state event emit)
   (declare (ignore provider))
@@ -880,6 +889,9 @@
               (json-get usage "cacheWriteInputTokens")
               nil
               (json-get usage "totalTokens"))
+             (setf (usage-cache-write-1h
+                    (assistant-message-usage message))
+                   (bedrock-cache-write-1h-tokens usage))
              (apply-known-model-cost message))))))))
 
 (defmethod parse-complete-response
@@ -925,7 +937,10 @@
          (json-get usage "inputTokens")
          (json-get usage "outputTokens")
          (json-get usage "cacheReadInputTokens")
-         (json-get usage "cacheWriteInputTokens"))))
+         (json-get usage "cacheWriteInputTokens"))
+        (setf (usage-cache-write-1h
+               (assistant-message-usage message))
+              (bedrock-cache-write-1h-tokens usage))))
     (when (tool-call-present-p message)
       (setf (assistant-message-stop-reason message) :tool-use))
     (apply-known-model-cost message)))

@@ -441,6 +441,25 @@ region = eu-central-1")))
         "Provider stopped with: guardrail_intervened"
         (cadr-ai:assistant-message-error-message message))))))
 
+(test bedrock-one-hour-cache-write-priced-at-twice-input
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :amazon-bedrock
+       :model-id "us.anthropic.claude-opus-4-8"
+       :api-key "bearer")
+    (let* ((message
+             (cadr-ai:parse-complete-response
+              provider model
+              (cadr-ai::parse-json
+               "{\"output\":{\"message\":{\"content\":[{\"text\":\"ok\"}]}},\"stopReason\":\"end_turn\",\"usage\":{\"cacheWriteInputTokens\":1000000,\"cacheDetails\":[{\"ttl\":\"1h\",\"inputTokens\":150000},{\"ttl\":\"5m\",\"inputTokens\":600000},{\"ttl\":\"1h\",\"inputTokens\":250000}]}}")))
+           (usage (cadr-ai:assistant-message-usage message)))
+      (is (= 1000000 (cadr-ai:usage-cache-write usage)))
+      (is (= 400000 (cadr-ai:usage-cache-write-1h usage)))
+      (is (< (abs (- 7.75d0
+                     (cadr-ai:cost-cache-write
+                      (cadr-ai:usage-cost usage))))
+             1d-6)))))
+
 (test bedrock-failure-records-bounded-structured-metadata
   (multiple-value-bind (provider model)
       (cadr-ai:instantiate-provider
