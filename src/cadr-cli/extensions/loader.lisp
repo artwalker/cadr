@@ -153,33 +153,44 @@ Returns (values any-error-p any-extension-load-failure-p)."
        extension-factories
        configured-package-paths
        no-discovery-p
+       disabled-builtin-extensions
        (output *standard-output*)
        secret-function
        (mode :repl))
-  (let ((manager
-          (%make-cli-extension-manager
-           :cwd
-           (uiop:ensure-directory-pathname
-            (pathname cwd))
-           :global-directory
-           (uiop:ensure-directory-pathname
-            (pathname global-directory))
-           :explicit-paths (copy-list explicit-paths)
-           :extension-factories
-           (cons
-            (list
-             :name "llama.cpp"
-             :factory #'llama-extension-factory
-             :hidden-p t)
-            (copy-list extension-factories))
-           :configured-package-paths
-           (copy-list configured-package-paths)
-           :no-discovery-p
-           (not (null no-discovery-p))
-           :output output
-           :secret-function
-           (or secret-function
-               (constantly nil)))))
+  (let* ((disabled
+           (copy-list disabled-builtin-extensions))
+         (factories
+           (remove-if
+            (lambda (entry)
+              (member
+               (getf entry :name)
+               disabled
+               :test #'string-equal))
+            (cons
+             (list
+              :name "llama.cpp"
+              :factory #'llama-extension-factory
+              :hidden-p t)
+             (copy-list extension-factories))))
+         (manager
+           (%make-cli-extension-manager
+            :cwd
+            (uiop:ensure-directory-pathname
+             (pathname cwd))
+            :global-directory
+            (uiop:ensure-directory-pathname
+             (pathname global-directory))
+            :explicit-paths (copy-list explicit-paths)
+            :extension-factories factories
+            :configured-package-paths
+            (copy-list configured-package-paths)
+            :no-discovery-p
+            (not (null no-discovery-p))
+            :disabled-builtin-extensions disabled
+            :output output
+            :secret-function
+            (or secret-function
+                (constantly nil)))))
     (let ((host
             (cadr-agent::make-extension-host
              :cwd (cli-extension-manager-cwd manager)

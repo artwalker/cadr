@@ -30,6 +30,7 @@
   (exclude-tools nil :type list)
   (no-tools-p nil :type boolean)
   (no-builtin-tools-p nil :type boolean)
+  (no-mcp-p nil :type boolean)
   (extensions nil :type list)
   (no-extensions-p nil :type boolean)
   export
@@ -183,9 +184,12 @@
             (#\r (if (cli-token-tail= name 3 "esume")
                      (values :special :resume)
                      (values nil nil)))
-            (#\n (if (cli-token-tail= name 3 "o-tui")
-                     (values :flag :no-tui)
-                     (values nil nil)))
+            (#\n (cond
+                   ((cli-token-tail= name 3 "o-tui")
+                    (values :flag :no-tui))
+                   ((cli-token-tail= name 3 "o-mcp")
+                    (values :flag :no-mcp))
+                   (t (values nil nil))))
             (t (values nil nil))))
          (9
           (case (char name 2)
@@ -470,6 +474,8 @@
      (setf (cli-arguments-no-tools-p arguments) t))
     (:no-builtin-tools
      (setf (cli-arguments-no-builtin-tools-p arguments) t))
+    (:no-mcp
+     (setf (cli-arguments-no-mcp-p arguments) t))
     (:no-extensions
      (setf (cli-arguments-no-extensions-p arguments) t))
     (:print
@@ -778,6 +784,7 @@ Options:
                                  Supports globs (anthropic/*, *sonnet*) and fuzzy matching
   --no-tools, -nt                Disable all tools by default (built-in and extension)
   --no-builtin-tools, -nbt       Disable built-in tools by default but keep extension/custom tools enabled
+  --no-mcp                       Disable built-in MCP support: no servers connect and no MCP tools
   --tools, -t <tools>            Comma-separated allowlist of tool names to enable
                                  Or only +name/-name entries to change the defaults
                                  Applies to built-in, extension, and custom tools

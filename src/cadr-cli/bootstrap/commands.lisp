@@ -252,7 +252,10 @@
              (cli-arguments-extensions command)
              (settings-extension-paths settings-manager))
             :no-discovery-p
-            (cli-arguments-no-extensions-p command))))
+            (cli-arguments-no-extensions-p command)
+            :disabled-builtin-extensions
+            (and (cli-arguments-no-mcp-p command)
+                 '("mcp")))))
     (unless (cli-arguments-no-extensions-p command)
       (let ((package-records
               (package-resource-paths
@@ -404,6 +407,9 @@
                 (default-agent-directory)))))
             :no-discovery-p
             (cli-arguments-no-extensions-p command)
+            :disabled-builtin-extensions
+            (and (cli-arguments-no-mcp-p command)
+                 '("mcp"))
             :secret-function
             (lambda ()
               (provider-config-secrets config))))
