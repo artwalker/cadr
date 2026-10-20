@@ -489,14 +489,6 @@
             (session-messages session))))
   drafts)
 
-(defun extension-host-has-hook-p (host event)
-  (and
-   host
-   (gethash
-    event
-    (extension-snapshot-hooks
-     (extension-host-current-snapshot host)))))
-
 (defun continue-after-before-settle-p (agent message)
   (let ((host (agent-extension-host agent)))
     (unless (extension-host-has-hook-p

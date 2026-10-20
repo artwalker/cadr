@@ -496,8 +496,8 @@ NIL means that the caller must send the original, uncompressed body."
     items))
 
 (defun read-codex-websocket-events
-    (provider model entry state emit abort-p on-first-event)
-  (declare (ignore model))
+    (provider model entry state emit abort-p on-first-event
+     &optional on-provider-stream-event)
   (let ((stream
           (codex-websocket-stream
            (codex-websocket-cache-entry-connection entry))))
@@ -513,6 +513,8 @@ NIL means that the caller must send the original, uncompressed body."
              (funcall on-first-event)
              (when (string= type "response.done")
                (setf (gethash "type" object) "response.completed"))
+             (notify-provider-stream-event
+              on-provider-stream-event object model)
              (reduce-provider-sse-event
               provider state
               (make-sse-event :data (stringify-json object)) emit)
@@ -571,6 +573,7 @@ NIL means that the caller must send the original, uncompressed body."
 (defmethod try-provider-websocket-stream
     ((provider openai-codex-provider) model context request state emit
      &key transport session-id abort-p on-response
+       on-provider-stream-event
        websocket-connect-timeout-ms http-proxy)
   (declare (ignore context))
   (let* ((mode (or transport :auto))
@@ -615,7 +618,8 @@ NIL means that the caller must send the original, uncompressed body."
                (unless websocket-started-p
                  (setf websocket-started-p t)
                  (emit-event emit :start
-                             (provider-stream-state-message state)))))
+                             (provider-stream-state-message state))))
+             on-provider-stream-event)
             (finalize-provider-stream provider model state emit)
             (let ((message (provider-stream-state-message state)))
               (unless (member (assistant-message-stop-reason message)

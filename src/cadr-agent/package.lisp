@@ -186,6 +186,13 @@
    #:extension-api-set-label
    #:extension-api-events-on
    #:extension-api-events-emit
+   #:extension-api-register-mcp-server
+   #:extension-api-unregister-mcp-server
+   #:extension-api-get-mcp-servers
+   #:registered-mcp-server
+   #:registered-mcp-server-name
+   #:registered-mcp-server-config
+   #:registered-mcp-server-extension-path
    #:extension-context
    #:extension-context-cwd
    #:extension-context-agent

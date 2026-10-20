@@ -312,6 +312,8 @@
     :model-select
     :thinking-level-select
     :after-provider-response
+    :provider-stream-event
+    :mcp-servers-change
     :ui-prompt-start
     :ui-prompt-end))
 

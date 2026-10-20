@@ -38,6 +38,14 @@
       ((extension-host-lock host))
     (extension-host-snapshot host)))
 
+(defun extension-host-has-hook-p (host event)
+  (and
+   host
+   (gethash
+    event
+    (extension-snapshot-hooks
+     (extension-host-current-snapshot host)))))
+
 (defun extension-host-conflicts (host)
   (copy-list
    (extension-snapshot-conflicts

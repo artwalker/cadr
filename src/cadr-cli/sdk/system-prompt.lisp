@@ -524,7 +524,23 @@
                  (cadr-agent::run-extension-lifecycle-hooks
                   extension-host
                   :after-provider-response
-                  :payload response))))))
+                  :payload response)))
+             :on-provider-stream-event
+             (lambda (data callback-model)
+               (when (and extension-host
+                          (cadr-agent::extension-host-has-hook-p
+                           extension-host :provider-stream-event))
+                 (cadr-agent::run-extension-lifecycle-hooks
+                  extension-host
+                  :provider-stream-event
+                  :payload
+                  (list
+                   :data data
+                   :provider
+                   (cadr-ai:model-provider callback-model)
+                   :api (cadr-ai:model-api callback-model)
+                   :model
+                   (cadr-ai:model-id callback-model))))))))
       (when (and session-id
                  (null (getf request-options :session-id)))
         (setf (getf request-options :session-id)

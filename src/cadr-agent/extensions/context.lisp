@@ -63,6 +63,15 @@
                    :type hash-table)
   (event-lock (sb-thread:make-mutex
                :name "cadr-extension-events"))
+  ;; pi@71023aec1 McpServerRegistry: servers registered via
+  ;; registerMcpServer; change listener emits mcp_servers_change.
+  (mcp-servers (make-hash-table :test #'equal)
+               :type hash-table)
+  (mcp-server-order nil :type list)
+  (mcp-servers-lock (sb-thread:make-mutex
+                     :name "cadr-extension-mcp-servers"))
+  (reported-mcp-servers (make-hash-table :test #'equal)
+                        :type hash-table)
   (ui-prompt-depth 0 :type (integer 0 *))
   active-ui-prompt
   (pending-custom-messages nil :type list))

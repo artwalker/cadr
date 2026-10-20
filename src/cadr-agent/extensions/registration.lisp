@@ -391,6 +391,8 @@
     :before-provider-request
     :before-provider-headers
     :after-provider-response
+    :provider-stream-event
+    :mcp-servers-change
     :user-bash
     :ui-prompt-start
     :ui-prompt-end))

@@ -75,7 +75,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 |---|---|---|
 | Fullscreen 默认 TUI；`tuiMode` / `--tui-mode regular` | v1.0.0 | done on tip：unset/`*` → fullscreen；仅 `"regular"` → regular；help + settings 文案对齐 |
 | `--no-mcp` | 枚举 | done：CLI 标志 + `disabled-builtin-extensions ("mcp")`；MCP builtin 仍薄 |
-| `mcp_servers_change` / `provider_stream_event`；去掉 `before_agent_start` | 枚举 | 扩展事件 |
+| `mcp_servers_change` / `provider_stream_event`；去掉 `before_agent_start` | 枚举 | done：两事件入 hook 表 + emit；保留 `before_agent_start` |
 | `sessionShareDestination`（`/share` → auto/gist/radius） | v1.3.0 | done：settings + `/share` destination auto/gist/radius |
 | 换模型时丢弃他模型 thinking，不改写成可见文本 | v1.3.0 | done：`copy-history-content-block` 跨模型 drop；同模型保留 signed/redacted/非空 |
 | Resume 保留会话激活工具；`--tools +/-` 叠加上去 | v1.3.0 | done：usesDefaultTools restore + modifiers；session toolsAdded persist/parse |

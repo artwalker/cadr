@@ -133,6 +133,7 @@
 (defgeneric try-provider-websocket-stream
     (provider model context request state emit
      &key transport session-id abort-p on-response
+       on-provider-stream-event
        websocket-connect-timeout-ms http-proxy)
   (:documentation
    "Handle REQUEST over a provider-specific WebSocket transport.
@@ -142,9 +143,11 @@ completed assistant message."))
 (defmethod try-provider-websocket-stream
     ((provider provider) model context request state emit
      &key transport session-id abort-p on-response
+       on-provider-stream-event
        websocket-connect-timeout-ms http-proxy)
   (declare (ignore provider model context request state emit
                    transport session-id abort-p on-response
+                   on-provider-stream-event
                    websocket-connect-timeout-ms http-proxy))
   (values nil nil))
 
@@ -706,10 +709,27 @@ string. Returns the buffer to store back. Per-delta
       (error-assistant-message
        model condition provider))))
 
+(defun provider-stream-event-data (event)
+  ;; Parsed provider event before normalization (pi onProviderStreamEvent).
+  (let ((data (sse-event-data event)))
+    (cond
+      ((null data) nil)
+      ((hash-table-p data) data)
+      ((stringp data)
+       (handler-case (parse-json data)
+         (error () data)))
+      (t data))))
+
+(defun notify-provider-stream-event (callback data model)
+  (when callback
+    (funcall callback data model)))
+
 (defun stream-chat (provider model context on-event
                     &key max-tokens temperature reasoning cache-retention
                       session-id tool-choice metadata abort-p
-                      on-payload transform-headers on-response transport
+                      on-payload transform-headers on-response
+                      on-provider-stream-event
+                      transport
                       websocket-connect-timeout-ms http-proxy
                       thinking-budgets
                       max-retries max-retry-delay-ms timeout-ms
@@ -750,6 +770,7 @@ string. Returns the buffer to store back. Per-delta
                  :session-id session-id
                  :abort-p abort-p
                  :on-response on-response
+                 :on-provider-stream-event on-provider-stream-event
                  :websocket-connect-timeout-ms
                  websocket-connect-timeout-ms
                  :http-proxy http-proxy)
@@ -765,6 +786,10 @@ string. Returns the buffer to store back. Per-delta
                 (lambda (event)
                   (setf saw-provider-event-p t)
                   (check-abort abort-p)
+                  (notify-provider-stream-event
+                   on-provider-stream-event
+                   (provider-stream-event-data event)
+                   model)
                   (reduce-provider-sse-event
                    provider state event on-event)
                   (check-abort abort-p))
