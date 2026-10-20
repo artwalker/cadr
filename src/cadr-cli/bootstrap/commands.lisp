@@ -2773,8 +2773,8 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           ;; pi@71023aec1 interactive-mode.ts:530-531 — the CLI flag
-           ;; wins over the tuiMode setting; default regular.
+           ;; pi@71023aec1 interactive-mode.ts:611-612 — the CLI flag
+           ;; wins over the tuiMode setting; default fullscreen.
            (eq :fullscreen
                (or (cli-arguments-tui-mode command)
                    (settings-tui-mode settings-manager)))

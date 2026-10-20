@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1540,
+  "expected_findings": 1541,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -2615,6 +2615,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "- Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 26: default TUI mode is fullscreen (pi v1.0.0+). Only exact",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -9838,7 +9846,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@71023aec1 interactive-mode.ts:530-531 \u2014 the CLI flag",
+      "line": "           ;; pi@71023aec1 interactive-mode.ts:611-612 \u2014 the CLI flag",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9918,14 +9926,6 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@71023aec1 settings-manager.ts:1128-1130 \u2014 only the exact string",
-      "occurrences": 1,
-      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
-    },
-    {
-      "path": "src/cadr-cli/bootstrap/settings.lisp",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "  ;; pi@71023aec1 settings-manager.ts:1138-1141 \u2014 \"always\"/\"hidden\" pass",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
@@ -9935,6 +9935,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; pi@71023aec1 settings-manager.ts:1252-1255 \u2014 markdown.mermaid is",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@71023aec1 settings-manager.ts:1256-1257 \u2014 only the exact string",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },

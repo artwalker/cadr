@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 26: default TUI mode is fullscreen (pi v1.0.0+). Only exact
+  `tuiMode`/`--tui-mode` value `regular` keeps normal scrollback.
+  Help and settings copy match the baseline.
+
 - Goal 26: retarget fixed pi baseline from v0.87.0 (`16787ad5b`) to
   v1.3.0 (`71023aec1`). Release identity is
   `cadr 0.2.0 · aligned with pi v1.3.0 (+0, 71023aec1)`.

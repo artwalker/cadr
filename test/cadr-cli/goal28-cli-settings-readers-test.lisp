@@ -5,7 +5,7 @@
   (let ((manager (cadr-cli::make-memory-settings-manager)))
     (is (eq t (cadr-cli::settings-show-terminal-images-p manager)))
     (is (= 60 (cadr-cli::settings-terminal-image-width-cells manager)))
-    (is (eq :regular (cadr-cli::settings-tui-mode manager)))
+    (is (eq :fullscreen (cadr-cli::settings-tui-mode manager)))
     (is (null (cadr-cli::settings-default-tools manager)))
     (is (string= "auto" (cadr-cli::settings-fullscreen-scrollbar manager)))
     (is (eq :transcript (cadr-cli::settings-fullscreen-exit-output manager)))
@@ -168,5 +168,5 @@
            (cadr-cli::settings-choice-value
             manager "autocompleteMaxVisible"
             '(3 5 7 10 15 20) 5)))
-    (is (eq :regular (cadr-cli::settings-tui-mode manager)))
+    (is (eq :fullscreen (cadr-cli::settings-tui-mode manager)))
     (is (= 1 (cadr-cli::settings-output-padding manager)))))

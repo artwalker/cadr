@@ -344,11 +344,12 @@
         default)))
 
 (defun settings-tui-mode (manager)
-  ;; pi@71023aec1 settings-manager.ts:1128-1130 — only the exact string
-  ;; "fullscreen" selects fullscreen; everything else is regular.
-  (if (string= (settings-value manager "tuiMode" "") "fullscreen")
-      :fullscreen
-      :regular))
+  ;; pi@71023aec1 settings-manager.ts:1256-1257 — only the exact string
+  ;; "regular" selects regular; everything else (including unset) is
+  ;; SETTINGS_DEFAULTS.tuiMode, which is fullscreen since v1.0.0.
+  (if (string= (settings-value manager "tuiMode" "") "regular")
+      :regular
+      :fullscreen))
 
 (defun parse-default-tools-setting (value)
   ;; Baseline v1.3.0 settings-manager.ts getDefaultTools: a string array
@@ -1003,7 +1004,7 @@
             :id "tui-mode"
             :label "TUI mode"
             :description
-            "Interface layout; fullscreen mode is experimental"
+            "Interface layout; regular mode uses the terminal's normal scrollback"
             :value
             (string-downcase
              (symbol-name

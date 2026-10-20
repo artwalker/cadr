@@ -73,7 +73,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 
 | 面 | 来源 | 处置方向 |
 |---|---|---|
-| Fullscreen 默认 TUI；`tuiMode` / `--tui-mode regular` | v1.0.0 | 默认与设置对齐 |
+| Fullscreen 默认 TUI；`tuiMode` / `--tui-mode regular` | v1.0.0 | done on tip：unset/`*` → fullscreen；仅 `"regular"` → regular；help + settings 文案对齐 |
 | `--no-mcp` | 枚举 | CLI 标志 |
 | `mcp_servers_change` / `provider_stream_event`；去掉 `before_agent_start` | 枚举 | 扩展事件 |
 | `sessionShareDestination`（`/share` → auto/gist/radius） | v1.3.0 | settings + share |
