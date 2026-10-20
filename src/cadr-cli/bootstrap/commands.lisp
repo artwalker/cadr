@@ -2849,6 +2849,9 @@
            :copy-on-select-p
            (settings-fullscreen-copy-on-select-p
             settings-manager)
+           :wheel-scroll-lines
+           (settings-fullscreen-wheel-scroll-lines
+            settings-manager)
            :last-assistant-text-function
            (lambda ()
              (last-assistant-text agent))

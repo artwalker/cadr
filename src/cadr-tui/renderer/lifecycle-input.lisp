@@ -5,7 +5,11 @@
   terminal
   (alt-screen-p nil :type boolean)
   (alt-screen-active-p nil :type boolean)
-  (wheel-scroll-lines 3 :type (integer 1 *))
+  ;; :auto accelerates fast spins (pi@71023aec #9758); integer is fixed.
+  (wheel-scroll-lines :auto)
+  (wheel-scroll-accelerator
+   (make-wheel-scroll-accelerator :auto)
+   :type wheel-scroll-accelerator)
   (mouse-p t :type boolean)
   (show-hardware-cursor-p nil :type boolean)
   (clear-on-shrink-p nil :type boolean)
@@ -80,10 +84,15 @@
   (invalid-p t :type boolean)
   (canonical-repaint-p nil :type boolean))
 
+(defun normalize-wheel-scroll-lines (lines)
+  (if (eq lines :auto)
+      :auto
+      (max 1 (floor (if (realp lines) lines 3)))))
+
 (defun make-terminal-renderer
     (terminal
      &key alt-p
-       (wheel-scroll-lines 3)
+       (wheel-scroll-lines :auto)
        (mouse-p t)
        (show-hardware-cursor-p nil)
        (clear-on-shrink-p nil)
@@ -93,11 +102,15 @@
        (copy-on-select-p t)
        open-url-function
        scroll-to-end-indicator-function)
+  (let ((lines
+          (normalize-wheel-scroll-lines
+           wheel-scroll-lines)))
   (%make-terminal-renderer
    :terminal terminal
    :alt-screen-p (not (null alt-p))
-   :wheel-scroll-lines
-   (max 1 (floor wheel-scroll-lines))
+   :wheel-scroll-lines lines
+   :wheel-scroll-accelerator
+   (make-wheel-scroll-accelerator lines)
    :mouse-p (not (null mouse-p))
    :show-hardware-cursor-p
    (not (null show-hardware-cursor-p))
@@ -115,7 +128,19 @@
    :copy-on-select-p (not (null copy-on-select-p))
    :open-url-function open-url-function
    :scroll-to-end-indicator-function
-   scroll-to-end-indicator-function))
+   scroll-to-end-indicator-function)))
+
+(defun renderer-set-wheel-scroll-lines (renderer lines)
+  (let ((normalized
+          (normalize-wheel-scroll-lines lines)))
+    (setf
+     (terminal-renderer-wheel-scroll-lines renderer)
+     normalized)
+    (wheel-scroll-accelerator-set-lines
+     (terminal-renderer-wheel-scroll-accelerator
+      renderer)
+     normalized)
+    normalized))
 
 (defun renderer-open-search (renderer)
   ;; Baseline tui-alt-screen.ts openSearch: focus the existing bar or
@@ -722,10 +747,22 @@ controlling mode flag and repaint afterwards."
               (char data
                     (aref starts 3)))))))
 
-(defun renderer-wheel-scroll-lines (renderer button)
-  ;; pi@71023aec1 tui-alt-screen.ts:968-970 — SGR bit 3 (value 8) is Alt.
+(defun renderer-wheel-now-ms ()
+  (* (/ (get-internal-real-time)
+        (coerce internal-time-units-per-second
+                'double-float))
+     1000d0))
+
+(defun renderer-wheel-scroll-lines
+    (renderer button &key (direction 1)
+                       (now-ms (renderer-wheel-now-ms)))
+  ;; pi@71023aec1 tui-alt-screen.ts — accelerator then Alt×5.
   (let ((lines
-          (terminal-renderer-wheel-scroll-lines renderer)))
+          (wheel-scroll-accelerator-next
+           (terminal-renderer-wheel-scroll-accelerator
+            renderer)
+           direction
+           now-ms)))
     (if (zerop (logand button 8))
         lines
         (* lines 5))))
@@ -1329,12 +1366,14 @@ word-navigation character classes, then join word runs across '-' and
              (renderer-scroll-by
               renderer
               (- (renderer-wheel-scroll-lines
-                  renderer button))))
+                  renderer button
+                  :direction -1))))
             (1
              (renderer-scroll-by
               renderer
               (renderer-wheel-scroll-lines
-               renderer button)))))
+               renderer button
+               :direction 1)))))
         (unless
             (not
              (zerop (logand button 64)))

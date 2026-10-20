@@ -11,6 +11,11 @@ onTuiModeChange.")
 the running alt-screen renderer can update copyOnSelect
 (pi@71023aec1 interactive-mode.ts:4584).")
 
+(defvar *fullscreen-wheel-scroll-lines-hook* nil
+  "When bound, called with the new fullscreenWheelScrollLines value
+(:auto or 1-100) so the running alt-screen renderer can update
+wheel scroll (pi@71023aec1 #9758).")
+
 (defvar *alt-screen-flash-function* nil
   "When non-nil, called with a message string to show a transient
 fullscreen flash instead of a status line (pi@71023aec1
@@ -154,10 +159,12 @@ interactive-mode.ts:5956-5960).")
        clear-on-shrink-p
        (scrollbar-mode :auto)
        (exit-output-mode :transcript)
-       (copy-on-select-p t))
+       (copy-on-select-p t)
+       (wheel-scroll-lines :auto))
   (cadr-tui:make-terminal-renderer
    terminal
    :alt-p alt-p
+   :wheel-scroll-lines wheel-scroll-lines
    :show-hardware-cursor-p
    show-hardware-cursor-p
    :clear-on-shrink-p clear-on-shrink-p
@@ -361,6 +368,7 @@ interactive-mode.ts:5956-5960).")
        (scrollbar-mode :auto)
        (exit-output-mode :transcript)
        (copy-on-select-p t)
+       (wheel-scroll-lines :auto)
        last-assistant-text-function
        (clock-function #'tui-monotonic-seconds)
        (sleep-function #'sleep)
@@ -471,7 +479,8 @@ interactive-mode.ts:5956-5960).")
             clear-on-shrink-p
             :scrollbar-mode scrollbar-mode
             :exit-output-mode exit-output-mode
-            :copy-on-select-p copy-on-select-p))
+            :copy-on-select-p copy-on-select-p
+            :wheel-scroll-lines wheel-scroll-lines))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -3061,6 +3070,10 @@ interactive-mode.ts:5956-5960).")
                (cadr-tui:terminal-renderer-copy-on-select-p
                 renderer)
                (not (null enabled))))
+            *fullscreen-wheel-scroll-lines-hook*
+            (lambda (lines)
+              (cadr-tui:renderer-set-wheel-scroll-lines
+               renderer lines))
             *alt-screen-flash-function*
             (and alt-p
                  (lambda (message)
@@ -3304,6 +3317,7 @@ interactive-mode.ts:5956-5960).")
                renderer))))
         (setf *tui-mode-switch-hook* nil
               *fullscreen-copy-on-select-hook* nil
+              *fullscreen-wheel-scroll-lines-hook* nil
               *alt-screen-flash-function* nil
               *call-with-share-loader* nil)
         (finish-custom-ui nil)

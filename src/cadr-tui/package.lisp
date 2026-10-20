@@ -334,9 +334,16 @@
    #:format-program-status
    #:program-status-reply-p
    #:+program-status-query+
+   #:wheel-scroll-accelerator
+   #:make-wheel-scroll-accelerator
+   #:wheel-scroll-accelerator-set-lines
+   #:wheel-scroll-accelerator-next
+   #:terminal-accelerates-wheel-p
    #:terminal-renderer
    #:make-terminal-renderer
    #:terminal-renderer-copy-on-select-p
+   #:terminal-renderer-wheel-scroll-lines
+   #:renderer-set-wheel-scroll-lines
    #:renderer-has-active-selection-p
    #:renderer-copy-active-selection
    #:alt-screen-renderer-p

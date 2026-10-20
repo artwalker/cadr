@@ -66,6 +66,7 @@
                                            (:file "loaders")
                                            (:file "root")))
                              (:file "program-status")
+                             (:file "wheel-scroll")
                              (:file "terminal"))))
   :in-order-to ((test-op (test-op "cadr-tui/tests"))))
 
@@ -111,6 +112,7 @@
                              (:file "terminal-test")
                              (:file "terminal-parity-test")
                              (:file "program-status-test")
+                             (:file "wheel-scroll-test")
                              (:file "manual-acceptance-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))

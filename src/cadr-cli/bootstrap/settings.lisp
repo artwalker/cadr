@@ -389,6 +389,28 @@
           (settings-value manager "fullscreenCopyOnSelect" t)))
     (not (eq value nil))))
 
+(defun settings-fullscreen-wheel-scroll-lines (manager)
+  ;; pi@71023aec1 settings-manager.ts getFullscreenWheelScrollLines (#9758).
+  (let ((value
+          (settings-value
+           manager "fullscreenWheelScrollLines" "auto")))
+    (cond
+      ((or (null value)
+           (eq value :null)
+           (and (stringp value)
+                (string= value "auto")))
+       :auto)
+      ((and (realp value) (<= 1 value 100))
+       (floor value))
+      ((stringp value)
+       (let ((parsed
+               (ignore-errors
+                (parse-integer value :junk-allowed t))))
+         (if (and parsed (<= 1 parsed 100))
+             parsed
+             :auto)))
+      (t :auto))))
+
 (defun settings-terminal-capability-overrides (manager)
   ;; pi@71023aec1 settings-manager.ts getTerminalCapabilityOverrides.
   (let ((terminal
@@ -1056,6 +1078,33 @@
                 "false")
             :values '("true" "false"))
            (make-settings-option
+            :id "fullscreen-wheel-scroll-lines"
+            :label "Fullscreen wheel scroll lines"
+            :description
+            "Lines per mouse-wheel event in fullscreen mode (1-100); auto accelerates fast spins outside local macOS"
+            :value
+            (let ((lines
+                    (settings-fullscreen-wheel-scroll-lines
+                     settings-manager)))
+              (if (eq lines :auto)
+                  "auto"
+                  (princ-to-string lines)))
+            :values
+            (let* ((current
+                     (settings-fullscreen-wheel-scroll-lines
+                      settings-manager))
+                   (numbers
+                     (remove-duplicates
+                      (append
+                       '(1 2 3 5 10)
+                       (and (integerp current)
+                            (list current)))
+                      :test #'=)))
+              (cons
+               "auto"
+               (mapcar #'princ-to-string
+                       (sort (copy-list numbers) #'<)))))
+           (make-settings-option
             :id "theme"
              :label "Theme"
              :description
@@ -1173,6 +1222,24 @@
              :scope :global)
             (when *fullscreen-copy-on-select-hook*
               (funcall *fullscreen-copy-on-select-hook* enabled))))
+         ((string= id "fullscreen-wheel-scroll-lines")
+          (let ((lines
+                  (if (string= value "auto")
+                      :auto
+                      (or
+                       (ignore-errors
+                        (parse-integer value
+                                       :junk-allowed t))
+                       :auto))))
+            (settings-set
+             settings-manager
+             "fullscreenWheelScrollLines"
+             (if (eq lines :auto) "auto" lines)
+             :scope :global)
+            (when *fullscreen-wheel-scroll-lines-hook*
+              (funcall
+               *fullscreen-wheel-scroll-lines-hook*
+               lines))))
          ((string= id "steering-mode")
           (setf
            (cadr-agent:agent-steering-mode agent)
