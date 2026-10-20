@@ -407,9 +407,15 @@
       (cli-arguments-models arguments)
       (split-comma-option value)))
     (:tools
-     (setf
-      (cli-arguments-tools arguments)
-      (split-comma-option value)))
+     (let* ((entries (split-comma-option value))
+            (error-message (tool-list-error entries)))
+       (if error-message
+           (add-cli-diagnostic
+            arguments :error
+            (format nil "--tools: ~A" error-message))
+           (setf
+            (cli-arguments-tools arguments)
+            entries))))
     (:exclude-tools
      (setf
       (cli-arguments-exclude-tools arguments)
@@ -773,6 +779,7 @@ Options:
   --no-tools, -nt                Disable all tools by default (built-in and extension)
   --no-builtin-tools, -nbt       Disable built-in tools by default but keep extension/custom tools enabled
   --tools, -t <tools>            Comma-separated allowlist of tool names to enable
+                                 Or only +name/-name entries to change the defaults
                                  Applies to built-in, extension, and custom tools
   --exclude-tools, -xt <tools>   Comma-separated denylist of tool names to disable
                                  Applies to built-in, extension, and custom tools
@@ -852,6 +859,9 @@ Examples:
 
   # Read-only mode (no file modifications possible)
   cadr --tools read,grep,find,ls -p \"Review the code in src/\"
+
+  # Add grep to the default tools
+  cadr --tools +grep
 
   # Disable one tool while keeping the rest available
   cadr --exclude-tools ask_question

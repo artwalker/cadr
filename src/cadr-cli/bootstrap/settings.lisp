@@ -352,11 +352,11 @@
       :fullscreen))
 
 (defun parse-default-tools-setting (value)
-  ;; Baseline v1.3.0 settings-manager.ts getDefaultTools: a string array
-  ;; passes through as a copy; anything else is absent.
+  ;; pi@71023aec1 settings-manager.ts getDefaultTools / resolveDefaultTools:
+  ;; a string array resolves plain names and +name/-name overlays; else absent.
   (and (vectorp value)
        (every #'stringp value)
-       (coerce value 'list)))
+       (resolve-default-tools (coerce value 'list))))
 
 (defun settings-default-tools (manager)
   (parse-default-tools-setting

@@ -161,3 +161,29 @@
     (is (string=
          (format nil "base~%~%<a>2</a>~%~%<c>1</c>")
          prompt))))
+
+(test goal24-session-line-parser-restores-tools-added-objects
+  ;; Session octets keep objects as (:json-object . pairs). toolsAdded
+  ;; must still rebuild hash-table tool parameters for resume restore.
+  (let* ((pairs-tool
+           (list*
+            :json-object
+            (list
+             "name" "plain"
+             "description" "Plain tool"
+             "parameters"
+             (list*
+              :json-object
+              (list
+               "type" "object"
+               "properties" (list* :json-object nil))))))
+         (tools
+           (cadr-agent::tools-added-from-json
+            (vector pairs-tool)))
+         (tool (first tools)))
+    (is (string= "plain" (cadr-ai:tool-name tool)))
+    (is (hash-table-p (cadr-ai:tool-parameters tool)))
+    (is (string=
+         "object"
+         (cadr-ai::json-get
+          (cadr-ai:tool-parameters tool) "type")))))

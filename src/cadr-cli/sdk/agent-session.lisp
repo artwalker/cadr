@@ -270,6 +270,29 @@
                           :test #'string=)))))))))
        candidates))))
 
+(defun sdk-resolve-selected-tool-names
+    (tools no-tools default-tool-names)
+  ;; pi@71023aec1 sdk.ts selectedToolNames / defaultToolNames
+  (let* ((defaults
+           (if no-tools
+               '()
+               (or default-tool-names
+                   +default-coding-tool-names+)))
+         (modifiers (tool-modifiers tools)))
+    (cond
+      (modifiers (apply-tool-modifiers defaults modifiers))
+      (tools tools)
+      (t defaults))))
+
+(defun sdk-explicit-tool-allowlist
+    (tools no-tools selected-tool-names)
+  ;; pi@71023aec1 sdk.ts allowedToolNames
+  (let ((modifiers (tool-modifiers tools)))
+    (if modifiers
+        (and (eq no-tools :all) selected-tool-names)
+        (or tools
+            (and (eq no-tools :all) '())))))
+
 (defun sdk-build-agent-system-prompt
     (loader tools cwd)
   (let ((options
@@ -400,12 +423,33 @@
          (selected-model nil)
          (selected-thinking nil)
          (provider-config nil)
+         (tool-list-error-message
+           (and tools (tool-list-error tools)))
+         (default-tool-names
+           (and settings
+                (parse-default-tools-setting
+                 (sdk-settings-value settings "defaultTools"))))
+         (modifiers (tool-modifiers tools))
+         (selected-tool-names
+           (sdk-resolve-selected-tool-names
+            tools no-tools default-tool-names))
+         (explicit-tools
+           (sdk-explicit-tool-allowlist
+            tools no-tools selected-tool-names))
+         (uses-default-tools-p
+           ;; pi@71023aec1 sdk.ts usesDefaultTools
+           (and (or (null tools) modifiers)
+                (null no-tools)))
          (tool-filter
+           ;; When modifiers change the default set, pass the resolved
+           ;; names as default-tool-names so the filter keeps them.
            (sdk-tool-filter
-            tools no-tools exclude-tools
-            (and settings
-                 (parse-default-tools-setting
-                  (sdk-settings-value settings "defaultTools")))))
+            explicit-tools
+            no-tools
+            exclude-tools
+            (if (and modifiers (null explicit-tools))
+                selected-tool-names
+                default-tool-names)))
          (base-tools
            (append
             (make-all-coding-tools
@@ -428,6 +472,10 @@
          (agent-cell (cons nil nil))
          (cache-warmer nil))
     (declare (ignore _loader))
+    (when tool-list-error-message
+      (error
+       "Invalid tools option: ~A"
+       tool-list-error-message))
     (multiple-value-setq (selected-model fallback)
       (sdk-select-initial-model
        runtime settings persistent model))
@@ -552,6 +600,11 @@
                       #'agent-session-listeners))))))
       (setf cache-warmer warmer
             (car agent-cell) agent)
+      (when uses-default-tools-p
+        (restore-active-tools-from-transcript
+         agent
+         :modifiers (or modifiers '())
+         :exclude-tools exclude-tools))
       (when extension-host
         (setf
          (cadr-agent::extension-host-reload-function extension-host)

@@ -46,10 +46,11 @@
      extension-tools)))
 
 (defun refresh-agent-extension-tools (agent)
-  (let* ((filtered
+  (let* ((merged (merged-agent-tools agent))
+         (filtered
            (funcall
             (agent-tool-filter-function agent)
-            (merged-agent-tools agent)))
+            merged))
          (host (agent-extension-host agent))
          (effective
            (if
@@ -57,6 +58,10 @@
                 host
                 (extension-host-active-tools-overridden-p
                  host))
+               ;; pi@71023aec1: setActiveTools / resume restore pick
+               ;; from the full registry, not the defaultTools filter.
+               ;; Intersecting with the filter dropped transcript tools
+               ;; like grep that are builtin but outside the defaults.
                (remove-if-not
                 (lambda (tool)
                   (member
@@ -64,7 +69,7 @@
                    (extension-host-active-tool-names
                     host)
                    :test #'string=))
-                filtered)
+                merged)
                filtered)))
     (setf
      (agent-tool-registry agent)
@@ -146,6 +151,13 @@
                 (registry-tools
                  (agent-tool-registry agent))))))
         (when initial
+          ;; Persist the seeded toolsAdded declaration so resume can
+          ;; restore the active loadout (pi@71023aec1 #10785). Agent
+          ;; messages alone are not enough: declare-tool-changes treats
+          ;; in-memory tools as already declared and skips the session.
+          (when (agent-session agent)
+            (session-append-message
+             (agent-session agent) initial))
           (let ((seeded
                   (cons initial (agent-messages agent))))
             (setf

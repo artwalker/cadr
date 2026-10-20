@@ -646,3 +646,132 @@
                    (cadr-agent::agent-tool-registry
                     (cadr-cli::agent-session-agent session))))))
       (cadr-cli::agent-session-dispose session))))
+
+(defun goal12-sdk-active-tool-names (session)
+  (mapcar
+   #'cadr-ai:tool-name
+   (cadr-agent::registry-tools
+    (cadr-agent::agent-tool-registry
+     (cadr-cli::agent-session-agent session)))))
+
+(test goal12-sdk-tool-modifiers-adjust-default-selection
+  ;; pi@71023aec1 settings-manager.ts applyToolModifiers / sdk.ts +name/-name
+  (is (equal
+       '("read" "bash" "edit" "write" "grep")
+       (cadr-cli::apply-tool-modifiers
+        cadr-cli::+default-coding-tool-names+
+        '("+grep"))))
+  (is (equal
+       '("read" "bash" "edit")
+       (cadr-cli::apply-tool-modifiers
+        cadr-cli::+default-coding-tool-names+
+        '("-write"))))
+  (is (string=
+       "tool names cannot be mixed with +name or -name entries"
+       (cadr-cli::tool-list-error '("read" "+grep"))))
+  (with-test-directory (temporary)
+    (multiple-value-bind (session)
+        (cadr-cli::create-agent-session
+         :cwd temporary
+         :agent-directory (merge-pathnames "agent/" temporary)
+         :model (goal12-sdk-model)
+         :provider :faux
+         :thinking-level :off
+         :stream-function #'goal12-sdk-stream
+         :session-manager
+         (cadr-cli::session-manager-in-memory temporary)
+         :tools '("+grep" "-write"))
+      (is (equal
+           '("bash" "edit" "grep" "read")
+           (sort (goal12-sdk-active-tool-names session)
+                 #'string<)))
+      (cadr-cli::agent-session-dispose session))))
+
+(test goal12-sdk-resume-restores-transcript-active-tools
+  ;; pi@71023aec1 agent-session.ts _restoreToolsFromTranscript / #10785
+  (with-test-directory (temporary)
+    (let* ((directory
+             (merge-pathnames "sessions/" temporary))
+           (manager
+             (cadr-cli::session-manager-create
+              temporary directory)))
+      (multiple-value-bind (session)
+          (cadr-cli::create-agent-session
+           :cwd temporary
+           :agent-directory (merge-pathnames "agent/" temporary)
+           :model (goal12-sdk-model)
+           :provider :faux
+           :thinking-level :off
+           :stream-function #'goal12-sdk-stream
+           :session-manager manager
+           :tools '("read" "grep"))
+        (is (equal '("grep" "read")
+                   (sort (goal12-sdk-active-tool-names session)
+                         #'string<)))
+        (cadr-cli::agent-session-prompt session "persist tools")
+        (cadr-cli::agent-session-dispose session))
+      (multiple-value-bind (resumed)
+          (cadr-cli::create-agent-session
+           :cwd temporary
+           :agent-directory (merge-pathnames "agent/" temporary)
+           :model (goal12-sdk-model)
+           :provider :faux
+           :thinking-level :off
+           :stream-function #'goal12-sdk-stream
+           :session-manager
+           (cadr-cli::session-manager-continue-recent
+            temporary directory))
+        (is (equal '("grep" "read")
+                   (sort (goal12-sdk-active-tool-names resumed)
+                         #'string<)))
+        (cadr-cli::agent-session-dispose resumed))
+      ;; --tools +/- overlays the restored loadout.
+      (multiple-value-bind (resumed)
+          (cadr-cli::create-agent-session
+           :cwd temporary
+           :agent-directory (merge-pathnames "agent/" temporary)
+           :model (goal12-sdk-model)
+           :provider :faux
+           :thinking-level :off
+           :stream-function #'goal12-sdk-stream
+           :session-manager
+           (cadr-cli::session-manager-continue-recent
+            temporary directory)
+           :tools '("-grep" "+bash"))
+        (is (equal '("bash" "read")
+                   (sort (goal12-sdk-active-tool-names resumed)
+                         #'string<)))
+        (cadr-cli::agent-session-dispose resumed))
+      ;; Plain --tools replaces instead of restoring.
+      (multiple-value-bind (resumed)
+          (cadr-cli::create-agent-session
+           :cwd temporary
+           :agent-directory (merge-pathnames "agent/" temporary)
+           :model (goal12-sdk-model)
+           :provider :faux
+           :thinking-level :off
+           :stream-function #'goal12-sdk-stream
+           :session-manager
+           (cadr-cli::session-manager-continue-recent
+            temporary directory)
+           :tools '("bash"))
+        (is (equal '("bash")
+                   (goal12-sdk-active-tool-names resumed)))
+        (cadr-cli::agent-session-dispose resumed)))))
+
+(test goal12-cli-tools-modifiers-parse-and-reject-mixed-lists
+  (let ((ok
+          (cadr-cli::parse-cli-arguments
+           '("--tools" "+grep,-write"))))
+    (is (equal '("+grep" "-write")
+               (cadr-cli::cli-arguments-tools ok)))
+    (is (null (cadr-cli::cli-arguments-diagnostics ok))))
+  (let ((bad
+          (cadr-cli::parse-cli-arguments
+           '("--tools" "read,+grep"))))
+    (is (null (cadr-cli::cli-arguments-tools bad)))
+    (is (= 1 (length (cadr-cli::cli-arguments-diagnostics bad))))
+    (is (eq :error
+            (getf
+             (first (cadr-cli::cli-arguments-diagnostics bad))
+             :type)))))

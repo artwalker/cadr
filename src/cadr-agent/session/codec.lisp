@@ -330,20 +330,33 @@
      (error "System message sections must be an object"))))
 
 (defun tool-declaration-from-json (object)
-  (unless (hash-table-p object)
+  ;; Session line parser keeps objects as (:json-object . pairs);
+  ;; message-to-json / json-object use hash tables.
+  (unless
+      (or (hash-table-p object)
+          (cadr-ai::json-object-pairs-p object))
     (error "Tool declaration must be an object"))
-  (multiple-value-bind (constrained present-p)
-      (gethash "constrainedSampling" object)
+  (let ((constrained
+          (cadr-ai::json-get object "constrainedSampling"))
+        (present-p
+          (cadr-ai::json-present-p
+           object "constrainedSampling"))
+        (parameters
+          (cadr-ai::json-get object "parameters")))
     (cadr-ai:make-tool
      :name (or (cadr-ai::json-get object "name") "")
      :description (or (cadr-ai::json-get object "description") "")
      :parameters
-     (or (cadr-ai::json-get object "parameters")
-         (cadr-ai::json-object))
+     (cond
+       ((null parameters) (cadr-ai::json-object))
+       ((hash-table-p parameters) parameters)
+       (t (json-safe-value parameters)))
      :constrained-sampling
      (cond
        ((not present-p) nil)
-       ((or (null constrained) (eq constrained 'null) (eq constrained :false))
+       ((or (null constrained)
+            (eq constrained 'null)
+            (eq constrained :false))
         :false)
        (t (copy-tree constrained)))
      :executor nil)))

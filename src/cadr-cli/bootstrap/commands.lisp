@@ -736,6 +736,22 @@
             (settings-shell-path settings-manager)))
          (builtin-names
            +builtin-coding-tool-names+)
+         (cli-tools-option
+           (cli-arguments-tools command))
+         (cli-tool-modifiers
+           (tool-modifiers cli-tools-option))
+         (cli-default-tool-names
+           (or
+            (settings-default-tools settings-manager)
+            +default-coding-tool-names+))
+         (cli-uses-default-tools-p
+           ;; pi@71023aec1 sdk.ts usesDefaultTools; --no-tools and
+           ;; --no-builtin-tools both map to a noTools mode.
+           (and
+            (or (null cli-tools-option) cli-tool-modifiers)
+            (not (cli-arguments-no-tools-p command))
+            (not
+             (cli-arguments-no-builtin-tools-p command))))
          (tool-filter
            (lambda (tools)
              (if
@@ -745,23 +761,36 @@
                  (select-coding-tools
                   tools
                   :allow
-                  (or
-                   (cli-arguments-tools command)
-                   (append
-                    ;; Baseline v1.3.0 sdk.ts: the defaultTools setting
-                    ;; overrides the built-in default selection.
-                    (or
-                     (settings-default-tools settings-manager)
-                     +default-coding-tool-names+)
-                    (mapcar
-                     #'cadr-ai:tool-name
-                     (remove-if
-                      (lambda (tool)
-                        (member
-                         (cadr-ai:tool-name tool)
-                         builtin-names
-                         :test #'string=))
-                      tools))))
+                  (cond
+                    (cli-tool-modifiers
+                     (append
+                      (apply-tool-modifiers
+                       cli-default-tool-names
+                       cli-tool-modifiers)
+                      (mapcar
+                       #'cadr-ai:tool-name
+                       (remove-if
+                        (lambda (tool)
+                          (member
+                           (cadr-ai:tool-name tool)
+                           builtin-names
+                           :test #'string=))
+                        tools))))
+                    (cli-tools-option cli-tools-option)
+                    (t
+                     (append
+                      ;; Baseline v1.3.0 sdk.ts: the defaultTools setting
+                      ;; overrides the built-in default selection.
+                      cli-default-tool-names
+                      (mapcar
+                       #'cadr-ai:tool-name
+                       (remove-if
+                        (lambda (tool)
+                          (member
+                           (cadr-ai:tool-name tool)
+                           builtin-names
+                           :test #'string=))
+                        tools)))))
                   :exclude
                   (cli-arguments-exclude-tools
                    command)
@@ -887,6 +916,12 @@
              _scope-diagnostic-report))
     (setf cache-warmer warmer
           (car agent-cell) agent)
+    (when cli-uses-default-tools-p
+      (restore-active-tools-from-transcript
+       agent
+       :modifiers (or cli-tool-modifiers '())
+       :exclude-tools
+       (cli-arguments-exclude-tools command)))
     (when (and tui-p *pending-deprecation-warnings*)
       ;; Baseline main.ts:837-839 — deprecated-directory warnings are
       ;; shown before the TUI takes over, interactive mode only.
