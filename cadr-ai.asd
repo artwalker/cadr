@@ -116,6 +116,7 @@
                              (:file "provider-payloads-test")
                              (:file "provider-compat-test")
                              (:file "anthropic-mid-conversation-effort-test")
+                             (:file "openai-responses-mid-convo-effort-test")
                              (:file "google-thinking-level-map-test")
                              (:file "provider-history-test")
                              (:file "provider-responses-test")

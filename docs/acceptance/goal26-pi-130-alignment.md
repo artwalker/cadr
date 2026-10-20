@@ -80,7 +80,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 换模型时丢弃他模型 thinking，不改写成可见文本 | v1.3.0 | done：`copy-history-content-block` 跨模型 drop；同模型保留 signed/redacted/非空 |
 | Resume 保留会话激活工具；`--tools +/-` 叠加上去 | v1.3.0 | done：usesDefaultTools restore + modifiers；session toolsAdded persist/parse |
 | Kimi Coding → Chat Completions + `/v1` base URL | v1.3.0 | done：openai-completions + `/v1`；catalog mid-convo flags |
-| OpenAI GPT-6 中途改 thinking 保 cache | v1.3.0 | provider/cache |
+| OpenAI GPT-6 中途改 thinking 保 cache | v1.3.0 | done：`configuration_update` + 固定 `reasoning.effort`；catalog `supportsMidConvoEffort` |
 | Cerebras bodyless 400/413 overflow | v1.3.0 overflow.ts | 已在 tip WIP |
 | settings / theme schema 变形 | 枚举假阳性 | 重解析后再列缺口 |
 

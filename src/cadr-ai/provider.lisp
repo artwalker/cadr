@@ -214,9 +214,15 @@ completed assistant message."))
                 (when (anthropic-effort-p down) down)))))
       "high"))
 
-(defun mid-convo-thinking-level (model reasoning)
+(defun mid-convo-thinking-level (model reasoning &optional api-key)
+  ;; Anthropic adaptive thinking always stamps an effort; OpenAI GPT-6
+  ;; configuration_update only stamps when getConfigurationUpdateEffort
+  ;; would (pi@71023aec1) — requires a thinking level and not ChatGPT
+  ;; sign-in.
   (when (model-compat-value model :supports-mid-convo-effort nil)
-    (anthropic-active-effort model reasoning)))
+    (if (eq (model-api model) :openai-responses)
+        (openai-configuration-update-effort model reasoning api-key)
+        (anthropic-active-effort model reasoning))))
 
 (defun normalize-cache-retention (value)
   (let ((retention (or value :short)))
@@ -331,13 +337,13 @@ string. Returns the buffer to store back. Per-delta
 (defun strip-trailing-slash (url)
   (string-right-trim "/" url))
 
-(defun empty-assistant-message (model &optional reasoning)
+(defun empty-assistant-message (model &optional reasoning api-key)
   (make-assistant-message
    :api (model-api model)
    :provider (model-provider model)
    :model (model-id model)
    :provider-thinking-level
-   (mid-convo-thinking-level model reasoning)))
+   (mid-convo-thinking-level model reasoning api-key)))
 
 (defun same-model-message-p (message model)
   (and (eq (assistant-message-provider message)
@@ -691,7 +697,10 @@ string. Returns the buffer to store back. Per-delta
           (let ((message
                   (parse-complete-response provider model response)))
             (setf (assistant-message-provider-thinking-level message)
-                  (mid-convo-thinking-level model reasoning))
+                  (mid-convo-thinking-level
+                   model reasoning
+                   (or (provider-oauth-access-token provider)
+                       (provider-api-key provider))))
             message)))
     (error (condition)
       (error-assistant-message
@@ -707,7 +716,11 @@ string. Returns the buffer to store back. Per-delta
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
   (let* ((transcript (ensure-transcript-context context))
-         (message (empty-assistant-message model reasoning))
+         (message
+           (empty-assistant-message
+            model reasoning
+            (or (provider-oauth-access-token provider)
+                (provider-api-key provider))))
          (state (make-provider-stream-state :message message :model model))
          (saw-provider-event-p nil)
          (response-request-id nil)

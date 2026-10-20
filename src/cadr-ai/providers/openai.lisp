@@ -58,9 +58,35 @@
           (error () (values signature nil)))
         (values signature nil))))
 
+;; Fixed reasoning.effort while configuration_update items carry the
+;; thinking level (pi@71023aec1 openai-responses.ts).
+(defparameter +configuration-update-request-effort+ "medium")
+
+(defun openai-chatgpt-sign-in-p (model api-key)
+  ;; Baseline isChatGPTSignIn: openai + api.openai.com/v1 + non-sk- key.
+  (and (eq (model-provider model) :openai)
+       (string= (model-base-url model) "https://api.openai.com/v1")
+       (non-empty-string-p api-key)
+       (not (uiop:string-prefix-p "sk-" api-key))))
+
+(defun openai-configuration-update-effort (model reasoning api-key)
+  (when (and (model-compat-value model :supports-mid-convo-effort nil)
+             reasoning
+             (not (openai-chatgpt-sign-in-p model api-key)))
+    (or (model-thinking-level-value model reasoning)
+        (string-downcase
+         (if (symbolp reasoning)
+             (symbol-name reasoning)
+             (princ-to-string reasoning))))))
+
+(defun configuration-update-item (effort)
+  (json-object
+   "type" "configuration_update"
+   "reasoning" (json-object "effort" effort)))
+
 (defun openai-input-items
     (model context &key grammar-properties deferred-tools deferred-tools-mode
-                        tool-options)
+                        tool-options configuration-update-effort)
   (let ((items nil)
         (message-index 0)
         (loaded-tool-names (make-hash-table :test #'equal)))
@@ -108,7 +134,15 @@
                     "content" content)
                    items))))
         ((typep message 'assistant-message)
-         (let ((text-index 0))
+         (let ((text-index 0)
+               (output nil)
+               (same-model-p
+                 (and (eq (assistant-message-provider message)
+                          (model-provider model))
+                      (eq (assistant-message-api message)
+                          (model-api model))
+                      (string= (assistant-message-model message)
+                               (model-id model)))))
            (dolist (block (assistant-message-content message))
              (cond
                ((typep block 'text-content)
@@ -138,7 +172,7 @@
                               "text" (text-content-text block)
                               "annotations" #())))))
                     (when phase (json-put item "phase" phase))
-                    (push item items)))
+                    (push item output)))
                 (incf text-index))
                ((typep block 'tool-call)
                 (multiple-value-bind (call-id item-id)
@@ -172,19 +206,26 @@
                     ;; deferred tool.
                     (let ((namespace (tool-call-namespace block)))
                       (when (and namespace
-                                 (or (and (eq (assistant-message-provider
-                                               message)
-                                              (model-provider model))
-                                          (eq (assistant-message-api message)
-                                              (model-api model))
-                                          (string=
-                                           (assistant-message-model message)
-                                           (model-id model)))
+                                 (or same-model-p
                                      (and deferred-tools
                                           (gethash (tool-call-name block)
                                                    deferred-tools))))
                         (json-put item "namespace" namespace)))
-                    (push item items))))))))
+                    (push item output))))))
+           (when output
+             ;; pi@71023aec1: configuration_update before each same-model
+             ;; reply that recorded providerThinkingLevel, so earlier
+             ;; input never changes when the level changes.
+             (when (and configuration-update-effort
+                        same-model-p
+                        (assistant-message-provider-thinking-level
+                         message))
+               (push
+                (configuration-update-item
+                 (assistant-message-provider-thinking-level message))
+                items))
+             (dolist (item (nreverse output))
+               (push item items)))))
         ((typep message 'tool-result-message)
          (multiple-value-bind (call-id item-id)
              (split-openai-tool-call-id
@@ -276,6 +317,9 @@
                        "image_url" (data-url block)))))
             items)))))
       (incf message-index))
+    (when configuration-update-effort
+      (push (configuration-update-item configuration-update-effort)
+            items))
     (list-json-array (nreverse items))))
 
 (defun openai-tools (model tools &key defer-loading-p options)
@@ -391,6 +435,8 @@
   (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
          (account-id (provider-oauth-account-id provider))
+         (configuration-update-effort
+           (openai-configuration-update-effort model reasoning key))
          (deferred-tools-mode
            ;; Baseline buildParams: additional-tools beats tool-search.
            (cond
@@ -420,6 +466,7 @@
       :grammar-properties grammar-properties
       :deferred-tools deferred-tools
       :deferred-tools-mode deferred-tools-mode
+      :configuration-update-effort configuration-update-effort
       :tool-options
       (list
        :supports-strict-mode
@@ -460,7 +507,19 @@
                 (openai-tools model immediate-tools)))
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
-    (add-responses-reasoning payload model reasoning)
+    ;; When configuration_update carries the level, keep reasoning.effort
+    ;; fixed so mid-session changes do not bust the prompt cache.
+    (if configuration-update-effort
+        (progn
+          (json-put
+           payload "reasoning"
+           (json-object
+            "effort" +configuration-update-request-effort+
+            "summary" "auto"))
+          (json-put
+           payload "include"
+           (json-array "reasoning.encrypted_content")))
+        (add-responses-reasoning payload model reasoning))
     (make-request-spec
      :url
      (let ((base (strip-trailing-slash (model-base-url model))))
