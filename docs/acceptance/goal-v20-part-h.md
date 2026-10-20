@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **304 files / 143,897 lines**
+Denominator: **304 files / 143,899 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 114,049 | 79.3% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 114,051 | 79.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 8,045 | 5.6% | single reference vs previous cadr |
 | `covered-as-callee` | 30 | 19,126 | 13.3% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,677 | 1.9% | must get an H pair; not a file-level idle bench |
@@ -13924,7 +13924,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/runtime/faux-provider.lisp` | 625 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | `ai_support.grammar_delta` |
-| `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
+| `src/cadr-ai/support/overflow.lisp` | 80 | `ai_support.context_overflow` |
 | `src/cadr-ai/support/release.lisp` | 111 | `ai_support.auth_guidance` |
 | `src/cadr-ai/support/threads.lisp` | 6 | `ai_support.threads_absent`, `ai_support.threads_current`, `ai_support.threads_joined` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
