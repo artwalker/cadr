@@ -358,24 +358,24 @@ string. Returns the buffer to store back. Per-delta
        :signature (and same-model-p
                        (text-content-signature block)))))
     ((typep block 'thinking-content)
+     ;; pi@71023aec1 transform-messages.ts — thinking from another model
+     ;; is dropped, not rewritten as visible text. Signatures/redacted
+     ;; blocks stay only for the same model (replay / encrypted reasoning).
      (cond
-       ((thinking-content-redacted-p block)
-        (if same-model-p
-            (list
-             (make-thinking-content
-              :thinking (thinking-content-thinking block)
-              :signature (thinking-content-signature block)
-              :redacted-p t))
-            nil))
-       (same-model-p
+       ((not same-model-p) nil)
+       ((or (thinking-content-redacted-p block)
+            (non-empty-string-p
+             (thinking-content-signature block)))
+        (list
+         (make-thinking-content
+          :thinking (thinking-content-thinking block)
+          :signature (thinking-content-signature block)
+          :redacted-p (thinking-content-redacted-p block))))
+       ((non-empty-string-p (thinking-content-thinking block))
         (list
          (make-thinking-content
           :thinking (thinking-content-thinking block)
           :signature (thinking-content-signature block))))
-       ((non-empty-string-p (thinking-content-thinking block))
-        (list
-         (make-text-content
-          :text (thinking-content-thinking block))))
        (t nil)))
     ((typep block 'tool-call)
      (let ((normalized-id

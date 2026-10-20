@@ -7,6 +7,11 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 26: when switching models, drop thinking blocks from earlier
+  assistants produced by a different model instead of rewriting them as
+  visible text (`#10995` / `#11000`). Same-model signed, redacted, and
+  non-empty thinking still replay.
+
 - Goal 26: default TUI mode is fullscreen (pi v1.0.0+). Only exact
   `tuiMode`/`--tui-mode` value `regular` keeps normal scrollback.
   Help and settings copy match the baseline.

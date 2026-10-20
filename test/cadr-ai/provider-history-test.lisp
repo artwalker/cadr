@@ -123,11 +123,67 @@
     (is (string= normalized-id
                  (cadr-ai::json-get function-response "id")))
     (is (null (cadr-ai::json-get function-part "thoughtSignature")))
-    (is (string= "Foreign reasoning"
+    ;; pi@71023aec1 #10995 / #11000 — foreign thinking is dropped, not
+    ;; sent as plain text. Visible text and the tool call remain.
+    (is (string= "Calling now."
                  (cadr-ai::json-get (aref assistant-parts 0) "text")))
     (is (null (cadr-ai::json-get (aref assistant-parts 0) "thought")))
     (is (null (cadr-ai::json-get (aref assistant-parts 0)
-                               "thoughtSignature")))))
+                               "thoughtSignature")))
+    (is (cadr-ai::json-present-p
+         (aref assistant-parts 1) "functionCall"))))
+
+(test cross-model-thinking-is-dropped-not-sent-as-text
+  ;; pi@71023aec1 transform-messages-cross-model-thinking.test.ts / #11000
+  (let* ((normalize (lambda (id &rest _) (declare (ignore _)) id))
+         (target
+           (make-model
+            :id "moonshotai/Kimi-K3"
+            :name "Kimi K3"
+            :api :openai-completions
+            :provider :sference
+            :base-url "https://example.test/v1"
+            :reasoning-p t
+            :context-window 1048576
+            :max-tokens 32768))
+         (prepared
+           (cadr-ai::prepare-messages-for-model
+            (list
+             (cadr-ai:make-user-message :content "Why?")
+             (cadr-ai:make-assistant-message
+              :api :openai-completions
+              :provider :sference
+              :model "zai-org/GLM-5.3"
+              :stop-reason :tool-use
+              :content
+              (list
+               (cadr-ai:make-thinking-content
+                :thinking "proxy or TLS"
+                :signature "reasoning_content")
+               (cadr-ai:make-text-content :text "Checking TLS.")
+               (cadr-ai:make-tool-call
+                :id "call_1" :name "bash"
+                :arguments (cadr-ai::json-object "command" "curl -v"))))
+             (cadr-ai:make-tool-result-message
+              :tool-call-id "call_1" :tool-name "bash"
+              :content (list (cadr-ai:make-text-content :text "TLSv1.2"))))
+            target
+            normalize))
+         (assistant
+           (find-if (lambda (message)
+                      (typep message 'cadr-ai:assistant-message))
+                    prepared)))
+    (is (= 2 (length (cadr-ai:assistant-message-content assistant))))
+    (is (typep (first (cadr-ai:assistant-message-content assistant))
+               'cadr-ai:text-content))
+    (is (string= "Checking TLS."
+                 (cadr-ai:text-content-text
+                  (first (cadr-ai:assistant-message-content assistant)))))
+    (is (typep (second (cadr-ai:assistant-message-content assistant))
+               'cadr-ai:tool-call))
+    (is (notany
+         (lambda (block) (typep block 'cadr-ai:thinking-content))
+         (cadr-ai:assistant-message-content assistant)))))
 
 (test consecutive-anthropic-tool-results-share-one-user-turn
   (let* ((assistant
