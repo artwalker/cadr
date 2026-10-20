@@ -197,6 +197,54 @@
                    (aref (cadr-ai::json-get loader "tools") 0) "function")
                   "name")))))
 
+(test goal26-kimi-coding-uses-openai-completions-v1
+  ;; pi@71023aec1 kimi-coding.ts + createKimiCodingModels: Chat Completions
+  ;; at https://api.kimi.com/coding/v1 (was Anthropic Messages without /v1).
+  (let* ((definition (cadr-ai:find-provider-definition :kimi-coding))
+         (catalog-ids
+           '("k3" "k3-256k" "kimi-for-coding"
+             "kimi-for-coding-highspeed"))
+         (model
+           (cadr-ai::model-from-metadata
+            (cadr-ai:find-model-metadata :kimi-coding "kimi-for-coding")))
+         (payload
+           (request-spec-payload
+            (build-request
+             (cadr-ai:make-openai-completions-provider :api-key "key")
+             model (goal12-tool-history-context) :stream-p t)))
+         (headers
+           (request-spec-headers
+            (build-request
+             (cadr-ai:make-openai-completions-provider :api-key "key")
+             model (make-context :messages nil) :stream-p nil)))
+         (ua
+           (cdr (find "user-agent" headers
+                      :key #'car :test #'string-equal))))
+    (is (eq :openai-completions
+            (cadr-ai:provider-definition-protocol definition)))
+    (is (string= "https://api.kimi.com/coding/v1"
+                 (cadr-ai:provider-definition-base-url definition)))
+    (dolist (id catalog-ids)
+      (let ((meta (cadr-ai:find-model-metadata :kimi-coding id)))
+        (is (eq :kimi-coding
+                (cadr-ai:model-metadata-provider meta)))
+        (is (eq :openai-completions
+                (cadr-ai:model-metadata-api meta)))
+        (is (string= "https://api.kimi.com/coding/v1"
+                     (cadr-ai:model-metadata-base-url meta)))))
+    (is (cadr-ai::model-compat-value
+         model :supports-mid-convo-system-messages nil))
+    (is (cadr-ai::model-compat-value
+         model :supports-mid-convo-tool-additions nil))
+    (is (= 1 (length (cadr-ai::json-get payload "tools"))))
+    (is (string= "read"
+                 (cadr-ai::json-get
+                  (cadr-ai::json-get
+                   (aref (cadr-ai::json-get payload "tools") 0)
+                   "function")
+                  "name")))
+    (is (string= (cadr-ai::cadr-os-user-agent) ua))))
+
 (defun goal13-emit-json-event (provider state emit payload)
   (cadr-ai::reduce-provider-sse-event
    provider state

@@ -376,9 +376,9 @@
     (:id :kimi-coding
      :baseline-source "packages/ai/src/providers/kimi-coding.ts:8"
      :name "Kimi For Coding"
-     :protocol :anthropic-messages
-     :protocols (:anthropic-messages)
-     :base-url "https://api.kimi.com/coding"
+     :protocol :openai-completions
+     :protocols (:openai-completions)
+     :base-url "https://api.kimi.com/coding/v1"
      :auth-types (:api-key :oauth)
      :default-model "kimi-for-coding"
      :key-environment "KIMI_API_KEY"

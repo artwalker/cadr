@@ -480,11 +480,11 @@
       "id": "kimi-coding",
       "source": "packages/ai/src/providers/kimi-coding.ts:8",
       "name": "Kimi For Coding",
-      "protocol": "anthropic-messages",
+      "protocol": "openai-completions",
       "protocols": [
-        "anthropic-messages"
+        "openai-completions"
       ],
-      "baseUrl": "https://api.kimi.com/coding",
+      "baseUrl": "https://api.kimi.com/coding/v1",
       "authTypes": [
         "api-key",
         "oauth"

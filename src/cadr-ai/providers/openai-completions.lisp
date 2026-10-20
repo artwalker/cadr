@@ -461,8 +461,20 @@
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
+         ;; pi@71023aec1: kimi Coding mid-convo tool additions, or the
+         ;; explicit deferred-tools-mode :kimi catalog override.
          (deferred-mode
-           (model-compat-value model :deferred-tools-mode nil))
+           (cond
+             ((eq (model-compat-value model :deferred-tools-mode nil)
+                  :kimi)
+              :kimi)
+             ((and (model-compat-value
+                    model :supports-mid-convo-system-messages nil)
+                   (model-compat-value
+                    model :supports-mid-convo-tool-additions nil))
+              :kimi)
+             (t
+              (model-compat-value model :deferred-tools-mode nil))))
          (deferred-names
            (and (eq deferred-mode :kimi)
                 (deferred-tool-names (context-messages context))))
@@ -546,7 +558,10 @@
      :url (chat-completions-url (model-base-url model))
      :headers
      (append
-      `(("content-type" . "application/json")
+      ;; pi@71023aec1 openai-completions.ts createClient: product UA first,
+      ;; then model.headers may override.
+      `(("User-Agent" . ,(cadr-os-user-agent))
+        ("content-type" . "application/json")
         ("accept" . ,(if stream-p
                          "text/event-stream"
                          "application/json")))

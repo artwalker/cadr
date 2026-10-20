@@ -138,7 +138,7 @@ credential is inferred.
 | 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | implemented; API-key/ADC resolution, RS256 JWT exchange and regional endpoint construction | fixture; no Vertex credential |
 | 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
 | 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | implemented; device flow and subscription headers | fixture; no Kimi credential |
+| 15 | `kimi-coding` | `openai-completions` | `KIMI_API_KEY` or device OAuth | implemented; Chat Completions `/v1`, device flow and subscription headers | fixture; no Kimi credential |
 | 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
 | 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
 | 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | implemented; independent protocol, reasoning mode, raw stop and schema sanitization | fixture; no Mistral credential |
