@@ -583,11 +583,20 @@
        radius-token
        radius-gateway
        (refresh #'radius-share-refresh)
-       (http #'cadr-ai:request-json))
-  (let* ((token
-           (or radius-token
-               (and (not (and auth-path-p (null auth-path)))
-                    (radius-share-token auth-path :refresh refresh))))
+       (http #'cadr-ai:request-json)
+       (destination "auto"))
+  ;; pi@71023aec1 session-share.ts shareSession + sessionShareDestination
+  (let* ((destination
+           (if (member destination '("auto" "gist" "radius")
+                       :test #'string=)
+               destination
+               "auto"))
+         (token
+           (unless (string= destination "gist")
+             (or radius-token
+                 (and (not (and auth-path-p (null auth-path)))
+                      (radius-share-token
+                       auth-path :refresh refresh)))))
          (directory
            (merge-pathnames
             (format nil "cadr-share-~A/" (cadr-ai:uuid-v7))
@@ -607,20 +616,27 @@
                  (cadr-agent::merged-agent-tools agent)))
            (flet ((upload (abort-p)
                     (handler-case
-                        (if token
-                            (values
-                             (share-via-radius
-                              jsonl token
-                              (or radius-gateway
-                                  (default-radius-gateway))
-                              http
-                              :abort-p abort-p)
-                             nil)
-                            (share-session-as-gist
-                             session
-                             :runner runner
-                             :viewer-base-url viewer-base-url
-                             :abort-p abort-p))
+                        (cond
+                          (token
+                           (values
+                            (share-via-radius
+                             jsonl token
+                             (or radius-gateway
+                                 (default-radius-gateway))
+                             http
+                             :abort-p abort-p)
+                            nil))
+                          ((string= destination "radius")
+                           (error
+                            'cadr-ai:configuration-error
+                            :message
+                            "Radius authentication is not configured. Run '/login radius' first."))
+                          (t
+                           (share-session-as-gist
+                            session
+                            :runner runner
+                            :viewer-base-url viewer-base-url
+                            :abort-p abort-p)))
                       (cadr-ai:request-aborted ()
                         (values nil :cancelled)))))
              (if *call-with-share-loader*

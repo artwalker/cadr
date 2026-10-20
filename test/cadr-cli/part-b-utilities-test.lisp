@@ -378,6 +378,93 @@
                   :message "radius down"))))
       (is (null calls)))))
 
+(test session-share-destination-gist-skips-radius
+  ;; pi@71023aec1 session-share.test.ts #10870
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "force-gist" "SHARE-GIST"))
+          (http-calls 0)
+          (gist-creates 0))
+      (multiple-value-bind (viewer gist)
+          (cadr-cli::share-session
+           session
+           :destination "gist"
+           :radius-token "should-not-use"
+           :viewer-base-url
+           "https://viewer.invalid/session/"
+           :runner
+           (lambda (argv)
+             (cond
+               ((equal argv '("gh" "auth" "status"))
+                (values "" "" 0))
+               ((and
+                 (equal
+                  '("gh" "gist" "create" "--public=false")
+                  (butlast argv))
+                 (probe-file (car (last argv))))
+                (incf gist-creates)
+                (values
+                 "https://gist.github.com/me/forced"
+                 "" 0))
+               (t (values "" "unexpected argv" 1))))
+           :http
+           (lambda (request)
+             (declare (ignore request))
+             (incf http-calls)
+             (error "radius must not run")))
+        (is (= 0 http-calls))
+        (is (= 1 gist-creates))
+        (is (search "forced" viewer))
+        (is (string=
+             "https://gist.github.com/me/forced"
+             gist))))))
+
+(test session-share-destination-radius-requires-auth
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session
+             root "force-radius" "SHARE-RADIUS-REQ"))
+          (gist-calls 0))
+      (signals cadr-ai:configuration-error
+        (cadr-cli::share-session
+         session
+         :destination "radius"
+         :auth-path nil
+         :runner
+         (lambda (argv)
+           (declare (ignore argv))
+           (incf gist-calls)
+           (values "" "" 0))))
+      (is (= 0 gist-calls)))))
+
+(test settings-session-share-destination-defaults-to-auto
+  (with-test-directory (root)
+    (let ((manager
+            (cadr-cli::make-settings-manager
+             :global-path
+             (merge-pathnames "settings.json" root)
+             :project-path
+             (merge-pathnames
+              "project-settings.json" root))))
+      (is (string=
+           "auto"
+           (cadr-cli::settings-session-share-destination
+            manager)))
+      (cadr-cli::settings-set
+       manager "sessionShareDestination" "gist"
+       :scope :global)
+      (is (string=
+           "gist"
+           (cadr-cli::settings-session-share-destination
+            manager)))
+      (cadr-cli::settings-set
+       manager "sessionShareDestination" "bogus"
+       :scope :global)
+      (is (string=
+           "auto"
+           (cadr-cli::settings-session-share-destination
+            manager))))))
+
 (test share-loader-abort-skips-radius-and-gist
   (with-test-directory (root)
     (let ((session

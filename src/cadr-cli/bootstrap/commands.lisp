@@ -1462,6 +1462,9 @@
              :output frontend-output
              :status-function status-consumer
              :ansi-theme-p tui-p
+             :share-destination
+             (settings-session-share-destination
+              settings-manager)
              :cache-warming-mode
              (%read-cache-warming-mode settings-manager)
              :cache-warming-status
@@ -1950,6 +1953,9 @@
             :directory session-directory
             :cwd cwd
             :output frontend-output
+            :share-destination
+            (settings-session-share-destination
+             settings-manager)
             :cache-warming-mode
             (%read-cache-warming-mode settings-manager)
             :cache-warming-status

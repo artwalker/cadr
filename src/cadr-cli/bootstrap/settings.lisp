@@ -7,6 +7,7 @@
     ("output-padding" . "outputPad")
     ("autocomplete-max-visible" . "autocompleteMaxVisible")
     ("transport" . "transport")
+    ("session-share-destination" . "sessionShareDestination")
     ("http-idle-timeout" . "httpIdleTimeoutMs")
     ("hide-thinking" . "hideThinkingBlock")
     ("cache-miss-notices" . "showCacheMissNotices")
@@ -368,6 +369,12 @@
   ;; regular TUI mode.
   (settings-choice-value
    manager "fullscreenScrollbar" '("auto" "always" "hidden") "auto"))
+
+(defun settings-session-share-destination (manager)
+  ;; pi@71023aec1 settings-manager.ts getSessionShareDestination
+  (settings-choice-value
+   manager "sessionShareDestination"
+   '("auto" "gist" "radius") "auto"))
 
 (defun settings-fullscreen-exit-output (manager)
   ;; Baseline v1.3.0 settings-manager.ts getFullscreenExitOutput.
@@ -825,6 +832,15 @@
              :values
              '("sse" "websocket"
                "websocket-cached" "auto"))
+            (make-settings-option
+             :id "session-share-destination"
+             :label "Share destination"
+             :description
+             "Where /share uploads: auto (Radius when authenticated, else gist), gist, or radius"
+             :value
+             (settings-session-share-destination
+              settings-manager)
+             :values '("auto" "gist" "radius"))
             (make-settings-option
              :id "http-idle-timeout"
              :label "HTTP idle timeout"
