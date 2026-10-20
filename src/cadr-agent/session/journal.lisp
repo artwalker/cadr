@@ -400,7 +400,7 @@
     (session-failure
      (session-path session) nil
      "Compaction summary must be a string"))
-  ;; pi@16787ad5b session-manager.ts appendCompaction — a null keep
+  ;; pi@71023aec1 session-manager.ts appendCompaction — a null keep
   ;; boundary stores this compaction entry's own id.
   (let ((id (make-session-entry-id (session-by-id session))))
     (cond

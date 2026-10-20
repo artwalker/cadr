@@ -139,7 +139,7 @@
            (and version
                 (format
                  nil
-                 "cadr ~A · aligned with pi v0.87.0 (+0, 16787ad5b)"
+                 "cadr ~A · aligned with pi v1.3.0 (+0, 71023aec1)"
                  version))))
     (dolist (asd
               '("cadr-core.asd" "cadr-ai.asd" "cadr-agent.asd"

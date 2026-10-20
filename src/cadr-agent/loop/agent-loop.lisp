@@ -40,7 +40,7 @@
               (emit-agent-end agent)
               (return-from run-agent-loop
                 final-message))))
-        ;; pi@16787ad5b agent-loop.ts #8782: compact before the next
+        ;; pi@71023aec1 agent-loop.ts #8782: compact before the next
         ;; provider request once a turn has already completed, so
         ;; threshold compaction runs between tool rounds.
         (when (> turn 1)
@@ -96,7 +96,7 @@
                turn-hook-messages
                :message-id message-entry-id
                :result-ids tool-result-entry-ids)
-              ;; pi@16787ad5b agent-session.ts finishTurn wrapper:
+              ;; pi@71023aec1 agent-session.ts finishTurn wrapper:
               ;; turn_end entries commit first. :end still wins.
               ;; :continue or a valid boundary continue asks for one
               ;; more provider turn when tools and steering would not.

@@ -907,7 +907,7 @@
        1)))))
 
 (test gif-image-detection-requires-a-complete-signature
-  ;; pi@16787ad5b mime.ts — "GIF" alone is text, not an image (#9755).
+  ;; pi@71023aec1 mime.ts — "GIF" alone is text, not an image (#9755).
   (flet ((bytes (text)
            (map '(vector (unsigned-byte 8)) #'char-code text)))
     (is (string=

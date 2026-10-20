@@ -126,7 +126,7 @@
          (mapcar #'declared-tool-json tools))))))
 
 (defun projected-context-tokens (messages &optional declared)
-  ;; pi@16787ad5b compaction.ts estimateProjectedContextTokens.
+  ;; pi@71023aec1 compaction.ts estimateProjectedContextTokens.
   ;; Tool declarations count only after this turn has declared them.
   ;; Idle history has no declaration and stays on the message text.
   (context-estimated-tokens

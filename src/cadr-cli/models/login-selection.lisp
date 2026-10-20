@@ -1,7 +1,7 @@
 (in-package #:cadr-cli)
 
 ;;; Post-login model selection. Baseline interactive-mode.ts
-;;; completeProviderAuthentication (16787ad5b:5424-5445) has four
+;;; completeProviderAuthentication (71023aec1:5424-5445) has four
 ;;; failure branches plus success. Radius uses the first provider model
 ;;; when the configured default is absent. An empty or missing-default
 ;;; catalog defers once for an authenticated refresh before erroring.

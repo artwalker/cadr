@@ -108,7 +108,7 @@
      (values nil nil nil))))
 
 (defun image-input-resize-limits (model)
-  ;; pi@16787ad5b ModelImageResizeOptions. Absent fields keep the
+  ;; pi@71023aec1 ModelImageResizeOptions. Absent fields keep the
   ;; global 2000x2000 and 4.5MiB inline defaults.
   (let* ((limits (and model (cadr-ai:model-input-limits model)))
          (resize (getf (getf limits :images) :resize)))
@@ -237,7 +237,7 @@
 
 (defun normalize-tool-result-images
     (content &key (auto-resize-p t) model)
-  ;; pi@16787ad5b utils/tool-result-images.ts — normalize image blocks
+  ;; pi@71023aec1 utils/tool-result-images.ts — normalize image blocks
   ;; once as tool results enter history.  Processing failures keep the
   ;; original block (the tool produced it; a missing backend must not
   ;; delete tool output), and untouched images return the original

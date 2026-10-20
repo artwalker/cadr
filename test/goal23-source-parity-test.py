@@ -87,7 +87,7 @@ class Goal23SourceParityTest(unittest.TestCase):
     def test_source_ledger_matches_v0851_manifest(self) -> None:
         text = LEDGER.read_text(encoding="utf-8")
         self.assertIn(
-            "GOAL12_LEDGER baseline=16787ad5b2dc748047f314ca1bfe7708f30f54f3 "
+            "GOAL12_LEDGER baseline=71023aec1546d6d677a65669c5665c0927ce0dd0 "
             "source=686/514/169/3",
             text,
         )

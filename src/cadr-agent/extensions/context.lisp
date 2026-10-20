@@ -391,7 +391,7 @@
              (funcall function method arguments)))))
 
 (defun call-with-extension-ui-prompt (host kind title thunk)
-  ;; pi@16787ad5b extensions/runner.ts withUIPrompt: nest prompts, emit
+  ;; pi@71023aec1 extensions/runner.ts withUIPrompt: nest prompts, emit
   ;; ui_prompt_start/end only on the outermost wait.
   (let ((outer-p
           (zerop (extension-host-ui-prompt-depth host))))
