@@ -324,6 +324,16 @@
    #:terminal-color-scheme-change
    #:terminal-set-progress
    #:terminal-poll-progress
+   #:terminal-set-program-status
+   #:program-status
+   #:make-program-status
+   #:program-status-state
+   #:program-status-app
+   #:program-status-kind
+   #:program-status-message
+   #:format-program-status
+   #:program-status-reply-p
+   #:+program-status-query+
    #:terminal-renderer
    #:make-terminal-renderer
    #:terminal-renderer-copy-on-select-p

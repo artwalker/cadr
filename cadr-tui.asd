@@ -65,6 +65,7 @@
                                            (:file "settings-list")
                                            (:file "loaders")
                                            (:file "root")))
+                             (:file "program-status")
                              (:file "terminal"))))
   :in-order-to ((test-op (test-op "cadr-tui/tests"))))
 
@@ -109,6 +110,7 @@
                              (:file "lispification-i0-test")
                              (:file "terminal-test")
                              (:file "terminal-parity-test")
+                             (:file "program-status-test")
                              (:file "manual-acceptance-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))

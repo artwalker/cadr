@@ -155,6 +155,7 @@
                                            (:file "frame")
                                            (:file "autocomplete")
                                            (:file "themes")
+                                           (:file "program-status-reporter")
                                            (:file "controller")))
                              (:file "remote-repl")
                              (:module "bootstrap"
@@ -227,6 +228,7 @@
                              (:file "goal24-empty-footer-test")
                              (:file "goal28-registries-test")
                              (:file "goal28-events-providers-tools-test")
+                             (:file "goal26-program-status-reporter-test")
                              (:file "goal28-remaining-surfaces-test")
                              (:file "goal28-extension-bundle-fields-test")
                              (:file "goal28-public-api-exports-test")

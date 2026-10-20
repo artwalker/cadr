@@ -29,6 +29,7 @@
 (defgeneric terminal-color-scheme-change (terminal))
 (defgeneric terminal-set-progress (terminal active))
 (defgeneric terminal-poll-progress (terminal))
+(defgeneric terminal-set-program-status (terminal status))
 
 (defmethod terminal-start ((terminal terminal))
   (declare (ignore terminal))
@@ -75,4 +76,8 @@
 
 (defmethod terminal-poll-progress ((terminal terminal))
   (declare (ignore terminal))
+  nil)
+
+(defmethod terminal-set-program-status ((terminal terminal) status)
+  (declare (ignore terminal status))
   nil)

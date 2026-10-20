@@ -509,13 +509,22 @@ interactive-mode.ts:5956-5960).")
          (terminal-active-p nil)
          (last-terminal-title nil)
          (pending-work-render-p nil)
-         (list-mouse-origin nil))
+         (list-mouse-origin nil)
+         (program-status
+           (make-program-status-reporter
+            (lambda () terminal)
+            (lambda ()
+              (tui-state-session-name state)))))
     (declare (ignore active-theme))
     (dolist (text initial-statuses)
       (add-tui-status state text))
+    (program-status-reporter-report program-status)
     (labels
         ((current-editor ()
            (or custom-editor-component editor))
+         (set-program-status-blocked (source status)
+           (program-status-reporter-set-blocked
+            program-status source status))
          (extension-runtime ()
            (or extension-ui-root
                (setf
@@ -1501,6 +1510,8 @@ interactive-mode.ts:5956-5960).")
                   (set-terminal-progress-state t))
                  ((:agent-end :compaction-end)
                   (set-terminal-progress-state nil))))
+             (program-status-reporter-handle-event
+              program-status event)
              (sb-thread:with-mutex (lock)
                (if
                    (and
@@ -1636,7 +1647,9 @@ interactive-mode.ts:5956-5960).")
                          (stop-tui-user-bash-entry live-bash-entry))
                        (when (eq overlay-kind :login-dialog)
                          (setf overlay nil
-                               overlay-kind nil))
+                               overlay-kind nil)
+                         (set-program-status-blocked
+                          "login" nil))
                        (setf busy-p nil
                              abort-requested-p nil)
                        (when (typep (current-editor)
@@ -1801,6 +1814,14 @@ interactive-mode.ts:5956-5960).")
                     overlay
                     (make-login-dialog-state
                      (oauth-selector-option-name option)))
+              (set-program-status-blocked
+               "login"
+               (list
+                :kind :auth
+                :message
+                (format nil "Log in to ~A"
+                        (oauth-selector-option-name
+                         option))))
               (start-work
                (format nil "/login ~(~A~)"
                        (oauth-selector-option-id option))))
@@ -1812,6 +1833,14 @@ interactive-mode.ts:5956-5960).")
                     overlay
                     (make-login-dialog-state
                      (oauth-selector-option-name option)))
+              (set-program-status-blocked
+               "login"
+               (list
+                :kind :auth
+                :message
+                (format nil "Log in to ~A"
+                        (oauth-selector-option-name
+                         option))))
               (when (eq :amazon-bedrock
                         (oauth-selector-option-id option))
                 (login-dialog-show-details
@@ -1994,7 +2023,9 @@ interactive-mode.ts:5956-5960).")
               (and show-cache-miss-notices-function
                    (funcall
                     show-cache-miss-notices-function))))
-           (refresh-footer-state))
+           (refresh-footer-state)
+           (program-status-reporter-reset
+            program-status))
          (submit (line)
            (let ((trimmed
                    (string-trim
@@ -2632,6 +2663,8 @@ interactive-mode.ts:5956-5960).")
                   (finish-custom-ui nil))
                 (cond
                   ((eq cancelled-kind :login-dialog)
+                   (set-program-status-blocked
+                    "login" nil)
                    (unless abort-requested-p
                      (setf abort-requested-p t)
                      (when abort-function

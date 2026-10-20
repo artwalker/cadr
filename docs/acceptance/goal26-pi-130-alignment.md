@@ -81,7 +81,8 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Resume 保留会话激活工具；`--tools +/-` 叠加上去 | v1.3.0 | done：usesDefaultTools restore + modifiers；session toolsAdded persist/parse |
 | Kimi Coding → Chat Completions + `/v1` base URL | v1.3.0 | done：openai-completions + `/v1`；catalog mid-convo flags |
 | OpenAI GPT-6 中途改 thinking 保 cache | v1.3.0 | done：`configuration_update` + 固定 `reasoning.effort`；catalog `supportsMidConvoEffort` |
-| Cerebras bodyless 400/413 overflow | v1.3.0 overflow.ts | 已在 tip WIP |
+| Cerebras bodyless 400/413 overflow | v1.3.0 overflow.ts | done on tip：`290327a77` bodyless 400/413 仅 Cerebras |
+| `PI_PROGRAM_STATUS` / OSC 7501 program status | 枚举 | done：`format-program-status` + terminal 探测/`PI_PROGRAM_STATUS=1\|0`；interactive reporter |
 | settings / theme schema 变形 | 枚举假阳性 | 重解析后再列缺口 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；

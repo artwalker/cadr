@@ -189,7 +189,10 @@
             (close-session-journal-stream session)))
         (flush-agent-pending-custom-messages agent)
         (run-agent-lifecycle agent :agent-settled)
-        (emit-agent-event agent :agent-settled)
+        (emit-agent-event
+         agent :agent-settled
+         :aborted
+         (not (null (agent-abort-requested-p agent))))
         (sb-thread:with-mutex
             ((agent-state-lock agent))
           (setf
