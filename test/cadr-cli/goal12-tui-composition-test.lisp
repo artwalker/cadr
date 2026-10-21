@@ -371,3 +371,52 @@
         (is (find "Indexing" plain :test #'search))
         (is (find "Reasoning hidden" plain :test #'search))
         (is (not (find "private chain" plain :test #'search)))))))
+
+(test closing-a-lower-custom-overlay-keeps-the-upper-one
+  ;; pi #10648: done() on a lower overlay must hide that overlay, not the
+  ;; topmost one opened later.
+  (dolist (non-capturing-p '(nil t))
+    (let* ((editor (cadr-tui:make-multiline-editor))
+           (stack
+             (cadr-tui:make-overlay-stack
+              :focused-component editor))
+           (lower (cadr-tui:make-text-component "LOWER"))
+           (upper (cadr-tui:make-text-component "UPPER"))
+           (lower-handle
+             (cadr-tui:overlay-stack-show
+              stack lower nil :non-capturing-p non-capturing-p))
+           (upper-handle
+             (cadr-tui:overlay-stack-show stack upper nil))
+           (lower-state
+             (cadr-cli::make-extension-custom-ui-state
+              :component lower
+              :overlay-p t
+              :handle lower-handle))
+           (upper-state
+             (cadr-cli::make-extension-custom-ui-state
+              :component upper
+              :overlay-p t
+              :handle upper-handle)))
+      (is (eq upper
+              (cadr-tui::overlay-stack-focused-component stack)))
+      (is (eq upper-state
+              (cadr-cli::complete-extension-custom-ui
+               lower-state "lower closed" upper-state)))
+      (is (cadr-cli::extension-custom-ui-state-done-p lower-state))
+      (is (string=
+           "lower closed"
+           (cadr-cli::extension-custom-ui-state-result lower-state)))
+      (is (not (cadr-cli::extension-custom-ui-state-done-p upper-state)))
+      (is (equal
+           (list upper)
+           (mapcar
+            #'cadr-tui::overlay-stack-entry-component
+            (cadr-tui::overlay-stack-entries stack))))
+      (is (eq upper
+              (cadr-tui::overlay-stack-focused-component stack)))
+      (is (null
+           (cadr-cli::complete-extension-custom-ui
+            upper-state "upper closed" upper-state)))
+      (is (null (cadr-tui::overlay-stack-entries stack)))
+      (is (eq editor
+              (cadr-tui::overlay-stack-focused-component stack))))))

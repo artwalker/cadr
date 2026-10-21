@@ -959,38 +959,47 @@ interactive-mode.ts:5956-5960).")
                        :not-subscription)))))
              (request-render))
            (tui-state-model state))
-         (finish-custom-ui (result)
+         (finish-custom-ui-state (state result)
            (sb-thread:with-mutex (custom-ui-lock)
-             (unless custom-ui-done-p
-               (when active-custom-ui-state
-                 (let ((handle
-                         (extension-custom-ui-state-handle
-                          active-custom-ui-state)))
-                   (when handle
-                     (cadr-tui:overlay-handle-hide handle)))
-                 (unless
-                     (extension-custom-ui-state-disposed-p
-                      active-custom-ui-state)
-                   (dispose-component
-                    (extension-custom-ui-state-component
-                     active-custom-ui-state))
-                   (setf
-                    (extension-custom-ui-state-disposed-p
-                     active-custom-ui-state)
-                    t))
-                 (setf active-custom-ui-state nil))
-               (setf
-                custom-ui-result result
-                custom-ui-done-p t)
-               (sb-thread:condition-broadcast
-                custom-ui-condition))))
+             (unless (extension-custom-ui-state-done-p state)
+               (unless
+                   (extension-custom-ui-state-disposed-p state)
+                 (dispose-component
+                  (extension-custom-ui-state-component state))
+                 (setf
+                  (extension-custom-ui-state-disposed-p state)
+                  t))
+               (setf active-custom-ui-state
+                     (complete-extension-custom-ui
+                      state result active-custom-ui-state)))
+             (sb-thread:condition-broadcast custom-ui-condition)))
+         (finish-custom-ui (result)
+           (let ((state
+                   (sb-thread:with-mutex (custom-ui-lock)
+                     active-custom-ui-state)))
+             (when state
+               (finish-custom-ui-state state result))
+             (sb-thread:with-mutex (custom-ui-lock)
+               (unless custom-ui-done-p
+                 (setf
+                  custom-ui-result result
+                  custom-ui-done-p t)
+                 (sb-thread:condition-broadcast
+                  custom-ui-condition)))))
          (show-extension-overlay
              (component &key signal timeout-ms)
-           (sb-thread:with-mutex (custom-ui-lock)
-             (setf
-              custom-ui-done-p nil
-              custom-ui-result nil))
-           (unless custom-ui-done-p
+           (let ((tracked-state
+                   (and (extension-custom-ui-state-p component)
+                        component)))
+             (unless tracked-state
+               (sb-thread:with-mutex (custom-ui-lock)
+                 (setf
+                  custom-ui-done-p nil
+                  custom-ui-result nil)))
+             (unless
+                 (if tracked-state
+                     (extension-custom-ui-state-done-p tracked-state)
+                     custom-ui-done-p)
              (sb-thread:with-mutex (lock)
                (setf overlay-kind :extension-custom
                      overlay component))
@@ -1026,7 +1035,10 @@ interactive-mode.ts:5956-5960).")
                                 (request-render)))
                           (when
                               (sb-thread:with-mutex (custom-ui-lock)
-                                custom-ui-done-p)
+                                (if tracked-state
+                                    (extension-custom-ui-state-done-p
+                                     tracked-state)
+                                    custom-ui-done-p))
                             (return))
                           (when
                               (or
@@ -1036,18 +1048,28 @@ interactive-mode.ts:5956-5960).")
                                (and deadline
                                     (>= (get-internal-real-time)
                                         deadline)))
-                            (finish-custom-ui nil)
+                            (if tracked-state
+                                (finish-custom-ui-state
+                                 tracked-state nil)
+                                (finish-custom-ui nil))
                             (return))
                           (sleep 0.01)))
                       :name "cadr-extension-ui-timeout")))
                   (result
                     (sb-thread:with-mutex (custom-ui-lock)
-                      (loop until custom-ui-done-p
+                      (loop until
+                            (if tracked-state
+                                (extension-custom-ui-state-done-p
+                                 tracked-state)
+                                custom-ui-done-p)
                             do
                             (sb-thread:condition-wait
                              custom-ui-condition
                              custom-ui-lock))
-                      custom-ui-result)))
+                      (if tracked-state
+                          (extension-custom-ui-state-result
+                           tracked-state)
+                          custom-ui-result))))
              (when monitor
                (stop-thread-for-cleanup monitor))
              (sb-thread:with-mutex (lock)
@@ -1055,83 +1077,99 @@ interactive-mode.ts:5956-5960).")
                  (setf overlay nil
                        overlay-kind nil)))
              (request-render)
-             result))
+             result)))
          (show-custom-ui
              (factory overlay-p overlay-options)
-           (sb-thread:with-mutex (custom-ui-lock)
-             (setf custom-ui-done-p nil
-                   custom-ui-result nil))
-           (let ((component
-                   (funcall factory
-                            #'finish-custom-ui)))
-             (note-component-render-channel
-              component #'request-render)
-             (if custom-ui-done-p
-                 custom-ui-result
-                 (let ((state
-                         (make-extension-custom-ui-state
-                          :component component
-                          :done-function #'finish-custom-ui
-                          :overlay-p (not (null overlay-p))
-                          :overlay-options overlay-options
-                          :legacy-p t)))
-                   (when overlay-p
-                     (setf
-                      (extension-custom-ui-state-handle state)
-                      (cadr-tui:overlay-stack-show
-                       (cadr-tui:make-overlay-stack
-                        :focused-component (current-editor))
-                       component nil)))
-                   (setf active-custom-ui-state state)
-                   (show-extension-overlay state)))))
+           (let ((own-state nil)
+                 (early-done-p nil)
+                 (early-result nil))
+             (labels ((finish-own (result)
+                        (if own-state
+                            (finish-custom-ui-state own-state result)
+                            (setf early-done-p t
+                                  early-result result))))
+               (let ((component (funcall factory #'finish-own)))
+                 (note-component-render-channel
+                  component #'request-render)
+                 (if early-done-p
+                     early-result
+                     (let ((state
+                             (make-extension-custom-ui-state
+                              :component component
+                              :done-function #'finish-own
+                              :overlay-p (not (null overlay-p))
+                              :overlay-options overlay-options
+                              :legacy-p t)))
+                       (setf own-state state)
+                       (when overlay-p
+                         (setf
+                          (extension-custom-ui-state-handle state)
+                          (cadr-tui:overlay-stack-show
+                           (cadr-tui:make-overlay-stack
+                            :focused-component (current-editor))
+                           component nil)))
+                       (if (extension-custom-ui-state-done-p state)
+                           (extension-custom-ui-state-result state)
+                           (progn
+                             (setf active-custom-ui-state state)
+                             (show-extension-overlay state)))))))))
          (show-custom-component-ui
              (factory overlay-p overlay-options on-handle)
-           (sb-thread:with-mutex (custom-ui-lock)
-             (setf custom-ui-done-p nil
-                   custom-ui-result nil))
-           (let ((component
-                   (funcall
-                    factory
-                    (extension-runtime)
-                    (extension-theme-runtime)
-                    (cadr-tui:get-keybindings)
-                    #'finish-custom-ui)))
-             (note-component-render-channel
-              component #'request-render)
-             (unless (tui-component-protocol-p component)
-               (error
-                'cadr-agent:extension-execution-error
-                :message
-                "Custom component factory must return a CADR-TUI:COMPONENT"))
-             (if custom-ui-done-p
-                 custom-ui-result
-                 (let ((state
-                         (make-extension-custom-ui-state
-                          :component component
-                          :done-function #'finish-custom-ui
-                          :overlay-p (not (null overlay-p))
-                          :overlay-options overlay-options)))
-                   (when overlay-p
-                     (let* ((options
-                              (if (functionp overlay-options)
-                                  (funcall overlay-options)
-                                  overlay-options))
-                            (non-capturing-p
-                              (or (getf options :non-capturing)
-                                  (getf options :non-capturing-p)))
-                            (handle
-                              (cadr-tui:overlay-stack-show
-                               (cadr-tui:make-overlay-stack
-                                :focused-component (current-editor))
-                               component nil
-                               :non-capturing-p non-capturing-p)))
-                       (setf
-                        (extension-custom-ui-state-handle state)
-                        handle)
-                       (when on-handle
-                         (funcall on-handle handle))))
-                   (setf active-custom-ui-state state)
-                   (show-extension-overlay state)))))
+           (let ((own-state nil)
+                 (early-done-p nil)
+                 (early-result nil))
+             (labels ((finish-own (result)
+                        (if own-state
+                            (finish-custom-ui-state own-state result)
+                            (setf early-done-p t
+                                  early-result result))))
+               (let ((component
+                       (funcall
+                        factory
+                        (extension-runtime)
+                        (extension-theme-runtime)
+                        (cadr-tui:get-keybindings)
+                        #'finish-own)))
+                 (note-component-render-channel
+                  component #'request-render)
+                 (unless (tui-component-protocol-p component)
+                   (error
+                    'cadr-agent:extension-execution-error
+                    :message
+                    "Custom component factory must return a CADR-TUI:COMPONENT"))
+                 (if early-done-p
+                     early-result
+                     (let ((state
+                             (make-extension-custom-ui-state
+                              :component component
+                              :done-function #'finish-own
+                              :overlay-p (not (null overlay-p))
+                              :overlay-options overlay-options)))
+                       (setf own-state state)
+                       (when overlay-p
+                         (let* ((options
+                                  (if (functionp overlay-options)
+                                      (funcall overlay-options)
+                                      overlay-options))
+                                (non-capturing-p
+                                  (or (getf options :non-capturing)
+                                      (getf options :non-capturing-p)))
+                                (handle
+                                  (cadr-tui:overlay-stack-show
+                                   (cadr-tui:make-overlay-stack
+                                    :focused-component (current-editor))
+                                   component nil
+                                   :non-capturing-p non-capturing-p)))
+                           (setf
+                            (extension-custom-ui-state-handle state)
+                            handle)
+                           (when on-handle
+                             (funcall on-handle handle))))
+                       (if (extension-custom-ui-state-done-p state)
+                           (extension-custom-ui-state-result state)
+                           (progn
+                             (setf active-custom-ui-state state)
+                             (show-extension-overlay state)))))))))
          (set-extension-header (factory)
            (let ((previous (tui-state-header-component state))
                  (replacement

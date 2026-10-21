@@ -7,7 +7,23 @@
   overlay-options
   handle
   (legacy-p nil :type boolean)
-  (disposed-p nil :type boolean))
+  (disposed-p nil :type boolean)
+  (done-p nil :type boolean)
+  result)
+
+(defun complete-extension-custom-ui (state result active-state)
+  ;; pi@71023aec1 interactive-mode.ts showExtensionCustom: done() hides
+  ;; this overlay's handle. A newer overlay above it stays up, and its
+  ;; promise keeps waiting.
+  (unless (extension-custom-ui-state-done-p state)
+    (let ((handle (extension-custom-ui-state-handle state)))
+      (when handle
+        (cadr-tui:overlay-handle-hide handle)))
+    (setf (extension-custom-ui-state-result state) result
+          (extension-custom-ui-state-done-p state) t))
+  (if (eq active-state state)
+      nil
+      active-state))
 
 (defclass extension-input-dialog (cadr-tui:component)
   ((title

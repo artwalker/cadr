@@ -6000,3 +6000,105 @@
         (is (not (cadr-cli::tui-entry-expanded-p entry)))))
     (is (null
          (cadr-cli::transcript-summary-click state click -1)))))
+
+(defun stacked-overlay-screen (terminal)
+  (format nil "~{~A~^~%~}"
+          (mapcar #'cadr-tui:strip-terminal-sequences
+                  (cadr-tui:virtual-terminal-snapshot terminal))))
+
+(test closing-a-lower-overlay-custom-ui-leaves-the-upper-one-open
+  ;; pi #10648: done() on a lower custom overlay must resolve only that
+  ;; overlay. The overlay opened later stays on screen.
+  (dolist (non-capturing-p '(nil t))
+    (let ((extension-ui nil)
+          (close-lower nil)
+          (close-upper nil)
+          (lower-result :pending)
+          (upper-result :pending)
+          (lower-worker nil)
+          (upper-worker nil)
+          (lower-options
+            (and non-capturing-p '(:non-capturing-p t))))
+      (cadr-cli::run-tui
+       (constantly nil)
+       :model "mock"
+       :terminal
+       (make-instance
+        'footer-sync-test-terminal
+        :columns 80 :rows 16
+        :inputs
+        (list
+         (footer-sync-submit-input "/stacked-overlay")
+         (footer-sync-wait-for-screen-text "LOWER")
+         (lambda (terminal)
+           (declare (ignore terminal))
+           (setf upper-worker
+                 (sb-thread:make-thread
+                  (lambda ()
+                    (setf upper-result
+                          (funcall
+                           extension-ui :custom-component
+                           (list
+                            :factory
+                            (lambda (tui theme keybindings done)
+                              (declare (ignore tui theme keybindings))
+                              (setf close-upper done)
+                              (cadr-tui:make-text-component
+                               "UPPER" :padding-x 0 :padding-y 0))
+                            :overlay-p t
+                            :overlay-options nil))))))
+           t)
+         (footer-sync-wait-for-screen-text "UPPER")
+         (let ((closed-p nil))
+           (lambda (terminal)
+             (cond
+               ((not closed-p)
+                (funcall close-lower "lower closed")
+                (setf closed-p t)
+                nil)
+               (t
+                (and (equal lower-result "lower closed")
+                     (sb-thread:thread-alive-p upper-worker)
+                     (search "UPPER"
+                             (stacked-overlay-screen terminal))
+                     (not (search "LOWER"
+                                  (stacked-overlay-screen terminal))))))))
+         (let ((closed-p nil))
+           (lambda (terminal)
+             (cond
+               ((not closed-p)
+                (funcall close-upper "upper closed")
+                (setf closed-p t)
+                nil)
+               (t
+                (and (equal upper-result "upper closed")
+                     (not (search "UPPER"
+                                  (stacked-overlay-screen terminal))))))))
+         (footer-sync-submit-input "/quit")))
+       :set-extension-ui-function
+       (lambda (function)
+         (setf extension-ui function))
+       :command-function
+       (lambda (line)
+         (when (string= line "/stacked-overlay")
+           (setf lower-worker
+                 (sb-thread:make-thread
+                  (lambda ()
+                    (setf lower-result
+                          (funcall
+                           extension-ui :custom-component
+                           (list
+                            :factory
+                            (lambda (tui theme keybindings done)
+                              (declare (ignore tui theme keybindings))
+                              (setf close-lower done)
+                              (cadr-tui:make-text-component
+                               "LOWER" :padding-x 0 :padding-y 0))
+                            :overlay-p t
+                            :overlay-options lower-options)))))))))
+      (when lower-worker
+        (sb-thread:join-thread lower-worker :timeout 2))
+      (when upper-worker
+        (sb-thread:join-thread upper-worker :timeout 2))
+      (is (equal "lower closed" lower-result))
+      (is (equal "upper closed" upper-result)))))

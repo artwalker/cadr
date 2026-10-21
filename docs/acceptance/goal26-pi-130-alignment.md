@@ -117,6 +117,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | OpenCode inference 端点 | v1.3.0 `generate-models.ts` `195120a91` | done：Zen 和 Go 的目录地址从 `opencode.ai/zen` 改到 `opencode.ai/inference`。先替换 `/zen/go`，再替换 `/zen`。`minimax-m2.7` 改走 Anthropic Messages，base 不带 `/v1`，请求打到 `.../inference/go/v1/messages`。Go 上的 `qwen3.6-plus` 仍是 openai-completions，地址 `.../inference/go/v1`。Zen 的 Gemini 仍是 google-generative-ai，地址 `.../inference/v1`。OpenCode Go 的协议补上 `google-generative-ai` |
 | Claude off 思考 | v1.3.0 #10753 | done：`claude-opus-5`、`claude-haiku-5-5`、`claude-haiku-5.5`（含 `anthropic/` 前缀和日期快照）不再把 `off: null` 留在 thinking map 里。思考关掉时请求是 `thinking: {type: "disabled"}`，不带 effort 标记，也不带 `block_binding`。`off` 仍是 null 的模型（如 Fable 5.1）继续走 adaptive thinking 和 effort |
 | Xiaomi MiMo 思考档 | v1.3.0 #10818 | done：`xiaomi` 和三个 token-plan 上会思考的模型只暴露 `off` 和 `high`。`minimal` 钳到 `high`。请求只发 `thinking.type` enabled/disabled，不发 `reasoning_effort` |
+| 下层 custom overlay 的 done | v1.3.0 #10648 | done：每个 custom overlay 自己的 `done` 只隐藏自己的 handle，并只唤醒自己的等待。上面后开的 overlay 留在屏幕上，输入仍给它；关掉上层后焦点回到编辑器。framed select 和登录提示仍走原来的全局完成标志 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
