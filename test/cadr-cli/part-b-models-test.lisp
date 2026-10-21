@@ -1016,3 +1016,55 @@
         (is (= 0
                (cadr-ai::model-compat-value
                 model :vllm-priority nil)))))))
+
+(defun sampling-json-close-p (expected actual)
+  (and (numberp actual)
+       (< (abs (- (coerce expected 'double-float)
+                  (coerce actual 'double-float)))
+          1d-9)
+       t))
+
+(test custom-model-reads-sampling-params-by-thinking-level
+  (let ((model
+          (cadr-cli::json-model
+           :faux
+           (cadr-ai::parse-json
+            "{\"id\":\"m\",\"samplingParams\":{\"temperature\":1,\"top_p\":0.95},\"samplingParamsByThinkingLevel\":{\"high\":{\"temperature\":0.8,\"top_k\":64},\"low\":null}}")
+           "https://example.invalid/v1"
+           "openai-completions"
+           nil)))
+    (is (eq t
+            (sampling-json-close-p
+             1
+             (cadr-ai::json-get
+              (cadr-ai::model-sampling-params model)
+              "temperature"))))
+    (is (eq t
+            (sampling-json-close-p
+             0.95d0
+             (cadr-ai::json-get
+              (cadr-ai::model-sampling-params model)
+              "top_p"))))
+    (is (eq t
+            (sampling-json-close-p
+             0.8d0
+             (cadr-ai::json-get
+              (cdr
+               (assoc
+                :high
+                (cadr-ai::model-sampling-params-by-thinking-level
+                 model)))
+              "temperature"))))
+    (is (= 64
+           (cadr-ai::json-get
+            (cdr
+             (assoc
+              :high
+              (cadr-ai::model-sampling-params-by-thinking-level
+               model)))
+            "top_k")))
+    (is (null
+         (assoc
+          :low
+          (cadr-ai::model-sampling-params-by-thinking-level
+           model))))))

@@ -120,7 +120,9 @@
 (defgeneric build-request
     (provider model context
      &key stream-p max-tokens temperature reasoning cache-retention
-       session-id tool-choice metadata thinking-budgets headers))
+       session-id tool-choice metadata thinking-budgets headers
+       sampling-params
+     &allow-other-keys))
 
 (defgeneric parse-complete-response (provider model response))
 
@@ -697,11 +699,46 @@ string. Returns the buffer to store back. Per-delta
       :headers headers)
      model)))
 
+(defun merge-sampling-params (objects)
+  (let ((merged nil))
+    (dolist (object objects)
+      (when (hash-table-p object)
+        (unless merged
+          (setf merged (json-object)))
+        (maphash
+         (lambda (key value)
+           (json-put merged key (copy-json-value value)))
+         object)))
+    merged))
+
+(defun resolve-sampling-params (model level request-params)
+  (let ((effective
+          (clamp-thinking-level model (or level :off))))
+    (merge-sampling-params
+     (list
+      (model-sampling-params model)
+      (cdr
+       (assoc
+        effective
+        (model-sampling-params-by-thinking-level model)))
+      request-params))))
+
+(defun apply-sampling-params (payload model level request-params)
+  (let ((params
+          (resolve-sampling-params
+           model level request-params)))
+    (when params
+      (maphash
+       (lambda (key value)
+         (json-put payload key value))
+       params)))
+  payload)
+
 (defun complete-chat (provider model context
                       &key max-tokens temperature reasoning cache-retention
                         session-id tool-choice metadata abort-p
                         on-payload transform-headers on-response
-                        thinking-budgets headers
+                        thinking-budgets headers sampling-params
                         max-retries max-retry-delay-ms timeout-ms
                         (read-timeout nil read-timeout-supplied-p)
                       &allow-other-keys)
@@ -723,7 +760,8 @@ string. Returns the buffer to store back. Per-delta
                                        :tool-choice tool-choice
                                        :metadata metadata
                                        :thinking-budgets thinking-budgets
-                                       :headers headers))
+                                       :headers headers
+                                       :sampling-params sampling-params))
                (_prepared
                  (apply-provider-request-callbacks
                   request model
@@ -823,7 +861,7 @@ string. Returns the buffer to store back. Per-delta
                       on-provider-stream-event
                       transport
                       websocket-connect-timeout-ms http-proxy
-                      thinking-budgets headers
+                      thinking-budgets headers sampling-params
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
@@ -867,6 +905,7 @@ string. Returns the buffer to store back. Per-delta
                                       :metadata metadata
                                       :thinking-budgets thinking-budgets
                                       :headers headers
+                                      :sampling-params sampling-params
                                       :disable-preferred-strict-tools
                                       disable-preferred-strict-p))
                      (preferred-strict-p

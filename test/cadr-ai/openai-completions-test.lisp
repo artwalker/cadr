@@ -830,3 +830,144 @@
           (is (not
                (cadr-ai::json-present-p
                 disabled "reasoning_effort"))))))))
+
+(defun sampling-close-p (expected actual)
+  (and (numberp actual)
+       (< (abs (- (coerce expected 'double-float)
+                  (coerce actual 'double-float)))
+          1d-9)
+       t))
+
+(defun sampling-request-payload
+    (provider model &key reasoning sampling-params temperature)
+  (request-spec-payload
+   (build-request
+    provider
+    model
+    (make-context
+     :messages
+     (list (make-user-message :content "hi" :timestamp 0)))
+    :stream-p nil
+    :temperature temperature
+    :reasoning reasoning
+    :sampling-params sampling-params)))
+
+(test sampling-params-follow-the-effective-thinking-level
+  ;; pi@71023aec1 simple-options.ts resolveSamplingParams (#9776).
+  ;; low is present with a null map value, so the request clamps to
+  ;; high. Level params override the model defaults, and request
+  ;; params override the level. Named temperature is written first,
+  ;; so the merged table replaces it.
+  (let* ((clamped
+           (make-model
+            :id "sample-model"
+            :provider :openai
+            :api :openai-completions
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 128
+            :reasoning-p t
+            :thinking-level-map '((:low) (:medium))
+            :sampling-params
+            (cadr-ai::json-object
+             "temperature" 1
+             "top_p" 0.95d0)
+            :sampling-params-by-thinking-level
+            (list
+             (cons :high
+                   (cadr-ai::json-object
+                    "temperature" 0.8d0
+                    "top_k" 64)))))
+         (off-model
+           (make-model
+            :id "off-model"
+            :provider :openai
+            :api :openai-completions
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 128
+            :reasoning-p nil
+            :sampling-params-by-thinking-level
+            (list
+             (cons :off
+                   (cadr-ai::json-object
+                    "temperature" 0.7d0)))))
+         (override
+           (make-model
+            :id "override-model"
+            :provider :openai
+            :api :openai-responses
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 128
+            :reasoning-p t
+            :thinking-level-map '((:low . "low"))
+            :sampling-params-by-thinking-level
+            (list
+             (cons :low
+                   (cadr-ai::json-object
+                    "temperature" 0.6d0
+                    "top_p" 0.95d0)))))
+         (completions
+           (cadr-ai:make-openai-completions-provider
+            :api-key "sampling-test"))
+         (responses
+           (cadr-ai:make-openai-provider
+            :api-key "sampling-test"))
+         (azure
+           (cadr-ai:make-azure-openai-provider
+            :api-key "sampling-test"
+            :options
+            '(:azure-base-url
+              "https://example.openai.azure.com/openai/v1")))
+         (clamped-payload
+           (sampling-request-payload
+            completions clamped
+            :reasoning :low
+            :temperature 0.1d0))
+         (off-payload
+           (sampling-request-payload completions off-model))
+         (responses-payload
+           (sampling-request-payload
+            responses override
+            :reasoning :low
+            :sampling-params
+            (cadr-ai::json-object "top_p" 0.5d0)))
+         (azure-payload
+           (sampling-request-payload
+            azure
+            (cadr-ai::copy-model-with
+             override
+             :api :openai-responses)
+            :reasoning :low
+            :sampling-params
+            (cadr-ai::json-object "top_p" 0.5d0))))
+    (is (eq t
+            (sampling-close-p
+             0.8d0
+             (cadr-ai::json-get clamped-payload "temperature"))))
+    (is (eq t
+            (sampling-close-p
+             0.95d0
+             (cadr-ai::json-get clamped-payload "top_p"))))
+    (is (= 64
+           (cadr-ai::json-get clamped-payload "top_k")))
+    (is (eq t
+            (sampling-close-p
+             0.7d0
+             (cadr-ai::json-get off-payload "temperature"))))
+    (is (not
+         (cadr-ai::json-present-p off-payload "top_p")))
+    (is (eq t
+            (sampling-close-p
+             0.6d0
+             (cadr-ai::json-get responses-payload "temperature"))))
+    (is (eq t
+            (sampling-close-p
+             0.5d0
+             (cadr-ai::json-get responses-payload "top_p"))))
+    (is (eq t
+            (sampling-close-p
+             0.6d0
+             (cadr-ai::json-get azure-payload "temperature"))))
+    (is (eq t
+            (sampling-close-p
+             0.5d0
+             (cadr-ai::json-get azure-payload "top_p"))))))

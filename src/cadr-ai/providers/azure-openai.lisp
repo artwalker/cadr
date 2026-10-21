@@ -17,7 +17,10 @@
    :reasoning-p (model-reasoning-p model)
    :thinking-level-map (model-thinking-level-map model)
    :headers (model-headers model)
-   :compat (model-compat model)))
+   :compat (model-compat model)
+   :sampling-params (model-sampling-params model)
+   :sampling-params-by-thinking-level
+   (model-sampling-params-by-thinking-level model)))
 
 (defun option-value (provider key &optional default)
   (getf (provider-options provider) key default))

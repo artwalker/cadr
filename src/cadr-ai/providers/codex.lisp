@@ -57,7 +57,8 @@
     ((provider openai-codex-provider) model context
      &key stream-p max-tokens temperature reasoning
        cache-retention session-id tool-choice metadata
-       thinking-budgets headers)
+       thinking-budgets headers
+       &allow-other-keys)
   (let ((token (provider-oauth-access-token provider)))
     (unless (non-empty-string-p token)
       (error 'authentication-error

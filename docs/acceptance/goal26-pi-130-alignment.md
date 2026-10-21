@@ -148,6 +148,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 多行语法颜色 | v1.3.0 `syntax-highlight.ts` #10356 | done：Python 三引号文档字符串每一行单独上色，空行保持空行。`"""`、`line one`、`line two` 各自有颜色，`after` 没有。JavaScript 模板里的 `${name}` 用正文色，不再跟着字符串色。HTML 高亮片段里的换行也按行上色 |
 | 用户消息只保留一份 | v1.3.0 `user-message.ts` | done：背景直接加在 markdown 的每一行上，没有外层盒子再存一份整行。`alpha` 和 `beta` 各出现一次 |
 | 终端消失不是崩溃 | v1.3.0 `interactive-mode.ts` #5080 | done：stdin 读到 EIO、ENOTTY、EPIPE、ENOTCONN 时退出码是 129。不写 crash log，stderr 没有 “exiting due to uncaught”。普通错误仍然记崩溃并退出 1 |
+| 按思考等级覆盖采样参数 | v1.3.0 `simple-options.ts` #9776 | done：有效等级先夹到模型支持的等级。请求体先放模型的 `samplingParams`，再放该等级的表，最后放这次请求自己的表。`low` 映射为空时夹到 `high`，`temperature` 变成 0.8，`top_p` 仍是 0.95，并带上 `top_k` 64，盖过单独传入的 temperature。没有 reasoning 时用 `off` 的 0.7。请求里的 `top_p` 0.5 盖过等级表里的 0.95。completions、responses，以及 Azure 转过去的 responses 请求都这样叠。自定义模型从 `samplingParams` 和 `samplingParamsByThinkingLevel` 读这两张表。这棵树没有 reasoning summary 参数，所以不会因为只写 summary 而改用 medium |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

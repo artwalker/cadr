@@ -593,7 +593,7 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
-                            thinking-budgets
+                            thinking-budgets sampling-params
                             &allow-other-keys)
   (declare (ignore metadata))
   (ensure-supported-content model context)
@@ -687,6 +687,7 @@
             (json-put payload "prompt_cache_key" cache-key))))
       (when (and (eq retention :long) supports-long)
         (json-put payload "prompt_cache_retention" "24h")))
+    (apply-sampling-params payload model reasoning sampling-params)
     (multiple-value-bind (priority present-p)
         (plist-entry (model-compat model) :vllm-priority)
       (when present-p

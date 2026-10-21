@@ -451,6 +451,7 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
+                            sampling-params
                             &allow-other-keys)
   (declare (ignore metadata))
   (ensure-supported-content model context)
@@ -542,6 +543,7 @@
            payload "include"
            (json-array "reasoning.encrypted_content")))
         (add-responses-reasoning payload model reasoning))
+    (apply-sampling-params payload model reasoning sampling-params)
     (make-request-spec
      :url
      (let ((base (strip-trailing-slash (model-base-url model))))
