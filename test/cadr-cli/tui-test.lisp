@@ -4266,7 +4266,9 @@
                 lines))))
       (let* ((compact (plain-render))
              (logo (position-if
-                    (lambda (line) (search version-line line))
+                    (lambda (line)
+                      (search (subseq version-line (length "cadr "))
+                              line))
                     compact))
              (chat
                (position-if

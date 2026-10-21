@@ -150,8 +150,14 @@
             plain)))))))
 
 (test goal9-b3-cold-startup-content-is-top-aligned
-  (let* ((version-line
+  (let* (         (version-line
            (format nil "cadr v~A" (cadr-ai::cadr-version)))
+         (logo-line
+           (concatenate 'string "▀▀█  "
+                        (subseq version-line (length "cadr "))))
+         (hint-line
+           (concatenate 'string "█▀ █ "
+                        "escape interrupt · ctrl+c/ctrl+d clear/exit"))
          (width 60)
          (rows 16)
          (blank-row
@@ -175,13 +181,12 @@
        (equal
         (list
          ""
-         (format nil " ~A~A" version-line
-                 (make-string (- width 1 (length version-line))
+         (format nil " ~A~A" logo-line
+                 (make-string (- width 1 (length logo-line))
                               :initial-element #\Space))
-         (format nil " escape interrupt · ctrl+c/ctrl+d clear/exit~A"
+         (format nil " ~A~A" hint-line
                  (make-string
-                  (- width
-                     (length " escape interrupt · ctrl+c/ctrl+d clear/exit"))
+                  (- width 1 (length hint-line))
                   :initial-element #\Space))
          ""
          ""

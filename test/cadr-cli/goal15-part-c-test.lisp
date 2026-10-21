@@ -117,9 +117,8 @@
        (merge-pathnames "notes/generated/result.txt" directory))))))
 
 (test goal15-startup-chrome-matches-fixed-baseline-padding-and-styles
-  ;; pi@71023aec1 interactive-mode.ts:754-812 constructs an ExpandableText
-  ;; with one horizontal cell of padding, styles the product and version
-  ;; separately, and styles key tokens independently from descriptions.
+  ;; pi@71023aec1 pi-logo.ts: the header is the half-block mark plus a dim
+  ;; version, and the first hint line sits on the mark's second row.
   (let* ((width 72)
          (lines
            (cadr-cli::render-tui-startup-lines
@@ -133,18 +132,15 @@
     (is (= width (cadr-tui:visible-width help)))
     (is
      (uiop:string-prefix-p
-      " cadr v0.2.0"
+      " ▀▀█  v0.2.0"
       (cadr-tui:strip-terminal-sequences logo)))
     (is
-     (search
-      (cadr-tui:theme-bold
-       (cadr-tui:theme-foreground
-        :accent "cadr" :enabled-p t))
-      logo))
+     (search "█▀ █"
+             (cadr-tui:strip-terminal-sequences help)))
     (is
      (search
       (cadr-tui:theme-foreground
-       :dim " v0.2.0" :enabled-p t)
+       :dim "v0.2.0" :enabled-p t)
       logo))
     (is
      (search

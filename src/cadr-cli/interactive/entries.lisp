@@ -920,8 +920,18 @@ directory-style extensions."
             (append (list "") blocks))))
        expanded))))
 
-(defun render-tui-startup-lines (lines width)
-  (labels
+(defun startup-version-line-p (line)
+  (and (stringp line)
+       (uiop:string-prefix-p "cadr v" line)
+       (not (find #\Esc line))))
+
+(defun render-tui-startup-lines
+    (lines width &key (logo-p nil logo-supplied-p))
+  (let ((logo-p
+          (if logo-supplied-p
+              logo-p
+              (startup-logo-supported-p))))
+    (labels
       ((key-hint (key description)
          (concatenate
           'string
@@ -964,12 +974,22 @@ directory-style extensions."
                        (- (length line)
                           (length " to cycle models")))
                "to cycle models")))))
-       (style-line (line index)
+       (style-content (line index)
          (cond
            ((find #\Esc line)
             ;; Section/conflict lines arrive pre-themed by
             ;; make-tui-startup-lines; pass them through untouched.
             line)
+           ((startup-version-line-p line)
+            (let ((version (subseq line (length "cadr "))))
+              (concatenate
+               'string
+               (if logo-p
+                   (nth-value 0 (pi-logo-lines))
+                   (cadr-startup-wordmark))
+               " "
+               (cadr-tui:theme-foreground
+                :dim version :enabled-p t))))
            ((zerop index)
             (let ((split (position #\Space line)))
               (if split
@@ -997,7 +1017,18 @@ directory-style extensions."
              :md-heading line :enabled-p t))
            (t
             (cadr-tui:theme-foreground
-             :dim line :enabled-p t)))))
+             :dim line :enabled-p t))))
+       (style-line (line index previous)
+         (if (and logo-p
+                  (startup-version-line-p previous)
+                  (plusp (length line))
+                  (not (find #\Esc line)))
+             (concatenate
+              'string
+              (nth-value 1 (pi-logo-lines))
+              " "
+              (style-content line index))
+             (style-content line index))))
     (when lines
       ;; The baseline renders the banner (paddingX 1) and the loaded
       ;; resource sections (paddingX 0, in a separate container) as
@@ -1026,9 +1057,10 @@ directory-style extensions."
            (cadr-tui:make-text-component
             (format
              nil "~{~A~^~%~}"
-             (loop for line in banner
+             (loop for previous = nil then line
+                   for line in banner
                    for index from 0
-                   collect (style-line line index)))
+                   collect (style-line line index previous)))
             :padding-x 1 :padding-y 0)
            width))
          ;; Render each section block through the component (content
@@ -1062,4 +1094,4 @@ directory-style extensions."
                      (format nil "~{~A~^~%~}" (nreverse block))
                      :padding-x 0 :padding-y 0)
                     width))))
-               (return rendered)))))))
+               (return rendered))))))))

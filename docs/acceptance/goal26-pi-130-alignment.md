@@ -101,6 +101,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | MCP 工具名 / `mcp_servers` 段 | v1.3.0 `createMcpToolName` / `renderServersSection` | done：名字只留 `[A-Za-z0-9_]`，超过 64 或撞名时加 sha256 后缀；系统段列出 codemode / deferred 服务器，描述缩短，放不下的末尾服务器计在结束行。连接仍不在这次 |
 | 登录授权 URL | v1.3.0 `auth-url.ts` | done：`showAuth` 的点击提示在 macOS 为 Cmd+click，其余为 Ctrl+click，后面跟 `app.message.copy`；该键复制 URL，成功写成 “Copied URL to clipboard”，失败写成剪贴板错误。设备码 URL 仍只有点击提示。MCP OAuth 连接仍不在这次 |
 | 截断输出临时文件 | v1.3.0 `output-files.ts` | done：bash 和 output accumulator 的完整输出用 `O_EXCL` 建在临时目录，权限 `#o600`；已有名字（含符号链接）失败，不跟着链接写。codemode 写图仍不在这次 |
+| 启动 logo | v1.3.0 `pi-logo.ts` | done：能画半块的终端用珊瑚/蓝/黄两行标记，版本跟在第一行，第一条提示跟在第二行；truecolor 用 `38;2`，否则用 256 色。Apple Terminal 改为珊瑚 `c`、黄色 `adr`。点击播放 3D 彩蛋仍不在这次 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

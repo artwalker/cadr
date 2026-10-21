@@ -141,7 +141,8 @@
                                            (:file "countdown")
                                            (:file "armin")
                                            (:file "daxnuts")
-                                           (:file "announcement")))
+                                           (:file "announcement")
+                                           (:file "pi-logo")))
                              (:module "interactive-controller"
                               :pathname "interactive"
                               :serial t
@@ -285,6 +286,7 @@
                              (:file "goal17-compaction-test")
                              (:file "goal17-login-dialog-test")
                              (:file "output-files-test")
+                             (:file "pi-logo-test")
                              (:file "goal18-login-cancel-test")
                              (:file "goal18-migration-test")
                              (:file "goal18-login-forms-test")

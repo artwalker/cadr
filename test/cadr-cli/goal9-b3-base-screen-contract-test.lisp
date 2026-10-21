@@ -279,10 +279,10 @@
         (cond
           ((string= name "cold-start")
            (is (= 1 (goal9-b3-screen-line-position
-                     "cadr v0.2.0" screen)))
+                     "▀▀█  v0.2.0" screen)))
            (goal9-b3-assert-screen-lines-in-order
             screen
-            '("cadr v0.2.0"
+            '("▀▀█  v0.2.0"
               "Cadr can explain its own features"
               "────────────────"
               "/tmp/project"
