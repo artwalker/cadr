@@ -134,6 +134,7 @@
                              (:file "image-model-test")
                              (:file "image-generation-test")
                              (:file "auth-test")
+                             (:file "openrouter-user-models-test")
                              (:file "goal12-capabilities-test")
                              (:file "goal12-provider-capabilities-test")
                              (:file "goal24-fireworks-deferred-tools-test")

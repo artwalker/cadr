@@ -35,6 +35,7 @@
           (model-metadata-id value)))
 
 (defparameter *model-catalog* (make-hash-table :test #'equal))
+(defvar *openrouter-metadata-overlay* nil)
 (defparameter *image-model-catalog*
   (make-hash-table :test #'equal))
 
@@ -91,7 +92,10 @@
   metadata)
 
 (defun find-model-metadata (provider id)
-  (or (gethash (model-catalog-key provider id) *model-catalog*)
+  (or (and (eq provider :openrouter)
+           (hash-table-p *openrouter-metadata-overlay*)
+           (gethash id *openrouter-metadata-overlay*))
+      (gethash (model-catalog-key provider id) *model-catalog*)
       (error 'configuration-error
              :message
              (format nil "Unknown model: ~A/~A" provider id))))

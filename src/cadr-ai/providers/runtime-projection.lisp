@@ -232,6 +232,62 @@ which auth strategies are structured."
                        '(:api-key :headers :environment :auth-type))
           append (list key value)))
 
+(defun make-openrouter-runtime-provider-parts (definition)
+  (let ((baseline
+          (list-model-metadata
+           (provider-definition-id definition)))
+        (dynamic nil))
+    (list
+     :models nil
+     :models-function
+     (lambda ()
+       (mapcar #'model-from-metadata
+               (or dynamic baseline)))
+     :refresh-context-function
+     (lambda (context)
+       (block refresh
+         (let* ((store (runtime-refresh-context-store context))
+                (stored (funcall store :read)))
+           (when (openrouter-stored-metadata-p stored)
+             (setf dynamic (copy-list stored))
+             (install-openrouter-metadata-overlay dynamic))
+           (when (or (not (runtime-refresh-context-allow-network-p
+                           context))
+                     (runtime-refresh-context-aborted-p context))
+             (return-from refresh nil))
+           (let ((key
+                   (openrouter-credential-key
+                    (runtime-refresh-context-credential context))))
+             (unless key
+               (setf dynamic nil)
+               (setf *openrouter-metadata-overlay* nil)
+               (funcall store :delete)
+               (return-from refresh nil))
+             (multiple-value-bind (body status)
+                 (fetch-openrouter-user-models
+                  (provider-definition-base-url definition)
+                  key)
+               (when (runtime-refresh-context-aborted-p context)
+                 (return-from refresh nil))
+               (let ((personalized
+                       (personalize-openrouter-catalog
+                        baseline
+                        status
+                        (when (and (integerp status)
+                                   (<= 200 status 299))
+                          (parse-json body)))))
+                 (unless (runtime-refresh-context-aborted-p context)
+                   (if (and personalized
+                            (not (eq personalized baseline)))
+                       (progn
+                         (setf dynamic personalized)
+                         (install-openrouter-metadata-overlay dynamic)
+                         (funcall store :write (copy-list dynamic)))
+                       (progn
+                         (setf dynamic nil)
+                         (setf *openrouter-metadata-overlay* nil)
+                         (funcall store :delete)))))))))))))
+
 (defun make-built-in-runtime-provider (definition &optional environment)
   (let* ((provider-id
            (provider-definition-id definition))
@@ -242,7 +298,11 @@ which auth strategies are structured."
          (radius-parts
            (when (eq provider-id :radius)
              (make-radius-runtime-provider-parts
-              definition environment radius-gateway))))
+              definition environment radius-gateway)))
+         (openrouter-parts
+           (when (eq provider-id :openrouter)
+             (make-openrouter-runtime-provider-parts
+              definition))))
     (apply
      #'make-runtime-provider
      :id provider-id
@@ -286,7 +346,7 @@ which auth strategies are structured."
      (lambda (model context on-event &rest options)
        (built-in-runtime-dispatch
         definition model context options t on-event))
-     radius-parts)))
+     (append radius-parts openrouter-parts))))
 
 (defun make-built-in-models-runtime
     (&key credential-store model-store environment)
