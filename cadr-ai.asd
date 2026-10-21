@@ -127,6 +127,7 @@
                              (:file "provider-wave3-test")
                              (:file "goal24-radius-offline-catalog-test")
                              (:file "bedrock-error-metadata-test")
+                             (:file "bedrock-openai-thinking-test")
                              (:file "models-runtime-test")
                              (:file "opencode-inference-test")
                              (:file "faux-provider-test")

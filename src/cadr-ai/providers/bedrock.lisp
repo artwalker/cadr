@@ -83,6 +83,44 @@
     ((eq reasoning :medium) "medium")
     (t "high")))
 
+(defun bedrock-openai-gpt-effort (reasoning)
+  (case reasoning
+    ((:minimal :low) "low")
+    (:medium "medium")
+    (:high "high")
+    (:xhigh "xhigh")
+    (:max "max")
+    (t "high")))
+
+(defun bedrock-gpt-oss-effort (reasoning)
+  (case reasoning
+    ((:minimal :low) "low")
+    (:medium "medium")
+    (t "high")))
+
+(defun bedrock-openai-request-fields (model reasoning)
+  ;; pi@71023aec1 bedrock-converse-stream.ts #9331. OpenAI models on
+  ;; Bedrock take reasoning.effort. gpt-oss takes a flat
+  ;; reasoning_effort and only low, medium, or high.
+  (when (and reasoning
+             (not (eq reasoning :off))
+             (model-reasoning-p model))
+    (cond
+      ((bedrock-candidate-matches-p model '("gpt-oss"))
+       (json-object
+        "reasoning_effort"
+        (bedrock-gpt-oss-effort reasoning)))
+      ((bedrock-candidate-matches-p model '("gpt-"))
+       (let ((mapped
+               (model-thinking-level-value model reasoning)))
+         (json-object
+          "reasoning"
+          (json-object
+           "effort"
+           (if (stringp mapped)
+               mapped
+               (bedrock-openai-gpt-effort reasoning)))))))))
+
 (defun bedrock-thinking-fields (model reasoning region options)
   (when (and reasoning
              (model-reasoning-p model)
@@ -605,12 +643,14 @@
                 (bedrock-tools
                  model (context-tools context) tool-choice)))
     (let ((thinking
-            (bedrock-thinking-fields
-             model reasoning region
-             (if thinking-budgets
-                 (list* :thinking-budgets thinking-budgets
-                        options)
-                 options))))
+            (or
+             (bedrock-thinking-fields
+              model reasoning region
+              (if thinking-budgets
+                  (list* :thinking-budgets thinking-budgets
+                         options)
+                  options))
+             (bedrock-openai-request-fields model reasoning))))
       (when thinking
         (json-put payload
                   "additionalModelRequestFields"
