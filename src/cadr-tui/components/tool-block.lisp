@@ -544,7 +544,7 @@
                       remainder))))))
 
 (defun render-tool-block
-    (block width &key (ansi-theme-p nil) now)
+    (block width &key (ansi-theme-p nil) now (output-pad 1))
   (multiple-value-bind
         (status-token background-token indicator)
       (tool-status-theme-tokens
@@ -623,14 +623,19 @@
       (cons
        ""
        (loop for line in box-lines
+             for pad = (if (member output-pad '(0 1))
+                           output-pad
+                           1)
              for padded =
                (concatenate
-                'string " " line
+                'string
+                (make-string pad :initial-element #\Space)
+                line
                 (make-string
                  (max
                   1
                   (- width
-                     1
+                     pad
                      (visible-width line)))
                  :initial-element #\Space))
              collect

@@ -783,7 +783,7 @@
              :id "output-padding"
              :label "Output padding"
              :description
-             "Horizontal padding for user messages, assistant messages, and thinking"
+             "Horizontal padding for transcript content."
              :value
              (settings-output-padding
               settings-manager)

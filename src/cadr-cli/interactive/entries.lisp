@@ -100,6 +100,7 @@
    nil
    (tui-entry-render-cache-mermaid-mode entry) nil
    (tui-entry-render-cache-code-block-indent entry) nil
+   (tui-entry-render-cache-output-pad entry) nil
    (tui-entry-render-cache-lines entry) nil)
   entry)
 

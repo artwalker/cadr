@@ -291,7 +291,8 @@
           (cadr-agent::custom-agent-message-details message)
           :display-p t)
          :custom-options
-         '(:expanded-p nil :output-pad 1)))))
+         (list :expanded-p nil
+               :output-pad (tui-state-output-pad state))))))
     (cadr-agent:branch-summary-message
      (append-tui-entry
       state
@@ -464,11 +465,13 @@
   (make-hash-table :test #'equal))
 
 (defun assistant-stop-error-lines
-    (entry width)
+    (entry width &key (output-pad 1))
   (let* ((reason (tui-entry-stop-reason entry))
          (error-message (tui-entry-error-message entry))
          (has-tool-calls-p (tui-entry-has-tool-calls-p entry))
-         (key (list reason error-message has-tool-calls-p width)))
+         (key
+           (list reason error-message has-tool-calls-p
+                 width output-pad)))
     (multiple-value-bind (cached found-p)
         (gethash key *assistant-stop-error-by-key*)
       (if found-p
@@ -499,7 +502,7 @@
                      (component-text-lines
                       (cadr-tui:theme-foreground
                        :error message :enabled-p t)
-                      width :padding-x 1)))))))))
+                      width :padding-x output-pad)))))))))
 
 (defparameter *tui-syntax-highlight-by-key*
   (make-hash-table :test #'equal))
@@ -532,7 +535,8 @@
     (entry width extension-host
      &key hide-thinking-block-p hidden-thinking-label
           (mermaid-mode "streaming")
-          (code-block-indent "  "))
+          (code-block-indent "  ")
+          (output-pad 1))
   (let* ((available-width
            (max 1 (- width 2)))
          (blocks
@@ -561,6 +565,7 @@
                       hidden-thinking-label
                       mermaid-mode
                       code-block-indent
+                      output-pad
                       (tui-entry-stop-reason entry)
                       (tui-entry-error-message entry)
                       (tui-entry-has-tool-calls-p entry)))))
@@ -583,7 +588,7 @@
                      for lines =
                        (cadr-tui:render-markdown
                         transformed width
-                        :padding-x 1
+                        :padding-x output-pad
                         :ansi-theme-p t
                         :code-block-indent code-block-indent
                         :default-style-function
@@ -606,7 +611,7 @@
                            (nconc rendered lines)))
                (let ((errors
                        (assistant-stop-error-lines
-                        entry width)))
+                        entry width :output-pad output-pad)))
                  (when rendered
                    (setf rendered
                          (cons "" rendered)))
@@ -648,7 +653,8 @@
 (defparameter *transcript-summary-entry-by-key*
   (make-hash-table :test #'equal))
 
-(defun render-transcript-summary-entry (entry width)
+(defun render-transcript-summary-entry
+    (entry width &key (output-pad 1))
   (let* ((type (tui-entry-type entry))
          (expanded-p (tui-entry-expanded-p entry))
          (key
@@ -657,7 +663,7 @@
                  (tui-entry-label entry)
                  (tui-entry-text entry)
                  (tui-entry-tokens-before entry)
-                 width)))
+                 width output-pad)))
     (or (gethash key *transcript-summary-entry-by-key*)
         (setf (gethash key *transcript-summary-entry-by-key*)
               (labels
@@ -737,7 +743,7 @@
                                       " to expand)")))))))))
                        (component
                          (cadr-tui:make-box-component
-                          :padding-x 1 :padding-y 1
+                          :padding-x output-pad :padding-y 1
                           :background-function
                           (lambda (text)
                             (cadr-tui:theme-background
@@ -880,7 +886,7 @@
 (defun tui-entry-uncached-paint-key
     (entry width hide-thinking-block-p
      hidden-thinking-label mermaid-mode
-     code-block-indent)
+     code-block-indent output-pad)
   "Equal-safe content key when extension-host is nil and paint ignores now.
 Theme is part of every cacheable key so a dark paint is never reused under
 light (and vice versa). Streaming and other non-cacheable entries return
@@ -888,8 +894,9 @@ nil so each paint recomputes. Hyperlink capability is included for update
 lines that embed OSC-8."
   (unless (tui-entry-render-cacheable-p entry)
     (return-from tui-entry-uncached-paint-key nil))
-  (let ((type (tui-entry-type entry))
-        (theme (cadr-tui:current-theme)))
+  (let* ((type (tui-entry-type entry))
+         (theme (cadr-tui:current-theme))
+         (key
     (case type
       ((:tool :bash-execution :custom-message :custom-entry
         :auth-url)
@@ -945,13 +952,15 @@ lines that embed OSC-8."
              (tui-entry-text entry)
              (tui-entry-label entry)
              width)))))
+    (and key (append key (list output-pad)))))
 
 (defun render-tui-entry-uncached
     (entry width &key extension-host now
                       hide-thinking-block-p
                       hidden-thinking-label
                       (mermaid-mode "streaming")
-                      (code-block-indent "  "))
+                      (code-block-indent "  ")
+                      (output-pad 1))
   (let* ((key
            (and (null extension-host)
                 (tui-entry-uncached-paint-key
@@ -959,7 +968,8 @@ lines that embed OSC-8."
                  hide-thinking-block-p
                  hidden-thinking-label
                  mermaid-mode
-                 code-block-indent)))
+                 code-block-indent
+                 output-pad)))
          (cached
            (and key
                 (gethash key *tui-entry-uncached-by-key*))))
@@ -972,7 +982,8 @@ lines that embed OSC-8."
                  :hide-thinking-block-p hide-thinking-block-p
                  :hidden-thinking-label hidden-thinking-label
                  :mermaid-mode mermaid-mode
-                 :code-block-indent code-block-indent)))
+                 :code-block-indent code-block-indent
+                 :output-pad output-pad)))
           (when key
             (setf (gethash key *tui-entry-uncached-by-key*)
                   lines))
@@ -983,7 +994,8 @@ lines that embed OSC-8."
                       hide-thinking-block-p
                       hidden-thinking-label
                       (mermaid-mode "streaming")
-                      (code-block-indent "  "))
+                      (code-block-indent "  ")
+                      (output-pad 1))
   (case (tui-entry-type entry)
     (:user
      (let ((lines
@@ -997,7 +1009,7 @@ lines that embed OSC-8."
                 extension-host
                 :mermaid-mode mermaid-mode)
                width
-               :padding-x 1
+               :padding-x output-pad
                :padding-y 1
                :ansi-theme-p t
                :code-block-indent code-block-indent
@@ -1018,7 +1030,8 @@ lines that embed OSC-8."
               :hide-thinking-block-p hide-thinking-block-p
               :hidden-thinking-label hidden-thinking-label
               :mermaid-mode mermaid-mode
-              :code-block-indent code-block-indent)))
+              :code-block-indent code-block-indent
+              :output-pad output-pad)))
        (when
            (and
             lines
@@ -1068,10 +1081,12 @@ lines that embed OSC-8."
            (cadr-tui:render-tool-block
             (tui-entry-tool-block entry)
             width
-           :ansi-theme-p t
-            :now now))))
+            :ansi-theme-p t
+            :now now
+            :output-pad output-pad))))
     (:bash-execution
-     (render-user-bash-entry entry width :now now))
+     (render-user-bash-entry
+      entry width :now now :output-pad output-pad))
     ((:custom-message :custom-entry)
      (render-extension-custom-entry
       entry width extension-host))
@@ -1081,7 +1096,8 @@ lines that embed OSC-8."
              (and component
                   (cadr-tui:component-render component width)))))
     ((:skill-invocation :branch-summary :compaction-summary)
-     (render-transcript-summary-entry entry width))
+     (render-transcript-summary-entry
+      entry width :output-pad output-pad))
     (:notice
      (cons
       ""
@@ -1091,14 +1107,14 @@ lines that embed OSC-8."
              text
              (cadr-tui:theme-foreground
               :dim text :enabled-p t)))
-       width :padding-x 1)))
+       width :padding-x output-pad)))
     (:status
      (cons
       ""
       (component-text-lines
        (cadr-tui:theme-foreground
         :dim (tui-entry-text entry) :enabled-p t)
-       width :padding-x 1)))
+       width :padding-x output-pad)))
     (:error
      (cons
       ""
@@ -1108,7 +1124,7 @@ lines that embed OSC-8."
         (format nil "Error: ~A"
                 (tui-entry-text entry))
         :enabled-p t)
-       width :padding-x 1)))
+       width :padding-x output-pad)))
     (:warning
      (cons
       ""
@@ -1118,14 +1134,14 @@ lines that embed OSC-8."
         (format nil "Warning: ~A"
                 (tui-entry-text entry))
         :enabled-p t)
-       width :padding-x 1)))
+       width :padding-x output-pad)))
     (:project-trust-warning
      (cons
       ""
       (component-text-lines
        (cadr-tui:theme-foreground
         :warning (tui-entry-text entry) :enabled-p t)
-       width :padding-x 1)))
+       width :padding-x output-pad)))
     (:success
      (append
       (list "" (make-string width :initial-element #\Space))
@@ -1135,21 +1151,21 @@ lines that embed OSC-8."
         (format nil "✓ ~A"
                 (tui-entry-text entry))
         :enabled-p t)
-       width :padding-x 1)
+       width :padding-x output-pad)
       (list (make-string width :initial-element #\Space))))
     (:debug-written
      ;; Baseline /debug block: Spacer(1), then accent "✓ Debug log
-     ;; written" and the muted path, both with one-cell padding.
+     ;; written" and the muted path, both using the transcript pad.
      (append
       (list "" (make-string width :initial-element #\Space))
       (component-text-lines
        (cadr-tui:theme-foreground
         :accent "✓ Debug log written" :enabled-p t)
-       width :padding-x 1)
+       width :padding-x output-pad)
       (component-text-lines
        (cadr-tui:theme-foreground
         :muted (tui-entry-text entry) :enabled-p t)
-       width :padding-x 1)
+       width :padding-x output-pad)
       (list (make-string width :initial-element #\Space))))
     (:command-markdown
      (append
@@ -1167,7 +1183,7 @@ lines that embed OSC-8."
       (cadr-tui:render-markdown
        (tui-entry-text entry)
        width
-       :padding-x 1
+       :padding-x output-pad
        :padding-y 1
        :ansi-theme-p t
        :code-block-indent code-block-indent
@@ -1205,7 +1221,8 @@ lines that embed OSC-8."
                       hide-thinking-block-p
                       hidden-thinking-label
                       (mermaid-mode "streaming")
-                      (code-block-indent "  "))
+                      (code-block-indent "  ")
+                      (output-pad 1))
   (let* ((cacheable-p
            (tui-entry-render-cacheable-p entry))
          (theme
@@ -1234,7 +1251,9 @@ lines that embed OSC-8."
                  entry))
          (equal code-block-indent
                 (tui-entry-render-cache-code-block-indent
-                 entry)))
+                 entry))
+         (eql output-pad
+              (tui-entry-render-cache-output-pad entry)))
         (tui-entry-render-cache-lines entry)
         (let ((lines
                 (render-tui-entry-uncached
@@ -1244,7 +1263,8 @@ lines that embed OSC-8."
                  :hide-thinking-block-p hide-thinking-block-p
                  :hidden-thinking-label hidden-thinking-label
                  :mermaid-mode mermaid-mode
-                 :code-block-indent code-block-indent)))
+                 :code-block-indent code-block-indent
+                 :output-pad output-pad)))
           (when cacheable-p
             (setf
              (tui-entry-render-cache-valid-p entry) t
@@ -1257,6 +1277,8 @@ lines that embed OSC-8."
              mermaid-mode
              (tui-entry-render-cache-code-block-indent entry)
              code-block-indent
+             (tui-entry-render-cache-output-pad entry)
+             output-pad
              (tui-entry-render-cache-lines entry) lines))
           lines))))
 
@@ -1265,7 +1287,8 @@ lines that embed OSC-8."
                         hide-thinking-block-p
                         hidden-thinking-label
                         (mermaid-mode "streaming")
-                        (code-block-indent "  "))
+                        (code-block-indent "  ")
+                        (output-pad 1))
   ;; Second value: (entry start end) ranges inside the returned lines
   ;; for branch, compaction, and skill entries. The leading blank
   ;; between entries is not part of the click target.
@@ -1283,7 +1306,8 @@ lines that embed OSC-8."
              :hide-thinking-block-p hide-thinking-block-p
              :hidden-thinking-label hidden-thinking-label
              :mermaid-mode mermaid-mode
-             :code-block-indent code-block-indent)
+             :code-block-indent code-block-indent
+             :output-pad output-pad)
           do (when (and (plusp index)
                         (member type
                                 '(:user :branch-summary

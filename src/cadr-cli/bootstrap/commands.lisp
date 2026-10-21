@@ -2709,6 +2709,9 @@
            (lambda ()
              (settings-markdown-code-block-indent
               settings-manager))
+           :output-pad-function
+           (lambda ()
+             (settings-output-padding settings-manager))
            :external-editor-command-function
            (lambda ()
              (settings-external-editor-command

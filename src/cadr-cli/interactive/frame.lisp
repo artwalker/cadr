@@ -230,7 +230,9 @@
                :mermaid-mode
                (tui-state-mermaid-mode state)
                :code-block-indent
-               (tui-state-code-block-indent state))))
+               (tui-state-code-block-indent state)
+               :output-pad
+               (tui-state-output-pad state))))
            (entry-content (first entry-rendering))
            (entry-hits (second entry-rendering))
            (startup-lines

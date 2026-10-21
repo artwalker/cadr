@@ -316,6 +316,7 @@ interactive-mode.ts:5956-5960).")
        settings-selector-function
        mermaid-mode-function
        code-block-indent-function
+       output-pad-function
        external-editor-command-function
        external-editor-runner-function
        extension-host
@@ -426,6 +427,11 @@ interactive-mode.ts:5956-5960).")
             (if code-block-indent-function
                 (or (funcall code-block-indent-function) "  ")
                 "  ")
+            :output-pad
+            (if output-pad-function
+                (let ((pad (funcall output-pad-function)))
+                  (if (member pad '(0 1)) pad 1))
+                1)
             :session session
             ;; Messages seed after managed-tool ensure (interactive-mode.ts
             ;; ensureTool then rebindCurrentSession / renderInitialMessages).
@@ -1416,7 +1422,8 @@ interactive-mode.ts:5956-5960).")
                   :custom-payload (copy-tree arguments)
                   :custom-options
                   (list :expanded-p nil
-                        :output-pad 1))))
+                        :output-pad
+                        (tui-state-output-pad state)))))
               (request-render)
               nil)
              (:append-custom-entry
@@ -2835,6 +2842,22 @@ interactive-mode.ts:5956-5960).")
                   (setf (tui-state-mermaid-mode state)
                         (or (getf value :value) "streaming"))
                   (dolist (entry (tui-state-entries state))
+                    (invalidate-tui-entry-render-cache entry)
+                    (setf (tui-entry-markdown-cache entry) nil)))
+                (when
+                    (and value
+                         (string=
+                          (getf value :id)
+                          "output-padding"))
+                  (let ((pad (getf value :value)))
+                    (setf (tui-state-output-pad state)
+                          (if (member pad '(0 1)) pad 1)))
+                  (dolist (entry (tui-state-entries state))
+                    (when (member (tui-entry-type entry)
+                                  '(:custom-message :custom-entry))
+                      (setf (getf (tui-entry-custom-options entry)
+                                  :output-pad)
+                            (tui-state-output-pad state)))
                     (invalidate-tui-entry-render-cache entry)
                     (setf (tui-entry-markdown-cache entry) nil)))
                 (synchronize-terminal-progress-setting)

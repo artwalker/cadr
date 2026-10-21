@@ -33,6 +33,7 @@
   render-cache-extension-snapshot
   render-cache-mermaid-mode
   render-cache-code-block-indent
+  render-cache-output-pad
   (render-cache-lines nil :type list))
 
 (defstruct (tui-state
@@ -93,6 +94,7 @@
   status-message
   (mermaid-mode "streaming" :type string)
   (code-block-indent "  " :type string)
+  (output-pad 1 :type (integer 0 1))
   (bug-report-hint-shown-p nil :type boolean))
 
 (defun make-tui-state
@@ -109,6 +111,7 @@
        (context-window 0)
        (mermaid-mode "streaming")
        (code-block-indent "  ")
+       (output-pad 1)
        show-cache-miss-notices-p)
   (let ((state
           (%make-tui-state
@@ -137,6 +140,10 @@
            (or mermaid-mode "streaming")
            :code-block-indent
            (or code-block-indent "  ")
+           :output-pad
+           (if (member output-pad '(0 1))
+               output-pad
+               1)
            :session session)))
     (dolist (message messages)
       (seed-tui-message

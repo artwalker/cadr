@@ -2,7 +2,7 @@
 
 (defconstant +user-bash-preview-lines+ 20)
 
-(defun render-user-bash-entry (entry width &key now)
+(defun render-user-bash-entry (entry width &key now (output-pad 1))
   ;; Fixed pi@71023aec1 BashExecutionComponent is deliberately separate from
   ;; agent tool rendering: it has a 20-line tail preview, a framed bash-mode
   ;; shell, and component-local cancelled/exit/truncation status copy.
@@ -36,7 +36,7 @@
                                  (cadr-tui:theme-foreground
                                   :muted line :enabled-p t))
                                preview-lines))
-                      width :padding-x 1)))
+                      width :padding-x output-pad)))
                (if expanded-p
                    lines
                    (let ((count (length lines)))
@@ -111,7 +111,7 @@
         (format nil "$ ~A" (or (tui-entry-label entry) ""))
         :enabled-p t)
        :enabled-p t)
-      width :padding-x 1)
+      width :padding-x output-pad)
      rendered-output
      (and
       running-p
@@ -135,11 +135,11 @@
           (format nil "Running... (~A to cancel)"
                   (key-text "tui.select.cancel"))
           :enabled-p t))
-        width :padding-x 1)))
+        width :padding-x output-pad)))
      (and status-lines
           (component-text-lines
            (format nil "~%~{~A~^~%~}" status-lines)
-           width :padding-x 1))
+           width :padding-x output-pad))
      (list
       (cadr-tui:theme-foreground
        color-token
