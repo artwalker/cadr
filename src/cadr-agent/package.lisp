@@ -28,6 +28,27 @@
    #:agent-append-message
    #:agent-set-model
    #:agent-set-thinking-level
+   #:virtual-model-p
+   #:create-virtual-model
+   #:register-virtual-model
+   #:unregister-virtual-model
+   #:registered-virtual-model
+   #:registered-virtual-models
+   #:virtual-model-generation
+   #:resolve-virtual-model
+   #:make-virtual-model-route
+   #:virtual-model-route-model
+   #:virtual-model-route-thinking-level
+   #:virtual-model-route-state
+   #:virtual-model-route-request-reason
+   #:virtual-model-route-request-state
+   #:virtual-model-route-request-messages
+   #:virtual-model-route-request-previous
+   #:virtual-model-route-request-failed
+   #:branch-selection
+   #:branch-selection-provider
+   #:branch-selection-model-id
+   #:virtual-model-state
    #:agent-navigate-tree
    #:collect-entries-for-branch-summary
    #:prepare-branch-entries

@@ -165,19 +165,18 @@
 (defun sdk-session-restored-selection
     (persistent model-runtime)
   (when persistent
-    (let ((entry
-            (find :model-change
-                  (cadr-agent:session-entries
-                   persistent)
-                  :key
-                  #'cadr-agent:session-entry-type
-                  :from-end t)))
-      (when entry
+    (let ((selection
+            (cadr-agent:branch-selection
+             (cadr-agent::session-path-entries persistent)
+             (lambda (provider model-id)
+               (sdk-model-runtime-model
+                model-runtime provider model-id)))))
+      (when selection
         (sdk-model-runtime-model
          model-runtime
-         (cadr-agent:session-entry-provider entry)
-         (cadr-agent:session-entry-model-id
-          entry))))))
+         (cadr-agent:branch-selection-provider selection)
+         (cadr-agent:branch-selection-model-id
+          selection))))))
 
 (defun sdk-session-restored-thinking
     (persistent)

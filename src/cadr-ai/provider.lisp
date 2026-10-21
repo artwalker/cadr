@@ -735,6 +735,10 @@ string. Returns the buffer to store back. Per-delta
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
+  (when (eq (model-api model) :pi-virtual)
+    (error "Virtual model ~A/~A must be routed before streaming"
+           (string-downcase (symbol-name (model-provider model)))
+           (model-id model)))
   (let* ((transcript (ensure-transcript-context context))
          (message
            (empty-assistant-message

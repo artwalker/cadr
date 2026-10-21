@@ -43,6 +43,7 @@
                              (:file "sqlite-storage")
                              (:file "runtime")
                              (:file "nested-calls")
+                             (:file "virtual-models")
                              (:file "schema")
                              (:module "extensions"
                               :serial t
@@ -84,6 +85,7 @@
                              (:file "queue-test")
                              (:file "retry-test")
                              (:file "tool-loop-test")
+                             (:file "virtual-models-test")
                              (:file "schema-test")
                              (:file "session-test")
                              (:file "session-v2-test")

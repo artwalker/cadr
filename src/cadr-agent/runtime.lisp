@@ -71,6 +71,12 @@
   (retry-attempt 0 :type (integer 0 *))
   (retry-in-progress-p nil :type boolean)
   (retry-abort-requested-p nil :type boolean)
+  ;; Failed assistant response removed before an automatic retry.
+  ;; The next virtual-model route reports it as reason :retry.
+  virtual-route-failure
+  ;; (model) -> provider, for a routed model whose provider is not
+  ;; the agent's current provider object.
+  virtual-provider-function
   (steering-mode :one-at-a-time
                  :type (member :all :one-at-a-time))
   (follow-up-mode :one-at-a-time

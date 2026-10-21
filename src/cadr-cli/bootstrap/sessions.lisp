@@ -1026,36 +1026,20 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
 (defun session-restored-model
     (session registry available-models)
   (when session
-    (let* ((change
-             (find
-              :model-change
-              (cadr-agent:session-entries session)
-              :from-end t
-              :key #'cadr-agent:session-entry-type))
-           (assistant
-             (find-if
-              (lambda (message)
-                (typep
-                 message
-                 'cadr-ai:assistant-message))
-              (cadr-agent:session-messages session)
-              :from-end t))
+    (let* ((selection
+             (cadr-agent:branch-selection
+              (cadr-agent::session-path-entries session)
+              (lambda (provider model-id)
+                (model-registry-find
+                 registry provider model-id))))
            (provider
-             (or
-              (and change
-                   (cadr-agent:session-entry-provider
-                    change))
-              (and assistant
-                   (cadr-ai:assistant-message-provider
-                    assistant))))
+             (and selection
+                  (cadr-agent:branch-selection-provider
+                   selection)))
            (model-id
-             (or
-              (and change
-                   (cadr-agent:session-entry-model-id
-                    change))
-              (and assistant
-                   (cadr-ai:assistant-message-model
-                    assistant))))
+             (and selection
+                  (cadr-agent:branch-selection-model-id
+                   selection)))
            (model
              (and
               provider model-id

@@ -45,21 +45,44 @@
              (lambda ()
                (if (agent-aborted-p agent)
                    (make-empty-aborted-summary-response agent)
-                   (or
-                    (apply
-                     (agent-stream-function agent)
-                     (agent-provider agent)
-                     (agent-model agent)
-                     context
-                     (lambda (event) (declare (ignore event)))
-                     :max-tokens max-tokens
-                     :cache-retention :none
-                     :session-id session-id
-                     :abort-p (lambda () (agent-aborted-p agent))
-                     (and reasoning (list :reasoning reasoning)))
-                    (progn
-                      (setf no-response-p t)
-                      (make-empty-aborted-summary-response agent)))))
+                   (multiple-value-bind
+                         (request-model request-provider
+                          request-thinking route-error)
+                       (agent-stream-target
+                        agent
+                        (cadr-ai:context-messages context)
+                        :reason :direct)
+                     (cond
+                       (route-error
+                        (cadr-ai:make-assistant-message
+                         :api (cadr-ai:model-api (agent-model agent))
+                         :provider
+                         (cadr-ai:model-provider (agent-model agent))
+                         :model (cadr-ai:model-id (agent-model agent))
+                         :stop-reason :error
+                         :error-message route-error))
+                       (t
+                        (let ((level
+                                (if (virtual-model-p (agent-model agent))
+                                    (and (not (eq request-thinking :off))
+                                         request-thinking)
+                                    reasoning)))
+                          (or
+                           (apply
+                            (agent-stream-function agent)
+                            request-provider
+                            request-model
+                            context
+                            (lambda (event) (declare (ignore event)))
+                            :max-tokens max-tokens
+                            :cache-retention :none
+                            :session-id session-id
+                            :abort-p (lambda () (agent-aborted-p agent))
+                            (and level (list :reasoning level)))
+                           (progn
+                             (setf no-response-p t)
+                             (make-empty-aborted-summary-response
+                              agent)))))))))
              (summarization-retry-policy agent)
              :abort-p (lambda () (agent-aborted-p agent))
              :sleep-function

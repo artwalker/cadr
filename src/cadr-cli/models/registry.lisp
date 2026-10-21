@@ -417,7 +417,7 @@
 (defun model-registry-all (registry)
   (copy-list (model-registry-models registry)))
 
-(defun model-registry-find
+(defun model-registry-find-physical
     (registry provider model)
   (find-if
    (lambda (candidate)
@@ -431,6 +431,13 @@
       (string= (cadr-ai:model-id candidate)
                model)))
    (model-registry-models registry)))
+
+(defun model-registry-find
+    (registry provider model)
+  ;; pi@71023aec1 withVirtualModels. A registered virtual model hides
+  ;; a physical chat model with the same id.
+  (or (cadr-agent:registered-virtual-model provider model)
+      (model-registry-find-physical registry provider model)))
 
 (defun known-provider-definition-p (provider)
   (find
@@ -822,7 +829,8 @@
                  (or (model-registry-path registry) config-path)
                  (model-registry-credentials registry))
                 config-path
-                auth-path))))
+                auth-path
+                (cadr-agent:virtual-model-generation)))))
     (when (and cache-key
                (equal cache-key
                       (model-registry-%available-models-key registry)))
@@ -867,6 +875,21 @@
               (remove-if-not
                #'configured-p
                (model-registry-models registry))))
+        (setf models
+              (remove-if
+               (lambda (model)
+                 (cadr-agent:registered-virtual-model
+                  (cadr-ai:model-provider model)
+                  (cadr-ai:model-id model)))
+               models))
+        (dolist (virtual (cadr-agent:registered-virtual-models))
+          (let ((provider (cadr-ai:model-provider virtual)))
+            (when (or (find provider models
+                            :key #'cadr-ai:model-provider)
+                      (not (find provider
+                                 (model-registry-models registry)
+                                 :key #'cadr-ai:model-provider)))
+              (push virtual models))))
         (when cache-key
           (setf (model-registry-%available-models registry) models
                 (model-registry-%available-models-key registry)

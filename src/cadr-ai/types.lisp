@@ -34,7 +34,7 @@
   (provider nil :type symbol)
   (api nil :type symbol)
   (base-url "" :type string)
-  (max-tokens 4096 :type (integer 1 *))
+  (max-tokens 4096 :type (integer 0 *))
   (context-window 0 :type (integer 0 *))
   (supports-images-p nil :type boolean)
   (supports-tools-p t :type boolean)

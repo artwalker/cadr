@@ -120,6 +120,7 @@
 (defun sdk-model-runtime-model
     (runtime provider model-id)
   (or
+   (cadr-agent:registered-virtual-model provider model-id)
    (cadr-ai:models-runtime-model
     (sdk-model-runtime-native-runtime runtime)
     (provider-symbol-from-key provider)

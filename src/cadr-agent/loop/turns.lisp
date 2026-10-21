@@ -209,23 +209,37 @@
                    ;; abort-p is a keyword on the stream call, not a
                    ;; one-field plist built to be read back (TS
                    ;; object-literal leftover).
-                   (if
-                       (eq :off
-                           (agent-thinking-level agent))
-                       (funcall
-                        (agent-stream-function agent)
-                        (agent-provider agent)
-                        (agent-model agent)
-                        context callback
-                        :abort-p abort-p)
-                       (funcall
-                        (agent-stream-function agent)
-                        (agent-provider agent)
-                        (agent-model agent)
-                        context callback
-                        :reasoning
-                        (agent-thinking-level agent)
-                        :abort-p abort-p))))))
+                   ;; pi@71023aec1 prepareRequest routes a virtual
+                   ;; model for this request only. The selection stays
+                   ;; on the agent.
+                   (multiple-value-bind
+                         (request-model request-provider
+                          request-thinking route-error)
+                       (agent-stream-target agent request-messages)
+                     (cond
+                       (route-error
+                        (cadr-ai:make-assistant-message
+                         :api (cadr-ai:model-api (agent-model agent))
+                         :provider
+                         (cadr-ai:model-provider (agent-model agent))
+                         :model (cadr-ai:model-id (agent-model agent))
+                         :stop-reason :error
+                         :error-message route-error))
+                       ((eq :off request-thinking)
+                        (funcall
+                         (agent-stream-function agent)
+                         request-provider
+                         request-model
+                         context callback
+                         :abort-p abort-p))
+                       (t
+                        (funcall
+                         (agent-stream-function agent)
+                         request-provider
+                         request-model
+                         context callback
+                         :reasoning request-thinking
+                         :abort-p abort-p))))))))
       (let ((final
               (merge-terminal-assistant-partial
                message last-partial)))
@@ -767,6 +781,7 @@
 (defun prepare-agent-retry (agent message)
   (unless (agent-will-retry-p agent message)
     (return-from prepare-agent-retry nil))
+  (setf (agent-virtual-route-failure agent) message)
   (incf (agent-retry-attempt agent))
   (let* ((attempt
            (agent-retry-attempt agent))
