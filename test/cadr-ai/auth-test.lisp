@@ -616,6 +616,71 @@
                  (cdr (assoc "openai-beta" headers
                              :test #'string-equal))))))
 
+(test codex-caller-headers-override-originator-and-user-agent
+  ;; pi@71023aec1 #10429. Model headers, then caller headers, replace
+  ;; the Codex originator and User-Agent. Authorization and the
+  ;; account id stay on the credential. A null caller value removes
+  ;; the name.
+  (let* ((provider
+           (cadr-ai:make-openai-codex-provider
+            :oauth-access-token "oauth-secret"
+            :oauth-account-id "acct-7"))
+         (model
+           (cadr-ai:make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"
+            :headers '(("originator" . "my-app"))))
+         (headers
+           (cadr-ai:request-spec-headers
+            (cadr-ai:build-request
+             provider model (sample-context)
+             :stream-p t
+             :headers '(("user-agent" . "my-app/1.0")
+                        ("Authorization" . "Bearer ignored")
+                        ("chatgpt-account-id" . "other-acct"))))))
+    (is (string= "my-app"
+                 (cdr (assoc "originator" headers
+                             :test #'string-equal))))
+    (is (string= "my-app/1.0"
+                 (cdr (assoc "user-agent" headers
+                             :test #'string-equal))))
+    (is (string= "Bearer oauth-secret"
+                 (cdr (assoc "authorization" headers
+                             :test #'string-equal))))
+    (is (string= "acct-7"
+                 (cdr (assoc "chatgpt-account-id" headers
+                             :test #'string-equal))))
+    (is (string= "responses=experimental"
+                 (cdr (assoc "openai-beta" headers
+                             :test #'string-equal))))
+    (is (= 1
+           (count "originator" headers
+                  :key #'car :test #'string-equal))))
+  (let* ((provider
+           (cadr-ai:make-openai-codex-provider
+            :oauth-access-token "oauth-secret"
+            :oauth-account-id "acct-7"))
+         (model
+           (cadr-ai:make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"
+            :headers '(("originator" . "my-app"))))
+         (headers
+           (cadr-ai:request-spec-headers
+            (cadr-ai:build-request
+             provider model (sample-context)
+             :stream-p t
+             :headers '(("originator" . nil))))))
+    (is (null
+         (assoc "originator" headers :test #'string-equal)))
+    (is (string= "Bearer oauth-secret"
+                 (cdr (assoc "authorization" headers
+                             :test #'string-equal))))))
+
 (test oauth-access-token-is-redacted-from-provider-errors
   (let* ((secret "oauth-access-must-not-leak")
          (provider

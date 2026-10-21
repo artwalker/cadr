@@ -120,7 +120,7 @@
 (defgeneric build-request
     (provider model context
      &key stream-p max-tokens temperature reasoning cache-retention
-       session-id tool-choice metadata thinking-budgets))
+       session-id tool-choice metadata thinking-budgets headers))
 
 (defgeneric parse-complete-response (provider model response))
 
@@ -701,7 +701,7 @@ string. Returns the buffer to store back. Per-delta
                       &key max-tokens temperature reasoning cache-retention
                         session-id tool-choice metadata abort-p
                         on-payload transform-headers on-response
-                        thinking-budgets
+                        thinking-budgets headers
                         max-retries max-retry-delay-ms timeout-ms
                         (read-timeout nil read-timeout-supplied-p)
                       &allow-other-keys)
@@ -722,7 +722,8 @@ string. Returns the buffer to store back. Per-delta
                                        :session-id session-id
                                        :tool-choice tool-choice
                                        :metadata metadata
-                                       :thinking-budgets thinking-budgets))
+                                       :thinking-budgets thinking-budgets
+                                       :headers headers))
                (_prepared
                  (apply-provider-request-callbacks
                   request model
@@ -822,7 +823,7 @@ string. Returns the buffer to store back. Per-delta
                       on-provider-stream-event
                       transport
                       websocket-connect-timeout-ms http-proxy
-                      thinking-budgets
+                      thinking-budgets headers
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
@@ -865,6 +866,7 @@ string. Returns the buffer to store back. Per-delta
                                       :tool-choice tool-choice
                                       :metadata metadata
                                       :thinking-budgets thinking-budgets
+                                      :headers headers
                                       :disable-preferred-strict-tools
                                       disable-preferred-strict-p))
                      (preferred-strict-p

@@ -519,7 +519,8 @@
     ((provider bedrock-provider) model context
      &key stream-p max-tokens temperature reasoning
        cache-retention session-id tool-choice metadata
-       thinking-budgets)
+       thinking-budgets
+       &allow-other-keys)
   (declare (ignore session-id))
   (ensure-supported-content model context)
   (let* ((options (provider-options provider))

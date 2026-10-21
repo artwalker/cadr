@@ -131,6 +131,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Herdr 的 Kitty 图和超链接 | v1.3.0 `terminal-image.ts` #10774 #10573 | done：`TERM_PROGRAM=herdr` 用 Kitty 图协议和 OSC 8。它排在 `KITTY_WINDOW_ID` 前面，所以漏进窗格的这个变量不会把真彩色打开。没有 `COLORTERM` 提示时真彩色仍是关的 |
 | Mistral `finish_reason` error | v1.3.0 `mistral-conversations.ts` #10487 | done：流式和完整响应里，`error` 的错误文案是 `Provider stopped with: error (server error)`，因此会重试。未知原因是 `Provider stopped with: 原因`，不重试。`model_length` 记成长度停止，不带错误文案 |
 | 重建转录时清掉全屏选区 | v1.3.0 `tui-alt-screen.ts` #10567 | done：换会话、压缩结束、树导航这些整段替换正文的路径，在全屏渲染器上丢掉选区、拖拽和连击单词。主屏渲染器不动。新正文不会沿用旧坐标的高亮 |
+| Codex 请求头覆盖 | v1.3.0 `openai-codex-responses.ts` #10429 | done：默认 `originator` 是 `cadr`，`User-Agent` 是产品标识。模型头再被调用方头盖掉，调用方传空值就删掉这个名字。`Authorization` 和 `chatgpt-account-id` 仍是凭据。`content-type`、`accept`、`openai-beta` 和会话头保持请求自己的值 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

@@ -593,7 +593,8 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
-                            thinking-budgets)
+                            thinking-budgets
+                            &allow-other-keys)
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
