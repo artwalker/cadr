@@ -109,6 +109,19 @@
    (settings-effective-object manager)
    key default))
 
+(defun settings-device-id (manager)
+  ;; pi@71023aec getOrCreateDeviceId: global only, created on first use.
+  ;; A project settings file must not supply the installation id.
+  (let ((existing
+          (cadr-ai::json-get
+           (settings-manager-global manager)
+           "deviceId")))
+    (if (and (stringp existing) (plusp (length existing)))
+        existing
+        (let ((id (cadr-ai:uuid-v7)))
+          (settings-set manager "deviceId" id :scope :global)
+          id))))
+
 (defun settings-set
     (manager key value &key (scope :global))
   (when (and (eq scope :project)

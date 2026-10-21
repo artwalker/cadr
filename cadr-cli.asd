@@ -244,6 +244,7 @@
                              (:file "goal28-image-settings-test")
                              (:file "goal28-terminal-warning-settings-test")
                              (:file "goal28-cli-settings-readers-test")
+                             (:file "goal26-settings-migration-test")
                              (:file "part-b-models-test")
                              (:file "goal21-thinking-selector-test")
                              (:file "model-registry-cache-test")

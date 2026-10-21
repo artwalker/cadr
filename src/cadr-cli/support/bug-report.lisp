@@ -226,10 +226,14 @@ Do not include file contents, secrets, or credentials from the transcript; refer
     (cond
       ((hash-table-p redacted)
        (remhash "trackingId" redacted)
+       (remhash "deviceId" redacted)
        redacted)
       ((and (consp redacted) (keywordp (car redacted)))
        (loop for (key val) on redacted by #'cddr
-             unless (member key '(:tracking-id :trackingid) :test #'eq)
+             unless (member key
+                            '(:tracking-id :trackingid
+                              :device-id :deviceid)
+                            :test #'eq)
                append (list key val)))
       (t redacted))))
 

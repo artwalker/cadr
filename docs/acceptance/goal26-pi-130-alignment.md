@@ -84,7 +84,8 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Cerebras bodyless 400/413 overflow | v1.3.0 overflow.ts | done on tip：`290327a77` bodyless 400/413 仅 Cerebras |
 | `PI_PROGRAM_STATUS` / OSC 7501 program status | 枚举 | done：`format-program-status` + terminal 探测/`PI_PROGRAM_STATUS=1\|0`；interactive reporter |
 | `fullscreenWheelScrollLines` / wheel auto-accel | v1.3.0 #9758 | done：`WheelScrollAccelerator` + settings/`/settings`；默认 `:auto` |
-| settings / theme schema 变形 | 枚举假阳性 | 重解析后再列缺口 |
+| settings schema 重解析 | 枚举假阳性 | done：82 个 interface key 仍在 `settings-schema.ts` `SettingsSchema`；真实新增 `$schema`、`deviceId`、`codemode`、`queueMode`/`websockets`（deprecated）。`deviceId` + 三项迁移已落地；`codemode` 仍缺 |
+| theme token 重解析 | 枚举假阳性 | 待重解析 `theme-schema.ts` |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
