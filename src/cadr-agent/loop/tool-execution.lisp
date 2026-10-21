@@ -21,7 +21,12 @@
        :error-p
        (cadr-ai:tool-result-message-is-error result))
       (when (tool-outcome-terminate-p outcome)
-        (list :terminate-p t)))))
+        (list :terminate-p t))
+      (when (integerp
+             (cadr-ai:tool-result-message-duration-ms result))
+        (list
+         :duration-ms
+         (cadr-ai:tool-result-message-duration-ms result))))))
   (emit-agent-event
    agent :tool-execution-end
    :tool-call (tool-outcome-call outcome)
@@ -53,6 +58,22 @@
            :tool-call (tool-outcome-call outcome)
            :tool-result (tool-outcome-result outcome))
         (declare (ignore blocked-p reason))
+        (let ((duration
+                (and
+                 (tool-outcome-result outcome)
+                 (cadr-ai:tool-result-message-duration-ms
+                  (tool-outcome-result outcome)))))
+          (when
+              (and
+               (integerp duration)
+               (typep replacement 'cadr-ai:tool-result-message)
+               (null
+                (cadr-ai:tool-result-message-duration-ms
+                 replacement)))
+            (setf
+             (cadr-ai:tool-result-message-duration-ms
+              replacement)
+             duration)))
         (setf
          (tool-outcome-result outcome) replacement
          (tool-outcome-appended-messages outcome)
@@ -261,11 +282,15 @@ pipeline lives.")
               (let ((condition (cdr value)))
                 (setf failure condition)
                 (values
-                 (make-error-tool-result
-                  (tool-restart-state-current-call state)
-                  (cadr-ai:cadr-error-message condition)
-                  (tool-restart-state-current-appended-messages
-                   state))
+                (make-error-tool-result
+                 (tool-restart-state-current-call state)
+                 (cadr-ai:cadr-error-message condition)
+                 (tool-restart-state-current-appended-messages
+                  state)
+                 (and
+                  (typep condition 'tool-execution-error)
+                  (tool-execution-error-duration-ms
+                   condition)))
                  nil))
               (values value nil)))
       (retry-tool-call (replacement-arguments)

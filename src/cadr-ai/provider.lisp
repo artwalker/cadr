@@ -519,7 +519,8 @@ string. Returns the buffer to store back. Per-delta
            :added-tool-names
            (copy-list (tool-result-message-added-tool-names message))
            :is-error (tool-result-message-is-error message)
-           :timestamp (tool-result-message-timestamp message))
+           :timestamp (tool-result-message-timestamp message)
+           :duration-ms (tool-result-message-duration-ms message))
           transformed))
         (t
          (push message transformed))))

@@ -18,7 +18,11 @@
     :reader tool-execution-error-tool)
    (tool-call-id
     :initarg :tool-call-id
-    :reader tool-execution-error-tool-call-id)))
+    :reader tool-execution-error-tool-call-id)
+   (duration-ms
+    :initarg :duration-ms
+    :initform nil
+    :reader tool-execution-error-duration-ms)))
 
 (define-condition agent-busy-error (cadr-ai:cadr-error) ())
 (define-condition agent-shutdown-error (cadr-ai:cadr-error) ())

@@ -218,7 +218,7 @@
   (terminate-p nil :type boolean))
 
 (defun make-error-tool-result
-    (call text &optional appended-messages)
+    (call text &optional appended-messages duration-ms)
   (make-tool-outcome
    :call call
    :appended-messages appended-messages
@@ -227,7 +227,8 @@
     :tool-call-id (cadr-ai:tool-call-id call)
     :tool-name (cadr-ai:tool-call-name call)
     :content (list (cadr-ai:make-text-content :text text))
-    :is-error t)))
+    :is-error t
+    :duration-ms duration-ms)))
 
 (defvar *tool-execution-error-fallback* nil)
 
@@ -254,8 +255,16 @@
       (funcall
        update content details (eq terminate-p t)))))
 
+(defun tool-elapsed-ms (started)
+  (max
+   0
+   (round
+    (* 1000d0
+       (/ (- (get-internal-real-time) started)
+          internal-time-units-per-second)))))
+
 (defun signal-tool-execution-error
-    (message condition tool call)
+    (message condition tool call &key duration-ms)
   (let ((wrapped
           (make-condition
            'tool-execution-error
@@ -263,7 +272,8 @@
            :cause condition
            :tool tool
            :tool-call-id
-           (cadr-ai:tool-call-id call))))
+           (cadr-ai:tool-call-id call)
+           :duration-ms duration-ms)))
     (signal wrapped)
     (if *tool-execution-error-fallback*
         (funcall
@@ -378,7 +388,8 @@
     (unwind-protect
          (let ((*tool-cancellation-signal*
                  cancellation-signal)
-               (*tool-update-function* scoped-update))
+               (*tool-update-function* scoped-update)
+               (started (get-internal-real-time)))
            (handler-bind
                ((error
                   (lambda (condition)
@@ -386,7 +397,9 @@
                         (typep condition 'tool-execution-error)
                       (signal-tool-execution-error
                        (princ-to-string condition)
-                       condition tool call)))))
+                       condition tool call
+                       :duration-ms
+                       (tool-elapsed-ms started))))))
              (let ((*tool-call-cwd*
                      (or execution-cwd *tool-call-cwd*))
                    (*nested-tool-caller-id*
@@ -412,7 +425,9 @@
                    (cadr-ai:tool-call-name call)
                    :content content
                    :details details
-                   :is-error nil))))))
+                   :is-error nil
+                   :duration-ms
+                   (tool-elapsed-ms started)))))))
       (sb-thread:with-recursive-lock
           (update-lock)
         (setf accepting-updates-p nil)))))

@@ -1782,7 +1782,11 @@
                    (keep-extra bag :diagnostics value))
                   ((or (eq field "details")
                        (string= field "details"))
-                   (keep-extra bag :details value))))
+                   (keep-extra bag :details value))
+                  ((or (eq field "durationMs")
+                       (string= field "durationMs")
+                       (string= field "duration_ms"))
+                   (keep-extra bag :duration-ms value))))
                (#\i
                 (when (or (eq field "isError")
                           (string= field "isError")

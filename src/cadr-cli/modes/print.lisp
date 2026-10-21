@@ -258,6 +258,11 @@
               (cadr-ai:tool-result-message-is-error message)
               "timestamp"
               (cadr-ai:tool-result-message-timestamp message))))
+       (when (integerp
+              (cadr-ai:tool-result-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:tool-result-message-duration-ms message)))
        (when (cadr-ai:tool-result-message-added-tool-names message)
          (cadr-ai::json-put
           object "addedToolNames"

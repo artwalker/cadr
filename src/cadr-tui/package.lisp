@@ -230,6 +230,7 @@
    #:tool-block-collapsed-p
    #:tool-block-started-at
    #:tool-block-ended-at
+   #:tool-block-duration-ms
    #:toggle-tool-block
    #:render-tool-block
    #:render-footer

@@ -562,6 +562,11 @@
               (cadr-ai:tool-result-message-is-error message)
               "timestamp"
               (cadr-ai:tool-result-message-timestamp message))))
+       (when (integerp
+              (cadr-ai:tool-result-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:tool-result-message-duration-ms message)))
        (when (cadr-ai:tool-result-message-nested-calls message)
          (cadr-ai::json-put
           object "nestedCalls"
@@ -719,6 +724,10 @@
           :total (usage-cost-amount cost "total"))
          (cadr-ai:make-cost)))))
 
+(defun json-duration-ms (value)
+  (when (realp value)
+    (max 0 (round value))))
+
 (defun message-from-json (object)
   (when (or (typep object 'cadr-ai:system-message)
             (typep object 'cadr-ai:user-message)
@@ -784,6 +793,8 @@
             :content (content-blocks-from-json content)
             :details (getf extra :details)
             :is-error (eq t (getf extra :is-error))
+            :duration-ms
+            (json-duration-ms (getf extra :duration-ms))
             :nested-calls
             (nested-tool-calls-from-json
              (getf extra :nested-calls))
@@ -879,6 +890,9 @@
         :is-error
         (eq t
             (json-get-either object "isError" "is_error"))
+        :duration-ms
+        (json-duration-ms
+         (json-get-either object "durationMs" "duration_ms"))
         :nested-calls
         (nested-tool-calls-from-json
          (cadr-ai::json-get object "nestedCalls"))
@@ -1332,6 +1346,12 @@
       buffer
       (json-safe-value
        (cadr-ai:tool-result-message-details message)))
+     (when (integerp
+            (cadr-ai:tool-result-message-duration-ms message))
+       (emit-json-key buffer nil "durationMs")
+       (emit-json-value
+        buffer
+        (cadr-ai:tool-result-message-duration-ms message)))
      (emit-json-key buffer nil "isError")
      (emit-json-value
       buffer

@@ -15,7 +15,8 @@
   preview-status
   (collapsed-p nil :type boolean)
   started-at
-  ended-at)
+  ended-at
+  (duration-ms nil :type (or null integer)))
 
 (defun make-tool-block (&key (name "") (summary "")
                              header-segments
@@ -26,6 +27,7 @@
                              supplemental-lines
                              (status :running) preview-status
                              started-at ended-at
+                             duration-ms
                              (collapsed-p nil
                               collapsed-p-supplied-p))
   (%make-tool-block
@@ -42,6 +44,7 @@
    :preview-status preview-status
    :started-at started-at
    :ended-at ended-at
+   :duration-ms duration-ms
    :collapsed-p
    (if collapsed-p-supplied-p
        collapsed-p
@@ -580,26 +583,34 @@
                (string-downcase (tool-block-name block))
                '("bash" "powershell")
                :test #'string=)
-              (tool-block-started-at block)
-              (let* ((running-p
-                       (eq (tool-block-status block)
-                           :running))
-                     (end
-                       (or
-                        (tool-block-ended-at block)
-                        now
-                        (tool-block-started-at block)))
-                     (elapsed
-                       (max
-                        0d0
-                        (- end
-                           (tool-block-started-at block)))))
-                (theme-foreground
-                 :muted
-                 (format nil "~A ~A"
-                         (if running-p "Elapsed" "Took")
-                         (format-tool-duration elapsed))
-                 :enabled-p ansi-theme-p))))
+              (let ((running-p
+                      (eq (tool-block-status block) :running))
+                    (recorded (tool-block-duration-ms block)))
+                (cond
+                  ((and (not running-p) (integerp recorded))
+                   (theme-foreground
+                    :muted
+                    (format nil "Took ~A"
+                            (format-tool-duration
+                             (/ recorded 1000d0)))
+                    :enabled-p ansi-theme-p))
+                  ((tool-block-started-at block)
+                   (let* ((end
+                            (or
+                             (tool-block-ended-at block)
+                             now
+                             (tool-block-started-at block)))
+                          (elapsed
+                            (max
+                             0d0
+                             (- end
+                                (tool-block-started-at block)))))
+                     (theme-foreground
+                      :muted
+                      (format nil "~A ~A"
+                              (if running-p "Elapsed" "Took")
+                              (format-tool-duration elapsed))
+                      :enabled-p ansi-theme-p)))))))
            (box-lines
              (append
               (list "")

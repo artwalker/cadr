@@ -966,6 +966,10 @@
             (cadr-tui:tool-block-ended-at
              (tui-entry-tool-block entry))
             (funcall clock-function)
+            (cadr-tui:tool-block-duration-ms
+             (tui-entry-tool-block entry))
+            (cadr-ai:tool-result-message-duration-ms
+             result)
             (cadr-tui:tool-block-collapsed-p
              (tui-entry-tool-block entry))
             (not
@@ -998,6 +1002,9 @@
                    (tui-state-tools-expanded-p state)
                    :is-error-p
                    (cadr-ai:tool-result-message-is-error
+                    result)
+                   :duration-ms
+                   (cadr-ai:tool-result-message-duration-ms
                     result)))
                (setf
                 (tui-entry-custom-result-render

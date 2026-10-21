@@ -156,6 +156,9 @@
   (added-tool-names nil :type list)
   (is-error nil :type boolean)
   (timestamp (unix-milliseconds) :type integer)
+  ;; Milliseconds the tool's execute function ran. Nil when the call
+  ;; never executed, including unknown tools and argument errors.
+  (duration-ms nil :type (or null integer))
   nested-calls
   usage)
 

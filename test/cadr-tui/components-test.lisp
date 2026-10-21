@@ -149,6 +149,50 @@
     (is (search "Took 1h 1m 1s" (screen "powershell" 0d0 3661d0)))
     (is (search "Took 59.9s" (screen "bash" 0d0 59.94d0)))))
 
+(test recorded-tool-duration-replaces-the-wall-clock
+  ;; pi@71023aec1 render-utils.ts toolTimerText. A stored duration
+  ;; wins over the renderer's clock, including after a reload that
+  ;; has no start time.
+  (let ((recorded
+          (cadr-tui:strip-terminal-sequences
+           (format
+            nil "~{~A~%~}"
+            (cadr-tui:render-tool-block
+             (cadr-tui:make-tool-block
+              :name "bash"
+              :summary "printf ok"
+              :status :complete
+              :started-at 0d0
+              :ended-at 99d0
+              :duration-ms 1300)
+             60)))))
+    (is (search "Took 1.3s" recorded))
+    (is (null (search "Took 99" recorded))))
+  (let ((reloaded
+          (cadr-tui:strip-terminal-sequences
+           (format
+            nil "~{~A~%~}"
+            (cadr-tui:render-tool-block
+             (cadr-tui:make-tool-block
+              :name "powershell"
+              :summary "Get-Date"
+              :status :complete
+              :duration-ms 90000)
+             60)))))
+    (is (search "Took 1m 30s" reloaded)))
+  (let ((other
+          (cadr-tui:strip-terminal-sequences
+           (format
+            nil "~{~A~%~}"
+            (cadr-tui:render-tool-block
+             (cadr-tui:make-tool-block
+              :name "read"
+              :summary "file"
+              :status :complete
+              :duration-ms 1300)
+             60)))))
+    (is (null (search "Took" other)))))
+
 (test status-bar-and-select-list
   (is (search "↑12"
               (cadr-tui:render-status-bar
