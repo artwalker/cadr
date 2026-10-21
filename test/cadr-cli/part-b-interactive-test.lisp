@@ -1051,6 +1051,58 @@
        (cadr-cli:osc52-copy-sequence
         "oversized" :maximum-bytes 1))))
 
+(test clipboard-osc52-opt-in-follows-a-successful-local-copy
+  ;; pi #10826: PI_CLIPBOARD_OSC52=1 sends OSC 52 after the local write
+  ;; when the session has no SSH markers.
+  (let ((events nil)
+        (output (make-string-output-stream)))
+    (is (eq :native+osc52
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :darwin
+             :environment '(("PI_CLIPBOARD_OSC52" . "1"))
+             :output output
+             :native-setter
+             (lambda (text)
+               (push (list :native text) events)))))
+    (is (equal '((:native "hello")) events))
+    (is (search "]52;c;aGVsbG8="
+                (get-output-stream-string output))))
+  (let ((commands nil)
+        (output (make-string-output-stream)))
+    (is (eq :shell+osc52
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :x11-display-p t
+             :wsl-p nil
+             :environment '(("PI_CLIPBOARD_OSC52" . "1")
+                            ("DISPLAY" . ":99"))
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (push (list argv input) commands)
+               t))))
+    (is (equal '((("xclip" "-selection" "clipboard") "hello"))
+               commands))
+    (is (search "]52;c;aGVsbG8="
+                (get-output-stream-string output))))
+  (let ((output (make-string-output-stream)))
+    (is (eq :shell
+            (cadr-cli::copy-to-clipboard
+             "hello"
+             :platform :linux
+             :x11-display-p t
+             :wsl-p nil
+             :environment '(("PI_CLIPBOARD_OSC52" . "0")
+                            ("DISPLAY" . ":99"))
+             :output output
+             :command-runner
+             (lambda (argv input)
+               (declare (ignore argv input))
+               t))))
+    (is (string= "" (get-output-stream-string output)))))
+
 (test clipboard-text-and-image-fallbacks-preserve-platform-order
   (is (string=
        "native"
