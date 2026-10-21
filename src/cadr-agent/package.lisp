@@ -232,6 +232,10 @@
    #:mcp-server-entry-source
    #:mcp-server-entry-scope
    #:mcp-server-entry-override
+   #:create-mcp-tool-name
+   #:render-mcp-servers-section
+   #:make-mcp-server-listing
+   #:mcp-server-listing-name
    #:registered-mcp-server
    #:registered-mcp-server-name
    #:registered-mcp-server-config

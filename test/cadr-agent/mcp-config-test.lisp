@@ -272,3 +272,85 @@
         (is (search "auth requires an https URL" (first errors)))
         (is (search "auth.provider must be a provider name" (second errors)))
         (is (search "auth is only allowed in the global mcp.json" (third errors)))))))
+
+(defun mcp-hex-suffix-p (name)
+  (and (>= (length name) 9)
+       (char= (char name (- (length name) 9)) #\_)
+       (every (lambda (character)
+                (digit-char-p character 16))
+              (subseq name (- (length name) 8)))))
+
+(test mcp-tool-names-and-servers-section
+  ;; pi@71023aec1 createMcpToolName and renderServersSection.
+  (is (string= "mcp__docs__search"
+               (cadr-agent:create-mcp-tool-name "docs" "search")))
+  (is (string= "mcp__my_server__get_item_v2"
+               (cadr-agent:create-mcp-tool-name "my-server" "get.item/v2")))
+  (let* ((long (cadr-agent:create-mcp-tool-name "server" (make-string 100 :initial-element #\x)))
+         (other (cadr-agent:create-mcp-tool-name
+                 "server"
+                 (concatenate 'string
+                              (make-string 100 :initial-element #\x)
+                              "y")))
+         (taken (cadr-agent:create-mcp-tool-name "s" "a_b"))
+         (second (cadr-agent:create-mcp-tool-name
+                  "s" "a-b"
+                  (lambda (name) (string= name taken)))))
+    (is (= 64 (length long)))
+    (is (uiop:string-prefix-p "mcp__server__" long))
+    (is (mcp-hex-suffix-p long))
+    (is (not (string= long other)))
+    (is (mcp-hex-suffix-p second))
+    (is (uiop:string-prefix-p "mcp__s__a_b_" second)))
+  (let* ((section
+           (cadr-agent:render-mcp-servers-section
+            (list
+             (cadr-agent:make-mcp-server-listing
+              :name "docs"
+              :description "Docs search.
+More.")
+             (cadr-agent:make-mcp-server-listing
+              :name "later"
+              :exposure "deferred")
+             (cadr-agent:make-mcp-server-listing
+              :name "direct"
+              :description "Declared."
+              :exposure "direct")
+             (cadr-agent:make-mcp-server-listing
+              :name "plain"
+              :instructions "From instructions."))))
+         (lines (uiop:split-string section :separator '(#\Newline))))
+    (is (string= (first lines)
+                 "MCP servers whose tools are not declared to you. Call the tools of `codemode` servers from codemode scripts. Load the tools of `tool_search` servers with `tool_search`."))
+    (is (equal (rest lines)
+               '("- mcp__docs (codemode): Docs search."
+                 "- mcp__later (tool_search)"
+                 "- mcp__plain (codemode): From instructions."))))
+  (is (null (cadr-agent:render-mcp-servers-section
+             (list (cadr-agent:make-mcp-server-listing
+                    :name "direct"
+                    :description "Declared."
+                    :exposure "direct")))))
+  (let* ((servers
+           (loop for index from 0 below 40
+                 collect (cadr-agent:make-mcp-server-listing
+                          :name (format nil "server~D" index)
+                          :description (make-string 400 :initial-element #\x))))
+         (section (cadr-agent:render-mcp-servers-section servers))
+         (lines (uiop:split-string section :separator '(#\Newline))))
+    (is (<= (length section) 4096))
+    (is (= 41 (length lines)))
+    (is (search "- mcp__server39 (codemode): x" section)))
+  (let* ((servers
+           (loop for index from 0 below 200
+                 collect (cadr-agent:make-mcp-server-listing
+                          :name (format nil "server-with-a-long-name-~D" index)
+                          :description "desc")))
+         (section (cadr-agent:render-mcp-servers-section servers))
+         (lines (uiop:split-string section :separator '(#\Newline)))
+         (last (car (last lines)))
+         (count (parse-integer last :start (1+ (position #\… last))
+                               :junk-allowed t)))
+    (is (<= (length section) 4096))
+    (is (search "more servers; find their tools with searchTools()" last))
+    (is (= 200 (+ (- (length lines) 2) count)))))

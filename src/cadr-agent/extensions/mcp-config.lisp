@@ -753,3 +753,168 @@
          (mcp-put parsed
                   "mcpServers"
                   (mcp-put servers name server)))))))
+
+(defstruct mcp-server-listing
+  (name "" :type string)
+  (description nil :type (or null string))
+  (exposure nil :type (or null string))
+  (tool-exposures nil :type list)
+  (enabled t :type boolean)
+  (instructions nil :type (or null string)))
+
+(defun mcp-sanitize-name (text)
+  (with-output-to-string (out)
+    (loop for character across text
+          do (write-char
+              (if (or (char<= #\A character #\Z)
+                      (char<= #\a character #\z)
+                      (digit-char-p character)
+                      (char= character #\_))
+                  character
+                  #\_)
+              out))))
+
+(defun mcp-name-hash (server tool)
+  (let ((digest
+          (cadr-ai::sha256-bytes
+           (sb-ext:string-to-octets
+            (concatenate 'string server (string #\Nul) tool)
+            :external-format :utf-8))))
+    (with-output-to-string (out)
+      (loop for index from 0 below 4
+            do (format out "~(~2,'0x~)" (aref digest index))))))
+
+(defun create-mcp-tool-name (server tool &optional (taken (constantly nil)))
+  ;; pi@71023aec1 createMcpToolName. Provider names are 64 characters of
+  ;; [A-Za-z0-9_]. A collision or a longer name keeps a sha256 suffix.
+  (let ((name (mcp-sanitize-name (format nil "mcp__~A__~A" server tool))))
+    (if (and (<= (length name) 64)
+             (not (funcall taken name)))
+        name
+        (let ((hash (mcp-name-hash server tool)))
+          (format nil "~A_~A"
+                  (subseq name 0 (min (length name)
+                                      (- 64 (length hash) 1)))
+                  hash)))))
+
+(defun mcp-listing-exposures (listing)
+  (let ((exposure (or (mcp-server-listing-exposure listing) "codemode")))
+    (remove-duplicates
+     (cons exposure (mcp-server-listing-tool-exposures listing))
+     :test #'string=)))
+
+(defun mcp-listing-indirect-p (listing)
+  (let ((exposures (mcp-listing-exposures listing)))
+    (or (member "codemode" exposures :test #'string=)
+        (member "deferred" exposures :test #'string=))))
+
+(defun mcp-listing-reach (listing)
+  (if (member "codemode" (mcp-listing-exposures listing) :test #'string=)
+      "codemode"
+      "tool_search"))
+
+(defun mcp-servers-intro (reaches)
+  (concatenate
+   'string
+   "MCP servers whose tools are not declared to you."
+   (if (member "codemode" reaches :test #'string=)
+       " Call the tools of `codemode` servers from codemode scripts."
+       "")
+   (if (member "tool_search" reaches :test #'string=)
+       " Load the tools of `tool_search` servers with `tool_search`."
+       "")))
+
+(defun mcp-trim (text)
+  (string-trim '(#\Space #\Tab #\Newline #\Return) text))
+
+(defun mcp-first-line (text)
+  (let* ((newline (position #\Newline text))
+         (line (if newline (subseq text 0 newline) text)))
+    (mcp-trim line)))
+
+(defun mcp-listing-summary (listing)
+  (let* ((description (mcp-server-listing-description listing))
+         (trimmed (and description (mcp-trim description)))
+         (text (if (and trimmed (plusp (length trimmed)))
+                   trimmed
+                   (or (mcp-server-listing-instructions listing) ""))))
+    (mcp-first-line text)))
+
+(defun mcp-truncate (text max)
+  (cond
+    ((<= (length text) max) text)
+    ((<= max 1) "")
+    (t
+     (concatenate 'string
+                  (mcp-trim (subseq text 0 (1- max)))
+                  (string #\…)))))
+
+(defun mcp-omitted-line (count)
+  (when (plusp count)
+    (format nil
+            "- … ~D more server~A; find their tools with searchTools()"
+            count
+            (if (= count 1) "" "s"))))
+
+(defun mcp-section-size (intro heads total kept)
+  (let ((lines (cons intro (subseq heads 0 kept)))
+        (omitted (mcp-omitted-line (- total kept))))
+    (length (format nil "~{~A~^~%~}"
+                    (if omitted
+                        (append lines (list omitted))
+                        lines)))))
+
+(defun render-mcp-servers-section (servers)
+  ;; pi@71023aec1 renderServersSection. Direct-only servers stay out.
+  ;; Descriptions shrink, then the last servers are counted in the
+  ;; closing line, so the section stays within 4096 characters.
+  (let* ((listed
+           (sort
+            (remove-if-not
+             (lambda (listing)
+               (and (mcp-server-listing-enabled listing)
+                    (mcp-listing-indirect-p listing)))
+             (copy-list servers))
+            #'string<
+            :key #'mcp-server-listing-name))
+         (reaches (mapcar #'mcp-listing-reach listed)))
+    (when listed
+      (let* ((intro (mcp-servers-intro reaches))
+             (heads
+               (loop for listing in listed
+                     for reach in reaches
+                     collect (format nil "- ~A (~A)"
+                                     (mcp-namespace
+                                      (mcp-server-listing-name listing))
+                                     reach)))
+             (kept (length listed)))
+        (loop while (and (plusp kept)
+                         (> (mcp-section-size intro heads (length listed) kept)
+                            4096))
+              do (decf kept))
+        (let ((per-server
+                (if (zerop kept)
+                    0
+                    (min 250
+                         (- (floor (- 4096
+                                      (mcp-section-size
+                                       intro heads (length listed) kept))
+                                   kept)
+                            2)))))
+          (format nil "~{~A~^~%~}"
+                  (append
+                   (list intro)
+                   (loop for listing in listed
+                         for head in heads
+                         for index from 0 below kept
+                         for summary = (if (plusp per-server)
+                                           (mcp-truncate
+                                            (mcp-listing-summary listing)
+                                            per-server)
+                                           "")
+                         collect (if (plusp (length summary))
+                                     (format nil "~A: ~A" head summary)
+                                     head))
+                   (let ((omitted
+                           (mcp-omitted-line (- (length listed) kept))))
+                     (if omitted (list omitted) nil)))))))))

@@ -98,6 +98,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | virtual model | v1.3.0 `virtual-models.ts` | done：`api` `:pi-virtual` 只作为选择；请求前 `route` 换成物理模型和钳制后的 thinking；未注册、非物理目标、无凭证、直接 `stream-chat` 都失败；物理回复之后分支选择仍停在已注册的虚拟模型上；路由状态记在 `pi.virtual-model-state` |
 | `tool_search` | v1.3.0 `extensions/tool-search/tool.ts` | done：BM25 检索尚未声明的 `deferred` / `codemode` 工具并写入 active tools，下一次调用才声明；空 query、非正整数 limit 失败；内置但不在默认四个工具里。`createCodemodeDescription` 不移植 |
 | MCP `mcp.json` | v1.3.0 `mcp-servers.ts` / `extensions/mcp/config.ts` | done：校验 stdio/HTTP、exposure 别名、按工具 exposure、OAuth 回调、provider auth 只允许全局文件；可信项目可覆盖 enabled/exposure/toolExposure；`-`/`_` 命名冲突拒绝。连接、OAuth 登录和 codemode 执行仍不在这次 |
+| MCP 工具名 / `mcp_servers` 段 | v1.3.0 `createMcpToolName` / `renderServersSection` | done：名字只留 `[A-Za-z0-9_]`，超过 64 或撞名时加 sha256 后缀；系统段列出 codemode / deferred 服务器，描述缩短，放不下的末尾服务器计在结束行。连接仍不在这次 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
