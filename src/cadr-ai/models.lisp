@@ -598,6 +598,122 @@
     (dolist (provider '(:openai :openai-codex :azure))
       (register-gpt-6-official-model provider id))))
 
+(defparameter +github-copilot-catalog-headers+
+  '(("Copilot-Integration-Id" . "vscode-chat")
+    ("Editor-Plugin-Version" . "copilot-chat/0.35.0")
+    ("Editor-Version" . "vscode/1.107.0")
+    ("User-Agent" . "GitHubCopilotChat/0.35.0")))
+
+(defparameter +github-copilot-extended-context-ids+
+  '("claude-fable-5"
+    "claude-opus-4.6"
+    "claude-opus-4.7"
+    "claude-opus-4.8"
+    "claude-opus-5"
+    "claude-opus-5.5"
+    "claude-sonnet-4.6"
+    "claude-sonnet-5"
+    "gpt-5.3-codex"
+    "gpt-5.4"
+    "gpt-5.5"
+    "gpt-6-astra"
+    "gpt-6-luna"
+    "gpt-6-sol"))
+
+(defun github-copilot-long-context-tiers (input output cache-read cache-write)
+  (list
+   (make-model-cost-tier
+    :input-tokens-above 272000
+    :input-price (round-model-cost (* input 2d0))
+    :output-price (round-model-cost (* output 1.5d0))
+    :cache-read-price (round-model-cost (* cache-read 2d0))
+    :cache-write-price (round-model-cost (* cache-write 2d0)))))
+
+(defun register-github-copilot-gpt-6 (id input output cache-read cache-write)
+  (when (gethash (model-catalog-key :github-copilot id) *model-catalog*)
+    (return-from register-github-copilot-gpt-6 nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :github-copilot
+    :id id
+    :name (gpt-6-official-name id)
+    :api :openai-responses
+    :base-url "https://api.individual.githubcopilot.com"
+    :context-window 1000000
+    :max-output-tokens 128000
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :thinking-level-map
+    '((:off . "none")
+      (:minimal)
+      (:low . "low")
+      (:medium . "medium")
+      (:high . "high")
+      (:xhigh . "xhigh")
+      (:max . "max"))
+    :headers (copy-tree +github-copilot-catalog-headers+)
+    :compat '(:supports-openai-grammar-tools t)
+    :input-price input
+    :output-price output
+    :cache-read-price cache-read
+    :cache-write-price cache-write
+    :cost-tiers
+    (github-copilot-long-context-tiers
+     input output cache-read cache-write))))
+
+(defun register-github-copilot-opus-5-5 ()
+  (when (gethash
+         (model-catalog-key :github-copilot "claude-opus-5.5")
+         *model-catalog*)
+    (return-from register-github-copilot-opus-5-5 nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :github-copilot
+    :id "claude-opus-5.5"
+    :name "Claude Opus 5.5"
+    :api :anthropic-messages
+    :base-url "https://api.individual.githubcopilot.com"
+    :context-window 1000000
+    :max-output-tokens 128000
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :thinking-level-map
+    '((:off)
+      (:minimal)
+      (:low . "low")
+      (:medium . "medium")
+      (:high . "high")
+      (:xhigh . "xhigh")
+      (:max . "max"))
+    :headers (copy-tree +github-copilot-catalog-headers+)
+    :compat '(:force-adaptive-thinking t
+              :supports-temperature nil
+              :supports-mid-convo-system-messages t)
+    :input-price 4d0
+    :output-price 20d0
+    :cache-read-price 0.2d0
+    :cache-write-price 5d0)))
+
+(defun apply-github-copilot-extended-context ()
+  (dolist (id +github-copilot-extended-context-ids+)
+    (let ((metadata
+            (gethash
+             (model-catalog-key :github-copilot id)
+             *model-catalog*)))
+      (when metadata
+        (setf (model-metadata-context-window metadata) 1000000)))))
+
+(defun register-github-copilot-pin-models ()
+  ;; pi@71023aec1 generate-models.ts. Copilot advertised these before
+  ;; models.dev did. The extended-context ids are 1_000_000 even when an
+  ;; import reports a larger window.
+  (register-github-copilot-opus-5-5)
+  (register-github-copilot-gpt-6 "gpt-6-sol" 2d0 10d0 0.2d0 2.5d0)
+  (register-github-copilot-gpt-6 "gpt-6-luna" 0.1d0 0.5d0 0.01d0 0.125d0)
+  (apply-github-copilot-extended-context))
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
@@ -623,4 +739,5 @@
       (register-model-metadata
        (apply #'make-model-metadata copy))))
   (register-azure-deepseek-model)
-  (register-gpt-6-official-models))
+  (register-gpt-6-official-models)
+  (register-github-copilot-pin-models))

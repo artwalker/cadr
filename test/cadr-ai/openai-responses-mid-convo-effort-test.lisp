@@ -335,3 +335,65 @@
   (is (= 272000
          (cadr-ai:model-metadata-context-window
           (cadr-ai:find-model-metadata :openai-codex "gpt-6-astra")))))
+
+(test github-copilot-lists-gpt-6-and-opus-5-5-at-one-million
+  ;; pi@71023aec1 generate-models.ts. Copilot's catalog adds these when
+  ;; models.dev omits them, and the extended-context ids are 1_000_000.
+  (dolist (case
+           '(("gpt-6-sol" :openai-responses
+              (:off :low :medium :high :xhigh :max)
+              2d0 10d0 0.2d0 2.5d0)
+             ("gpt-6-luna" :openai-responses
+              (:off :low :medium :high :xhigh :max)
+              0.1d0 0.5d0 0.01d0 0.125d0)))
+    (destructuring-bind
+        (id api levels input output cache-read cache-write)
+        case
+      (let* ((meta (cadr-ai:find-model-metadata :github-copilot id))
+             (tier (first (cadr-ai:model-metadata-cost-tiers meta))))
+        (is (eq api (cadr-ai:model-metadata-api meta)))
+        (is (string=
+             "https://api.individual.githubcopilot.com"
+             (cadr-ai:model-metadata-base-url meta)))
+        (is (= 1000000 (cadr-ai:model-metadata-context-window meta)))
+        (is (= 128000 (cadr-ai:model-metadata-max-output-tokens meta)))
+        (is (= input (cadr-ai:model-metadata-input-price meta)))
+        (is (= output (cadr-ai:model-metadata-output-price meta)))
+        (is (= cache-read (cadr-ai:model-metadata-cache-read-price meta)))
+        (is (= cache-write
+               (cadr-ai:model-metadata-cache-write-price meta)))
+        (is (equal levels
+                   (cadr-ai:supported-thinking-levels
+                    (cadr-ai::model-from-metadata meta))))
+        (is (eq t
+                (getf (cadr-ai:model-metadata-compat meta)
+                      :supports-openai-grammar-tools)))
+        (is (= 272000
+               (cadr-ai:model-cost-tier-input-tokens-above tier)))
+        (is (= (cadr-ai::round-model-cost (* input 2d0))
+               (cadr-ai:model-cost-tier-input-price tier))))))
+  (let ((opus
+          (cadr-ai:find-model-metadata
+           :github-copilot "claude-opus-5.5")))
+    (is (eq :anthropic-messages (cadr-ai:model-metadata-api opus)))
+    (is (string= "Claude Opus 5.5" (cadr-ai:model-metadata-name opus)))
+    (is (= 1000000 (cadr-ai:model-metadata-context-window opus)))
+    (is (= 128000 (cadr-ai:model-metadata-max-output-tokens opus)))
+    (is (= 4d0 (cadr-ai:model-metadata-input-price opus)))
+    (is (= 20d0 (cadr-ai:model-metadata-output-price opus)))
+    (is (equal '(:low :medium :high :xhigh :max)
+               (cadr-ai:supported-thinking-levels
+                (cadr-ai::model-from-metadata opus))))
+    (is (eq t
+            (getf (cadr-ai:model-metadata-compat opus)
+                  :force-adaptive-thinking)))
+    (is (null
+         (getf (cadr-ai:model-metadata-compat opus)
+               :supports-temperature)))
+    (is (eq t
+            (getf (cadr-ai:model-metadata-compat opus)
+                  :supports-mid-convo-system-messages))))
+  (is (= 1000000
+         (cadr-ai:model-metadata-context-window
+          (cadr-ai:find-model-metadata
+           :github-copilot "gpt-6-astra")))))
