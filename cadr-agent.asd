@@ -113,6 +113,7 @@
                              (:file "goal28-tool-call-events-test")
                              (:file "extensions-wave2-test")
                              (:file "extensions-wave3-test")
+                             (:file "custom-trigger-test")
                              (:file "goal26-extension-events-test")
                              (:file "goal12-extension-api-test")
                              (:file "goal24-extension-tool-schema-test")

@@ -265,6 +265,14 @@
       (error
        'extension-execution-error
        :message "send-message requires an attached agent"))
+    (when (and (extension-custom-message-p message)
+               trigger-turn-p
+               (null deliver-as)
+               (not (agent-busy-p agent)))
+      ;; The run appends the custom message once. A user copy would
+      ;; put the same text in the prompt a second time.
+      (return-from extension-host-send-message
+        (agent-prompt-custom agent message)))
     (let ((queued-message
             (cond
               ((extension-custom-message-p message)

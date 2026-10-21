@@ -446,6 +446,60 @@
                 final-text))
            nil))))))
 
+(defun finish-prepared-prompt
+    (agent prompt-options selected-before before-result starting)
+  (let ((handler-edited-tools-p
+          (let ((after
+                  (getf prompt-options :selected-tools)))
+            (or
+             (/= (length after) (length selected-before))
+             (notevery #'string= after selected-before)))))
+    (unless handler-edited-tools-p
+      (let* ((declared
+               (mapcar
+                #'cadr-ai:tool-name
+                (registry-tools
+                 (agent-tool-registry agent))))
+             (hidden (active-hidden-tool-names agent)))
+        (setf
+         (getf prompt-options :selected-tools)
+         (append
+          declared
+          (remove-if
+           (lambda (name)
+             (member name declared :test #'string=))
+           hidden))
+         (getf prompt-options :hidden-tools)
+         hidden)))
+    (let* ((force-system-prompt
+             (let ((sentinel (list :missing)))
+               (let ((system-prompt
+                       (getf before-result :system-prompt sentinel)))
+                 (unless (eq system-prompt sentinel)
+                   system-prompt))))
+           (loadout
+             (agent-prepare-prompt-loadout-function agent))
+           (update
+             (progn
+               (when force-system-prompt
+                 (setf
+                  (getf prompt-options :force-system-prompt)
+                  force-system-prompt))
+               (when loadout
+                 (funcall
+                  loadout
+                  agent
+                  prompt-options
+                  (agent-messages agent)))))
+           (pending
+             (if update
+                 (cons update starting)
+                 starting)))
+      (values
+       pending
+       (agent-system-prompt agent)
+       force-system-prompt))))
+
 (defun prepare-agent-prompt
     (agent message source)
   (multiple-value-bind (final-message handled-p)
@@ -470,71 +524,76 @@
                  :images final-images
                  :system-prompt
                  (agent-system-prompt agent)
-                 :system-prompt-options prompt-options)))
-             (handler-edited-tools-p
-               (let ((after
-                       (getf prompt-options
-                             :selected-tools)))
-                 (or
-                  (/= (length after)
-                      (length selected-before))
-                  (notevery
-                   #'string=
-                   after selected-before)))))
-        (unless handler-edited-tools-p
-          (let* ((declared
-                   (mapcar
-                    #'cadr-ai:tool-name
-                    (registry-tools
-                     (agent-tool-registry agent))))
-                 (hidden (active-hidden-tool-names agent)))
-            (setf
-             (getf prompt-options :selected-tools)
-             (append
-              declared
-              (remove-if
-               (lambda (name)
-                 (member name declared :test #'string=))
-               hidden))
-             (getf prompt-options :hidden-tools)
-             hidden)))
-        (let* ((pending
-                 (nconc
-                  (drain-agent-queue agent :next-turn)
-                  (list final-message)
-                  (copy-list
-                   (getf before-result :messages))
-                  (drain-agent-queue agent :steering)))
-               (force-system-prompt
-                 (let ((sentinel (list :missing)))
-                   (let ((system-prompt
-                           (getf
-                            before-result
-                            :system-prompt sentinel)))
-                     (unless (eq system-prompt sentinel)
-                       system-prompt))))
-               (loadout
-                 (agent-prepare-prompt-loadout-function
-                  agent))
-               (update
-                 (progn
-                   (when force-system-prompt
-                     (setf
-                      (getf prompt-options :force-system-prompt)
-                      force-system-prompt))
-                   (when loadout
-                     (funcall
-                      loadout
-                      agent
-                      prompt-options
-                      (agent-messages agent))))))
-          (when update
-            (setf pending (cons update pending)))
+                 :system-prompt-options prompt-options))))
+        (multiple-value-bind
+              (pending system-prompt force-system-prompt)
+            (finish-prepared-prompt
+             agent prompt-options selected-before before-result
+             (nconc
+              (drain-agent-queue agent :next-turn)
+              (list final-message)
+              (copy-list (getf before-result :messages))
+              (drain-agent-queue agent :steering)))
           (values
            pending
-           (agent-system-prompt agent)
+           system-prompt
            nil
            force-system-prompt))))))
+
+(defun custom-trigger-agent-message (message)
+  (make-custom-agent-message
+   :custom-type (or (getf message :custom-type) "")
+   :content (getf message :content)
+   :display-p (not (null (getf message :display-p)))
+   :details (getf message :details)))
+
+(defun prepare-custom-agent-prompt (agent message)
+  ;; pi@71023aec1 agent-session.ts _prepareRun. An idle triggerTurn
+  ;; custom message is the run's starting message. The hook sees that
+  ;; message and no user prompt.
+  (let* ((prompt-options
+           (copy-tree (agent-system-prompt-options agent)))
+         (selected-before
+           (copy-list (getf prompt-options :selected-tools)))
+         (before-result
+           (run-agent-lifecycle
+            agent :before-agent-start
+            (list
+             :message-type :custom
+             :message (copy-tree message)
+             :system-prompt (agent-system-prompt agent)
+             :system-prompt-options prompt-options))))
+    (multiple-value-bind
+          (pending system-prompt force-system-prompt)
+        (finish-prepared-prompt
+         agent prompt-options selected-before before-result
+         (nconc
+          (list (custom-trigger-agent-message message))
+          (drain-agent-queue agent :next-turn)
+          (copy-list (getf before-result :messages))
+          (drain-agent-queue agent :steering)))
+      (values pending system-prompt force-system-prompt))))
+
+(defun agent-prompt-custom (agent message)
+  (call-with-agent-run
+   agent
+   (lambda ()
+     (ensure-agent-session-started agent)
+     (flush-agent-pending-custom-messages agent)
+     (maybe-compact-agent agent)
+     (multiple-value-bind
+           (messages system-prompt force-system-prompt)
+         (prepare-custom-agent-prompt agent message)
+       (unless (agent-model agent)
+         (error
+          'cadr-ai:configuration-error
+          :message
+          (cadr-ai::no-api-key-found-message "unknown")))
+       (assert-agent-not-shutdown agent)
+       (let ((*agent-run-system-prompt* system-prompt)
+             (*agent-run-force-system-prompt*
+               force-system-prompt))
+         (run-agent-with-retries agent messages))))))
 
 (defun agent-prompt
     (agent prompt

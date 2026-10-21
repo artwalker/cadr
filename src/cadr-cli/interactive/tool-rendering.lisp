@@ -713,6 +713,8 @@
          (cadr-agent:branch-summary-message
           (seed-tui-message state message))
          (cadr-agent:compaction-summary-agent-message
+          (seed-tui-message state message))
+         (cadr-agent:custom-agent-message
           (seed-tui-message state message))))
       (:message-update
        ;; Block-end opens the persist settle window (pi never paints
