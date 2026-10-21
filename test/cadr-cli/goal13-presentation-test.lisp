@@ -1359,4 +1359,35 @@
                  :id "read-plain"
                  :name "read"
                  :arguments (cadr-ai::json-object "path" "a.txt"))
-                "/tmp"))))
+                "/tmp")))
+  (is (string= "a.txt:1-13" (goal13-read-summary 'null "13"))))
+
+(test session-tree-uses-the-shared-read-line-range
+  ;; pi@71023aec1 #10938. String bounds are numbers, not concatenation.
+  ;; JSON null is an omitted argument. A bad bound drops the range.
+  (labels ((label (offset limit)
+             (cadr-cli::tree-selector-format-tool-call
+              "read"
+              (cadr-ai::json-object
+               "path" "notes.txt"
+               "offset" offset
+               "limit" limit))))
+    (is (string= "[read: notes.txt:25-37]" (label "25" "13")))
+    (is (string= "[read: notes.txt:25-37]" (label 25 13)))
+    (is (string= "[read: notes.txt:1-13]" (label 'null "13")))
+    (is (string= "[read: notes.txt:25]" (label "25" 'null)))
+    (is (string= "[read: notes.txt]" (label "abc" 13)))
+    (is (string= "[read: notes.txt]" (label 25 "")))
+    (is (string= "[read: notes.txt]" (label 25 "Infinity")))
+    (is (string= "[read: notes.txt:1]" (label 1 0))))
+  (let ((template
+          (uiop:read-file-string
+           (merge-pathnames
+            "src/cadr-agent/export-html/template.js"
+            (asdf:system-source-directory "cadr-agent")))))
+    (is (search
+         "[read: ${path}${formatReadLineRange(args.offset, args.limit)}]"
+         template))
+    (is (search "function formatReadLineRange(offset, limit)" template))
+    (is (search "escapeHtml(readLineRange)" template))
+    (is (not (search "start + limit - 1" template)))))

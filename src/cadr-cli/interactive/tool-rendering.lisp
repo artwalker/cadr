@@ -76,9 +76,17 @@
      (princ-to-string (truncate value)))
     (t (princ-to-string (coerce value 'single-float)))))
 
+(defun read-line-bound-absent-p (value)
+  (or (null value) (cadr-ai::json-null-p value)))
+
 (defun format-read-line-range (offset limit)
   ;; pi@71023aec1 formatReadLineRange. A malformed bound drops the
-  ;; whole range. A zero end is omitted, so :1 with limit 0 stays ":1".
+  ;; whole range. JSON null is an omitted argument. A zero end is
+  ;; omitted, so :1 with limit 0 stays ":1".
+  (when (read-line-bound-absent-p offset)
+    (setf offset nil))
+  (when (read-line-bound-absent-p limit)
+    (setf limit nil))
   (when (and (null offset) (null limit))
     (return-from format-read-line-range ""))
   (let ((start
