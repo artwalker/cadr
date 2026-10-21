@@ -36,6 +36,33 @@
       (uiop:delete-directory-tree
        root :validate t :if-does-not-exist :ignore))))
 
+(test skill-slash-scores-bare-name-before-full-prefix
+  (let* ((provider
+           (cadr-tui:make-autocomplete-provider
+            :base-path (uiop:temporary-directory)
+            :commands
+            (list
+             (cadr-tui:make-autocomplete-command
+              :name "skip" :description "Skip")
+             (cadr-tui:make-autocomplete-command
+              :name "skill:pdf" :description "PDF skill")
+             (cadr-tui:make-autocomplete-command
+              :name "help" :description "Help"))))
+         (bare
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/pdf") 0 4))
+         (prefix-only
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/ski") 0 4)))
+    (is (equal '("skill:pdf")
+               (mapcar #'cadr-tui:autocomplete-item-value
+                       (cadr-tui:autocomplete-suggestions-items
+                        bare))))
+    (is (equal '("skip" "skill:pdf")
+               (mapcar #'cadr-tui:autocomplete-item-value
+                       (cadr-tui:autocomplete-suggestions-items
+                        prefix-only))))))
+
 (test autocomplete-slash-and-path-prefix-semantics
   (with-autocomplete-tree
    (lambda (root)

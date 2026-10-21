@@ -531,6 +531,12 @@
        ((plusp (length description)) description)
        (t nil)))))
 
+(defun autocomplete-command-score-text (item)
+  (let ((name (autocomplete-item-value item)))
+    (if (string-prefix-p "skill:" name)
+        (subseq name (length "skill:"))
+        name)))
+
 (defun autocomplete-command-suggestions
     (provider text)
   (let* ((space (position #\Space text))
@@ -539,15 +545,33 @@
                (subseq text 1 space)
                (subseq text 1))))
     (if (null space)
-        (let ((items
-                (fuzzy-filter
+        (let* ((command-items
                  (autocomplete-provider-command-items
-                  provider)
-                 prefix
-                 #'autocomplete-item-value)))
-          (and items
-               (make-autocomplete-suggestions
-                :items items :prefix text)))
+                  provider))
+               (bare-matches
+                 (fuzzy-filter
+                  command-items prefix
+                  #'autocomplete-command-score-text))
+               (matched (make-hash-table :test #'eq))
+               (full-name-candidates nil))
+          (dolist (item bare-matches)
+            (setf (gethash item matched) t))
+          (dolist (item command-items)
+            (when (and (string-prefix-p
+                        "skill:"
+                        (autocomplete-item-value item))
+                       (not (gethash item matched)))
+              (push item full-name-candidates)))
+          (let ((items
+                  (append
+                   bare-matches
+                   (fuzzy-filter
+                    (nreverse full-name-candidates)
+                    prefix
+                    #'autocomplete-item-value))))
+            (and items
+                 (make-autocomplete-suggestions
+                  :items items :prefix text))))
         (let* ((command
                  (find
                   prefix

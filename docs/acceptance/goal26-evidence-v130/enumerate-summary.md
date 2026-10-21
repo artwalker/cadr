@@ -17,7 +17,7 @@ Named sets with empty added and removed lists are omitted.
 | extensionEvents | added 2; removed 1 | added: `mcp_servers_change`, `provider_stream_event`; removed: `before_agent_start` |
 | providers | added 5; removed 2 | added: `azure.ts`, `compat-schema.ts`, `model-schema.ts`, `openrouter-api.ts`, `typesafe.ts`; removed: `azure-openai-responses.ts`, `openrouter-images.ts` |
 | environmentVariables | added 1; removed 0 | added: `PI_PROGRAM_STATUS`; removed: — |
-| themeTokens | added 0; removed 56 | enumerator false-positive likely: theme token extraction shape changed; re-parse before treating as removals |
+| themeTokens | added 0; removed 56 | re-parsed 2026-10-21: `THEME_TOKENS` in `theme-tokens.ts` has the same 56 names. The union left `theme.ts`, so the extractor saw removals. cadr `theme.lisp` already has all 56. `pageBg`/`cardBg`/`infoBg` are export colors, not palette tokens |
 | extensionTypeFields | added 10; removed 0 | added: `Extension.replaceable`, `Extension.toolRenderers`, `ExtensionActions.getSettings`, `ExtensionContextActions.executeTool`, `ExtensionContextActions.getCallableTools`, `ExtensionRuntimeState.createContext`, `ExtensionRuntimeState.mcpServers`, `ExtensionRuntimeState.pendingVirtualModelRegistrations`, `ExtensionRuntimeState.registerVirtualModel`, `ExtensionRuntimeState.unregisterVirtualModel`; removed: — |
 | errorClasses | added 1; removed 1 | added: `McpSignInCancelledError`; removed: `SessionPluginSelectionConflictError` |
 | publicApiExportCount | 36 to 44 | |
