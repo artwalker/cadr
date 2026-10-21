@@ -786,6 +786,35 @@ string. Returns the buffer to store back. Per-delta
   (when callback
     (funcall callback data model)))
 
+(defun strict-tool-limit-rejection-p (condition)
+  (and (typep condition 'api-error)
+       (eql (api-error-status condition) 400)
+       (let ((code (api-error-code condition)))
+         (or (null code)
+             (string= code "invalid_request_error")
+             (string= code "error")))
+       (let ((text (cadr-error-message condition)))
+         (and (stringp text)
+              (some
+               (lambda (needle)
+                 (search needle text))
+               '("The compiled grammar is too large"
+                 "Too many strict tools ("
+                 "Schemas contains too many parameters with union types ("))))))
+
+(defvar *anthropic-preferred-strict-sent-p* nil
+  "Set by the Anthropic request builder when a prefer tool was sent strict.")
+
+(defun append-strict-tool-fallback-diagnostic (message condition)
+  (setf (assistant-message-diagnostics message)
+        (append
+         (assistant-message-diagnostics message)
+         (list
+          (make-assistant-message-diagnostic
+           :type :anthropic-strict-tools-fallback
+           :error (list :message (cadr-error-message condition))
+           :details '(:reason "strict_tool_limits_exceeded"))))))
+
 (defun stream-chat (provider model context on-event
                     &key max-tokens temperature reasoning cache-retention
                       session-id tool-choice metadata abort-p
@@ -820,80 +849,106 @@ string. Returns the buffer to store back. Per-delta
     (handler-case
         (progn
           (check-abort abort-p)
-          (let ((request (build-request provider model transcript
-                                        :stream-p t
-                                        :max-tokens max-tokens
-                                        :temperature temperature
-                                        :reasoning reasoning
-                                        :cache-retention cache-retention
-                                        :session-id session-id
-                                        :tool-choice tool-choice
-                                        :metadata metadata
-                                        :thinking-budgets thinking-budgets)))
-            (apply-provider-request-callbacks
-             request model
-             on-payload transform-headers)
-            (multiple-value-bind (handled-p websocket-message)
-                (try-provider-websocket-stream
-                 provider model transcript request state on-event
-                 :transport transport
-                 :session-id session-id
-                 :abort-p abort-p
-                 :on-response on-response
-                 :on-provider-stream-event on-provider-stream-event
-                 :websocket-connect-timeout-ms
-                 websocket-connect-timeout-ms
-                 :http-proxy http-proxy)
-              (when handled-p
-                (return-from stream-chat websocket-message)))
-            (emit-event on-event :start message)
-            (call-with-provider-retries
-             (lambda ()
-               (check-abort abort-p)
-               (apply
-                #'request-provider-events
-                (prepare-provider-sse-request provider request)
-                (lambda (event)
-                  (setf saw-provider-event-p t)
-                  (check-abort abort-p)
-                  (notify-provider-stream-event
-                   on-provider-stream-event
-                   (provider-stream-event-data event)
-                   model)
-                  (reduce-provider-sse-event
-                   provider state event on-event)
-                  (check-abort abort-p))
-                (append
-                 (list
-                  :abort-p abort-p
-                  :environment
-                  (environment-with-http-proxy
-                   (getf (provider-options provider) :environment)
-                   http-proxy)
-                  :on-response
-                  (lambda (status headers)
-                    (when (typep provider 'bedrock-provider)
-                      (setf response-request-id
-                            (normalize-bedrock-diagnostic-value
-                             (or
-                              (header-value
-                               headers "x-amzn-requestid")
-                              (header-value
-                               headers "x-amz-request-id")))))
-                    (notify-provider-response
-                     on-response status headers
-                     model)))
-                 (when timeout-seconds
-                   (list :connect-timeout timeout-seconds))
-                 (when read-timeout-supplied-p
-                   (list :read-timeout read-timeout)))))
-             :retry-allowed-p
-             (lambda (condition)
-               (declare (ignore condition))
-               (not saw-provider-event-p))
-             :max-retries max-retries
-             :max-retry-delay-ms max-retry-delay-ms
-             :timeout-ms timeout-ms))
+          (let ((disable-preferred-strict-p nil)
+                (start-sent-p nil))
+            (loop
+              (check-abort abort-p)
+              (let* ((*anthropic-preferred-strict-sent-p* nil)
+                     (request
+                       (build-request provider model transcript
+                                      :stream-p t
+                                      :max-tokens max-tokens
+                                      :temperature temperature
+                                      :reasoning reasoning
+                                      :cache-retention cache-retention
+                                      :session-id session-id
+                                      :tool-choice tool-choice
+                                      :metadata metadata
+                                      :thinking-budgets thinking-budgets
+                                      :disable-preferred-strict-tools
+                                      disable-preferred-strict-p))
+                     (preferred-strict-p
+                       *anthropic-preferred-strict-sent-p*))
+                (apply-provider-request-callbacks
+                 request model
+                 on-payload transform-headers)
+                (multiple-value-bind (handled-p websocket-message)
+                    (try-provider-websocket-stream
+                     provider model transcript request state on-event
+                     :transport transport
+                     :session-id session-id
+                     :abort-p abort-p
+                     :on-response on-response
+                     :on-provider-stream-event on-provider-stream-event
+                     :websocket-connect-timeout-ms
+                     websocket-connect-timeout-ms
+                     :http-proxy http-proxy)
+                  (when handled-p
+                    (return-from stream-chat websocket-message)))
+                (unless start-sent-p
+                  (emit-event on-event :start message)
+                  (setf start-sent-p t))
+                (handler-case
+                    (progn
+                      (call-with-provider-retries
+                       (lambda ()
+                         (check-abort abort-p)
+                         (apply
+                          #'request-provider-events
+                          (prepare-provider-sse-request provider request)
+                          (lambda (event)
+                            (setf saw-provider-event-p t)
+                            (check-abort abort-p)
+                            (notify-provider-stream-event
+                             on-provider-stream-event
+                             (provider-stream-event-data event)
+                             model)
+                            (reduce-provider-sse-event
+                             provider state event on-event)
+                            (check-abort abort-p))
+                          (append
+                           (list
+                            :abort-p abort-p
+                            :environment
+                            (environment-with-http-proxy
+                             (getf (provider-options provider) :environment)
+                             http-proxy)
+                            :on-response
+                            (lambda (status headers)
+                              (when (typep provider 'bedrock-provider)
+                                (setf response-request-id
+                                      (normalize-bedrock-diagnostic-value
+                                       (or
+                                        (header-value
+                                         headers "x-amzn-requestid")
+                                        (header-value
+                                         headers "x-amz-request-id")))))
+                              (notify-provider-response
+                               on-response status headers
+                               model)))
+                           (when timeout-seconds
+                             (list :connect-timeout timeout-seconds))
+                           (when read-timeout-supplied-p
+                             (list :read-timeout read-timeout)))))
+                       :retry-allowed-p
+                       (lambda (condition)
+                         (declare (ignore condition))
+                         (not saw-provider-event-p))
+                       :max-retries max-retries
+                       :max-retry-delay-ms max-retry-delay-ms
+                       :timeout-ms timeout-ms)
+                      (return))
+                  (api-error (condition)
+                    ;; pi@71023aec1 #10409. Downgrade prefer-strict tools
+                    ;; only when the request itself was rejected.
+                    (unless (and (not saw-provider-event-p)
+                                 (not disable-preferred-strict-p)
+                                 preferred-strict-p
+                                 (strict-tool-limit-rejection-p condition))
+                      (error condition))
+                    (setf disable-preferred-strict-p t)
+                    (append-strict-tool-fallback-diagnostic
+                     message condition))))))
           (finalize-provider-stream
            provider model state on-event)
           (unless (provider-stream-state-terminal-p state)

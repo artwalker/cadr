@@ -851,3 +851,182 @@
                   (thinking-matrix-event-types
                    provider model expected-thinking-events-p))
                  "~A thinking event sequence differs" label))))))))
+
+(defun strict-fallback-parameters ()
+  (cadr-ai::json-object
+   "type" "object"
+   "properties"
+   (cadr-ai::json-object
+    "path" (cadr-ai::json-object "type" "string"))
+   "required" #("path")))
+
+(defun strict-fallback-tool (strict)
+  (make-tool
+   :name "read"
+   :description "Read a file"
+   :parameters (strict-fallback-parameters)
+   :constrained-sampling (list :type :json-schema :strict strict)))
+
+(defun strict-fallback-model ()
+  (make-model
+   :id "claude-test"
+   :provider :anthropic
+   :api :anthropic-messages
+   :base-url "https://api.anthropic.com"
+   :max-tokens 1024
+   :compat '(:supports-strict-tools t)))
+
+(defun strict-fallback-payload-tool (payload)
+  (aref (cadr-ai::json-get payload "tools") 0))
+
+(defun strict-fallback-http (box status-message)
+  (lambda (url &rest arguments)
+    (declare (ignore url))
+    (setf (cdr box)
+          (cons (cadr-ai::parse-json (getf arguments :content))
+                (cdr box)))
+    (if (and status-message
+             (= (length (cdr box)) 1))
+        (error 'cadr-ai::api-error
+               :provider :anthropic
+               :status 400
+               :code "invalid_request_error"
+               :message status-message)
+        (values
+         (open (fixture-path
+                "test/fixtures/goal20-paired-paths/anthropic-messages.sse")
+               :direction :input
+               :element-type '(unsigned-byte 8))
+         200
+         '(("content-type" . "text/event-stream"))))))
+
+(test anthropic-retries-preferred-strict-tools-once-after-a-grammar-limit
+  ;; pi #10409
+  (let* ((box (cons nil nil))
+         (*http-request-function*
+           (strict-fallback-http
+            box
+            "The compiled grammar is too large"))
+         (message
+           (stream-chat
+            (make-anthropic-provider :api-key "key")
+            (strict-fallback-model)
+            (make-context
+             :messages (list (make-user-message :content "hi"))
+             :tools (list (strict-fallback-tool :prefer)))
+            (lambda (event) (declare (ignore event)))))
+         (payloads (cdr box)))
+    (is (= 2 (length payloads)))
+    (let ((first (strict-fallback-payload-tool (second payloads)))
+          (second (strict-fallback-payload-tool (first payloads))))
+        (is (eq t (cadr-ai::json-get first "strict")))
+        (is (cadr-ai::json-present-p
+             (cadr-ai::json-get first "input_schema")
+             "additionalProperties"))
+        (is (not (cadr-ai::json-present-p second "strict")))
+        (is (not (cadr-ai::json-present-p
+                  (cadr-ai::json-get second "input_schema")
+                  "additionalProperties"))))
+      (let ((diagnostic
+              (find :anthropic-strict-tools-fallback
+                    (cadr-ai:assistant-message-diagnostics message)
+                    :key #'cadr-ai:assistant-message-diagnostic-type)))
+        (is (not (null diagnostic)))
+        (is (string=
+             "strict_tool_limits_exceeded"
+             (getf (cadr-ai:assistant-message-diagnostic-details
+                    diagnostic)
+                   :reason)))))
+  (is (cadr-ai::strict-tool-limit-rejection-p
+       (make-condition
+        'cadr-ai::api-error
+        :status 400
+        :code "error"
+        :message "Too many strict tools (12)")))
+  (is (cadr-ai::strict-tool-limit-rejection-p
+       (make-condition
+        'cadr-ai::api-error
+        :status 400
+        :code "invalid_request_error"
+        :message "Schemas contains too many parameters with union types (3)")))
+  (is (not
+       (cadr-ai::strict-tool-limit-rejection-p
+        (make-condition
+         'cadr-ai::api-error
+         :status 400
+         :code "invalid_request_error"
+         :message "other request error"))))
+  (let ((payloads nil))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (push (cadr-ai::parse-json (getf arguments :content))
+                    payloads)
+              (error 'cadr-ai::api-error
+                     :provider :anthropic
+                     :status 400
+                     :code "invalid_request_error"
+                     :message "The compiled grammar is too large"))))
+      (let ((message
+              (stream-chat
+               (make-anthropic-provider :api-key "key")
+               (strict-fallback-model)
+               (make-context
+                :messages (list (make-user-message :content "hi"))
+                :tools (list (strict-fallback-tool :prefer)))
+               (lambda (event) (declare (ignore event))))))
+        (is (= 2 (length payloads)))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (not (cadr-ai::json-present-p
+                  (strict-fallback-payload-tool (first payloads))
+                  "strict"))))))
+  (let ((payloads nil))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (push (cadr-ai::parse-json (getf arguments :content))
+                    payloads)
+              (error 'cadr-ai::api-error
+                     :provider :anthropic
+                     :status 400
+                     :code "invalid_request_error"
+                     :message "model not found"))))
+      (let ((message
+              (stream-chat
+               (make-anthropic-provider :api-key "key")
+               (strict-fallback-model)
+               (make-context
+                :messages (list (make-user-message :content "hi"))
+                :tools (list (strict-fallback-tool :require)))
+               (lambda (event) (declare (ignore event))))))
+        (is (= 1 (length payloads)))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (eq t
+                (cadr-ai::json-get
+                 (strict-fallback-payload-tool (first payloads))
+                 "strict")))))
+  (let ((payloads nil))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (push (cadr-ai::parse-json (getf arguments :content))
+                    payloads)
+              (error 'cadr-ai::api-error
+                     :provider :anthropic
+                     :status 400
+                     :code "invalid_request_error"
+                     :message "The compiled grammar is too large"))))
+      (let ((message
+              (stream-chat
+               (make-anthropic-provider :api-key "key")
+               (strict-fallback-model)
+               (make-context
+                :messages (list (make-user-message :content "hi"))
+                :tools (list (strict-fallback-tool :require)))
+               (lambda (event) (declare (ignore event))))))
+        (is (= 1 (length payloads)))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (eq t
+                (cadr-ai::json-get
+                 (strict-fallback-payload-tool (first payloads))
+                 "strict"))))))))

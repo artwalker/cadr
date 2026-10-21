@@ -306,19 +306,32 @@
            (anthropic-active-effort model reasoning))
           encoded))))
 
+(defvar *anthropic-preferred-strict-sent-p* nil)
+
+(defun anthropic-preferred-strict-p (tool)
+  (let ((config (tool-constrained-sampling tool)))
+    (and (eq :json-schema (sampling-type config))
+         (eq :prefer (sampling-value config :strict)))))
+
 (defun anthropic-tools
-    (model tools cache-control &optional defer-loading-p)
-  (list-json-array
-   (loop for tool in tools
-         for index from 0
-         for supports-strict =
-           (model-compat-value model :supports-strict-tools nil)
-         ;; Baseline anthropic-messages.ts convertTools: resolve throws on
-         ;; a "require" mismatch, and strict tools send the strictified
-         ;; schema; others send the legacy {type,properties,required}
-         ;; shape.
-         for strict =
-           (resolve-json-schema-strict-sampling tool supports-strict)
+    (model tools cache-control
+     &optional defer-loading-p disable-preferred-strict-p)
+  (let ((preferred-strict-p nil))
+    (values
+     (list-json-array
+      (loop for tool in tools
+            for index from 0
+            for supports-strict =
+              (model-compat-value model :supports-strict-tools nil)
+            for prefer-p = (anthropic-preferred-strict-p tool)
+            ;; pi@71023aec1 anthropic-messages.ts #10409. A prefer tool
+            ;; that was sent strict can be retried with its original schema.
+            ;; require stays strict.
+            for strict =
+              (if (and disable-preferred-strict-p prefer-p)
+                  nil
+                  (resolve-json-schema-strict-sampling
+                   tool supports-strict))
          for parameters = (get-json-schema-tool-parameters tool strict)
          for encoded =
          (if (eq strict t)
@@ -345,7 +358,9 @@
                 model :supports-eager-tool-input-streaming t)
            (json-put encoded-tool "eager_input_streaming" t))
          (when (eq strict t)
-           (json-put encoded-tool "strict" t))
+           (json-put encoded-tool "strict" t)
+           (when prefer-p
+             (setf preferred-strict-p t)))
          (when (and cache-control
                     (not defer-loading-p)
                     (model-compat-value
@@ -354,7 +369,8 @@
            (json-put encoded-tool "cache_control" cache-control))
          (when defer-loading-p
            (json-put encoded-tool "defer_loading" t))
-         collect encoded-tool)))
+            collect encoded-tool))
+     preferred-strict-p)))
 
 (defun anthropic-thinking-options (model reasoning)
   (cond
@@ -400,6 +416,7 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
+                            disable-preferred-strict-tools
                             &allow-other-keys)
   (ensure-supported-content model context)
   (let* ((oauth-token (provider-oauth-access-token provider))
@@ -408,6 +425,7 @@
            (anthropic-cache-control model cache-retention))
          (immediate-tools nil)
          (deferred-tools nil)
+         (preferred-strict-p nil)
          (payload
            (json-object
             "model" (model-id model)
@@ -437,20 +455,24 @@
         (json-put payload "system" (json-array block))))
     (when (or immediate-tools
               (plusp (hash-table-count deferred-tools)))
-      (json-put
-       payload "tools"
-       (list-json-array
-        (append
-         (coerce
-          (anthropic-tools model immediate-tools cache-control)
-          'list)
-         (coerce
+      (multiple-value-bind (immediate-encoded immediate-preferred)
           (anthropic-tools
-           model
-           (loop for tool being the hash-values of deferred-tools
-                 collect tool)
-           nil t)
-          'list)))))
+           model immediate-tools cache-control nil
+           disable-preferred-strict-tools)
+        (multiple-value-bind (deferred-encoded deferred-preferred)
+            (anthropic-tools
+             model
+             (loop for tool being the hash-values of deferred-tools
+                   collect tool)
+             nil t
+             disable-preferred-strict-tools)
+          (setf preferred-strict-p
+                (or immediate-preferred deferred-preferred))
+          (json-put
+           payload "tools"
+           (list-json-array
+            (append (coerce immediate-encoded 'list)
+                    (coerce deferred-encoded 'list)))))))
     (when (and (not (null temperature))
                (null reasoning)
                (not (model-compat-value
@@ -470,8 +492,9 @@
       (when (stringp user-id)
         (json-put payload "metadata"
                   (json-object "user_id" user-id))))
-    (make-request-spec
-     :url (format nil "~A/v1/messages"
+    (let ((request
+            (make-request-spec
+             :url (format nil "~A/v1/messages"
                   (strip-trailing-slash (model-base-url model)))
      :headers
     (let* ((beta-features
@@ -528,6 +551,8 @@
      :payload payload
      :stream-p stream-p
      :provider :anthropic)))
+      (setf *anthropic-preferred-strict-sent-p* preferred-strict-p)
+      request)))
 
 (defun parse-anthropic-content (content)
   (loop for block across (or content #())
