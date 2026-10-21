@@ -122,6 +122,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Codex GPT-6.1 Sol 上下文 | v1.3.0 #10840 | done：目录补上 `gpt-6.1-sol`、`gpt-6-sol`、`gpt-6-luna`。Codex 上 `gpt-6.1-sol` 的 context window 是 500000，OpenAI 和 Azure 仍是 272000，输出上限 128000。其它 Codex GPT-6（含 `gpt-6-astra`）仍是 272000。`gpt-6.1-sol` 的 `off` 是 null；Codex 把 `minimal` 映成 `low`，OpenAI 和 Azure 不提供 `minimal`。长上下文计价档从 272000 token 起 |
 | `PI_CLIPBOARD_OSC52` | v1.3.0 `clipboard.ts` #10826 | done：值为 `1` 时，本地剪贴板写成功之后再向终端发 OSC 52，没有 SSH 标记也发。其它值不发。有显示器的 Linux 在本地写入失败时仍报错，不把未验证的 OSC 52 当成成功 |
 | 设置路径里的 `~` | v1.3.0 `package-manager.ts` #10765 | done：`extensions`、`skills`、`prompts`、`themes` 里的 `!pattern`、`+path`、`-path` 会把开头的 `~` 或 `~/` 展开成 `HOME`。`!~/extra/skills/glob-*` 能排除对应技能，`-~/...` 按展开后的路径精确排除，`+~/...` 能把被排除的项加回来。`~user` 不展开 |
+| 打印模式截断退出 | v1.3.0 `print-mode.ts` #10799 | done：`-p` 文本模式在最终回复的 stop reason 是 `length` 时仍打印已有正文，stderr 写 `Response was truncated: the model reached its output token limit.`，退出码 1。JSON 模式不因此改退出码 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

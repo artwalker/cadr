@@ -612,7 +612,20 @@
                                  (text
                                   (assistant-text-content
                                    last))
-                               (format output "~A~%" text)))
+                               (format output "~A~%" text))
+                             ;; pi@71023aec1 print-mode.ts #10799. Partial
+                             ;; text still prints; length is a failed run.
+                             (when
+                                 (eq
+                                  :length
+                                  (cadr-ai:assistant-message-stop-reason
+                                   last))
+                               (format
+                                error-output
+                                "Response was truncated: the model reached its output token limit.~%")
+                               (finish-output output)
+                               (finish-output error-output)
+                               (return-from run-print-mode 1)))
                            (finish-output output)
                            0)))))
            (error (condition)

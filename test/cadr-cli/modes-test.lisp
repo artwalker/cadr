@@ -166,6 +166,45 @@
            "provider failed"
            (get-output-stream-string errors))))))
 
+(test print-mode-exits-1-when-the-final-response-hits-the-length-limit
+  ;; pi #10799
+  (multiple-value-bind (agent remaining)
+      (cli-faux-agent
+       (list (cli-test-assistant "partial answer" :length)))
+    (declare (ignore remaining))
+    (let ((output (make-string-output-stream))
+          (errors (make-string-output-stream)))
+      (is
+       (= 1
+          (cadr-cli::run-print-mode
+           agent "one" nil
+           :mode :text
+           :output output
+           :error-output errors)))
+      (is (string=
+           (format nil "partial answer~%")
+           (get-output-stream-string output)))
+      (is (string=
+           (format nil
+                   "Response was truncated: the model reached its output token limit.~%")
+           (get-output-stream-string errors)))))
+  (multiple-value-bind (agent remaining)
+      (cli-faux-agent
+       (list (cli-test-assistant "partial answer" :length)))
+    (declare (ignore remaining))
+    (let ((output (make-string-output-stream))
+          (errors (make-string-output-stream)))
+      (is
+       (= 0
+          (cadr-cli::run-print-mode
+           agent "one" nil
+           :mode :json
+           :output output
+           :error-output errors)))
+      (is (string=
+           ""
+           (get-output-stream-string errors))))))
+
 (test json-mode-emits-one-valid-json-object-per-line
   (multiple-value-bind (agent remaining)
       (cli-faux-agent
