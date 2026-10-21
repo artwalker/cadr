@@ -1,5 +1,16 @@
 (in-package #:cadr-ai)
 
+(defun mistral-header-timeout-ms (timeout-ms)
+  ;; pi@71023aec1 mistral-conversations.ts. Headers wait at most this
+  ;; long. The body is not on the same clock.
+  (if (and (integerp timeout-ms) (>= timeout-ms 0))
+      timeout-ms
+      60000))
+
+(defun mistral-header-timeout-message (milliseconds)
+  (format nil "Mistral response headers timed out after ~Dms"
+          milliseconds))
+
 (defun mistral-reasoning-effort-model-p (model)
   (member
    (model-id model)

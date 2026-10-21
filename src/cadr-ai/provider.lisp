@@ -926,8 +926,16 @@ string. Returns the buffer to store back. Per-delta
                               (notify-provider-response
                                on-response status headers
                                model)))
-                           (when timeout-seconds
-                             (list :connect-timeout timeout-seconds))
+                           (cond
+                             ((typep provider 'mistral-provider)
+                              (let ((ms (mistral-header-timeout-ms
+                                         timeout-ms)))
+                                (list :connect-timeout (/ ms 1000)
+                                      :header-timeout (/ ms 1000)
+                                      :header-timeout-message
+                                      (mistral-header-timeout-message ms))))
+                             (timeout-seconds
+                              (list :connect-timeout timeout-seconds)))
                            (when read-timeout-supplied-p
                              (list :read-timeout read-timeout)))))
                        :retry-allowed-p

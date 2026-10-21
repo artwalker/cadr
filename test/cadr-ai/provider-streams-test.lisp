@@ -1030,3 +1030,62 @@
                 (cadr-ai::json-get
                  (strict-fallback-payload-tool (first payloads))
                  "strict"))))))))
+
+(defclass mistral-slow-char-stream
+    (sb-gray:fundamental-character-input-stream)
+  ((text :initarg :text)
+   (index :initform 0)
+   (delay :initarg :delay)
+   (delayed-p :initform nil)))
+
+(defmethod sb-gray:stream-read-char ((stream mistral-slow-char-stream))
+  (unless (slot-value stream 'delayed-p)
+    (setf (slot-value stream 'delayed-p) t)
+    (sleep (slot-value stream 'delay)))
+  (let ((text (slot-value stream 'text))
+        (index (slot-value stream 'index)))
+    (if (< index (length text))
+        (prog1 (char text index)
+          (setf (slot-value stream 'index) (1+ index)))
+        :eof)))
+
+(test mistral-timeout-covers-response-headers-only
+  ;; pi@71023aec1 #10609
+  (is (= 60000 (cadr-ai::mistral-header-timeout-ms nil)))
+  (is (= 30 (cadr-ai::mistral-header-timeout-ms 30)))
+  (multiple-value-bind (provider model)
+      (provider-case :mistral)
+    (let* ((*http-request-function*
+             (lambda (url &rest arguments)
+               (declare (ignore url arguments))
+               (sleep 0.4)
+               (values (make-string-input-stream "data: [DONE]~%")
+                       200 nil)))
+           (message
+             (stream-chat
+              provider model (sample-context)
+              (lambda (event) (declare (ignore event)))
+              :timeout-ms 30)))
+      (is (eq :error (assistant-message-stop-reason message)))
+      (is (string=
+           "Mistral response headers timed out after 30ms"
+           (assistant-message-error-message message))))
+    (let* ((text
+             (format nil
+                     "data: {\"id\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"},\"finish_reason\":null}]}~%~%data: {\"id\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}~%~%data: [DONE]~%~%"))
+           (*http-request-function*
+             (lambda (url &rest arguments)
+               (declare (ignore url arguments))
+               (values
+                (make-instance 'mistral-slow-char-stream
+                               :text text
+                               :delay 0.08)
+                200
+                '(("content-type" . "text/event-stream")))))
+           (message
+             (stream-chat
+              provider model (sample-context)
+              (lambda (event) (declare (ignore event)))
+              :timeout-ms 30)))
+      (is (eq :stop (assistant-message-stop-reason message)))
+      (is (string= "ok" (first-text message))))))
