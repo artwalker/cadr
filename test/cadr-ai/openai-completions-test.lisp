@@ -518,3 +518,259 @@
                (opencode-completion-header "sess-1" "x-opencode-session")))
   (is (string= "cadr"
                (opencode-completion-header "sess-1" "x-opencode-client"))))
+
+(defun feed-completions-deltas (model deltas)
+  (let* ((provider
+           (cadr-ai:make-openai-completions-provider :api-key "test"))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model)
+            :model model)))
+    (dolist (delta deltas)
+      (cadr-ai::reduce-provider-sse-event
+       provider state
+       (cadr-ai::make-sse-event
+        :data
+        (cadr-ai::stringify-json
+         (cadr-ai::json-object
+          "id" "chatcmpl-test"
+          "choices"
+          (vector
+           (cadr-ai::json-object
+            "delta" delta
+            "finish_reason" 'cadr-ai::null)))))
+       (lambda (event) (declare (ignore event)))))
+    (cadr-ai::reduce-provider-sse-event
+     provider state
+     (cadr-ai::make-sse-event
+      :data
+      (cadr-ai::stringify-json
+       (cadr-ai::json-object
+        "id" "chatcmpl-test"
+        "choices"
+        (vector
+         (cadr-ai::json-object
+          "delta" (cadr-ai::json-object)
+          "finish_reason" "stop")))))
+     (lambda (event) (declare (ignore event))))
+    (cadr-ai::provider-stream-state-message state)))
+
+(defun completions-block-types (message)
+  (mapcar
+   (lambda (block)
+     (cond
+       ((typep block 'cadr-ai:thinking-content) :thinking)
+       ((typep block 'cadr-ai:text-content) :text)
+       ((typep block 'cadr-ai:tool-call) :tool-call)))
+   (cadr-ai:assistant-message-content message)))
+
+(defun replay-assistant-payload (model message)
+  (let* ((provider
+           (cadr-ai:make-openai-completions-provider :api-key "test"))
+         (request
+           (cadr-ai:build-request
+            provider model
+            (cadr-ai:make-context
+             :messages
+             (list
+              (cadr-ai:make-user-message :content "continue")
+              message))
+            :stream-p t
+            :max-tokens 64))
+         (messages
+           (cadr-ai::json-get
+            (cadr-ai:request-spec-payload request)
+            "messages")))
+    (find "assistant" messages
+          :key (lambda (item) (cadr-ai::json-get item "role"))
+          :test #'string=)))
+
+(test completions-same-delta-puts-thinking-before-text
+  ;; pi@71023aec1 openai-completions.ts #10926.
+  (let ((model
+          (cadr-ai:make-model
+           :id "proxy-model"
+           :provider :openrouter
+           :api :openai-completions
+           :base-url "https://openrouter.ai/api/v1"
+           :max-tokens 1024
+           :reasoning-p t)))
+    (let ((message
+            (feed-completions-deltas
+             model
+             (list
+              (cadr-ai::json-object
+               "reasoning_content" "thinking"
+               "content" "answer")))))
+      (is (equal '(:thinking :text) (completions-block-types message)))
+      (is (string= "thinking"
+                   (cadr-ai:thinking-content-thinking
+                    (first (cadr-ai:assistant-message-content message)))))
+      (is (string= "reasoning_content"
+                   (cadr-ai:thinking-content-signature
+                    (first (cadr-ai:assistant-message-content message)))))
+      (is (string= "answer"
+                   (cadr-ai:text-content-text
+                    (second (cadr-ai:assistant-message-content message))))))
+    (let* ((detail
+             (cadr-ai::json-object
+              "type" "reasoning.encrypted"
+              "id" "call_1"
+              "data" "encrypted-signature"))
+           (message
+             (feed-completions-deltas
+              model
+              (list
+               (cadr-ai::json-object
+                "reasoning_details" (vector detail)
+                "content" "answer"))))
+           (thinking
+             (first (cadr-ai:assistant-message-content message))))
+      (is (equal '(:thinking :text) (completions-block-types message)))
+      (is (string= "answer"
+                   (cadr-ai:text-content-text
+                    (second (cadr-ai:assistant-message-content message)))))
+      (is (string=
+           (cadr-ai::stringify-json (vector detail))
+           (cadr-ai:thinking-content-signature thinking)))
+      (let ((payload (replay-assistant-payload model message)))
+        (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+        (is (equalp
+             (vector detail)
+             (cadr-ai::json-get payload "reasoning_details")))))
+    (let* ((detail
+             (cadr-ai::json-object
+              "type" "reasoning.text"
+              "text" "I should call the read tool."
+              "signature" "sha256:signed-text"))
+           (message
+             (feed-completions-deltas
+              model
+              (list
+               (cadr-ai::json-object
+                "reasoning" "I should call the read tool."
+                "reasoning_details" (vector detail)))))
+           (thinking
+             (first (cadr-ai:assistant-message-content message)))
+           (payload (replay-assistant-payload model message)))
+      (is (string= "I should call the read tool."
+                   (cadr-ai:thinking-content-thinking thinking)))
+      (is (string=
+           (cadr-ai::stringify-json (vector detail))
+           (cadr-ai:thinking-content-signature thinking)))
+      (is (not (cadr-ai::json-present-p payload "reasoning")))
+      (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+      (is (equalp
+           (vector detail)
+           (cadr-ai::json-get payload "reasoning_details"))))))
+
+(test completions-reasoning-details-merge-and-replay-in-order
+  (let* ((model
+           (cadr-ai:make-model
+            :id "google/gemini-test"
+            :provider :openrouter
+            :api :openai-completions
+            :base-url "https://openrouter.ai/api/v1"
+            :max-tokens 1024
+            :reasoning-p t))
+         (text-delta
+           (cadr-ai::json-object
+            "type" "reasoning.text" "text" "The" "index" 0))
+         (text-rest
+           (cadr-ai::json-object
+            "type" "reasoning.text"
+            "text" " user wants the time."
+            "signature" "sha256:text-signature"
+            "format" "openai-responses-v1"
+            "index" 0))
+         (summary-delta
+           (cadr-ai::json-object
+            "type" "reasoning.summary" "summary" "Looked" "index" 0))
+         (summary-rest
+           (cadr-ai::json-object
+            "type" "reasoning.summary"
+            "summary" " up time."
+            "format" "openai-responses-v1"
+            "index" 0))
+         (encrypted
+           (cadr-ai::json-object
+            "type" "reasoning.encrypted"
+            "id" "call_1"
+            "data" "encrypted-signature"))
+         (later-summary
+           (cadr-ai::json-object
+            "type" "reasoning.summary"
+            "summary" "After encrypted block."
+            "format" "openai-responses-v1"
+            "index" 0))
+         (expected
+           (vector
+            (cadr-ai::json-object
+             "type" "reasoning.text"
+             "text" "The user wants the time."
+             "index" 0
+             "signature" "sha256:text-signature"
+             "format" "openai-responses-v1")
+            (cadr-ai::json-object
+             "type" "reasoning.summary"
+             "summary" "Looked up time."
+             "index" 0
+             "format" "openai-responses-v1")
+            encrypted
+            later-summary))
+         (message
+           (feed-completions-deltas
+            model
+            (list
+             (cadr-ai::json-object "reasoning_details" (vector text-delta))
+             (cadr-ai::json-object "reasoning_details" (vector text-rest))
+             (cadr-ai::json-object "reasoning_details" (vector summary-delta))
+             (cadr-ai::json-object "reasoning_details" (vector summary-rest))
+             (cadr-ai::json-object "reasoning_details" (vector encrypted))
+             (cadr-ai::json-object
+              "reasoning_details" (vector later-summary)))))
+         (thinking
+           (find-if (lambda (block)
+                      (typep block 'cadr-ai:thinking-content))
+                    (cadr-ai:assistant-message-content message))))
+    (is (string= "" (cadr-ai:thinking-content-thinking thinking)))
+    (is (string=
+         (cadr-ai::stringify-json expected)
+         (cadr-ai:thinking-content-signature thinking)))
+    (let ((payload (replay-assistant-payload model message)))
+      (is (not (cadr-ai::json-present-p payload "reasoning")))
+      (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+      (is (equalp expected
+                  (cadr-ai::json-get payload "reasoning_details"))))))
+
+(test completions-legacy-tool-signature-replays-as-reasoning-details
+  (let* ((model
+           (cadr-ai:make-model
+            :id "google/gemini-test"
+            :provider :openrouter
+            :api :openai-completions
+            :base-url "https://openrouter.ai/api/v1"
+            :max-tokens 1024
+            :reasoning-p t))
+         (detail
+           (cadr-ai::json-object
+            "type" "reasoning.encrypted"
+            "id" "call_1"
+            "data" "encrypted-signature"))
+         (message
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-tool-call
+              :id "call_1"
+              :name "read"
+              :arguments (cadr-ai::json-object "path" "README.md")
+              :thought-signature (cadr-ai::stringify-json detail)))
+            :api :openai-completions
+            :provider :openrouter
+            :model "google/gemini-test"
+            :stop-reason :tool-use))
+         (payload (replay-assistant-payload model message)))
+    (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+    (is (equalp (vector detail)
+                (cadr-ai::json-get payload "reasoning_details")))))

@@ -254,7 +254,8 @@ completed assistant message."))
   (terminal-p nil :type boolean)
   (current-block-index nil :type (or null (integer 0 *)))
   (json-scratch nil :type (or null json-parse-scratch))
-  (model nil :type (or null model)))
+  (model nil :type (or null model))
+  (reasoning-details nil :type list))
 
 (defun nappend-string (buffer chunk)
   "Append CHUNK onto BUFFER in amortized linear time.

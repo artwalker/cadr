@@ -41,28 +41,159 @@
     "name" (tool-call-name call)
     "arguments" (stringify-json (tool-call-arguments call)))))
 
+(defun openai-reasoning-detail-p (detail)
+  ;; pi@71023aec1 openai-completions.ts isOpenAIReasoningDetail.
+  (and (hash-table-p detail)
+       (let ((type (json-get detail "type")))
+         (and (stringp type)
+              (or (not (json-present-p detail "id"))
+                  (json-null-p (json-get detail "id"))
+                  (stringp (json-get detail "id")))
+              (or (not (json-present-p detail "format"))
+                  (stringp (json-get detail "format")))
+              (or (not (json-present-p detail "index"))
+                  (numberp (json-get detail "index")))
+              (cond
+                ((string= type "reasoning.summary")
+                 (stringp (json-get detail "summary")))
+                ((string= type "reasoning.encrypted")
+                 (stringp (json-get detail "data")))
+                ((string= type "reasoning.text")
+                 (and (stringp (json-get detail "text"))
+                      (or (not (json-present-p detail "signature"))
+                          (json-null-p (json-get detail "signature"))
+                          (stringp (json-get detail "signature")))))
+                (t nil))))))
+
+(defun parse-openai-reasoning-details (signature)
+  (when (and (stringp signature) (plusp (length signature)))
+    (handler-case
+        (let ((parsed (parse-json signature)))
+          (when (and (vectorp parsed)
+                     (plusp (length parsed))
+                     (every #'openai-reasoning-detail-p parsed))
+            (coerce parsed 'list)))
+      (error () nil))))
+
+(defun legacy-encrypted-reasoning-detail (signature)
+  (when (and (stringp signature) (plusp (length signature)))
+    (handler-case
+        (let ((parsed (parse-json signature)))
+          (when (and (openai-reasoning-detail-p parsed)
+                     (string= "reasoning.encrypted"
+                              (json-get parsed "type"))
+                     (stringp (json-get parsed "id"))
+                     (plusp (length (json-get parsed "id")))
+                     (stringp (json-get parsed "data"))
+                     (plusp (length (json-get parsed "data"))))
+            parsed))
+      (error () nil))))
+
+(defun reasoning-detail-string-falsy-p (object key)
+  (if (json-present-p object key)
+      (let ((value (json-get object key)))
+        (or (not (stringp value)) (zerop (length value))))
+      t))
+
+(defun fill-missing-reasoning-detail-fields (target source)
+  (when (or (not (json-present-p target "id"))
+            (json-null-p (json-get target "id")))
+    (when (json-present-p source "id")
+      (json-put target "id"
+                (copy-json-value (json-get source "id")))))
+  (when (reasoning-detail-string-falsy-p target "format")
+    (let ((format
+            (and (json-present-p source "format")
+                 (json-get source "format"))))
+      (when (and (stringp format) (plusp (length format)))
+        (json-put target "format" format))))
+  (when (or (not (json-present-p target "index"))
+            (json-null-p (json-get target "index")))
+    (when (numberp
+           (and (json-present-p source "index")
+                (json-get source "index")))
+      (json-put target "index" (json-get source "index")))))
+
+(defun merge-reasoning-detail-signature (target source)
+  (when (reasoning-detail-string-falsy-p target "signature")
+    (let ((signature
+            (and (json-present-p source "signature")
+                 (json-get source "signature"))))
+      (when (and (stringp signature) (plusp (length signature)))
+        (json-put target "signature" signature)))))
+
+(defun append-openai-reasoning-detail (details detail)
+  ;; Consecutive text or summary deltas merge. Encrypted entries stay
+  ;; discrete. The stored object is a copy so the SSE scratch can be reused.
+  (let ((copy (copy-json-value detail))
+        (last (car (last details)))
+        (type (json-get detail "type")))
+    (cond
+      ((and last
+            (string= type "reasoning.text")
+            (string= (json-get last "type") "reasoning.text"))
+       (json-put last "text"
+                 (concatenate 'string
+                              (json-get last "text")
+                              (json-get copy "text")))
+       (merge-reasoning-detail-signature last copy)
+       (fill-missing-reasoning-detail-fields last copy)
+       details)
+      ((and last
+            (string= type "reasoning.summary")
+            (string= (json-get last "type") "reasoning.summary"))
+       (json-put last "summary"
+                 (concatenate 'string
+                              (json-get last "summary")
+                              (json-get copy "summary")))
+       (fill-missing-reasoning-detail-fields last copy)
+       details)
+      (details (nconc details (list copy)))
+      (t (list copy)))))
+
 (defun openai-chat-assistant-message (message)
   (let ((result (json-object "role" "assistant"))
         (texts nil)
-        (thinking nil)
+        (thinking-blocks nil)
         (calls nil))
     (dolist (block (assistant-message-content message))
       (cond
         ((typep block 'text-content)
          (push (text-content-text block) texts))
         ((typep block 'thinking-content)
-         (push (thinking-content-thinking block) thinking))
+         (push block thinking-blocks))
         ((typep block 'tool-call)
          (push (openai-chat-tool-call block) calls))))
+    (setf texts (nreverse texts)
+          thinking-blocks (nreverse thinking-blocks)
+          calls (nreverse calls))
     (when texts
-      (json-put result "content"
-                (format nil "~{~A~}" (nreverse texts))))
-    (when thinking
-      (json-put result "reasoning_content"
-                (format nil "~{~A~^~%~%~}" (nreverse thinking))))
-    (when calls
-      (json-put result "tool_calls"
-                (list-json-array (nreverse calls))))
+      (json-put result "content" (format nil "~{~A~}" texts)))
+    (let ((preserved
+            (or (loop for block in thinking-blocks
+                      for details
+                        = (parse-openai-reasoning-details
+                           (thinking-content-signature block))
+                      when details
+                        return details)
+                (loop for block in (assistant-message-content message)
+                      when (and (typep block 'tool-call)
+                                (legacy-encrypted-reasoning-detail
+                                 (tool-call-thought-signature block)))
+                        collect
+                        (legacy-encrypted-reasoning-detail
+                         (tool-call-thought-signature block))))))
+      (unless preserved
+        (when thinking-blocks
+          (json-put result "reasoning_content"
+                    (format nil "~{~A~^~%~%~}"
+                            (mapcar #'thinking-content-thinking
+                                    thinking-blocks)))))
+      (when calls
+        (json-put result "tool_calls" (list-json-array calls)))
+      (when preserved
+        (json-put result "reasoning_details"
+                  (list-json-array preserved))))
     (when (and (null texts) (null calls))
       (json-put result "content" ""))
     result))
@@ -812,6 +943,12 @@
                         :content-index index
                         :content (text-content-text block)))
            ((typep block 'thinking-content)
+            (let ((details
+                    (provider-stream-state-reasoning-details state)))
+              (when details
+                (setf (thinking-content-signature block)
+                      (stringify-json
+                       (list-json-array details)))))
             (emit-event emit :thinking-end message
                         :content-index index
                         :content
@@ -870,6 +1007,22 @@
                  (completions-thinking-signature
                   (assistant-message-provider message)
                   field))))
+            ;; pi@71023aec1 #10926. reasoning_details are replay metadata.
+            ;; A proxy can put them in the same delta as content; the
+            ;; thinking block has to exist before the text block.
+            (let ((details (json-get delta "reasoning_details")))
+              (when (vectorp details)
+                (loop for detail across details
+                      when (openai-reasoning-detail-p detail)
+                        do
+                        (chat-stream-block
+                         state :thinking :thinking emit
+                         :signature "")
+                        (setf
+                         (provider-stream-state-reasoning-details state)
+                         (append-openai-reasoning-detail
+                          (provider-stream-state-reasoning-details state)
+                          detail)))))
             (append-chat-text-delta
              state :text :text
              (json-get delta "content") emit)

@@ -112,6 +112,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 提示词空引号参数 | v1.3.0 `parseCommandArgs` #10867 | done：`""` 和 `''` 占一个空参数，后面的位置不前移。空的 `$1` 仍用 `${1:-default}`。反斜杠不转义引号。未加引号的换行仍是分隔符 |
 | 工具参数 JSON | v1.3.0 `parseToolCallArguments` #10868 #10897 | done：字符串里的非法 `\u`（如 `\usepackage`）变成字面反斜杠，后面的字段还在。流被截在 `\u` 中间时丢掉这个未写完的转义。工具调用结束后，残缺 JSON 不再留下已解析的前缀：参数是空对象，`argumentsError` 带原文。校验失败，模型看到 `Invalid arguments for tool` 和收到的文本 |
 | `--model` 多 provider | v1.3.0 `resolveModelReference` #10160 | done：同一 id 有多家时，有凭证的那一家胜出；只有一家可用就选它；多家可用或一家都没用则报歧义，不按目录顺序，也不落到更弱的 fuzzy。`provider/id` 在该 provider 可用时优先。`--models` / enabledModels 把每一家都加进范围并警告。`--api-key` 不替用户选 provider。没有对应模型但 provider 明确时用自定义 id，并警告 |
+| 同块 reasoning 顺序 | v1.3.0 `openai-completions` #10926 | done：一条 delta 同时带 reasoning 和 content 时，thinking 在正文前面。`reasoning_details` 也先进入 thinking；连续的 text/summary 合并，encrypted 保持独立。签名是这些对象的 JSON，下一次请求只带回 `reasoning_details`，不再带原始 reasoning 字段。旧 tool `thoughtSignature` 里的 encrypted 对象同样回放 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
