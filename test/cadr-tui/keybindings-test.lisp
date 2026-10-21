@@ -139,3 +139,59 @@
      (null
       (cadr-tui:keybinding-keys
        disabled "app.model.cycleBackward")))))
+
+(test fullscreen-home-and-end-stay-on-the-editor
+  ;; pi@71023aec1 keybindings.ts #10314.
+  (let ((manager (cadr-tui:make-keybindings-manager))
+        (home (format nil "~COH" #\Escape))
+        (end (format nil "~C[F" #\Escape))
+        (ctrl-home (format nil "~C[1;5H" #\Escape))
+        (ctrl-end (format nil "~C[1;5F" #\Escape))
+        (legacy-ctrl-home (format nil "~C[7^" #\Escape))
+        (legacy-ctrl-end (format nil "~C[8^" #\Escape))
+        (kitty-ctrl-home (format nil "~C[57423;5u" #\Escape)))
+    (is (equal
+         '("home" "ctrl+a")
+         (cadr-tui:keybinding-keys
+          manager "tui.editor.cursorLineStart")))
+    (is (equal
+         '("end" "ctrl+e")
+         (cadr-tui:keybinding-keys
+          manager "tui.editor.cursorLineEnd")))
+    (is (equal
+         '("ctrl+home")
+         (cadr-tui:keybinding-keys
+          manager "tui.altScreen.top")))
+    (is (equal
+         '("ctrl+end")
+         (cadr-tui:keybinding-keys
+          manager "tui.altScreen.bottom")))
+    (is (not
+         (cadr-tui:keybinding-matches-p
+          manager home "tui.altScreen.top")))
+    (is (not
+         (cadr-tui:keybinding-matches-p
+          manager end "tui.altScreen.bottom")))
+    (is (eq t
+            (cadr-tui:keybinding-matches-p
+             manager ctrl-home "tui.altScreen.top")))
+    (is (eq t
+            (cadr-tui:keybinding-matches-p
+             manager legacy-ctrl-home "tui.altScreen.top")))
+    (is (eq t
+            (cadr-tui:keybinding-matches-p
+             manager kitty-ctrl-home "tui.altScreen.top")))
+    (is (eq t
+            (cadr-tui:keybinding-matches-p
+             manager ctrl-end "tui.altScreen.bottom")))
+    (is (eq t
+            (cadr-tui:keybinding-matches-p
+             manager legacy-ctrl-end "tui.altScreen.bottom")))
+    (is (eq :line-start
+            (cadr-tui::event-kind-for-raw-key home)))
+    (is (eq :line-end
+            (cadr-tui::event-kind-for-raw-key end)))
+    (is (null
+         (cadr-tui::event-kind-for-raw-key ctrl-home)))
+    (is (null
+         (cadr-tui::event-kind-for-raw-key ctrl-end)))))

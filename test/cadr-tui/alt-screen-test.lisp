@@ -1027,3 +1027,52 @@
                (format nil "~C[<64;3;1M" #\Escape))))
       (is (= top (cadr-tui:renderer-viewport-top renderer)))
       (is (eq :wheel (getf (first gestures) :type))))))
+
+(test fullscreen-home-does-not-scroll-the-transcript
+  ;; pi@71023aec1 tui-alt-screen.test.ts #10314. The viewport sees the
+  ;; key before the editor, so Home/End must not match top/bottom.
+  (let* ((terminal
+           (make-alt-recording-terminal :rows 4))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (home (format nil "~COH" #\Escape))
+         (end (format nil "~C[F" #\Escape))
+         (ctrl-home (format nil "~C[1;5H" #\Escape))
+         (ctrl-end (format nil "~C[1;5F" #\Escape))
+         (legacy-ctrl-home (format nil "~C[7^" #\Escape))
+         (kitty-ctrl-home (format nil "~C[57423;5u" #\Escape)))
+    (cadr-tui:renderer-start renderer)
+    (alt-render
+     renderer
+     (loop for index from 1 to 12
+           collect (format nil "line ~A" index)))
+    (is (eq t
+            (cadr-tui:renderer-following-output-p renderer)))
+    (dolist (input (list home end))
+      (is (null
+           (cadr-tui:renderer-handle-input renderer input)))
+      (is (eq t
+              (cadr-tui:renderer-following-output-p renderer))))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer ctrl-home)))
+    (is (null
+         (cadr-tui:renderer-following-output-p renderer)))
+    (is (= 0
+           (cadr-tui:renderer-viewport-top renderer)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer ctrl-end)))
+    (is (eq t
+            (cadr-tui:renderer-following-output-p renderer)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer legacy-ctrl-home)))
+    (is (null
+         (cadr-tui:renderer-following-output-p renderer)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer kitty-ctrl-home)))
+    (is (null
+         (cadr-tui:renderer-following-output-p renderer)))))

@@ -37,10 +37,13 @@
      . ("alt+left" "ctrl+left" "alt+b"))
     ("tui.editor.cursorWordRight"
      . ("alt+right" "ctrl+right" "alt+f"))
+    ;; pi@71023aec1 keybindings.ts #10314 — unmodified Home/End stay
+    ;; with the editor. Ctrl+Home/Ctrl+End scroll the fullscreen
+    ;; transcript, so they are not also line-start/line-end.
     ("tui.editor.cursorLineStart"
-     . ("home" "ctrl+home" "ctrl+a"))
+     . ("home" "ctrl+a"))
     ("tui.editor.cursorLineEnd"
-     . ("end" "ctrl+end" "ctrl+e"))
+     . ("end" "ctrl+e"))
     ("tui.editor.jumpForward" . ("ctrl+]"))
     ("tui.editor.jumpBackward" . ("ctrl+alt+]"))
     ("tui.editor.pageUp" . ("pageUp" "ctrl+pageUp"))
@@ -82,8 +85,8 @@
     ("tui.altScreen.searchNext" . ("enter" "ctrl+g"))
     ("tui.altScreen.searchPrevious" . ("shift+enter" "ctrl+shift+g"))
     ("tui.altScreen.searchClose" . ("escape"))
-    ("tui.altScreen.top" . ("home"))
-    ("tui.altScreen.bottom" . ("end"))))
+    ("tui.altScreen.top" . ("ctrl+home"))
+    ("tui.altScreen.bottom" . ("ctrl+end"))))
 
 (defparameter +logical-key-events+
   '(("app.interrupt" . :interrupt)
