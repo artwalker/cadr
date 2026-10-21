@@ -493,6 +493,107 @@
           :cache-read-price 0.165d0
           :cache-write-price 0d0))))))
 
+(defun gpt-6-official-prices (id)
+  (cond
+    ((string= id "gpt-6.1-sol") (values 2d0 10d0 0.1d0 2.5d0))
+    ((string= id "gpt-6-sol") (values 2d0 10d0 0.2d0 2.5d0))
+    ((string= id "gpt-6-luna") (values 0.1d0 0.5d0 0.01d0 0.125d0))))
+
+(defun gpt-6-official-name (id)
+  (cond
+    ((string= id "gpt-6.1-sol") "GPT-6.1 Sol")
+    ((string= id "gpt-6-sol") "GPT-6 Sol")
+    ((string= id "gpt-6-luna") "GPT-6 Luna")))
+
+(defun gpt-6-official-thinking-map (id codex-p)
+  ;; pi@71023aec1 applyThinkingLevelMetadata. Astra and GPT-6.1 Sol reject
+  ;; reasoning.effort "none". Codex remaps minimal to "low" for xhigh models.
+  (list
+   (cons :off
+         (if (or (string= id "gpt-6-astra")
+                 (string= id "gpt-6.1-sol"))
+             nil
+             "none"))
+   (cons :minimal (if codex-p "low" nil))
+   (cons :low "low")
+   (cons :medium "medium")
+   (cons :high "high")
+   (cons :xhigh "xhigh")
+   (cons :max "max")))
+
+(defun gpt-6-official-compat (provider)
+  (cond
+    ((eq provider :openai)
+     '(:supports-additional-tools t
+       :supports-explicit-prompt-cache-mode t
+       :supports-mid-convo-effort t
+       :supports-mid-convo-system-messages t
+       :supports-openai-grammar-tools t
+       :supports-tool-search t))
+    ((eq provider :openai-codex)
+     '(:supports-additional-tools t
+       :supports-mid-convo-system-messages t
+       :supports-openai-grammar-tools t
+       :supports-tool-search t))
+    (t '(:supports-openai-grammar-tools t))))
+
+(defun register-gpt-6-official-model (provider id)
+  (let ((existing
+          (gethash (model-catalog-key provider id) *model-catalog*)))
+    (when (and existing
+               (eq provider :openai-codex)
+               (string= id "gpt-6.1-sol"))
+      (setf (model-metadata-context-window existing) 500000))
+    (when existing
+      (return-from register-gpt-6-official-model nil)))
+  (multiple-value-bind (input output cache-read cache-write)
+      (gpt-6-official-prices id)
+    (let ((codex-p (eq provider :openai-codex)))
+      (register-model-metadata
+       (make-model-metadata
+        :provider provider
+        :id id
+        :name (gpt-6-official-name id)
+        :api (cond
+               (codex-p :openai-codex-responses)
+               ((eq provider :azure) :azure-openai-responses)
+               (t :openai-responses))
+        :base-url (cond
+                    (codex-p "https://chatgpt.com/backend-api")
+                    ((eq provider :azure) "")
+                    (t "https://api.openai.com/v1"))
+        :context-window
+        (if (and codex-p (string= id "gpt-6.1-sol"))
+            500000
+            272000)
+        :max-output-tokens 128000
+        :supports-images-p t
+        :supports-tools-p t
+        :reasoning-p t
+        :thinking-level-map (gpt-6-official-thinking-map id codex-p)
+        :compat (gpt-6-official-compat provider)
+        :input-price input
+        :output-price output
+        :cache-read-price cache-read
+        :cache-write-price cache-write
+        :cost-tiers
+        (unless (eq provider :azure)
+          (list
+           (make-model-cost-tier
+            :input-tokens-above 272000
+            :input-price (round-model-cost (* input 2d0))
+            :output-price (round-model-cost (* output 1.5d0))
+            :cache-read-price (round-model-cost (* cache-read 2d0))
+            :cache-write-price
+            (round-model-cost (* cache-write 2d0))))))))))
+
+(defun register-gpt-6-official-models ()
+  ;; pi@71023aec1 #10840. These ids are an explicit catalog, not a
+  ;; models.dev import. Codex reports 500k only for gpt-6.1-sol.
+  (dolist (id '("gpt-6.1-sol" "gpt-6-sol" "gpt-6-luna"))
+    (dolist (provider '(:openai :openai-codex :azure))
+      (register-gpt-6-official-model provider id))))
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
@@ -517,4 +618,5 @@
         (getf copy :cost-tiers)))
       (register-model-metadata
        (apply #'make-model-metadata copy))))
-  (register-azure-deepseek-model))
+  (register-azure-deepseek-model)
+  (register-gpt-6-official-models))

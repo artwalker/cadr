@@ -273,3 +273,65 @@
     (is (eq t
             (getf (cadr-ai:model-metadata-compat meta)
                   :supports-mid-convo-effort)))))
+
+(test codex-gpt-6-1-sol-uses-a-500k-context-window
+  ;; pi #10840: Codex reports 500k for gpt-6.1-sol. OpenAI and Azure stay
+  ;; on the 272k short-context cap. Other Codex GPT-6 ids stay at 272k.
+  (dolist (case
+           '(("gpt-6.1-sol" :openai 272000
+              (:low :medium :high :xhigh :max)
+              2d0 10d0 0.1d0 2.5d0)
+             ("gpt-6.1-sol" :openai-codex 500000
+              (:minimal :low :medium :high :xhigh :max)
+              2d0 10d0 0.1d0 2.5d0)
+             ("gpt-6.1-sol" :azure 272000
+              (:low :medium :high :xhigh :max)
+              2d0 10d0 0.1d0 2.5d0)
+             ("gpt-6-sol" :openai 272000
+              (:off :low :medium :high :xhigh :max)
+              2d0 10d0 0.2d0 2.5d0)
+             ("gpt-6-sol" :openai-codex 272000
+              (:off :minimal :low :medium :high :xhigh :max)
+              2d0 10d0 0.2d0 2.5d0)
+             ("gpt-6-luna" :openai 272000
+              (:off :low :medium :high :xhigh :max)
+              0.1d0 0.5d0 0.01d0 0.125d0)
+             ("gpt-6-luna" :openai-codex 272000
+              (:off :minimal :low :medium :high :xhigh :max)
+              0.1d0 0.5d0 0.01d0 0.125d0)))
+    (destructuring-bind
+        (id provider window levels input output cache-read cache-write)
+        case
+      (let* ((meta (cadr-ai:find-model-metadata provider id))
+             (compat (cadr-ai:model-metadata-compat meta))
+             (tier (first (cadr-ai:model-metadata-cost-tiers meta))))
+        (is (= window (cadr-ai:model-metadata-context-window meta)))
+        (is (= 128000 (cadr-ai:model-metadata-max-output-tokens meta)))
+        (is (eq t (cadr-ai:model-metadata-supports-images-p meta)))
+        (is (= input (cadr-ai:model-metadata-input-price meta)))
+        (is (= output (cadr-ai:model-metadata-output-price meta)))
+        (is (= cache-read (cadr-ai:model-metadata-cache-read-price meta)))
+        (is (= cache-write (cadr-ai:model-metadata-cache-write-price meta)))
+        (is (equal levels
+                   (cadr-ai:supported-thinking-levels
+                    (cadr-ai::model-from-metadata meta))))
+        (is (eq t (getf compat :supports-openai-grammar-tools)))
+        (cond
+          ((eq provider :azure)
+           (is (null (getf compat :supports-mid-convo-effort)))
+           (is (null tier)))
+          (t
+           (is (eq t (getf compat :supports-additional-tools)))
+           (is (eq t (getf compat :supports-tool-search)))
+           (is (eq t (getf compat :supports-mid-convo-system-messages)))
+           (is (eq (eq provider :openai)
+                   (eq t (getf compat :supports-mid-convo-effort))))
+           (is (= 272000
+                  (cadr-ai:model-cost-tier-input-tokens-above tier)))
+           (is (= (cadr-ai::round-model-cost (* input 2d0))
+                  (cadr-ai:model-cost-tier-input-price tier)))
+           (is (= (cadr-ai::round-model-cost (* output 1.5d0))
+                  (cadr-ai:model-cost-tier-output-price tier))))))))
+  (is (= 272000
+         (cadr-ai:model-metadata-context-window
+          (cadr-ai:find-model-metadata :openai-codex "gpt-6-astra")))))

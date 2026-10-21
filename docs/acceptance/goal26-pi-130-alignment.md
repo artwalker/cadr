@@ -119,6 +119,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Xiaomi MiMo 思考档 | v1.3.0 #10818 | done：`xiaomi` 和三个 token-plan 上会思考的模型只暴露 `off` 和 `high`。`minimal` 钳到 `high`。请求只发 `thinking.type` enabled/disabled，不发 `reasoning_effort` |
 | 下层 custom overlay 的 done | v1.3.0 #10648 | done：每个 custom overlay 自己的 `done` 只隐藏自己的 handle，并只唤醒自己的等待。上面后开的 overlay 留在屏幕上，输入仍给它；关掉上层后焦点回到编辑器。framed select 和登录提示仍走原来的全局完成标志 |
 | Gemini 4 thinkingLevel | v1.3.0 #10890 | done：id 以 `gemini-` 开头且主版本至少 4（如 `gemini-4-argon`）在 Google 和 Vertex 上都发 `thinkingConfig` `{includeThoughts: true, thinkingLevel: "MEDIUM"}`，不发 `thinkingBudget` |
+| Codex GPT-6.1 Sol 上下文 | v1.3.0 #10840 | done：目录补上 `gpt-6.1-sol`、`gpt-6-sol`、`gpt-6-luna`。Codex 上 `gpt-6.1-sol` 的 context window 是 500000，OpenAI 和 Azure 仍是 272000，输出上限 128000。其它 Codex GPT-6（含 `gpt-6-astra`）仍是 272000。`gpt-6.1-sol` 的 `off` 是 null；Codex 把 `minimal` 映成 `low`，OpenAI 和 Azure 不提供 `minimal`。长上下文计价档从 272000 token 起 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
