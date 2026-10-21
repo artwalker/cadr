@@ -1329,3 +1329,34 @@
       (is (search path audit)
           "Post-audit source addition has no disposition: ~A"
           path))))
+
+(defun goal13-read-summary (offset limit)
+  (cadr-cli::tool-arguments-summary
+   (cadr-ai:make-tool-call
+    :id "read-range"
+    :name "read"
+    :arguments
+    (cadr-ai::json-object
+     "path" "a.txt"
+     "offset" offset
+     "limit" limit))
+   "/tmp"))
+
+(test read-line-range-accepts-numeric-strings-and-drops-malformed-bounds
+  ;; pi@71023aec1 formatReadLineRange.
+  (is (string= "a.txt:2-4" (goal13-read-summary 2 3)))
+  (is (string= "a.txt:2-4" (goal13-read-summary "2" "3")))
+  (is (string= "a.txt:8-9" (goal13-read-summary "  8 " "2")))
+  (is (string= "a.txt:4" (goal13-read-summary 4 nil)))
+  (is (string= "a.txt:1-3" (goal13-read-summary nil 3)))
+  (is (string= "a.txt:1" (goal13-read-summary 1 0)))
+  (is (string= "a.txt:0" (goal13-read-summary 0 1)))
+  (is (string= "a.txt" (goal13-read-summary "nope" 3)))
+  (is (string= "a.txt" (goal13-read-summary 4 "nope")))
+  (is (string= "a.txt"
+               (cadr-cli::tool-arguments-summary
+                (cadr-ai:make-tool-call
+                 :id "read-plain"
+                 :name "read"
+                 :arguments (cadr-ai::json-object "path" "a.txt"))
+                "/tmp"))))

@@ -93,6 +93,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Google thinking 钳制 | v1.3.0 `getDisabledGoogleThinkingConfig` #9455 | done：省略 reasoning 时按 thinkingLevelMap 把 off 钳到下一档；Gemini 3.1 Pro medium 保持 MEDIUM；2.5 用 budget |
 | OpenCode session header | v1.3.0 `getSessionHeaders` | done：没有 session id 时不发 `x-opencode-session` / `x-opencode-client`，不再合成 UUID |
 | compaction `systemMessage` | v1.3.0 `appendCompaction` | done：折叠后的 system message 写在 compaction 条目上，时间戳用条目时间；投影在摘要前放回该 checkpoint |
+| read 行号范围 | v1.3.0 `formatReadLineRange` | done：数字字符串可解析；任一端畸形则整段省略；end 为 0 时不写 `-0` |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

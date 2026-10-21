@@ -45,19 +45,69 @@
         :url (and hyperlink-p
                   (tool-path-file-url text cwd)))))))
 
+(defun tool-read-finite-line-number (value)
+  ;; pi@71023aec1 render-utils.ts parseLineNumber. Numeric strings
+  ;; count. Empty, partial, and non-finite values do not.
+  (cond
+    ((integerp value) value)
+    ((and (floatp value)
+          (not (or (float-infinity-p value)
+                   (float-nan-p value))))
+     value)
+    ((and (rationalp value) (not (integerp value))) value)
+    ((stringp value)
+     (let ((token
+             (string-trim
+              '(#\Space #\Tab #\Newline #\Return #\Page)
+              value)))
+       (when (plusp (length token))
+         (handler-case
+             (tool-read-finite-line-number
+              (cadr-ai::parse-json-number-token token))
+           (error () nil)))))
+    (t nil)))
+
+(defun format-tool-read-line-number (value)
+  (cond
+    ((integerp value) (princ-to-string value))
+    ((and (rationalp value) (= value (truncate value)))
+     (princ-to-string (truncate value)))
+    ((and (floatp value) (= value (ffloor value)))
+     (princ-to-string (truncate value)))
+    (t (princ-to-string (coerce value 'single-float)))))
+
+(defun format-read-line-range (offset limit)
+  ;; pi@71023aec1 formatReadLineRange. A malformed bound drops the
+  ;; whole range. A zero end is omitted, so :1 with limit 0 stays ":1".
+  (when (and (null offset) (null limit))
+    (return-from format-read-line-range ""))
+  (let ((start
+          (if (null offset)
+              1
+              (tool-read-finite-line-number offset))))
+    (unless start
+      (return-from format-read-line-range ""))
+    (when (null limit)
+      (return-from format-read-line-range
+        (format nil ":~A" (format-tool-read-line-number start))))
+    (let ((count (tool-read-finite-line-number limit)))
+      (unless count
+        (return-from format-read-line-range ""))
+      (let ((end (+ start count -1)))
+        (if (zerop end)
+            (format nil ":~A" (format-tool-read-line-number start))
+            (format nil ":~A-~A"
+                    (format-tool-read-line-number start)
+                    (format-tool-read-line-number end)))))))
+
 (defun tool-read-range-segments (arguments)
-  (let ((offset (cadr-ai::json-get arguments "offset"))
-        (limit (cadr-ai::json-get arguments "limit")))
-    (when (or (numberp offset)
-              (numberp limit))
-      (let* ((start (if (numberp offset) offset 1))
-             (end
-               (and (numberp limit)
-                    (+ start limit -1))))
-        (list
-         (tool-header-segment
-          (format nil ":~A~@[-~A~]" start end)
-          :token :warning))))))
+  (let ((text
+          (format-read-line-range
+           (cadr-ai::json-get arguments "offset")
+           (cadr-ai::json-get arguments "limit"))))
+    (when (plusp (length text))
+      (list
+       (tool-header-segment text :token :warning)))))
 
 (defun tool-summary-segments (call &optional (cwd (uiop:getcwd)))
   (let* ((name (cadr-ai:tool-call-name call))
