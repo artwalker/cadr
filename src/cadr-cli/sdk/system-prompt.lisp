@@ -17,6 +17,7 @@
        custom-prompt
        (force-system-prompt nil force-system-prompt-p)
        (selected-tools nil selected-tools-p)
+       (hidden-tools nil hidden-tools-p)
        tool-snippets
        tool-guidelines
        prompt-guidelines
@@ -35,6 +36,8 @@
     (if selected-tools-p
         selected-tools
         '("read" "bash" "edit" "write")))
+   :hidden-tools
+   (copy-list (if hidden-tools-p hidden-tools '()))
    :tool-snippets (copy-alist tool-snippets)
    :tool-guidelines (copy-alist-string-lists tool-guidelines)
    :prompt-guidelines (copy-list prompt-guidelines)
@@ -125,6 +128,23 @@
           described))
         "(none)")))
 
+(defun system-prompt-declared-tools (selected-tools hidden-tools)
+  (remove-if
+   (lambda (name)
+     (member name hidden-tools :test #'string=))
+   selected-tools))
+
+(defun system-prompt-skill-reader (selected-tools declared-tools)
+  ;; pi@71023aec1 #10343. A hidden reader is still reachable through
+  ;; another tool, so skills stay, and the hint names no tool.
+  (cond
+    ((member "read" declared-tools :test #'string=) :read)
+    ((member "bash" declared-tools :test #'string=) :bash)
+    ((or (member "read" selected-tools :test #'string=)
+         (member "bash" selected-tools :test #'string=))
+     :indirect)
+    (t nil)))
+
 (defun system-prompt-tools-section-body
     (selected-tools tool-snippets)
   (format
@@ -186,6 +206,7 @@
     (&key
        custom-prompt
        (selected-tools nil selected-tools-p)
+       hidden-tools
        tool-snippets
        tool-guidelines
        prompt-guidelines
@@ -203,6 +224,8 @@
             (if selected-tools-p
                 selected-tools
                 '("read" "bash" "edit" "write"))))
+         (declared
+           (system-prompt-declared-tools selected hidden-tools))
          (snippets (copy-alist tool-snippets))
          (guidelines-by-tool
            (copy-alist-string-lists tool-guidelines))
@@ -244,13 +267,13 @@
             (push-section "preamble" +default-system-prompt-preamble+)
             (push-section
              "tools"
-             (system-prompt-tools-section-body selected snippets))
+             (system-prompt-tools-section-body declared snippets))
             (push-section
              "rules"
              (format
               nil "~{- ~A~^~%~}"
               (system-prompt-rule-lines
-               selected
+               declared
                :tool-guidelines guidelines-by-tool
                :prompt-guidelines prompt-rules)))
             (push-section
@@ -264,10 +287,7 @@
          "project_context"
          (system-prompt-project-context-body files)))
       (let ((skill-file-read-tool
-              (cond
-                ((member "read" selected :test #'string=) :read)
-                ((member "bash" selected :test #'string=) :bash)
-                (t nil))))
+              (system-prompt-skill-reader selected declared)))
         (when (and skill-file-read-tool skill-list)
           (let ((skills-prompt
                   (string-trim
@@ -318,11 +338,13 @@
 
 (defun prepare-prompt-and-tool-loadout
     (options messages tool-lookup)
-  (let* ((selected-names
+  (let* ((hidden-names (getf options :hidden-tools))
+         (selected-names
            (remove-duplicates
             (remove-if-not
              (lambda (name)
                (and (stringp name)
+                    (not (member name hidden-names :test #'string=))
                     (funcall tool-lookup name)))
              (copy-list
               (getf options :selected-tools)))
@@ -372,6 +394,7 @@
 (defun build-system-prompt
     (&key
        (selected-tools nil selected-tools-p)
+       hidden-tools
        tool-snippets
        tool-guidelines
        prompt-guidelines context-files
@@ -380,10 +403,12 @@
        (readme-path nil readme-path-p)
        (docs-directory nil docs-directory-p)
        (examples-directory nil examples-directory-p))
-  (let ((selected
-          (if selected-tools-p
-              selected-tools
-              '("read" "bash" "edit" "write"))))
+  (let* ((selected
+           (if selected-tools-p
+               selected-tools
+               '("read" "bash" "edit" "write")))
+         (declared
+           (system-prompt-declared-tools selected hidden-tools)))
     (with-output-to-string (output)
       (if custom-prompt
           (write-string custom-prompt output)
@@ -402,7 +427,7 @@
                        (merge-pathnames "examples/" cli-root)))
                  (guidelines
                    (system-prompt-rule-lines
-                    selected
+                    declared
                     :tool-guidelines tool-guidelines
                     :prompt-guidelines prompt-guidelines)))
             (write-string +default-system-prompt-preamble+ output)
@@ -411,7 +436,7 @@
             (format output "Available tools:~%")
             (let ((listing
                     (system-prompt-tools-listing
-                     selected tool-snippets)))
+                     declared tool-snippets)))
               (if (string= listing "(none)")
                   (format output "(none)~%")
                   (format output "~A~%" listing)))
@@ -435,10 +460,7 @@
          (system-prompt-project-context-body context-files))
         (format output "</project_context>~%"))
       (let ((skill-file-read-tool
-              (cond
-                ((member "read" selected :test #'string=) :read)
-                ((member "bash" selected :test #'string=) :bash)
-                (t nil))))
+              (system-prompt-skill-reader selected declared)))
         (when (and skill-file-read-tool skills)
           (write-string
            (cadr-agent:format-skills-for-system-prompt

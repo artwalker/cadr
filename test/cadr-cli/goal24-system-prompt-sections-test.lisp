@@ -68,3 +68,84 @@ Implementation allowed.
       (cadr-cli:build-system-prompt-sections
        :cwd "/tmp"
        :sections '(("preamble" . "x"))))))
+
+(test hidden-tools-leave-the-prompt-list-rules-and-reader-name
+  ;; pi@71023aec1 #10343. Declared tools are the selected tools minus
+  ;; hidden ones. Skills stay when the reader is only hidden, and the
+  ;; hint names no tool. A hidden name is not put back on the registry.
+  (let* ((skill
+           (cadr-agent::make-skill
+            :name "review"
+            :description "Review a change"
+            :content "steps"
+            :file-path "/skills/review/SKILL.md"))
+         (snippets
+           '(("read" . "Read files")
+             ("bash" . "Run commands")
+             ("run" . "Run a task")))
+         (guidelines
+           '(("read" "Use read for files.")
+             ("run" "Prefer run.")))
+         (both
+           (cadr-cli:build-system-prompt-sections
+            :cwd "/tmp"
+            :selected-tools '("read" "bash" "run")
+            :hidden-tools '("read" "bash")
+            :tool-snippets snippets
+            :tool-guidelines guidelines
+            :skills (list skill)))
+         (bash-only
+           (cadr-cli:build-system-prompt-sections
+            :cwd "/tmp"
+            :selected-tools '("read" "bash" "run")
+            :hidden-tools '("read")
+            :tool-snippets snippets
+            :tool-guidelines guidelines
+            :skills (list skill)))
+         (none
+           (cadr-cli:build-system-prompt-sections
+            :cwd "/tmp"
+            :selected-tools '("read" "bash" "run")
+            :tool-snippets snippets
+            :tool-guidelines guidelines
+            :skills (list skill)))
+         (tools (section-text both "tools"))
+         (rules (section-text both "rules"))
+         (skills (section-text both "skills")))
+    (is (search "- run: Run a task" tools))
+    (is (not (search "- read: " tools)))
+    (is (not (search "- bash: " tools)))
+    (is (not (search "Use read for files." rules)))
+    (is (not (search "Use bash for file operations" rules)))
+    (is (search "- Prefer run." rules))
+    (is (search "Load a skill's file when the task matches its description."
+                skills))
+    (is (search "<available_skills>" skills))
+    (is (search "Use bash to load a skill's file"
+                (section-text bash-only "skills")))
+    (is (search "Use the read tool to load a skill's file"
+                (section-text none "skills"))))
+  (let* ((read-tool
+           (cadr-ai:make-tool
+            :name "read" :description "read"
+            :parameters (cadr-ai::json-object)
+            :executor (lambda (&rest args) (declare (ignore args)) nil)))
+         (run-tool
+           (cadr-ai:make-tool
+            :name "run" :description "run"
+            :parameters (cadr-ai::json-object)
+            :executor (lambda (&rest args) (declare (ignore args)) nil)))
+         (lookup
+           (let ((by-name (make-hash-table :test #'equal)))
+             (setf (gethash "read" by-name) read-tool
+                   (gethash "run" by-name) run-tool)
+             (lambda (name) (gethash name by-name)))))
+    (multiple-value-bind (update selected)
+        (cadr-cli:prepare-prompt-and-tool-loadout
+         (list :cwd "/tmp"
+               :selected-tools '("read" "run")
+               :hidden-tools '("read"))
+         nil lookup)
+      (declare (ignore update))
+      (is (equal '("run")
+                 (mapcar #'cadr-ai:tool-name selected))))))

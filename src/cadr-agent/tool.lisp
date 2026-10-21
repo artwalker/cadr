@@ -61,6 +61,19 @@
   (member (extension-tool-exposure host (cadr-ai:tool-name tool))
           '(:direct :model-only)))
 
+(defun active-hidden-tool-names (agent)
+  ;; pi@71023aec1 #10343. Hidden tools stay callable through another
+  ;; tool, so the prompt still knows they exist, but they are not
+  ;; declared to the model.
+  (let ((host (agent-extension-host agent))
+        (filter (agent-tool-filter-function agent)))
+    (unless host
+      (return-from active-hidden-tool-names nil))
+    (loop for tool in (funcall filter (merged-agent-tools agent))
+          for name = (cadr-ai:tool-name tool)
+          when (eq :hidden (extension-tool-exposure host name))
+          collect name)))
+
 (defun refresh-agent-extension-tools (agent)
   (let* ((merged (merged-agent-tools agent))
          (filtered

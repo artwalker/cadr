@@ -482,12 +482,22 @@
                    #'string=
                    after selected-before)))))
         (unless handler-edited-tools-p
-          (setf
-           (getf prompt-options :selected-tools)
-           (mapcar
-            #'cadr-ai:tool-name
-            (registry-tools
-             (agent-tool-registry agent)))))
+          (let* ((declared
+                   (mapcar
+                    #'cadr-ai:tool-name
+                    (registry-tools
+                     (agent-tool-registry agent))))
+                 (hidden (active-hidden-tool-names agent)))
+            (setf
+             (getf prompt-options :selected-tools)
+             (append
+              declared
+              (remove-if
+               (lambda (name)
+                 (member name declared :test #'string=))
+               hidden))
+             (getf prompt-options :hidden-tools)
+             hidden)))
         (let* ((pending
                  (nconc
                   (drain-agent-queue agent :next-turn)

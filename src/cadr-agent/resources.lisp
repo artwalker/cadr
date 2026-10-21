@@ -723,16 +723,21 @@
         (tool
           (ecase file-read-tool
             ((:read "read") :read)
-            ((:bash "bash") :bash))))
+            ((:bash "bash") :bash)
+            ((:indirect "indirect") :indirect))))
     (if (null visible)
         ""
         (with-output-to-string (stream)
           (format
            stream
            "~%~%The following skills provide specialized instructions for specific tasks.~%~A~%When a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.~%~%<available_skills>~%"
-           (if (eq tool :read)
-               "Use the read tool to load a skill's file when the task matches its description."
-               "Use bash to load a skill's file when the task matches its description."))
+           (case tool
+             (:read
+              "Use the read tool to load a skill's file when the task matches its description.")
+             (:bash
+              "Use bash to load a skill's file when the task matches its description.")
+             (otherwise
+              "Load a skill's file when the task matches its description.")))
           (dolist (skill visible)
             (format
              stream
