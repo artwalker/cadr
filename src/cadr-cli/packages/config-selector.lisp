@@ -133,9 +133,24 @@
        (list (truename resolved)))
       (t nil))))
 
+(defun config-pattern-home ()
+  (or (uiop:getenv "HOME")
+      (namestring (user-homedir-pathname))))
+
+(defun config-expand-pattern-tilde (value)
+  ;; pi@71023aec1 normalizePath. Only a leading ~ or ~/ is home.
+  ;; String pasting keeps * and ? for the glob that follows.
+  (let ((home (string-right-trim "/\\" (config-pattern-home))))
+    (cond
+      ((string= value "~") home)
+      ((or (uiop:string-prefix-p "~/" value)
+           (uiop:string-prefix-p "~\\" value))
+       (concatenate 'string home "/" (subseq value 2)))
+      (t value))))
+
 (defun config-normalize-pattern-path (value)
   (let ((normalized
-          (substitute #\/ #\\ value)))
+          (substitute #\/ #\\ (config-expand-pattern-tilde value))))
     (if (uiop:string-prefix-p "./" normalized)
         (subseq normalized 2)
         normalized)))
