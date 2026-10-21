@@ -187,11 +187,24 @@
           (prepare-messages-for-model
            (context-messages context)
            model #'normalize-provider-id))
-        (result nil))
-    (loop for tail on messages
-          for message = (car tail)
-          do
-          (cond
+        (result nil)
+        (error-images nil))
+    (labels ((flush-error-images ()
+               (when error-images
+                 (let ((message (car result)))
+                   (json-put
+                    message "content"
+                    (concatenate
+                     'vector
+                     (json-get message "content")
+                     (coerce error-images 'vector))))
+                 (setf error-images nil))))
+      (loop for tail on messages
+            for message = (car tail)
+            do
+            (unless (typep message 'tool-result-message)
+              (flush-error-images))
+            (cond
            ((typep message 'user-message)
             (push
              (json-object
@@ -264,43 +277,56 @@
                   "content" (list-json-array blocks))
                  result))))
            ((typep message 'tool-result-message)
-            (let* ((block
+            (multiple-value-bind (split-content images caption)
+                (if (bedrock-claude-model-p model)
+                    (split-error-tool-result-images message)
+                    (values nil nil nil))
+              (let* ((block
+                       (json-object
+                        "toolResult"
+                        (json-object
+                         "toolUseId"
+                         (tool-result-message-tool-call-id message)
+                         "status"
+                         (if (tool-result-message-is-error message)
+                             "error" "success")
+                         "content"
+                         (bedrock-text-blocks
+                          (or split-content
+                              (tool-result-message-content message))
+                          :required-p t))))
+                     (previous (car result))
+                     (previous-content
+                       (and previous
+                            (string= (json-get previous "role") "user")
+                            (json-get previous "content")))
+                     (tool-result-message-p
+                       (and previous-content
+                            (plusp (length previous-content))
+                            (every
+                             (lambda (entry)
+                               (json-present-p entry "toolResult"))
+                             previous-content))))
+                (if tool-result-message-p
+                    (json-put
+                     previous "content"
+                     (concatenate 'vector
+                                  previous-content
+                                  (vector block)))
+                    (push
                      (json-object
-                      "toolResult"
-                      (json-object
-                       "toolUseId"
-                       (tool-result-message-tool-call-id message)
-                       "status"
-                       (if (tool-result-message-is-error message)
-                           "error" "success")
-                       "content"
-                       (bedrock-text-blocks
-                        (tool-result-message-content message)
-                        :required-p t))))
-                   (previous (car result))
-                   (previous-content
-                     (and previous
-                          (string= (json-get previous "role") "user")
-                          (json-get previous "content")))
-                   (tool-result-message-p
-                     (and previous-content
-                          (plusp (length previous-content))
-                          (every
-                           (lambda (entry)
-                             (json-present-p entry "toolResult"))
-                           previous-content))))
-              (if tool-result-message-p
-                  (json-put
-                   previous "content"
-                   (concatenate 'vector
-                                previous-content
-                                (vector block)))
-                  (push
-                   (json-object
-                    "role" "user"
-                    "content" (json-array block))
-                   result))))))
-    (list-json-array (nreverse result))))
+                      "role" "user"
+                      "content" (json-array block))
+                     result))
+                (when split-content
+                  (setf error-images
+                        (append
+                         error-images
+                         (list (json-object "text" caption))
+                         (mapcar #'bedrock-image-block images)))))))
+      ))
+      (flush-error-images)
+    (list-json-array (nreverse result)))))
 
 (defun bedrock-tools (model tools tool-choice)
   (let ((result

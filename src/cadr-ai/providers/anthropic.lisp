@@ -15,7 +15,8 @@
        "data" (image-content-data block))))
     (t nil)))
 
-(defun anthropic-message-content (message &optional allow-empty-signature-p)
+(defun anthropic-message-content
+    (message &optional allow-empty-signature-p content-override)
   (cond
     ((typep message 'user-message)
      (let ((content (user-message-content message)))
@@ -75,7 +76,9 @@
        "type" "tool_result"
        "tool_use_id" (tool-result-message-tool-call-id message)
        "content"
-       (let ((content (tool-result-message-content message)))
+       (let ((content
+               (or content-override
+                   (tool-result-message-content message))))
          (if (content-has-images-p content)
              (list-json-array
               (loop for block across (coerce content 'vector)
@@ -147,7 +150,8 @@
                    (and (= major 4) minor (>= minor 5))))))))))
 
 (defun anthropic-tool-result-blocks
-    (message allow-empty-signature-p deferred-tools loaded-tool-names)
+    (message allow-empty-signature-p deferred-tools loaded-tool-names
+     &optional content-override)
   (let ((references nil))
     (dolist (name (tool-result-message-added-tool-names message))
       (when (and deferred-tools
@@ -158,7 +162,8 @@
               references)))
     (let* ((ordinary
              (aref
-              (anthropic-message-content message allow-empty-signature-p)
+              (anthropic-message-content
+               message allow-empty-signature-p content-override)
               0))
            (ordinary-content (json-get ordinary "content")))
       (if (null references)
@@ -218,22 +223,41 @@
             do
             (cond
               ((typep message 'tool-result-message)
-               (let ((blocks nil))
+               (let ((blocks nil)
+                     (error-images nil))
                  (loop while (and prepared
                                   (typep (first prepared)
                                          'tool-result-message))
-                       do (dolist
-                              (block
-                               (anthropic-tool-result-blocks
-                                (pop prepared)
-                                allow-empty-signature-p
-                                deferred-tools
-                                loaded-tool-names))
-                            (push block blocks)))
+                       for tool-message = (pop prepared)
+                       do (multiple-value-bind
+                              (split-content images caption)
+                              (split-error-tool-result-images
+                               tool-message)
+                            (dolist
+                                (block
+                                 (anthropic-tool-result-blocks
+                                  tool-message
+                                  allow-empty-signature-p
+                                  deferred-tools
+                                  loaded-tool-names
+                                  split-content))
+                              (push block blocks))
+                            (when split-content
+                              (setf error-images
+                                    (append
+                                     error-images
+                                     (list
+                                      (json-object
+                                       "type" "text"
+                                       "text" caption))
+                                     (mapcar #'anthropic-input-block
+                                             images))))))
                  (record
                   (json-object
                    "role" "user"
-                   "content" (list-json-array (nreverse blocks)))
+                   "content"
+                   (list-json-array
+                    (append (nreverse blocks) error-images)))
                   nil)))
               ((typep message 'assistant-message)
                (pop prepared)

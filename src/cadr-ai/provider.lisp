@@ -319,6 +319,44 @@ string. Returns the buffer to store back. Per-delta
        (find-if (lambda (item) (typep item 'image-content))
                 (coerce content 'list))))
 
+(defparameter +error-tool-image-placeholder+
+  "(image attached after the tool results)")
+
+(defun replace-images-with-placeholder (content placeholder)
+  ;; pi@71023aec1 transform-messages.ts. One note covers a run of images.
+  (let ((result nil)
+        (previous-placeholder-p nil))
+    (loop for block across (coerce content 'vector)
+          do (cond
+               ((typep block 'image-content)
+                (unless previous-placeholder-p
+                  (push (make-text-content :text placeholder) result))
+                (setf previous-placeholder-p t))
+               ((typep block 'text-content)
+                (push block result)
+                (setf previous-placeholder-p
+                      (string=
+                       (text-content-text block) placeholder)))))
+    (nreverse result)))
+
+(defun split-error-tool-result-images (message)
+  ;; pi@71023aec1 #10794. Anthropic and Claude on Bedrock reject images
+  ;; inside an error tool result. The text result keeps a placeholder;
+  ;; the images follow every tool result of the turn.
+  (let ((content (tool-result-message-content message)))
+    (when (and (tool-result-message-is-error message)
+               (content-has-images-p content))
+      (values
+       (replace-images-with-placeholder
+        content +error-tool-image-placeholder+)
+       (loop for block across (coerce content 'vector)
+             when (typep block 'image-content)
+               collect block)
+       (format nil
+               "Images from the error result of tool call ~A (~A):"
+               (tool-result-message-tool-call-id message)
+               (tool-result-message-tool-name message))))))
+
 (defun context-has-images-p (context)
   (some
    (lambda (message)
