@@ -96,12 +96,55 @@
   (emit-mcp-servers-change host)
   t)
 
+(defun extension-host-find-mcp-server (host name)
+  (sb-thread:with-mutex ((extension-host-mcp-servers-lock host))
+    (gethash name (extension-host-mcp-servers host))))
+
 (defun extension-api-register-mcp-server (api name config)
   (assert-active-extension-api api)
   (let* ((bundle (%extension-api-bundle api))
-         (path (or (extension-bundle-path bundle) "")))
+         (path (or (extension-bundle-path bundle) ""))
+         (host (%extension-api-host api))
+         (validated (validate-mcp-server-config name config)))
+    (when (stringp validated)
+      (error
+       'extension-registration-error
+       :message
+       (format nil
+               "Invalid MCP server registered by extension ~S: ~A"
+               path validated)))
+    (let ((owner
+            (let ((existing (extension-host-find-mcp-server host name)))
+              (and existing
+                   (registered-mcp-server-extension-path existing)))))
+      (when (and owner (not (string= owner path)))
+        (error
+         'extension-registration-error
+         :message
+         (format nil
+                 "MCP server ~S is already registered by extension ~S"
+                 name owner))))
+    (let ((clash
+            (find-if
+             (lambda (server)
+               (and (not (string=
+                          (registered-mcp-server-name server)
+                          name))
+                    (string=
+                     (mcp-namespace
+                      (registered-mcp-server-name server))
+                     (mcp-namespace name))))
+             (extension-host-list-mcp-servers host))))
+      (when clash
+        (error
+         'extension-registration-error
+         :message
+         (format nil
+                 "MCP server ~S conflicts with registered server ~S"
+                 name
+                 (registered-mcp-server-name clash)))))
     (extension-host-register-mcp-server
-     (%extension-api-host api) name config path))
+     host name validated path))
   nil)
 
 (defun extension-api-unregister-mcp-server (api name)

@@ -217,6 +217,21 @@
    #:extension-api-register-mcp-server
    #:extension-api-unregister-mcp-server
    #:extension-api-get-mcp-servers
+   #:validate-mcp-server-config
+   #:mcp-tool-exposure
+   #:mcp-namespace
+   #:load-mcp-config
+   #:update-mcp-server-config
+   #:loaded-mcp-config-servers
+   #:loaded-mcp-config-errors
+   #:loaded-mcp-config-auto-enable-codemode
+   #:loaded-mcp-config-auto-enable-codemode-p
+   #:loaded-mcp-config-project-config
+   #:mcp-server-entry-name
+   #:mcp-server-entry-config
+   #:mcp-server-entry-source
+   #:mcp-server-entry-scope
+   #:mcp-server-entry-override
    #:registered-mcp-server
    #:registered-mcp-server-name
    #:registered-mcp-server-config
