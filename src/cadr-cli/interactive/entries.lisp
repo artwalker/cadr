@@ -315,18 +315,45 @@
           #\Escape url (code-char 7) label
           #\Escape (code-char 7)))
 
-(defun render-auth-url-lines (url width)
+(defun auth-url-click-label (&optional (platform (cli-platform)))
+  ;; pi@71023aec1 AuthUrlComponent: macOS uses Cmd+click.
+  (if (eq platform :darwin)
+      "Cmd+click to open"
+      "Ctrl+click to open"))
+
+(defun render-auth-url-lines
+    (url width &key copy-hint-p status (platform (cli-platform)))
+  ;; pi@71023aec1 auth-url.ts. The click hint stays; copy replaces only
+  ;; the suffix after the bullet.
   (let* ((linked
            (cadr-tui:theme-foreground
             :accent
             (terminal-hyperlink url url)
             :enabled-p t))
-         (hint
+         (suffix
+           (cond
+             ((eq status :copied)
+              (cadr-tui:theme-foreground
+               :success "Copied URL to clipboard" :enabled-p t))
+             ((stringp status)
+              (cadr-tui:theme-foreground :error status :enabled-p t))
+             (copy-hint-p
+              (key-hint "app.message.copy" "to copy"))
+             (t nil)))
+         (click
            (cadr-tui:theme-foreground
             :dim
             (terminal-hyperlink
-             url "Ctrl+click to open")
-            :enabled-p t)))
+             url (auth-url-click-label platform))
+            :enabled-p t))
+         (hint
+           (if suffix
+               (format nil "~A ~A ~A"
+                       click
+                       (cadr-tui:theme-foreground
+                        :dim "•" :enabled-p t)
+                       suffix)
+               click)))
     (append
      (cadr-tui:wrap-text linked width)
      (list hint))))
