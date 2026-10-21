@@ -705,12 +705,16 @@ interactive-mode.ts:5956-5960).")
                    (cadr-tui:terminal-query-background-color
                     terminal
                     :timeout-seconds 0.1d0)))
-             (and
-              color
-              (rgb-background-theme
-               (cadr-tui:rgb-color-red color)
-               (cadr-tui:rgb-color-green color)
-               (cadr-tui:rgb-color-blue color)))))
+             (when color
+               (setf *system-terminal-colors*
+                     (list :background
+                           (list (cadr-tui:rgb-color-red color)
+                                 (cadr-tui:rgb-color-green color)
+                                 (cadr-tui:rgb-color-blue color))))
+               (rgb-background-theme
+                (cadr-tui:rgb-color-red color)
+                (cadr-tui:rgb-color-green color)
+                (cadr-tui:rgb-color-blue color)))))
          (refresh-terminal-theme-policy ()
            (let ((mode (current-theme-mode)))
              (setf active-theme-mode mode)

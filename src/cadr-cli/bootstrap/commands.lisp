@@ -2548,7 +2548,13 @@
                    (push
                     (list :name name :path nil)
                     themes)))
-               (nreverse themes)))
+               (setf themes (nreverse themes))
+               (unless
+                   (find "system" themes
+                         :key (lambda (theme) (getf theme :name))
+                         :test #'string=)
+                 (push (list :name "system" :path nil) themes))
+               themes))
            :get-theme-function
            (lambda (name)
              (or
@@ -2560,7 +2566,7 @@
                  (getf theme :name))
                :test #'string=)
               (and
-               (member name '("dark" "light")
+               (member name '("system" "dark" "light")
                        :test #'string=)
                (list :name name :path nil))))
            :set-theme-function
@@ -2578,7 +2584,7 @@
                        (stringp name)
                        (or
                         (member
-                         name '("dark" "light")
+                         name '("system" "dark" "light")
                          :test #'string=)
                         (find
                          name

@@ -681,7 +681,7 @@
          (theme-names
            (remove-duplicates
             (append
-             '("dark" "light")
+             '("system" "dark" "light")
              (loop
                for theme
                  in (and resources

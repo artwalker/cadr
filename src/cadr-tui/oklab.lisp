@@ -325,6 +325,65 @@
           (let ((gray (+ 8 (* (- index 232) 10))))
             (list gray gray gray)))))
 
+(defun oklab-to-okhsl-lightness (value)
+  (* 0.5d0
+     (+ (- (* +okhsl-k3+ value) +okhsl-k1+)
+        (sqrt
+         (+ (expt (- (* +okhsl-k3+ value) +okhsl-k1+) 2d0)
+            (* 4d0 +okhsl-k2+ +okhsl-k3+ value))))))
+
+(defun rgb-oklch-channels (red green blue)
+  (let* ((lab (rgb-to-oklab red green blue))
+         (a (second lab))
+         (b (third lab)))
+    (values (first lab)
+            (sqrt (+ (* a a) (* b b)))
+            (mod (+ (* (atan b a) (/ 180d0 pi)) 360d0) 360d0))))
+
+(defun rgb-okhsl-channels (red green blue)
+  (let* ((lab (rgb-to-oklab red green blue))
+         (l (first lab))
+         (a (second lab))
+         (b (third lab))
+         (chroma (sqrt (+ (* a a) (* b b))))
+         (lightness (oklab-to-okhsl-lightness l)))
+    (when (or (< chroma 1d-9)
+              (<= lightness 0d0)
+              (>= lightness 1d0))
+      (return-from rgb-okhsl-channels
+        (values 0d0 0d0 lightness)))
+    (let* ((hue (mod (+ (* (atan b a) (/ 180d0 pi)) 360d0) 360d0))
+           (stops (chroma-stops l (/ a chroma) (/ b chroma)))
+           (c0 (first stops))
+           (c-mid (second stops))
+           (c-max (third stops))
+           (saturation
+             (if (< chroma c-mid)
+                 (let ((k1 (* 0.8d0 c0)))
+                   (* 0.8d0
+                      (/ chroma
+                         (+ k1
+                            (* (- 1d0 (/ k1 c-mid)) chroma)))))
+                 (let ((k1 (/ (* 0.2d0 c-mid c-mid 1.25d0 1.25d0) c0))
+                       (offset (- chroma c-mid)))
+                   (+ 0.8d0
+                      (* 0.2d0
+                         (/ offset
+                            (+ k1
+                               (* (- 1d0 (/ k1 (- c-max c-mid)))
+                                  offset)))))))))
+      (values hue (min 1d0 (max 0d0 saturation)) lightness))))
+
+(defun wcag-contrast (r1 g1 b1 r2 g2 b2)
+  (flet ((luminance (red green blue)
+           (+ (* 0.2126d0 (srgb-to-linear (/ red 255d0)))
+              (* 0.7152d0 (srgb-to-linear (/ green 255d0)))
+              (* 0.0722d0 (srgb-to-linear (/ blue 255d0))))))
+    (let ((first (luminance r1 g1 b1))
+          (second (luminance r2 g2 b2)))
+      (/ (+ (max first second) 0.05d0)
+         (+ (min first second) 0.05d0)))))
+
 (defun color-lightness (red green blue)
   (first (rgb-to-oklab red green blue)))
 

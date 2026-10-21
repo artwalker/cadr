@@ -94,6 +94,13 @@
    #:rgb-to-ansi-256
    #:normalize-theme-color
    #:theme-color-lightness
+   #:color-lightness
+   #:oklab-to-okhsl-lightness
+   #:rgb-oklch-channels
+   #:rgb-okhsl-channels
+   #:wcag-contrast
+   #:okhsl-to-rgb
+   #:oklch-to-rgb
    #:theme-color-value
    #:theme-foreground-ansi
    #:theme-background-ansi

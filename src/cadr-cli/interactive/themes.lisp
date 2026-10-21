@@ -331,6 +331,28 @@
            (theme-resolved-appearance
             object color-overrides)))))))))
 
+(defvar *system-terminal-colors* nil)
+
+(defun system-theme-document ()
+  (multiple-value-bind (colors dim appearance)
+      (if *system-terminal-colors*
+          (apply #'generate-system-theme-colors *system-terminal-colors*)
+          (generate-system-theme-colors
+           :appearance-hint
+           (theme-detection-theme
+            (detect-background-from-environment))))
+    (let ((object (make-hash-table :test #'equal))
+          (table (make-hash-table :test #'equal)))
+      (maphash (lambda (key value)
+                 (setf (gethash key table) value))
+               colors)
+      (setf (gethash "name" object) "system"
+            (gethash "colors" object) table)
+      (when appearance
+        (setf (gethash "appearance" object)
+              (if (eq appearance :light) "light" "dark")))
+      (values object dim))))
+
 (defun apply-tui-theme-summary
     (summary
      &key background
@@ -363,12 +385,19 @@
               :light)
              (t :dark))))
     (handler-case
-        (multiple-value-bind (overrides appearance)
-            (theme-object-overrides object)
-          (cadr-tui:set-current-theme
-           (or appearance base)
-           :overrides overrides
-           :capabilities capabilities))
+        (let ((dim nil))
+          (when (and (stringp name) (string-equal name "system"))
+            (multiple-value-bind (generated generated-dim)
+                (system-theme-document)
+              (setf object generated
+                    dim generated-dim)))
+          (multiple-value-bind (overrides appearance)
+              (theme-object-overrides object)
+            (cadr-tui:set-current-theme
+             (or appearance base)
+             :overrides overrides
+             :dim-keys dim
+             :capabilities capabilities)))
       (condition ()
         (unless keep-current-on-error-p
           (cadr-tui:set-current-theme
