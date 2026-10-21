@@ -129,3 +129,46 @@
        (declare (ignore provider model))
        0.3d0))
     (is (null (cache-miss-notice-texts state)))))
+
+(defun thinking-drop-message (count)
+  (cadr-ai:make-assistant-message
+   :api :anthropic-messages
+   :provider :anthropic
+   :model "claude"
+   :stop-reason :stop
+   :diagnostics
+   (list
+    (cadr-ai:make-assistant-message-diagnostic
+     :type :anthropic-input-transformations
+     :details
+     (list :transformations
+           (loop repeat count
+                 collect (list :type "thinking_dropped"
+                               :path "messages.0.content.0"
+                               :reason "prefix_binding_mismatch")))))))
+
+(test thinking-drop-notice-when-count-increases
+  (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::maybe-show-thinking-drop-notice
+     state (thinking-drop-message 2)
+     :show-p t
+     :session-entries (list (thinking-drop-message 1)))
+    (let ((texts (cache-miss-notice-texts state)))
+      (is (= 1 (length texts)))
+      (is (search
+           "Anthropic dropped 2 thinking blocks (details in session)"
+           (cache-miss-notice-plain-text (first texts)))))))
+
+(test thinking-drop-notice-skips-repeat-and-hidden-setting
+  (let ((same (cadr-cli::make-tui-state))
+        (hidden (cadr-cli::make-tui-state)))
+    (cadr-cli::maybe-show-thinking-drop-notice
+     same (thinking-drop-message 1)
+     :show-p t
+     :session-entries (list (thinking-drop-message 1)))
+    (cadr-cli::maybe-show-thinking-drop-notice
+     hidden (thinking-drop-message 2)
+     :show-p nil
+     :session-entries nil)
+    (is (null (cache-miss-notice-texts same)))
+    (is (null (cache-miss-notice-texts hidden)))))

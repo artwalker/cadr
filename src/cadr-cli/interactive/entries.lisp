@@ -147,6 +147,52 @@
       :enabled-p t)))
   state)
 
+(defun dropped-thinking-count (message)
+  (let ((count 0))
+    (dolist (diagnostic (cadr-ai:assistant-message-diagnostics message))
+      (when (eq (cadr-ai:assistant-message-diagnostic-type diagnostic)
+                :anthropic-input-transformations)
+        (dolist (item (getf (cadr-ai:assistant-message-diagnostic-details
+                             diagnostic)
+                            :transformations))
+          (when (and (listp item)
+                     (string= (or (getf item :type) "")
+                              "thinking_dropped"))
+            (incf count)))))
+    count))
+
+(defun previous-assistant-message (entries)
+  (loop for item in (reverse entries)
+        for message =
+          (if (typep item 'cadr-agent:session-entry)
+              (cadr-agent:session-entry-message item)
+              item)
+        when (typep message 'cadr-ai:assistant-message)
+          return message))
+
+(defun format-thinking-drop-notice (count)
+  (format nil
+          "Anthropic dropped ~D thinking block~:[~;s~] (details in session)"
+          count
+          (> count 1)))
+
+(defun maybe-show-thinking-drop-notice
+    (state message &key show-p session-entries)
+  "Warn when this assistant message dropped more thinking than the previous one."
+  (when (and show-p (typep message 'cadr-ai:assistant-message))
+    (let* ((dropped (dropped-thinking-count message))
+           (previous (previous-assistant-message session-entries))
+           (previous-dropped
+             (if previous (dropped-thinking-count previous) 0)))
+      (when (> dropped previous-dropped)
+        (add-tui-notice
+         state
+         (cadr-tui:theme-foreground
+          :warning
+          (format-thinking-drop-notice dropped)
+          :enabled-p t)))))
+  state)
+
 (defun maybe-show-cache-miss-notice
     (state message
      &key show-p session-entries model-price-function)

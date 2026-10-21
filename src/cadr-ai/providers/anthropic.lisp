@@ -606,6 +606,36 @@
                        (provider-stream-state-message state))))
             content-index)))
 
+(defun anthropic-input-transformation (value)
+  (when (hash-table-p value)
+    (list :type (json-get value "type")
+          :path (json-get value "path")
+          :reason (json-get value "reason"))))
+
+(defun record-anthropic-input-transformations (message transformations)
+  ;; Last message_delta array wins, matching anthropic-messages.ts.
+  (setf (assistant-message-diagnostics message)
+        (remove :anthropic-input-transformations
+                (assistant-message-diagnostics message)
+                :key #'assistant-message-diagnostic-type
+                :test #'eq))
+  (when (and (vectorp transformations)
+             (plusp (length transformations)))
+    (setf (assistant-message-diagnostics message)
+          (append
+           (assistant-message-diagnostics message)
+           (list
+            (make-assistant-message-diagnostic
+             :type :anthropic-input-transformations
+             :details
+             (list :transformations
+                   (loop for item across transformations
+                         for recorded =
+                           (anthropic-input-transformation item)
+                         when recorded
+                           collect recorded)))))))
+  message)
+
 (defmethod reduce-provider-sse-event ((provider anthropic-provider)
                                       state event emit)
   (declare (ignore provider))
@@ -772,7 +802,12 @@
              (price-anthropic-usage
               message
               (provider-stream-state-model state)
-              (assistant-message-response-model message)))))
+              (assistant-message-response-model message)))
+           (let ((transformations
+                   (json-get payload "input_transformations")))
+             (when (vectorp transformations)
+               (record-anthropic-input-transformations
+                message transformations)))))
         ((string= type "message_stop")
          (setf (provider-stream-state-terminal-p state) t)))))
   nil)

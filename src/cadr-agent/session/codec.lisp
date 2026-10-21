@@ -271,8 +271,12 @@
   (let ((object
           (cadr-ai::json-object
            "type"
-           (symbol-json-name
-            (cadr-ai:assistant-message-diagnostic-type diagnostic))
+           (let ((type
+                   (cadr-ai:assistant-message-diagnostic-type
+                    diagnostic)))
+             (if (eq type :anthropic-input-transformations)
+                 "anthropic_input_transformations"
+                 (symbol-json-name type)))
            "timestamp"
            (cadr-ai:assistant-message-diagnostic-timestamp diagnostic))))
     (when (cadr-ai:assistant-message-diagnostic-details diagnostic)
@@ -576,7 +580,9 @@
      ((or (eq value "user") (string= value "user")) :user)
      ((or (eq value "assistant") (string= value "assistant"))
       :assistant)
-     ((or (eq value "error") (string= value "error")) :error))
+     ((or (eq value "error") (string= value "error")) :error)
+     ((string= value "anthropic_input_transformations")
+      :anthropic-input-transformations))
    (intern (string-upcase value) "KEYWORD")))
 
 (defun json-get-either (object primary legacy)

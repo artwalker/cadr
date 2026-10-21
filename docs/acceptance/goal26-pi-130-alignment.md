@@ -89,6 +89,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | skill slash 按裸名计分 | v1.3.0 `autocomplete.ts` | done：`skill:` 先按裸名 fuzzy，未中的再按全名，裸名命中排在前面 |
 | `--continue` 最近会话 | v1.3.0 `findMostRecentSession` | done：匹配 cwd 的 jsonl 按文件 mtime 取最新；同一秒 mtime 再比消息时间 |
 | Responses `api-error` provider | v1.3.0 `openai-responses.ts` | done：request-spec 与 SSE `api-error` 用模型 provider；`response.failed` / `error` 文案跟 shared stream |
+| Anthropic thinking drop 提示 | v1.3.0 `interactive-mode.ts` | done：`message_delta.input_transformations` 记入 diagnostic；次数高于上一条 assistant 且 cache-miss notices 开时警告 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

@@ -363,3 +363,40 @@
              (cadr-ai:cost-input complete-cost)))
       (is (= (* (/ 20d0 1000000d0) 5d0)
              (cadr-ai:cost-output complete-cost))))))
+
+(test anthropic-message-delta-records-thinking-drops
+  (let* ((model (mid-convo-model))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model)
+            :model model))
+         (payload
+           (cadr-ai::stringify-json
+            (cadr-ai::json-object
+             "type" "message_delta"
+             "delta" (cadr-ai::json-object "stop_reason" "end_turn")
+             "input_transformations"
+             (cadr-ai::json-array
+              (cadr-ai::json-object
+               "type" "thinking_dropped"
+               "path" "messages.1.content.0"
+               "reason" "prefix_binding_mismatch"))))))
+    (cadr-ai::reduce-provider-sse-event
+     (make-anthropic-provider :api-key "test")
+     state
+     (cadr-ai::make-sse-event :data payload)
+     (lambda (event) (declare (ignore event))))
+    (let* ((diagnostic
+             (first
+              (cadr-ai:assistant-message-diagnostics
+               (cadr-ai::provider-stream-state-message state))))
+           (item
+             (first
+              (getf (cadr-ai:assistant-message-diagnostic-details
+                     diagnostic)
+                    :transformations))))
+      (is (eq :anthropic-input-transformations
+              (cadr-ai:assistant-message-diagnostic-type diagnostic)))
+      (is (string= "thinking_dropped" (getf item :type)))
+      (is (string= "messages.1.content.0" (getf item :path)))
+      (is (string= "prefix_binding_mismatch" (getf item :reason))))))

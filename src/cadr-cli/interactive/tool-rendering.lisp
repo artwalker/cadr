@@ -770,15 +770,21 @@
                  (setf (tui-state-bug-report-hint-shown-p state)
                        t))))))
          (accumulate-message-usage state message)
-         (maybe-show-cache-miss-notice
-          state message
-          :show-p
-          (and show-cache-miss-notices-function
-               (funcall show-cache-miss-notices-function))
-          :session-entries
-          (and session-entries-function
-               (funcall session-entries-function))
-          :model-price-function model-price-function)
+         (let ((show-cache-miss-notices-p
+                 (and show-cache-miss-notices-function
+                      (funcall show-cache-miss-notices-function)))
+               (session-entries
+                 (and session-entries-function
+                      (funcall session-entries-function))))
+           (maybe-show-thinking-drop-notice
+            state message
+            :show-p show-cache-miss-notices-p
+            :session-entries session-entries)
+           (maybe-show-cache-miss-notice
+            state message
+            :show-p show-cache-miss-notices-p
+            :session-entries session-entries
+            :model-price-function model-price-function))
          (setf
           (tui-state-current-assistant state)
           nil)))
