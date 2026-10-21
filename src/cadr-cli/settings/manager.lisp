@@ -319,6 +319,14 @@
           (settings-value manager "outputPad" 1)))
     (if (member value '(0 1)) value 1)))
 
+(defun settings-quiet-startup (manager)
+  "Return T, :HEADER, or NIL. Only boolean true and the string \"header\" count."
+  (let ((value (settings-value manager "quietStartup" nil)))
+    (cond
+      ((eq value t) t)
+      ((and (stringp value) (string= value "header")) :header)
+      (t nil))))
+
 (defun settings-auto-resize-images-p (manager)
   (let ((images
           (settings-value

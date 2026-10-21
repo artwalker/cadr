@@ -415,3 +415,61 @@
                            (uiop:read-file-string
                             path :external-format :utf-8))
                          (goal18-context-under root src)))))))
+
+(test header-only-quiet-startup-keeps-the-banner-and-drops-resources
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (model
+           (cadr-ai:make-model
+            :id "faux-1" :name "Faux" :provider :faux :api :faux))
+         (agent (cadr-agent:make-agent :provider nil :model model))
+         (state
+           (cadr-cli::make-cli-settings-selector-state
+            manager agent (cadr-cli::make-resource-snapshot)
+            :supports-images-p nil))
+         (snapshot (goal18-resource-snapshot))
+         (scope
+           (list (list :model model :thinking nil)))
+         (keys (cadr-tui:make-keybindings-manager)))
+    (is (null (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-selector-notify-change
+     state "quiet-startup" "header")
+    (is (eq :header (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-selector-notify-change
+     state "quiet-startup" "true")
+    (is (eq t (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-selector-notify-change
+     state "quiet-startup" "false")
+    (is (null (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-set
+     manager "quietStartup" "nope" :scope :global)
+    (is (null (cadr-cli::settings-quiet-startup manager)))
+    (is (null
+         (cadr-cli::model-scope-startup-line
+          scope keys :verbose-p nil :quiet-startup-p :header)))
+    (is (stringp
+         (cadr-cli::model-scope-startup-line
+          scope keys :verbose-p t :quiet-startup-p :header)))
+    (multiple-value-bind (compact expanded)
+        (cadr-cli::make-tui-startup-lines
+         snapshot :include-resources-p nil)
+      (let ((compact-text (mapcar #'goal18-strip-ansi compact))
+            (expanded-text (mapcar #'goal18-strip-ansi expanded)))
+        (is (find-if
+             (lambda (line) (uiop:string-prefix-p "cadr v" line))
+             compact-text))
+        (is (find "Press ctrl+o to show full startup help."
+                  compact-text :test #'string=))
+        (is (not (find "loaded resources" compact-text :test #'search)))
+        (is (not (find "[Skills]" compact-text :test #'string=)))
+        (is (not (find "alpha-skill" compact-text :test #'search)))
+        (is (not (find "[Skills]" expanded-text :test #'string=)))
+        (is (not (find "alpha-skill" expanded-text :test #'search)))))
+    (let ((texts
+            (mapcar
+             #'goal18-strip-ansi
+             (cadr-cli::make-tui-startup-lines snapshot))))
+      (is (find
+           "Press ctrl+o to show full startup help and loaded resources."
+           texts :test #'string=))
+      (is (find "[Skills]" texts :test #'string=))
+      (is (find "  alpha-skill, zeta-skill" texts :test #'string=)))))

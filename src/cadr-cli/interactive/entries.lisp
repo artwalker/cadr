@@ -634,7 +634,8 @@ directory-style extensions."
      &key
        (version (cadr-ai::cadr-version))
        extensions
-       extension-issues)
+       extension-issues
+       (include-resources-p t))
   (labels
       ((namestring-of (path)
          (if (pathnamep path) (namestring path) path))
@@ -899,11 +900,15 @@ directory-style extensions."
                   (format
                    nil "~{~A~^/~} to cycle models"
                    (append cycle-keys backward-cycle-keys))))
+           (help-hint
+             (if include-resources-p
+                 "Press ctrl+o to show full startup help and loaded resources."
+                 "Press ctrl+o to show full startup help."))
            (compact
              (list
               logo
               "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
-              "Press ctrl+o to show full startup help and loaded resources."
+              help-hint
               ""
               "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr."))
            (expanded
@@ -916,15 +921,17 @@ directory-style extensions."
                 (list
                  ""
                  "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr.")))
-              (let ((blocks (sections t)))
-                (when blocks
-                  (append (list "") blocks))))))
+              (when include-resources-p
+                (let ((blocks (sections t)))
+                  (when blocks
+                    (append (list "") blocks)))))))
       (values
        (append
         compact
-        (let ((blocks (sections nil)))
-          (when blocks
-            (append (list "") blocks))))
+        (when include-resources-p
+          (let ((blocks (sections nil)))
+            (when blocks
+              (append (list "") blocks)))))
        expanded))))
 
 (defun startup-version-line-p (line)

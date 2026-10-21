@@ -926,12 +926,16 @@
              :id "quiet-startup"
              :label "Quiet startup"
              :description
-             "Disable verbose printing at startup"
+             "Disable verbose printing at startup (header: keep only the startup header)"
              :value
-             (settings-boolean-value
-              settings-manager
-              "quietStartup" nil)
-             :values (list t nil))
+             (let ((quiet
+                     (settings-quiet-startup
+                      settings-manager)))
+               (cond
+                 ((eq quiet t) "true")
+                 ((eq quiet :header) "header")
+                 (t "false")))
+             :values (list "true" "header" "false"))
             (make-settings-option
              :id "install-telemetry"
              :label "Install telemetry"
@@ -1297,6 +1301,14 @@
                        settings-manager)
                       +default-thinking-level+)
                      level))))))
+         ((string= id "quiet-startup")
+          (settings-set
+           settings-manager "quietStartup"
+           (cond
+             ((equal value "header") "header")
+             ((equal value "true") t)
+             (t nil))
+           :scope :global))
          (t
           (let ((key
                   (cdr

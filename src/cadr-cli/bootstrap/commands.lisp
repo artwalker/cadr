@@ -2355,8 +2355,11 @@
               :verbose-p
               (cli-arguments-verbose-p command)
               :quiet-startup-p
-              (settings-value
-               settings-manager "quietStartup" nil)))
+              (and
+               (not
+                (cli-arguments-verbose-p command))
+               (settings-quiet-startup
+                settings-manager))))
             (when startup-scope-line
               (write-line startup-scope-line)
               (finish-output))
@@ -2379,21 +2382,31 @@
             (multiple-value-bind
                   (startup-compact
                    startup-expanded)
-                (if
-                    (or
-                     (cli-arguments-verbose-p command)
-                     (not
-                      (settings-value
-                       settings-manager
-                       "quietStartup" nil)))
-                    (make-tui-startup-lines
-                     resources
-                     :extensions
-                     (startup-extension-entries extension-manager)
-                     :extension-issues
-                     (cli-extension-manager-startup-issues
-                      extension-manager))
-                    (values nil nil))
+                (let ((quiet
+                        (and
+                         (not
+                          (cli-arguments-verbose-p command))
+                         (settings-quiet-startup
+                          settings-manager))))
+                  (cond
+                    ((eq quiet t) (values nil nil))
+                    ((eq quiet :header)
+                     (make-tui-startup-lines
+                      resources
+                      :extensions
+                      (startup-extension-entries extension-manager)
+                      :extension-issues
+                      (cli-extension-manager-startup-issues
+                       extension-manager)
+                      :include-resources-p nil))
+                    (t
+                     (make-tui-startup-lines
+                      resources
+                      :extensions
+                      (startup-extension-entries extension-manager)
+                      :extension-issues
+                      (cli-extension-manager-startup-issues
+                       extension-manager)))))
               (setf
                startup-compact
                (apply-changelog-to-startup-compact-lines

@@ -140,6 +140,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Codex 登录里的应用名 | v1.3.0 `openai-codex.ts` #10433 | done：浏览器授权地址的 `originator` 用调用方传入的名字。不传时仍是 `cadr`。`models-runtime-login` 把这个名字交给登录函数。这棵树没有 Sign in with ChatGPT，所以没有 `agent_name_hint` |
 | 转录内容的左右边距 | v1.3.0 `interactive-mode.ts` #10557 | done：`outputPad` 为 0 时，bash、工具、edit 报错和压缩摘要的正文没有前导空格。改成 1 时这些行各多一个空格。交互界面从设置读这个值，改设置后下一帧用新的边距。用户消息、助手消息和提示行也走同一个值 |
 | 会话树和导出的 read 行号 | v1.3.0 `tree-selector.ts` / `template.js` #10938 | done：会话树和 HTML 导出跟工具标题用同一套行号。`"25"` 和 `"13"` 是 `:25-37`，不会把两个字符串拼在一起。JSON null 当作没写。任一端畸形则整段省略。limit 为 0 时不写 `-0` |
+| 只留启动标题的安静启动 | v1.3.0 `interactive-mode.ts` quietStartup `"header"` | done：`quietStartup` 为 `true` 时没有启动标题、资源列表和模型范围行。为 `"header"` 时保留标题和按键提示，`ctrl+o` 那句不带 “and loaded resources”，资源列表和模型范围行仍不出现。`--verbose` 盖过这两种安静模式。设置项在 `true`、`header`、`false` 之间切换，存下去的是布尔或字符串 `"header"` |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
