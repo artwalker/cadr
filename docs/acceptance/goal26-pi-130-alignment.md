@@ -150,6 +150,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 终端消失不是崩溃 | v1.3.0 `interactive-mode.ts` #5080 | done：stdin 读到 EIO、ENOTTY、EPIPE、ENOTCONN 时退出码是 129。不写 crash log，stderr 没有 “exiting due to uncaught”。普通错误仍然记崩溃并退出 1 |
 | 按思考等级覆盖采样参数 | v1.3.0 `simple-options.ts` #9776 | done：有效等级先夹到模型支持的等级。请求体先放模型的 `samplingParams`，再放该等级的表，最后放这次请求自己的表。`low` 映射为空时夹到 `high`，`temperature` 变成 0.8，`top_p` 仍是 0.95，并带上 `top_k` 64，盖过单独传入的 temperature。没有 reasoning 时用 `off` 的 0.7。请求里的 `top_p` 0.5 盖过等级表里的 0.95。completions、responses，以及 Azure 转过去的 responses 请求都这样叠。自定义模型从 `samplingParams` 和 `samplingParamsByThinkingLevel` 读这两张表。这棵树没有 reasoning summary 参数，所以不会因为只写 summary 而改用 medium |
 | 全屏里的 Home/End | v1.3.0 `keybindings.ts` #10314 | done：Home 和 End 留在编辑器，分别是行首和行尾，另外还有 Ctrl+A / Ctrl+E。全屏正文滚到顶是 Ctrl+Home，滚到底是 Ctrl+End。`ESC OH` 和 `ESC [F` 不再被视口吃掉。`ESC [1;5H`、`ESC [7^`、Kitty `ESC [57423;5u` 滚到顶并取消跟随底部；Ctrl+End 再回到底部 |
+| Anthropic 复制授权码登录 | v1.3.0 `anthropic.ts` #10194 | done：运行时登录先问方法。`browser` 仍走本机回调。`copy_code` 不打开浏览器、不监听本机端口，授权地址的 `redirect_uri` 是 `https://platform.claude.com/oauth/code/callback`，提示是 “Paste the code Anthropic shows after you sign in:”。粘贴 `code#state` 后用同一段 state 和这个回调地址换 token。state 对不上是 `OAuth state mismatch`，没有 code 是 `Missing authorization code`，未知方法带上那个方法名。选择被取消仍是 `Login cancelled` |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

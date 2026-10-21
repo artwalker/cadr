@@ -64,6 +64,8 @@
   "https://platform.claude.com/v1/oauth/token")
 (defparameter +anthropic-oauth-redirect-uri+
   "http://localhost:53692/callback")
+(defparameter +anthropic-copy-code-redirect-uri+
+  "https://platform.claude.com/oauth/code/callback")
 (defparameter +anthropic-oauth-scopes+
   "org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload")
 

@@ -1160,3 +1160,134 @@
        "client_id=pi-gateway"
        (cadr-ai::radius-authorization-url
         "https://gateway.example" "challenge" "state"))))
+
+(test anthropic-runtime-login-offers-copy-code
+  ;; pi@71023aec1 anthropic.ts #10194.
+  (let* ((prompts nil)
+         (events nil)
+         (requests nil)
+         (opened nil)
+         (interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (push (copy-tree prompt) prompts)
+              (case (getf prompt :type)
+                (:select "copy_code")
+                (:manual-code
+                 (let ((state
+                         (gethash
+                          "state"
+                          (cadr-ai::parse-query
+                           (subseq
+                            (getf (first events) :url)
+                            (1+
+                             (position
+                              #\?
+                              (getf (first events) :url))))))))
+                   (format nil "copied-code#~A" state)))
+                (t nil)))
+            :notify-function
+            (lambda (event)
+              (push (copy-tree event) events))))
+         (cadr-ai::*oauth-browser-open-function*
+           (lambda (url) (push url opened)))
+         (cadr-ai::*oauth-http-request-function*
+           (lambda (url &rest options)
+             (push (list url (copy-tree options)) requests)
+             (values
+              (cadr-ai::stringify-json
+               (cadr-ai::json-object
+                "access_token" "access-token"
+                "refresh_token" "refresh-token"
+                "expires_in" 3600))
+              200 nil))))
+    (let ((credential
+            (cadr-ai::login-anthropic-runtime-oauth interaction)))
+      (is (string=
+           "access-token"
+           (cadr-ai:oauth-credential-access credential)))
+      (is (string=
+           "refresh-token"
+           (cadr-ai:oauth-credential-refresh credential))))
+    (is (null opened))
+    (is (equal
+         '((:type :select
+            :message "Select Anthropic login method:"
+            :options
+            ((:id "browser" :label "Browser login (default)")
+             (:id "copy_code"
+              :label "Copy code login (headless)")))
+           (:type :manual-code
+            :message
+            "Paste the code Anthropic shows after you sign in:"
+            :placeholder "code#state"))
+         (reverse prompts)))
+    (let ((notices (reverse events)))
+      (is (eq :auth-url (getf (first notices) :type)))
+      (is (string=
+           "Complete login in your browser, then copy the code Anthropic shows and paste it here."
+           (getf (first notices) :instructions)))
+      (is (search
+           "redirect_uri=https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback"
+           (getf (first notices) :url)))
+      (is (eq :progress (getf (second notices) :type)))
+      (is (string=
+           "Exchanging authorization code for tokens..."
+           (getf (second notices) :message))))
+    (let* ((body
+             (cadr-ai::parse-json
+              (getf (second (first requests)) :content)))
+           (state
+             (cadr-ai::json-get body "state")))
+      (is (string=
+           cadr-ai::+anthropic-oauth-token-url+
+           (first (first requests))))
+      (is (string= "copied-code" (cadr-ai::json-get body "code")))
+      (is (string=
+           "https://platform.claude.com/oauth/code/callback"
+           (cadr-ai::json-get body "redirect_uri")))
+      (is (string=
+           state
+           (cadr-ai::json-get body "code_verifier")))))
+  (let ((condition
+          (handler-case
+              (cadr-ai::login-anthropic-runtime-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function (constantly "nope")))
+            (cadr-ai:authentication-error (caught) caught))))
+    (is (string=
+         "Unknown Anthropic login method: nope"
+         (cadr-ai:cadr-error-message condition))))
+  (let ((condition
+          (handler-case
+              (cadr-ai::login-anthropic-runtime-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function
+                (lambda (prompt)
+                  (if (eq :select (getf prompt :type))
+                      "copy_code"
+                      "copied-code#wrong"))
+                :notify-function (constantly nil)))
+            (cadr-ai:authentication-error (caught) caught))))
+    (is (string=
+         "OAuth state mismatch"
+         (cadr-ai:cadr-error-message condition))))
+  (let ((condition
+          (handler-case
+              (cadr-ai::login-anthropic-runtime-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function
+                (lambda (prompt)
+                  (if (eq :select (getf prompt :type))
+                      "copy_code"
+                      "   "))
+                :notify-function (constantly nil)))
+            (cadr-ai:authentication-error (caught) caught))))
+    (is (string=
+         "Missing authorization code"
+         (cadr-ai:cadr-error-message condition))))
+  (signals cadr-ai:authentication-cancelled
+    (cadr-ai::login-anthropic-runtime-oauth
+     (cadr-ai:make-runtime-auth-interaction
+      :prompt-function (constantly nil)))))
