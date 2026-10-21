@@ -193,8 +193,8 @@ which auth strategies are structured."
    (environment-value environment "AZURE_OPENAI_BASE_URL")
    :azure-resource-name
    (environment-value environment "AZURE_OPENAI_RESOURCE_NAME")
-   :azure-deployment-name
-   (environment-value environment "AZURE_OPENAI_DEPLOYMENT_NAME")
+   :azure-deployment-name-map
+   (environment-value environment "AZURE_OPENAI_DEPLOYMENT_NAME_MAP")
    :cloudflare-account-id
    (environment-value environment "CLOUDFLARE_ACCOUNT_ID")
    :cloudflare-gateway-id

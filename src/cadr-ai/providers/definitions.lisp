@@ -109,11 +109,11 @@
      :oauth-refresh-strategy :anthropic
      :oauth-to-auth-strategy :access-token
      :model-filter-strategy nil)
-    (:id :azure-openai-responses
-     :baseline-source "packages/ai/src/providers/azure-openai-responses.ts:7"
-     :name "Azure OpenAI"
+    (:id :azure
+     :baseline-source "packages/ai/src/providers/azure.ts:44"
+     :name "Azure"
      :protocol :azure-openai-responses
-     :protocols (:azure-openai-responses)
+     :protocols (:azure-openai-responses :openai-completions)
      :base-url ""
      :auth-types (:api-key)
      :default-model "gpt-5.4"
@@ -125,7 +125,7 @@
      :reasoning-p nil
      :oauth-metadata nil
      :api-key-name "Azure OpenAI API key"
-     :environment-names ("AZURE_OPENAI_API_KEY" "AZURE_OPENAI_BASE_URL" "AZURE_OPENAI_RESOURCE_NAME" "AZURE_OPENAI_DEPLOYMENT_NAME")
+     :environment-names ("AZURE_OPENAI_API_KEY" "AZURE_OPENAI_BASE_URL" "AZURE_OPENAI_RESOURCE_NAME" "AZURE_OPENAI_DEPLOYMENT_NAME_MAP")
      :api-key-auth-strategy :environment
      :oauth-login-strategy nil
      :oauth-refresh-strategy nil

@@ -167,9 +167,30 @@
                (return target))))
    model-id))
 
+(defun azure-environment-value (provider name)
+  (let ((environment (option-value provider :environment)))
+    (if (and (listp environment)
+             (assoc name environment :test #'string=))
+        (cdr (assoc name environment :test #'string=))
+        (uiop:getenv name))))
+
+(defun azure-deployment-for (provider model)
+  (resolve-azure-deployment-name
+   (model-id model)
+   (option-value provider :azure-deployment-name)
+   (or (option-value provider :azure-deployment-name-map)
+       (azure-environment-value
+        provider "AZURE_OPENAI_DEPLOYMENT_NAME_MAP"))))
+
 (defun azure-base-url (provider model)
-  (let ((explicit (option-value provider :azure-base-url))
-        (resource (option-value provider :azure-resource-name)))
+  (let ((explicit
+          (or (option-value provider :azure-base-url)
+              (azure-environment-value
+               provider "AZURE_OPENAI_BASE_URL")))
+        (resource
+          (or (option-value provider :azure-resource-name)
+              (azure-environment-value
+               provider "AZURE_OPENAI_RESOURCE_NAME"))))
     (normalize-azure-openai-base-url
      (or
       (and (non-empty-string-p explicit) explicit)
@@ -181,18 +202,40 @@
            (model-base-url model))
       (error 'configuration-error
              :message
-             "Azure OpenAI base URL is required")))))
+             "Azure OpenAI base URL is required. Set AZURE_OPENAI_BASE_URL or AZURE_OPENAI_RESOURCE_NAME, or pass azureBaseUrl, azureResourceName, or model.baseUrl.")))))
+
+(defparameter *azure-completions-parser*
+  nil)
+
+(defun azure-completions-parser ()
+  (or *azure-completions-parser*
+      (setf *azure-completions-parser*
+            (make-openai-completions-provider :api-key "azure"))))
+
+(defun azure-completions-request (provider model context args)
+  (let* ((base (azure-base-url provider model))
+         (deployment (azure-deployment-for provider model))
+         (delegate
+           (make-openai-completions-provider
+            :api-key (require-api-key provider)))
+         (request
+           (apply #'build-request
+                  delegate
+                  (copy-model-with model :base-url base)
+                  context
+                  args)))
+    (json-put (request-spec-payload request) "model" deployment)
+    request))
 
 (defmethod build-request
     ((provider azure-openai-provider) model context
      &rest args)
+  (when (eq (model-api model) :openai-completions)
+    (return-from build-request
+      (azure-completions-request provider model context args)))
   (let* ((key (require-api-key provider))
          (base (azure-base-url provider model))
-         (deployment
-           (resolve-azure-deployment-name
-            (model-id model)
-            (option-value provider :azure-deployment-name)
-            (option-value provider :azure-deployment-name-map)))
+         (deployment (azure-deployment-for provider model))
          (delegate
            (make-openai-provider :api-key key))
          (request
@@ -213,7 +256,7 @@
        "authorization")
       "api-key" key)
      (request-spec-provider request)
-     :azure-openai-responses)
+     (model-provider model))
     (let ((api-version
             (option-value provider :azure-api-version "v1")))
       (when (and (non-empty-string-p api-version)
@@ -223,3 +266,25 @@
                       (request-spec-url request)
                       api-version))))
     request))
+
+(defmethod reduce-provider-sse-event
+    ((provider azure-openai-provider) state event emit)
+  (if (eq (model-api (provider-stream-state-model state))
+          :openai-completions)
+      (reduce-provider-sse-event
+       (azure-completions-parser) state event emit)
+      (call-next-method)))
+
+(defmethod parse-complete-response
+    ((provider azure-openai-provider) model response)
+  (if (eq (model-api model) :openai-completions)
+      (parse-complete-response
+       (azure-completions-parser) model response)
+      (call-next-method)))
+
+(defmethod finalize-provider-stream
+    ((provider azure-openai-provider) model state emit)
+  (if (eq (model-api model) :openai-completions)
+      (finalize-provider-stream
+       (azure-completions-parser) model state emit)
+      (call-next-method)))

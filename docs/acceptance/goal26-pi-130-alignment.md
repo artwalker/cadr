@@ -107,6 +107,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 主题 appearance / OKLCH | v1.3.0 `theme-schema.ts` / `colors.ts` | done：主题 JSON 接受 `appearance` 为 `dark` 或 `light`；省略时按前景和背景的 Oklab 明度判断，背景更亮就是 light。`#RGB`、`oklch()`、`okhsl()` 解析成 `#rrggbb`。调色板 0–15 不参与判断 |
 | 系统主题 | v1.3.0 `system-theme.ts` | done：`system` 排在主题列表最前，名字保留。有背景和 16 色调色板时按家族色相和对比度曲线生成；只有背景时用家族自己的色相；都没有时用 ANSI 下标，中性字用 SGR 2。正文在面板上至少 4.5:1，浅色调色板不会在别的明度上变艳 |
 | 终端前景和 16 色 | v1.3.0 `queryTerminalColors` | done：一次查询 OSC 10、OSC 11 和 OSC 4 的 0–15，并以 DA1 收尾。18 个回复或 DA1 结束；调色板缺任何一格就不用。超时先交已到的颜色，迟到的回复再合并，不清掉先前的前景、背景或调色板。当前主题是 `system` 时重新套用 |
+| Azure provider | v1.3.0 `azure.ts` / Foundry DeepSeek | done：目录里的 Azure 模型改挂 provider `azure`。`deepseek-v4-pro` 走 Chat Completions，地址归一到 `/openai/v1`，请求里的 model 用 `AZURE_OPENAI_DEPLOYMENT_NAME_MAP` 或 `azureDeploymentName`，回复上的模型 id 仍是目录 id。thinking 用 `reasoning_effort`，`max` 钳到 `high`，不发 `thinking` 和 prompt cache 字段；系统提示用 system 角色，对话中的 system 消息留在原位。没有地址时流返回错误，而不是从 `stream` 抛出去 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

@@ -505,6 +505,11 @@ string. Returns the buffer to store back. Per-delta
              (push message result))
             ((typep message 'user-message)
              (insert-missing-results)
+             (push message result))
+            ((and (typep message 'system-message)
+                  (model-compat-value
+                   model :supports-mid-convo-system-messages nil))
+             (insert-missing-results)
              (push message result))))
         (insert-missing-results))
       (nreverse result))))

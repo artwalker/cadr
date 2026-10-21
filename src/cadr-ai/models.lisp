@@ -354,16 +354,60 @@
               (list* :allow-empty-signature t compat)))))
   row)
 
+(defun apply-azure-provider-id (row)
+  ;; pi@71023aec1 generate-models.ts publishes these rows as provider "azure".
+  (when (eq (getf row :provider) :azure-openai-responses)
+    (setf (getf row :provider) :azure))
+  row)
+
+(defun register-azure-deepseek-model ()
+  ;; pi@71023aec1 generate-models.ts azureDeepSeekModels. Foundry rejects
+  ;; DeepSeek's thinking field and prompt-cache parameters, and it keeps
+  ;; mid-conversation system messages.
+  (let ((source (find-model-metadata :deepseek "deepseek-v4-pro")))
+    (when source
+      (let ((compat (copy-list (model-metadata-compat source)))
+            (levels
+              (mapcar #'copy-list
+                      (model-metadata-thinking-level-map source))))
+        (setf (getf compat :thinking-format) :openai)
+        (setf (getf compat :supports-developer-role) nil)
+        (setf (getf compat :supports-mid-convo-system-messages) t)
+        (setf (getf compat :supports-long-cache-retention) nil)
+        (let ((max (assoc :max levels)))
+          (if max
+              (setf (cdr max) "high")
+              (setf levels (acons :max "high" levels))))
+        (register-model-metadata
+         (make-model-metadata
+          :provider :azure
+          :id "deepseek-v4-pro"
+          :name "DeepSeek V4 Pro"
+          :api :openai-completions
+          :base-url ""
+          :context-window (model-metadata-context-window source)
+          :max-output-tokens (model-metadata-max-output-tokens source)
+          :supports-images-p nil
+          :supports-tools-p t
+          :reasoning-p t
+          :thinking-level-map levels
+          :compat compat
+          :input-price 1.925d0
+          :output-price 3.828d0
+          :cache-read-price 0.165d0
+          :cache-write-price 0d0))))))
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-vercel-ai-gateway-empty-signature
-             (apply-fireworks-effort-override
-              (apply-fireworks-tool-references-override
-               (apply-anthropic-prompt-cache-override
-                (apply-gpt-5-6-pricing-override
-                 (copy-list row))))))))
+            (apply-azure-provider-id
+             (apply-vercel-ai-gateway-empty-signature
+              (apply-fireworks-effort-override
+               (apply-fireworks-tool-references-override
+                (apply-anthropic-prompt-cache-override
+                 (apply-gpt-5-6-pricing-override
+                  (copy-list row)))))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
@@ -373,4 +417,5 @@
               (apply #'make-model-cost-tier tier)))
         (getf copy :cost-tiers)))
       (register-model-metadata
-       (apply #'make-model-metadata copy)))))
+       (apply #'make-model-metadata copy))))
+  (register-azure-deepseek-model))

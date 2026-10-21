@@ -107,6 +107,11 @@
           model
           normalize-id))
       (cond
+        ((typep message 'system-message)
+         (let ((text (get-system-message-text message)))
+           (when (non-empty-string-p text)
+             (push (json-object "role" "system" "content" text)
+                   messages))))
         ((typep message 'user-message)
          (let ((content
                  (openai-chat-user-content
