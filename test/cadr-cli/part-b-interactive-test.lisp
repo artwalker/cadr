@@ -1991,6 +1991,31 @@
           "SELECT name FROM users WHERE id = 42"
           "sql" theme)))))
 
+(test multiline-syntax-colors-each-line-and-template-holes
+  (let ((theme
+          (list
+           (cons "string"
+                 (lambda (text) (format nil "[s:~A]" text)))
+           (cons "subst"
+                 (lambda (text) (format nil "[h:~A]" text)))
+           (cons "keyword"
+                 (lambda (text) (format nil "[k:~A]" text))))))
+    (is (string=
+         (format nil "[s:\"\"\"]~%[s:line one]~%~%[s:line two]~%[s:\"\"\"]~%after")
+         (cadr-cli:simple-syntax-highlight
+          (format nil "\"\"\"~%line one~%~%line two~%\"\"\"~%after")
+          "python" theme)))
+    (is (string=
+         (format nil "[s:\"\"\"]~%[s:line one]~%~%[s:line two]~%[s:\"\"\"]~%after")
+         (cadr-cli:render-highlighted-html
+          (format nil "<span class=\"hljs-string\">\"\"\"~%line one~%~%line two~%\"\"\"</span>~%after")
+          theme)))
+    (is (string=
+         "[k:const] x = [s:`a][h:${name}][s:b`]"
+         (cadr-cli:simple-syntax-highlight
+          "const x = `a${name}b`"
+          "javascript" theme)))))
+
 (test goal9-syntax-previous-word-context-does-not-cross-boundaries
   (let ((theme
           (list

@@ -102,7 +102,7 @@
                                formatters)))
                (push
                 (if formatter
-                    (funcall formatter decoded)
+                    (format-syntax-lines decoded formatter)
                     decoded)
                 segments)))))
       (loop while (< index (length html))
@@ -180,6 +180,7 @@
     ("function" . :syntax-function)
     ("variable" . :syntax-variable)
     ("string" . :syntax-string)
+    ("subst" . :text)
     ("number" . :syntax-number)
     ("type" . :syntax-type)
     ("operator" . :syntax-operator)
@@ -202,6 +203,24 @@
         (cadr-tui:theme-foreground
          color text :enabled-p t))))))
 
+(defun format-syntax-lines (text formatter)
+  (if (not (find #\Newline text))
+      (funcall formatter text)
+      (with-output-to-string (output)
+        (loop with start = 0
+              for index from 0 to (length text)
+              do
+              (when (or (= index (length text))
+                        (char= (char text index) #\Newline))
+                (unless (= start index)
+                  (write-string
+                   (funcall formatter
+                            (subseq text start index))
+                   output))
+                (when (< index (length text))
+                  (write-char #\Newline output)
+                  (setf start (1+ index))))))))
+
 (defun write-simple-syntax-token
     (text scope theme output)
   (let ((formatter
@@ -210,7 +229,7 @@
                 scope theme))))
     (write-string
      (if formatter
-         (funcall formatter text)
+         (format-syntax-lines text formatter)
          text)
      output)))
 
@@ -882,7 +901,7 @@
                             scope theme))))
                (write-string
                 (if formatter
-                    (funcall formatter text)
+                    (format-syntax-lines text formatter)
                     text)
                 output)))
            (advance (end &key (clear-lisp-form-p nil))
@@ -891,7 +910,42 @@
                    expect-type-p nil
                    index end)
              (when clear-lisp-form-p
-               (setf lisp-form-name-p nil))))
+               (setf lisp-form-name-p nil)))
+           (emit-template ()
+             (let ((cursor (1+ index)))
+               (loop while (< cursor (length code))
+                     do
+                     (cond
+                       ((char= (char code cursor) #\\)
+                        (incf cursor
+                              (if (< (1+ cursor) (length code))
+                                  2 1)))
+                       ((char= (char code cursor) #\`)
+                        (emit index (1+ cursor) "string")
+                        (advance (1+ cursor))
+                        (return-from emit-template))
+                       ((and (char= (char code cursor) #\$)
+                             (< (1+ cursor) (length code))
+                             (char= (char code (1+ cursor)) #\{))
+                        (when (< index cursor)
+                          (emit index cursor "string"))
+                        (let ((depth 1)
+                              (close (+ cursor 2)))
+                          (loop while (and (< close (length code))
+                                           (plusp depth))
+                                for brace = (char code close)
+                                do
+                                (cond
+                                  ((char= brace #\{) (incf depth))
+                                  ((char= brace #\}) (decf depth)))
+                                (incf close))
+                          (emit cursor close "subst")
+                          (setf index close
+                                cursor close)))
+                       (t (incf cursor)))))
+             (when (< index (length code))
+               (emit index (length code) "string")
+               (advance (length code)))))
         (loop while (< index (length code))
               for character = (char code index)
               for comment-length =
@@ -955,6 +1009,33 @@
                               #\Newline #\Return))))
                          do (incf end))
                    (emit index end "meta")
+                   (advance end)))
+                ((and
+                  (member language
+                          '("javascript" "typescript")
+                          :test #'string=)
+                  (char= character #\`))
+                 (emit-template))
+                ((and
+                  (string= language "python")
+                  (member character '(#\" #\'))
+                  (<= (+ index 3) (length code))
+                  (char= (char code (1+ index)) character)
+                  (char= (char code (+ index 2)) character))
+                 (let ((quote character)
+                       (end (+ index 3)))
+                   (loop while (< end (length code))
+                         do
+                         (if (and
+                              (char= (char code end) quote)
+                              (<= (+ end 3) (length code))
+                              (char= (char code (1+ end)) quote)
+                              (char= (char code (+ end 2)) quote))
+                             (progn
+                               (setf end (+ end 3))
+                               (return))
+                             (incf end)))
+                   (emit index end "string")
                    (advance end)))
                 ((member character
                          '(#\" #\' #\`))
