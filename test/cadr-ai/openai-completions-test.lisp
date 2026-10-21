@@ -491,3 +491,30 @@
     (loop for tool across payload-tools
           for function = (cadr-ai::json-get tool "function")
           do (is (not (cadr-ai::json-present-p function "strict"))))))
+
+(defun opencode-completion-header (session-id name)
+  (cdr
+   (assoc
+    name
+    (request-spec-headers
+     (build-request
+      (cadr-ai:make-openai-completions-provider :api-key "key")
+      (make-model
+       :id "test"
+       :provider :opencode
+       :api :openai-completions
+       :base-url "https://opencode.ai/zen/v1"
+       :max-tokens 16)
+      (sample-context)
+      :stream-p t
+      :max-tokens 16
+      :session-id session-id))
+    :test #'string-equal)))
+
+(test opencode-session-header-requires-session-id
+  (is (null (opencode-completion-header nil "x-opencode-session")))
+  (is (null (opencode-completion-header nil "x-opencode-client")))
+  (is (string= "sess-1"
+               (opencode-completion-header "sess-1" "x-opencode-session")))
+  (is (string= "cadr"
+               (opencode-completion-header "sess-1" "x-opencode-client"))))

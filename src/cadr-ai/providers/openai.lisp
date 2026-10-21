@@ -572,6 +572,10 @@
           ("originator" . ,+openai-originator+)
           ("openai-beta" . "responses=experimental")))
       (responses-session-headers model session-id cache-retention)
+      (opencode-request-headers
+       :provider (model-provider model)
+       :base-url (model-base-url model)
+       :session-id session-id)
       (model-headers model))
      :payload payload
      :stream-p stream-p

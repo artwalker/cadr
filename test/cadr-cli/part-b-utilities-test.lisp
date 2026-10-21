@@ -825,16 +825,12 @@
                    (header "x-opencode-client" opencode)))
       (is (string= "session"
                    (header "x-opencode-session" opencode)))
-      (is (stringp
+      (is (null
            (header "x-opencode-session"
                    opencode-go-ephemeral)))
-      (is (plusp
-           (length
-            (header "x-opencode-session"
-                    opencode-go-ephemeral))))
-      (is (string= "cadr"
-                   (header "x-opencode-client"
-                           opencode-go-ephemeral)))))
+      (is (null
+           (header "x-opencode-client"
+                   opencode-go-ephemeral)))))
   (let ((headers
           (cadr-cli::provider-attribution-headers
            :provider :openrouter

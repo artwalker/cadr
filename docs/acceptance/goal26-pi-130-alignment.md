@@ -91,6 +91,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Responses `api-error` provider | v1.3.0 `openai-responses.ts` | done：request-spec 与 SSE `api-error` 用模型 provider；`response.failed` / `error` 文案跟 shared stream |
 | Anthropic thinking drop 提示 | v1.3.0 `interactive-mode.ts` | done：`message_delta.input_transformations` 记入 diagnostic；次数高于上一条 assistant 且 cache-miss notices 开时警告 |
 | Google thinking 钳制 | v1.3.0 `getDisabledGoogleThinkingConfig` #9455 | done：省略 reasoning 时按 thinkingLevelMap 把 off 钳到下一档；Gemini 3.1 Pro medium 保持 MEDIUM；2.5 用 budget |
+| OpenCode session header | v1.3.0 `getSessionHeaders` | done：没有 session id 时不发 `x-opencode-session` / `x-opencode-client`，不再合成 UUID |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

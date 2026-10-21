@@ -287,7 +287,7 @@
                             cache-retention session-id tool-choice metadata
                             thinking-budgets
                             &allow-other-keys)
-  (declare (ignore cache-retention session-id metadata))
+  (declare (ignore cache-retention metadata))
   (ensure-supported-content model context)
   (let* ((key (require-api-key provider))
          (payload
@@ -343,6 +343,10 @@
                          "text/event-stream"
                          "application/json"))
         ("x-goog-api-key" . ,key))
+      (opencode-request-headers
+       :provider (model-provider model)
+       :base-url (model-base-url model)
+       :session-id session-id)
       (model-headers model))
      :payload payload
      :stream-p stream-p
