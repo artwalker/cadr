@@ -63,6 +63,71 @@
                        (cadr-tui:autocomplete-suggestions-items
                         prefix-only))))))
 
+(test slash-commands-complete-after-leading-whitespace
+  (let ((provider
+          (cadr-tui:make-autocomplete-provider
+           :commands
+           (list
+            (cadr-tui:make-autocomplete-command
+             :name "model"
+             :argument-completer
+             (lambda (prefix)
+               (and (string= prefix "son")
+                    (list
+                     (cadr-tui:make-autocomplete-item
+                      :value "sonnet"
+                      :label "sonnet")))))))))
+    (dolist (example
+             (list
+              (list " /" "/" " /model ")
+              (list "  /mod" "/mod" "  /model ")
+              (list
+               (format nil "~C/mod" #\Tab)
+               "/mod"
+               (format nil "~C/model " #\Tab))))
+      (destructuring-bind (line prefix expected) example
+        (let ((suggestions
+                (cadr-tui:autocomplete-get-suggestions
+                 provider (list line) 0 (length line))))
+          (is (string=
+               prefix
+               (cadr-tui:autocomplete-suggestions-prefix
+                suggestions)))
+          (is (equal
+               '("model")
+               (mapcar
+                #'cadr-tui:autocomplete-item-value
+                (cadr-tui:autocomplete-suggestions-items
+                 suggestions))))
+          (multiple-value-bind (lines cursor-line column)
+              (cadr-tui:autocomplete-apply
+               (list line) 0 (length line)
+               (first
+                (cadr-tui:autocomplete-suggestions-items
+                 suggestions))
+               prefix)
+            (declare (ignore cursor-line))
+            (is (equal (list expected) lines))
+            (is (= (length expected) column))))))
+    (let* ((line "  /model son")
+           (suggestions
+             (cadr-tui:autocomplete-get-suggestions
+              provider (list line) 0 (length line))))
+      (is (string=
+           "son"
+           (cadr-tui:autocomplete-suggestions-prefix
+            suggestions)))
+      (multiple-value-bind (lines cursor-line column)
+          (cadr-tui:autocomplete-apply
+           (list line) 0 (length line)
+           (first
+            (cadr-tui:autocomplete-suggestions-items
+             suggestions))
+           "son")
+        (declare (ignore cursor-line))
+        (is (equal '("  /model sonnet") lines))
+        (is (= (length "  /model sonnet") column))))))
+
 (test autocomplete-slash-and-path-prefix-semantics
   (with-autocomplete-tree
    (lambda (root)

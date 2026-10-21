@@ -622,12 +622,16 @@
           (and items
                (make-autocomplete-suggestions
                 :items items :prefix at-prefix)))))
-    (when (and (plusp (length before))
-               (char= (char before 0) #\/)
-               (not force-p))
-      (return-from autocomplete-get-suggestions
-        (autocomplete-command-suggestions
-         provider before)))
+    (when (not force-p)
+      (let ((command-text
+              (string-left-trim
+               '(#\Space #\Tab #\Newline #\Return #\Page)
+               before)))
+        (when (and (plusp (length command-text))
+                   (char= (char command-text 0) #\/))
+          (return-from autocomplete-get-suggestions
+            (autocomplete-command-suggestions
+             provider command-text)))))
     (let ((path-prefix
             (autocomplete-path-prefix before force-p)))
       (when path-prefix
