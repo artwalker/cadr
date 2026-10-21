@@ -1089,3 +1089,38 @@
               :timeout-ms 30)))
       (is (eq :stop (assistant-message-stop-reason message)))
       (is (string= "ok" (first-text message))))))
+
+(test mistral-finish-reason-error-is-a-retryable-server-error
+  ;; pi@71023aec1 #10487
+  (multiple-value-bind (provider model)
+      (provider-case :mistral)
+    (flet ((finish (reason)
+             (let* ((body
+                      (format nil
+                              "data: {\"id\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":~S}]}~%~%data: [DONE]~%~%"
+                              reason))
+                    (*http-request-function*
+                      (lambda (url &rest arguments)
+                        (declare (ignore url arguments))
+                        (values (make-string-input-stream body) 200
+                                '(("content-type" . "text/event-stream"))))))
+               (stream-chat
+                provider model (sample-context)
+                (lambda (event) (declare (ignore event)))))))
+      (let ((message (finish "error")))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (string= "error"
+                     (cadr-ai:assistant-message-raw-stop-reason message)))
+        (is (string=
+             "Provider stopped with: error (server error)"
+             (assistant-message-error-message message)))
+        (is (eq t (cadr-ai:retryable-assistant-error-p message))))
+      (let ((message (finish "unmapped_error")))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (string=
+             "Provider stopped with: unmapped_error"
+             (assistant-message-error-message message)))
+        (is (not (cadr-ai:retryable-assistant-error-p message))))
+      (let ((message (finish "model_length")))
+        (is (eq :length (assistant-message-stop-reason message)))
+        (is (null (assistant-message-error-message message)))))))

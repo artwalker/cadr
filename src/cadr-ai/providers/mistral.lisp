@@ -107,3 +107,35 @@
      :payload payload
      :stream-p stream-p
      :provider :mistral)))
+
+(defun apply-mistral-finish-reason (message reason)
+  ;; pi@71023aec1 mistral-conversations.ts mapChatStopReason. #10487
+  ;; puts "server error" in the error finish so the retry classifier
+  ;; treats a transient Mistral stop as retryable.
+  (cond
+    ((or (null reason)
+         (json-null-p reason)
+         (equal reason "stop"))
+     (setf (assistant-message-stop-reason message) :stop
+           (assistant-message-error-message message) nil))
+    ((member reason '("length" "model_length") :test #'equal)
+     (setf (assistant-message-stop-reason message) :length
+           (assistant-message-error-message message) nil))
+    ((equal reason "tool_calls")
+     (setf (assistant-message-stop-reason message) :tool-use
+           (assistant-message-error-message message) nil))
+    ((equal reason "error")
+     (setf (assistant-message-stop-reason message) :error
+           (assistant-message-error-message message)
+           "Provider stopped with: error (server error)"))
+    (t
+     (setf (assistant-message-stop-reason message) :error
+           (assistant-message-error-message message)
+           (format nil "Provider stopped with: ~A" reason))))
+  message)
+
+(defmethod parse-complete-response :around
+    ((provider mistral-provider) model response)
+  (let ((message (call-next-method)))
+    (apply-mistral-finish-reason
+     message (assistant-message-raw-stop-reason message))))

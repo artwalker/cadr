@@ -972,7 +972,6 @@
 
 (defmethod reduce-provider-sse-event
     ((provider openai-completions-provider) state event emit)
-  (declare (ignore provider))
   (let ((data (sse-event-data event))
         (message (provider-stream-state-message state)))
     (unless (string= data "[DONE]")
@@ -1049,7 +1048,10 @@
                 (setf
                  (assistant-message-error-message message)
                  (format nil "Provider finish_reason: ~A"
-                         finish-reason))))))))))
+                         finish-reason)))
+              (when (typep provider 'mistral-provider)
+                (apply-mistral-finish-reason
+                 message finish-reason)))))))))
 
 (defmethod finalize-provider-stream
     ((provider openai-completions-provider)
