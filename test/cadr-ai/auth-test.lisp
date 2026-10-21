@@ -21,6 +21,71 @@
     (is (search "originator=cadr" url))
     (is (not (search "originator=pi" url)))))
 
+(test openai-codex-browser-login-uses-the-caller-name
+  ;; pi@71023aec1 #10433. The Codex browser authorize URL takes the
+  ;; caller's name. Omitting it stays cadr. Sign in with ChatGPT's
+  ;; agent_name_hint is not in this tree.
+  (let ((named
+          (cadr-ai:openai-authorization-url
+           "challenge" "state-1" "my-app"))
+        (spaced
+          (cadr-ai:openai-authorization-url
+           "challenge" "state-1" "my app")))
+    (is (search "originator=my-app" named))
+    (is (not (search "originator=cadr" named)))
+    (is (search "originator=my%20app" spaced)))
+  (let ((seen nil))
+    (handler-case
+        (cadr-ai::login-openai-oauth
+         nil
+         :agent-name "my-app"
+         :open-browser (lambda (url) (declare (ignore url)) nil)
+         :auth-prompt-function
+         (lambda (prompt)
+           (setf seen (getf prompt :url))
+           nil))
+      (cadr-ai:authentication-cancelled ()))
+    (is (search "originator=my-app" seen)))
+  (let* ((seen nil)
+         (interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (if (eq :select (getf prompt :type))
+                  "browser"
+                  (progn
+                    (setf seen (getf prompt :url))
+                    nil))))))
+    (let ((cadr-ai::*oauth-login-agent-name* "my-app"))
+      (handler-case
+          (cadr-ai::login-openai-runtime-oauth interaction)
+        (cadr-ai:authentication-cancelled ())))
+    (is (search "originator=my-app" seen)))
+  (let* ((seen nil)
+         (store (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-models-runtime :credential-store store))
+         (interaction (cadr-ai:make-runtime-auth-interaction))
+         (provider
+           (cadr-ai:make-runtime-provider
+            :id :fixture
+            :name "Fixture"
+            :oauth-auth-p t
+            :oauth-login-function
+            (lambda (actual-interaction)
+              (declare (ignore actual-interaction))
+              (setf seen cadr-ai::*oauth-login-agent-name*)
+              (cadr-ai:make-oauth-credential
+               :provider :fixture
+               :access "access"
+               :refresh "refresh"
+               :expires
+               (+ (cadr-ai::unix-milliseconds) 3600000))))))
+    (cadr-ai:models-runtime-set-provider runtime provider)
+    (cadr-ai::models-runtime-login
+     runtime :fixture :oauth interaction :agent-name "my-app")
+    (is (string= "my-app" seen))))
+
 (test openai-token-credentials-use-openai-codex-provider-identity
   (let* ((payload
            (cadr-ai::json-object

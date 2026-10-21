@@ -137,6 +137,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 分块的 bash 转义序列 | v1.3.0 `bash-executor.ts` #10504 | done：颜色码和 OSC 被输出块切开时先留着，结束符到了再整段删掉，不会漏进正文。超过 256 个字符还没结束的序列马上输出，转义字节本身丢掉。回车被去掉 |
 | 隐藏工具不进提示 | v1.3.0 `system-prompt.ts` #10343 | done：工具列表和规则只用声明给模型的工具，隐藏的名字不出现。`read` 和 `bash` 都被隐藏时技能段还在，提示不再点名工具。只隐藏 `read` 时提示改用 bash。隐藏的名字不会写回模型的工具表 |
 | Anthropic 回调端口 | v1.3.0 `anthropic.ts` #10571 | done：先绑 `53692`。这个端口被占时改由系统分配空闲端口。授权地址、粘贴提示和换 token 都用实际监听的 `http://localhost:端口/callback`。两个端口都绑不上时仍用原来的地址，改走粘贴 |
+| Codex 登录里的应用名 | v1.3.0 `openai-codex.ts` #10433 | done：浏览器授权地址的 `originator` 用调用方传入的名字。不传时仍是 `cadr`。`models-runtime-login` 把这个名字交给登录函数。这棵树没有 Sign in with ChatGPT，所以没有 `agent_name_hint` |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

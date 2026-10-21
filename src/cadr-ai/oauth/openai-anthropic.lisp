@@ -276,33 +276,37 @@
                              (output *standard-output*)
                              (open-browser *oauth-browser-open-function*)
                              auth-url-function
-                             auth-prompt-function)
-  (login-pkce-browser-oauth
-   auth-path
-   :output output
-   :open-browser open-browser
-   :auth-url-function auth-url-function
-   :auth-prompt-function auth-prompt-function
-   :state-function (lambda (verifier)
-                     (declare (ignore verifier))
-                     (oauth-state))
-   :authorization-url #'openai-authorization-url
-   :metadata +openai-codex-oauth-metadata+
-   :placeholder +openai-oauth-redirect-uri+
-   :wait
-   (lambda (state cancelled-p)
-     (wait-for-openai-oauth-code state cancelled-p))
-   :exchange
-   (lambda (code state verifier)
-     (declare (ignore state))
-     (exchange-openai-authorization-code code verifier))
-   :after-credential
-   (lambda (credential)
-     (unless (non-empty-string-p
-              (oauth-credential-account-id credential))
-       (error 'authentication-error
-              :message
-              "OpenAI OAuth token does not contain chatgpt_account_id")))))
+                             auth-prompt-function
+                             agent-name)
+  (let ((originator (openai-login-originator agent-name)))
+    (login-pkce-browser-oauth
+     auth-path
+     :output output
+     :open-browser open-browser
+     :auth-url-function auth-url-function
+     :auth-prompt-function auth-prompt-function
+     :state-function (lambda (verifier)
+                       (declare (ignore verifier))
+                       (oauth-state))
+     :authorization-url
+     (lambda (challenge state)
+       (openai-authorization-url challenge state originator))
+     :metadata +openai-codex-oauth-metadata+
+     :placeholder +openai-oauth-redirect-uri+
+     :wait
+     (lambda (state cancelled-p)
+       (wait-for-openai-oauth-code state cancelled-p))
+     :exchange
+     (lambda (code state verifier)
+       (declare (ignore state))
+       (exchange-openai-authorization-code code verifier))
+     :after-credential
+     (lambda (credential)
+       (unless (non-empty-string-p
+                (oauth-credential-account-id credential))
+         (error 'authentication-error
+                :message
+                "OpenAI OAuth token does not contain chatgpt_account_id"))))))
 
 (defun login-anthropic-oauth
     (auth-path

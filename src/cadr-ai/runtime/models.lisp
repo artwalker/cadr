@@ -541,7 +541,7 @@
   credential)
 
 (defun models-runtime-login-oauth
-    (runtime provider-id interaction)
+    (runtime provider-id interaction &key agent-name)
   (let* ((provider
            (models-runtime-provider-for-login runtime provider-id))
          (login (runtime-provider-oauth-login-function provider)))
@@ -557,16 +557,18 @@
       :auth
       (format nil "OAuth login failed for ~A" provider-id)
       (lambda ()
-        (funcall login interaction)))
+        (let ((*oauth-login-agent-name* agent-name))
+          (funcall login interaction))))
      'oauth-credential)))
 
 (defun models-runtime-login
-    (runtime provider-id auth-type interaction)
+    (runtime provider-id auth-type interaction &key agent-name)
   (ecase auth-type
     (:api-key
      (models-runtime-login-api-key runtime provider-id interaction))
     (:oauth
-     (models-runtime-login-oauth runtime provider-id interaction))))
+     (models-runtime-login-oauth
+      runtime provider-id interaction :agent-name agent-name))))
 
 (defun models-runtime-available-models
     (runtime &optional provider-id)

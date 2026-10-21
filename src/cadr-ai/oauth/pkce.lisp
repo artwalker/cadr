@@ -75,6 +75,7 @@
      (list "xdg-open" url)
      :output nil
      :error-output nil)))
+(defparameter *oauth-login-agent-name* nil)
 
 (defparameter +sha256-constants+
   #(#x428a2f98 #x71374491 #xb5c0fbcf #xe9b5dba5
@@ -291,7 +292,14 @@
                         (percent-encode key)
                         (percent-encode value)))))
 
-(defun openai-authorization-url (challenge state)
+(defun openai-login-originator (agent-name)
+  "Use a caller's name when one was given. Otherwise keep cadr."
+  (if (stringp agent-name)
+      agent-name
+      +openai-originator+))
+
+(defun openai-authorization-url
+    (challenge state &optional (originator +openai-originator+))
   (format
    nil "~A?~A"
    +openai-oauth-authorize-url+
@@ -305,7 +313,7 @@
       ("state" . ,state)
       ("id_token_add_organizations" . "true")
       ("codex_cli_simplified_flow" . "true")
-      ("originator" . ,+openai-originator+)))))
+      ("originator" . ,originator)))))
 
 (defun anthropic-authorization-url
     (challenge state
