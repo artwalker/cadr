@@ -56,6 +56,109 @@
            (kitty-unmodified-printable-codepoint sequence))
           (cons sequence output)))))
 
+(defun control-string-introducer-p (text)
+  (and (>= (length text) 2)
+       (char= (char text 0) #\Escape)
+       (member (char text 1) '(#\] #\P #\_))))
+
+(defun osc-palette-reply-header-p (text)
+  ;; ESC ] 4 ; <1-3 digits> ;
+  (unless (and (>= (length text) 6)
+               (char= (char text 2) #\4)
+               (char= (char text 3) #\;))
+    (return-from osc-palette-reply-header-p nil))
+  (let ((index 4)
+        (digits 0))
+    (loop while (and (< digits 3)
+                     (< index (length text))
+                     (digit-char-p (char text index)))
+          do (incf digits)
+             (incf index))
+    (and (plusp digits)
+         (< index (length text))
+         (char= (char text index) #\;))))
+
+(defun kitty-graphics-reply-header-p (text)
+  ;; ESC _ G (letter = digits ,)* letter = digits ;
+  (let ((index 2))
+    (unless (and (< index (length text))
+                 (char= (char text index) #\G))
+      (return-from kitty-graphics-reply-header-p nil))
+    (incf index)
+    (loop
+      (unless (and (< index (length text))
+                   (lower-case-p (char text index)))
+        (return-from kitty-graphics-reply-header-p nil))
+      (incf index)
+      (unless (and (< index (length text))
+                   (char= (char text index) #\=))
+        (return-from kitty-graphics-reply-header-p nil))
+      (incf index)
+      (let ((digits 0))
+        (loop while (and (< index (length text))
+                         (digit-char-p (char text index)))
+              do (incf digits)
+                 (incf index))
+        (unless (plusp digits)
+          (return-from kitty-graphics-reply-header-p nil)))
+      (cond
+        ((and (< index (length text))
+              (char= (char text index) #\,))
+         (incf index))
+        ((and (< index (length text))
+              (char= (char text index) #\;))
+         (return-from kitty-graphics-reply-header-p t))
+        (t
+         (return-from kitty-graphics-reply-header-p nil))))))
+
+(defun terminal-reply-header-p (text)
+  ;; pi@71023aec1 stdin-buffer.ts. OSC 10/11, palette 4, program
+  ;; status 7501, XTVERSION, and Kitty graphics replies. A shorter
+  ;; prefix can still be a batched legacy Alt key.
+  (unless (control-string-introducer-p text)
+    (return-from terminal-reply-header-p nil))
+  (case (char text 1)
+    (#\]
+     (or (and (>= (length text) 5)
+              (char= (char text 2) #\1)
+              (member (char text 3) '(#\0 #\1))
+              (char= (char text 4) #\;))
+         (and (>= (length text) 8)
+              (string= text "7501;?" :start1 2 :end1 8))
+         (osc-palette-reply-header-p text)))
+    (#\P
+     (and (>= (length text) 4)
+          (char= (char text 2) #\>)
+          (char= (char text 3) #\|)))
+    (#\_
+     (kitty-graphics-reply-header-p text))))
+
+(defun consume-terminal-reply (remaining)
+  ;; Returns status, advance, and the sequence when one was completed.
+  ;; CAN and SUB drop the reply. A later escape that is not ST drops
+  ;; the reply and leaves that escape to be parsed.
+  (loop for seq-end from 1 to (length remaining)
+        do
+        (when (> seq-end 2)
+          (let ((char (char remaining (1- seq-end))))
+            (cond
+              ((or (= (char-code char) #x18)
+                   (= (char-code char) #x1a))
+               (return-from consume-terminal-reply
+                 (values :discard seq-end nil)))
+              ((and (char= char #\Escape)
+                    (< seq-end (length remaining))
+                    (char/= (char remaining seq-end) #\\))
+               (return-from consume-terminal-reply
+                 (values :discard (1- seq-end) nil))))))
+        (let* ((candidate (subseq remaining 0 seq-end))
+               (length (complete-terminal-sequence-length candidate)))
+          (when length
+            (return-from consume-terminal-reply
+              (values :sequence length
+                      (subseq remaining 0 length))))))
+  (values :incomplete 0 nil))
+
 (defun stdin-buffer-extract (buffer text)
   (let ((sequences nil)
         (position 0)
@@ -63,25 +166,36 @@
     (loop while (< position length)
           do
           (if (char= (char text position) #\Escape)
-              (let* ((remaining (subseq text position))
-                     (sequence-length
-                       (complete-terminal-sequence-length
-                        remaining)))
-                (unless sequence-length
-                  (return))
-                (when (and (= sequence-length 2)
-                           (>= (length remaining) 3)
-                           (char= (char remaining 1) #\Escape)
-                           (member (char remaining 2)
-                                   '(#\[ #\] #\O #\P #\_)))
-                  (setf sequence-length 1))
-                (setf
-                 sequences
-                 (stdin-buffer-emit-sequence
-                  buffer
-                  (subseq remaining 0 sequence-length)
-                  sequences))
-                (incf position sequence-length))
+              (let ((remaining (subseq text position)))
+                (if (terminal-reply-header-p remaining)
+                    (multiple-value-bind (status advance sequence)
+                        (consume-terminal-reply remaining)
+                      (ecase status
+                        (:incomplete (return))
+                        (:discard (incf position advance))
+                        (:sequence
+                         (setf sequences
+                               (stdin-buffer-emit-sequence
+                                buffer sequence sequences))
+                         (incf position advance))))
+                    (let ((sequence-length
+                            (complete-terminal-sequence-length
+                             remaining)))
+                      (unless sequence-length
+                        (return))
+                      (when (and (= sequence-length 2)
+                                 (>= (length remaining) 3)
+                                 (char= (char remaining 1) #\Escape)
+                                 (member (char remaining 2)
+                                         '(#\[ #\] #\O #\P #\_)))
+                        (setf sequence-length 1))
+                      (setf
+                       sequences
+                       (stdin-buffer-emit-sequence
+                        buffer
+                        (subseq remaining 0 sequence-length)
+                        sequences))
+                      (incf position sequence-length))))
               (progn
                 (setf
                  sequences
@@ -208,14 +322,28 @@
     (values sequences pastes events)))
 
 (defun stdin-buffer-flush (buffer)
-  (if (zerop (length (stdin-buffer-buffer buffer)))
-      nil
-      (prog1
-          (list (stdin-buffer-buffer buffer))
-        (setf
-         (stdin-buffer-buffer buffer) ""
-         (stdin-buffer-pending-kitty-codepoint buffer)
-         nil))))
+  ;; pi@71023aec1 #10256. A recognized reply waits for its terminator.
+  ;; A longer control string that never became one is a legacy Alt key
+  ;; plus the keys that were batched behind it.
+  (let ((text (stdin-buffer-buffer buffer)))
+    (cond
+      ((zerop (length text)) nil)
+      ((terminal-reply-header-p text) nil)
+      ((and (> (length text) 2)
+            (control-string-introducer-p text))
+       (let ((introducer (subseq text 0 2))
+             (tail (subseq text 2)))
+         (setf (stdin-buffer-buffer buffer) ""
+               (stdin-buffer-pending-kitty-codepoint buffer) nil)
+         (multiple-value-bind (sequences pastes events)
+             (stdin-buffer-process buffer tail)
+           (declare (ignore pastes events))
+           (cons introducer sequences))))
+      (t
+       (prog1 (list text)
+         (setf (stdin-buffer-buffer buffer) ""
+               (stdin-buffer-pending-kitty-codepoint buffer)
+               nil))))))
 
 (defun stdin-buffer-clear (buffer)
   (setf
