@@ -110,6 +110,12 @@
       base "tokensBefore"
       (session-entry-tokens-before entry))
      (put-session-details-and-usage base entry)
+     (when (cadr-ai:system-message-p
+            (session-entry-system-message entry))
+       (cadr-ai::json-put
+        base "systemMessage"
+        (message-to-json
+         (session-entry-system-message entry))))
      (when (session-entry-retained-tail entry)
        (cadr-ai::json-put
         base "retainedTail"
@@ -393,6 +399,20 @@
     :timestamp (message-timestamp message)
     :message message)))
 
+(defun compaction-checkpoint-system-message (session timestamp)
+  ;; pi@71023aec1 session-manager.ts appendCompaction. The kept path
+  ;; drops system messages before firstKeptEntryId, so the folded
+  ;; prompt and tools are stored on the compaction entry. The
+  ;; checkpoint timestamp is the compaction entry's, not the first
+  ;; system message's.
+  (let ((current
+          (cadr-ai:get-current-system-message
+           (session-messages session))))
+    (when current
+      (let ((copy (copy-structure current)))
+        (setf (cadr-ai:system-message-timestamp copy) timestamp)
+        copy))))
+
 (defun session-append-compaction
     (session summary source-ids first-kept-id tokens-before
      &key details usage from-hook-p)
@@ -419,20 +439,25 @@
         (session-failure
          (session-path session) nil
          "Compaction source entry does not exist: ~S" source-id)))
-    (append-session-entry
-     session
-     (make-session-entry
-      :type :compaction
-      :id id
-      :parent-id (session-leaf-id session)
-      :timestamp (cadr-ai::unix-milliseconds)
-      :summary summary
-      :source-ids (copy-list source-ids)
-      :first-kept-id first-kept-id
-      :tokens-before tokens-before
-      :details details
-      :usage usage
-      :from-hook-p (not (null from-hook-p))))))
+    (let* ((timestamp (cadr-ai::unix-milliseconds))
+           (system-message
+             (compaction-checkpoint-system-message
+              session timestamp)))
+      (append-session-entry
+       session
+       (make-session-entry
+        :type :compaction
+        :id id
+        :parent-id (session-leaf-id session)
+        :timestamp timestamp
+        :summary summary
+        :source-ids (copy-list source-ids)
+        :first-kept-id first-kept-id
+        :tokens-before tokens-before
+        :details details
+        :usage usage
+        :from-hook-p (not (null from-hook-p))
+        :system-message system-message)))))
 
 (defun make-session-child-entry (session type)
   (make-session-entry
@@ -794,7 +819,13 @@
                             message
                             (session-entry-data edit)))))))
                     (:compaction
-                     (list (compaction-summary-message entry)))
+                     (let ((summary
+                             (compaction-summary-message entry))
+                           (system
+                             (session-entry-system-message entry)))
+                       (if (cadr-ai:system-message-p system)
+                           (list system summary)
+                           (list summary))))
                     (:branch-summary
                      (list
                       (cadr-ai:make-user-message

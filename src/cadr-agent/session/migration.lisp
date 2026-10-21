@@ -68,7 +68,9 @@
          ((or (eq key "summary") (string= key "summary"))
           (setf (session-entry-summary entry) value))
          ((string= key "sourceIds")
-          (setf (session-entry-source-ids entry) value))))
+          (setf (session-entry-source-ids entry) value))
+         ((string= key "systemMessage")
+          (setf (session-entry-system-message entry) value))))
       (#\f
        (cond
          ((string= key "firstKeptEntryId")
@@ -1549,6 +1551,13 @@
                (#xc61746572
                 (setf (session-entry-retained-tail entry)
                       (parse-generic)))
+               ;; systemMessage: length 13, little-endian prefix "syst".
+               (#xD74737973
+                (skip-space)
+                (setf (session-entry-system-message entry)
+                      (if (eql (peek-code) 123)
+                          (parse-message)
+                          (parse-generic))))
                (otherwise
                 (skip-value)))))
         (skip-space)
@@ -2505,7 +2514,24 @@
                (loop for message across tail
                      collect
                      (message-from-json
-                      message)))))))
+                      message))))))
+           (let ((raw (session-entry-system-message entry)))
+             (when raw
+               (let ((message
+                       (handler-case
+                           (message-from-json raw)
+                         (error ()
+                           (session-failure
+                            path line-number
+                            "Invalid compaction systemMessage at line ~D"
+                            line-number)))))
+                 (unless (cadr-ai:system-message-p message)
+                   (session-failure
+                    path line-number
+                    "Invalid compaction systemMessage at line ~D"
+                    line-number))
+                 (setf (session-entry-system-message entry)
+                       message)))))
         (:branch-summary
          (let ((from-id
                  (require-session-slot

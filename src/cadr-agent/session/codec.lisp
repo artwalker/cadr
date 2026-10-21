@@ -23,6 +23,7 @@
   details
   usage
   (from-hook-p nil :type boolean)
+  system-message
   custom-type
   data
   content

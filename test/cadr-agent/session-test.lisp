@@ -480,3 +480,114 @@
                        id)))
          ids))
     (is (= 256 (hash-table-count by-id)))))
+
+(test compaction-checkpoint-keeps-folded-system-message
+  ;; pi@71023aec1 session-manager.ts appendCompaction /
+  ;; sessionEntryToContextMessages. Entries before firstKeptEntryId
+  ;; leave the projection, so the folded system message is stored on
+  ;; the compaction entry and leads the context after the cut.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "compact-system"))
+           (tool
+             (cadr-ai:make-tool
+              :name "plain"
+              :description "Plain tool"
+              :parameters
+              (cadr-ai::json-object "type" "object")))
+           (system-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-system-message
+               :content "You are cadr."
+               :tools-added (list tool)
+               :timestamp 111)))
+           (kept-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "keep me" :timestamp 222)))
+           (assistant-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list (cadr-ai:make-text-content :text "ack"))
+               :api :openai-responses
+               :provider :openai
+               :model "tiny"
+               :stop-reason :stop
+               :timestamp 333))))
+      (declare (ignore system-id assistant-id))
+      (cadr-agent:session-append-compaction
+       session "folded history" nil kept-id 9)
+      (let* ((entry
+               (find :compaction
+                     (cadr-agent:session-entries session)
+                     :key #'cadr-agent:session-entry-type))
+             (messages (cadr-agent:session-messages session))
+             (head (first messages))
+             (summary (second messages)))
+        (is (cadr-ai:system-message-p head))
+        (is (string= "You are cadr."
+                     (cadr-ai:system-message-content head)))
+        (is (= (cadr-agent:session-entry-timestamp entry)
+               (cadr-ai:system-message-timestamp head)))
+        (is (/= 111 (cadr-ai:system-message-timestamp head)))
+        (is (string=
+             "plain"
+             (cadr-ai:tool-name
+              (first (cadr-ai:system-message-tools-added head)))))
+        (is (search "folded history"
+                    (cadr-ai:user-message-content summary)))
+        (is (string=
+             "keep me"
+             (cadr-ai:user-message-content (third messages))))
+        (is (search
+             "systemMessage"
+             (uiop:read-file-string
+              (cadr-agent:session-path session)))))
+      (let* ((loaded
+               (cadr-agent:load-session
+                (cadr-agent:session-path session)))
+             (messages (cadr-agent:session-messages loaded))
+             (head (first messages)))
+        (is (cadr-ai:system-message-p head))
+        (is (string= "You are cadr."
+                     (cadr-ai:system-message-content head)))
+        (is (string=
+             "plain"
+             (cadr-ai:tool-name
+              (first
+               (cadr-ai:system-message-tools-added head)))))))
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "compact-plain"))
+           (kept-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "keep me" :timestamp 222))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "ack"))
+        :api :openai-responses
+        :provider :openai
+        :model "tiny"
+        :stop-reason :stop
+        :timestamp 333))
+      (cadr-agent:session-append-compaction
+       session "plain history" nil kept-id 4)
+      (let ((entry
+              (find :compaction
+                    (cadr-agent:session-entries session)
+                    :key #'cadr-agent:session-entry-type))
+            (head
+              (first (cadr-agent:session-messages session))))
+        (is (null (cadr-agent::session-entry-system-message entry)))
+        (is (typep head 'cadr-ai:user-message))
+        (is (search "plain history"
+                    (cadr-ai:user-message-content head)))))))
