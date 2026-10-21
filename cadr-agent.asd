@@ -42,6 +42,7 @@
                                (:file "jsonl")))
                              (:file "sqlite-storage")
                              (:file "runtime")
+                             (:file "nested-calls")
                              (:file "schema")
                              (:module "extensions"
                               :serial t

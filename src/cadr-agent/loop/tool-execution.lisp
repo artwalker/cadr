@@ -71,10 +71,30 @@ normalize image blocks entering session history (pi@71023aec1
 core/agent-session.ts:517-520).  Bound by cadr-cli, where the image
 pipeline lives.")
 
+(defun attach-nested-tool-record (outcome)
+  ;; pi@71023aec1 agent-session.ts records ctx.executeTool calls on the
+  ;; model-issued result after the after-hook. Nested results stay bare.
+  (when (and *nested-tool-call-runner*
+             (not *nested-tool-caller-id*))
+    (let ((summary
+            (nested-tool-call-runner-take
+             *nested-tool-call-runner*
+             (cadr-ai:tool-call-id
+              (tool-outcome-call outcome)))))
+      (when (and summary (nested-call-summary-calls summary))
+        (let ((result (tool-outcome-result outcome)))
+          (setf (cadr-ai:tool-result-message-nested-calls result)
+                (nested-call-summary-calls summary))
+          (when (nested-call-summary-usage summary)
+            (setf (cadr-ai:tool-result-message-usage result)
+                  (nested-call-summary-usage summary)))))))
+  outcome)
+
 (defun complete-tool-outcome (agent outcome turn-index)
   (let ((final
-          (finalize-tool-outcome
-           agent outcome turn-index)))
+          (attach-nested-tool-record
+           (finalize-tool-outcome
+            agent outcome turn-index))))
     ;; Runs after the extension hook so images injected or replaced by
     ;; extensions are normalized too.
     (when *tool-result-image-normalize-function*
@@ -402,7 +422,10 @@ pipeline lives.")
             prepared))
          (outcomes
            (make-array (length prepared)
-                       :initial-element nil)))
+                       :initial-element nil))
+         (*nested-tool-call-runner*
+           (or *nested-tool-call-runner*
+               (make-agent-nested-tool-runner agent))))
     ;; pi executeToolCallsParallel is Promise.all on the same
     ;; event loop. One parallel tool still paid pthread_create
     ;; (sprof pthread_sigmask 53% of agent_tool_loop). Spawn

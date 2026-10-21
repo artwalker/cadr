@@ -152,7 +152,9 @@
   details
   (added-tool-names nil :type list)
   (is-error nil :type boolean)
-  (timestamp (unix-milliseconds) :type integer))
+  (timestamp (unix-milliseconds) :type integer)
+  nested-calls
+  usage)
 
 (defstruct tool
   (name "" :type string)

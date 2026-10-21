@@ -22,7 +22,8 @@
   final-error
   source
   reason
-  entry)
+  entry
+  parent-tool-call-id)
 
 (defstruct (agent
             (:constructor %make-agent))
@@ -113,7 +114,8 @@
                            final-error
                            source
                            reason
-                           entry)
+                           entry
+                           parent-tool-call-id)
   (let ((event
           (make-agent-event
            :type type
@@ -137,7 +139,8 @@
            :final-error final-error
            :source source
            :reason reason
-           :entry entry)))
+           :entry entry
+           :parent-tool-call-id parent-tool-call-id)))
     (when (agent-on-event agent)
       (sb-thread:with-recursive-lock
           ((agent-event-lock agent))

@@ -1220,6 +1220,9 @@
                        (keep-extra bag :diagnostics (parse-generic)))
                       ((and (= w #x61746564) (= n 7))
                        (keep-extra bag :details (parse-generic)))
+                      ;; nestedCalls: length 11, little-endian "nest".
+                      ((and (= w #x7473656e) (= n 11))
+                       (keep-extra bag :nested-calls (parse-generic)))
                       ((and (= w #x72457369) (= n 7))
                        (keep-extra bag :is-error (parse-generic)))
                       ((and (= w #x655f7369) (= n 8))
@@ -1742,6 +1745,9 @@
                (#\m
                 (when (or (eq field "model") (string= field "model"))
                   (keep-extra bag :model value)))
+               (#\n
+                (when (string= field "nestedCalls")
+                  (keep-extra bag :nested-calls value)))
                (#\u
                 (when (or (eq field "usage") (string= field "usage"))
                   (setf (session-json-message-usage bag)

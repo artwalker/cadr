@@ -342,7 +342,10 @@
                        (princ-to-string condition)
                        condition tool call)))))
              (let ((*tool-call-cwd*
-                     (or execution-cwd *tool-call-cwd*)))
+                     (or execution-cwd *tool-call-cwd*))
+                   (*nested-tool-caller-id*
+                     (or *nested-tool-caller-id*
+                         (cadr-ai:tool-call-id call))))
                (multiple-value-bind
                      (content details terminate-p)
                    (funcall
@@ -367,3 +370,69 @@
       (sb-thread:with-recursive-lock
           (update-lock)
         (setf accepting-updates-p nil)))))
+
+(defun emit-nested-tool-event (agent type tool-call parent-id outcome)
+  (run-agent-lifecycle
+   agent type
+   (append
+    (list
+     :tool-call-id (cadr-ai:tool-call-id tool-call)
+     :tool-name (cadr-ai:tool-call-name tool-call)
+     :arguments (cadr-ai:tool-call-arguments tool-call)
+     :parent-tool-call-id parent-id)
+    (when (and outcome (eq type :tool-execution-end))
+      (list
+       :result (nested-tool-call-outcome-result outcome)
+       :error-p (nested-tool-call-outcome-is-error outcome)))))
+  (emit-agent-event
+   agent type
+   :tool-call tool-call
+   :tool-result
+   (and outcome (nested-tool-call-outcome-result outcome))
+   :parent-tool-call-id parent-id))
+
+(defun run-agent-nested-tool (agent tool-call parent-id signal on-update)
+  (let* ((*nested-tool-caller-id* (cadr-ai:tool-call-id tool-call))
+         (prepared
+           (handler-case
+               (prepare-tool-execution agent tool-call)
+             (error (condition)
+               (make-error-tool-result
+                tool-call (princ-to-string condition))))))
+    (let ((outcome
+            (if (typep prepared 'tool-outcome)
+                prepared
+                (handler-case
+                    (execute-prepared-tool
+                     prepared
+                     :cancellation-signal signal
+                     :on-update
+                     (when on-update
+                       (lambda (partial)
+                         (funcall on-update partial)
+                         (emit-nested-tool-event
+                          agent :tool-execution-update
+                          tool-call parent-id nil))))
+                  (error (condition)
+                    (make-error-tool-result
+                     tool-call (princ-to-string condition)))))))
+      (make-nested-tool-call-outcome
+       :tool-call (tool-outcome-call outcome)
+       :result (tool-outcome-result outcome)
+       :is-error
+       (cadr-ai:tool-result-message-is-error
+        (tool-outcome-result outcome))))))
+
+(defun make-agent-nested-tool-runner (agent)
+  (make-nested-tool-call-runner
+   :tools-function
+   (lambda ()
+     (registry-tools (agent-tool-registry agent)))
+   :emit-function
+   (lambda (type tool-call parent-id outcome)
+     (emit-nested-tool-event
+      agent type tool-call parent-id outcome))
+   :run-function
+   (lambda (tool-call parent-id signal on-update)
+     (run-agent-nested-tool
+      agent tool-call parent-id signal on-update))))

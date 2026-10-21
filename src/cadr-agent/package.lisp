@@ -247,6 +247,7 @@
    #:extension-context-set-tools-expanded
    #:extension-context-register-provider
    #:extension-context-register-tool
+   #:extension-context-execute-tool
    #:extension-context-send-message
    #:extension-context-send-user-message
    #:extension-context-set-session-name

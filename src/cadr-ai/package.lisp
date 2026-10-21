@@ -104,6 +104,8 @@
    #:tool-result-message-added-tool-names
    #:tool-result-message-is-error
    #:tool-result-message-timestamp
+   #:tool-result-message-nested-calls
+   #:tool-result-message-usage
    #:tool
    #:make-tool
    #:tool-name

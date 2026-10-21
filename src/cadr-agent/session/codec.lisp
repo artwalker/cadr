@@ -545,22 +545,34 @@
           (bash-execution-message-full-output-path message)))
        object))
     ((typep message 'cadr-ai:tool-result-message)
-     (cadr-ai::json-object
-      "role" "toolResult"
-      "toolCallId"
-      (cadr-ai:tool-result-message-tool-call-id message)
-      "toolName"
-      (cadr-ai:tool-result-message-tool-name message)
-      "content"
-      (content-blocks-to-json
-       (cadr-ai:tool-result-message-content message))
-      "details"
-      (json-safe-value
-       (cadr-ai:tool-result-message-details message))
-      "isError"
-      (cadr-ai:tool-result-message-is-error message)
-      "timestamp"
-      (cadr-ai:tool-result-message-timestamp message)))
+     (let ((object
+             (cadr-ai::json-object
+              "role" "toolResult"
+              "toolCallId"
+              (cadr-ai:tool-result-message-tool-call-id message)
+              "toolName"
+              (cadr-ai:tool-result-message-tool-name message)
+              "content"
+              (content-blocks-to-json
+               (cadr-ai:tool-result-message-content message))
+              "details"
+              (json-safe-value
+               (cadr-ai:tool-result-message-details message))
+              "isError"
+              (cadr-ai:tool-result-message-is-error message)
+              "timestamp"
+              (cadr-ai:tool-result-message-timestamp message))))
+       (when (cadr-ai:tool-result-message-nested-calls message)
+         (cadr-ai::json-put
+          object "nestedCalls"
+          (nested-tool-calls-to-json
+           (cadr-ai:tool-result-message-nested-calls message))))
+       (when (cadr-ai:tool-result-message-usage message)
+         (cadr-ai::json-put
+          object "usage"
+          (usage-to-json
+           (cadr-ai:tool-result-message-usage message))))
+       object))
     (t
      (error "Unsupported session message: ~S" message))))
 
@@ -772,6 +784,10 @@
             :content (content-blocks-from-json content)
             :details (getf extra :details)
             :is-error (eq t (getf extra :is-error))
+            :nested-calls
+            (nested-tool-calls-from-json
+             (getf extra :nested-calls))
+            :usage (session-json-message-usage object)
             :timestamp
             (session-json-message-timestamp object)))
           ((member type '("bashExecution" "bash_execution")
@@ -863,6 +879,12 @@
         :is-error
         (eq t
             (json-get-either object "isError" "is_error"))
+        :nested-calls
+        (nested-tool-calls-from-json
+         (cadr-ai::json-get object "nestedCalls"))
+        :usage
+        (let ((usage (cadr-ai::json-get object "usage")))
+          (and usage (usage-from-json usage)))
         :timestamp (cadr-ai::json-get object "timestamp")))
       ((member type '("bashExecution" "bash_execution")
                :test #'string=)
@@ -1314,6 +1336,12 @@
      (emit-json-value
       buffer
       (cadr-ai:tool-result-message-is-error message))
+     (when (cadr-ai:tool-result-message-nested-calls message)
+       (emit-json-key buffer nil "nestedCalls")
+       (emit-json-value
+        buffer
+        (nested-tool-calls-to-json
+         (cadr-ai:tool-result-message-nested-calls message))))
      (emit-json-key buffer nil "role")
      (emit-json-value buffer "toolResult")
      (emit-json-key buffer nil "timestamp")
@@ -1327,7 +1355,12 @@
      (emit-json-key buffer nil "toolName")
      (emit-json-value
       buffer
-      (cadr-ai:tool-result-message-tool-name message)))
+      (cadr-ai:tool-result-message-tool-name message))
+     (when (cadr-ai:tool-result-message-usage message)
+       (emit-json-key buffer nil "usage")
+       (write-session-usage
+        (cadr-ai:tool-result-message-usage message)
+        buffer)))
     (t
      (error "Unsupported session message: ~S" message)))
   (vector-push-extend #x7d buffer))
