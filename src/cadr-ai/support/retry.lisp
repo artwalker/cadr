@@ -8,15 +8,23 @@
     "insufficient_quota"
     "out of budget"
     "quota exceeded"
-    "billing"))
+    "billing"
+    "subscription_sharing_usage_limit_exceeded"))
 
 (defparameter +retryable-assistant-error-patterns+
-  '("overloaded" "currently experiencing high demand" "rate.?limit"
-    "too many requests"
-    "429" "500" "502" "503" "504" "524"
-    "service.?unavailable" "server.?error" "internal.?error"
+  '("overloaded" "server_busy" "servers are currently busy"
+    "currently experiencing high demand" "model is at capacity"
+    "rate.?limit" "too many requests"
+    "429" "500" "502" "503" "504" "520" "524"
+    "service.?unavailable"
+    "service is unavailable"
+    "service temporarily unavailable"
+    "service is temporarily unavailable"
+    "server.?error" "internal.?error"
     "provider.?returned.?error"
+    "provider returned an error"
     "exceeded request buffer limit while retrying upstream"
+    "unable to forward upstream"
     "network.?error"
     "connection.?error" "connection.?refused"
     "connection.?lost" "other side closed" "fetch failed"
@@ -28,7 +36,10 @@
     "stream ended before a terminal response event"
     "http2 request did not get a response" "retry delay"
     "you can retry your request" "try your request again"
-    "please retry your request" "ResourceExhausted"))
+    "please retry your request" "ResourceExhausted"
+    "pending stream has been canceled"
+    "subscription_sharing_usage_unavailable"
+    "subscription_sharing_user_unavailable"))
 
 (defun text-contains-any-p (text fragments)
   (some

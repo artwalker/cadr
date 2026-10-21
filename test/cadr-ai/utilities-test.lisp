@@ -87,6 +87,30 @@ second" (cadr-ai:content-text content)))
              (:finished t 2))
            (nreverse events))))))
 
+(test assistant-retry-matches-v130-transient-and-limit-wording
+  ;; pi@71023aec1 packages/ai/src/utils/retry.ts
+  ;; #10965, #10920, #10379, #9627. A 429 that names the ChatGPT
+  ;; subscription limit stays terminal.
+  (dolist
+      (text
+       '("The service is temporarily unavailable. Please retry later."
+         "Service unavailable: The service is temporarily unavailable."
+         "Unable to forward upstream stream"
+         "The upstream provider returned an error"
+         "The pending stream has been canceled"
+         "520 status code (no body)"
+         "subscription_sharing_usage_unavailable: Usage cannot be checked."
+         "subscription_sharing_user_unavailable: User cannot be loaded."
+         "server_busy"
+         "servers are currently busy"
+         "model is at capacity"))
+    (is (cadr-ai:retryable-assistant-error-p
+         (utility-error-message text))))
+  (is (not
+       (cadr-ai:retryable-assistant-error-p
+        (utility-error-message
+         "OpenAI API error (429): {\"code\":\"subscription_sharing_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
+
 (test goal17-retry-classifier-matches-the-baseline-transient-pattern-matrix
   (dolist
       (text

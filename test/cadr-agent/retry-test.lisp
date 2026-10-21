@@ -22,6 +22,26 @@
      (cadr-agent::retryable-assistant-error-p
       (retry-error-message message)))))
 
+(test v130-transient-wording-retries-and-subscription-limits-do-not
+  (dolist
+      (message
+       '("The service is temporarily unavailable. Please retry later."
+         "Service unavailable: The service is temporarily unavailable."
+         "Unable to forward upstream stream"
+         "The upstream provider returned an error"
+         "The pending stream has been canceled"
+         "520 status code (no body)"
+         "subscription_sharing_usage_unavailable: Usage cannot be checked."
+         "The system is currently experiencing high demand"))
+    (is
+     (cadr-agent::retryable-assistant-error-p
+      (retry-error-message message))))
+  (is
+   (not
+    (cadr-agent::retryable-assistant-error-p
+     (retry-error-message
+      "OpenAI API error (429): {\"code\":\"subscription_sharing_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
+
 (test transient-assistant-errors-retry-and-report-recovery
   (let ((*responses*
           (list
