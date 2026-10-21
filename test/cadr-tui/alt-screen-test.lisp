@@ -984,3 +984,46 @@
                 previous-pane)
           (sb-posix:unsetenv "WEZTERM_PANE"))
       (cadr-tui:reset-terminal-capabilities))))
+
+(test unhandled-wheel-scrolls-the-transcript-under-a-focused-overlay
+  ;; pi@71023aec1 #10769. A focused overlay that does not handle the
+  ;; wheel must not swallow it. The transcript scrolls, and the input
+  ;; is consumed so it is not delivered again as raw overlay input.
+  (let* ((terminal
+           (make-alt-recording-terminal :columns 20 :rows 6))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t))
+         (gestures nil)
+         (lines
+           (loop for index from 1 to 12
+                 collect (format nil "line ~D" index))))
+    (cadr-tui:renderer-set-wheel-scroll-lines renderer 1)
+    (setf
+     (cadr-tui::terminal-renderer-component-mouse-function
+      renderer)
+     (lambda (gesture)
+       (push gesture gestures)
+       nil))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer lines)
+    (let ((top (cadr-tui:renderer-viewport-top renderer)))
+      (is (eq t
+              (cadr-tui:renderer-handle-input
+               renderer
+               (format nil "~C[<64;3;1M" #\Escape))))
+      (is (< (cadr-tui:renderer-viewport-top renderer) top))
+      (is (eq :wheel (getf (first gestures) :type))))
+    (setf gestures nil
+          (cadr-tui::terminal-renderer-component-mouse-function
+           renderer)
+          (lambda (gesture)
+            (push gesture gestures)
+            t))
+    (alt-render renderer lines)
+    (let ((top (cadr-tui:renderer-viewport-top renderer)))
+      (is (eq t
+              (cadr-tui:renderer-handle-input
+               renderer
+               (format nil "~C[<64;3;1M" #\Escape))))
+      (is (= top (cadr-tui:renderer-viewport-top renderer)))
+      (is (eq :wheel (getf (first gestures) :type))))))

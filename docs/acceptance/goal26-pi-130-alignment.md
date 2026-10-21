@@ -127,6 +127,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Anthropic strict 工具超限回退 | v1.3.0 `anthropic-messages.ts` #10409 | done：只在流式请求里，响应头之前若 400 的消息是 `The compiled grammar is too large`、`Too many strict tools (` 或 `Schemas contains too many parameters with union types (`，并且这次请求里有 `strict: prefer` 且实际发出了 `strict: true`，就重试一次。重试去掉 prefer 工具的 `strict`，schema 回到未收紧的原文。`require` 仍严格，不降级。第二次同样的 400、已经收到 SSE、或消息对不上时停在错误。诊断类型是 `:anthropic-strict-tools-fallback`，reason 是 `strict_tool_limits_exceeded` |
 | 嵌套 worktree 的上下文文件 | v1.3.0 `resource-loader.ts` #10681 | done：嵌套 linked worktree 自己有上下文文件时，主仓库根上同名的那份不再加载。比较目录的真实路径加文件名，所以 worktree 的 `AGENTS.md` 即使符号链接到主仓库或另一份共享文件，也按 worktree 路径加载一次。worktree 根上没有文件时仍继承主仓库。只跳过同名文件，主仓库的 `CLAUDE.md` 还在。bare 布局、并列 worktree、submodule 不把外层文件当成重复。主仓库之上的祖先仍加载 |
 | Mistral 响应头超时 | v1.3.0 `mistral-conversations.ts` #10609 | done：流式请求的 `timeout-ms` 只包住等到响应头。没传时是 60000ms。头没到时错误是 `Mistral response headers timed out after Nms`，不重试。头到了以后，正文读得比这个时限更久也正常结束，不再被同一段时限掐断 |
+| 聚焦 overlay 时未处理的滚轮 | v1.3.0 `tui-alt-screen.ts` #10769 | done：滚轮先交给组件的鼠标处理。处理函数返回空时，正文视口照样滚动，这次输入被消费，不再留给后面的原始按键处理。处理函数返回真时，视口不动 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
