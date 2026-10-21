@@ -255,6 +255,14 @@
                :images nil
                :true-color-p (not (null true-color-hint-p))
                :hyperlinks-p nil))
+             ;; pi@71023aec1 #10774. Herdr speaks Kitty graphics and OSC 8.
+             ;; Check it before KITTY_WINDOW_ID: that variable leaks into
+             ;; Herdr panes and would force true color on the Kitty branch.
+             ((string= term-program "herdr")
+              (make-terminal-capabilities
+               :images :kitty
+               :true-color-p (not (null true-color-hint-p))
+               :hyperlinks-p t))
              ((or (truthy-environment-p "KITTY_WINDOW_ID"
                                         environment)
                   (string= term-program "kitty")

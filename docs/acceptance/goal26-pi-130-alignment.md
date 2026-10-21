@@ -128,6 +128,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 嵌套 worktree 的上下文文件 | v1.3.0 `resource-loader.ts` #10681 | done：嵌套 linked worktree 自己有上下文文件时，主仓库根上同名的那份不再加载。比较目录的真实路径加文件名，所以 worktree 的 `AGENTS.md` 即使符号链接到主仓库或另一份共享文件，也按 worktree 路径加载一次。worktree 根上没有文件时仍继承主仓库。只跳过同名文件，主仓库的 `CLAUDE.md` 还在。bare 布局、并列 worktree、submodule 不把外层文件当成重复。主仓库之上的祖先仍加载 |
 | Mistral 响应头超时 | v1.3.0 `mistral-conversations.ts` #10609 | done：流式请求的 `timeout-ms` 只包住等到响应头。没传时是 60000ms。头没到时错误是 `Mistral response headers timed out after Nms`，不重试。头到了以后，正文读得比这个时限更久也正常结束，不再被同一段时限掐断 |
 | 聚焦 overlay 时未处理的滚轮 | v1.3.0 `tui-alt-screen.ts` #10769 | done：滚轮先交给组件的鼠标处理。处理函数返回空时，正文视口照样滚动，这次输入被消费，不再留给后面的原始按键处理。处理函数返回真时，视口不动 |
+| Herdr 的 Kitty 图和超链接 | v1.3.0 `terminal-image.ts` #10774 #10573 | done：`TERM_PROGRAM=herdr` 用 Kitty 图协议和 OSC 8。它排在 `KITTY_WINDOW_ID` 前面，所以漏进窗格的这个变量不会把真彩色打开。没有 `COLORTERM` 提示时真彩色仍是关的 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

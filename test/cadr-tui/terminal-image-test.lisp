@@ -29,7 +29,20 @@
       (is (cadr-tui:terminal-capabilities-true-color-p tmux))
       (is (cadr-tui:terminal-capabilities-hyperlinks-p tmux))
       (is (not
-           (cadr-tui:terminal-capabilities-hyperlinks-p screen))))))
+           (cadr-tui:terminal-capabilities-hyperlinks-p screen)))
+      (let ((herdr (detect "TERM_PROGRAM=herdr"))
+            (herdr-leaked
+              (detect "TERM_PROGRAM=herdr" "KITTY_WINDOW_ID=1")))
+        (is (eq :kitty
+                (cadr-tui:terminal-capabilities-images herdr)))
+        (is (cadr-tui:terminal-capabilities-hyperlinks-p herdr))
+        (is (not
+             (cadr-tui:terminal-capabilities-true-color-p herdr)))
+        (is (eq :kitty
+                (cadr-tui:terminal-capabilities-images herdr-leaked)))
+        (is (not
+             (cadr-tui:terminal-capabilities-true-color-p
+              herdr-leaked)))))))
 
 (test terminal-image-encoding-sizing-and-detection
   (let* ((escape (string #\Escape))
