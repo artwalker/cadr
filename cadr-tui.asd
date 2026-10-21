@@ -24,6 +24,7 @@
                              (:file "terminal-colors")
                              (:file "terminal-image")
                              (:file "theme")
+                             (:file "oklab")
                              (:file "overlay")
                              (:file "autocomplete")
                              (:file "editor")

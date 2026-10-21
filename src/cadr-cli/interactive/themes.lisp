@@ -79,7 +79,7 @@
      (declare (ignore value))
      (unless
          (member name
-                 '("$schema" "name" "vars"
+                 '("$schema" "name" "appearance" "vars"
                    "colors" "export")
                  :test #'string=)
        (error "Unknown theme property: ~A"
@@ -98,6 +98,13 @@
              (plusp (length name))
              (not (search "/" name)))
       (error "Theme requires a valid name without '/'")))
+  (multiple-value-bind (appearance present-p)
+      (gethash "appearance" object)
+    (when present-p
+      (unless (and (stringp appearance)
+                   (or (string= appearance "dark")
+                       (string= appearance "light")))
+        (error "Theme appearance must be \"dark\" or \"light\""))))
   (unless (hash-table-p colors)
     (error "Theme requires a colors object"))
   (unless
@@ -167,9 +174,11 @@
             value))
     ((zerop (length value))
      "")
-    ((char= (char value 0) #\#)
-     (cadr-tui:parse-theme-hex-color value)
-     (string-downcase value))
+    ((or (char= (char value 0) #\#)
+         (and (>= (length value) 5)
+              (or (string-equal value "oklch" :end1 5)
+                  (string-equal value "okhsl" :end1 5))))
+     (cadr-tui:normalize-theme-color value))
     ((member value seen :test #'string=)
      (error "Cyclic theme variable reference: ~A"
             value))
@@ -181,6 +190,46 @@
                 value))
        (resolve-tui-theme-value
         resolved variables (cons value seen))))))
+
+(defun theme-background-token-p (key)
+  (member key
+          '(:selected-bg :search-match-bg :user-message-bg
+            :custom-message-bg :tool-pending-bg
+            :tool-success-bg :tool-error-bg)))
+
+(defun theme-average-lightness (overrides background-p)
+  (let ((samples nil))
+    (dolist (pair overrides)
+      (when (eq (and (theme-background-token-p (car pair)) t)
+                background-p)
+        (let ((value (cdr pair)))
+          (unless (equal value "")
+            (let ((lightness
+                    (cadr-tui:theme-color-lightness value)))
+              (when lightness
+                (push lightness samples)))))))
+    (when samples
+      (/ (reduce #'+ samples) (length samples)))))
+
+(defun detect-theme-appearance (overrides)
+  ;; pi@71023aec1 detectAppearance: background lighter than the text is a
+  ;; light theme. Palette indexes 0-15 are ignored.
+  (let ((foreground (theme-average-lightness overrides nil))
+        (background (theme-average-lightness overrides t)))
+    (cond
+      ((and foreground background)
+       (if (< background foreground) :dark :light))
+      (background
+       (if (< background 0.5d0) :dark :light))
+      (foreground
+       (if (> foreground 0.5d0) :dark :light)))))
+
+(defun theme-resolved-appearance (object color-overrides)
+  (multiple-value-bind (appearance present-p)
+      (gethash "appearance" object)
+    (if present-p
+        (if (string= appearance "light") :light :dark)
+        (detect-theme-appearance color-overrides))))
 
 (defun theme-object-overrides (object)
   (when (hash-table-p object)
@@ -273,10 +322,14 @@
             (gethash "text" colors)
             variables))
           overrides))
-        (collect-values
-         export
-         +tui-theme-json-export-map+))
-            (nreverse overrides))))))
+        (let ((color-overrides (copy-list overrides)))
+          (collect-values
+           export
+           +tui-theme-json-export-map+)
+          (values
+           (nreverse overrides)
+           (theme-resolved-appearance
+            object color-overrides)))))))))
 
 (defun apply-tui-theme-summary
     (summary
@@ -310,11 +363,12 @@
               :light)
              (t :dark))))
     (handler-case
-        (cadr-tui:set-current-theme
-         base
-         :overrides
-         (theme-object-overrides object)
-         :capabilities capabilities)
+        (multiple-value-bind (overrides appearance)
+            (theme-object-overrides object)
+          (cadr-tui:set-current-theme
+           (or appearance base)
+           :overrides overrides
+           :capabilities capabilities))
       (condition ()
         (unless keep-current-on-error-p
           (cadr-tui:set-current-theme

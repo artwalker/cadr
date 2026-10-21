@@ -92,6 +92,8 @@
    #:terminal-theme-color-keys
    #:parse-theme-hex-color
    #:rgb-to-ansi-256
+   #:normalize-theme-color
+   #:theme-color-lightness
    #:theme-color-value
    #:theme-foreground-ansi
    #:theme-background-ansi

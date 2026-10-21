@@ -289,6 +289,7 @@
                              (:file "output-files-test")
                              (:file "pi-logo-test")
                              (:file "radius-login-test")
+                             (:file "theme-appearance-test")
                              (:file "goal18-login-cancel-test")
                              (:file "goal18-migration-test")
                              (:file "goal18-login-forms-test")
