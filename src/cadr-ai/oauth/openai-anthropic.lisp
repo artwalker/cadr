@@ -182,7 +182,8 @@
    (oauth-credential-refresh credential)))
 
 (defun exchange-anthropic-authorization-code
-    (code state verifier)
+    (code state verifier
+     &optional (redirect-uri +anthropic-oauth-redirect-uri+))
   (token-response-credential
    :anthropic
    (oauth-json-token-request
@@ -192,7 +193,7 @@
      "client_id" +anthropic-oauth-client-id+
      "code" code
      "state" state
-     "redirect_uri" +anthropic-oauth-redirect-uri+
+     "redirect_uri" redirect-uri
      "code_verifier" verifier)
     (list code verifier))
    nil))
@@ -310,24 +311,37 @@
        (open-browser *oauth-browser-open-function*)
        auth-url-function
        auth-prompt-function)
-  ;; This mirrors the fixed reference implementation but remains live-unverified.
-  (login-pkce-browser-oauth
-   auth-path
-   :output output
-   :open-browser open-browser
-   :auth-url-function auth-url-function
-   :auth-prompt-function auth-prompt-function
-   :warning
-   "Anthropic subscription OAuth is unverified and may violate provider terms."
-   :state-function #'identity
-   :authorization-url #'anthropic-authorization-url
-   :metadata +anthropic-oauth-metadata+
-   :placeholder +anthropic-oauth-redirect-uri+
-   :wait
-   (lambda (state cancelled-p)
-     (wait-for-oauth-code
-      state 53692 "/callback" "Anthropic" cancelled-p))
-   :exchange
-   (lambda (code state verifier)
-     (exchange-anthropic-authorization-code
-      code state verifier))))
+  ;; pi@71023aec1 #10571. Bind the callback before the authorize URL
+  ;; so the URL, the paste placeholder, and the token exchange share
+  ;; the port that actually listened.
+  (let* ((socket (open-anthropic-oauth-callback-socket))
+         (redirect-uri (anthropic-oauth-redirect-uri socket)))
+    (unwind-protect
+         (login-pkce-browser-oauth
+          auth-path
+          :output output
+          :open-browser open-browser
+          :auth-url-function auth-url-function
+          :auth-prompt-function auth-prompt-function
+          :warning
+          "Anthropic subscription OAuth is unverified and may violate provider terms."
+          :state-function #'identity
+          :authorization-url
+          (lambda (challenge state)
+            (anthropic-authorization-url
+             challenge state redirect-uri))
+          :metadata +anthropic-oauth-metadata+
+          :placeholder redirect-uri
+          :wait
+          (lambda (state cancelled-p)
+            (when socket
+              (wait-for-oauth-code
+               state 53692 "/callback" "Anthropic"
+               cancelled-p socket)))
+          :exchange
+          (lambda (code state verifier)
+            (exchange-anthropic-authorization-code
+             code state verifier redirect-uri)))
+      (when socket
+        (ignore-errors
+          (sb-bsd-sockets:socket-close socket))))))

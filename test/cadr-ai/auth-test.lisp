@@ -112,6 +112,55 @@
          url))
     (is (search "state=state-1" url))))
 
+(test anthropic-oauth-uses-a-free-port-when-53692-is-taken
+  ;; pi@71023aec1 #10571. The authorize URL, paste placeholder, and
+  ;; token exchange all use the listener that actually bound.
+  (let ((blocker (cadr-ai::open-oauth-callback-socket 53692)))
+    (unwind-protect
+         (let ((prompt nil))
+           (signals cadr-ai:authentication-cancelled
+             (cadr-ai:login-anthropic-oauth
+              nil
+              :output (make-string-output-stream)
+              :open-browser (constantly nil)
+              :auth-prompt-function
+              (lambda (value)
+                (setf prompt value)
+                (funcall (getf value :cancel-function))
+                nil)))
+           (let* ((placeholder (getf prompt :placeholder))
+                  (colon (position #\: placeholder :from-end t))
+                  (slash (position #\/ placeholder :start colon))
+                  (port
+                    (parse-integer
+                     placeholder :start (1+ colon) :end slash)))
+             (is (/= port 53692))
+             (is (string=
+                  (format nil "http://localhost:~D/callback" port)
+                  placeholder))
+             (is (search
+                  (format nil
+                          "redirect_uri=http%3A%2F%2Flocalhost%3A~D%2Fcallback"
+                          port)
+                  (getf prompt :url)))
+             (let ((released
+                     (cadr-ai::open-oauth-callback-socket port)))
+               (sb-bsd-sockets:socket-close released))))
+      (ignore-errors
+        (sb-bsd-sockets:socket-close blocker))))
+  (let ((sent nil))
+    (let ((cadr-ai::*oauth-http-request-function*
+            (lambda (url &key content &allow-other-keys)
+              (declare (ignore url))
+              (setf sent content)
+              (values
+               "{\"access_token\":\"access\",\"refresh_token\":\"refresh\",\"expires_in\":3600}"
+               200))))
+      (cadr-ai::exchange-anthropic-authorization-code
+       "code" "state" "verifier"
+       "http://localhost:9/callback"))
+    (is (search "http://localhost:9/callback" sent))))
+
 (test oauth-callback-parser-validates-path-and-state
   (multiple-value-bind (code status)
       (cadr-ai:parse-oauth-callback-request

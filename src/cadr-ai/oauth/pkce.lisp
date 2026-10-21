@@ -307,7 +307,9 @@
       ("codex_cli_simplified_flow" . "true")
       ("originator" . ,+openai-originator+)))))
 
-(defun anthropic-authorization-url (challenge state)
+(defun anthropic-authorization-url
+    (challenge state
+     &optional (redirect-uri +anthropic-oauth-redirect-uri+))
   (format
    nil "~A?~A"
    +anthropic-oauth-authorize-url+
@@ -315,7 +317,7 @@
     `(("code" . "true")
       ("client_id" . ,+anthropic-oauth-client-id+)
       ("response_type" . "code")
-      ("redirect_uri" . ,+anthropic-oauth-redirect-uri+)
+      ("redirect_uri" . ,redirect-uri)
       ("scope" . ,+anthropic-oauth-scopes+)
       ("code_challenge" . ,challenge)
       ("code_challenge_method" . "S256")
