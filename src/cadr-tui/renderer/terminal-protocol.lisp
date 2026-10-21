@@ -22,6 +22,9 @@
 (defgeneric terminal-resized-p (terminal))
 (defgeneric terminal-query-background-color
     (terminal &key timeout-seconds))
+(defgeneric terminal-query-theme-colors
+    (terminal &key timeout-seconds))
+(defgeneric terminal-take-theme-colors (terminal))
 (defgeneric terminal-query-color-scheme
     (terminal &key timeout-seconds))
 (defgeneric terminal-set-color-scheme-notifications
@@ -54,6 +57,15 @@
 (defmethod terminal-query-background-color
     ((terminal terminal) &key (timeout-seconds 0.1d0))
   (declare (ignore terminal timeout-seconds))
+  nil)
+
+(defmethod terminal-query-theme-colors
+    ((terminal terminal) &key (timeout-seconds 0.1d0))
+  (declare (ignore terminal timeout-seconds))
+  nil)
+
+(defmethod terminal-take-theme-colors ((terminal terminal))
+  (declare (ignore terminal))
   nil)
 
 (defmethod terminal-query-color-scheme

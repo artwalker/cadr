@@ -175,3 +175,31 @@
                          (cadr-tui:theme-foreground :muted "x"))))
         (setf cadr-cli::*system-terminal-colors* nil)
         (cadr-tui:set-current-theme previous))))))
+
+(test terminal-color-report-keeps-a-palette-already-seen
+  (let ((previous (cadr-tui:current-theme))
+        (palette +dracula-palette+))
+    (unwind-protect
+         (let ((cadr-cli::*system-terminal-colors*
+                 (list :foreground '(248 248 242)
+                       :background '(40 42 54)
+                       :palette palette)))
+           (cadr-cli::merge-reported-terminal-colors
+            (list :background '(1 2 3)))
+           (is (equal '(248 248 242)
+                      (getf cadr-cli::*system-terminal-colors*
+                            :foreground)))
+           (is (equal '(1 2 3)
+                      (getf cadr-cli::*system-terminal-colors*
+                            :background)))
+           (is (equal palette
+                      (getf cadr-cli::*system-terminal-colors*
+                            :palette)))
+           (cadr-cli::apply-tui-theme-summary
+            "system"
+            :capabilities
+            (cadr-tui:make-terminal-capabilities :true-color-p t))
+           (is (search (format nil "~C[38;2;" #\Escape)
+                       (cadr-tui:theme-foreground-ansi :error))))
+      (setf cadr-cli::*system-terminal-colors* nil)
+      (cadr-tui:set-current-theme previous))))

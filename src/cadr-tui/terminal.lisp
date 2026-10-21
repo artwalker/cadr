@@ -847,6 +847,55 @@
         (process-terminal-pending-input terminal))))
     (process-terminal-background-response terminal)))
 
+(defmethod terminal-query-theme-colors
+    ((terminal process-terminal)
+     &key (timeout-seconds 0.1d0))
+  (unless (process-terminal-started-p terminal)
+    (return-from terminal-query-theme-colors nil))
+  (let* ((filter
+           (process-terminal-response-filter terminal))
+         (query (make-terminal-color-query))
+         (forward nil)
+         (started-at (get-internal-real-time))
+         (timeout
+           (max 0d0
+                (coerce timeout-seconds 'double-float))))
+    (setf (terminal-response-filter-color-query filter) query)
+    (setf (terminal-response-filter-color-result filter) nil)
+    (terminal-write terminal (terminal-color-query-sequence))
+    (loop
+      (let ((input (terminal-read-input terminal)))
+        (when (plusp (length input))
+          (push input forward)))
+      (when (or (null
+                 (terminal-response-filter-color-query filter))
+                (>= (elapsed-seconds started-at) timeout))
+        (return))
+      (sleep 0.005d0))
+    (when forward
+      (setf
+       (process-terminal-pending-input terminal)
+       (nconc
+        (nreverse forward)
+        (process-terminal-pending-input terminal))))
+    (let ((result
+            (or (terminal-response-filter-color-result filter)
+                (terminal-color-query-plist query))))
+      (when (null
+             (terminal-response-filter-color-query filter))
+        (setf (terminal-response-filter-color-result filter)
+              nil))
+      result)))
+
+(defmethod terminal-take-theme-colors
+    ((terminal process-terminal))
+  (let* ((filter
+           (process-terminal-response-filter terminal))
+         (result
+           (terminal-response-filter-color-result filter)))
+    (setf (terminal-response-filter-color-result filter) nil)
+    result))
+
 (defmethod terminal-query-color-scheme
     ((terminal process-terminal)
      &key (timeout-seconds 0.1d0))

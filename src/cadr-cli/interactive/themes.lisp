@@ -333,6 +333,21 @@
 
 (defvar *system-terminal-colors* nil)
 
+(defun merge-reported-terminal-colors (reported)
+  (when reported
+    (let ((previous *system-terminal-colors*))
+      (setf *system-terminal-colors*
+            (list :foreground
+                  (or (getf reported :foreground)
+                      (getf previous :foreground))
+                  :background
+                  (or (getf reported :background)
+                      (getf previous :background))
+                  :palette
+                  (or (getf reported :palette)
+                      (getf previous :palette))))))
+  *system-terminal-colors*)
+
 (defun system-theme-document ()
   (multiple-value-bind (colors dim appearance)
       (if *system-terminal-colors*

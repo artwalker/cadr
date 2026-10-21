@@ -706,33 +706,60 @@ interactive-mode.ts:5956-5960).")
                     terminal
                     :timeout-seconds 0.1d0)))
              (when color
-               (setf *system-terminal-colors*
-                     (list :background
-                           (list (cadr-tui:rgb-color-red color)
-                                 (cadr-tui:rgb-color-green color)
-                                 (cadr-tui:rgb-color-blue color))))
+               (merge-reported-terminal-colors
+                (list :background
+                      (list (cadr-tui:rgb-color-red color)
+                            (cadr-tui:rgb-color-green color)
+                            (cadr-tui:rgb-color-blue color))))
                (rgb-background-theme
                 (cadr-tui:rgb-color-red color)
                 (cadr-tui:rgb-color-green color)
                 (cadr-tui:rgb-color-blue color)))))
+         (system-theme-selected-p ()
+           (let ((summary
+                   (and theme-function
+                        (funcall theme-function))))
+             (and summary
+                  (stringp (getf summary :name))
+                  (string-equal (getf summary :name) "system"))))
+         (reapply-system-theme ()
+           (when (system-theme-selected-p)
+             (sb-thread:with-mutex (lock)
+               (apply-tui-theme-summary "system"))
+             (request-render)))
+         (reported-background-theme (reported)
+           (let ((color (getf reported :background)))
+             (when (and color (= (length color) 3))
+               (rgb-background-theme
+                (first color) (second color) (third color)))))
          (refresh-terminal-theme-policy ()
-           (let ((mode (current-theme-mode)))
-             (setf active-theme-mode mode)
-             (case mode
-               (:auto
-                (let ((background
-                        (or
-                         (cadr-tui:terminal-query-color-scheme
-                          terminal
-                          :timeout-seconds 0.1d0)
-                         (query-osc11-background))))
-                  (apply-detected-background background)))
-               (:detect-once
-                (apply-detected-background
-                 (query-osc11-background))))
-             (cadr-tui:terminal-set-color-scheme-notifications
-              terminal (eq mode :auto))
-             mode))
+           (let* ((reported
+                    (cadr-tui:terminal-query-theme-colors
+                     terminal
+                     :timeout-seconds 0.1d0))
+                  (from-report
+                    (reported-background-theme reported)))
+             (merge-reported-terminal-colors reported)
+             (reapply-system-theme)
+             (let ((mode (current-theme-mode)))
+               (setf active-theme-mode mode)
+               (case mode
+                 (:auto
+                  (let ((background
+                          (or
+                           (cadr-tui:terminal-query-color-scheme
+                            terminal
+                            :timeout-seconds 0.1d0)
+                           from-report
+                           (query-osc11-background))))
+                    (apply-detected-background background)))
+                 (:detect-once
+                  (apply-detected-background
+                   (or from-report
+                       (query-osc11-background)))))
+               (cadr-tui:terminal-set-color-scheme-notifications
+                terminal (eq mode :auto))
+               mode)))
          (terminal-progress-enabled-p ()
            (not
             (null
@@ -3315,6 +3342,12 @@ interactive-mode.ts:5956-5960).")
                       (request-render))
                     (cadr-tui:terminal-poll-progress
                      terminal)
+                    (let ((late
+                            (cadr-tui:terminal-take-theme-colors
+                             terminal)))
+                      (when late
+                        (merge-reported-terminal-colors late)
+                        (reapply-system-theme)))
                     (poll-theme-watcher)
                     (flush-render)
                     (funcall sleep-function 0.005d0))

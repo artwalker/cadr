@@ -64,9 +64,18 @@
    #:rgb-color-green
    #:rgb-color-blue
    #:parse-osc-11-background-color
+   #:parse-osc-color-response
+   #:terminal-color-query
+   #:make-terminal-color-query
+   #:terminal-color-query-sequence
+   #:terminal-color-query-note
+   #:terminal-color-query-plist
+   #:terminal-color-query-open-p
    #:parse-terminal-color-scheme-report
    #:terminal-response-filter
    #:make-terminal-response-filter
+   #:terminal-response-filter-color-query
+   #:terminal-response-filter-color-result
    #:terminal-response-expect-color
    #:terminal-response-consume
    #:get-cell-dimensions
@@ -328,6 +337,8 @@
    #:terminal-read-input
    #:terminal-resized-p
    #:terminal-query-background-color
+   #:terminal-query-theme-colors
+   #:terminal-take-theme-colors
    #:terminal-query-color-scheme
    #:terminal-set-color-scheme-notifications
    #:terminal-color-scheme-change

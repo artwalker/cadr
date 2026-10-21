@@ -105,7 +105,8 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | Radius 登录 shimmer | v1.3.0 `radius-login-selector.ts` | done：顶层 `/login` 在账户和 API key 之后加上 `Sign in with Radius`；选中时这几个字按 logo 四色、每秒 10 字做 sRGB smoothstep。状态后缀仍用现有 configured 文案。50ms 重画只在该项选中时发生 |
 | MCP 结果截断 | v1.3.0 `limitMcpContent` | done：文本块按换行拼起来，超过 20KB 时各留一半字节，中间标出省掉的码点数，只在 UTF-8 字符边界切开；原文写入 `cadr-mcp` 临时文件（`#o600`），模型看到 token 估算、行数和路径。存盘失败只留下错误。图片块跟在警告后面。连接、OAuth 和资源读取仍不在这次 |
 | 主题 appearance / OKLCH | v1.3.0 `theme-schema.ts` / `colors.ts` | done：主题 JSON 接受 `appearance` 为 `dark` 或 `light`；省略时按前景和背景的 Oklab 明度判断，背景更亮就是 light。`#RGB`、`oklch()`、`okhsl()` 解析成 `#rrggbb`。调色板 0–15 不参与判断 |
-| 系统主题 | v1.3.0 `system-theme.ts` | done：`system` 排在主题列表最前，名字保留。有背景和 16 色调色板时按家族色相和对比度曲线生成；只有背景时用家族自己的色相；都没有时用 ANSI 下标，中性字用 SGR 2。正文在面板上至少 4.5:1，浅色调色板不会在别的明度上变艳。OSC 11 的背景会记下来。前景和 16 色查询仍不在这次 |
+| 系统主题 | v1.3.0 `system-theme.ts` | done：`system` 排在主题列表最前，名字保留。有背景和 16 色调色板时按家族色相和对比度曲线生成；只有背景时用家族自己的色相；都没有时用 ANSI 下标，中性字用 SGR 2。正文在面板上至少 4.5:1，浅色调色板不会在别的明度上变艳 |
+| 终端前景和 16 色 | v1.3.0 `queryTerminalColors` | done：一次查询 OSC 10、OSC 11 和 OSC 4 的 0–15，并以 DA1 收尾。18 个回复或 DA1 结束；调色板缺任何一格就不用。超时先交已到的颜色，迟到的回复再合并，不清掉先前的前景、背景或调色板。当前主题是 `system` 时重新套用 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
