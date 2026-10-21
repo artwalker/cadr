@@ -226,6 +226,14 @@
     :exit-function exit-function)
    :exit-function exit-function))
 
+(defun dead-terminal-error-p (condition)
+  (or (typep condition 'sb-int:broken-pipe)
+      (let ((text (princ-to-string condition)))
+        (or (search "Input/output error" text)
+            (search "Inappropriate ioctl for device" text)
+            (search "Transport endpoint is not connected" text)
+            (search "Broken pipe" text)))))
+
 (defun call-with-fatal-condition-boundary
     (function &key
                 (program-name "cadr")
@@ -239,6 +247,9 @@
   ;; without *invoke-debugger-hook*.
   (let ((fatal-marker (gensym "FATAL-")))
     (labels ((fail (condition)
+               (when (dead-terminal-error-p condition)
+                 (return-from call-with-fatal-condition-boundary
+                   (funcall exit-function 129)))
                (values
                 fatal-marker
                 (prepare-fatal-condition-report

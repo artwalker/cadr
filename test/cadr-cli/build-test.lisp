@@ -92,6 +92,26 @@
           (is (null (search secret printed)))
           (is (search "REDACTED" printed)))))))
 
+(test dead-terminal-errors-exit-without-a-crash-report
+  (dolist (errno '(5 25 32 107))
+    (with-test-directory (directory)
+      (let* ((visible (make-string-output-stream))
+             (status
+               (let ((*error-output* visible))
+                 (cadr-cli::call-with-fatal-condition-boundary
+                  (lambda ()
+                    (sb-impl::simple-stream-perror
+                     "read" *standard-input* errno))
+                  :crash-directory directory
+                  :exit-function #'identity)))
+             (output (get-output-stream-string visible)))
+        (is (= 129 status))
+        (is (string= "" output))
+        (is (null
+             (directory
+              (merge-pathnames
+               "cadr-crash-*.log" directory))))))))
+
 (test goal13-interactive-interrupt-uses-the-sanitized-fatal-path
   (with-test-directory (directory)
     (let* ((visible (make-string-output-stream))
