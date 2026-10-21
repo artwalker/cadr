@@ -774,3 +774,59 @@
     (is (not (cadr-ai::json-present-p payload "reasoning_content")))
     (is (equalp (vector detail)
                 (cadr-ai::json-get payload "reasoning_details")))))
+
+(defun xiaomi-catalog-model (provider id)
+  (let ((meta (cadr-ai:find-model-metadata provider id)))
+    (make-model
+     :id id
+     :provider provider
+     :api (cadr-ai:model-metadata-api meta)
+     :base-url (cadr-ai:model-metadata-base-url meta)
+     :reasoning-p (cadr-ai:model-metadata-reasoning-p meta)
+     :thinking-level-map (cadr-ai:model-metadata-thinking-level-map meta)
+     :compat (cadr-ai:model-metadata-compat meta))))
+
+(defun xiaomi-thinking-payload (model reasoning)
+  (request-spec-payload
+   (build-request
+    (cadr-ai:make-openai-completions-provider :api-key "test-xiaomi-key")
+    model
+    (make-context
+     :messages
+     (list (make-user-message :content "test" :timestamp 0)))
+    :stream-p t
+    :reasoning reasoning)))
+
+(test xiaomi-mimo-thinking-is-an-off-on-toggle
+  (dolist (provider '(:xiaomi :xiaomi-token-plan-cn
+                      :xiaomi-token-plan-ams :xiaomi-token-plan-sgp))
+    (let ((models
+            (loop for metadata
+                  in (cadr-ai:list-model-metadata provider)
+                  when (cadr-ai:model-metadata-reasoning-p metadata)
+                    collect
+                    (xiaomi-catalog-model
+                     provider
+                     (cadr-ai:model-metadata-id metadata)))))
+      (is (not (null models)))
+      (dolist (model models)
+        (is (equal '(:off :high)
+                   (cadr-ai:supported-thinking-levels model)))
+        (is (eq :high (cadr-ai:clamp-thinking-level model :minimal)))
+        (is (eq :off (cadr-ai:clamp-thinking-level model :off)))
+        (let ((enabled (xiaomi-thinking-payload model :high))
+              (disabled (xiaomi-thinking-payload model nil)))
+          (is (string=
+               "enabled"
+               (cadr-ai::json-get
+                (cadr-ai::json-get enabled "thinking")
+                "type")))
+          (is (not (cadr-ai::json-present-p enabled "reasoning_effort")))
+          (is (string=
+               "disabled"
+               (cadr-ai::json-get
+                (cadr-ai::json-get disabled "thinking")
+                "type")))
+          (is (not
+               (cadr-ai::json-present-p
+                disabled "reasoning_effort"))))))))

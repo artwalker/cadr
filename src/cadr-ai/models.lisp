@@ -399,6 +399,32 @@
             '("claude-opus-5" "claude-haiku-5-5" "claude-haiku-5.5")
             :test #'string=)))
 
+(defparameter +xiaomi-thinking-level-map+
+  '((:off . "off")
+    (:minimal)
+    (:low)
+    (:medium)
+    (:high . "high")
+    (:xhigh)
+    (:max)))
+
+(defun apply-xiaomi-thinking-toggle (row)
+  ;; pi@71023aec1 #10818. MiMo Chat Completions documents only
+  ;; thinking.type enabled/disabled and rejects reasoning_effort
+  ;; "minimal". Every effort level is treated the same, so the catalog
+  ;; exposes off and high and the request omits reasoning_effort.
+  (when (member (getf row :provider)
+                '(:xiaomi :xiaomi-token-plan-ams
+                  :xiaomi-token-plan-cn :xiaomi-token-plan-sgp))
+    (let ((compat (copy-list (getf row :compat))))
+      (setf (getf compat :supports-reasoning-effort) nil)
+      (setf (getf row :compat) compat))
+    (when (getf row :reasoning-p)
+      (setf (getf row :thinking-level-map)
+            (mapcar (lambda (entry) (cons (car entry) (cdr entry)))
+                    +xiaomi-thinking-level-map+))))
+  row)
+
 (defun apply-anthropic-disabled-thinking (row)
   ;; The catalog snapshot still records off: null for these models, which
   ;; means "cannot turn thinking off". The pin stopped merging that entry.
@@ -471,15 +497,16 @@
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-anthropic-disabled-thinking
-             (apply-opencode-inference-endpoints
+            (apply-xiaomi-thinking-toggle
+             (apply-anthropic-disabled-thinking
+              (apply-opencode-inference-endpoints
               (apply-azure-provider-id
               (apply-vercel-ai-gateway-empty-signature
                (apply-fireworks-effort-override
                 (apply-fireworks-tool-references-override
                  (apply-anthropic-prompt-cache-override
                   (apply-gpt-5-6-pricing-override
-                   (copy-list row)))))))))))
+                   (copy-list row))))))))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
