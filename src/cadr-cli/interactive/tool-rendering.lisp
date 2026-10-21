@@ -619,6 +619,7 @@
        show-cache-miss-notices-function
        session-entries-function
        model-price-function
+       renderer
        (clock-function #'tui-monotonic-seconds))
   (let ((type (cadr-agent:agent-event-type event))
         (message (cadr-agent:agent-event-message event))
@@ -1043,6 +1044,7 @@
                 state display-messages
                 :preserve-usage-p t
                 :context-unknown-p t
+                :renderer renderer
                 :show-cache-miss-notices-p
                 (and show-cache-miss-notices-function
                      (funcall

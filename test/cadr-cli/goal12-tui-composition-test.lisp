@@ -420,3 +420,59 @@
       (is (null (cadr-tui::overlay-stack-entries stack)))
       (is (eq editor
               (cadr-tui::overlay-stack-focused-component stack))))))
+
+(defun goal12-mark-fullscreen-selection (renderer)
+  (cadr-tui:render-frame
+   renderer '("alpha" "beta" "gamma" "delta")
+   :cursor-row 3 :cursor-column 0)
+  (setf
+   (cadr-tui::terminal-renderer-selection-anchor renderer)
+   (cons 0 0)
+   (cadr-tui::terminal-renderer-selection-focus renderer)
+   (cons 0 4)
+   (cadr-tui::terminal-renderer-selection-granularity renderer)
+   :word
+   (cadr-tui::terminal-renderer-last-click-at renderer)
+   12d0
+   (cadr-tui::terminal-renderer-last-click-count renderer)
+   3
+   (cadr-tui::terminal-renderer-last-click-row renderer)
+   0
+   (cadr-tui::terminal-renderer-last-click-word-start renderer)
+   0
+   (cadr-tui::terminal-renderer-last-click-word-end renderer)
+   5))
+
+(test transcript-rebuild-drops-fullscreen-selection
+  ;; pi@71023aec1 #10567. Replacing the transcript must drop the
+  ;; highlight and the multi-click word. A main-screen renderer has
+  ;; no such selection.
+  (let* ((terminal
+           (cadr-tui:make-virtual-terminal :columns 20 :rows 6))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t))
+         (state (cadr-cli::make-tui-state)))
+    (goal12-mark-fullscreen-selection renderer)
+    (is (eq t (cadr-tui:renderer-has-active-selection-p renderer)))
+    (cadr-cli::reset-tui-messages state nil :renderer renderer)
+    (is (not (cadr-tui:renderer-has-active-selection-p renderer)))
+    (is (null
+         (cadr-tui::terminal-renderer-last-click-at renderer)))
+    (is (zerop
+         (cadr-tui::terminal-renderer-last-click-count renderer)))
+    (is (eq :character
+            (cadr-tui::terminal-renderer-selection-granularity
+             renderer)))
+    (goal12-mark-fullscreen-selection renderer)
+    (cadr-cli::replace-tui-entries state nil :renderer renderer)
+    (is (not (cadr-tui:renderer-has-active-selection-p renderer)))
+    (is (zerop
+         (cadr-tui::terminal-renderer-last-click-count renderer)))
+    (let ((main
+            (cadr-tui:make-terminal-renderer terminal)))
+      (setf
+       (cadr-tui::terminal-renderer-last-click-count main)
+       2)
+      (cadr-cli::replace-tui-entries state nil :renderer main)
+      (is (= 2
+             (cadr-tui::terminal-renderer-last-click-count main))))))

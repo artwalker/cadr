@@ -351,7 +351,8 @@
 (defun reset-tui-messages
     (state messages &key preserve-usage-p
                          context-unknown-p
-                         show-cache-miss-notices-p)
+                         show-cache-miss-notices-p
+                         renderer)
   (let ((saved-usage
           (and
            preserve-usage-p
@@ -364,7 +365,7 @@
             (tui-state-latest-cache-hit-rate state)
             (tui-state-cost state)
             (tui-state-cost-known-p state)))))
-    (replace-tui-entries state nil)
+    (replace-tui-entries state nil :renderer renderer)
     (setf
      (tui-state-current-assistant state) nil
      (tui-state-input-tokens state) 0

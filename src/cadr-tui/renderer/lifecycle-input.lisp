@@ -1046,6 +1046,24 @@ word-navigation character classes, then join word runs across '-' and
 (defun renderer-has-active-selection-p (renderer)
   (not (null (renderer-active-selection-text renderer))))
 
+(defun renderer-reset-text-selection (renderer)
+  ;; pi@71023aec1 #10567. A transcript rebuild reuses viewport
+  ;; coordinates. Drop the highlight and the multi-click word so the
+  ;; new transcript is not painted as selected.
+  (setf
+   (terminal-renderer-selection-anchor renderer) nil
+   (terminal-renderer-selection-focus renderer) nil
+   (terminal-renderer-pressed-url renderer) nil
+   (terminal-renderer-selection-dragged-p renderer) nil
+   (terminal-renderer-selection-granularity renderer) :character
+   (terminal-renderer-selection-initial-range renderer) nil
+   (terminal-renderer-last-click-at renderer) nil
+   (terminal-renderer-last-click-count renderer) 0
+   (terminal-renderer-last-click-row renderer) -1
+   (terminal-renderer-last-click-word-start renderer) -1
+   (terminal-renderer-last-click-word-end renderer) -1)
+  renderer)
+
 (defun renderer-copy-selection-flash (result)
   ;; True flashes Copied! for 1s. A string is the backend error for 5s.
   (values

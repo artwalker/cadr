@@ -365,6 +365,7 @@
    #:terminal-renderer-wheel-scroll-lines
    #:renderer-set-wheel-scroll-lines
    #:renderer-has-active-selection-p
+   #:renderer-reset-text-selection
    #:renderer-copy-active-selection
    #:alt-screen-renderer-p
    #:renderer-viewport-top

@@ -44,7 +44,13 @@
                    append
                    (cadr-tui:wrap-text line width))))))
 
-(defun replace-tui-entries (state entries)
+(defun replace-tui-entries (state entries &key renderer)
+  ;; pi@71023aec1 #10567. Session switches and other full transcript
+  ;; replacements go through here. Only the fullscreen renderer has
+  ;; the selection that would highlight the new text.
+  (when (and renderer
+             (cadr-tui:alt-screen-renderer-p renderer))
+    (cadr-tui:renderer-reset-text-selection renderer))
   (dolist (entry (tui-state-entries state))
     (when (tui-entry-custom-component entry)
       (ignore-errors

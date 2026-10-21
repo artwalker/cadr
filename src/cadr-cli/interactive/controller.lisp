@@ -1619,6 +1619,7 @@ interactive-mode.ts:5956-5960).")
                       session-entries-function
                       :model-price-function
                       model-price-function
+                      :renderer renderer
                       :clock-function clock-function))
                    (tui-handle-agent-event
                     state event
@@ -1629,6 +1630,7 @@ interactive-mode.ts:5956-5960).")
                     session-entries-function
                     :model-price-function
                     model-price-function
+                    :renderer renderer
                     :clock-function clock-function)))
              ;; MESSAGE-END is emitted before Cadr persists the final
              ;; assistant message.  Preserve the event-local usage until the
@@ -2082,7 +2084,7 @@ interactive-mode.ts:5956-5960).")
            (when selected-path
              (setf
               active-session-path selected-path))
-           (replace-tui-entries state nil)
+           (replace-tui-entries state nil :renderer renderer)
            (setf
             (tui-state-current-assistant state)
             nil
@@ -2633,7 +2635,8 @@ interactive-mode.ts:5956-5960).")
                                     (sb-thread:with-mutex (lock)
                                       (reset-tui-messages
                                        state
-                                       selected-messages))
+                                       selected-messages
+                                       :renderer renderer))
                                     (request-render))))
                              (error (condition)
                                (status
