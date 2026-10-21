@@ -39,6 +39,8 @@
   handler
   render-call
   render-result
+  (exposure :direct
+            :type (member :direct :model-only :codemode :deferred :hidden))
   bundle)
 
 (defstruct extension-command-definition
@@ -204,7 +206,8 @@
 
 (defun register-extension-tool
     (name &key description parameters
-            (execution-mode :parallel) handler)
+            (execution-mode :parallel) handler
+            (exposure :direct))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (stringp description)
@@ -224,6 +227,13 @@
        'extension-registration-error
        :message (format nil "Tool ~A handler must be a function"
                         name)))
+    (unless (member exposure
+                    '(:direct :model-only :codemode :deferred :hidden))
+      (error
+       'extension-registration-error
+       :message
+       (format nil "Tool ~A exposure must be direct, model-only, codemode, deferred, or hidden"
+               name)))
     (ensure-unique-extension-definition
      (extension-bundle-tools bundle)
      name
@@ -241,6 +251,7 @@
         :parameters parameters
         :execution-mode execution-mode
         :handler handler
+        :exposure exposure
         :bundle bundle)))))
   name)
 
@@ -248,7 +259,8 @@
     (name &key label description prompt-snippet prompt-guidelines
             parameters constrained-sampling render-shell
             prepare-arguments (execution-mode :parallel)
-            handler render-call render-result)
+            handler render-call render-result
+            (exposure :direct))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (and (stringp label) (plusp (length label)))
@@ -283,6 +295,12 @@
                  (or (null render-result) (functionp render-result)))
       (error 'extension-registration-error
              :message (format nil "Tool ~A renderers must be functions or NIL" name)))
+    (unless (member exposure
+                    '(:direct :model-only :codemode :deferred :hidden))
+      (error 'extension-registration-error
+             :message
+             (format nil "Tool ~A exposure must be direct, model-only, codemode, deferred, or hidden"
+                     name)))
     (ensure-unique-extension-definition
      (extension-bundle-tools bundle) name
      #'extension-tool-definition-name "Tool")
@@ -301,6 +319,7 @@
         :prepare-arguments prepare-arguments
         :execution-mode execution-mode :full-handler-p t
         :handler handler :render-call render-call :render-result render-result
+        :exposure exposure
         :bundle bundle)))))
   name)
 

@@ -361,7 +361,8 @@ pipeline lives.")
              (unwind-protect
                   (let ((*tool-abort-p*
                           (lambda ()
-                            (agent-aborted-p agent))))
+                            (agent-aborted-p agent)))
+                        (*tool-search-agent* agent))
                     (execute-prepared-tool
                      entry
                      :cancellation-signal signal

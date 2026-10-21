@@ -45,6 +45,22 @@
       (copy-list (agent-base-tools agent)))
      extension-tools)))
 
+(defun extension-tool-exposure (host name)
+  (let ((definition
+          (and host
+               (find name
+                     (extension-snapshot-tools
+                      (extension-host-current-snapshot host))
+                     :key #'extension-tool-definition-name
+                     :test #'string=))))
+    (if definition
+        (extension-tool-definition-exposure definition)
+        :direct)))
+
+(defun tool-declared-by-default-p (host tool)
+  (member (extension-tool-exposure host (cadr-ai:tool-name tool))
+          '(:direct :model-only)))
+
 (defun refresh-agent-extension-tools (agent)
   (let* ((merged (merged-agent-tools agent))
          (filtered
@@ -70,7 +86,12 @@
                     host)
                    :test #'string=))
                 merged)
-               filtered)))
+               ;; Deferred, codemode, and hidden tools stay out of the
+               ;; model declaration until something activates them.
+               (remove-if-not
+                (lambda (tool)
+                  (tool-declared-by-default-p host tool))
+                filtered))))
     (setf
      (agent-tool-registry agent)
      (make-tool-registry effective)))
@@ -308,6 +329,9 @@
 (defvar *tool-call-cwd* nil
   "Directory for the tool call in progress. Nil keeps the directory captured when the tool was built.")
 
+(defvar *tool-search-agent* nil
+  "Agent whose tool set tool_search reads and updates.")
+
 (defun execute-prepared-tool
     (prepared &key cancellation-signal on-update execution-cwd)
   (let* ((call (prepared-tool-call-call prepared))
@@ -403,16 +427,17 @@
             (if (typep prepared 'tool-outcome)
                 prepared
                 (handler-case
-                    (execute-prepared-tool
-                     prepared
-                     :cancellation-signal signal
+                    (let ((*tool-search-agent* agent))
+                      (execute-prepared-tool
+                       prepared
+                       :cancellation-signal signal
                      :on-update
                      (when on-update
                        (lambda (partial)
                          (funcall on-update partial)
                          (emit-nested-tool-event
                           agent :tool-execution-update
-                          tool-call parent-id nil))))
+                          tool-call parent-id nil)))))
                   (error (condition)
                     (make-error-tool-result
                      tool-call (princ-to-string condition)))))))

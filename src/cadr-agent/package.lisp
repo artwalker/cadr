@@ -49,6 +49,13 @@
    #:branch-selection-provider
    #:branch-selection-model-id
    #:virtual-model-state
+   #:tool-search-tokenize
+   #:tool-search-document
+   #:tool-search-rank
+   #:tool-search-load
+   #:make-tool-search-tool
+   #:tool-search-match-name
+   #:tool-search-match-score
    #:agent-navigate-tree
    #:collect-entries-for-branch-summary
    #:prepare-branch-entries

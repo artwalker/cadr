@@ -96,6 +96,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | read 行号范围 | v1.3.0 `formatReadLineRange` | done：数字字符串可解析；任一端畸形则整段省略；end 为 0 时不写 `-0` |
 | `executeTool` / `nestedCalls` | v1.3.0 `nested-tool-calls.ts` | done：工具执行中 `extension-context-execute-tool` 跑子调用；父结果记下 `nestedCalls`（256 条、参数字节上限）；子结果不记；事件带 `parent-tool-call-id` |
 | virtual model | v1.3.0 `virtual-models.ts` | done：`api` `:pi-virtual` 只作为选择；请求前 `route` 换成物理模型和钳制后的 thinking；未注册、非物理目标、无凭证、直接 `stream-chat` 都失败；物理回复之后分支选择仍停在已注册的虚拟模型上；路由状态记在 `pi.virtual-model-state` |
+| `tool_search` | v1.3.0 `extensions/tool-search/tool.ts` | done：BM25 检索尚未声明的 `deferred` / `codemode` 工具并写入 active tools，下一次调用才声明；空 query、非正整数 limit 失败；内置但不在默认四个工具里。`createCodemodeDescription` 不移植 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

@@ -76,7 +76,9 @@
                :render-shell
                (extension-tool-definition-render-shell definition)
                :source
-               (extension-definition-origin definition)))))
+               (extension-definition-origin definition)
+               :exposure
+               (extension-tool-definition-exposure definition)))))
 
 (defun extension-host-current-active-tools (host)
   (let ((agent (extension-host-agent host)))

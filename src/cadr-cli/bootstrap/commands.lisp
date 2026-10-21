@@ -2166,7 +2166,8 @@
                     :prompt-snippet (getf metadata :prompt-snippet)
                     :prompt-guidelines
                     (copy-list (getf metadata :prompt-guidelines))
-                    :source (or (getf metadata :source) :builtin)))))
+                    :source (or (getf metadata :source) :builtin)
+                    :exposure (or (getf metadata :exposure) :direct)))))
          (extension-context-usage ()
            (let* ((model (cadr-agent:agent-model agent))
                   (window

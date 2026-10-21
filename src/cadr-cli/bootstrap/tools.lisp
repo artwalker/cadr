@@ -4,7 +4,8 @@
   '("read" "bash" "edit" "write"))
 
 (defparameter +builtin-coding-tool-names+
-  '("read" "bash" "powershell" "edit" "write" "grep" "find" "ls"))
+  '("read" "bash" "powershell" "edit" "write" "grep" "find" "ls"
+    "tool_search"))
 
 (defun make-baseline-coding-tools
     (cwd &key context command-prefix shell-path)
@@ -37,7 +38,8 @@
     (make-powershell-tool cwd :context context)
     (make-grep-tool cwd)
     (make-find-tool cwd)
-    (make-ls-tool cwd))))
+    (make-ls-tool cwd)
+    (cadr-agent:make-tool-search-tool))))
 
 (defun tool-modifier-p (entry)
   ;; pi@71023aec1 settings-manager.ts isToolModifier
