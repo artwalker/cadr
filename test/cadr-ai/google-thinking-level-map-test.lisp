@@ -125,10 +125,22 @@
     (is (= 0 (cadr-ai::json-get config "thinkingBudget")))))
 
 (test google-4-uses-thinking-level
-  (let ((config
-          (google-thinking-config-of "gemini-4-argon" '()
-                                     :reasoning :medium)))
-    (is (string= "MEDIUM" (cadr-ai::json-get config "thinkingLevel")))))
+  ;; pi #10890: Gemini 4 ids use thinkingLevel on both Google adapters.
+  (dolist (provider (list (make-google-provider :api-key "key")
+                          (make-vertex-provider :api-key "key")))
+    (let* ((payload
+             (cadr-ai::request-spec-payload
+              (build-request
+               provider
+               (google-thinking-test-model "gemini-4-argon" '())
+               (sample-context)
+               :stream-p t
+               :max-tokens 16
+               :reasoning :medium)))
+           (config (cadr-ai::json-get payload "thinkingConfig")))
+      (is (eq t (cadr-ai::json-get config "includeThoughts")))
+      (is (string= "MEDIUM" (cadr-ai::json-get config "thinkingLevel")))
+      (is (not (cadr-ai::json-present-p config "thinkingBudget"))))))
 
 (test google-2-5-maps-extended-level-onto-custom-budget
   (let ((config
