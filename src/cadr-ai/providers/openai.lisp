@@ -873,9 +873,7 @@
                              output-index
                              (provider-stream-state-partial-json state)
                              ""))))
-                  (when (non-empty-string-p arguments)
-                    (setf (tool-call-arguments block)
-                          (parse-streaming-json arguments)))
+                  (finish-tool-call-arguments block arguments)
                   (let ((namespace (json-get item "namespace")))
                     (when namespace
                       (setf (tool-call-namespace block) namespace))))

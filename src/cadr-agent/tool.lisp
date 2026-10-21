@@ -316,6 +316,15 @@
                              condition)
                             (princ-to-string condition))
                         condition tool effective-call)))))
+              (let ((arguments-error
+                      (cadr-ai:tool-call-arguments-error
+                       effective-call)))
+                (when (and (stringp arguments-error)
+                           (plusp (length arguments-error)))
+                  (error
+                   "Invalid arguments for tool \"~A\": ~A"
+                   (cadr-ai:tool-call-name effective-call)
+                   arguments-error)))
               (validate-tool-arguments
                tool
                (cadr-ai:tool-call-arguments

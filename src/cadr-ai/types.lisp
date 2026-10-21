@@ -71,7 +71,8 @@
   ;; OpenAI Responses namespace for calls to dynamically loaded or
   ;; namespaced tools.  Wire-level only: like the baseline, the session
   ;; codec does not persist it.
-  (namespace nil :type (or null string)))
+  (namespace nil :type (or null string))
+  (arguments-error nil :type (or null string)))
 
 (defstruct (cost
             (:constructor make-cost

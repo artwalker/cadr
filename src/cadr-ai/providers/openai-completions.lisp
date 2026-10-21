@@ -822,11 +822,7 @@
                      key
                      (provider-stream-state-partial-json state)
                      "")))
-              (setf
-               (tool-call-arguments block)
-               (if (non-empty-string-p json)
-                   (parse-streaming-json json)
-                   (json-object)))
+              (finish-tool-call-arguments block json)
               (emit-event emit :tool-call-end message
                           :content-index index
                           :tool-call block))))))

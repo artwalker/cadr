@@ -861,9 +861,7 @@
                       index
                       (provider-stream-state-partial-json state)
                       "")))
-               (when (non-empty-string-p json)
-                 (setf (tool-call-arguments block)
-                       (parse-partial-json-object json))))
+               (finish-tool-call-arguments block json))
              (emit-event emit :tool-call-end message
                          :content-index block-index
                          :tool-call block))))

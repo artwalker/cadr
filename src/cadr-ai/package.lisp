@@ -50,8 +50,10 @@
    #:tool-call-id
    #:tool-call-name
    #:tool-call-arguments
+   #:tool-call-arguments-error
    #:tool-call-thought-signature
    #:tool-call-namespace
+   #:parse-tool-call-arguments
    #:cost
    #:make-cost
    #:cost-input

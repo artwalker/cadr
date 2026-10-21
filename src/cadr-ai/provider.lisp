@@ -401,6 +401,7 @@ string. Returns the buffer to store back. Per-delta
          :id normalized-id
          :name (tool-call-name block)
          :arguments (tool-call-arguments block)
+         :arguments-error (tool-call-arguments-error block)
          :thought-signature
          (and same-model-p
               (tool-call-thought-signature block))))))

@@ -157,6 +157,7 @@
       :id (tool-call-id block)
       :name (tool-call-name block)
       :arguments (copy-json-value (tool-call-arguments block))
+      :arguments-error (tool-call-arguments-error block)
       :thought-signature
       (tool-call-thought-signature block)))
     (t block)))
