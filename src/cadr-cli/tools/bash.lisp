@@ -320,12 +320,9 @@
            (sb-thread:make-thread
             (lambda ()
               (handler-case
-                  (with-open-file
-                      (full output-path
-                            :direction :output
-                            :if-exists :supersede
-                            :if-does-not-exist :create
-                            :external-format :utf-8)
+                  (let ((full (exclusive-output-stream output-path)))
+                    (unwind-protect
+                        (progn
                     ;; Match Node's pipe `data` contract: block for the first
                     ;; character, then drain the currently available burst
                     ;; into one bounded callback chunk.  Per-character flushes
@@ -362,7 +359,9 @@
                             (write-string buffer live-output :end count)
                             (finish-output live-output))
                           (when eof-p
-                            (return))))))
+                            (return)))))
+                      (when (open-stream-p full)
+                        (close full)))))
                 (error (condition)
                   (unless forced-output-close-p
                     (setf reader-error condition)))))

@@ -78,6 +78,7 @@
                                                          (:file "trust")
                                                          (:file "fork")))))
                              (:file "truncation")
+                             (:file "output-files")
                              (:file "output-accumulator")
                              (:module "tools"
                               :serial t
@@ -283,6 +284,7 @@
                              (:file "goal15-part-c-test")
                              (:file "goal17-compaction-test")
                              (:file "goal17-login-dialog-test")
+                             (:file "output-files-test")
                              (:file "goal18-login-cancel-test")
                              (:file "goal18-migration-test")
                              (:file "goal18-login-forms-test")

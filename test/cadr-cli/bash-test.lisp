@@ -32,6 +32,11 @@
         (is (search "line-2105" (result-text content)))
         (is (eq t (getf details :truncated)))
         (is (probe-file (getf details :full-output-path)))
+        (is (= #o600
+               (logand
+                (sb-posix:stat-mode
+                 (sb-posix:stat (getf details :full-output-path)))
+                #o777)))
         (delete-file (getf details :full-output-path))))))
 
 (test bash-wrapper-passes-paren-payload-as-argv-not-inner-minus-c
