@@ -217,12 +217,25 @@ completed assistant message."))
                 (when (anthropic-effort-p down) down)))))
       "high"))
 
+(defun anthropic-off-null-p (model)
+  ;; pi@71023aec1 thinkingLevelMap.off === null means the model rejects
+  ;; thinking: {type: "disabled"}. A missing off entry does not.
+  (and (model-thinking-level-present-p model :off)
+       (null (model-thinking-level-value model :off))))
+
+(defun anthropic-thinking-disabled-p (model reasoning)
+  (and (eq (model-api model) :anthropic-messages)
+       (model-reasoning-p model)
+       (null reasoning)
+       (not (anthropic-off-null-p model))))
+
 (defun mid-convo-thinking-level (model reasoning &optional api-key)
-  ;; Anthropic adaptive thinking always stamps an effort; OpenAI GPT-6
-  ;; configuration_update only stamps when getConfigurationUpdateEffort
-  ;; would (pi@71023aec1) — requires a thinking level and not ChatGPT
-  ;; sign-in.
-  (when (model-compat-value model :supports-mid-convo-effort nil)
+  ;; Anthropic adaptive thinking stamps an effort unless this request
+  ;; turns thinking off. OpenAI GPT-6 configuration_update only stamps
+  ;; when getConfigurationUpdateEffort would (pi@71023aec1) — requires a
+  ;; thinking level and not ChatGPT sign-in.
+  (when (and (model-compat-value model :supports-mid-convo-effort nil)
+             (not (anthropic-thinking-disabled-p model reasoning)))
     (if (eq (model-api model) :openai-responses)
         (openai-configuration-update-effort model reasoning api-key)
         (anthropic-active-effort model reasoning))))

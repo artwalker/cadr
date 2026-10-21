@@ -400,3 +400,81 @@
       (is (string= "thinking_dropped" (getf item :type)))
       (is (string= "messages.1.content.0" (getf item :path)))
       (is (string= "prefix_binding_mismatch" (getf item :reason))))))
+
+(test anthropic-unsupported-off-keeps-adaptive-thinking
+  (let* ((model (mid-convo-model))
+         (request
+           (mid-convo-request
+            model
+            (mid-convo-context (list (mid-convo-user "one" 1)))))
+         (payload (request-spec-payload request)))
+    (is (string=
+         "adaptive"
+         (cadr-ai::json-get
+          (cadr-ai::json-get payload "thinking")
+          "type")))
+    (is (json-equal-p
+         (mid-convo-effort-marker "high")
+         (first (mid-convo-effort-messages payload))))
+    (is (string=
+         "high"
+         (cadr-ai:assistant-message-provider-thinking-level
+          (cadr-ai::empty-assistant-message model))))))
+
+(test anthropic-supported-off-sends-disabled-thinking-without-effort
+  (let* ((model (mid-convo-model))
+         (request
+           (progn
+             (setf (cadr-ai::model-thinking-level-map model)
+                   (remove :off
+                           (cadr-ai::model-thinking-level-map model)
+                           :key #'car))
+             (mid-convo-request
+              model
+              (mid-convo-context
+               (list
+                (mid-convo-user "one" 1)
+                (mid-convo-assistant model "low")
+                (mid-convo-user "two" 2))))))
+         (payload (request-spec-payload request)))
+    (is (json-equal-p
+         (cadr-ai::json-object "type" "disabled")
+         (cadr-ai::json-get payload "thinking")))
+    (is (null (cadr-ai::json-get payload "output_config")))
+    (is (null (mid-convo-effort-messages payload)))
+    (is (null
+         (cadr-ai:assistant-message-provider-thinking-level
+          (cadr-ai::empty-assistant-message model nil))))))
+
+(test anthropic-opus-5-catalog-accepts-disabled-thinking
+  (let* ((meta
+           (cadr-ai:find-model-metadata :anthropic "claude-opus-5"))
+         (model
+           (make-model
+            :id "claude-opus-5"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url (cadr-ai:model-metadata-base-url meta)
+            :reasoning-p t
+            :thinking-level-map
+            (cadr-ai:model-metadata-thinking-level-map meta)
+            :compat (cadr-ai:model-metadata-compat meta)))
+         (payload
+           (request-spec-payload
+            (mid-convo-request
+             model
+             (mid-convo-context (list (mid-convo-user "one" 1)))))))
+    (is (null
+         (assoc :off
+                (cadr-ai:model-metadata-thinking-level-map meta))))
+    (is (eq t
+            (getf (cadr-ai:model-metadata-compat meta)
+                  :supports-mid-convo-effort)))
+    (is (json-equal-p
+         (cadr-ai::json-object "type" "disabled")
+         (cadr-ai::json-get payload "thinking")))
+    (is (null (mid-convo-effort-messages payload)))
+    (let ((fable
+            (cadr-ai:find-model-metadata :anthropic "claude-fable-5-1")))
+      (is (assoc :off
+                 (cadr-ai:model-metadata-thinking-level-map fable))))))

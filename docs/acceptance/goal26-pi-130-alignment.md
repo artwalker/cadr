@@ -115,6 +115,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 同块 reasoning 顺序 | v1.3.0 `openai-completions` #10926 | done：一条 delta 同时带 reasoning 和 content 时，thinking 在正文前面。`reasoning_details` 也先进入 thinking；连续的 text/summary 合并，encrypted 保持独立。签名是这些对象的 JSON，下一次请求只带回 `reasoning_details`，不再带原始 reasoning 字段。旧 tool `thoughtSignature` 里的 encrypted 对象同样回放 |
 | 错误 tool result 图片 | v1.3.0 #10794 | done：Anthropic 和 Bedrock 上的 Claude 不把图片留在 `is_error` 结果里。连续图片换成 `(image attached after the tool results)`，原图跟在这一轮全部 tool result 后面，说明行带 tool call id 和工具名。成功结果、没有图片的错误结果、非 Claude 的 Bedrock 模型仍把图片留在结果里 |
 | OpenCode inference 端点 | v1.3.0 `generate-models.ts` `195120a91` | done：Zen 和 Go 的目录地址从 `opencode.ai/zen` 改到 `opencode.ai/inference`。先替换 `/zen/go`，再替换 `/zen`。`minimax-m2.7` 改走 Anthropic Messages，base 不带 `/v1`，请求打到 `.../inference/go/v1/messages`。Go 上的 `qwen3.6-plus` 仍是 openai-completions，地址 `.../inference/go/v1`。Zen 的 Gemini 仍是 google-generative-ai，地址 `.../inference/v1`。OpenCode Go 的协议补上 `google-generative-ai` |
+| Claude off 思考 | v1.3.0 #10753 | done：`claude-opus-5`、`claude-haiku-5-5`、`claude-haiku-5.5`（含 `anthropic/` 前缀和日期快照）不再把 `off: null` 留在 thinking map 里。思考关掉时请求是 `thinking: {type: "disabled"}`，不带 effort 标记，也不带 `block_binding`。`off` 仍是 null 的模型（如 Fable 5.1）继续走 adaptive thinking 和 effort |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

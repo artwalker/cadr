@@ -202,7 +202,7 @@
 
 (defun anthropic-messages
     (model messages &optional cache-control deferred-tools reasoning)
-  (let ((prepared
+  (let* ((prepared
           (prepare-messages-for-model
            messages model #'normalize-provider-id))
         (result nil)
@@ -211,9 +211,12 @@
         (allow-empty-signature-p
           (model-compat-value model :allow-empty-signature nil))
         (mid-convo-p
-          (model-compat-value model :supports-mid-convo-effort nil)))
+          (model-compat-value model :supports-mid-convo-effort nil))
+        (effort-messages-p
+          (and mid-convo-p
+               (not (anthropic-thinking-disabled-p model reasoning)))))
     (flet ((record (encoded effort)
-             (when mid-convo-p
+             (when effort-messages-p
                (when effort
                  (setf (gethash (length result) assistant-levels)
                        effort)))
@@ -268,7 +271,7 @@
                    (record
                     (json-object "role" "assistant"
                                  "content" content)
-                    (and mid-convo-p
+                    (and effort-messages-p
                          (eq (assistant-message-api message)
                              :anthropic-messages)
                          (eq (assistant-message-provider message)
@@ -296,7 +299,7 @@
             (add-anthropic-cache-control-to-messages
              (list-json-array (nreverse result))
              cache-control)))
-      (if mid-convo-p
+      (if effort-messages-p
           (insert-thinking-level-messages
            encoded
            assistant-levels
@@ -355,6 +358,10 @@
 
 (defun anthropic-thinking-options (model reasoning)
   (cond
+    ((anthropic-thinking-disabled-p model reasoning)
+     ;; Haiku 5.5 and Opus 5 accept this. Effort markers and
+     ;; block_binding are rejected while thinking is disabled.
+     (values (json-object "type" "disabled") nil))
     ((model-compat-value model :supports-mid-convo-effort nil)
      (values
       (json-object

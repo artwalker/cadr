@@ -377,6 +377,42 @@
       (subseq url (length "https://opencode.ai/zen"))))
     (t url)))
 
+(defun anthropic-disabled-thinking-model-p (model-id)
+  ;; pi@71023aec1 ANTHROPIC_DISABLED_THINKING_MODELS. Dated snapshots
+  ;; and an OpenRouter anthropic/ prefix do not change the decision.
+  (let* ((lower (string-downcase model-id))
+         (stripped
+           (cond
+             ((uiop:string-prefix-p "~anthropic/" lower)
+              (subseq lower (length "~anthropic/")))
+             ((uiop:string-prefix-p "anthropic/" lower)
+              (subseq lower (length "anthropic/")))
+             (t lower)))
+         (base
+           (if (and (>= (length stripped) 9)
+                    (char= (char stripped (- (length stripped) 9)) #\-)
+                    (every #'digit-char-p
+                           (subseq stripped (- (length stripped) 8))))
+               (subseq stripped 0 (- (length stripped) 9))
+               stripped)))
+    (member base
+            '("claude-opus-5" "claude-haiku-5-5" "claude-haiku-5.5")
+            :test #'string=)))
+
+(defun apply-anthropic-disabled-thinking (row)
+  ;; The catalog snapshot still records off: null for these models, which
+  ;; means "cannot turn thinking off". The pin stopped merging that entry.
+  (when (and (stringp (getf row :id))
+             (anthropic-disabled-thinking-model-p (getf row :id)))
+    (setf (getf row :thinking-level-map)
+          (remove-if
+           (lambda (entry)
+             (and (consp entry)
+                  (eq (car entry) :off)
+                  (null (cdr entry))))
+           (getf row :thinking-level-map))))
+  row)
+
 (defun apply-opencode-inference-endpoints (row)
   (when (member (getf row :provider) '(:opencode :opencode-go))
     (setf (getf row :base-url)
@@ -435,14 +471,15 @@
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-opencode-inference-endpoints
-             (apply-azure-provider-id
+            (apply-anthropic-disabled-thinking
+             (apply-opencode-inference-endpoints
+              (apply-azure-provider-id
               (apply-vercel-ai-gateway-empty-signature
                (apply-fireworks-effort-override
                 (apply-fireworks-tool-references-override
                  (apply-anthropic-prompt-cache-override
                   (apply-gpt-5-6-pricing-override
-                   (copy-list row))))))))))
+                   (copy-list row)))))))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
