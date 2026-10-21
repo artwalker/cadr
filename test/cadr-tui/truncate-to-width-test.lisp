@@ -95,12 +95,10 @@
     (is (string= "H" after))
     (is (= 1 after-width))))
 
-;;; goal 20, 12F-2: slice-with-width is being rewritten to iterate grapheme
-;;; spans without per-cluster subseq allocation and to collect pending ANSI
-;;; codes in a list instead of quadratic concatenation.  The reference copy
-;;; below is the pre-rewrite implementation, verbatim; the equivalence test
-;;; pins the rewrite to it over a corpus that covers ANSI-dense lines, wide
-;;; graphemes, combining marks, ZWJ sequences, tabs, and window edges.
+;;; goal 20, 12F-2: slice-with-width iterates grapheme spans and collects
+;;; pending ANSI codes in a list. The reference below stays aligned with
+;;; that function, including the #10169 rule that codes from before the
+;;; window are written before a code that sits on the window's first column.
 
 (defun slice-with-width-reference (text start-column length &optional strict-p)
   (when (<= length 0)
@@ -122,6 +120,8 @@
                    (cond
                      ((and (>= column start-column)
                            (< column end-column))
+                      (write-string pending-ansi output)
+                      (setf pending-ansi "")
                       (write-string code output))
                      ((< column start-column)
                       (setf pending-ansi
@@ -187,3 +187,17 @@
                                   (is (= rw nw)
                                       "width mismatch: ~S start=~D length=~D strict=~S"
                                       text start length strict)))))))))
+
+(test slice-by-column-keeps-ansi-order-at-the-boundary
+  (let ((reset-at-start
+          (format nil "~C[32mfoo~C[39m bar" #\Escape #\Escape))
+        (after-token
+          (format nil "Another ~C[35malpha~C[39m line with ~C[35mbeta~C[39m later."
+                  #\Escape #\Escape #\Escape #\Escape)))
+    (is (string=
+         (format nil "~C[32m~C[39m bar" #\Escape #\Escape)
+         (cadr-tui:slice-by-column reset-at-start 3 4 t)))
+    (is (string=
+         (format nil "~C[35m~C[39m line with ~C[35mbeta~C[39m later."
+                 #\Escape #\Escape #\Escape #\Escape)
+         (cadr-tui:slice-by-column after-token 13 100 t)))))

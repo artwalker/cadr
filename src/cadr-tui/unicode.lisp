@@ -627,6 +627,10 @@ The walk stops early when FUNCTION returns true."
                  (progn
                    (when (and (>= column start-column)
                               (< column end-column))
+                     (when pending-ansi
+                       (dolist (code (nreverse pending-ansi))
+                         (write-string code output))
+                       (setf pending-ansi nil))
                      (write-string text output :start index :end ansi-end))
                    (when (< column start-column)
                      (push (subseq text index ansi-end) pending-ansi))

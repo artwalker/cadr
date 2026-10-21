@@ -144,6 +144,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | `--provider` 必须带 `--model` | v1.3.0 `main.ts` #10236 | done：只写 `--provider openai` 时退出码是 1，stderr 是 `Error: --provider requires --model (for example: --provider openai --model <pattern>)`。`--help` 仍先打印用法。帮助里这行是 “Provider to search for --model (requires --model)” |
 | `--models` 里的空项 | v1.3.0 `args.ts` #10334 | done：`gpt-4o, ,claude-sonnet,` 解析成 `gpt-4o` 和 `claude-sonnet`。空项不会进模型循环。这是逗号选项拆分时丢掉空白项，`--tools` 走同一条 |
 | 行首空白后的斜杠命令 | v1.3.0 `autocomplete.ts` #10218 | done：` /`、`  /mod`、Tab 加 `/mod` 都能补成对应缩进的 `/model `。`  /model son` 把参数补成 `sonnet`，前面的空格留着 |
+| 切片边界上的 ANSI 顺序 | v1.3.0 `utils.ts` #10169 | done：`slice-by-column` 从第 3 列切 `\x1b[32mfoo\x1b[39m bar` 得到 `\x1b[32m\x1b[39m bar`。窗口前的颜色码写在边界上的复位码前面，选区和搜索高亮不会把后面的字染上前一个颜色 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
