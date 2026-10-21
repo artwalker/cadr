@@ -203,6 +203,41 @@
       (is (string= "newer"
                    (cadr-agent::session-id continued))))))
 
+(test continue-session-prefers-file-mtime-over-message-clock
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let ((clock-ahead
+            (cadr-agent::create-session
+             :directory sessions :cwd cwd :id "clock-ahead"))
+          (file-newer
+            (cadr-agent::create-session
+             :directory sessions :cwd cwd :id "file-newer")))
+      (cadr-agent::session-append-message
+       clock-ahead
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "ahead"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 9000000000000))
+      (cadr-agent::session-append-message
+       file-newer
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "fresh"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 1))
+      (sb-posix:utime (cadr-agent::session-path clock-ahead) 1000 1000)
+      (sb-posix:utime (cadr-agent::session-path file-newer) 2000 2000))
+    (let ((continued
+            (cadr-agent::continue-session
+             :directory sessions :cwd cwd)))
+      (is (string= "file-newer"
+                   (cadr-agent::session-id continued))))))
+
 (test continue-session-rejects-invalid-session-headers
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
