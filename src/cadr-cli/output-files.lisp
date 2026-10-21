@@ -64,3 +64,110 @@
         (when (open-stream-p stream)
           (close stream)))
       (namestring path))))
+
+(defun write-mcp-output-file (data extension)
+  (write-output-file "cadr-mcp" extension data))
+
+(defun mcp-content-type (block)
+  (let ((type (getf block :type)))
+    (etypecase type
+      (keyword type)
+      (string (intern (string-upcase type) :keyword)))))
+
+(defun mcp-content-text (blocks)
+  (with-output-to-string (out)
+    (loop with first-p = t
+          for block in blocks
+          when (eq (mcp-content-type block) :text)
+            do (if first-p
+                   (setf first-p nil)
+                   (write-char #\Newline out))
+               (write-string (or (getf block :text) "") out))))
+
+(defun mcp-output-line-count (content)
+  (if (zerop (length content))
+      0
+      (let ((newlines (count #\Newline content)))
+        (if (char= (char content (1- (length content))) #\Newline)
+            newlines
+            (1+ newlines)))))
+
+(defun mcp-utf8-boundary-p (octets index)
+  (or (>= index (length octets))
+      (/= (logand (aref octets index) #xc0) #x80)))
+
+(defun mcp-octets-string (octets start end)
+  (sb-ext:octets-to-string
+   (subseq octets start end)
+   :external-format :utf-8))
+
+(defun truncate-mcp-middle (content max-bytes)
+  ;; pi@71023aec1 truncateMiddle: keep half the byte budget at each end and
+  ;; mark the omitted code points. Cuts only on UTF-8 character boundaries.
+  (let* ((octets (cadr-ai::utf8-octets content))
+         (total (length octets))
+         (lines (mcp-output-line-count content)))
+    (when (<= total max-bytes)
+      (return-from truncate-mcp-middle
+        (values content nil 0 total lines)))
+    (let ((head-end (floor max-bytes 2))
+          (tail-start
+            (- total (- max-bytes (floor max-bytes 2)))))
+      (loop while (and (> head-end 0)
+                       (not (mcp-utf8-boundary-p octets head-end)))
+            do (decf head-end))
+      (loop while (and (< tail-start total)
+                       (not (mcp-utf8-boundary-p octets tail-start)))
+            do (incf tail-start))
+      (let ((removed
+              (length (mcp-octets-string octets head-end tail-start))))
+        (values
+         (concatenate
+          'string
+          (mcp-octets-string octets 0 head-end)
+          (format nil "…~D chars truncated…" removed)
+          (mcp-octets-string octets tail-start total))
+         t
+         removed
+         total
+         lines)))))
+
+(defun limit-mcp-content
+    (blocks &key (max-bytes (* 20 1024))
+                 (save-output #'write-mcp-output-file))
+  ;; pi@71023aec1 limitMcpContent: text over the byte budget becomes one
+  ;; warning block plus the saved original. Image blocks stay after it.
+  (let ((combined (mcp-content-text blocks)))
+    (multiple-value-bind (text truncated removed total lines)
+        (truncate-mcp-middle combined max-bytes)
+      (declare (ignore removed))
+      (unless truncated
+        (return-from limit-mcp-content (values blocks nil)))
+      (let ((path nil)
+            (where nil))
+        (handler-case
+            (progn
+              (setf path (funcall save-output combined ".txt"))
+              (setf where
+                    (format nil
+                            "[Full output: ~A (read it with offset/limit)]"
+                            path)))
+          (error (condition)
+            (setf path nil)
+            (setf where
+                  (format nil
+                          "[Could not save the full output: ~A]"
+                          condition))))
+        (values
+         (cons (list :type :text
+                     :text
+                     (format nil
+                             "Warning: truncated output (original token count: ~D)~%Total output lines: ~D~%~%~A~%~%~A"
+                             (ceiling total 4)
+                             lines
+                             text
+                             where))
+               (loop for block in blocks
+                     when (eq (mcp-content-type block) :image)
+                       collect block))
+         path)))))

@@ -103,6 +103,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 截断输出临时文件 | v1.3.0 `output-files.ts` | done：bash 和 output accumulator 的完整输出用 `O_EXCL` 建在临时目录，权限 `#o600`；已有名字（含符号链接）失败，不跟着链接写。codemode 写图仍不在这次 |
 | 启动 logo | v1.3.0 `pi-logo.ts` | done：能画半块的终端用珊瑚/蓝/黄两行标记，版本跟在第一行，第一条提示跟在第二行；truecolor 用 `38;2`，否则用 256 色。Apple Terminal 改为珊瑚 `c`、黄色 `adr`。点击播放 3D 彩蛋仍不在这次 |
 | Radius 登录 shimmer | v1.3.0 `radius-login-selector.ts` | done：顶层 `/login` 在账户和 API key 之后加上 `Sign in with Radius`；选中时这几个字按 logo 四色、每秒 10 字做 sRGB smoothstep。状态后缀仍用现有 configured 文案。50ms 重画只在该项选中时发生 |
+| MCP 结果截断 | v1.3.0 `limitMcpContent` | done：文本块按换行拼起来，超过 20KB 时各留一半字节，中间标出省掉的码点数，只在 UTF-8 字符边界切开；原文写入 `cadr-mcp` 临时文件（`#o600`），模型看到 token 估算、行数和路径。存盘失败只留下错误。图片块跟在警告后面。连接、OAuth 和资源读取仍不在这次 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

@@ -87,3 +87,62 @@
       (cadr-cli:output-accumulator-close-temp-file accumulator)
       (when (and path (probe-file path))
         (delete-file path)))))
+
+(test mcp-content-over-the-byte-budget-is-cut-in-the-middle
+  ;; pi@71023aec1 limitMcpContent / truncateMiddle.
+  (let ((short
+          (list (list :type :text :text "ok")
+                (list :type :image :data "img"))))
+    (multiple-value-bind (content path)
+        (cadr-cli::limit-mcp-content short :max-bytes 20)
+      (is (null path))
+      (is (equal short content))))
+  (let ((boundary (make-string (* 20 1024) :initial-element #\a)))
+    (multiple-value-bind (content path)
+        (cadr-cli::limit-mcp-content
+         (list (list :type :text :text boundary)))
+      (is (null path))
+      (is (string= boundary (getf (first content) :text)))))
+  (let* ((source (concatenate 'string "aaaa" "你" "bbbb"))
+         (image (list :type :image :data "img"))
+         (path nil))
+    (unwind-protect
+         (multiple-value-bind (content saved)
+             (cadr-cli::limit-mcp-content
+              (list (list :type :text :text source)
+                    image)
+              :max-bytes 9)
+           (setf path saved)
+           (is (cl-ppcre:scan "/cadr-mcp-[0-9a-f]{16}\\.txt$" path))
+           (is (= #o600 (output-file-mode path)))
+           (is (string= source (uiop:read-file-string path)))
+           (is (= 2 (length content)))
+           (is (eq :image (getf (second content) :type)))
+           (is (string=
+                (format nil
+                        "Warning: truncated output (original token count: ~D)~%Total output lines: 1~%~%aaaa…1 chars truncated…bbbb~%~%[Full output: ~A (read it with offset/limit)]"
+                        (ceiling 11 4)
+                        path)
+                (getf (first content) :text))))
+      (when (and path (probe-file path))
+        (delete-file path))))
+  (multiple-value-bind (content path)
+      (cadr-cli::limit-mcp-content
+       (list (list :type :text :text "abcdef"))
+       :max-bytes 4
+       :save-output (lambda (data extension)
+                      (declare (ignore data extension))
+                      (error "disk full")))
+    (is (null path))
+    (is (search "Could not save the full output: disk full"
+                (getf (first content) :text))))
+  (let ((joined nil))
+    (cadr-cli::limit-mcp-content
+     (list (list :type :text :text "aa")
+           (list :type :text :text "bb"))
+     :max-bytes 4
+     :save-output (lambda (data extension)
+                    (declare (ignore extension))
+                    (setf joined data)
+                    "saved.txt"))
+    (is (string= (format nil "aa~%bb") joined))))
