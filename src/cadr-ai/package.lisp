@@ -90,6 +90,7 @@
    #:assistant-message-end-turn
    #:assistant-message-diagnostics
    #:assistant-message-timestamp
+   #:assistant-message-duration-ms
    #:assistant-message-provider-thinking-level
    #:assistant-message-diagnostic
    #:make-assistant-message-diagnostic

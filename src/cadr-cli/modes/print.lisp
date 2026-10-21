@@ -214,6 +214,11 @@
                (cadr-ai:assistant-message-stop-reason message))
               "timestamp"
               (cadr-ai:assistant-message-timestamp message))))
+       (when (integerp
+              (cadr-ai:assistant-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:assistant-message-duration-ms message)))
        (when (cadr-ai:assistant-message-response-id message)
          (cadr-ai::json-put
           object "responseId"

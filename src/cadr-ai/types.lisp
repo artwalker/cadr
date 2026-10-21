@@ -146,6 +146,9 @@
   (end-turn nil :type (or null boolean))
   (diagnostics nil :type list)
   (timestamp (unix-milliseconds) :type integer)
+  ;; Milliseconds from the assistant stream's creation to its done or
+  ;; error event. Nil when this message was not timed by that stream.
+  (duration-ms nil :type (or null integer))
   (provider-thinking-level nil :type (or null string)))
 
 (defstruct tool-result-message

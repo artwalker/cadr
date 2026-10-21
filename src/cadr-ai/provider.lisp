@@ -503,6 +503,7 @@ string. Returns the buffer to store back. Per-delta
                (copy-list
                 (assistant-message-diagnostics message))
                :timestamp (assistant-message-timestamp message)
+               :duration-ms (assistant-message-duration-ms message)
                :provider-thinking-level
                (assistant-message-provider-thinking-level message))
               transformed))))
@@ -588,8 +589,44 @@ string. Returns the buffer to store back. Per-delta
           (nconc (assistant-message-content message) (list block)))
     index))
 
+(defvar *assistant-stream-started-wall* nil
+  "Unix milliseconds when the current assistant stream was created.")
+
+(defvar *assistant-stream-started-mono* nil
+  "Monotonic clock when the current assistant stream was created.")
+
+(defvar *assistant-stream-closed-p* nil
+  "True after this assistant stream has already emitted done or error.")
+
+(defun stamp-assistant-stream-duration (message)
+  ;; pi@71023aec1 event-stream.ts AssistantMessageEventStream.#time.
+  ;; The monotonic clock starts with the stream. A message that already
+  ;; has durationMs, or whose timestamp is earlier than the stream, was
+  ;; started elsewhere and stays untimed. A later terminal event does
+  ;; not time a second message.
+  (unless (integerp *assistant-stream-started-mono*)
+    (return-from stamp-assistant-stream-duration nil))
+  (unless *assistant-stream-closed-p*
+    (setf *assistant-stream-closed-p* t)
+    (when (and (typep message 'assistant-message)
+               (null (assistant-message-duration-ms message))
+               (integerp (assistant-message-timestamp message))
+               (integerp *assistant-stream-started-wall*)
+               (>= (assistant-message-timestamp message)
+                   *assistant-stream-started-wall*))
+      (setf (assistant-message-duration-ms message)
+            (max
+             0
+             (round
+              (* 1000d0
+                 (/ (- (get-internal-real-time)
+                       *assistant-stream-started-mono*)
+                    internal-time-units-per-second))))))))
+
 (defun emit-event (emit type message
                    &key content-index delta content tool-call reason)
+  (when (member type '(:done :error))
+    (stamp-assistant-stream-duration message))
   (funcall emit
            (make-stream-event
             :type type
@@ -870,7 +907,10 @@ string. Returns the buffer to store back. Per-delta
     (error "Virtual model ~A/~A must be routed before streaming"
            (string-downcase (symbol-name (model-provider model)))
            (model-id model)))
-  (let* ((transcript (ensure-transcript-context context))
+  (let* ((*assistant-stream-started-wall* (unix-milliseconds))
+         (*assistant-stream-started-mono* (get-internal-real-time))
+         (*assistant-stream-closed-p* nil)
+         (transcript (ensure-transcript-context context))
          (max-tokens
            (clamp-max-tokens-to-context
             model transcript

@@ -131,6 +131,7 @@
                              (:file "models-runtime-test")
                              (:file "opencode-inference-test")
                              (:file "faux-provider-test")
+                             (:file "assistant-duration-test")
                              (:file "openai-completions-test")
                              (:file "image-model-test")
                              (:file "image-generation-test")

@@ -510,6 +510,11 @@
            'vector
            #'assistant-diagnostic-to-json
            (cadr-ai:assistant-message-diagnostics message))))
+       (when (integerp
+              (cadr-ai:assistant-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:assistant-message-duration-ms message)))
        (when (cadr-ai:assistant-message-provider-thinking-level
               message)
          (cadr-ai::json-put
@@ -783,6 +788,8 @@
              (or (getf extra :diagnostics) #()))
             :provider-thinking-level
             (getf extra :provider-thinking-level)
+            :duration-ms
+            (json-duration-ms (getf extra :duration-ms))
             :timestamp
             (session-json-message-timestamp object)))
           ((member type '("toolResult" "tool_result")
@@ -877,6 +884,9 @@
         :provider-thinking-level
         (json-get-either
          object "providerThinkingLevel" "provider_thinking_level")
+        :duration-ms
+        (json-duration-ms
+         (json-get-either object "durationMs" "duration_ms"))
         :timestamp (cadr-ai::json-get object "timestamp")))
       ((member type '("toolResult" "tool_result")
                :test #'string=)
@@ -1270,6 +1280,12 @@
          (emit-json-value
           buffer
           (map 'vector #'assistant-diagnostic-to-json diagnostics)))
+       (when (integerp
+              (cadr-ai:assistant-message-duration-ms message))
+         (emit-json-key buffer nil "durationMs")
+         (emit-json-value
+          buffer
+          (cadr-ai:assistant-message-duration-ms message)))
        (when error-message
          (emit-json-key buffer nil "errorMessage")
          (emit-json-value buffer error-message))

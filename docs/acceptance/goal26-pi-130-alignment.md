@@ -156,6 +156,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | GitHub Copilot 的 GPT-6 与 100 万上下文 | v1.3.0 `generate-models.ts` | done：目录里没有时补上 `claude-opus-5.5`、`gpt-6-sol`、`gpt-6-luna`。两个 GPT 走 `openai-responses`，上下文 1000000，最大输出 128000，`off` 是 `none`，`minimal` 不支持，其余档原样。长上下文档从 272000 起，输入和 cache 乘 2，输出乘 1.5。Sol 是 2/10/0.2/2.5，Luna 是 0.1/0.5/0.01/0.125。Opus 5.5 走 `anthropic-messages`，费用 4/20/0.2/5，`off` 和 `minimal` 不支持，compat 是强制 adaptive thinking、不支持 temperature、支持对话中途系统消息。扩展上下文名单里已有的模型窗口改成 1000000，所以 `gpt-6-astra` 从 1050000 收到 1000000。名单里没有的 `gpt-5.6-luna` 仍是 1050000。目录里本来就没有的 `claude-opus-4.6` 不补 |
 | 自定义消息触发的 before_agent_start | v1.3.0 `agent-session.ts` #10739 | done：空闲时 `triggerTurn` 不再把自定义消息改成用户消息。钩子看到 `:message-type :custom` 和原来的消息，没有 `:prompt`。这段内容在这次运行里只出现一次。`nextTurn` 队列和钩子返回的消息跟在它后面。钩子返回的 system prompt 是这次请求的系统提示，并且这次运行一直带着它。钩子执行时会话已经是 busy。正在跑的 `triggerTurn` 仍把内容转成用户消息并 steer。自定义消息进入实时转录时按原来的自定义消息画出来 |
 | 工具执行时间 | v1.3.0 `agent-loop.ts` #10549 | done：真正执行过的工具结果带整数 `durationMs`，只计 `execute` 本身。抛出的 `tool-execution-error` 也带着这段时间。没找到工具和参数错误的结果没有这段时间。`after` 钩子换成没有时间的新结果时，原来的时间抄过去。会话 JSONL 和打印 JSON 在有整数时写出 `durationMs`，读回时 `0` 保留。bash 和 powershell 结束后的 `Took` 用记录的毫秒，不再用墙上时钟；只有记录、没有开始时间也能显示。正在跑的行仍用墙上时钟。codemode 计时和助手消息的 `durationMs` 不在这次 |
+| 助手消息耗时 | v1.3.0 `event-stream.ts` #10549 | done：一次助手流在 `done` 或 `error` 上记下从建流到此刻的毫秒 `durationMs`。消息已经有这段时间，或它的时间戳早于这次流，就保持原样。同一次流后面的终态不再计时。没进这次流的消息没有这段时间。会话 JSON 和打印 JSON 在有整数时写出 `durationMs`，读回保留 `0`。codemode 不在这次 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

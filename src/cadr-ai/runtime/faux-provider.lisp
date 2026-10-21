@@ -417,6 +417,8 @@
 (defun faux-emit
     (emit type message
      &key content-index delta content tool-call reason)
+  (when (member type '(:done :error))
+    (stamp-assistant-stream-duration message))
   (funcall
    emit
    (make-stream-event
@@ -521,6 +523,9 @@
 (defun faux-stream
     (handle model context on-event
      &rest options &key abort-p &allow-other-keys)
+  (let ((*assistant-stream-started-wall* (unix-milliseconds))
+        (*assistant-stream-started-mono* (get-internal-real-time))
+        (*assistant-stream-closed-p* nil))
   (multiple-value-bind (message resolution-error-p)
       (faux-resolve handle model context options)
     (let ((partial (faux-partial-message message))
@@ -623,4 +628,4 @@
       (faux-emit
        #'emit-event :done message
        :reason (assistant-message-stop-reason message))
-      (finish message)))))
+      (finish message))))))

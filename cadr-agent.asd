@@ -115,6 +115,7 @@
                              (:file "extensions-wave3-test")
                              (:file "custom-trigger-test")
                              (:file "tool-duration-test")
+                             (:file "assistant-duration-test")
                              (:file "goal26-extension-events-test")
                              (:file "goal12-extension-api-test")
                              (:file "goal24-extension-tool-schema-test")
