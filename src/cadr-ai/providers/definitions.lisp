@@ -576,7 +576,7 @@
      :name "OpenCode Zen"
      :protocol :openai-completions
      :protocols (:anthropic-messages :google-generative-ai :openai-completions :openai-responses)
-     :base-url "https://opencode.ai/zen/v1"
+     :base-url "https://opencode.ai/inference/v1"
      :auth-types (:api-key)
      :default-model "kimi-k2.6"
      :key-environment "OPENCODE_API_KEY"
@@ -597,8 +597,8 @@
      :baseline-source "packages/ai/src/providers/opencode-go.ts:9"
      :name "OpenCode Go"
      :protocol :openai-completions
-     :protocols (:anthropic-messages :openai-completions :openai-responses)
-     :base-url "https://opencode.ai/zen/go/v1"
+     :protocols (:anthropic-messages :google-generative-ai :openai-completions :openai-responses)
+     :base-url "https://opencode.ai/inference/go/v1"
      :auth-types (:api-key)
      :default-model "kimi-k2.6"
      :key-environment "OPENCODE_API_KEY"

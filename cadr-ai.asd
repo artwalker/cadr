@@ -128,6 +128,7 @@
                              (:file "goal24-radius-offline-catalog-test")
                              (:file "bedrock-error-metadata-test")
                              (:file "models-runtime-test")
+                             (:file "opencode-inference-test")
                              (:file "faux-provider-test")
                              (:file "openai-completions-test")
                              (:file "image-model-test")

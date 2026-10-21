@@ -360,6 +360,40 @@
     (setf (getf row :provider) :azure))
   row)
 
+(defun opencode-inference-base-url (url)
+  ;; pi@71023aec1 generate-models.ts: Zen and Go left /zen for /inference.
+  ;; Replace the /go host first so a later /zen rewrite cannot eat it.
+  (cond
+    ((not (stringp url)) url)
+    ((uiop:string-prefix-p "https://opencode.ai/zen/go" url)
+     (concatenate
+      'string
+      "https://opencode.ai/inference/go"
+      (subseq url (length "https://opencode.ai/zen/go"))))
+    ((uiop:string-prefix-p "https://opencode.ai/zen" url)
+     (concatenate
+      'string
+      "https://opencode.ai/inference"
+      (subseq url (length "https://opencode.ai/zen"))))
+    (t url)))
+
+(defun apply-opencode-inference-endpoints (row)
+  (when (member (getf row :provider) '(:opencode :opencode-go))
+    (setf (getf row :base-url)
+          (opencode-inference-base-url (getf row :base-url)))
+    ;; The catalog snapshot still forces MiniMax M2.7 through
+    ;; openai-completions. The pin removed that override: OpenCode Go
+    ;; rejects the completions protocol for this model.
+    (when (and (eq (getf row :provider) :opencode-go)
+               (string= (getf row :id) "minimax-m2.7"))
+      (setf (getf row :api) :anthropic-messages)
+      (let ((base (getf row :base-url)))
+        (when (and (stringp base)
+                   (uiop:string-suffix-p base "/v1"))
+          (setf (getf row :base-url)
+                (subseq base 0 (- (length base) 3)))))))
+  row)
+
 (defun register-azure-deepseek-model ()
   ;; pi@71023aec1 generate-models.ts azureDeepSeekModels. Foundry rejects
   ;; DeepSeek's thinking field and prompt-cache parameters, and it keeps
@@ -401,13 +435,14 @@
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-azure-provider-id
-             (apply-vercel-ai-gateway-empty-signature
-              (apply-fireworks-effort-override
-               (apply-fireworks-tool-references-override
-                (apply-anthropic-prompt-cache-override
-                 (apply-gpt-5-6-pricing-override
-                  (copy-list row)))))))))
+            (apply-opencode-inference-endpoints
+             (apply-azure-provider-id
+              (apply-vercel-ai-gateway-empty-signature
+               (apply-fireworks-effort-override
+                (apply-fireworks-tool-references-override
+                 (apply-anthropic-prompt-cache-override
+                  (apply-gpt-5-6-pricing-override
+                   (copy-list row))))))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
