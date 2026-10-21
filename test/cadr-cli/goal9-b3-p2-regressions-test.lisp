@@ -150,8 +150,8 @@
             plain)))))))
 
 (test goal9-b3-cold-startup-content-is-top-aligned
-  (let* (         (version-line
-           (format nil "cadr v~A" (cadr-ai::cadr-version)))
+  (let* ((version-line
+          (format nil "cadr v~A" (cadr-ai::cadr-version)))
          (logo-line
            (concatenate 'string "▀▀█  "
                         (subseq version-line (length "cadr "))))
