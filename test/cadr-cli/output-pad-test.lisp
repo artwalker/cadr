@@ -90,3 +90,23 @@
              :output-pad
              (cadr-cli::tui-state-output-pad state)))))
     (is (equal direct through-state))))
+
+(test user-message-keeps-one-copy-of-each-line
+  (cadr-tui:set-current-theme :dark)
+  (let* ((entry
+           (cadr-cli::make-tui-entry
+            :type :user
+            :text (format nil "alpha~%beta")))
+         (lines
+           (cadr-cli::render-tui-entry entry 40 :output-pad 1))
+         (plain
+           (mapcar
+            (lambda (line)
+              (string-right-trim
+               '(#\Space)
+               (cadr-cli::strip-ansi line)))
+            lines)))
+    (is (= 1 (count " alpha" plain :test #'string=)))
+    (is (= 1 (count " beta" plain :test #'string=)))
+    (is (not (find "alphaalpha" plain :test #'search)))
+    (is (not (find "betabeta" plain :test #'search)))))

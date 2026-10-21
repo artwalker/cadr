@@ -146,6 +146,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 行首空白后的斜杠命令 | v1.3.0 `autocomplete.ts` #10218 | done：` /`、`  /mod`、Tab 加 `/mod` 都能补成对应缩进的 `/model `。`  /model son` 把参数补成 `sonnet`，前面的空格留着 |
 | 切片边界上的 ANSI 顺序 | v1.3.0 `utils.ts` #10169 | done：`slice-by-column` 从第 3 列切 `\x1b[32mfoo\x1b[39m bar` 得到 `\x1b[32m\x1b[39m bar`。窗口前的颜色码写在边界上的复位码前面，选区和搜索高亮不会把后面的字染上前一个颜色 |
 | 多行语法颜色 | v1.3.0 `syntax-highlight.ts` #10356 | done：Python 三引号文档字符串每一行单独上色，空行保持空行。`"""`、`line one`、`line two` 各自有颜色，`after` 没有。JavaScript 模板里的 `${name}` 用正文色，不再跟着字符串色。HTML 高亮片段里的换行也按行上色 |
+| 用户消息只保留一份 | v1.3.0 `user-message.ts` | done：背景直接加在 markdown 的每一行上，没有外层盒子再存一份整行。`alpha` 和 `beta` 各出现一次 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。
