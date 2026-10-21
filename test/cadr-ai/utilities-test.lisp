@@ -24,8 +24,8 @@ second" (cadr-ai:content-text content)))
     (is (string= "hello" (cadr-ai:content-text "hello")))))
 
 (test token-estimation-counts-javascript-utf16-code-units
-  ;; The fixed TypeScript baseline estimates tokens with text.length / 4.
   ;; JavaScript length counts non-BMP characters as two UTF-16 code units.
+  ;; pi@71023aec1 divides those units by 3.5.
   (is (= 2 (cadr-ai:estimate-text-tokens "abc🙂")))
   (is (= 2 (cadr-ai::estimate-content-tokens "abc🙂")))
   (is (= 2
@@ -150,10 +150,10 @@ second" (cadr-ai:content-text content)))
               :content (make-string 4000 :initial-element #\x)
               :timestamp 300)))))
     (let ((estimate (cadr-ai:estimate-context-tokens context)))
-      (is (= 1005 (cadr-ai:context-usage-estimate-tokens estimate)))
+      (is (= 1149 (cadr-ai:context-usage-estimate-tokens estimate)))
       (is (= 0
              (cadr-ai:context-usage-estimate-usage-tokens estimate)))
-      (is (= 1005
+      (is (= 1149
              (cadr-ai:context-usage-estimate-trailing-tokens estimate)))
       (is (null
            (cadr-ai:context-usage-estimate-last-usage-index estimate))))))
@@ -176,13 +176,47 @@ second" (cadr-ai:content-text content)))
             (cadr-ai:make-user-message
              :content "tail" :timestamp 500)))))
     (let ((estimate (cadr-ai:estimate-context-tokens context)))
-      (is (= 2001 (cadr-ai:context-usage-estimate-tokens estimate)))
+      (is (= 2002 (cadr-ai:context-usage-estimate-tokens estimate)))
       (is (= 2000
              (cadr-ai:context-usage-estimate-usage-tokens estimate)))
-      (is (= 1
+      (is (= 2
              (cadr-ai:context-usage-estimate-trailing-tokens estimate)))
       (is (= 3
              (cadr-ai:context-usage-estimate-last-usage-index estimate))))))
+
+(test output-limit-reserves-3-5-characters-per-token
+  ;; pi #10497. 3500 new characters are 1000 tokens, so a 10000-token
+  ;; window with a 4096 safety margin leaves 2904 for the reply.
+  (let* ((model
+           (cadr-ai:make-model
+            :id "test-model"
+            :provider :openai
+            :api :openai-responses
+            :context-window 10000
+            :max-tokens 8000))
+         (context
+           (cadr-ai:make-context
+            :messages
+            (list
+             (cadr-ai:make-assistant-message
+              :content (list (cadr-ai:make-text-content :text "kept"))
+              :usage (cadr-ai:make-usage :input 2000)
+              :stop-reason :stop
+              :timestamp 100)
+             (cadr-ai:make-user-message
+              :content (make-string 3500 :initial-element #\x)
+              :timestamp 200))))
+         (estimate (cadr-ai:estimate-context-tokens context)))
+    (is (= 3000 (cadr-ai:context-usage-estimate-tokens estimate)))
+    (is (= 2000
+           (cadr-ai:context-usage-estimate-usage-tokens estimate)))
+    (is (= 1000
+           (cadr-ai:context-usage-estimate-trailing-tokens estimate)))
+    (is (= 0
+           (cadr-ai:context-usage-estimate-last-usage-index estimate)))
+    (is (= 2904
+           (cadr-ai::clamp-max-tokens-to-context
+            model context 8000)))))
 
 (test overflow-detection-matches-provider-matrix
   (dolist

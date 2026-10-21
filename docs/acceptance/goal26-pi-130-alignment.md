@@ -123,6 +123,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | `PI_CLIPBOARD_OSC52` | v1.3.0 `clipboard.ts` #10826 | done：值为 `1` 时，本地剪贴板写成功之后再向终端发 OSC 52，没有 SSH 标记也发。其它值不发。有显示器的 Linux 在本地写入失败时仍报错，不把未验证的 OSC 52 当成成功 |
 | 设置路径里的 `~` | v1.3.0 `package-manager.ts` #10765 | done：`extensions`、`skills`、`prompts`、`themes` 里的 `!pattern`、`+path`、`-path` 会把开头的 `~` 或 `~/` 展开成 `HOME`。`!~/extra/skills/glob-*` 能排除对应技能，`-~/...` 按展开后的路径精确排除，`+~/...` 能把被排除的项加回来。`~user` 不展开 |
 | 打印模式截断退出 | v1.3.0 `print-mode.ts` #10799 | done：`-p` 文本模式在最终回复的 stop reason 是 `length` 时仍打印已有正文，stderr 写 `Response was truncated: the model reached its output token limit.`，退出码 1。JSON 模式不因此改退出码 |
+| 上下文估算 3.5 字/token | v1.3.0 `estimate.ts` #10497 | done：新文本按 UTF-16 码元除以 3.5 向上取整。3500 个新字符在已用 2000 token 时估成 1000，10000 的窗口扣掉 4096 安全量后输出上限是 2904。`stream-chat` 和 `complete-chat` 在发请求前做这个钳制 |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

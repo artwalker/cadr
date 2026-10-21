@@ -477,7 +477,8 @@
 (test goal17-direct-user-bash-enters-agent-session-and-context
   ;; pi@71023aec1 agent-session.ts:2803-2824 records every direct bash result
   ;; before the footer asks getContextUsage().  This is observable even before
-  ;; the next provider turn: a 50 KiB tail must move the 128k footer to 10.0%.
+  ;; the next provider turn: a 50 KiB tail is about 11.4% of a 128k window
+  ;; at 3.5 characters per token.
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))
            (cwd (merge-pathnames "cwd/" root))
@@ -518,7 +519,7 @@
         (is (typep decoded 'cadr-agent:bash-execution-message))
         (is (string= "produce"
                      (cadr-agent:bash-execution-message-command decoded)))
-        (is (< 9.9d0 percent 10.1d0))))))
+        (is (< 11.2d0 percent 11.6d0))))))
 
 (test goal17-direct-user-bash-result-contract-preserves-render-metadata
   (let ((result

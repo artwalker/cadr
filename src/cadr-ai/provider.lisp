@@ -709,6 +709,10 @@ string. Returns the buffer to store back. Per-delta
       (progn
         (check-abort abort-p)
         (let* ((transcript (ensure-transcript-context context))
+               (max-tokens
+                 (clamp-max-tokens-to-context
+                  model transcript
+                  (or max-tokens (model-max-tokens model))))
                (request (build-request provider model transcript
                                        :stream-p nil
                                        :max-tokens max-tokens
@@ -798,6 +802,10 @@ string. Returns the buffer to store back. Per-delta
            (string-downcase (symbol-name (model-provider model)))
            (model-id model)))
   (let* ((transcript (ensure-transcript-context context))
+         (max-tokens
+           (clamp-max-tokens-to-context
+            model transcript
+            (or max-tokens (model-max-tokens model))))
          (message
            (empty-assistant-message
             model reasoning
