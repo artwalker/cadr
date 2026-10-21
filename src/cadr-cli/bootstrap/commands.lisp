@@ -594,26 +594,54 @@
                 (getf initial-scope-entry
                       :thinking)))
          (_startup-model-config
-           (when startup-model
-             (let ((matched-provider-p
-                     (and
-                      (cli-arguments-provider command)
-                      (string-equal
-                       (provider-key
-                        (cadr-ai:model-provider startup-model))
-                       (provider-key
-                        (cli-arguments-provider command))))))
-               (setf
-                config
-                (provider-config-for-model
-                 model-registry startup-model
-                 :api-key
-                 (and matched-provider-p
-                      (cli-arguments-api-key command))
-                 :base-url
-                 (and matched-provider-p
-                      (cli-arguments-base-url command))
-                 :allow-missing-auth-p t)))))
+           (cond
+             ((cli-arguments-model command)
+              (multiple-value-bind
+                    (resolved-model error thinking warning)
+                  (resolve-cli-model
+                   model-registry
+                   (cli-arguments-model command)
+                   :provider (cli-arguments-provider command)
+                   :inline-api-key-p
+                   (cadr-ai::non-empty-string-p
+                    (cli-arguments-api-key command))
+                   :explicit-thinking
+                   (cli-arguments-thinking command))
+                (when error
+                  (error 'cadr-ai:configuration-error
+                         :message error))
+                (when warning
+                  (format frontend-output "Warning: ~A~%" warning)
+                  (finish-output frontend-output))
+                (when resolved-model
+                  (setf config
+                        (provider-config-for-model
+                         model-registry resolved-model
+                         :api-key (cli-arguments-api-key command)
+                         :base-url (cli-arguments-base-url command)
+                         :allow-missing-auth-p t))
+                  (unless (cli-arguments-thinking command)
+                    (setf startup-thinking thinking)))))
+             (startup-model
+              (let ((matched-provider-p
+                      (and
+                       (cli-arguments-provider command)
+                       (string-equal
+                        (provider-key
+                         (cadr-ai:model-provider startup-model))
+                        (provider-key
+                         (cli-arguments-provider command))))))
+                (setf
+                 config
+                 (provider-config-for-model
+                  model-registry startup-model
+                  :api-key
+                  (and matched-provider-p
+                       (cli-arguments-api-key command))
+                  :base-url
+                  (and matched-provider-p
+                       (cli-arguments-base-url command))
+                  :allow-missing-auth-p t))))))
          ;; Baseline model-resolver.ts:650-651 — with no authenticated
          ;; model and no explicit --model/--provider the session keeps a
          ;; NIL model (the footer sentinel "no-model"); sending then
