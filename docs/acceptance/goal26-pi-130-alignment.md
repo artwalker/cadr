@@ -88,6 +88,7 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | theme token 重解析 | 枚举假阳性 | done：56 个调色板 token 在 `theme-tokens.ts` `THEME_TOKENS`，与 `theme.lisp` kebab-case 一一对应；`pageBg`/`cardBg`/`infoBg` 是 export 色，已在调色板外。枚举「removed 56」是 `theme.ts` 联合类型迁走造成的假阳性 |
 | skill slash 按裸名计分 | v1.3.0 `autocomplete.ts` | done：`skill:` 先按裸名 fuzzy，未中的再按全名，裸名命中排在前面 |
 | `--continue` 最近会话 | v1.3.0 `findMostRecentSession` | done：匹配 cwd 的 jsonl 按文件 mtime 取最新；同一秒 mtime 再比消息时间 |
+| Responses `api-error` provider | v1.3.0 `openai-responses.ts` | done：request-spec 与 SSE `api-error` 用模型 provider；`response.failed` / `error` 文案跟 shared stream |
 
 v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对照 tip；
 不以旧 PR 是否合并为完成条件。

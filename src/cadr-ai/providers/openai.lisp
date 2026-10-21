@@ -16,6 +16,28 @@
          (trimmed (string-right-trim "_" sanitized)))
     trimmed))
 
+(defun responses-failure-text (response)
+  ;; pi openai-responses-shared.ts response.failed
+  (let* ((error-object (json-get response "error"))
+         (reason (json-get (json-get response "incomplete_details")
+                           "reason")))
+    (cond
+      ((hash-table-p error-object)
+       (let ((code (json-get error-object "code"))
+             (message (json-get error-object "message")))
+         (format nil "~A: ~A"
+                 (if (non-empty-string-p code) code "unknown")
+                 (if (non-empty-string-p message) message "no message"))))
+      ((non-empty-string-p reason)
+       (format nil "incomplete: ~A" reason))
+      (t "Unknown error (no error details in response)"))))
+
+(defun responses-event-error-text (payload)
+  ;; pi throws `Error Code ${event.code}: ${event.message}`.
+  (format nil "Error Code ~A: ~A"
+          (or (json-get payload "code") "undefined")
+          (or (json-get payload "message") "undefined")))
+
 (defun responses-normalize-tool-call-id (id target source)
   (if (not (member (model-provider target)
                    '(:openai :openai-codex :opencode)
@@ -553,7 +575,7 @@
       (model-headers model))
      :payload payload
      :stream-p stream-p
-     :provider :openai)))
+     :provider (model-provider model))))
 
 (defun parse-openai-output (output)
   (loop for item across (or output #())
@@ -882,17 +904,15 @@
              (setf (assistant-message-stop-reason message) :tool-use))))
         ((string= type "response.failed")
          (setf (provider-stream-state-terminal-p state) t)
-         (let* ((response (json-get payload "response"))
-                (error-object (json-get response "error")))
-           (error 'api-error
-                  :provider :openai
-                  :status 200
-                  :message (or (json-get error-object "message")
-                               "OpenAI response failed"))))
+         (error 'api-error
+                :provider (assistant-message-provider message)
+                :status 200
+                :message
+                (responses-failure-text
+                 (json-get payload "response"))))
         ((string= type "error")
          (error 'api-error
-                :provider :openai
+                :provider (assistant-message-provider message)
                 :status 200
-                :message (or (json-get payload "message")
-                             "OpenAI stream error")))))
+                :message (responses-event-error-text payload)))))
   nil))
