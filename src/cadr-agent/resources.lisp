@@ -753,12 +753,14 @@
           '(#\Space #\Tab #\Newline #\Return #\Page #\Vt)))
 
 (defun parse-command-args (text)
+  ;; Opening a quote starts a token, so "" and '' stay as empty arguments.
   (let ((arguments nil)
         (current
           (make-array
            16 :element-type 'character
            :adjustable t :fill-pointer 0))
-        (quote nil))
+        (quote nil)
+        (token-p nil))
     (loop for character across (or text "")
           do
           (cond
@@ -768,14 +770,17 @@
                  (vector-push-extend character current)))
             ((or (char= character #\")
                  (char= character #\'))
-             (setf quote character))
+             (setf quote character
+                   token-p t))
             ((command-arg-whitespace-p character)
-             (when (plusp (fill-pointer current))
+             (when token-p
                (push (copy-seq current) arguments)
-               (setf (fill-pointer current) 0)))
+               (setf (fill-pointer current) 0
+                     token-p nil)))
             (t
-             (vector-push-extend character current))))
-    (when (plusp (fill-pointer current))
+             (vector-push-extend character current)
+             (setf token-p t))))
+    (when token-p
       (push (copy-seq current) arguments))
     (nreverse arguments)))
 
