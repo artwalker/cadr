@@ -20,6 +20,56 @@
           (format nil "~C~Cok" #\Escape character)))))
   (signals type-error (cadr-cli::strip-ansi 42)))
 
+(test bash-output-strips-ansi-split-across-chunks
+  ;; pi@71023aec1 #10504. A color or OSC sequence split across bash
+  ;; chunks stays out of the streamed text. A sequence longer than the
+  ;; hold window is emitted immediately, with the escape byte removed.
+  (labels ((chunks (parts)
+             (let ((sanitizer
+                     (cadr-cli::make-bash-output-sanitizer))
+                   (streamed nil))
+               (dolist (part parts)
+                 (let ((text
+                         (cadr-cli::bash-take-output-chunk
+                          sanitizer part)))
+                   (when (plusp (length text))
+                     (push text streamed))))
+               (let ((tail
+                       (cadr-cli::bash-flush-output sanitizer)))
+                 (when (plusp (length tail))
+                   (push tail streamed)))
+               (apply #'concatenate 'string
+                      (nreverse streamed)))))
+    (is (string=
+         (format nil "ERROR: file.py:1~%")
+         (chunks
+          (list
+           (format nil "~C[31mERROR: file.py:1~C[0" #\Escape #\Escape)
+           (format nil "m~%")))))
+    (is (string=
+         (format nil "beforeafter~%")
+         (chunks
+          (list
+           (format nil "before~C" #\Escape)
+           (format nil "[32mafter~%")))))
+    (is (string=
+         (format nil "ab~%")
+         (chunks
+          (list
+           (format nil "a~C]0;window " #\Escape)
+           "title"
+           (format nil "~C" #\Escape)
+           (format nil "\\b~%")))))
+    (let* ((long (make-string 300 :initial-element #\x))
+           (sanitizer (cadr-cli::make-bash-output-sanitizer))
+           (first
+             (cadr-cli::bash-take-output-chunk
+              sanitizer
+              (format nil "~C]~A" #\Escape long))))
+      (is (string= (concatenate 'string "]" long) first))
+      (is (string= ""
+                   (cadr-cli::bash-flush-output sanitizer))))))
+
 (test goal16-cli-runtime-flags-use-only-cadr-environment
   (let ((previous-cadr-experimental
           (uiop:getenv "CADR_EXPERIMENTAL"))

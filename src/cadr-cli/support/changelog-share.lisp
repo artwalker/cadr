@@ -82,6 +82,67 @@
                   (write-char character output)
                   (incf index)))))))))
 
+(defconstant +max-pending-ansi-length+ 256)
+
+(let ((scanner nil))
+  (defun unfinished-ansi-at-end-scanner ()
+    ;; pi@71023aec1 ansi.ts unfinishedAnsiAtEndRegex. An OSC without
+    ;; its terminator, or a CSI without its final byte, at the end.
+    (or scanner
+        (setf scanner
+              (cl-ppcre:create-scanner
+               `(:sequence
+                 (:alternation
+                  (:sequence
+                   #\Escape #\]
+                   (:greedy-repetition
+                    0 nil
+                    (:alternation
+                     (:inverted-char-class
+                      ,(code-char 7)
+                      ,(code-char #x9c)
+                      #\Escape)
+                     (:sequence
+                      #\Escape
+                      (:negative-lookahead #\\)))))
+                  (:sequence
+                   (:char-class #\Escape ,(code-char #x9b))
+                   (:greedy-repetition
+                    0 nil
+                    (:char-class
+                     #\[ #\\ #\] #\( #\) #\# #\; #\?))
+                   (:greedy-repetition
+                    0 1
+                    (:sequence
+                     (:greedy-repetition 1 4 :digit-class)
+                     (:greedy-repetition
+                      0 nil
+                      (:sequence
+                       (:char-class #\; #\:)
+                       (:greedy-repetition
+                        0 4 :digit-class)))))))
+                 :end-anchor))))))
+
+(defun split-incomplete-ansi-suffix (value)
+  ;; pi@71023aec1 ansi.ts splitIncompleteAnsiSuffix
+  (unless (and (stringp value)
+               (or (find #\Escape value)
+                   (find (code-char #x9b) value)))
+    (return-from split-incomplete-ansi-suffix
+      (values value "")))
+  (let* ((window-start
+           (max 0 (- (length value)
+                     +max-pending-ansi-length+)))
+         (window (subseq value window-start)))
+    (multiple-value-bind (start)
+        (cl-ppcre:scan
+         (unfinished-ansi-at-end-scanner) window)
+      (if start
+          (let ((split-at (+ window-start start)))
+            (values (subseq value 0 split-at)
+                    (subseq value split-at)))
+          (values value "")))))
+
 (defun normalize-version-tag (version)
   (if (uiop:string-prefix-p "v" version)
       version

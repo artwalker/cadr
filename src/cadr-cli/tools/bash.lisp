@@ -265,6 +265,37 @@
       (format nil "~A~%~A" prefix command)
       command))
 
+(defstruct bash-output-sanitizer
+  (pending "" :type string))
+
+(defun bash-sanitize-output-text (text)
+  ;; pi@71023aec1 bash-executor.ts appendText
+  (remove #\Return
+          (sanitize-binary-output (strip-ansi text))))
+
+(defun bash-take-output-chunk (sanitizer chunk)
+  (multiple-value-bind (complete pending)
+      (split-incomplete-ansi-suffix
+       (concatenate 'string
+                    (bash-output-sanitizer-pending sanitizer)
+                    chunk))
+    (setf (bash-output-sanitizer-pending sanitizer) pending)
+    (bash-sanitize-output-text complete)))
+
+(defun bash-flush-output (sanitizer)
+  (let ((rest (bash-output-sanitizer-pending sanitizer)))
+    (setf (bash-output-sanitizer-pending sanitizer) "")
+    (bash-sanitize-output-text rest)))
+
+(defun write-sanitized-bash-output
+    (text capture full live-output)
+  (when (plusp (length text))
+    (write-string text capture)
+    (write-string text full)
+    (when live-output
+      (write-string text live-output)
+      (finish-output live-output))))
+
 (defun run-bash-command
     (cwd command timeout
      &key
@@ -320,13 +351,16 @@
            (sb-thread:make-thread
             (lambda ()
               (handler-case
-                  (let ((full (exclusive-output-stream output-path)))
+                  (let ((full (exclusive-output-stream output-path))
+                        (sanitizer (make-bash-output-sanitizer)))
                     (unwind-protect
                         (progn
                     ;; Match Node's pipe `data` contract: block for the first
                     ;; character, then drain the currently available burst
                     ;; into one bounded callback chunk.  Per-character flushes
                     ;; turn a normal command into thousands of render requests.
+                    ;; An escape sequence split across bursts stays pending
+                    ;; until its terminator, then strip-ansi removes it.
                     (let ((buffer (make-string 4096)))
                       (loop
                         for first =
@@ -353,13 +387,15 @@
                           (setf
                            last-output-time
                            (get-internal-real-time))
-                          (write-string buffer capture :end count)
-                          (write-string buffer full :end count)
-                          (when live-output
-                            (write-string buffer live-output :end count)
-                            (finish-output live-output))
+                          (write-sanitized-bash-output
+                           (bash-take-output-chunk
+                            sanitizer (subseq buffer 0 count))
+                           capture full live-output)
                           (when eof-p
                             (return)))))
+                      (write-sanitized-bash-output
+                       (bash-flush-output sanitizer)
+                       capture full live-output)
                       (when (open-stream-p full)
                         (close full)))))
                 (error (condition)
