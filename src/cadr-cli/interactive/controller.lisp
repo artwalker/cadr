@@ -1875,7 +1875,17 @@ interactive-mode.ts:5956-5960).")
            (multiple-value-bind (action value)
                (login-auth-type-route
                 provider-options
-                :generic-p (not provider-options-p))
+                :generic-p (not provider-options-p)
+                :radius-option
+                (unless provider-options-p
+                  (find-if
+                   (lambda (option)
+                     (and (eq :radius
+                              (oauth-selector-option-id option))
+                          (eq :oauth
+                              (oauth-selector-option-auth-type
+                               option))))
+                   (current-login-options))))
              (case action
                (:none
                 (status value))
@@ -3286,6 +3296,11 @@ interactive-mode.ts:5956-5960).")
                               (handle-event event)))))))
                       )
                     (tick-status-animation)
+                    (when (and (eq overlay-kind :login-method)
+                               (login-method-selector-state-p overlay)
+                               (login-method-radius-selected-p overlay)
+                               (login-method-note-radius-frame overlay))
+                      (request-render))
                     (when
                         (and
                          (typep (current-editor)

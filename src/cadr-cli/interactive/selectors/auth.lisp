@@ -13,7 +13,9 @@
             (:constructor
                 %make-login-method-selector-state))
   (title "Select authentication method:" :type string)
-  select-list)
+  select-list
+  radius-started
+  radius-frame)
 
 (defun make-login-method-selector-state
     (&key
@@ -34,11 +36,58 @@
     :height (length items)
     :show-filter-p nil)))
 
+(defun radius-login-menu-text (option)
+  (format nil "Sign in with ~A" (oauth-selector-option-name option)))
+
+(defun radius-login-menu-item (option)
+  (cadr-tui:make-select-item
+   :label (concatenate 'string
+                       (radius-login-menu-text option)
+                       (oauth-option-status-rendered option))
+   :value option))
+
+(defun login-method-selected-value (state)
+  (let* ((select-list
+           (login-method-selector-state-select-list state))
+         (items (cadr-tui::select-list-filtered-items select-list)))
+    (when items
+      (cadr-tui:select-item-value
+       (nth (min (cadr-tui::select-list-selected select-list)
+                 (1- (length items)))
+            items)))))
+
+(defun login-method-radius-selected-p (state)
+  (let ((value (login-method-selected-value state)))
+    (and (oauth-selector-option-p value)
+         (eq :radius (oauth-selector-option-id value))
+         (eq :oauth (oauth-selector-option-auth-type value)))))
+
+(defun login-method-note-radius-frame (state)
+  ;; pi@71023aec1 redraws the shimmer every 50ms while Radius is selected.
+  (let ((now (get-internal-real-time))
+        (last (or (login-method-selector-state-radius-frame state) 0)))
+    (when (>= (- now last)
+              (round (* 0.05d0 internal-time-units-per-second)))
+      (setf (login-method-selector-state-radius-frame state) now)
+      t)))
+
 (defun login-auth-type-route
-    (provider-options &key generic-p)
+    (provider-options &key generic-p radius-option)
   (when generic-p
     (return-from login-auth-type-route
-      (values :select (make-login-method-selector-state))))
+      (values :select
+              (make-login-method-selector-state
+               :items
+               (append
+                (list
+                 (cadr-tui:make-select-item
+                  :label "Sign in with an account"
+                  :value :oauth)
+                 (cadr-tui:make-select-item
+                  :label "Sign in with an API key"
+                  :value :api-key))
+                (when radius-option
+                  (list (radius-login-menu-item radius-option))))))))
   (let* ((oauth
            (find :oauth provider-options
                  :key #'oauth-selector-option-auth-type))
@@ -116,7 +165,26 @@
                  keybindings "tui.select.cancel" "cancel"))
                width)))))
 
-(defun render-login-method-selector (state width)
+(defun login-method-item-text (item selected-p elapsed)
+  (let* ((value (cadr-tui:select-item-value item))
+         (label (cadr-tui:select-item-label item))
+         (radius-p
+           (and (oauth-selector-option-p value)
+                (eq :radius (oauth-selector-option-id value)))))
+    (if radius-p
+        (let ((text (radius-login-menu-text value)))
+          (concatenate
+           'string
+           (if selected-p
+               (radius-shimmer text elapsed)
+               (cadr-tui:theme-foreground :text text))
+           (subseq label (length text))))
+        (cadr-tui:theme-foreground
+         (if selected-p :accent :text)
+         label))))
+
+(defun render-login-method-selector
+    (state width &key (elapsed nil elapsed-p))
   (let* ((select-list
            (login-method-selector-state-select-list state))
          (items
@@ -126,7 +194,20 @@
                (min (cadr-tui::select-list-selected select-list)
                     (1- (length items)))
                0))
-         (pointer (login-method-selector-pointer-accent)))
+         (pointer (login-method-selector-pointer-accent))
+         (elapsed
+           (if elapsed-p
+               elapsed
+               (let ((started
+                       (or (login-method-selector-state-radius-started
+                            state)
+                           (setf (login-method-selector-state-radius-started
+                                  state)
+                                 (get-internal-real-time)))))
+                 (round
+                  (* 1000
+                     (/ (- (get-internal-real-time) started)
+                        internal-time-units-per-second)))))))
     (render-selector-frame
      (make-selector-frame
       :sections
@@ -150,9 +231,7 @@
                (concatenate
                 'string
                 (if selected-p pointer "  ")
-                (cadr-tui:theme-foreground
-                 (if selected-p :accent :text)
-                 (cadr-tui:select-item-label item)))
+                (login-method-item-text item selected-p elapsed))
                width)))
        :blank
        (list
