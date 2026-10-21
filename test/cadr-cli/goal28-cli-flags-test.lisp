@@ -117,3 +117,28 @@
                  manager)
                 :key (lambda (entry) (getf entry :name))
                 :test #'string-equal)))))
+
+(test provider-flag-requires-a-model
+  (let* ((errors (make-string-output-stream))
+         (help (make-string-output-stream))
+         (status
+           (let ((*error-output* errors)
+                 (*standard-output* (make-broadcast-stream)))
+             (cadr-cli:main '("--provider" "openai"))))
+         (help-status
+           (let ((*error-output* (make-broadcast-stream))
+                 (*standard-output* help))
+             (cadr-cli:main '("--provider" "openai" "--help")))))
+    (is (= 1 status))
+    (is (search
+         "Error: --provider requires --model (for example: --provider openai --model <pattern>)"
+         (get-output-stream-string errors)))
+    (is (= 0 help-status))
+    (is (search
+         "Provider to search for --model (requires --model)"
+         (get-output-stream-string help))))
+  (is (equal
+       '("gpt-4o" "claude-sonnet")
+       (cadr-cli::cli-arguments-models
+        (cadr-cli::parse-cli-arguments
+         '("--models" "gpt-4o, ,claude-sonnet,"))))))

@@ -294,6 +294,15 @@
        (cli-extension-manager-host manager))))))
 
 (defun cli-handler (command)
+  (when (and (cli-arguments-provider command)
+             (null (cli-arguments-model command)))
+    (error
+     'cadr-ai:configuration-error
+     :message
+     (format
+      nil
+      "Error: --provider requires --model (for example: --provider ~A --model <pattern>)"
+      (cli-arguments-provider command))))
   (let* ((input-terminal-p
            (cadr-tui:terminal-stream-p
             *standard-input* :input))
@@ -643,10 +652,10 @@
                        (cli-arguments-base-url command))
                   :allow-missing-auth-p t))))))
          ;; Baseline model-resolver.ts:650-651 — with no authenticated
-         ;; model and no explicit --model/--provider the session keeps a
-         ;; NIL model (the footer sentinel "no-model"); sending then
-         ;; fails with formatNoModelSelectedMessage.  An explicit
-         ;; --provider still resolves that provider's default model.
+         ;; model and no explicit --model the session keeps a NIL model
+         ;; (the footer sentinel "no-model"); sending then fails with
+         ;; formatNoModelSelectedMessage. --provider without --model is
+         ;; rejected in cli-handler before this point.
          (bare-sentinel-p
            (and
             (null startup-model)
