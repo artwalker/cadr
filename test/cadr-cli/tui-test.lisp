@@ -4233,6 +4233,78 @@
                    (search "─" line)))
             lines))))))
 
+(test compaction-status-uses-the-embedded-border-color
+  ;; pi@71023aec1 #10810. Compaction in the editor border takes the
+  ;; border color for the spinner and the label. A bash border wins
+  ;; over the thinking color. Outside the border, the spinner stays
+  ;; accent and the label stays muted.
+  (let ((editor (cadr-tui:make-multiline-editor))
+        (state (cadr-cli::make-tui-state :model "mock"))
+        (message "Compacting context... (ctrl+c to cancel)")
+        (spinner "⠹"))
+    (cadr-tui:editor-set-embed-working-status editor t)
+    (cadr-tui:editor-set-border-mode editor :thinking :high)
+    (setf (cadr-cli::tui-state-status-message state) message)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 80 12 :spinner-frame spinner))
+           (border
+             (find-if
+              (lambda (line)
+                (and (search message line)
+                     (search "─" line)))
+              lines)))
+      (is (search
+           (cadr-tui:theme-foreground
+            :thinking-high spinner :enabled-p t)
+           border))
+      (is (search
+           (cadr-tui:theme-foreground
+            :thinking-high message :enabled-p t)
+           border))
+      (is (not (search
+                (cadr-tui:theme-foreground
+                 :accent spinner :enabled-p t)
+                border)))
+      (is (not (search
+                (cadr-tui:theme-foreground
+                 :muted message :enabled-p t)
+                border))))
+    (cadr-tui:editor-set-border-mode editor :bash)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 80 12 :spinner-frame spinner))
+           (border
+             (find-if
+              (lambda (line)
+                (and (search message line)
+                     (search "─" line)))
+              lines)))
+      (is (search
+           (cadr-tui:theme-foreground
+            :bash-mode spinner :enabled-p t)
+           border))
+      (is (search
+           (cadr-tui:theme-foreground
+            :bash-mode message :enabled-p t)
+           border)))
+    (cadr-tui:editor-set-embed-working-status editor nil)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 80 12 :spinner-frame spinner))
+           (status
+             (find-if
+              (lambda (line) (search message line))
+              lines)))
+      (is (search
+           (cadr-tui:theme-foreground
+            :accent spinner :enabled-p t)
+           status))
+      (is (search
+           (cadr-tui:theme-foreground
+            :muted message :enabled-p t)
+           status)))))
+
 (test goal9-startup-header-precedes-chat-and-expands-with-tools
   (let* ((version-line
            (format nil "cadr v~A" (cadr-ai::cadr-version)))
