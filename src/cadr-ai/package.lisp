@@ -110,6 +110,7 @@
    #:tool-result-message-duration-ms
    #:tool-result-message-nested-calls
    #:tool-result-message-usage
+   #:tool-result-message-structured-content
    #:tool
    #:make-tool
    #:tool-name

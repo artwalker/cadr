@@ -113,6 +113,7 @@
                              (:file "execution-env-test")
                              (:file "extensions-test")
                              (:file "goal28-tool-call-events-test")
+                             (:file "goal27-tool-call-result-rewrite-test")
                              (:file "extensions-wave2-test")
                              (:file "extensions-wave3-test")
                              (:file "custom-trigger-test")

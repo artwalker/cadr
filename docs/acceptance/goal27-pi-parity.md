@@ -30,7 +30,7 @@
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-20 `tool_call` / `tool_result` | `packages/coding-agent/src/core/extensions/types.ts` → `src/cadr-agent/extensions/registration.lisp` | open |
+| GAP-20 `tool_call` / `tool_result` | `packages/coding-agent/src/core/extensions/types.ts` → `src/cadr-agent/extensions/registration.lisp` | done：`tool_call` / `tool_result` 别名改写即将执行的参数和进入会话的结果。后一个 `tool_result` 只交 `is-error` 时保留先前的 content 与 details；只替换 content 时丢掉 structured content。拦住的调用不跑 `tool_result`。 |
 | GAP-29 `SIGHUP` | `packages/coding-agent/src/modes/interactive/interactive-mode.ts` → `src/cadr-cli/bootstrap/commands.lisp`，`test/cadr-cli/goal28-exit-and-auth-test.lisp` | open |
 | GAP-44 Copilot model filter | `packages/ai/src/providers/github-copilot.ts` → `src/cadr-ai/providers/runtime-projection.lisp` | open |
 | GAP-45 Provider retry fields | `settings-schema.ts` → `src/cadr-cli/sdk/settings-service.lisp` | open |

@@ -234,6 +234,10 @@
                              (error
                               "Only :tool-call-before and :tool-call-after hooks may override terminate")))
                          ;; Commit only after the entire hook result validates.
+                         (multiple-value-setq (replacement replacement-p)
+                           (merge-tool-result-hook-patch
+                            event-type primary replacement
+                            replacement-p result))
                          (setf primary replacement
                                 appended
                                 (nconc

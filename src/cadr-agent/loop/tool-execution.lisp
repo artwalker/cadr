@@ -46,7 +46,9 @@
    :tool-result partial-result))
 
 (defun finalize-tool-outcome (agent outcome turn-index)
-  (if (not (agent-extension-host agent))
+  ;; pi@4a080252f agent-loop.test.ts: blocked calls skip afterToolCall.
+  (if (or (not (agent-extension-host agent))
+          (tool-outcome-blocked-p outcome))
       outcome
       (multiple-value-bind
             (replacement appended blocked-p reason

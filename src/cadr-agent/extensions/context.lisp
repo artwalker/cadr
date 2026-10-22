@@ -161,7 +161,17 @@
   entries
   (entries-supplied-p nil :type boolean)
   (continue-p nil :type boolean)
-  (continue-supplied-p nil :type boolean))
+  (continue-supplied-p nil :type boolean)
+  content
+  (content-supplied-p nil :type boolean)
+  details
+  (details-supplied-p nil :type boolean)
+  is-error
+  (is-error-supplied-p nil :type boolean)
+  usage
+  (usage-supplied-p nil :type boolean)
+  structured-content
+  (structured-content-supplied-p nil :type boolean))
 
 (defstruct extension-event-listener
   name
@@ -182,7 +192,12 @@
        reason
        (terminate-p nil terminate-supplied-p)
        (entries nil entries-supplied-p)
-       (continue nil continue-supplied-p))
+       (continue nil continue-supplied-p)
+       (content nil content-supplied-p)
+       (details nil details-supplied-p)
+       (is-error nil is-error-supplied-p)
+       (usage nil usage-supplied-p)
+       (structured-content nil structured-content-supplied-p))
   (%make-extension-hook-result
    :replacement replacement
    :replacement-p replacement-p
@@ -194,7 +209,17 @@
    :entries entries
    :entries-supplied-p entries-supplied-p
    :continue-p (not (null continue))
-   :continue-supplied-p continue-supplied-p))
+   :continue-supplied-p continue-supplied-p
+   :content content
+   :content-supplied-p content-supplied-p
+   :details details
+   :details-supplied-p details-supplied-p
+   :is-error is-error
+   :is-error-supplied-p is-error-supplied-p
+   :usage usage
+   :usage-supplied-p usage-supplied-p
+   :structured-content structured-content
+   :structured-content-supplied-p structured-content-supplied-p))
 
 (defun assert-active-extension-context (context)
   (unless
@@ -828,3 +853,63 @@
   (call-extension-host-action
    context #'extension-host-set-session-name-function
    "set-session-name" name))
+
+(defun tool-result-hook-patch-p (result)
+  (or (extension-hook-result-content-supplied-p result)
+      (extension-hook-result-details-supplied-p result)
+      (extension-hook-result-is-error-supplied-p result)
+      (extension-hook-result-usage-supplied-p result)
+      (extension-hook-result-structured-content-supplied-p result)))
+
+(defun tool-result-content-blocks-p (value)
+  (and (listp value)
+       (every
+        (lambda (block)
+          (or (typep block 'cadr-ai:text-content)
+              (typep block 'cadr-ai:image-content)))
+        value)))
+
+(defun apply-tool-result-hook-patch (message result)
+  (unless (typep message 'cadr-ai:tool-result-message)
+    (error "Invalid replacement for :TOOL-CALL-AFTER"))
+  (let ((patched (cadr-ai::copy-tool-result-message message)))
+    (when (extension-hook-result-content-supplied-p result)
+      (let ((content (extension-hook-result-content result)))
+        (unless (tool-result-content-blocks-p content)
+          (error
+           "tool_result content must be a list of text or image blocks"))
+        (setf (cadr-ai:tool-result-message-content patched) content)
+        ;; pi@4a080252f types.ts ToolResultEventResult: content without
+        ;; structuredContent drops structured content.
+        (unless
+            (extension-hook-result-structured-content-supplied-p result)
+          (setf (cadr-ai:tool-result-message-structured-content patched)
+                nil))))
+    (when (extension-hook-result-details-supplied-p result)
+      (setf (cadr-ai:tool-result-message-details patched)
+            (extension-hook-result-details result)))
+    (when (extension-hook-result-structured-content-supplied-p result)
+      (setf (cadr-ai:tool-result-message-structured-content patched)
+            (extension-hook-result-structured-content result)))
+    (when (extension-hook-result-is-error-supplied-p result)
+      (let ((flag (extension-hook-result-is-error result)))
+        (unless (or (eq flag t) (null flag))
+          (error "tool_result is-error must be boolean"))
+        (setf (cadr-ai:tool-result-message-is-error patched) flag)))
+    (when (extension-hook-result-usage-supplied-p result)
+      (let ((usage (extension-hook-result-usage result)))
+        (unless (or (null usage) (typep usage 'cadr-ai:usage))
+          (error "tool_result usage must be a usage or NIL"))
+        (setf (cadr-ai:tool-result-message-usage patched) usage)))
+    patched))
+
+(defun merge-tool-result-hook-patch
+    (event-type primary replacement replacement-p result)
+  (if (and (eq event-type :tool-call-after)
+           (tool-result-hook-patch-p result))
+      (values
+       (apply-tool-result-hook-patch
+        (if replacement-p replacement primary)
+        result)
+       t)
+      (values replacement replacement-p)))

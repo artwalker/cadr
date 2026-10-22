@@ -163,7 +163,11 @@
   ;; never executed, including unknown tools and argument errors.
   (duration-ms nil :type (or null integer))
   nested-calls
-  usage)
+  usage
+  ;; In-flight only. pi@4a080252f createToolResultMessage does not copy
+  ;; this onto the transcript message; tool_result handlers and nested
+  ;; callers read it, and replacing content without it drops it.
+  structured-content)
 
 (defstruct tool
   (name "" :type string)

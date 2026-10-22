@@ -378,7 +378,9 @@
   call
   result
   appended-messages
-  (terminate-p nil :type boolean))
+  (terminate-p nil :type boolean)
+  ;; A tool_call block. pi@4a080252f agent-loop.ts skips afterToolCall.
+  (blocked-p nil :type boolean))
 
 (defun make-error-tool-result
     (call text &optional appended-messages duration-ms)
@@ -443,6 +445,16 @@
          *tool-execution-error-fallback* wrapped)
         (error wrapped))))
 
+(defun hook-tool-call-copy (call)
+  ;; pi@4a080252f validateToolArguments clones before tool_call, so
+  ;; mutating event.input does not rewrite the assistant message.
+  (let ((copy (cadr-ai::copy-tool-call call))
+        (arguments (cadr-ai:tool-call-arguments call)))
+    (when (hash-table-p arguments)
+      (setf (cadr-ai:tool-call-arguments copy)
+            (cadr-ai::copy-json-value arguments)))
+    copy))
+
 (defun prepare-tool-execution
     (agent call &key turn-index on-effective-call)
   (let ((effective-call call)
@@ -455,7 +467,7 @@
            (agent-extension-host agent)
            :tool-call-before
            :turn-index turn-index
-           :tool-call effective-call)
+           :tool-call (hook-tool-call-copy call))
         (setf effective-call replacement
               appended-messages appended)
         (when blocked-p
@@ -465,6 +477,7 @@
                      effective-call
                      (or reason "Tool execution was blocked")
                      appended-messages)))
+              (setf (tool-outcome-blocked-p blocked) t)
               ;; pi@4a080252f agent-loop.ts:637-640 — a before-hook
               ;; terminate on a blocked call marks the result so the
               ;; batch termination rule can stop the agent.
@@ -569,7 +582,8 @@
                      (or *nested-tool-caller-id*
                          (cadr-ai:tool-call-id call))))
                (multiple-value-bind
-                     (content details terminate-p)
+                     (content details terminate-p
+                      structured-content usage)
                    (funcall
                     (cadr-ai:tool-executor tool)
                     (cadr-ai:tool-call-id call)
@@ -588,6 +602,8 @@
                    (cadr-ai:tool-call-name call)
                    :content content
                    :details details
+                   :structured-content structured-content
+                   :usage usage
                    :is-error nil
                    :duration-ms
                    (tool-elapsed-ms started)))))))
@@ -641,6 +657,9 @@
                   (error (condition)
                     (make-error-tool-result
                      tool-call (princ-to-string condition)))))))
+      (when (agent-extension-host agent)
+        (setf outcome
+              (finalize-tool-outcome agent outcome nil)))
       (make-nested-tool-call-outcome
        :tool-call (tool-outcome-call outcome)
        :result (tool-outcome-result outcome)

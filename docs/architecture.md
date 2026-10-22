@@ -1402,6 +1402,10 @@ A hook's only mutating return value is constructed by
 - `:append-messages`: a list of valid `CADR-AI` messages appended at that
   event's commit point;
 - `:block-p` and `:reason`: permitted only for `:tool-call-before`.
+- `:content`, `:details`, `:structured-content`, `:is-error`, and `:usage`:
+  permitted on `:tool-call-after`. Omitted fields stay. Supplying `:content`
+  without `:structured-content` drops structured content. A later handler
+  sees the merged result.
 
 The type of `replacement` is determined by the event:
 
@@ -1419,11 +1423,13 @@ only the current hook; the last valid state is kept and the next hook continues.
 
 The tool-call order is fixed as:
 
-1. `:tool-call-before` chained rewrite or block;
+1. `:tool-call-before` chained rewrite or block. The handler sees a copy of
+   the call, so an in-place argument change reaches later handlers and the
+   executor while the assistant message keeps the model's arguments;
 2. re-resolve the tool by its final name, and schema-validate the final
    arguments;
 3. execute the tool;
-4. `:tool-call-after` chained result rewrite;
+4. `:tool-call-after` chained result rewrite, unless the call was blocked;
 5. persist the final result and the appended messages.
 
 A hook therefore cannot bypass the schema by "changing the arguments after
