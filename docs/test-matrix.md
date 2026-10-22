@@ -1,6 +1,6 @@
 # Gate denominators (Goal 20 Part M)
 
-<!-- GOAL20_TEST_CHECKS systems=9 checks=24458 pass=24458 skip=0 fail=0 -->
+<!-- GOAL20_TEST_CHECKS systems=9 checks=24474 pass=24474 skip=0 fail=0 -->
 
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
 `scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green
@@ -60,7 +60,8 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Recount: 199 files.
+above are unchanged. Measured 2026-10-22: 200 listed files
+(`rg -c '^\|[^|]*\| \x60test/.*\.(lisp|py)\x60 \|$' docs/test-matrix.md`).
 
 ### cadr-core
 
@@ -109,6 +110,7 @@ above are unchanged. Recount: 199 files.
 | sse | `test/cadr-ai/sse-test.lisp` |
 | types | `test/cadr-ai/types-test.lisp` |
 | utilities | `test/cadr-ai/utilities-test.lisp` |
+| xAI Grok thinking levels | `test/cadr-ai/xai-grok-xhigh-test.lisp` |
 
 ### cadr-agent
 
