@@ -1,0 +1,808 @@
+# 2026-10-22 远端分支清理
+
+范围只包括 `origin`（github.com/artwalker/cadr）。`upstream`（earendil-works/pi）不在这份清单里，也不删除。
+
+测量命令（2026-10-22，`git fetch --prune origin` 之后）：
+
+- `git ls-remote --heads origin` = 775
+- `origin/cadr-migration` = `3bc5eb8990ed2c864820d506c3acde774ebc3316`（Merge pull request #871）
+- 已合并（tip 是该提交的祖先，不含 `cadr-migration` 自身）= 337
+- 未合并 = 437
+- 337 + 437 + 1 = 775
+
+第一次 `git fetch --prune origin` 时远端是 774 个分支，这份清单的分支还不存在。下面的 775 把随后推上去的 `docs/remote-branch-cleanup-2026-10-22` 算了进去。
+
+每个已合并分支都用 `git merge-base --is-ancestor origin/<分支> origin/cadr-migration` 核对过，失败数是 0。
+
+未合并分支的判断规则：
+
+- `main`：已被替代。它是 2026-08-01 的上游 pi 快照。
+- 领先提交不超过 40 条，且每条提交说明都能在 `git log origin/cadr-migration --format=%s` 里找到：已被替代。
+- 其余 `cursor/` 分支：不确定。没有逐个 diff。
+- 其余具名分支：可能有用。至少有一条领先提交说明对不上稳定分支。
+
+同一类里按最后提交时间从新到旧排。可能有用在最前。
+
+## 已合并
+
+- `cursor/active-clamp-leftovers-571-573-34f9`
+- `cursor/armin-leftovers-514-516-34f9`
+- `cursor/auth-make-login-api-oauth-leftovers-616-618-34f9`
+- `cursor/bash-deadline-result-norm-leftovers-694-696-34f9`
+- `cursor/bash-tool-leftovers-508-510-34f9`
+- `cursor/bootstrap-commands-cycle-scope-files-leftovers-940-942-34f9`
+- `cursor/bootstrap-commands-leftovers-484-486-34f9`
+- `cursor/bootstrap-sessions-leftovers-553-555-34f9`
+- `cursor/cli-auth-latxxx-lpoxxx-lgoxxx-ok-leftovers-1354-1356-34f9`
+- `cursor/cli-auth-lmsxxxx-akixxxx-ossxxxx-ok-leftovers-1405-1407-34f9`
+- `cursor/cli-fork-umevxxx-umrwxxx-umrsxxx-ok-leftovers-1390-1392-34f9`
+- `cursor/cli-interactive-bash-run-fin-halt-leftovers-955-957-34f9`
+- `cursor/cli-interactive-sess-make-upd-draw-leftovers-943-945-34f9`
+- `cursor/cli-interactive-wrap-osc-pad-cache-leftovers-949-951-34f9`
+- `cursor/cli-login-dlg-ldcixxx-ldhexxx-ldrdxxx-ok-leftovers-1387-1389-34f9`
+- `cursor/cli-login-dlg-ldprxxx-ldixxx-lddtxxx-ok-leftovers-1384-1386-34f9`
+- `cursor/cli-login-dlg-ldwxxx-ldpxxx-ldmixxx-ok-leftovers-1381-1383-34f9`
+- `cursor/cli-models-mkbxxx-msmsxxx-mrmsxxx-ok-leftovers-1393-1395-34f9`
+- `cursor/cli-selectors-dlg-make-auth-dev-leftovers-946-948-34f9`
+- `cursor/cli-thinking-henxxx-mtsxxx-lstxxx-ok-leftovers-1363-1365-34f9`
+- `cursor/cli-thinking-thafxxx-thclxxx-thscxxx-ok-leftovers-1396-1398-34f9`
+- `cursor/cli-thinking-thmvxxx-thhrxxx-thhexxx-ok-leftovers-1399-1401-34f9`
+- `cursor/cli-trust-trsvxxx-trmkxxx-trrsxxx-ok-leftovers-1402-1404-34f9`
+- `cursor/clipboard-leftovers-535-537-34f9`
+- `cursor/cloud-agent-merge-duty-34f9`
+- `cursor/config-default-oauth-leftovers-742-744-34f9`
+- `cursor/config-env-provider-settings-leftovers-739-741-34f9`
+- `cursor/config-leftovers-454-456-34f9`
+- `cursor/config-selector-autoload-filter-matches-leftovers-712-714-34f9`
+- `cursor/config-selector-delta-top-derived-leftovers-736-738-34f9`
+- `cursor/config-selector-file-display-settings-leftovers-706-708-34f9`
+- `cursor/config-selector-group-filters-find-leftovers-718-720-34f9`
+- `cursor/config-selector-items-source-pattern-leftovers-727-729-34f9`
+- `cursor/config-selector-leftovers-442-444-34f9`
+- `cursor/config-selector-ordinal-replace-scope-leftovers-724-726-34f9`
+- `cursor/config-selector-override-label-settings-leftovers-730-732-34f9`
+- `cursor/config-selector-pattern-enabled-leftovers-733-735-34f9`
+- `cursor/config-selector-resource-relative-fit-leftovers-715-717-34f9`
+- `cursor/config-selector-selected-move-visible-leftovers-721-723-34f9`
+- `cursor/config-selector-spec-glob-entry-leftovers-709-711-34f9`
+- `cursor/controller-tui-error-route-leftovers-667-669-34f9`
+- `cursor/copy-items-cancel-leftovers-583-585-34f9`
+- `cursor/countdown-leftovers-556-558-34f9`
+- `cursor/daxnuts-leftovers-547-549-34f9`
+- `cursor/daxnuts-rgb-make-tick-leftovers-634-636-34f9`
+- `cursor/evals-harness-leftovers-370-372-1fdc`
+- `cursor/evals-harness-leftovers-376-378-6135`
+- `cursor/evals-harness-leftovers-418-420-b700`
+- `cursor/evals-harness-msg-tools-paths-leftovers-928-930-34f9`
+- `cursor/evals-harness-pairs-355-357-f964`
+- `cursor/evals-harness-pairs-364-366-d90b`
+- `cursor/evals-leftover-pairs-349-351-46e3`
+- `cursor/evals-main-leftovers-400-402-03ad`
+- `cursor/evals-main-validate-suite-typep-leftovers-925-927-34f9`
+- `cursor/evals-reporter-leftovers-412-414-412b`
+- `cursor/evals-reporter-leftovers-430-432-124c`
+- `cursor/evals-reporter-rep-make-fin-meta-leftovers-952-954-34f9`
+- `cursor/evals-reporter-run-id-reference-artifacts-leftovers-703-705-34f9`
+- `cursor/evals-suites-canonical-legacy-error-leftovers-697-699-34f9`
+- `cursor/evals-suites-leftovers-439-441-34f9`
+- `cursor/evals-suites-prompt-guidelines-override-leftovers-700-702-34f9`
+- `cursor/ext-installer-leftovers-499-501-34f9`
+- `cursor/ext-loader-leftovers-502-504-34f9`
+- `cursor/extension-ui-auth-handle-render-entry-leftovers-679-681-34f9`
+- `cursor/extension-ui-chrome-protocol-lines-leftovers-670-672-34f9`
+- `cursor/extension-ui-custom-ui-overlay-leftovers-685-687-34f9`
+- `cursor/extension-ui-framed-note-theme-leftovers-673-675-34f9`
+- `cursor/extension-ui-framed-select-leftovers-682-684-34f9`
+- `cursor/extension-ui-input-editor-auth-leftovers-676-678-34f9`
+- `cursor/extension-ui-leftovers-550-552-34f9`
+- `cursor/extensions-commands-leftovers-487-489-34f9`
+- `cursor/file-watcher-leftovers-481-483-34f9`
+- `cursor/finish-refresh-key-binding-leftovers-595-597-34f9`
+- `cursor/fix-metrics-dup-union-leftover-merges-34f9`
+- `cursor/footer-leftovers-541-543-34f9`
+- `cursor/fork-handle-raw-render-leftovers-628-630-34f9`
+- `cursor/fork-leftovers-526-528-34f9`
+- `cursor/glob-ignored-gitignored-make-leftovers-691-693-34f9`
+- `cursor/glob-leftovers-448-450-34f9`
+- `cursor/glob-scanner-body-parse-leftovers-688-690-34f9`
+- `cursor/goal20-ext-leftover-collect-34f9`
+- `cursor/goal20-inventory-reclassify-34f9`
+- `cursor/goal20-pair-319-321-tui-796d`
+- `cursor/goal20-pair-remaining-23-34f9`
+- `cursor/goal20-reclassify-measured-files-34f9`
+- `cursor/goal20-retag-remaining-selectors-34f9`
+- `cursor/goal22-mark-complete-34f9`
+- `cursor/install-pstack-verification-skills-34f9`
+- `cursor/interactive-controller-leftovers-511-513-34f9`
+- `cursor/key-p-keybindings-make-state-leftovers-598-600-34f9`
+- `cursor/llama-extension-leftovers-505-507-34f9`
+- `cursor/llama-ui-leftovers-544-546-34f9`
+- `cursor/login-dialog-complete-handle-render-leftovers-625-627-34f9`
+- `cursor/login-dialog-leftovers-529-531-34f9`
+- `cursor/login-dialog-prompt-info-details-leftovers-622-624-34f9`
+- `cursor/login-dialog-wait-progress-manual-leftovers-619-621-34f9`
+- `cursor/migration-leftovers-457-459-34f9`
+- `cursor/model-help-leftovers-460-462-34f9`
+- `cursor/models-by-id-leftovers-580-582-34f9`
+- `cursor/models-keybindings-scoped-render-leftovers-631-633-34f9`
+- `cursor/models-leftovers-559-561-34f9`
+- `cursor/pair-277-279-bash-leftovers-4440`
+- `cursor/pair-334-336-oauth-callback-leftovers-3839`
+- `cursor/pair-337-339-core-rest-leftovers-5e64`
+- `cursor/pair-352-354-cli-settings-leftovers-9088`
+- `cursor/pair-358-360-oauth-openai-anthropic-ff5f`
+- `cursor/pair-361-363-core-rest-leftovers-0556`
+- `cursor/pair-367-369-image-runtime-leftovers-d240`
+- `cursor/pair-373-375-grep-leftovers-eb2d`
+- `cursor/pair-379-381-oauth-xai-leftovers-8969`
+- `cursor/pair-385-387-core-rest-leftovers-4e7e`
+- `cursor/pair-388-390-edit-leftovers-b6da`
+- `cursor/pair-391-393-execution-env-leftovers-494e`
+- `cursor/pair-394-396-resource-loader-leftovers-b350`
+- `cursor/pair-403-405-runtime-projection-ff1b`
+- `cursor/pair-406-408-grep-leftovers-4050`
+- `cursor/pair-409-411-tool-manager-leftovers-766a`
+- `cursor/pair-421-423-oauth-openai-device-0de9`
+- `cursor/pair-427-429-output-accumulator-leftovers-154d`
+- `cursor/pair-436-438-oauth-openrouter-31c4`
+- `cursor/pair-fmq-leftovers-328-330-ce29`
+- `cursor/pair-tui-loaders-leftover-415-417-fcad`
+- `cursor/pair-tui-loaders-leftover-433-435-4fbd`
+- `cursor/pair-tui-loaders-leftovers-397-399-f441`
+- `cursor/pair-tui-stdin-leftover-424-426-8d33`
+- `cursor/pi-0844-alignment-34f9`
+- `cursor/prompt-bash-leftovers-463-465-34f9`
+- `cursor/rebuild-filter-visible-leftovers-589-591-34f9`
+- `cursor/refresh-clamp-mark-leftovers-592-594-34f9`
+- `cursor/refresh-search-leftovers-577-579-34f9`
+- `cursor/repl-leftovers-490-492-34f9`
+- `cursor/rpc-commands-leftovers-475-477-34f9`
+- `cursor/rpc-mode-bad-line-array-ui-leftovers-937-939-34f9`
+- `cursor/rpc-mode-leftovers-496-498-34f9`
+- `cursor/rpc-queue-asst-cmd-leftovers-934-936-34f9`
+- `cursor/rpc-ui-leftovers-466-468-34f9`
+- `cursor/runtime-apikey-login-auth-filter-leftovers-748-750-34f9`
+- `cursor/runtime-oauth-login-refresh-toauth-leftovers-745-747-34f9`
+- `cursor/scoped-enable-leftovers-565-567-34f9`
+- `cursor/scoped-models-leftovers-562-564-34f9`
+- `cursor/scoped-set-leftovers-568-570-34f9`
+- `cursor/sdk-resource-leftovers-478-480-34f9`
+- `cursor/sdk-settings-leftovers-469-471-34f9`
+- `cursor/selected-notify-leftovers-586-588-34f9`
+- `cursor/sessions-leftovers-451-453-34f9`
+- `cursor/sort-slice-leftovers-574-576-34f9`
+- `cursor/system-prompt-leftovers-472-474-34f9`
+- `cursor/theme-leftovers-538-540-34f9`
+- `cursor/themes-leftovers-523-525-34f9`
+- `cursor/themes-overrides-apply-load-leftovers-637-639-34f9`
+- `cursor/themes-prim-val-res-leftovers-931-933-34f9`
+- `cursor/thinking-apply-filter-clamp-select-leftovers-604-606-34f9`
+- `cursor/thinking-key-p-keybindings-make-state-leftovers-601-603-34f9`
+- `cursor/thinking-leftovers-532-534-34f9`
+- `cursor/thinking-move-handle-raw-event-leftovers-607-609-34f9`
+- `cursor/thinking-selected-desc-render-leftovers-610-612-34f9`
+- `cursor/tool-render-session-leftovers-520-522-34f9`
+- `cursor/transcript-asst-md-summary-leftovers-658-660-34f9`
+- `cursor/transcript-blocks-version-package-leftovers-661-663-34f9`
+- `cursor/transcript-has-tools-display-label-leftovers-643-645-34f9`
+- `cursor/transcript-leftovers-517-519-34f9`
+- `cursor/transcript-price-usage-user-msg-leftovers-652-654-34f9`
+- `cursor/transcript-seed-reset-user-lines-leftovers-655-657-34f9`
+- `cursor/transcript-text-stop-border-leftovers-646-648-34f9`
+- `cursor/transcript-theme-notify-syntax-leftovers-649-651-34f9`
+- `cursor/transcript-tui-entry-leftovers-664-666-34f9`
+- `cursor/trust-saved-make-render-leftovers-613-615-34f9`
+- `cursor/update-checks-leftovers-445-447-34f9`
+- `cursor/user-bash-leftovers-493-495-34f9`
+- `cursor/user-bash-running-complete-stop-leftovers-640-642-34f9`
+- `cursor/verify-cadr-skill-34f9`
+- `fix-404-rebase`
+- `fix-73-rebase`
+- `fix-90-rebase`
+- `g20-412-land`
+- `g20-781-783-inventory-sync`
+- `g20-784-786-inventory-sync`
+- `g20-787-789-inventory-sync`
+- `g20-790-792-inventory-sync`
+- `g20-808-810-inventory-sync`
+- `g20-811-813-inventory-sync`
+- `g20-ai-threads`
+- `g20-asdf-floor-cache`
+- `g20-config-read-760-762`
+- `g20-freeze-1042-1044`
+- `g20-freeze-1045-1047`
+- `g20-freeze-1048-1050`
+- `g20-freeze-1051-1053`
+- `g20-freeze-1054-1056`
+- `g20-freeze-1057-1059`
+- `g20-freeze-1060-1062`
+- `g20-freeze-1063-1065`
+- `g20-freeze-1066-1068`
+- `g20-freeze-1069-1071`
+- `g20-freeze-1072-1074`
+- `g20-freeze-1075-1077`
+- `g20-freeze-1078-1080`
+- `g20-freeze-1081-1083`
+- `g20-freeze-1084-1086`
+- `g20-freeze-1087-1089`
+- `g20-freeze-1090-1092`
+- `g20-freeze-1093-1095`
+- `g20-freeze-1096-1098`
+- `g20-freeze-1099-1101`
+- `g20-freeze-1102-1104`
+- `g20-freeze-1105-1107`
+- `g20-freeze-1108-1110`
+- `g20-freeze-1111-1113`
+- `g20-freeze-1114-1116`
+- `g20-freeze-1117-1119`
+- `g20-freeze-1120-1122`
+- `g20-freeze-1123-1125`
+- `g20-freeze-1126-1128`
+- `g20-freeze-1129-1131`
+- `g20-freeze-1132-1134`
+- `g20-freeze-1135-1137`
+- `g20-freeze-1138-1140`
+- `g20-freeze-1141-1143`
+- `g20-freeze-1144-1146`
+- `g20-freeze-1147-1149`
+- `g20-freeze-1150-1152`
+- `g20-freeze-1153-1155`
+- `g20-freeze-1156-1158`
+- `g20-freeze-1159-1161`
+- `g20-freeze-1162-1164`
+- `g20-freeze-1165-1167`
+- `g20-freeze-1168-1170`
+- `g20-freeze-1171-1173`
+- `g20-freeze-1174-1176`
+- `g20-freeze-1177-1179`
+- `g20-freeze-1180-1182`
+- `g20-freeze-1183-1185`
+- `g20-freeze-1186-1188`
+- `g20-freeze-1189-1191`
+- `g20-freeze-1192-1194`
+- `g20-freeze-1195-1197`
+- `g20-freeze-1198-1200`
+- `g20-freeze-1201-1203`
+- `g20-freeze-1204-1206`
+- `g20-freeze-1207-1209`
+- `g20-freeze-1210-1212`
+- `g20-freeze-1213-1215`
+- `g20-freeze-1216-1218`
+- `g20-freeze-1219-1221`
+- `g20-freeze-1222-1224`
+- `g20-freeze-1225-1227`
+- `g20-freeze-1228-1230`
+- `g20-freeze-1231-1233`
+- `g20-freeze-1234-1236`
+- `g20-freeze-1237-1239`
+- `g20-freeze-1240-1242`
+- `g20-freeze-1243-1245`
+- `g20-freeze-1246-1248`
+- `g20-freeze-1249-1251`
+- `g20-freeze-1252-1254`
+- `g20-freeze-1255-1257`
+- `g20-freeze-1258-1260`
+- `g20-freeze-1261-1263`
+- `g20-freeze-1264-1266`
+- `g20-freeze-1267-1269`
+- `g20-freeze-1270-1272`
+- `g20-freeze-1273-1275`
+- `g20-freeze-1276-1278`
+- `g20-freeze-1279-1281`
+- `g20-freeze-1282-1284`
+- `g20-freeze-1285-1287`
+- `g20-freeze-1288-1290`
+- `g20-freeze-1291-1293`
+- `g20-freeze-1294-1296`
+- `g20-freeze-1297-1299`
+- `g20-freeze-1300-1302`
+- `g20-freeze-1303-1305`
+- `g20-freeze-1306-1308`
+- `g20-freeze-1309-1311`
+- `g20-freeze-1312-1314`
+- `g20-freeze-1315-1317`
+- `g20-freeze-1318-1320`
+- `g20-freeze-1321-1323`
+- `g20-freeze-1324-1326`
+- `g20-freeze-1327-1329`
+- `g20-freeze-1330-1332`
+- `g20-freeze-1333-1335`
+- `g20-freeze-1336-1338`
+- `g20-freeze-1339-1341`
+- `g20-freeze-1342-1344`
+- `g20-freeze-1345-1347`
+- `g20-freeze-1348-1350`
+- `g20-freeze-1351-1353`
+- `g20-freeze-1357-1359`
+- `g20-freeze-1360-1362`
+- `g20-freeze-1366-1368`
+- `g20-freeze-1369-1371`
+- `g20-freeze-1372-1374`
+- `g20-freeze-1375-1377`
+- `g20-freeze-1378-1380`
+- `g20-freeze-757-759`
+- `g20-freeze-760-762`
+- `g20-freeze-781-783`
+- `g20-freeze-784-786`
+- `g20-freeze-787-789`
+- `g20-freeze-790-792`
+- `g20-freeze-808-810`
+- `g20-freeze-811-813`
+- `g20-freeze-814-816`
+- `g20-freeze-844-846`
+- `g20-freeze-847-849`
+- `g20-freeze-850-852`
+- `g20-freeze-853-855`
+- `g20-freeze-856-858`
+- `g20-freeze-862-864`
+- `g20-freeze-889-891`
+- `g20-freeze-898-900`
+- `g20-freeze-904-906`
+- `g20-freeze-910-912`
+- `g20-freeze-916-918`
+- `g20-inv-844-846`
+- `g20-inv-847-849`
+- `g20-inv-850-852`
+- `g20-inventory-line-refresh`
+- `g20-migration`
+- `g20-p13-inventory-catchup`
+- `g20-part-o-hillclimb`
+- `g20-registry`
+- `g20-repl`
+- `g20-resource`
+- `g20-settings`
+- `g20-skip-untimed-metrics`
+- `g24-b1-watch-stat`
+- `goal24-interface-inventory-tip`
+- `goal24-product-identity-tip`
+- `goal24-release-identity-doc-tip`
+- `goal25-pin-v0861`
+- `goal26-pin-v0870`
+- `goal26-pin-v130`
+- `goal26-pin-v140`
+- `maintain-verify-cadr-scrub-api-keys`
+- `pi-mono-legacy`
+
+## 未合并
+
+可能有用 167，不确定 236，已被替代 34。
+
+- `docs/remote-branch-cleanup-2026-10-22` | 2026-10-22T23:58:00+08:00 | 领先 2 | docs: count the inventory branch in the unmerged list | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warming-settings-wire-tip` | 2026-09-22T06:31:53+08:00 | 领先 4 | feat(cli): drive cache warmer mode from settings | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-copy-selection-flash-tip` | 2026-09-22T06:26:47+08:00 | 领先 2 | fix(tui): flash named clipboard backend errors on selection copy | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-paste-newline-tip` | 2026-09-22T06:20:31+08:00 | 领先 4 | fix(cli): tip re-land pasted /bug line breaks and hint skip | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-summary-tip` | 2026-09-22T06:12:22+08:00 | 领先 3 | feat(cli): tip re-land /bug report summary generation | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-crash-tip` | 2026-09-22T06:08:05+08:00 | 领先 2 | feat(cli): tip re-land crashes.json and startup crash announcement | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-consent-tip` | 2026-09-22T06:02:02+08:00 | 领先 1 | feat(cli): tip re-land /bug consent UI and Radius upload | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warmer-dispatch-tip` | 2026-09-22T05:56:07+08:00 | 领先 2 | feat(cli): wire cache warmer settle/stream dispatch | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warmer-tip` | 2026-09-22T05:49:14+08:00 | 领先 1 | feat(cli): tip-reland prompt cache warmer decisions and /session status | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warming-settings-tip` | 2026-09-22T05:43:36+08:00 | 领先 1 | feat(cli): honor global cacheWarming mode | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-editor-border-spinners-tip` | 2026-09-22T05:09:59+08:00 | 领先 1 | fix(cli): embed compaction, summary, and retry spinners in the editor border | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-radius-offline-catalog-tip` | 2026-09-22T04:56:44+08:00 | 领先 4 | docs: refresh goal-v10-part-e release identity for v0.86.1 | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-force-system-prompt` | 2026-09-22T04:39:54+08:00 | 领先 6 | feat(agent): force before_agent_start systemPrompt as leading provider head | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-extension-tool-schema` | 2026-09-22T04:12:48+08:00 | 领先 1 | fix(agent): reject extension tools without object parameter schemas | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-selector-save-keybindings` | 2026-09-22T04:05:20+08:00 | 领先 2 | test(cli): assert truncated model-selector save footer at width 30 | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-compaction-auth-abort` | 2026-09-22T03:47:02+08:00 | 领先 2 | docs(org): refresh SDK line counts after auth-abort wiring | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-compaction-cost-notices` | 2026-09-22T03:26:52+08:00 | 领先 3 | feat(cli): show compaction and branch-summary cost notices | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-miss-notices` | 2026-09-22T03:07:40+08:00 | 领先 2 | docs(org): refresh line counts for cache-miss notice wiring | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-fuzzy-indexof` | 2026-09-22T02:48:00+08:00 | 领先 1 | Match pi fuzzy successive indexOf via position. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-rpc-steer-input-hooks` | 2026-09-22T02:44:02+08:00 | 领先 1 | fix(sdk): run steer/follow-up through input hooks | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-empty-footer` | 2026-09-22T02:30:38+08:00 | 领先 1 | test(cli): lock zero-row custom footer does not inflate the frame | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-harness-append-usage` | 2026-09-22T02:20:21+08:00 | 领先 2 | feat(session): add harness-session-append-usage for cache_warm lines | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-prompt-cache-meta` | 2026-09-22T02:09:47+08:00 | 领先 1 | feat(ai): annotate Anthropic Messages models with promptCache lifetimes | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-session-usage` | 2026-09-22T02:03:16+08:00 | 领先 1 | feat(session): persist type:usage entries for cache warming | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-compaction-oversized-trailing` | 2026-09-22T01:54:42+08:00 | 领先 1 | test(agent): lock cut-point before oversized trailing tool results | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-fireworks-tool-refs` | 2026-09-22T01:45:18+08:00 | 领先 1 | feat(ai): stamp Fireworks Messages supports-tool-references | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-compaction-cancel-races` | 2026-09-22T01:33:38+08:00 | 领先 1 | fix(agent): skip post-run auto-compaction after abort (#9340) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-tree-during-compaction` | 2026-09-22T01:24:09+08:00 | 领先 1 | fix(agent): reject tree navigation during compaction (pi #9179) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-latex-compat` | 2026-09-22T01:12:59+08:00 | 领先 1 | feat(tui): port pi LaTeX legacy fonts, centered cases, and script layout | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-fireworks-effort` | 2026-09-22T00:19:11+08:00 | 领先 1 | Replay Fireworks unsigned thinking and send verified effort. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-vercel-empty-signature` | 2026-09-22T00:00:02+08:00 | 领先 1 | Replay unsigned thinking for Vercel AI Gateway models. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-codex-off-effort` | 2026-09-21T23:43:12+08:00 | 领先 1 | Send Codex Off reasoning effort when the caller omits a level. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-anthropic-response-model` | 2026-09-21T23:14:19+08:00 | 领先 1 | Keep signed thinking when an Anthropic relay reports another model. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bedrock-cache-1h` | 2026-09-21T22:05:43+08:00 | 领先 1 | Price Bedrock one-hour cache writes at twice the input rate. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-azure-peak-load` | 2026-09-21T21:39:44+08:00 | 领先 1 | Retry Azure peak-load errors so that text no longer stops the turn. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cerebras-bodyless-overflow` | 2026-09-21T21:15:14+08:00 | 领先 1 | Treat bodyless HTTP 400 and 413 as context overflow only for Cerebras. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-mistral-reasoning-effort` | 2026-09-21T20:05:05+08:00 | 领先 1 | Mistral medium and zai-glm-5-2 ignore prompt_mode. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cloudflare-520` | 2026-09-21T19:53:32+08:00 | 领先 1 | Retry a bodyless Cloudflare 520 assistant error. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-skill-slash` | 2026-09-21T19:43:26+08:00 | 领先 1 | Rank an exact bare skill name ahead of a longer skill: prefix. | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-llama-thinking` | 2026-09-21T19:14:45+08:00 | 领先 1 | fix(cli): honor llama.cpp enable_thinking templates (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-copilot-gpt-responses` | 2026-09-21T18:49:06+08:00 | 领先 2 | fix(ai): route Copilot GPT-6 Astra through Responses | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-summary` | 2026-09-21T18:32:03+08:00 | 领先 3 | feat(cli): generate /bug report summary (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warmer-dispatch` | 2026-09-21T18:02:41+08:00 | 领先 2 | feat(cli): wire cache warmer settle/stream dispatch | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-vercel-allow-empty-signature-v2` | 2026-09-21T17:35:04+08:00 | 领先 1 | feat(ai): allow empty signatures on Vercel AI Gateway | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-thinking-drop-notice-v2` | 2026-09-21T17:33:36+08:00 | 领先 1 | fix(cli): warn when Anthropic drops thinking blocks | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-google-thinking-9455-v2` | 2026-09-21T17:29:48+08:00 | 领先 1 | fix(ai): clamp disabled Google thinking from model maps | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-retry-max-agent-delay-v2` | 2026-09-21T17:28:06+08:00 | 领先 1 | feat(agent): cap retry backoff at retry.maxAgentDelayMs | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-session-exact-id-v2` | 2026-09-21T17:24:32+08:00 | 领先 1 | fix(cli): header-only exact session id lookup | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bedrock-cache-write-1h-v2` | 2026-09-21T17:22:39+08:00 | 领先 1 | fix(ai): set Bedrock cacheWrite1h from cacheDetails | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-deepseek-flash-catalog-v2` | 2026-09-21T17:21:30+08:00 | 领先 1 | feat(ai): ship canonical deepseek-flash catalog | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-openrouter-session-affinity-v2` | 2026-09-21T17:19:17+08:00 | 领先 1 | feat(ai): default OpenRouter session affinity headers | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-codex-off-reasoning-v2` | 2026-09-21T17:18:10+08:00 | 领先 1 | fix(ai): keep Codex Off reasoning when effort is omitted | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-opencode-session-header-v2` | 2026-09-21T17:17:10+08:00 | 领先 1 | feat(ai): omit OpenCode session headers without session id | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-responses-provider-error-label-v2` | 2026-09-21T17:14:32+08:00 | 领先 1 | feat(ai): label Responses api-error with the real provider | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-mistral-medium-reasoning-v2` | 2026-09-21T17:12:40+08:00 | 领先 3 | fix(test): drop leftover conflict markers in mistral tests | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-mistral-glm-reasoning-v2` | 2026-09-21T17:09:54+08:00 | 领先 1 | fix(ai): send reasoning_effort for Mistral zai-glm-5-2 | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-baseten-session-affinity-v2` | 2026-09-21T17:08:51+08:00 | 领先 1 | feat(ai): enable Baseten session affinity headers | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-retry-520-azure-peak-v2` | 2026-09-21T17:07:33+08:00 | 领先 1 | feat(ai): retry Cloudflare 520 and Azure peak-load errors | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-overflow-cerebras-bodyless-v2` | 2026-09-21T17:03:59+08:00 | 领先 1 | feat(ai): limit bodyless 400/413 overflow to Cerebras | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warmer-v2` | 2026-09-21T17:02:07+08:00 | 领先 1 | feat(cli): add prompt cache warmer decisions and /session status | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-crash-v2` | 2026-09-21T16:57:43+08:00 | 领先 2 | feat(cli): crashes.json and startup crash announcement | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-consent-v2` | 2026-09-21T16:53:51+08:00 | 领先 1 | feat(cli): /bug consent UI and Radius upload | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-transcript-context-v2` | 2026-09-21T16:49:52+08:00 | 领先 4 | feat(ai): normalize Context into TranscriptContext at stream entry | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-system-message-emission-v2` | 2026-09-21T16:43:29+08:00 | 领先 3 | feat(agent): emit system-message deltas on turn prep | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-session-system-messages-v2` | 2026-09-21T16:39:09+08:00 | 领先 2 | feat(agent): round-trip system messages in session JSON | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-transcript-system-messages-v2` | 2026-09-21T16:34:34+08:00 | 领先 1 | feat(ai): port transcript system-message replay helpers | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-radius-offline-catalog-v2` | 2026-09-21T16:30:25+08:00 | 领先 1 | feat(ai): ship offline Radius catalog defaulting to balanced | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-json-value-tool-fields-v2` | 2026-09-21T16:24:25+08:00 | 领先 1 | feat(ai): JsonValue boundary for tool arguments and details | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warming-settings-v2` | 2026-09-21T16:20:42+08:00 | 领先 1 | feat(cli): honor global cacheWarming mode | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-model-registry-stream-v2` | 2026-09-21T16:15:38+08:00 | 领先 1 | feat(cli): expose modelRegistry stream to extensions | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-editor-border-spinners` | 2026-09-21T15:31:49+08:00 | 领先 1 | fix(cli): embed compaction, summary, and retry spinners in the editor border | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-builtin-model-overrides` | 2026-09-21T15:26:13+08:00 | 领先 1 | feat(cli): apply models.json modelOverrides to built-in models | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-compaction-model-overrides-v2` | 2026-09-21T15:15:45+08:00 | 领先 1 | feat(cli): resolve compaction.modelOverrides per model | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-resume-progressive-v2` | 2026-09-21T15:08:36+08:00 | 领先 1 | feat(cli): progressive session list publish for resume | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-continue-early-stop` | 2026-09-21T15:01:22+08:00 | 领先 1 | fix(agent): continue the newest matching session by file mtime | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-codex-omit-54` | 2026-09-21T14:58:25+08:00 | 领先 1 | fix(ai): drop GPT-5.4 from the OpenAI Codex catalog | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-builtin-strict` | 2026-09-21T14:52:18+08:00 | 领先 1 | fix(cli): prefer strict sampling for the five built-in tools | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-anthropic-fallbacks` | 2026-09-21T14:37:04+08:00 | 领先 1 | fix(ai): send Anthropic allowed fallback models | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-extension-on` | 2026-09-21T14:23:30+08:00 | 领先 1 | fix(agent): unsubscribe extension handlers without touching the current dispatch | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-user-bash-stop` | 2026-09-21T13:43:56+08:00 | 领先 1 | fix(agent): stop user_bash when a hook fails | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal25-bash-duration` | 2026-09-21T13:04:37+08:00 | 领先 1 | fix(tui): show shell timings past one minute as minutes and seconds | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal25-meta-muse` | 2026-09-21T12:58:01+08:00 | 领先 3 | docs(cli): list META_API_KEY in --help | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal25-bug-report` | 2026-09-21T12:44:53+08:00 | 领先 4 | fix(cli): show one /bug hint after a live assistant error | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal25-clipboard-osc52` | 2026-09-21T12:07:53+08:00 | 领先 2 | docs: note OSC 52 clipboard fallback | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal25-cerebras-strict` | 2026-09-21T12:03:48+08:00 | 领先 3 | docs: note Cerebras completions omit strict mode | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal25-zai-overflow` | 2026-09-21T11:59:00+08:00 | 领先 3 | docs: note z.ai Prompt too long overflow | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-thinking-drop-notice-9391` | 2026-09-21T11:36:36+08:00 | 领先 1 | fix(cli): warn when Anthropic drops thinking blocks | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-retry-max-agent-delay-8826` | 2026-09-21T10:01:17+08:00 | 领先 1 | feat(agent): cap retry backoff at retry.maxAgentDelayMs (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-mistral-glm-reasoning-9375` | 2026-09-21T08:23:41+08:00 | 领先 3 | docs: retarget hash.ts Mistral mapping line | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bedrock-cache-write-1h-9457` | 2026-09-21T08:06:08+08:00 | 领先 2 | docs: retarget Bedrock source-parity lines for cacheWrite1h | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-session-exact-id-9601` | 2026-09-21T07:12:18+08:00 | 领先 6 | chore: drop pi# from Goal14 B8 note | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-mistral-medium-reasoning-8700` | 2026-09-21T06:44:08+08:00 | 领先 1 | fix(ai): use reasoning_effort for all mistral-medium ids (#8700) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-google-thinking-9455` | 2026-09-21T06:37:12+08:00 | 领先 1 | fix(ai): clamp disabled Google thinking from model maps (#9455) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-vercel-allow-empty-signature` | 2026-09-21T06:26:51+08:00 | 领先 1 | feat(ai): allow empty signatures on Vercel AI Gateway (#9676) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-deepseek-flash-catalog` | 2026-09-21T05:39:17+08:00 | 领先 1 | feat(ai): ship canonical deepseek-flash catalog (#9423) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-codex-off-reasoning` | 2026-09-21T04:33:11+08:00 | 领先 1 | fix(ai): keep Codex Off reasoning when effort is omitted (#9191) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-openrouter-session-affinity` | 2026-09-21T03:50:20+08:00 | 领先 1 | feat(ai): default OpenRouter session affinity headers (#9102) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-baseten-session-affinity` | 2026-09-21T03:34:39+08:00 | 领先 1 | feat(ai): enable Baseten session affinity headers (Goal 24 #9629) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-responses-provider-error-label` | 2026-09-21T03:21:59+08:00 | 领先 2 | docs: note Responses provider labels and refresh check-count | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-overflow-cerebras-bodyless` | 2026-09-21T03:09:41+08:00 | 领先 1 | feat(ai): limit bodyless 400/413 overflow to Cerebras | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-retry-520-azure-peak` | 2026-09-21T03:07:35+08:00 | 领先 1 | feat(ai): retry Cloudflare 520 and Azure peak-load errors | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-opencode-session-header` | 2026-09-21T03:02:25+08:00 | 领先 1 | feat(ai): omit OpenCode session headers without session id | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-clipboard-align` | 2026-09-21T02:53:11+08:00 | 领先 2 | docs(goal24): link clipboard alignment PR #733 | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-session-system-message` | 2026-09-21T02:40:46+08:00 | 领先 3 | feat(agent): store compaction systemMessage checkpoints | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-crash-announce` | 2026-09-21T02:12:32+08:00 | 领先 1 | feat(cli): announce prior crashes and attach them to /bug | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-transcript-context` | 2026-09-21T01:24:00+08:00 | 领先 2 | chore(docs): correct transcript.lisp ledger line count | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-system-message-emission` | 2026-09-21T00:42:13+08:00 | 领先 10 | chore: re-record FiveAM check-count after emission knife | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-system-prompt-sections` | 2026-09-20T23:55:23+08:00 | 领先 2 | docs: note system-prompt sections helpers in CHANGELOG | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-json-value-tool-fields` | 2026-09-20T23:30:02+08:00 | 领先 2 | docs: note JsonValue tool-field boundary in CHANGELOG | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-session-system-messages` | 2026-09-20T22:44:13+08:00 | 领先 3 | feat(agent): round-trip system messages in session JSON (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-transcript-system-messages` | 2026-09-20T22:27:00+08:00 | 领先 2 | chore(ai): book transcript replay file in Goal 13/20 locks | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warming-decision` | 2026-09-20T21:38:34+08:00 | 领先 1 | feat(cli): add prompt cache warmer decisions and /session status (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-click-collapse` | 2026-09-20T20:27:26+08:00 | 领先 1 | feat(tui): toggle skill/branch/compaction summaries on click (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-radius-offline-catalog` | 2026-09-20T20:14:25+08:00 | 领先 1 | feat(ai): ship offline Radius catalog defaulting to balanced (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-status-spinner-border` | 2026-09-20T19:55:26+08:00 | 领先 1 | feat(tui): embed compaction/retry/branch spinners in editor border (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-model-registry-stream` | 2026-09-20T19:32:14+08:00 | 领先 3 | test: re-record FiveAM check-count ledger after stream tests | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-max-agent-delay` | 2026-09-20T19:14:28+08:00 | 领先 1 | feat(agent): cap auto-retry delay with retry.maxAgentDelayMs (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-cache-warming-settings` | 2026-09-20T19:07:27+08:00 | 领先 1 | feat(cli): honor global cacheWarming settings mode (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-allowed-fallback-models` | 2026-09-20T18:53:42+08:00 | 领先 1 | feat(cli): honor models.json allowedFallbackModels overrides | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-compaction-model-overrides` | 2026-09-20T18:40:20+08:00 | 领先 1 | feat(cli): per-model compaction token overrides | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-hook-unsubscribe` | 2026-09-20T18:22:03+08:00 | 领先 1 | feat(agent): return unsubscribe from extension event hooks | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-strict-prefer` | 2026-09-20T18:11:58+08:00 | 领先 1 | feat(cli): prefer strict JSON schema for built-in tools | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-user-bash-fail-closed` | 2026-09-20T18:05:57+08:00 | 领先 1 | feat(agent): fail closed on user_bash hook errors | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-resume-progressive` | 2026-09-20T17:54:05+08:00 | 领先 3 | fix(cli): balance resume picker progressive-load forms | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-continue-mtime` | 2026-09-20T17:37:08+08:00 | 领先 1 | feat(agent): continue session via mtime early-stop | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-codex-drop-54` | 2026-09-20T17:29:34+08:00 | 领先 1 | feat(ai): drop GPT-5.4 from OpenAI Codex catalog | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bash-duration` | 2026-09-20T17:20:26+08:00 | 领先 1 | feat(tui): format shell tool duration as minutes after 60s (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `goal24-bug-consent-upload` | 2026-09-20T17:17:24+08:00 | 领先 2 | feat(cli): crashes.json and startup crash announcement (Goal 24) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/unflushed-session-fork` | 2026-09-19T23:50:09+08:00 | 领先 1 | fix(cli): refuse to fork a session before it is saved | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/fork-settle-outgoing-turn` | 2026-09-19T23:28:56+08:00 | 领先 1 | fix(cli): settle the in-flight turn before forking a session (#8724) | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/import-unique-session-path` | 2026-09-19T21:36:51+08:00 | 领先 1 | feat(cli): keep unique paths when importing a colliding session file | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/at-file-shallow-fd` | 2026-09-19T21:17:54+08:00 | 领先 1 | feat(tui): keep shallow @ matches when recursive fd is flooded | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/latex-join-symbols` | 2026-09-19T20:42:34+08:00 | 领先 1 | feat(tui): render relational algebra join symbols | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/model-compat-request-fields` | 2026-09-19T20:33:03+08:00 | 领先 1 | feat(ai): send GPT-5.6 cache TTL and model compat request fields | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/builtin-command-conflict` | 2026-09-19T19:37:23+08:00 | 领先 1 | feat(tui): warn when an extension command hides a built-in slash name | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/extension-resource-source-tags` | 2026-09-19T19:28:57+08:00 | 领先 1 | feat(tui): prefer extension source for contributed skills | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/slash-argument-completions` | 2026-09-19T19:19:50+08:00 | 领先 1 | feat(tui): complete slash arguments for thinking and extensions | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/autocomplete-source-tags` | 2026-09-19T19:08:43+08:00 | 领先 1 | feat(tui): prefix slash autocomplete descriptions with source tags | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/extension-command-invocation-names` | 2026-09-19T18:53:11+08:00 | 领先 1 | feat(agent): keep both extension commands when names collide | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/extension-slash-autocomplete` | 2026-09-19T18:34:38+08:00 | 领先 1 | feat(tui): list extension slash commands in autocomplete | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/slash-command-autocomplete` | 2026-09-19T17:53:48+08:00 | 领先 1 | feat(tui): list skills and file prompts in slash autocomplete | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/expand-slash-skills-and-prompts` | 2026-09-19T17:40:43+08:00 | 领先 1 | fix(cli): expand skill and file-prompt slash commands | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/model-visible-tool-result-truncation` | 2026-09-19T17:06:29+08:00 | 领先 1 | test(gate): lock tool-result truncation text | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/fix-mermaid-bullet-regex` | 2026-09-19T17:04:31+08:00 | 领先 1 | fix(tui): keep mermaid list-bullet regex escapes | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/fix-lisp-newline-escapes` | 2026-09-19T16:58:34+08:00 | 领先 1 | fix(agent): use real newlines in summary templates | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/model-visible-compaction-prompts` | 2026-09-19T16:47:30+08:00 | 领先 1 | test(gate): lock compaction summarization prompts | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/model-visible-custom-prompt` | 2026-09-19T16:45:17+08:00 | 领先 1 | test(gate): lock the custom system-prompt branch | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/missing-session-cwd-confirm` | 2026-09-19T16:40:48+08:00 | 领先 1 | feat(session): confirm a missing session directory | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/easter-egg-commands` | 2026-09-19T16:09:17+08:00 | 领先 1 | feat(tui): wire the interactive easter-egg commands | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/settings-parity-line-drift` | 2026-09-19T14:49:02+08:00 | 领先 1 | docs(parity): refresh settings selector mapping lines | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/share-schema-identity-allowlist` | 2026-09-19T14:41:12+08:00 | 领先 1 | fix(identity): allow the session share schema token | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/branch-summary-custom-prompt` | 2026-09-19T14:36:10+08:00 | 领先 1 | feat(tui): collect custom branch summary instructions | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/thinking-submenu-models` | 2026-09-19T14:16:29+08:00 | 领先 1 | fix(settings): list models in the thinking submenu | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `feat/share-loader` | 2026-09-19T13:56:33+08:00 | 领先 1 | feat(share): show an abortable loader during upload | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `radius-share-refresh` | 2026-09-19T13:28:02+08:00 | 领先 1 | feat(share): refresh a Radius token before upload | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `settings-select-submenu` | 2026-09-19T13:17:01+08:00 | 领先 1 | feat(settings): filter the per-model thinking submenu | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `session-radius-share` | 2026-09-19T12:56:12+08:00 | 领先 1 | feat(share): try Radius before the gist fallback | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `recount-render-diff-checks` | 2026-09-19T12:25:25+08:00 | 领先 1 | docs(gates): recount render-diff checks after the agent scenario | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `close-ttt-agent-repaint` | 2026-09-19T11:21:05+08:00 | 领先 1 | test(render-diff): lock the tic-tac-toe agent repaint | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `docs/user-rulings-2026-09-19` | 2026-09-19T09:49:45+08:00 | 领先 1 | docs(rulings): record the 2026-09-19 user calls | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/tui-model-confirm` | 2026-09-19T09:01:05+08:00 | 领先 2 | fix(tui): pass the selected model through apply | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/github-copilot-oauth-resolve` | 2026-09-17T21:45:54+08:00 | 领先 2 | fix(cli): resolve Kimi Coding and Radius stored OAuth | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `fix/xai-oauth-resolve` | 2026-09-17T21:23:48+08:00 | 领先 3 | fix(cli): keep github-copilot out of generic oauth resolve | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `g24-b2-reclassify-oauth` | 2026-09-07T15:07:27+08:00 | 领先 1 | docs(g24): reclassify five oauth_pkce sub-µs rows as variance-floor | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `g20-jr-fixture-id` | 2026-09-06T22:36:50+08:00 | 领先 1 | perf(agent): structural toolResult isError parse on journal path | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `g20-jr-slice` | 2026-09-06T21:05:01+08:00 | 领先 16 | docs(g20): book scan-key and handler-elide journal invent reverts | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+- `g20-message-envelope-compact` | 2026-09-04T21:25:02+08:00 | 领先 1 | perf(agent): compact fixture-stable session message envelopes | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
+
+- `cursor/goal20-pair-gate-timed-slots-34f9` | 2026-09-01T05:21:53+00:00 | 领先 6 | Refresh Part H unpaired-path section after installer leftover restore. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-tllxxx-tsqxxx-tskbxxx-ok-leftovers-1378-1380-34f9` | 2026-08-31T17:07:51+00:00 | 领先 2 | Freeze leftover 1378-1380 thinking label/query/kb unused-slug remount. n=5 first freeze: tllxxx_ok 1.762x, tsqxxx_ok 1.197x, tskbxxx_ok 5.612x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead 2acdeb91e. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-daxnuts-draxxx-dmcxxx-dctxxx-ok-leftovers-1372-1374-34f9` | 2026-08-31T17:07:48+00:00 | 领先 2 | Freeze leftover 1372-1374 daxnuts unused-slug remount. n=5 first freeze leftover 1306 matching: draxxx_ok 1.734x, dmcxxx_ok 3.028x, dctxxx_ok 5.654x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead 1a299c68a. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-powershell-utfxxx-pfxxxx-mtbxxx-ok-leftovers-1369-1371-34f9` | 2026-08-31T17:06:31+00:00 | 领先 2 | Freeze leftover 1369-1371 powershell unused-slug remount. n=5 first freeze: utfxxx_ok 2.585x, pfxxxx_ok 1.251x, mtbxxx_ok 0.833x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead af2247852. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-countdown-cdsxxx-cdtxxx-cdrxxx-ok-leftovers-1366-1368-34f9` | 2026-08-31T17:06:19+00:00 | 领先 2 | Freeze leftover 1366-1368 countdown unused-slug remount. n=5 first freeze: cdsxxx_ok 3.196x, cdtxxx_ok 2.399x, cdrxxx_ok 1.558x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead 7749670f8. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-repl-pbkxxx-rtkxxx-dpkxxx-ok-leftovers-1375-1377-34f9` | 2026-08-31T17:06:10+00:00 | 领先 2 | Freeze leftover 1375-1377 repl unused-slug remount. n=5 first freeze: pbkxxx_ok 0.472x, rtkxxx_ok 1.162x, dpkxxx_ok 0.435x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead 00cc16b2e. pbk/dpk under-1x not booked. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-akhexxx-mlsxxx-aisxxx-ok-leftovers-1360-1362-34f9` | 2026-08-31T16:42:07+00:00 | 领先 2 | Freeze leftover 1360-1362 unused-slug remount of api-key handle/ctors. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmhxxx-luixxx-akuxxx-ok-leftovers-1357-1359-34f9` | 2026-08-31T16:42:01+00:00 | 领先 2 | Freeze leftover 1357-1359 unused-slug remount of login method handle/ui. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oasxxx-fltxxx-qryxxx-ok-leftovers-1351-1353-34f9` | 2026-08-31T15:06:52+00:00 | 领先 2 | Freeze leftover 1351-1353 oauth sel/filter/query unused-slug remount. n=5 first freeze: oasxxx_ok 15.638x, fltxxx_ok 9.950x, qryxxx_ok 2.185x (ceilings 20.0 / 12.0 / 8.0). Overlay gitHead 405d50f87. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lblxxx-typxxx-envxxx-ok-leftovers-1348-1350-34f9` | 2026-08-31T15:01:37+00:00 | 领先 2 | Freeze leftover 1348-1350 oauth label/type/env unused-slug remount. n=5 first freeze: lblxxx_ok 1.478x, typxxx_ok 1.286x, envxxx_ok 1.967x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead b90ca2c0a. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-slxxx-dscxxx-rthxxx-ok-leftovers-1345-1347-34f9` | 2026-08-31T14:58:42+00:00 | 领先 2 | Freeze leftover 1345-1347 thinking selected/desc/render unused-slug remount. n=5 first freeze: slxxx_ok 0.653x under-1x, dscxxx_ok 1.255x, rthxxx_ok 52.562x (ceilings 8.0 / 8.0 / 60.0). Overlay gitHead 29945a8e4. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tsmxxx-tsexxx-tuixxx-ok-leftovers-1342-1344-34f9` | 2026-08-31T14:52:19+00:00 | 领先 2 | Freeze leftover 1342-1344 trust move/event/ui unused-slug remount. n=5 first freeze: tsmxxx_ok 3.742x, tsexxx_ok 3.570x, tuixxx_ok 3.322x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead d4a269561. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmsxxx-akixxx-ossxxx-ok-leftovers-1339-1341-34f9` | 2026-08-31T14:46:17+00:00 | 领先 2 | Freeze leftover 1339-1341 auth login/api/oauth ctor unused-slug remount. n=5 first freeze: lmsxxx_ok 1.128x, akixxx_ok 2.090x, ossxxx_ok 1.352x (ceilings 8.0 / 8.0 / 8.0). Overlay gitHead 1c01edd95. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-trsvxx-trmkxx-trrsxx-ok-leftovers-1336-1338-34f9` | 2026-08-31T14:33:38+00:00 | 领先 2 | Freeze leftover 1336-1338 trust saved/ctor/layout unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-thmvxx-thhrxx-thhexx-ok-leftovers-1333-1335-34f9` | 2026-08-31T14:28:42+00:00 | 领先 2 | Freeze leftover 1333-1335 thinking move/handle unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-thafxx-thclxx-thscxx-ok-leftovers-1330-1332-34f9` | 2026-08-31T14:23:21+00:00 | 领先 2 | Freeze leftover 1330-1332 thinking apply/clamp/select unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-models-mkbxx-msmsxx-mrmsxx-ok-leftovers-1327-1329-34f9` | 2026-08-31T14:15:20+00:00 | 领先 2 | Freeze leftover 1327-1329 models keybindings/ctor/layout unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-fork-umevxx-umrwxx-umrsxx-ok-leftovers-1324-1326-34f9` | 2026-08-31T14:08:56+00:00 | 领先 2 | Freeze leftover 1324-1326 fork handle/raw/render unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldcixx-ldhexx-ldrdxx-ok-leftovers-1321-1323-34f9` | 2026-08-31T14:04:47+00:00 | 领先 2 | Freeze leftover 1321-1323 login-dialog complete/handle/render unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldprxx-ldixx-lddtxx-ok-leftovers-1318-1320-34f9` | 2026-08-31T14:00:35+00:00 | 领先 2 | Freeze leftover 1318-1320 login-dialog prompt/info/details unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldwxx-ldpxx-ldmixx-ok-leftovers-1315-1317-34f9` | 2026-08-31T13:53:57+00:00 | 领先 2 | Freeze leftover 1315-1317 login-dialog wait/progress/manual unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-tllxx-tsqxx-tskbxx-ok-leftovers-1312-1314-34f9` | 2026-08-31T13:31:11+00:00 | 领先 2 | Freeze leftover 1312-1314 thinking label/query/keybindings unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-repl-pbkxx-rtkxx-dpkxx-ok-leftovers-1309-1311-34f9` | 2026-08-31T13:25:55+00:00 | 领先 3 | Freeze leftover 1309-1311 repl parse/response/dispatch unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-daxnuts-draxx-dmcxx-dctxx-ok-leftovers-1306-1308-34f9` | 2026-08-31T13:11:13+00:00 | 领先 2 | Freeze leftover 1306-1308 daxnuts rgb/make/tick unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-powershell-utfxx-pfxxx-mtbxx-ok-leftovers-1303-1305-34f9` | 2026-08-31T13:06:17+00:00 | 领先 2 | Freeze leftover 1303-1305 powershell utf/prefix/make-tool unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-countdown-cdsxx-cdtxx-cdrxx-ok-leftovers-1300-1302-34f9` | 2026-08-31T12:59:36+00:00 | 领先 2 | Freeze leftover 1300-1302 countdown seconds/tick/render unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-henxx-mtsxx-lstxx-ok-leftovers-1297-1299-34f9` | 2026-08-31T12:43:08+00:00 | 领先 2 | Freeze leftover 1297-1299 thinking handle/ctor/search unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-akhexx-mlsxx-aisxx-ok-leftovers-1294-1296-34f9` | 2026-08-31T09:22:27+00:00 | 领先 2 | Freeze leftover 1294-1296 n=5 overlay for auth handle/ctors. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmhxx-luixx-akuxx-ok-leftovers-1291-1293-34f9` | 2026-08-31T09:06:55+00:00 | 领先 2 | Freeze leftover 1291-1293 n=5 overlay for auth handle/ui. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-latxx-lpoxx-lgoxx-ok-leftovers-1288-1290-34f9` | 2026-08-31T08:54:33+00:00 | 领先 2 | Freeze leftover 1288-1290 n=5 overlay for auth route/options. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oasxx-fltxx-qryxx-ok-leftovers-1285-1287-34f9` | 2026-08-31T08:49:02+00:00 | 领先 2 | Freeze leftover 1285-1287 n=5 overlay for auth selection/filter/query. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lblxx-typxx-envxx-ok-leftovers-1282-1284-34f9` | 2026-08-31T08:42:00+00:00 | 领先 2 | Freeze leftover 1282-1284 n=5 overlay for auth label/type/env. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-slxx-dscxx-rthxx-ok-leftovers-1279-1281-34f9` | 2026-08-31T08:35:26+00:00 | 领先 2 | Freeze leftover 1279-1281 n=5 overlay for thinking selected/desc/render. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tsmxx-tsexx-tuixx-ok-leftovers-1276-1278-34f9` | 2026-08-31T08:17:50+00:00 | 领先 2 | Freeze leftover 1276-1278 n=5 overlay for trust move/event/ui. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmsxx-akixx-ossxx-ok-leftovers-1273-1275-34f9` | 2026-08-31T08:11:27+00:00 | 领先 2 | Freeze leftover 1273-1275 n=5 overlay for auth login/api-key/oauth constructors. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-trsvx-trmkx-trrsx-ok-leftovers-1270-1272-34f9` | 2026-08-31T08:00:08+00:00 | 领先 2 | Freeze leftover 1270-1272 n=5 overlay for trust saved/make/render. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-thmvx-thhrx-thhex-ok-leftovers-1267-1269-34f9` | 2026-08-31T07:54:08+00:00 | 领先 2 | Freeze leftover 1267-1269 n=5 overlay for thinking move/raw/event. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-thafx-thclx-thscx-ok-leftovers-1264-1266-34f9` | 2026-08-31T07:48:00+00:00 | 领先 2 | Freeze leftover 1264-1266 n=5 overlay for thinking apply/clamp/select. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-models-mkbx-msmsx-mrmsx-ok-leftovers-1261-1263-34f9` | 2026-08-31T07:36:20+00:00 | 领先 2 | Freeze leftover 1261-1263 n=5 overlay for models keybindings/ctor/render. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-fork-umevx-umrwx-umrsx-ok-leftovers-1258-1260-34f9` | 2026-08-31T07:29:45+00:00 | 领先 2 | Freeze leftover 1258-1260 n=5 overlay for fork handle/raw/render. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldcix-ldhex-ldrdx-ok-leftovers-1255-1257-34f9` | 2026-08-31T07:20:40+00:00 | 领先 2 | Freeze leftover 1255-1257 n=5 overlay for login-dialog complete/handle/render. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldprx-ldix-lddtx-ok-leftovers-1252-1254-34f9` | 2026-08-31T07:14:19+00:00 | 领先 2 | Freeze leftover 1252-1254 n=5 overlay for login-dialog prompt/info/details. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldwx-ldpx-ldmix-ok-leftovers-1249-1251-34f9` | 2026-08-31T07:07:47+00:00 | 领先 2 | Freeze leftover 1249-1251 n=5 overlay for login-dialog wait/progress/manual. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-tllx-tsqx-tskbx-ok-leftovers-1246-1248-34f9` | 2026-08-31T06:52:17+00:00 | 领先 2 | Freeze leftover 1246-1248 cli_selectors tllx_ok/tsqx_ok/tskbx_ok. n=5 --only-enforce: tllx_ok 1.622×, tsqx_ok 1.146×, tskbx_ok 5.941×. Overlay gitHead e1d8dd06c. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-repl-pbkx-rtkx-dpkx-ok-leftovers-1243-1245-34f9` | 2026-08-31T06:41:46+00:00 | 领先 3 | Freeze leftover 1243-1245 cli_bootstrap_sessions pbkx_ok/rtkx_ok/dpkx_ok. n=5 --only-enforce: pbkx_ok 0.463× under-1×, rtkx_ok 1.376×, dpkx_ok 0.462× under-1×. Overlay gitHead 04f4bc099. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-daxnuts-drax-dmcx-dctx-ok-leftovers-1240-1242-34f9` | 2026-08-31T06:28:49+00:00 | 领先 2 | Freeze leftover 1240-1242 cli_selectors drax_ok/dmcx_ok/dctx_ok. n=5 --only-enforce: drax_ok 1.707×, dmcx_ok 3.038×, dctx_ok 5.902×. Overlay gitHead 760a48d25. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-powershell-utfx-pfxx-mtbx-ok-leftovers-1237-1239-34f9` | 2026-08-31T06:14:09+00:00 | 领先 2 | Freeze leftover 1237-1239 powershell_tool utfx_ok/pfxx_ok/mtbx_ok. n=5 --only-enforce: utfx_ok 3.523×, pfxx_ok 1.546×, mtbx_ok 1.149×. Overlay gitHead aa13e4145. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-countdown-cdsx-cdtx-cdrx-ok-leftovers-1234-1236-34f9` | 2026-08-31T06:06:25+00:00 | 领先 2 | Freeze leftover 1234-1236 cli_selectors cdsx_ok/cdtx_ok/cdrx_ok. n=5 --only-enforce: cdsx_ok 3.447×, cdtx_ok 2.757×, cdrx_ok 1.762×. Overlay gitHead d38fcd20a. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-henx-mtsx-lstx-ok-leftovers-1231-1233-34f9` | 2026-08-31T05:58:34+00:00 | 领先 2 | Freeze leftover 1231-1233 cli_selectors henx_ok/mtsx_ok/lstx_ok. n=5 --only-enforce: henx_ok 0.854× under-1×, mtsx_ok 0.941× under-1×, lstx_ok 2.429×. Overlay gitHead a31eca7a4. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-akhex-mlsx-aisx-ok-leftovers-1228-1230-34f9` | 2026-08-31T05:50:27+00:00 | 领先 2 | Freeze leftover 1228-1230 cli_selectors akhex_ok/mlsx_ok/aisx_ok. n=5 --only-enforce: akhex_ok 0.962× under-1×, mlsx_ok 1.176×, aisx_ok 1.815×. Overlay gitHead 04ccdd5a7. nextPairNum left at 328. fileRules unchanged. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmhx-luix-akux-ok-leftovers-1225-1227-34f9` | 2026-08-31T05:36:22+00:00 | 领先 2 | Freeze leftover 1225-1227 cli_selectors lmhx_ok/luix_ok/akux_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-latx-lpox-lgox-ok-leftovers-1222-1224-34f9` | 2026-08-31T05:29:34+00:00 | 领先 2 | Freeze leftover 1222-1224 cli_selectors latx_ok/lpox_ok/lgox_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oasx-fltx-qryx-ok-leftovers-1219-1221-34f9` | 2026-08-31T05:18:34+00:00 | 领先 2 | Freeze leftover 1219-1221 cli_selectors oasx_ok/fltx_ok/qryx_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lblx-typx-envx-ok-leftovers-1216-1218-34f9` | 2026-08-31T05:11:49+00:00 | 领先 2 | Freeze leftover 1216-1218 cli_selectors lblx_ok/typx_ok/envx_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-slx-dscx-rthx-ok-leftovers-1213-1215-34f9` | 2026-08-31T04:59:13+00:00 | 领先 2 | Freeze leftover 1213-1215 cli_selectors slx_ok/dscx_ok/rthx_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tsmx-tsex-tuix-ok-leftovers-1210-1212-34f9` | 2026-08-31T04:48:34+00:00 | 领先 2 | Freeze leftover 1210-1212 cli_selectors tsmx_ok/tsex_ok/tuix_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmsx-akix-ossx-ok-leftovers-1207-1209-34f9` | 2026-08-31T04:40:51+00:00 | 领先 2 | Freeze leftover 1207-1209 cli_selectors lmsx_ok/akix_ok/ossx_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-trsv-trmk-trrs-ok-leftovers-1204-1206-34f9` | 2026-08-31T04:27:06+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1204-1206 trust unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-thmv-thhr-thhe-ok-leftovers-1201-1203-34f9` | 2026-08-31T04:20:02+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1201-1203 thinking unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-thaf-thcl-thsc-ok-leftovers-1198-1200-34f9` | 2026-08-31T04:09:14+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1198-1200 thinking unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-models-mkb-msms-mrms-ok-leftovers-1195-1197-34f9` | 2026-08-31T04:02:15+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1195-1197 models unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-fork-umev-umrw-umrs-ok-leftovers-1192-1194-34f9` | 2026-08-31T03:50:48+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1192-1194 fork unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldci-ldhe-ldrd-ok-leftovers-1189-1191-34f9` | 2026-08-31T03:43:57+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1189-1191 login-dialog unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldpr-ldi-lddt-ok-leftovers-1186-1188-34f9` | 2026-08-31T03:32:06+00:00 | 领先 2 | Goal 20 leftover: freeze pairs 1186-1188 login-dialog unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ldw-ldp-ldmi-ok-leftovers-1183-1185-34f9` | 2026-08-31T03:19:50+00:00 | 领先 2 | Freeze leftover 1183-1185 login waiting unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-tll-tsq-tskb-ok-leftovers-1180-1182-34f9` | 2026-08-31T03:12:57+00:00 | 领先 2 | Freeze leftover 1180-1182 thinking unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-repl-pbk-rtk-dpk-ok-leftovers-1177-1179-34f9` | 2026-08-31T03:01:18+00:00 | 领先 4 | Freeze leftover 1177-1179 repl unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-daxnuts-dra-dmc-dct-ok-leftovers-1174-1176-34f9` | 2026-08-31T02:43:12+00:00 | 领先 2 | Freeze leftover 1174-1176 daxnuts unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-powershell-utf-pfx-mtb-ok-leftovers-1171-1173-34f9` | 2026-08-31T02:36:04+00:00 | 领先 2 | Freeze leftover 1171-1173 powershell unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-countdown-cds-cdt-cdr-ok-leftovers-1168-1170-34f9` | 2026-08-31T02:25:45+00:00 | 领先 2 | Freeze leftover 1168-1170 countdown unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmsu-aui-ahe-ok-leftovers-1165-1167-34f9` | 2026-08-31T02:08:59+00:00 | 领先 2 | Freeze leftover 1165-1167 login/api-key UI unused-slug remount overlay. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-rte-lpr-lhe-ok-leftovers-1162-1164-34f9` | 2026-08-31T02:00:04+00:00 | 领先 2 | Freeze leftover 1162-1164 login route/options/handle unused-slug remount overlay. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-rwi-esp-lgt-ok-leftovers-1159-1161-34f9` | 2026-08-31T01:46:12+00:00 | 领先 2 | Freeze leftover 1159-1161 oauth raw/env/logout unused-slug remount overlay. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-osr-osl-cet-ok-leftovers-1156-1158-34f9` | 2026-08-31T01:41:02+00:00 | 领先 2 | Freeze leftover 1156-1158 oauth status/authType unused-slug remount overlay. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-ohe-mos-sst-ok-leftovers-1153-1155-34f9` | 2026-08-31T01:33:50+00:00 | 领先 2 | Freeze leftover 1153-1155 oauth selector unused-slug remount overlay. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-hen-mts-lst-ok-leftovers-1150-1152-34f9` | 2026-08-31T01:17:18+00:00 | 领先 2 | Freeze leftover 1150-1152 n=5 overlay for hen_ok/mts_ok/lst_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-akhe-mls-ais-ok-leftovers-1147-1149-34f9` | 2026-08-31T00:04:47+00:00 | 领先 2 | Freeze leftover 1147-1149 n=5 overlay for akhe_ok/mls_ok/ais_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lmh-lui-aku-ok-leftovers-1144-1146-34f9` | 2026-08-30T23:49:14+00:00 | 领先 2 | Freeze leftover 1144-1146 n=5 overlay for lmh_ok/lui_ok/aku_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lat-lpo-lgo-ok-leftovers-1141-1143-34f9` | 2026-08-30T23:35:42+00:00 | 领先 2 | Freeze leftover 1141-1143 n=5 overlay for lat_ok/lpo_ok/lgo_ok. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oas-flt-qry-ok-leftovers-1138-1140-34f9` | 2026-08-30T23:19:46+00:00 | 领先 2 | Freeze leftover 1138-1140 oauth selector unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lbl-typ-env-ok-leftovers-1135-1137-34f9` | 2026-08-30T23:11:47+00:00 | 领先 2 | Freeze leftover 1135-1137 auth status/type/env unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-sl-dsc-rth-ok-leftovers-1132-1134-34f9` | 2026-08-30T22:56:27+00:00 | 领先 2 | Freeze leftover 1132-1134 thinking selector unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tsm-tse-tui-ok-leftovers-1129-1131-34f9` | 2026-08-30T22:48:42+00:00 | 领先 2 | Freeze leftover 1129-1131 trust selector unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-lms-aki-oss-ok-leftovers-1126-1128-34f9` | 2026-08-30T22:42:05+00:00 | 领先 2 | Freeze leftover 1126-1128 auth constructor unused-slug remount. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-sv-mk-trn-ok-leftovers-1123-1125-34f9` | 2026-08-30T22:26:21+00:00 | 领先 2 | freeze leftover 1123-1125 n=5 (cli_selectors.sv_ok/mk_ok/trn_ok). Enforce 4.914x / 2.559x / 9.103x; 8.0/8.0/15.0 first freeze. Over-1x booked. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-mv-hri-hev-ok-leftovers-1120-1122-34f9` | 2026-08-30T22:19:45+00:00 | 领先 2 | freeze leftover 1120-1122 n=5 (cli_selectors.mv_ok/hri_ok/hev_ok). Enforce 1.964x / 24.275x / 1.016x; 8.0/30.0/8.0 first freeze. Over-1x booked. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-af-cl-sc-ok-leftovers-1117-1119-34f9` | 2026-08-30T22:08:40+00:00 | 领先 2 | freeze leftover 1117-1119 n=5 (cli_selectors.af_ok/cl_ok/sc_ok). Enforce 1.240x / 0.974x / 0.919x; 8.0 first freeze. af_ok over-1x booked; cl_ok/sc_ok under-1x. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-models-kb-sms-rms-ok-leftovers-1114-1116-34f9` | 2026-08-30T22:01:12+00:00 | 领先 2 | freeze leftover 1114-1116 n=5 (cli_selectors.kb_ok/sms_ok/rms_ok). Enforce 0.776x / 26.663x / 27.897x; 8.0/40.0/50.0 first freeze. kb_ok under-1x; sms_ok/rms_ok over-1x booked. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-fork-he-raw-sel-ok-leftovers-1111-1113-34f9` | 2026-08-30T21:49:10+00:00 | 领先 2 | freeze leftover 1111-1113 n=5 (cli_selectors.he_ok/raw_ok/sel_ok). Enforce 0.730x / 17.845x / 62.986x; 8.0/30.0/100.0 first freeze. he_ok under-1x; raw_ok/sel_ok over-1x booked. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-cmp-evt-rnd-ok-leftovers-1108-1110-34f9` | 2026-08-30T21:38:31+00:00 | 领先 2 | freeze leftover 1108-1110 n=5 (cli_selectors.cmp_ok/evt_ok/rnd_ok). Enforce 2.365x / 2.722x / 36.604x; 8.0/8.0/50.0 first freeze. Over-1x booked. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-prmt-info-det-ok-leftovers-1105-1107-34f9` | 2026-08-30T21:29:46+00:00 | 领先 2 | freeze leftover 1105-1107 n=5 (cli_selectors.prmt_ok/info_ok/det_ok). Enforce 1.862x / 2.351x / 0.871x; 8.0 first freeze. Over-1x booked for prmt_ok/info_ok; det_ok under-1x. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-wait-prog-man-ok-leftovers-1102-1104-34f9` | 2026-08-30T21:14:49+00:00 | 领先 2 | docs: record leftover 1102-1104 freeze on host cursor, gitHead 6b8844178. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-tlbl-tqry-tkb-leftovers-1099-1101-34f9` | 2026-08-30T21:01:50+00:00 | 领先 2 | docs: record leftover 1099-1101 freeze on host cursor, gitHead 714bd8367. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-repl-psb-rst-dsp-leftovers-1096-1098-34f9` | 2026-08-30T20:53:33+00:00 | 领先 2 | docs: record leftover 1096-1098 freeze on host cursor, gitHead 6ba621704. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-daxnuts-dn-rgb-make-tick-leftovers-1093-1095-34f9` | 2026-08-30T20:36:25+00:00 | 领先 2 | docs(goal20): leftover 1093-1095 freeze on host cursor, gitHead 62e09d1d4 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-powershell-ps-up-pc-mt-leftovers-1090-1092-34f9` | 2026-08-30T20:23:38+00:00 | 领先 2 | docs(goal20): leftover 1090-1092 freeze on host cursor, gitHead 4e3f94dbe | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-countdown-sec-tick-rnd-ok-leftovers-1087-1089-34f9` | 2026-08-30T20:16:27+00:00 | 领先 2 | docs(goal20): leftover 1087-1089 freeze on host cursor, gitHead b111ae3fd | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-lms-aku-ahe-leftovers-1084-1086-34f9` | 2026-08-30T20:04:53+00:00 | 领先 2 | docs(goal20): leftover 1084-1086 freeze on host cursor, gitHead fc37c5a48 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-lat-lpo-lhe-leftovers-1081-1083-34f9` | 2026-08-30T19:53:50+00:00 | 领先 2 | docs(goal20): leftover 1081-1083 freeze on host cursor, gitHead d5aa63866 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-hri-esp-lgo-leftovers-1078-1080-34f9` | 2026-08-30T19:42:48+00:00 | 领先 2 | docs(goal20): leftover 1078-1080 freeze on host cursor, gitHead ef14284ed | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-osr-osl-cet-leftovers-1075-1077-34f9` | 2026-08-30T19:29:45+00:00 | 领先 2 | docs(goal20): leftover 1075-1077 freeze on host cursor, gitHead 58013c75c | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-ohe-mos-sst-leftovers-1072-1074-34f9` | 2026-08-30T19:18:44+00:00 | 领先 2 | docs(goal20): leftover 1072-1074 freeze on host cursor, gitHead 0ed34f1a4 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-th-he-mts-lst-leftovers-1069-1071-34f9` | 2026-08-30T19:03:00+00:00 | 领先 2 | docs(goal20): leftover 1069-1071 freeze on host cursor, gitHead 923add4aa | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-akhe-mls-ais-leftovers-1066-1068-34f9` | 2026-08-30T18:53:05+00:00 | 领先 2 | docs(goal20): leftover 1066-1068 freeze on host cursor, gitHead 415c702b1 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-lmh-lui-aki-leftovers-1063-1065-34f9` | 2026-08-30T18:36:38+00:00 | 领先 2 | docs(goal20): leftover 1063-1065 freeze on host cursor, gitHead 1c7ca1c4c | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-rt-lin-out-leftovers-1060-1062-34f9` | 2026-08-30T18:25:28+00:00 | 领先 2 | docs(goal20): leftover 1060-1062 freeze on host cursor, gitHead 573e45214 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-sel-flt-qry-leftovers-1057-1059-34f9` | 2026-08-30T18:06:52+00:00 | 领先 2 | docs(goal20): leftover 1057-1059 freeze on host cursor, gitHead 76a013fdf | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-oa-lbl-typ-env-leftovers-1054-1056-34f9` | 2026-08-30T17:59:40+00:00 | 领先 2 | docs(goal20): leftover 1054-1056 freeze on host cursor, gitHead 342a49161 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tr-mv-he-ui-leftovers-1051-1053-34f9` | 2026-08-30T17:45:02+00:00 | 领先 2 | docs: record leftover 1051-1053 freeze on host cursor, gitHead 08156bfee. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tr-pto-tss-tdd-leftovers-1048-1050-34f9` | 2026-08-30T17:34:06+00:00 | 领先 2 | docs: record leftover 1048-1050 freeze on host cursor, gitHead e26026001. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-th-mv-lv-ds-leftovers-1045-1047-34f9` | 2026-08-30T17:21:41+00:00 | 领先 2 | docs: record leftover 1045-1047 freeze on host cursor, gitHead deec603a7. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-th-af-cl-sc-leftovers-1042-1044-34f9` | 2026-08-30T17:14:43+00:00 | 领先 2 | docs: record leftover 1042-1044 freeze on host cursor, gitHead ff89e5f81. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-models-ms-kb-sm-st-rm-sel-leftovers-1039-1041-34f9` | 2026-08-30T17:02:04+00:00 | 领先 2 | docs: record leftover 1039-1041 freeze on host cursor, gitHead 15870c170. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-fork-um-he-hr-rd-leftovers-1036-1038-34f9` | 2026-08-30T16:52:03+00:00 | 领先 2 | docs: record leftover 1036-1038 freeze on host cursor, gitHead b4cd6de10. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ld-cmp-evt-rnd-leftovers-1033-1035-34f9` | 2026-08-30T16:41:42+00:00 | 领先 2 | docs: record leftover 1033-1035 freeze on host cursor, gitHead 395aeadce. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ld-prmt-info-det-leftovers-1030-1032-34f9` | 2026-08-30T16:35:00+00:00 | 领先 2 | docs: record leftover 1030-1032 freeze on host cursor, gitHead 9f44f72ab. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-ld-wait-prog-man-leftovers-1027-1029-34f9` | 2026-08-30T16:19:39+00:00 | 领先 2 | docs: record leftover 1027-1029 freeze on host cursor, gitHead 87731eaa3. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-th-lbl-qry-kb-leftovers-1024-1026-34f9` | 2026-08-30T16:08:17+00:00 | 领先 2 | docs: record leftover 1024-1026 freeze on host cursor, gitHead da2512a28. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-daxnuts-rgb-make-tick-leftovers-1021-1023-34f9` | 2026-08-30T15:59:44+00:00 | 领先 2 | docs: record leftover 1021-1023 freeze on host cursor, gitHead 271e177cf. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-countdown-cd-sec-tick-rnd-leftovers-1018-1020-34f9` | 2026-08-30T15:43:36+00:00 | 领先 2 | docs: record leftover 1018-1020 freeze on host cursor, gitHead f86991ac0. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-powershell-up-pc-mt-leftovers-1015-1017-34f9` | 2026-08-30T15:22:27+00:00 | 领先 2 | docs: record leftover 1015-1017 freeze on host cursor, gitHead 61bc950bf. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-repl-pb-rt-dp-leftovers-1012-1014-34f9` | 2026-08-30T15:11:20+00:00 | 领先 4 | docs: record leftover 1012-1014 freeze on host cursor, gitHead 38629b2e7. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-bash-br-bf-bh-leftovers-1009-1011-34f9` | 2026-08-30T10:00:54+00:00 | 领先 2 | freeze leftover 1009-1011 n=5 (cli_interactive_controller.br_ok/bf_ok/bh_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-ext-sc-hp-hu-leftovers-1006-1008-34f9` | 2026-08-30T09:53:39+00:00 | 领先 2 | freeze leftover 1006-1008 n=5 (cli_extensions_install.sc_ok/hp_ok/hu_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-auth-mlms-makis-moss-leftovers-1003-1005-34f9` | 2026-08-30T09:45:44+00:00 | 领先 2 | freeze leftover 1003-1005 n=5 (cli_selectors.mlms_ok/makis_ok/moss_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-trust-tosp-mtss-rtrs-leftovers-1000-1002-34f9` | 2026-08-30T09:22:38+00:00 | 领先 2 | freeze leftover 1000-1002 n=5 (cli_selectors.tosp_ok/mtss_ok/rtrs_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-fork-um-evt-raw-draw-leftovers-997-999-34f9` | 2026-08-30T09:16:02+00:00 | 领先 2 | freeze leftover 997-999 n=5 (cli_selectors.um_evt/um_raw/um_draw). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-thinking-th-sel-desc-draw-leftovers-994-996-34f9` | 2026-08-30T09:00:42+00:00 | 领先 2 | Freeze leftover 994-996 n=5 (cli_selectors.th_sel/th_desc/th_draw). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-login-dlg-new-key-code-leftovers-991-993-34f9` | 2026-08-30T08:56:23+00:00 | 领先 2 | Freeze leftover 991-993 n=5 (cli_selectors.dlg_new/key/code). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-interactive-bash-go-end-off-leftovers-988-990-34f9` | 2026-08-30T08:43:44+00:00 | 领先 2 | Freeze leftover 988-990 n=5 (cli_interactive_controller.bash_go/end/off). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-reporter-rep-ok-fin-meta-leftovers-985-987-34f9` | 2026-08-30T08:39:27+00:00 | 领先 2 | Freeze leftover 985-987 n=5 (evals_harness.rep_ok/fin_ok/meta_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-harness-msg-txt-tools-paths-leftovers-982-984-34f9` | 2026-08-30T08:28:56+00:00 | 领先 2 | Freeze leftover 982-984 n=5 (evals_harness.msg_txt/tools_n/paths_n). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-main-val-ext-suite-type-leftovers-979-981-34f9` | 2026-08-30T08:23:14+00:00 | 领先 2 | Freeze leftover 979-981 n=5 (evals_harness.val_ext/suite_id/type_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/rpc-prompt-bash-img-ok-prompt-bash-leftovers-976-978-34f9` | 2026-08-30T08:13:33+00:00 | 领先 2 | freeze leftover 976-978 n=5 (cli_print_rpc.img_ok/prompt_ok/bash_js). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/rpc-commands-queue-ok-asst-cmd-leftovers-973-975-34f9` | 2026-08-30T08:02:09+00:00 | 领先 2 | freeze leftover 973-975 n=5 (cli_print_rpc.queue_ok/asst_hit/cmd_n). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/rpc-mode-line-bad-arr-ui-leftovers-970-972-34f9` | 2026-08-30T07:50:15+00:00 | 领先 2 | freeze leftover 970-972 n=5 (cli_print_rpc.line_bad/line_arr/line_ui). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-bootstrap-cycle-ent-scope-file-leftovers-967-969-34f9` | 2026-08-30T07:38:19+00:00 | 领先 2 | freeze leftover 967-969 n=5 (cli_bootstrap_sessions.cycle_ent/scope_st/file_cli). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-tool-sess-new-set-out-leftovers-964-966-34f9` | 2026-08-30T07:30:55+00:00 | 领先 2 | freeze leftover 964-966 n=5 (cli_interactive_controller.sess_new/sess_set/sess_out). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-transcript-wrap-ln-pad-cache-leftovers-961-963-34f9` | 2026-08-30T07:06:58+00:00 | 领先 2 | freeze leftover 961-963 n=5 (cli_interactive_controller.wrap_ln/pad_sp/cache_ok). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-themes-kind-ok-get-leftovers-958-960-34f9` | 2026-08-30T06:56:12+00:00 | 领先 2 | freeze leftover 958-960 n=5 (cli_interactive_controller.theme_kind/ok/get). | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bash-output-make-record-leftovers-922-924-34f9` | 2026-08-30T02:53:28+00:00 | 领先 3 | docs(cadr-cli): record leftover 922–924 bash freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-resource-skills-prompts-themes-leftovers-919-921-34f9` | 2026-08-30T02:34:31+00:00 | 领先 2 | Freeze leftover 919-921 resource-service skills / prompts / themes getters. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-support-watch-error-start-poll-leftovers-916-918-34f9` | 2026-08-30T02:25:12+00:00 | 领先 3 | Freeze leftover 916-918 file-watcher error / start-close / poll-once. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-copilot-domain-url-headers-leftovers-913-915-34f9` | 2026-08-30T02:02:25+00:00 | 领先 3 | Freeze leftover 913-915 github-copilot domain / oauth-url / request-headers. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/daxnuts-render-invalidate-dispose-leftovers-910-912-34f9` | 2026-08-30T01:43:25+00:00 | 领先 2 | docs: record leftover 910-912 daxnuts render/invalidate/dispose freeze n=5 on host cursor, gitHead 73ff28037. daxnuts_render 4.706× / daxnuts_invalidate 5.814× / daxnuts_dispose 3.400× (ceilings 8.0). Over-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/model-help-login-docs-thinking-leftovers-907-909-34f9` | 2026-08-30T01:25:34+00:00 | 领先 2 | docs: record leftover 907–909 model-help login/docs/thinking freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/countdown-dispose-unstarted-start-leftovers-904-906-34f9` | 2026-08-30T01:13:14+00:00 | 领先 2 | docs: record leftover 904–906 countdown dispose/unstarted/start-guard freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/glob-walk-files-leftovers-901-903-34f9` | 2026-08-30T00:55:34+00:00 | 领先 2 | docs: record leftover 901–903 glob walk/files freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-openrouter-login-leftovers-898-900-34f9` | 2026-08-30T00:25:00+00:00 | 领先 2 | docs(cadr-ai): record leftover 898–900 openrouter login freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-xai-login-refresh-leftovers-895-897-34f9` | 2026-08-30T00:06:56+00:00 | 领先 3 | docs(cadr-ai): record leftover 895–897 xai login/refresh freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-openai-device-poll-leftovers-892-894-34f9` | 2026-08-29T23:47:38+00:00 | 领先 4 | docs: record leftover 892-894 openai-device poll freeze Friend-MachineD n=5 on host cursor, gitHead cd28885fa. device_poll_complete 10.640× / device_poll_fail 1.273× / device_poll_slow 1.697×. Over-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-openai-anthropic-token-leftovers-889-891-34f9` | 2026-08-29T23:24:39+00:00 | 领先 3 | docs: record leftover 889-891 openai-anthropic freeze Friend-MachineD n=5 on host cursor, gitHead 914af2314. token_fields 0.536× / openai_exchange 4.144× / anthropic_exchange 1.694×. Mixed under/over-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-support-threads-leftovers-886-888-34f9` | 2026-08-29T23:03:04+00:00 | 领先 2 | docs: record leftover 886-888 cadr-cli threads freeze Friend-MachineD n=5 on host cursor, gitHead af847043f. threads_absent 1.127× / threads_current 1.257× / threads_joined 0.007×. Mixed over/under-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/ai-support-threads-leftovers-883-885-34f9` | 2026-08-29T22:57:58+00:00 | 领先 3 | docs: record leftover 883-885 cadr-ai threads freeze Friend-MachineD n=5 on host cursor, gitHead ffec731cb. threads_absent 1.104× / threads_current 1.135× / threads_joined 0.005×. Mixed over/under-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-anthropic-meta-leftovers-880-882-34f9` | 2026-08-29T22:33:29+00:00 | 领先 2 | docs: record leftover 880-882 anthropic oauth metadata freeze Friend-MachineD n=5 on host cursor, gitHead 21f928a20. anth_oauth_name 2.451× / anth_oauth_sub 0.835× / anth_oauth_instructions 6.497×. Mixed over/under-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-kimi-host-leftovers-877-879-34f9` | 2026-08-29T22:15:18+00:00 | 领先 2 | docs: record leftover 877-879 kimi oauth host freeze Friend-MachineD n=5 on host cursor, gitHead d07485562. kimi_host_default 1.122× / kimi_host_code 1.729× / kimi_host_trim 2.025×. Over-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-announcement-leftovers-874-876-34f9` | 2026-08-29T21:57:41+00:00 | 领先 2 | docs: record leftover 874-876 announcement freeze Friend-MachineD n=5 on host cursor, gitHead 942181b0c. announcement_make 0.030× / announcement_url 0.255× / announcement_title 0.547×. Under-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-support-atomic-write-leftovers-871-873-34f9` | 2026-08-29T21:43:19+00:00 | 领先 2 | docs: record leftover 871-873 atomic-write freeze Friend-MachineD n=5 on host cursor, gitHead 7efe322a6. write_hello 7.308× / write_overwrite 5.941× / write_empty 10.337× (write_empty ceiling 15.0). Over-1×. nextPairNum stays 328. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-support-external-editor-leftovers-868-870-34f9` | 2026-08-29T21:16:14+00:00 | 领先 2 | docs(cadr-cli): record leftover 868–870 external-editor freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/ext-ui-tui-thread-wrap-leftovers-865-867-34f9` | 2026-08-29T14:20:15+00:00 | 领先 84 | docs(cadr-cli): record leftover 865–867 extension-ui freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/armin-copy-cell-row-rotate-leftovers-862-864-34f9` | 2026-08-29T13:59:39+00:00 | 领先 81 | docs(cadr-cli): record leftover 862–864 armin freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/controller-title-notify-stream-leftovers-859-861-34f9` | 2026-08-29T13:46:37+00:00 | 领先 79 | docs(cadr-cli): record leftover 859–861 controller freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-settings-make-memory-thinking-leftovers-856-858-34f9` | 2026-08-29T13:27:42+00:00 | 领先 75 | docs(cadr-cli): record leftover 856–858 sdk freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-platform-style-changelog-leftovers-853-855-34f9` | 2026-08-29T13:03:52+00:00 | 领先 73 | docs(cadr-cli): record leftover 853–855 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/llama-ext-loaded-catalog-progress-leftovers-850-852-34f9` | 2026-08-29T12:42:35+00:00 | 领先 71 | docs(cadr-cli): record leftover 850–852 llama freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9` | 2026-08-29T12:29:22+00:00 | 领先 69 | docs(cadr-cli): record leftover 847–849 loader freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/ext-loader-timeout-source-quiet-leftovers-844-846-34f9` | 2026-08-29T12:13:37+00:00 | 领先 67 | docs(cadr-cli): record leftover 844–846 loader freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/migration-binaries-guide-docs-leftovers-841-843-34f9` | 2026-08-29T11:52:01+00:00 | 领先 65 | docs(cadr-cli): record leftover 841–843 migration freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/migration-data-legacy-manual-leftovers-838-840-34f9` | 2026-08-29T11:43:18+00:00 | 领先 63 | docs(cadr-cli): record leftover 838–840 migration freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/armin-make-copy-row-leftovers-835-837-34f9` | 2026-08-29T11:24:41+00:00 | 领先 61 | docs(cadr-cli): record leftover 835–837 armin freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/oauth-callback-hex-write-present-leftovers-832-834-34f9` | 2026-08-29T11:04:51+00:00 | 领先 59 | docs(cadr-ai): record leftover 832–834 oauth freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/rpc-ui-dialog-default-deadline-close-leftovers-829-831-34f9` | 2026-08-29T10:46:10+00:00 | 领先 57 | docs(cadr-cli): record leftover 829–831 rpc freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/llama-ui-search-filter-width-leftovers-826-828-34f9` | 2026-08-29T10:31:32+00:00 | 领先 55 | docs(cadr-cli): record leftover 826–828 llama freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-flags-entry-restored-leftovers-823-825-34f9` | 2026-08-29T10:13:04+00:00 | 领先 53 | docs(cadr-cli): record leftover 823–825 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-find-display-tree-leftovers-820-822-34f9` | 2026-08-29T09:57:52+00:00 | 领先 51 | docs(cadr-cli): record leftover 820–822 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-tree-display-hotkeys-leftovers-817-819-34f9` | 2026-08-29T09:44:39+00:00 | 领先 48 | docs(cadr-cli): record leftover 817–819 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-stats-usage-labels-leftovers-814-816-34f9` | 2026-08-29T09:27:30+00:00 | 领先 45 | docs(cadr-cli): record leftover 814–816 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-last-export-fork-leftovers-811-813-34f9` | 2026-08-29T09:13:46+00:00 | 领先 42 | docs(cadr-cli): record leftover 811–813 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/bootstrap-sessions-tool-user-compact-leftovers-808-810-34f9` | 2026-08-29T08:58:37+00:00 | 领先 40 | docs(cadr-cli): record leftover 808–810 sessions freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/llama-ui-format-fixed-exact-leftovers-805-807-34f9` | 2026-08-29T08:39:59+00:00 | 领先 38 | docs(cadr-cli): record leftover 805–807 llama-ui freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9` | 2026-08-29T08:28:07+00:00 | 领先 36 | docs(cadr-cli): record leftover 802–804 installer freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/config-selector-hint-suffix-checkbox-leftovers-799-801-34f9` | 2026-08-29T08:11:22+00:00 | 领先 34 | docs(cadr-cli): record leftover 799–801 config-selector freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/update-checks-git-output-ref-result-leftovers-796-798-34f9` | 2026-08-29T07:57:44+00:00 | 领先 32 | docs(cadr-cli): record leftover 796–798 update-checks freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-suites-bundle-visible-table-leftovers-793-795-34f9` | 2026-08-29T07:41:31+00:00 | 领先 30 | docs(cadr-evals): record leftover 793–795 suites freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/config-selector-records-rebuild-scope-leftovers-790-792-34f9` | 2026-08-29T07:25:26+00:00 | 领先 28 | docs(cadr-cli): record leftover 790–792 config-selector freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/config-selector-package-entry-state-record-leftovers-787-789-34f9` | 2026-08-29T07:11:17+00:00 | 领先 26 | docs(cadr-cli): record leftover 787–789 config-selector freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/config-selector-inherited-group-index-leftovers-784-786-34f9` | 2026-08-29T06:56:32+00:00 | 领先 24 | docs(cadr-cli): record leftover 784–786 config-selector freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/config-selector-item-key-project-next-leftovers-781-783-34f9` | 2026-08-29T06:42:59+00:00 | 领先 22 | docs(cadr-cli): record leftover 781–783 config-selector freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-suites-hello-judge-source-leftovers-778-780-34f9` | 2026-08-29T06:24:37+00:00 | 领先 20 | docs(cadr-evals): record leftover 778–780 suites freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-settings-reload-flush-compaction-leftovers-775-777-34f9` | 2026-08-29T06:14:07+00:00 | 领先 18 | docs(cadr-cli): record leftover 775–777 sdk-settings freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-settings-effective-set-remove-leftovers-772-774-34f9` | 2026-08-29T06:01:01+00:00 | 领先 16 | docs(cadr-cli): record leftover 772–774 sdk-settings freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-settings-value-thinking-drain-leftovers-769-771-34f9` | 2026-08-29T05:50:33+00:00 | 领先 14 | docs(cadr-cli): record leftover 769–771 sdk-settings freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-settings-thinking-idle-override-leftovers-766-768-34f9` | 2026-08-29T05:35:49+00:00 | 领先 12 | docs(cadr-cli): record leftover 766–768 sdk-settings freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/sdk-settings-default-retry-leftovers-763-765-34f9` | 2026-08-29T05:23:43+00:00 | 领先 10 | docs(cadr-cli): record leftover 763–765 sdk-settings freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/config-read-secrets-resolve-leftovers-760-762-34f9` | 2026-08-29T05:13:59+00:00 | 领先 8 | docs(cadr-cli): record leftover 760–762 config freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/update-checks-records-offline-leftovers-757-759-34f9` | 2026-08-29T04:57:15+00:00 | 领先 6 | docs(cadr-cli): record leftover 757–759 update-checks freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/registry-protocol-instantiate-leftovers-754-756-34f9` | 2026-08-29T04:45:05+00:00 | 领先 4 | docs(cadr-ai): record leftover 754–756 protocol/instantiate freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/runtime-provider-models-leftovers-751-753-34f9` | 2026-08-29T04:31:10+00:00 | 领先 2 | docs(cadr-ai): record leftover 751–753 runtime-provider freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-382-384-resource-loader-leftovers-80f7` | 2026-08-28T01:27:03+00:00 | 领先 4 | docs(cadr-cli): record cli_settings thinking leftover freeze (382-384) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/split-paired-paths-history-c88e` | 2026-08-28T00:22:13+00:00 | 领先 1 | Split Goal 20 paired-path history into per-lane shards. | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-harness-pairs-346-348-8a7a` | 2026-08-28T00:08:51+00:00 | 领先 3 | Merge cadr-migration 5cfd949d into evals harness leftover pairs 346-348 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-340-342-tui-theme-leftovers-102a` | 2026-08-27T23:57:35+00:00 | 领先 2 | feat(cadr-tui): freeze tui leftover trio (340-342) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-harness-pairs-331-333-4603` | 2026-08-27T23:45:22+00:00 | 领先 3 | merge cadr-migration tip eda54f81 into evals-harness 331-333 branch | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-343-345-write-leftovers-32fc` | 2026-08-27T23:22:34+00:00 | 领先 6 | merge cadr-migration tip 6b1c154a; append write freeze 343-345 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-322-324-core-rest-4664` | 2026-08-27T20:48:24+00:00 | 领先 4 | merge(cadr-migration): land #33 onto 8b03e65b without rewriting paired JSON | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/evals-leftover-pairs-325-327-b3bc` | 2026-08-27T20:33:32+00:00 | 领先 4 | merge cadr-migration 5ad6a77e into evals leftover 325-327 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-310-312-oauth-callback-leftovers-9da1` | 2026-08-27T20:19:21+00:00 | 领先 6 | docs(cadr-ai): set leftover-trio queue pointer to 328 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-307-309-cli-settings-leftovers-17b4` | 2026-08-27T19:50:14+00:00 | 领先 3 | docs(goal20): freeze cli_settings leftover trio (307-309) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-fmq-leftovers-304-306-c605` | 2026-08-27T19:25:57+00:00 | 领先 5 | merge cadr-migration 1f45de31 into file-mutation-queue leftovers 304-306 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-316-318-ls-leftovers-41ff` | 2026-08-27T19:09:04+00:00 | 领先 3 | merge cadr-migration a68275dc into pair-316-318 ls leftovers | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-301-303-powershell-leftovers-1ace` | 2026-08-27T18:53:18+00:00 | 领先 4 | docs(cadr-cli): record powershell_tool leftover freeze (301-303) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-harness-events-leftovers-313-315-1cff` | 2026-08-27T18:39:45+00:00 | 领先 4 | merge(cadr-cli): integrate cadr-migration 0fb9021b into 313-315 branch | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-298-300-image-runtime-leftovers-4eb0` | 2026-08-27T18:12:20+00:00 | 领先 4 | docs(cadr-ai): record image_runtime leftover freeze (298-300) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-295-297-cadr-ai-providers-0e8d` | 2026-08-27T17:53:53+00:00 | 领先 9 | Merge branch 'cadr-migration' into cursor/pair-295-297-cadr-ai-providers-0e8d | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-292-294-tool-manager-af5e` | 2026-08-27T17:25:55+00:00 | 领先 4 | docs(cadr-cli): restore over-1x rows dropped in 292-294 freeze | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-harness-events-leftovers-301-303-b1e9` | 2026-08-27T16:56:30+00:00 | 领先 1 | feat(cadr-cli): pair harness_events make_end/event_type/make_bus (301-303) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-289-291-find-leftovers-c98c` | 2026-08-27T16:51:55+00:00 | 领先 2 | docs(cadr-cli): record find_tool leftover trio freeze (289-291) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-286-288-fmq-leftover-150d` | 2026-08-27T16:28:26+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue leftover freeze (286-288) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-283-285-harness-events-1bde` | 2026-08-27T16:04:35+00:00 | 领先 2 | docs(cadr-agent): record harness_events on/watch/make_start freeze (283-285) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-280-282-output-accumulator-7ccd` | 2026-08-27T15:42:58+00:00 | 领先 2 | docs(cadr-cli): record output_accumulator freeze (280-282) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-280-282-output-accumulator-389c` | 2026-08-27T14:47:56+00:00 | 领先 1 | feat(cadr-cli): pair output_accumulator append/snapshot/finish (280-282) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-276-harness-events-emit-8cfd` | 2026-08-27T14:43:24+00:00 | 领先 4 | docs(cadr-cli): set nextPairNum 283 after module split | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-275-fmq-ensure-state-b990` | 2026-08-27T13:58:38+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue.ensure_state freeze (275) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-274-fmq-release-turn-ef6d` | 2026-08-27T13:31:51+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue.release_turn freeze (274) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-273-fmq-wait-turn-cba9` | 2026-08-27T13:14:05+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue.wait_turn freeze (273) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-272-fmq-register-68aa` | 2026-08-27T12:55:42+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue.register freeze (272) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-271-fmq-lock-7523` | 2026-08-27T12:36:57+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue.lock freeze (271) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/pair-270-queue-key-8765` | 2026-08-27T12:12:45+00:00 | 领先 2 | docs(cadr-cli): record file_mutation_queue.queue_key freeze (270) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/g20-0-unpause-inventory-46fa` | 2026-08-27T11:52:40+00:00 | 领先 1 | docs(goal20): unpause pairing after Goal 21, refresh inventory | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/g21-closeout-prereq-cfbf` | 2026-08-27T10:55:46+00:00 | 领先 1 | docs(acceptance): check G21 前置 and mark Goal 21 complete | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/g21-spec-closeout-9295` | 2026-08-27T10:45:11+00:00 | 领先 1 | docs(acceptance): close out Goal 21 spec to v0.84.3 | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/quiet-fiveam-gate-skip-60b2` | 2026-08-27T10:20:28+00:00 | 领先 2 | fix(test-cl): make quiet/skip verify fixtures printf-safe | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/process-docs-kimi-login-b5b9` | 2026-08-27T10:03:11+00:00 | 领先 3 | Revert "fix(cadr-cli): hide kimi-coding from /login selector" | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/g21-task7-gate-299b` | 2026-08-27T09:45:13+00:00 | 领先 6 | fix(g21-gate): full-gate (r2) | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/goal21-leftover-docs-b912` | 2026-08-27T08:14:20+00:00 | 领先 1 | docs(acceptance): add leftover Goal 21 alignment and team-platform briefs | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+- `cursor/setup-cloud-agent-environment-3901` | 2026-08-16T18:58:22+00:00 | 领先 1 | chore(env): add Cloud Agent environment for SBCL cadr build | 不确定：云代理工作分支，领先提交的说明没有全部出现在 cadr-migration 上，没有逐个 diff，不能判断是废弃尝试还是漏合并。
+
+- `goal26-footer-context-percent` | 2026-09-22T17:40:05+08:00 | 领先 4 | fix(agent): keep the turn's tool declaration off the transcript | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-cache-deadline` | 2026-09-22T12:41:33+08:00 | 领先 1 | feat(agent): skip a cache refresh that misses its deadline | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-context-system` | 2026-09-22T12:32:18+08:00 | 领先 1 | feat(agent): restore prompt and tools around context handlers | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-boundary-continue` | 2026-09-22T12:18:46+08:00 | 领先 1 | feat(agent): continue a run from turn_end and agent_before_settle | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-bug-offline` | 2026-09-22T12:02:12+08:00 | 领先 1 | test(cli): lock offline /bug to a local zip | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-image-input-limits` | 2026-09-22T11:56:35+08:00 | 领先 1 | feat(cli): resize tool-result images from model input limits | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-crash-extension-hint` | 2026-09-22T11:43:23+08:00 | 领先 1 | feat(cli): name loaded extensions that appear in a crash stack | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-context-edit` | 2026-09-22T11:33:02+08:00 | 领先 1 | feat(agent): append context edits without rewriting history | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-finish-turn` | 2026-09-22T11:08:29+08:00 | 领先 1 | feat(agent): stop or continue a run from finishTurn | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-compaction-null-keep` | 2026-09-22T11:01:52+08:00 | 领先 1 | fix(agent): retain-none compaction keeps its own entry id | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-gif-signature` | 2026-09-22T10:57:51+08:00 | 领先 1 | test(cli): lock GIF detection to the complete signatures | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-jump-label` | 2026-09-22T10:54:45+08:00 | 领先 1 | fix(tui): keep the jump-to-end label centered when the scrollbar hides | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-prompt-frontmatter` | 2026-09-22T10:52:03+08:00 | 领先 1 | test(agent): lock malformed prompt frontmatter as a resource warning | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal26-strict-default` | 2026-09-22T10:38:32+08:00 | 领先 1 | fix(ai): default unknown Chat Completions tools to non-strict | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-startup-i04-sha-tip` | 2026-09-22T09:13:57+08:00 | 领先 1 | fix(goal24): retarget I04 screenSha pins for pi v0.86.1 banners | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-unmodeled-sink-tip` | 2026-09-22T08:14:13+08:00 | 领先 1 | fix(goal24): remap unmodeled-sink review sites for v0.86.1 | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-visible-string-inv-tip` | 2026-09-22T07:39:51+08:00 | 领先 1 | fix(goal24): refresh baseline visible-string inventory for v0.86.1 | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-fixed-baseline-sha-tip` | 2026-09-22T07:04:02+08:00 | 领先 1 | fix(perf): pin goal11 fixed-baseline artifact SHA to v0.86.1 | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-clipboard-osc52-tip` | 2026-09-22T05:33:47+08:00 | 领先 1 | fix(cli): restore OSC 52 when no display clipboard exists | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-clipboard-errors-tip` | 2026-09-22T05:25:18+08:00 | 领先 1 | fix(cli): name a failed local clipboard write | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-summary-click-tip` | 2026-09-22T05:12:11+08:00 | 领先 1 | fix(cli): toggle summary entries on left click | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-post-login-catalog-wait` | 2026-09-22T02:57:23+08:00 | 领先 1 | fix(cli): wait once for post-login catalog before model pick | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-wezterm-kitty` | 2026-09-22T00:56:55+08:00 | 领先 1 | fix(tui): clear WezTerm rows before drawing Kitty images | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-bash-signal-exit` | 2026-09-22T00:52:18+08:00 | 领先 1 | fix(cli): map signal-killed bash exits to 128 plus the signal | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-cerebras-strict` | 2026-09-22T00:42:43+08:00 | 领先 1 | fix(ai): omit tool strict mode for Cerebras completions | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-zai-prompt-too-long` | 2026-09-22T00:39:18+08:00 | 领先 1 | fix(ai): treat z.ai Prompt too long as context overflow | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-cjk-autocomplete` | 2026-09-22T00:35:55+08:00 | 领先 1 | fix(tui): treat CJK punctuation as autocomplete path boundaries | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-clipboard-errors` | 2026-09-21T15:59:52+08:00 | 领先 1 | fix(cli): name a failed local clipboard write | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `goal24-summary-click` | 2026-09-21T15:39:14+08:00 | 领先 1 | fix(cli): toggle summary entries on left click | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `fix/auth-check-oauth-refresh-table` | 2026-09-17T22:31:09+08:00 | 领先 1 | fix(cli): share OAuth refresh table with auth check | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `cursor/maintain-verify-cadr-34f9` | 2026-09-01T03:02:00+00:00 | 领先 1 | Maintain verify-cadr map: --offline vs CADR_OFFLINE for fd/rg. | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `cursor/cursor-full-crew-34f9` | 2026-08-28T07:05:43+00:00 | 领先 1 | docs: Cursor cloud agents are the live crew | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `cursor/pstack-cadr-mode-handoff-34f9` | 2026-08-28T03:50:28+00:00 | 领先 2 | Clarify pstack is Cursor-only, not a cadr product skill. | 已被替代：领先提交的说明都能在 origin/cadr-migration 的历史里找到，这个 tip 没有新的提交说明。
+- `main` | 2026-08-01T01:48:53+03:00 | 领先 1675 | Merge pull request #7408 from earendil-works/refactor/session-reader | 已被替代：这是 2026-08-01 的上游 pi 快照（earendil-works 的合并提交），cadr 的稳定线是 cadr-migration，钉点已经到 v1.4.0。
