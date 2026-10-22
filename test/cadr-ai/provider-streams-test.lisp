@@ -812,6 +812,13 @@
       (when (eq provider-id :radius)
         (is (null catalog-hit)
             "Radius is dynamic and intentionally has no static hit"))
+      ;; v1.4.0 typesafe.ts registers classifiers only. There is no chat
+      ;; request, so the thinking-level matrix does not apply.
+      (when (eq (cadr-ai:provider-definition-protocol definition)
+                :typesafe-system-one)
+        (is (null (cadr-ai:list-model-metadata provider-id))))
+      (unless (eq (cadr-ai:provider-definition-protocol definition)
+                  :typesafe-system-one)
       (dolist (model-case model-cases)
         (dolist (level *thinking-matrix-levels*)
           (multiple-value-bind (provider model)
@@ -851,7 +858,7 @@
                       nil)
                   (thinking-matrix-event-types
                    provider model expected-thinking-events-p))
-                 "~A thinking event sequence differs" label))))))))
+                 "~A thinking event sequence differs" label)))))))))
 
 (defun strict-fallback-parameters ()
   (cadr-ai::json-object

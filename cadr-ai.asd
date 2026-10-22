@@ -153,6 +153,7 @@
                              (:file "goal12-auth-test")
                              (:file "goal18-auth-test")
                              (:file "meta-oauth-test")
+                             (:file "typesafe-credentials-test")
                              (:file "openai-chatgpt-oauth-test")
                              (:file "goal12-model-data-test")
                              (:file "goal12-codex-websocket-test")

@@ -106,7 +106,7 @@ Reference public surface:
 | Native JSON, SSE, HTTP, retry | implemented | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [HTTP transport](../src/cadr-ai/transport/http.lisp), [streaming JSON](../src/cadr-ai/capabilities/streaming-json.lisp), [event streams](../src/cadr-ai/capabilities/event-stream.lisp), and [retry](../src/cadr-ai/support/retry.lisp), including proxy CONNECT in [CL-GOAL12-AI](#cl-goal12-ai) |
 | Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | implemented | Complete deterministic compatibility, transport, history, retry, image and provider-matrix behavior is covered by [CL-AI-WAVE3](#cl-ai-wave3) and the retained Wave 1 evidence |
 | Remaining independent APIs | implemented | Azure Responses, Bedrock Converse Stream, Vertex, Mistral Conversations, OpenAI Codex Responses and `pi-messages` have independent request/response/auth coverage in [CL-AI-WAVE3](#cl-ai-wave3) |
-| 41 built-in text providers | implemented | The registry has 41 definitions. Meta reads `META_API_KEY` or mints a 24-hour Model API key from a Muse device login. The non-baseline `ollama` registration stays removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
+| 42 built-in providers | implemented | The registry has 42 definitions. TypeSafe reads `TYPESAFE_API_KEY` and exposes classifier `jev-latest` on `typesafe-system-one`; it has no chat models. Meta reads `META_API_KEY` or mints a 24-hour Model API key from a Muse device login. The non-baseline `ollama` registration stays removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
 | Static catalogs and cost calculation | implemented | [generated catalog](../src/cadr-ai/models.generated.lisp) plus the schema/structure/per-shard integrity gate and deterministic native generators in [CL-GOAL12-AI](#cl-goal12-ai) cover the exact pinned 37-file, 1153-model snapshot |
 | API-key and OAuth/device authentication | implemented | [auth](../src/cadr-ai/auth.lisp), [OAuth core](../src/cadr-ai/oauth/pkce.lisp), [provider OAuth flows](../src/cadr-ai/oauth/providers/), and [CL-GOAL12-AI](#cl-goal12-ai) cover all provider-owned login/refresh/store/filter contracts, including GitHub Copilot, Kimi, Meta, OpenRouter, Radius and xAI |
 | Image input | implemented | [CL-AI-IMAGE](#cl-ai-image) |
@@ -163,6 +163,7 @@ credential is inferred.
 | 37 | `zai` | `openai-completions` | `ZAI_API_KEY` | implemented; endpoint/catalog | fixture; no ZAI credential |
 | 38 | `zai-coding-cn` | `openai-completions` | `ZAI_CODING_CN_API_KEY` | implemented; regional coding endpoint/catalog | fixture; no ZAI credential |
 | 39 | `meta` | `openai-responses` | `META_API_KEY` or Muse subscription device OAuth | implemented; device-code login mints a 24-hour Model API key; default model `muse-spark-1.3` | fixture; [meta-oauth-test](../test/cadr-ai/meta-oauth-test.lisp) |
+| 40 | `typesafe` | `typesafe-system-one` | `TYPESAFE_API_KEY` | implemented; stored key wins over the env var; empty values do not authenticate; classifier `jev-latest` only | fixture; [typesafe-credentials-test](../test/cadr-ai/typesafe-credentials-test.lisp) |
 
 The separate `openrouter` image provider and dynamic `faux` provider are not
 text-provider rows; both are implemented as public cadr runtimes with

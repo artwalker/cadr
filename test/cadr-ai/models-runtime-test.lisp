@@ -243,7 +243,7 @@
           (cadr-ai:make-built-in-models-runtime
            :environment
            '(("DEEPSEEK_API_KEY" . "test-deepseek")))))
-    (is (= 41
+    (is (= 42
            (length
             (cadr-ai:models-runtime-providers runtime))))
     ;; v1.4.0 meta.models.ts: muse-spark-1.1, 1.2, 1.2-contributor, 1.3, 1.3-contributor, muse-wonder-1.0.

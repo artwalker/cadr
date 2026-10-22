@@ -45,6 +45,7 @@
     (:qwen-token-plan-cn . 21)
     (:qwen-token-plan-individual . 9)
     (:together . 15)
+    (:typesafe . 0)
     (:vercel-ai-gateway . 305)
     (:xai . 4)
     (:xiaomi . 3)
@@ -65,7 +66,7 @@
       :moonshotai :moonshotai-cn :nvidia :openai :openai-codex
       :opencode :opencode-go :openrouter :qwen-token-plan
       :qwen-token-plan-cn :qwen-token-plan-individual :radius
-      :together :vercel-ai-gateway
+      :together :typesafe :vercel-ai-gateway
       :xai :xiaomi :xiaomi-token-plan-ams :xiaomi-token-plan-cn
       :xiaomi-token-plan-sgp :zai :zai-coding-cn)
     (mapcar #'cadr-ai:provider-definition-id

@@ -771,6 +771,28 @@
      :oauth-refresh-strategy nil
      :oauth-to-auth-strategy nil
      :model-filter-strategy nil)
+    (:id :typesafe
+     :baseline-source "packages/ai/src/providers/typesafe.ts:6"
+     :name "TypeSafe"
+     :protocol :typesafe-system-one
+     :protocols (:typesafe-system-one)
+     :base-url "https://api.typesafe.ai/v1/"
+     :auth-types (:api-key)
+     :default-model "jev-latest"
+     :key-environment "TYPESAFE_API_KEY"
+     :required-environment nil
+     :dynamic-models-p nil
+     :supports-images-p nil
+     :supports-tools-p nil
+     :reasoning-p nil
+     :oauth-metadata nil
+     :api-key-name "TypeSafe API key"
+     :environment-names ("TYPESAFE_API_KEY")
+     :api-key-auth-strategy :environment
+     :oauth-login-strategy nil
+     :oauth-refresh-strategy nil
+     :oauth-to-auth-strategy nil
+     :model-filter-strategy nil)
     (:id :vercel-ai-gateway
      :baseline-source "packages/ai/src/providers/vercel-ai-gateway.ts:7"
      :name "Vercel AI Gateway"
