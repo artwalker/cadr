@@ -120,6 +120,33 @@ second" (cadr-ai:content-text content)))
         (utility-error-message
          "OpenAI API error (429): {\"code\":\"subscription_sharing_workplace_individual_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
 
+(test v140-retry-matches-gateway-vertex-and-codex-disconnect-wording
+  ;; pi@4a080252f packages/ai/test/retry.test.ts
+  ;; #10920 gateway upstream failures, #10996 node-fetch Vertex token
+  ;; refresh, #11057 Codex CLI stream disconnect relayed by proxies.
+  (dolist
+      (text
+       '("request to https://oauth2.googleapis.com/token failed, reason:"
+         "request to https://oauth2.googleapis.com/token failed, reason: connect ECONNREFUSED 127.0.0.1:9"
+         "unknown: Unable to forward upstream stream"
+         "upstream_error: Upstream request failed"
+         "upstream_stream_read_error: Upstream response stream was interrupted"
+         "Upstream HTTP/2 stream failed"
+         "stream disconnected before completion: stream closed before response.completed"))
+    (is (cadr-ai:retryable-assistant-error-p
+         (utility-error-message text)))))
+
+(test v140-retry-ignores-status-digits-inside-ids-and-byte-counts
+  ;; pi@4a080252f packages/ai/test/retry.test.ts #11057
+  ;; Status codes inside request ids or longer numbers are not statuses.
+  (dolist
+      (text
+       '("401 {\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"},\"request_id\":\"req_011CU503xyz\"}"
+         "400 image exceeds 5 MB maximum: 5316784 bytes > 5242880 bytes"))
+    (is (not
+         (cadr-ai:retryable-assistant-error-p
+          (utility-error-message text))))))
+
 (test goal17-retry-classifier-matches-the-baseline-transient-pattern-matrix
   (dolist
       (text

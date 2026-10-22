@@ -1430,7 +1430,9 @@
     ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
     ;; +2 Goal 26: faux-system-line and faux-message-line.
     ;; +1 Goal 26 #11016: request-size-overflow-text-p (support/overflow.lisp).
-    (is (= 291 definition-count)
+    ;; +4 Goal 26 v1.4.0 retry: status-code boundary and the node-fetch
+    ;; request-failure matcher in support/retry.lisp.
+    (is (= 295 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

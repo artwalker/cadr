@@ -51,6 +51,28 @@
      (retry-error-message
       "OpenAI API error (429): {\"code\":\"subscription_sharing_workplace_individual_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
 
+(test v140-session-retry-matches-gateway-vertex-and-codex-disconnect
+  ;; Session loop mirrors packages/ai/src/utils/retry.ts at v1.4.0.
+  (dolist
+      (message
+       '("request to https://oauth2.googleapis.com/token failed, reason:"
+         "upstream_error: Upstream request failed"
+         "upstream_stream_read_error: Upstream response stream was interrupted"
+         "Upstream HTTP/2 stream failed"
+         "stream disconnected before completion: stream closed before response.completed"
+         "524 status code (no body)"))
+    (is
+     (cadr-agent::retryable-assistant-error-p
+      (retry-error-message message))))
+  (dolist
+      (message
+       '("401 {\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"},\"request_id\":\"req_011CU503xyz\"}"
+         "400 image exceeds 5 MB maximum: 5316784 bytes > 5242880 bytes"))
+    (is
+     (not
+      (cadr-agent::retryable-assistant-error-p
+       (retry-error-message message))))))
+
 (test transient-assistant-errors-retry-and-report-recovery
   (let ((*responses*
           (list
