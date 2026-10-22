@@ -64,7 +64,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | `@` 补全的查询含正则元字符时仍有结果 | v1.4.0 #10972 | done：fd 查询按字面转义。`@pages/[`、`@pages/(`、`@[id` 命中对应文件，不把 `[` 和 `(` 当字符类 |
 | 扩展对话框叠放，关掉当前的再露出上一个 | v1.4.0 #11166 #9909 | open |
 | Ctrl+Z 挂起后剪贴板进程不被一起挂起 | v1.4.0 #11179 | open |
-| `mcp.json` 允许 UTF-8 BOM | v1.4.0 #11191 | done：以 UTF-8 BOM 开头的全局和项目 `mcp.json` 能读出各自的服务器，errors 为空。改写后的文件不再带 BOM，不剥 BOM 的 JSON 解析也能读出改过的条目 |
+| `mcp.json` 允许 UTF-8 BOM | v1.4.0 #11191 | open：以 UTF-8 BOM 开头的全局和项目 `mcp.json` 能读出各自的服务器，errors 为空。改写后的文件不再带 BOM，不剥 BOM 的 JSON 解析也能读出改过的条目；review-fail（2026-10-22）：上游 `packages/coding-agent/CHANGELOG.md` 明确该修复覆盖 `pi mcp add` / `pi mcp remove`，`packages/coding-agent/test/mcp-extension.test.ts` 用 `addMcpServerConfig` 在带 BOM 的全局文件中新增 `other`；cadr 的 `src/cadr-agent/extensions/mcp-config.lisp` 只提供 `update-mcp-server-config`，`src/cadr-agent/package.lisp` 也未导出 add/remove，`test/cadr-agent/mcp-config-test.lisp` 只更新既有 `demo`，未实现或锁死 add/remove 场景 |
 | 恢复会话时，分支没记过的扩展工具默认仍激活 | v1.4.0 #11062 #11075 | open |
 | 输出上限截断的工具调用丢掉对应的工具结果 | v1.4.0 #11227 | open |
 | `grep` 使用 `rg --no-config` | v1.4.0 #11203 | done：工具自己的正则、字面、glob 和条数不受 `RIPGREP_CONFIG_PATH` 影响。配置里的 `--fixed-strings` 不会把 `a.` 变成字面搜索 |
