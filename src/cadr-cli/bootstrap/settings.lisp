@@ -488,7 +488,12 @@
     (and (stringp value) value)))
 
 (defun settings-external-editor-command
-    (manager &optional (environment-function #'uiop:getenv))
+    (manager &optional (environment-function #'uiop:getenv)
+                       (windows-p (uiop:os-windows-p)))
+  ;; v1.4.0 settings-manager.ts getExternalEditorCommand: a trimmed
+  ;; externalEditor string, else VISUAL, else EDITOR, else notepad
+  ;; when process.platform is win32 and nano otherwise. Env values
+  ;; are not trimmed; only an empty string is absent.
   (let ((configured
           (settings-value manager "externalEditor" :missing)))
     (if (and (stringp configured)
@@ -508,7 +513,9 @@
               (and (stringp editor)
                    (plusp (length editor))
                    editor))
-            "nano"))))
+            (if windows-p
+                "notepad"
+                "nano")))))
 
 (defun settings-npm-command (manager)
   (let ((value (settings-value manager "npmCommand" :missing)))

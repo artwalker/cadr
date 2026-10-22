@@ -14,7 +14,8 @@
         manager
         (lambda (name)
           (declare (ignore name))
-          nil))))
+          nil)
+        nil)))
   (is (null (cadr-cli::settings-theme-paths manager)))
   (is (null (cadr-cli::settings-skill-paths manager)))
   (is (null (cadr-cli::settings-prompt-paths manager)))
