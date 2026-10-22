@@ -367,6 +367,10 @@
     (list-json-array (nreverse result)))))
 
 (defun bedrock-tools (model tools tool-choice)
+  ;; pi@4a080252f bedrock-converse-stream.ts convertToolConfig:
+  ;; toolChoice "none" drops the whole toolConfig, tools included.
+  (when (and (stringp tool-choice) (string= tool-choice "none"))
+    (return-from bedrock-tools nil))
   (let ((result
           (json-object
            "tools"
@@ -640,9 +644,11 @@
                      (bedrock-cache-point
                       retention)))))))
     (when (context-tools context)
-      (json-put payload "toolConfig"
-                (bedrock-tools
-                 model (context-tools context) tool-choice)))
+      (let ((tool-config
+              (bedrock-tools
+               model (context-tools context) tool-choice)))
+        (when tool-config
+          (json-put payload "toolConfig" tool-config))))
     (let ((thinking
             (or
              (bedrock-thinking-fields

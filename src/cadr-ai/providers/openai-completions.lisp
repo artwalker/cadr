@@ -704,10 +704,9 @@
     (when active-tools
       (json-put payload "tools"
                 (openai-chat-tools model active-tools)))
-    ;; pi@4a080252f openai-completions.ts:838 — omit tool_choice when
-    ;; the request has no tools (#8607). Compaction no longer passes
-    ;; toolChoice: "none" (6b36eb592).
-    (when (and tool-choice active-tools)
+    ;; pi@4a080252f openai-completions.ts buildParams: a truthy
+    ;; toolChoice is copied even when the request has no tools.
+    (when tool-choice
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
     ;; pi@4a080252f api/openai-completions.ts:847-866 — vLLM caps

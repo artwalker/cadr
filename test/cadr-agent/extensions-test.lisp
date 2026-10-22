@@ -603,6 +603,41 @@
            (length
             (cadr-agent::extension-host-conflicts host))))))
 
+(test extension-tool-execution-mode-is-copied-onto-the-agent-tool
+  ;; pi@4a080252f AgentTool.executionMode. Omitted stays parallel.
+  ;; sequential is the value the batch rule reads.
+  (let* ((bundle
+           (make-test-extension-bundle
+            "modes"
+            (lambda ()
+              (cadr-agent:define-tool
+               "plain"
+               :description "plain"
+               :parameters (object-schema)
+               :handler
+               (lambda (call-id arguments context)
+                 (declare (ignore call-id arguments context))
+                 (values nil nil)))
+              (cadr-agent:define-tool
+               "serial"
+               :description "serial"
+               :parameters (object-schema)
+               :execution-mode :sequential
+               :handler
+               (lambda (call-id arguments context)
+                 (declare (ignore call-id arguments context))
+                 (values nil nil))))))
+         (host (make-test-extension-host (list bundle)))
+         (tools (cadr-agent::extension-host-tools host))
+         (plain
+           (find "plain" tools
+                 :key #'cadr-ai:tool-name :test #'string=))
+         (serial
+           (find "serial" tools
+                 :key #'cadr-ai:tool-name :test #'string=)))
+    (is (eq :parallel (cadr-ai:tool-execution-mode plain)))
+    (is (eq :sequential (cadr-ai:tool-execution-mode serial)))))
+
 (test duplicate-extension-commands-use-invocation-names
   (let ((seen nil))
     (let* ((first

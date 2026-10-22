@@ -104,12 +104,17 @@
             (google-thinking-config model reasoning thinking-budgets)))
       (when thinking
         (json-put payload "thinkingConfig" thinking)))
-    (when tool-choice
-      (json-put
-       payload "toolConfig"
-       (json-object
-        "functionCallingConfig"
-        (json-object "mode" (string-upcase tool-choice)))))
+    (let ((mode
+            (google-function-calling-mode
+             (context-tools context)
+             tool-choice
+             (supports-google-strict-tool-sampling-p model))))
+      (when mode
+        (json-put
+         payload "toolConfig"
+         (json-object
+          "functionCallingConfig"
+          (json-object "mode" mode)))))
     (make-request-spec
      :url
      (format

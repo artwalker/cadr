@@ -296,6 +296,233 @@
         (agent-prompt agent "run")
         (is (not (null second-saw-first)))))))
 
+(test omitted-execution-mode-runs-the-batch-in-parallel
+  ;; pi@4a080252f agent-loop.ts: omitted executionMode is not sequential,
+  ;; and the default toolExecution is parallel. The second call starts
+  ;; before the first finishes. tool_execution_end follows completion.
+  ;; tool results stay in assistant source order.
+  (let* ((finish-order nil)
+         (slow-started
+           (sb-thread:make-semaphore :count 0))
+         (release-slow
+           (sb-thread:make-semaphore :count 0))
+         (slow
+           (make-tool
+            :name "slow"
+            :description "Slow"
+            :parameters (object-schema)
+            :executor
+            (lambda (call-id arguments)
+              (declare (ignore arguments))
+              (sb-thread:signal-semaphore slow-started)
+              (sb-thread:wait-on-semaphore release-slow)
+              (push call-id finish-order)
+              (list (make-text-content :text "slow")))))
+         (fast
+           (make-tool
+            :name "fast"
+            :description "Fast"
+            :parameters (object-schema)
+            :executor
+            (lambda (call-id arguments)
+              (declare (ignore arguments))
+              (sb-thread:wait-on-semaphore slow-started)
+              (push call-id finish-order)
+              (list (make-text-content :text "fast")))))
+         (*responses*
+           (list
+            (assistant
+             (list
+              (make-tool-call
+               :id "slow_1" :name "slow"
+               :arguments (cadr-ai::json-object))
+              (make-tool-call
+               :id "fast_1" :name "fast"
+               :arguments (cadr-ai::json-object)))
+             :tool-use)
+            (assistant (list (make-text-content :text "done")))))
+         (*contexts* nil)
+         (events nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :tools (list slow fast)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :on-event
+             (lambda (event)
+               (push event events)
+               (when
+                   (and
+                    (eq :tool-execution-end
+                        (agent-event-type event))
+                    (string=
+                     "fast_1"
+                     (cadr-ai:tool-call-id
+                      (agent-event-tool-call event))))
+                 (sb-thread:signal-semaphore release-slow))))))
+      (agent-prompt agent "run")
+      (is (equal '("slow_1" "fast_1") finish-order))
+      (let ((result-ids
+              (loop for message in (agent-messages agent)
+                    when (typep message 'tool-result-message)
+                      collect
+                      (tool-result-message-tool-call-id message))))
+        (is (equal '("slow_1" "fast_1") result-ids)))
+      (let ((end-ids
+              (loop for event in (nreverse events)
+                    when (eq :tool-execution-end
+                             (agent-event-type event))
+                      collect
+                      (cadr-ai:tool-call-id
+                       (agent-event-tool-call event)))))
+        (is (equal '("fast_1" "slow_1") end-ids))))))
+
+(test sequential-tool-holds-every-other-call-in-the-batch
+  ;; pi@4a080252f agent-loop.test.ts: one executionMode sequential forces
+  ;; the batch even when the other tool omits the mode. The second call
+  ;; does not start while the first is still running.
+  (let ((first-entered (sb-thread:make-semaphore :count 0))
+        (second-started (sb-thread:make-semaphore :count 0))
+        (release-first (sb-thread:make-semaphore :count 0))
+        (early nil)
+        (watcher nil))
+    (let* ((first
+             (make-tool
+              :name "slow"
+              :description "Slow"
+              :parameters (object-schema)
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (sb-thread:signal-semaphore first-entered)
+                (sb-thread:wait-on-semaphore release-first)
+                (list (make-text-content :text "slow")))))
+           (second
+             (make-tool
+              :name "fast"
+              :description "Fast"
+              :parameters (object-schema)
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (sb-thread:signal-semaphore second-started)
+                (list (make-text-content :text "fast")))))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "tool-1" :name "slow"
+                 :arguments (cadr-ai::json-object))
+                (make-tool-call
+                 :id "tool-2" :name "fast"
+                 :arguments (cadr-ai::json-object)))
+               :tool-use)
+              (assistant (list (make-text-content :text "done")))))
+           (*contexts* nil))
+      (declare (special *responses* *contexts*))
+      (setf watcher
+            (sb-thread:make-thread
+             (lambda ()
+               (when (sb-thread:wait-on-semaphore
+                      first-entered :timeout 2)
+                 (setf early
+                       (and (sb-thread:wait-on-semaphore
+                             second-started :timeout 1)
+                            t))
+                 (sb-thread:signal-semaphore release-first)))
+             :name "cadr-gap48-batch-watch"))
+      (let ((agent
+              (make-agent
+               :provider :mock
+               :model (mock-model)
+               :tools (list first second)
+               :stream-function
+               (faux-stream '*responses* '*contexts*))))
+        (unwind-protect
+             (agent-prompt agent "run")
+          (sb-thread:join-thread watcher))
+        (is (not early))
+        (let ((result-ids
+                (loop for message in (agent-messages agent)
+                      when (typep message 'tool-result-message)
+                        collect
+                        (tool-result-message-tool-call-id message))))
+          (is (equal '("tool-1" "tool-2") result-ids)))))))
+
+(test sequential-tool-called-twice-stays-sequential-under-the-default
+  ;; pi@4a080252f agent-loop.test.ts: the same tool with
+  ;; executionMode sequential, and no global override, runs its two
+  ;; calls one after the other.
+  (let ((first-entered (sb-thread:make-semaphore :count 0))
+        (second-started (sb-thread:make-semaphore :count 0))
+        (release-first (sb-thread:make-semaphore :count 0))
+        (early nil)
+        (watcher nil))
+    (let* ((tool
+             (make-tool
+              :name "slow"
+              :description "Slow"
+              :parameters (object-schema)
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore arguments))
+                (if (string= call-id "tool-1")
+                    (progn
+                      (sb-thread:signal-semaphore first-entered)
+                      (sb-thread:wait-on-semaphore release-first)
+                      (list (make-text-content :text "first")))
+                    (progn
+                      (sb-thread:signal-semaphore second-started)
+                      (list (make-text-content :text "second")))))))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "tool-1" :name "slow"
+                 :arguments (cadr-ai::json-object))
+                (make-tool-call
+                 :id "tool-2" :name "slow"
+                 :arguments (cadr-ai::json-object)))
+               :tool-use)
+              (assistant (list (make-text-content :text "done")))))
+           (*contexts* nil))
+      (declare (special *responses* *contexts*))
+      (setf watcher
+            (sb-thread:make-thread
+             (lambda ()
+               (when (sb-thread:wait-on-semaphore
+                      first-entered :timeout 2)
+                 (setf early
+                       (and (sb-thread:wait-on-semaphore
+                             second-started :timeout 1)
+                            t))
+                 (sb-thread:signal-semaphore release-first)))
+             :name "cadr-gap48-twice-watch"))
+      (let ((agent
+              (make-agent
+               :provider :mock
+               :model (mock-model)
+               :tools (list tool)
+               :stream-function
+               (faux-stream '*responses* '*contexts*))))
+        (unwind-protect
+             (agent-prompt agent "run")
+          (sb-thread:join-thread watcher))
+        (is (not early))
+        (let ((result-ids
+                (loop for message in (agent-messages agent)
+                      when (typep message 'tool-result-message)
+                        collect
+                        (tool-result-message-tool-call-id message))))
+          (is (equal '("tool-1" "tool-2") result-ids)))))))
+
 (test goal10-busy-parallel-tool-abort-reaches-all-running-executors
   (let ((started
           (sb-thread:make-semaphore :count 0))

@@ -484,7 +484,9 @@
     (is (string= "required"
                  (cadr-ai::json-get payload "tool_choice")))))
 
-(test completions-omits-tool-choice-when-the-request-has-no-tools
+(test completions-sends-tool-choice-none-when-the-request-has-no-tools
+  ;; pi@4a080252f openai-completions.ts buildParams copies a truthy
+  ;; toolChoice without consulting the tool list.
   (let* ((model
            (compat-model
             :id "plain"
@@ -505,7 +507,7 @@
               :api-key "key")
              model context
              :tool-choice "none"))))
-    (is (not (cadr-ai::json-present-p payload "tool_choice")))
+    (is (string= "none" (cadr-ai::json-get payload "tool_choice")))
     (is (not (cadr-ai::json-present-p payload "tools")))))
 
 (test google-thinking-off-and-tool-mode-cover-non-gemini-3
@@ -782,3 +784,182 @@
                  (string= "internal reasoning"
                           (cadr-ai::json-get block "text"))))
           content)))))
+
+(defun gap48-payload (provider model context &rest args)
+  (request-spec-payload
+   (apply #'build-request provider model context :stream-p t args)))
+
+(defun gap48-google-mode (payload)
+  (cadr-ai::json-get
+   (cadr-ai::json-get
+    (cadr-ai::json-get payload "toolConfig")
+    "functionCallingConfig")
+   "mode"))
+
+(test shared-tool-choice-auto-and-none-reach-every-api
+  ;; pi@4a080252f types.ts ToolChoice is "auto" | "none". Each KnownApi
+  ;; copies those two values into the request the way its adapter does.
+  (let ((bare
+          (cadr-ai:make-context
+           :system-prompt "sys"
+           :messages
+           (list (cadr-ai:make-user-message :content "hi" :timestamp 1)))))
+    (dolist (choice '("auto" "none"))
+      (let* ((anthropic
+               (multiple-value-bind (provider model)
+                   (provider-case :anthropic)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice)))
+             (responses
+               (multiple-value-bind (provider model)
+                   (provider-case :openai)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice)))
+             (azure
+               (multiple-value-bind (provider model)
+                   (provider-case :azure)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice)))
+             (completions
+               (gap48-payload
+                (cadr-ai:make-openai-completions-provider :api-key "key")
+                (compat-model
+                 :id "gpt-4.1"
+                 :provider :openai
+                 :api :openai-completions
+                 :base-url "https://api.openai.com/v1"
+                 :max-tokens 4096)
+                (sample-context)
+                :tool-choice choice))
+             (completions-bare
+               (gap48-payload
+                (cadr-ai:make-openai-completions-provider :api-key "key")
+                (compat-model
+                 :id "gpt-4.1"
+                 :provider :openai
+                 :api :openai-completions
+                 :base-url "https://api.openai.com/v1"
+                 :max-tokens 4096)
+                bare
+                :tool-choice choice))
+             (mistral
+               (multiple-value-bind (provider model)
+                   (provider-case :mistral)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice)))
+             (codex
+               (multiple-value-bind (provider model)
+                   (provider-case :codex)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice)))
+             (pi-payload
+               (multiple-value-bind (provider model)
+                   (provider-case :pi-messages)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice)))
+             (google
+               (multiple-value-bind (provider model)
+                   (provider-case :google)
+                 (declare (ignore model))
+                 (gap48-payload
+                  provider
+                  (compat-model
+                   :id "gemini-2.5-flash"
+                   :provider :google
+                   :api :google-generative-ai
+                   :base-url
+                   "https://generativelanguage.googleapis.com/v1beta"
+                   :max-tokens 4096)
+                  (sample-context)
+                  :tool-choice choice)))
+             (vertex
+               (multiple-value-bind (provider model)
+                   (provider-case :vertex)
+                 (declare (ignore model))
+                 (gap48-payload
+                  provider
+                  (compat-model
+                   :id "gemini-2.5-flash"
+                   :provider :google-vertex
+                   :api :google-vertex
+                   :base-url "https://aiplatform.googleapis.com/v1"
+                   :max-tokens 4096)
+                  (sample-context)
+                  :tool-choice choice)))
+             (bedrock
+               (multiple-value-bind (provider model)
+                   (provider-case :bedrock)
+                 (gap48-payload provider model (sample-context)
+                                :tool-choice choice))))
+        (is (string=
+             choice
+             (cadr-ai::json-get
+              (cadr-ai::json-get anthropic "tool_choice")
+              "type")))
+        (is (string= choice (cadr-ai::json-get responses "tool_choice")))
+        (is (string= choice (cadr-ai::json-get azure "tool_choice")))
+        (is (string= choice (cadr-ai::json-get completions "tool_choice")))
+        (is (string= choice
+                     (cadr-ai::json-get completions-bare "tool_choice")))
+        (is (string= choice (cadr-ai::json-get mistral "tool_choice")))
+        (is (string= choice (cadr-ai::json-get codex "tool_choice")))
+        (is (string=
+             choice
+             (cadr-ai::json-get
+              (cadr-ai::json-get pi-payload "options")
+              "toolChoice")))
+        (is (string= (string-upcase choice) (gap48-google-mode google)))
+        (is (string= (string-upcase choice) (gap48-google-mode vertex)))
+        (if (string= choice "none")
+            (is (not (cadr-ai::json-present-p bedrock "toolConfig")))
+            (is (hash-table-p
+                 (cadr-ai::json-get
+                  (cadr-ai::json-get
+                   (cadr-ai::json-get bedrock "toolConfig")
+                   "toolChoice")
+                  "auto"))))))
+    (multiple-value-bind (provider model) (provider-case :codex)
+      (is (string=
+           "auto"
+           (cadr-ai::json-get
+            (gap48-payload provider model (sample-context))
+            "tool_choice"))))
+    (multiple-value-bind (provider model) (provider-case :openai)
+      (is (not
+           (cadr-ai::json-present-p
+            (gap48-payload provider model (sample-context))
+            "tool_choice"))))))
+
+(test google-strict-tool-turns-auto-into-validated-and-keeps-none
+  ;; pi@4a080252f resolveGoogleFunctionCallingMode: none stays NONE.
+  ;; auto, and an omitted choice, become VALIDATED when a tool is strict
+  ;; on Gemini 3+.
+  (dolist (api '(:google :vertex))
+    (multiple-value-bind (provider model) (provider-case api)
+      (declare (ignore model))
+      (let ((model
+              (compat-model
+               :id "gemini-3-pro"
+               :provider (if (eq api :google) :google :google-vertex)
+               :api (if (eq api :google)
+                        :google-generative-ai
+                        :google-vertex)
+               :base-url
+               (if (eq api :google)
+                   "https://generativelanguage.googleapis.com/v1beta"
+                   "https://aiplatform.googleapis.com/v1")
+               :max-tokens 4096)))
+        (is (string=
+             "VALIDATED"
+             (gap48-google-mode
+              (gap48-payload provider model (strict-sample-context)
+                             :tool-choice "auto"))))
+        (is (string=
+             "NONE"
+             (gap48-google-mode
+              (gap48-payload provider model (strict-sample-context)
+                             :tool-choice "none"))))
+        (is (string=
+             "VALIDATED"
+             (gap48-google-mode
+              (gap48-payload provider model (strict-sample-context)))))))))

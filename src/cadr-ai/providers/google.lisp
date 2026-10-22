@@ -293,6 +293,37 @@
                      (google-thinking-budget
                       model resolved thinking-budgets)))))))))
 
+(defun google-map-tool-choice (choice)
+  ;; pi@4a080252f google-shared.ts mapToolChoice.
+  (cond
+    ((string= choice "auto") "AUTO")
+    ((string= choice "none") "NONE")
+    ((string= choice "any") "ANY")
+    (t "AUTO")))
+
+(defun google-function-calling-mode (tools tool-choice supports-strict-p)
+  ;; pi@4a080252f google-shared.ts resolveGoogleFunctionCallingMode.
+  ;; "none" and "any" win. A strict tool on Gemini 3+ is VALIDATED,
+  ;; including an explicit "auto" and an omitted choice. No tools, or
+  ;; an omitted choice without strict tools, sends no mode.
+  (when tools
+    (let ((strict-p
+            (some
+             (lambda (tool)
+               (eq t
+                   (resolve-json-schema-strict-sampling
+                    tool supports-strict-p)))
+             tools)))
+      (cond
+        ((and (stringp tool-choice)
+              (or (string= tool-choice "none")
+                  (string= tool-choice "any")))
+         (google-map-tool-choice tool-choice))
+        (strict-p "VALIDATED")
+        ((and (stringp tool-choice)
+              (plusp (length tool-choice)))
+         (google-map-tool-choice tool-choice))))))
+
 (defmethod build-request ((provider google-provider)
                           model context
                           &key stream-p max-tokens temperature reasoning
@@ -332,13 +363,17 @@
             (google-thinking-config model reasoning thinking-budgets)))
       (when thinking-config
         (json-put payload "thinkingConfig" thinking-config)))
-    (when tool-choice
-      (json-put
-       payload "toolConfig"
-       (json-object
-        "functionCallingConfig"
-        (json-object
-         "mode" (string-upcase tool-choice)))))
+    (let ((mode
+            (google-function-calling-mode
+             (context-tools context)
+             tool-choice
+             (supports-google-strict-tool-sampling-p model))))
+      (when mode
+        (json-put
+         payload "toolConfig"
+         (json-object
+          "functionCallingConfig"
+          (json-object "mode" mode)))))
     (make-request-spec
      :url (format
            nil
