@@ -935,6 +935,81 @@ region = eu-central-1")))
          (cadr-ai:selectable-github-copilot-model-ids
           response)))))
 
+(test github-copilot-oauth-available-model-ids-filter-the-static-catalog
+  ;; v1.4.0 packages/ai/src/providers/github-copilot.ts filterModels.
+  ;; Models.getAvailable (packages/ai/src/models.ts) applies it only after
+  ;; auth is configured. A string array keeps catalog models whose id is
+  ;; in the set, in catalog order. Any other availableModelIds value, and
+  ;; any non-oauth credential, keeps the static catalog. No auth omits it.
+  (let* ((store (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-built-in-models-runtime
+            :credential-store store
+            :environment '(("COPILOT_GITHUB_TOKEN" . ""))))
+         (catalog
+           (mapcar #'cadr-ai:model-id
+                   (cadr-ai:models-runtime-models
+                    runtime :github-copilot)))
+         (kept '("claude-fable-5" "mai-code-1.1-flash")))
+    (is (subsetp kept catalog :test #'string=))
+    (flet ((available ()
+             (loop for model
+                     in (cadr-ai:models-runtime-available-models runtime)
+                   when (eq :github-copilot
+                            (cadr-ai:model-provider model))
+                     collect (cadr-ai:model-id model)))
+           (install (credential)
+             (cadr-ai:credential-store-modify
+              store :github-copilot
+              (lambda (old)
+                (declare (ignore old))
+                credential)))
+           (oauth (&rest metadata)
+             (cadr-ai:make-oauth-credential
+              :provider :github-copilot
+              :access "copilot-access"
+              :refresh "github-refresh"
+              :expires 9999999999999
+              :metadata metadata))
+           (catalog-kept (ids)
+             (remove-if-not
+              (lambda (id) (member id ids :test #'string=))
+              catalog)))
+      (is (null (available)))
+      (let* ((allowed
+               (append (reverse (catalog-kept kept))
+                       '("mai-code-1.1-flash" "not-a-copilot-model")))
+             (expected (catalog-kept kept)))
+        (install
+         (oauth (cons "availableModelIds" (coerce allowed 'vector))))
+        (is (= 2 (length expected)))
+        (is (equal expected (available)))
+        (is (not (equal allowed (available)))))
+      (install
+       (oauth (cons "availableModelIds" #("not-a-copilot-model"))))
+      (is (null (available)))
+      (install
+       (oauth (cons "availableModelIds" #("Claude-Fable-5"))))
+      (is (null (available)))
+      (install (oauth (cons "availableModelIds" #())))
+      (is (null (available)))
+      (dolist (bad (list "claude-fable-5"
+                         ""
+                         42
+                         t
+                         (cadr-ai::json-object "id" "claude-fable-5")
+                         (vector "claude-fable-5" 1)
+                         #(1)))
+        (install (oauth (cons "availableModelIds" bad)))
+        (is (equal catalog (available))))
+      (install (oauth))
+      (is (equal catalog (available)))
+      (install
+       (cadr-ai:make-api-key-credential
+        :provider :github-copilot
+        :key "copilot-token"))
+      (is (equal catalog (available))))))
+
 (test radius-oauth-authorization-url-is-pkce-bound
   (let ((url
           (cadr-ai:radius-authorization-url

@@ -180,7 +180,7 @@ which auth strategies are structured."
                (and (typep credential 'oauth-credential)
                     (github-copilot-metadata-value
                      credential "availableModelIds"))))
-         (if (vectorp available)
+         (if (and (vectorp available) (not (stringp available)) (every #'stringp available))
              (remove-if-not
               (lambda (model)
                 (find (model-id model) available :test #'string=))
