@@ -570,6 +570,17 @@
               #'apply-prepare-prompt-and-tool-loadout
               :extension-host extension-host
               :session persistent
+              :named-tool-names
+              (explicitly-named-tool-names
+               tools default-tool-names)
+              :tool-allowlist (or explicit-tools '())
+              :tool-allowlist-p
+              (or explicit-tools (eq no-tools :all))
+              :tool-allowlist-filters-mcp-p
+              (tool-allowlist-filters-mcp-names-p
+               (or explicit-tools '())
+               (or explicit-tools (eq no-tools :all)))
+              :excluded-tool-names (copy-list exclude-tools)
               :stream-function wrapped-stream
               :summarization-auth-function
               (lambda (agent model signal)

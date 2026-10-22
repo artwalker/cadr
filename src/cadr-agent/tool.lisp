@@ -57,9 +57,35 @@
         (extension-tool-definition-exposure definition)
         :direct)))
 
+(defun find-extension-tool-definition (host name)
+  (and host
+       (find name
+             (extension-snapshot-tools
+              (extension-host-current-snapshot host))
+             :key #'extension-tool-definition-name
+             :test #'string=)))
+
+(defun extension-tool-activates-on-registration-p (host name)
+  ;; pi@4a080252f agent-session.ts _isActivatedOnRegistration.
+  ;; direct and model-only tools activate unless default-active is nil.
+  (let ((definition (find-extension-tool-definition host name)))
+    (and definition
+         (member (extension-tool-definition-exposure definition)
+                 '(:direct :model-only))
+         (extension-tool-definition-default-active definition))))
+
 (defun tool-declared-by-default-p (host tool)
   (member (extension-tool-exposure host (cadr-ai:tool-name tool))
           '(:direct :model-only)))
+
+(defun extension-tool-kept-without-override-p (agent host tool)
+  (let ((name (cadr-ai:tool-name tool)))
+    (and (tool-declared-by-default-p host tool)
+         (or (null (find-extension-tool-definition host name))
+             (extension-tool-activates-on-registration-p host name)
+             (member name
+                     (agent-named-tool-names agent)
+                     :test #'string=)))))
 
 (defun active-hidden-tool-names (agent)
   ;; pi@4a080252f #10343. Hidden tools stay callable through another
@@ -103,12 +129,138 @@
                ;; model declaration until something activates them.
                (remove-if-not
                 (lambda (tool)
-                  (tool-declared-by-default-p host tool))
+                  (extension-tool-kept-without-override-p
+                   agent host tool))
                 filtered))))
     (setf
      (agent-tool-registry agent)
      (make-tool-registry effective)))
   agent)
+
+(defun recorded-tool-name (entry)
+  (cond
+    ((typep entry 'cadr-ai:tool) (cadr-ai:tool-name entry))
+    ((typep entry 'cadr-ai:tool-reference)
+     (cadr-ai:tool-reference-name entry))
+    ((stringp entry) entry)))
+
+(defun branch-system-messages (session)
+  ;; pi@4a080252f agent-session.ts _restoreToolsFromTranscript. The
+  ;; whole branch, including system messages before a compaction.
+  ;; Compaction checkpoints are derived and are not replayed here.
+  (when session
+    (loop for entry in (session-path-entries session)
+          when (and (eq (session-entry-type entry) :message)
+                    (cadr-ai:system-message-p
+                     (session-entry-message entry)))
+          collect (session-entry-message entry))))
+
+(defun branch-mentioned-tool-names (messages)
+  (loop for message in messages
+        append
+        (loop for entry in
+              (append
+               (cadr-ai:system-message-tools-added message)
+               (cadr-ai:system-message-tools-removed message))
+              for name = (recorded-tool-name entry)
+              when name
+              collect name)))
+
+(defun tool-allowed-in-registry-p (agent name)
+  (when (member name
+                (agent-excluded-tool-names agent)
+                :test #'string=)
+    (return-from tool-allowed-in-registry-p nil))
+  (cond
+    ((not (agent-tool-allowlist-p agent)) t)
+    ((member name (agent-tool-allowlist agent) :test #'string=) t)
+    ((and (mcp-tool-name-p name)
+          (not (agent-tool-allowlist-filters-mcp-p agent)))
+     t)
+    (t nil)))
+
+(defun restored-tool-activatable-p (agent name)
+  ;; pi@4a080252f _isActivatable plus the hidden-tool drop in
+  ;; _applyToolLoadout. An allowlist keeps non-matching MCP tools
+  ;; registered and inactive unless tool_search can load them.
+  (let* ((host (agent-extension-host agent))
+         (exposure (extension-tool-exposure host name)))
+    (when (eq exposure :hidden)
+      (return-from restored-tool-activatable-p nil))
+    (unless (agent-tool-allowlist-p agent)
+      (return-from restored-tool-activatable-p t))
+    (or (member name (agent-tool-allowlist agent) :test #'string=)
+        (not (mcp-tool-name-p name))
+        (and (not (eq exposure :direct))
+             (find "tool_search"
+                   (merged-agent-tools agent)
+                   :key #'cadr-ai:tool-name
+                   :test #'string=)))))
+
+(defun unmentioned-extension-tool-names (agent mentioned)
+  (let ((host (agent-extension-host agent))
+        (base-names
+          (mapcar #'cadr-ai:tool-name (agent-base-tools agent))))
+    (loop for tool in (merged-agent-tools agent)
+          for name = (cadr-ai:tool-name tool)
+          when (and (not (member name mentioned :test #'string=))
+                    (not (member name base-names :test #'string=))
+                    (tool-allowed-in-registry-p agent name)
+                    (extension-tool-activates-on-registration-p
+                     host name))
+          collect name)))
+
+(defun agent-restore-tools-from-transcript
+    (agent &key (modifiers '()) modifier-function exclude-tools)
+  ;; pi@4a080252f agent-session.ts _restoreToolsFromTranscript (#11062 #11075).
+  (let ((excluded
+          (if exclude-tools
+              exclude-tools
+              (agent-excluded-tool-names agent)))
+        (messages
+          (branch-system-messages (agent-session agent))))
+    (unless messages
+      (return-from agent-restore-tools-from-transcript nil))
+    (let* ((mentioned (branch-mentioned-tool-names messages))
+           (current
+             (mapcar
+              #'cadr-ai:tool-name
+              (cadr-ai:get-current-tools messages)))
+           (names
+             (append
+              current
+              (unmentioned-extension-tool-names agent mentioned))))
+      (when modifier-function
+        (setf names (funcall modifier-function names modifiers)))
+      (setf names
+            (remove-if
+             (lambda (name)
+               (or (member name excluded :test #'string=)
+                   (not (tool-allowed-in-registry-p agent name))
+                   (not (restored-tool-activatable-p agent name))))
+             names))
+      (let* ((available
+               (mapcar
+                #'cadr-ai:tool-name
+                (merged-agent-tools agent)))
+             (known
+               (remove-if-not
+                (lambda (name)
+                  (member name available :test #'string=))
+                names))
+             (host (agent-extension-host agent)))
+        (if host
+            (cadr-agent::extension-host-set-active-tools host known)
+            (progn
+              (setf (agent-tool-filter-function agent)
+                    (lambda (candidates)
+                      (remove-if-not
+                       (lambda (tool)
+                         (member (cadr-ai:tool-name tool)
+                                 known :test #'string=))
+                       candidates)))
+              (refresh-agent-extension-tools agent)))
+        known))))
 
 (defun make-agent (&key
                          provider
@@ -132,7 +284,12 @@
                          (auto-retry-max-attempts 3)
                          (auto-retry-base-delay 2)
                          finish-turn-function
-                         abort-p)
+                         abort-p
+                         named-tool-names
+                         tool-allowlist
+                         tool-allowlist-p
+                         tool-allowlist-filters-mcp-p
+                         excluded-tool-names)
   (let* ((initial-messages
            (copy-list
             (or messages
@@ -169,7 +326,13 @@
            :auto-retry-max-attempts auto-retry-max-attempts
            :auto-retry-base-delay auto-retry-base-delay
            :finish-turn-function finish-turn-function
-           :abort-p abort-p)))
+           :abort-p abort-p
+           :named-tool-names (copy-list named-tool-names)
+           :tool-allowlist (copy-list tool-allowlist)
+           :tool-allowlist-p (not (null tool-allowlist-p))
+           :tool-allowlist-filters-mcp-p
+           (not (null tool-allowlist-filters-mcp-p))
+           :excluded-tool-names (copy-list excluded-tool-names))))
     (when extension-host
       (attach-extension-host extension-host agent))
     (unless

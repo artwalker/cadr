@@ -775,3 +775,233 @@
             (getf
              (first (cadr-cli::cli-arguments-diagnostics bad))
              :type)))))
+
+(defun goal26-tool-schema ()
+  (cadr-ai::json-object "type" "object"))
+
+(defun goal26-register-loadout-tool (name &key (default-active t))
+  ;; define-tool's lambda list stays frozen. default-active lives on
+  ;; the register function, which is the implementation owner.
+  (cadr-agent::register-extension-tool
+   name
+   :description name
+   :parameters (goal26-tool-schema)
+   :default-active default-active
+   :handler
+   (lambda (call-id arguments context)
+     (declare (ignore call-id arguments context))
+     nil)))
+
+(defun goal26-loadout-factory (api)
+  (declare (ignore api))
+  (goal26-register-loadout-tool "inactive_tool" :default-active nil)
+  (goal26-register-loadout-tool "active_tool"))
+
+(defun goal26-loadout-mcp-factory (api)
+  (goal26-loadout-factory api)
+  (goal26-register-loadout-tool "mcp__server__lookup"))
+
+(defun goal26-record-loadout (session added &optional removed)
+  (cadr-agent:session-append-message
+   session
+   (cadr-ai:make-system-message
+    :content ""
+    :tools-added
+    (mapcar
+     (lambda (name)
+       (cadr-ai:make-tool
+        :name name
+        :description name
+        :parameters (goal26-tool-schema)))
+     added)
+    :tools-removed
+    (mapcar
+     (lambda (name)
+       (cadr-ai:make-tool-reference :name name))
+     removed))))
+
+(defun goal26-changed-loadout (session)
+  (goal26-record-loadout session '("read" "grep" "active_tool"))
+  (goal26-record-loadout
+   session '("inactive_tool") '("active_tool"))
+  session)
+
+(defun goal26-sorted-active-tools (session)
+  (sort (goal12-sdk-active-tool-names session) #'string<))
+
+(defun goal26-resume-recorded-session
+    (manager temporary &key tools exclude-tools factory)
+  (cadr-cli::create-agent-session
+   :cwd temporary
+   :agent-directory (merge-pathnames "agent/" temporary)
+   :model (goal12-sdk-model)
+   :provider :faux
+   :thinking-level :off
+   :stream-function #'goal12-sdk-stream
+   :session-manager manager
+   :tools tools
+   :exclude-tools exclude-tools
+   :resource-loader
+   (cadr-cli::make-sdk-resource-loader
+    :cwd temporary
+    :agent-directory (merge-pathnames "agent/" temporary)
+    :no-extensions-p t
+    :extension-factories
+    (list (or factory #'goal26-loadout-factory)))))
+
+(test goal26-resume-restores-added-and-removed-branch-tools
+  ;; pi@4a080252f default-tools-setting.test.ts
+  ;; "restores the loadout the transcript records"
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager)))
+      (goal26-changed-loadout stored)
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session manager temporary)
+        (is (equal '("grep" "inactive_tool" "read")
+                   (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-resume-activates-unmentioned-extension-tools
+  ;; pi@4a080252f #11062. Built-ins and default-active false stay off.
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager)))
+      (goal26-record-loadout stored '("read" "grep"))
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session manager temporary)
+        (is (equal '("active_tool" "grep" "read")
+                   (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-resume-keeps-tools-removed-before-compaction-inactive
+  ;; pi@4a080252f default-tools-setting.test.ts
+  ;; "keeps tools removed before a compaction inactive"
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager))
+           (kept nil))
+      (goal26-changed-loadout stored)
+      (setf kept
+            (cadr-agent:session-append-message
+             stored
+             (cadr-ai:make-user-message :content "hi")))
+      (cadr-agent:session-append-compaction
+       stored "summary" nil kept 1000)
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session manager temporary)
+        (is (equal '("grep" "inactive_tool" "read")
+                   (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-tree-restores-the-target-branch-tool-loadout
+  ;; pi@4a080252f #11075
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager))
+           (target nil))
+      (goal26-record-loadout stored '("read" "grep"))
+      (goal26-record-loadout stored nil '("grep"))
+      (setf target
+            (cadr-agent:session-append-message
+             stored
+             (cadr-ai:make-user-message :content "first")))
+      (goal26-record-loadout
+       stored '("grep") '("active_tool"))
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session manager temporary)
+        (is (equal '("grep" "read")
+                   (goal26-sorted-active-tools session)))
+        (cadr-agent:agent-navigate-tree
+         (cadr-cli::agent-session-agent session)
+         target
+         :summarize-p nil)
+        (is (equal '("active_tool" "read")
+                   (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-tree-keeps-unlisted-mcp-tools-inactive
+  ;; pi@4a080252f "keeps registered tools outside the tools allowlist
+  ;; inactive on tree navigation"
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager))
+           (target nil))
+      (goal26-record-loadout stored '("read"))
+      (setf target
+            (cadr-agent:session-append-message
+             stored
+             (cadr-ai:make-user-message :content "first")))
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session
+           manager temporary
+           :tools '("read")
+           :factory #'goal26-loadout-mcp-factory)
+        (is (equal '("read")
+                   (goal12-sdk-active-tool-names session)))
+        (cadr-agent:agent-navigate-tree
+         (cadr-cli::agent-session-agent session)
+         target
+         :summarize-p nil)
+        (is (equal '("read")
+                   (goal12-sdk-active-tool-names session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-resume-drops-excluded-tools-from-the-changed-loadout
+  ;; pi@4a080252f "does not restore excluded tools"
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager)))
+      (goal26-changed-loadout stored)
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session
+           manager temporary
+           :exclude-tools '("inactive_tool"))
+        (is (equal '("grep" "read")
+                   (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-resume-applies-modifiers-to-the-changed-loadout
+  ;; pi@4a080252f "applies +name and -name tool options to the recorded loadout"
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager)))
+      (goal26-changed-loadout stored)
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session
+           manager temporary
+           :tools '("-grep" "+write"))
+        (is (equal '("inactive_tool" "read" "write")
+                   (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))
+
+(test goal26-resume-without-a-recorded-loadout-keeps-default-tools
+  ;; pi@4a080252f "uses the default tools when the transcript records no loadout"
+  (with-test-directory (temporary)
+    (let* ((manager
+             (cadr-cli::session-manager-in-memory temporary))
+           (stored
+             (cadr-cli::session-manager-resolve manager)))
+      (cadr-agent:session-append-message
+       stored
+       (cadr-ai:make-user-message :content "hi"))
+      (multiple-value-bind (session)
+          (goal26-resume-recorded-session manager temporary)
+        (is (equal
+             '("active_tool" "bash" "edit" "read" "write")
+             (goal26-sorted-active-tools session)))
+        (cadr-cli::agent-session-dispose session)))))

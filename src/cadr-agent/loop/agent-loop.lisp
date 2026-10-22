@@ -352,6 +352,7 @@
                           (setf
                            (agent-messages agent)
                            (session-messages session))
+                          (agent-restore-tools-from-transcript agent)
                           (run-agent-lifecycle
                            agent :session-tree
                            (list

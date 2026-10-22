@@ -906,6 +906,31 @@
              :extension-host
              (cli-extension-manager-host
               extension-manager)
+             :named-tool-names
+             (explicitly-named-tool-names
+              cli-tools-option
+              (settings-default-tools settings-manager))
+             :tool-allowlist
+             (if (and cli-tools-option
+                      (null cli-tool-modifiers))
+                 cli-tools-option
+                 '())
+             :tool-allowlist-p
+             (or (and cli-tools-option
+                      (null cli-tool-modifiers))
+                 (cli-arguments-no-tools-p command))
+             :tool-allowlist-filters-mcp-p
+             (tool-allowlist-filters-mcp-names-p
+              (if (and cli-tools-option
+                       (null cli-tool-modifiers))
+                  cli-tools-option
+                  '())
+              (or (and cli-tools-option
+                       (null cli-tool-modifiers))
+                  (cli-arguments-no-tools-p command)))
+             :excluded-tool-names
+             (copy-list
+              (cli-arguments-exclude-tools command))
              :stream-function
              (wrap-stream-function-with-cache-warmer
               warmer

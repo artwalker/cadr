@@ -478,7 +478,7 @@
     (context tool
      &key label prompt-snippet prompt-guidelines
        constrained-sampling render-shell prepare-arguments
-       render-call render-result)
+       render-call render-result (default-active t))
   (assert-active-extension-context context)
   (unless (typep tool 'cadr-ai:tool)
     (error
@@ -508,6 +508,7 @@
                call-id arguments))
             :render-call render-call
             :render-result render-result
+            :default-active (not (null default-active))
             :bundle bundle)))
     (validate-extension-resource-name "tool" name)
     (validate-extension-schema

@@ -41,6 +41,9 @@
   render-result
   (exposure :direct
             :type (member :direct :model-only :codemode :deferred :hidden))
+  ;; pi@4a080252f extensions/types.ts defaultActive. Nil keeps the tool
+  ;; registered without activating it. Naming it still activates it.
+  (default-active t :type boolean)
   bundle)
 
 (defstruct extension-command-definition
@@ -207,7 +210,8 @@
 (defun register-extension-tool
     (name &key description parameters
             (execution-mode :parallel) handler
-            (exposure :direct))
+            (exposure :direct)
+            (default-active t))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (stringp description)
@@ -252,6 +256,7 @@
         :execution-mode execution-mode
         :handler handler
         :exposure exposure
+        :default-active (not (null default-active))
         :bundle bundle)))))
   name)
 
@@ -260,7 +265,8 @@
             parameters constrained-sampling render-shell
             prepare-arguments (execution-mode :parallel)
             handler render-call render-result
-            (exposure :direct))
+            (exposure :direct)
+            (default-active t))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (and (stringp label) (plusp (length label)))
@@ -320,6 +326,7 @@
         :execution-mode execution-mode :full-handler-p t
         :handler handler :render-call render-call :render-result render-result
         :exposure exposure
+        :default-active (not (null default-active))
         :bundle bundle)))))
   name)
 
@@ -813,7 +820,8 @@
     (name &key label description prompt-snippet prompt-guidelines
             parameters constrained-sampling render-shell
             prepare-arguments (execution-mode :parallel)
-            handler render-call render-result)
+            handler render-call render-result
+            (default-active t))
   `(register-rich-extension-tool
     ,name :label ,label :description ,description
     :prompt-snippet ,prompt-snippet
@@ -824,7 +832,8 @@
     :prepare-arguments ,prepare-arguments
     :execution-mode ,execution-mode
     :handler ,handler :render-call ,render-call
-    :render-result ,render-result))
+    :render-result ,render-result
+    :default-active ,default-active))
 
 (defmacro define-command
     (name &key description argument-hint

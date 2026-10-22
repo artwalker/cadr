@@ -443,7 +443,9 @@
     ;; (bootstrap/sessions.lisp, baseline existsSync before branch).
     ;; +3 Goal 26: cache warming mode parameter and global reader/writer
     ;; (bootstrap/settings.lisp).
-    (is (= 188 definition-count)
+    ;; +2 Goal 26 #11062: explicitly-named-tool-names and
+    ;; tool-allowlist-filters-mcp-names-p (bootstrap/tools.lisp).
+    (is (= 190 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

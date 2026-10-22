@@ -96,7 +96,17 @@
     (sb-thread:make-mutex :name "cadr-agent-events"))
   (declared-system-message nil)
   (prompt-insert-index nil :type (or null integer))
-  (system-cut-index nil :type (or null integer)))
+  (system-cut-index nil :type (or null integer))
+  ;; Names the user or defaultTools setting named, including +name.
+  ;; A default-active false extension tool stays inactive unless named.
+  (named-tool-names nil :type list)
+  ;; Nil allowlist-p means no --tools allowlist. An empty allowlist is
+  ;; present and matches nothing. MCP names stay registered unless the
+  ;; allowlist is empty or itself names an mcp__ tool.
+  (tool-allowlist nil :type list)
+  (tool-allowlist-p nil :type boolean)
+  (tool-allowlist-filters-mcp-p nil :type boolean)
+  (excluded-tool-names nil :type list))
 
 (defun emit-agent-event (agent type
                          &key

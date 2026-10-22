@@ -99,56 +99,34 @@
          +default-coding-tool-names+)
      entries)))
 
+(defun explicitly-named-tool-names (entries &optional defaults)
+  (append
+   (remove-if #'tool-modifier-p entries)
+   (loop for entry in entries
+         when (and (tool-modifier-p entry)
+                   (char= (char entry 0) #\+))
+         collect (subseq entry 1))
+   (copy-list defaults)))
+
+(defun tool-allowlist-filters-mcp-names-p (names present-p)
+  ;; pi@4a080252f agent-session.ts: an empty allowlist, or one that
+  ;; names an mcp__ tool, stops keeping other MCP tools registered.
+  (and present-p
+       (or (null names)
+           (some
+            (lambda (name)
+              (and (stringp name)
+                   (uiop:string-prefix-p "mcp__" name)))
+            names))))
+
 (defun restore-active-tools-from-transcript
     (agent &key (modifiers '()) exclude-tools)
   ;; pi@4a080252f agent-session.ts _restoreToolsFromTranscript
-  (let ((system
-          (cadr-ai:get-current-system-message
-           (cadr-agent:agent-messages agent))))
-    (unless system
-      (return-from restore-active-tools-from-transcript nil))
-    (let* ((recorded
-             (mapcar
-              #'cadr-ai:tool-name
-              (or (cadr-ai:system-message-tools-added system)
-                  '())))
-           (names
-             (apply-tool-modifiers recorded modifiers))
-           (names
-             (if exclude-tools
-                 (remove-if
-                  (lambda (name)
-                    (member name exclude-tools
-                            :test #'string=))
-                  names)
-                 names))
-           (host
-             (cadr-agent::agent-extension-host agent))
-           (available
-             (mapcar
-              #'cadr-ai:tool-name
-              (cadr-agent::merged-agent-tools agent)))
-           (known
-             (remove-if-not
-              (lambda (name)
-                (member name available :test #'string=))
-              names)))
-      (if host
-          (cadr-agent::extension-host-set-active-tools
-           host known)
-          (progn
-            (setf
-             (cadr-agent::agent-tool-filter-function agent)
-             (lambda (candidates)
-               (remove-if-not
-                (lambda (tool)
-                  (member
-                   (cadr-ai:tool-name tool)
-                   known :test #'string=))
-                candidates)))
-            (cadr-agent::refresh-agent-extension-tools
-             agent)))
-      known)))
+  (cadr-agent::agent-restore-tools-from-transcript
+   agent
+   :modifiers modifiers
+   :modifier-function #'apply-tool-modifiers
+   :exclude-tools exclude-tools))
 
 (defun select-coding-tools
     (tools &key allow exclude no-builtin-p builtin-names)
