@@ -147,6 +147,53 @@ second" (cadr-ai:content-text content)))
          (cadr-ai:retryable-assistant-error-p
           (utility-error-message text))))))
 
+(test v140-http-status-boundary-is-ascii-letters-and-digits
+  ;; pi@4a080252f packages/ai/src/utils/retry.ts
+  ;; (?<![a-z0-9])(?:429|500|502|503|504|520|524)(?![a-z0-9]) with flag i
+  ;; and no u flag. é, CJK, and fullwidth digit five (U+FF15) are outside
+  ;; that class, so the 503 is a status. An ASCII letter or digit is not.
+  (dolist
+      (text
+       (list
+        (format nil "~C503" (code-char #x00E9))
+        (format nil "~C503" (code-char #x00C9))
+        "错误503"
+        (format nil "503~C" (code-char #xFF15))
+        (format nil "~C503" (code-char #xFF15))))
+    (is (cadr-ai:retryable-assistant-error-p
+         (utility-error-message text))))
+  (dolist
+      (text
+       '("503a" "a503" "503A" "A503" "5035" "5503"))
+    (is (not
+         (cadr-ai:retryable-assistant-error-p
+          (utility-error-message text))))))
+
+(test v140-node-fetch-url-breaks-on-javascript-whitespace
+  ;; pi@4a080252f packages/ai/src/utils/retry.ts
+  ;; "request to \\S+ failed, reason:" — JavaScript \S is the complement
+  ;; of /\s/ with no u flag (WhiteSpace and LineTerminator).
+  (dolist
+      (text
+       '("request to https://oauth2.googleapis.com/token failed, reason:"
+         "Request To https://oauth2.googleapis.com/token Failed, Reason:"
+         "request to x failed, reason:"))
+    (is (cadr-ai:retryable-assistant-error-p
+         (utility-error-message text))))
+  (dolist
+      (code
+       '(#x0009 #x000A #x000B #x000C #x000D #x0020
+         #x00A0 #x1680
+         #x2000 #x2001 #x2002 #x2003 #x2004 #x2005
+         #x2006 #x2007 #x2008 #x2009 #x200A
+         #x2028 #x2029 #x202F #x205F #x3000 #xFEFF))
+    (is (not
+         (cadr-ai:retryable-assistant-error-p
+          (utility-error-message
+           (format nil
+                   "request to https://oauth2.googleapis.com/to~Cken failed, reason:"
+                   (code-char code))))))))
+
 (test goal17-retry-classifier-matches-the-baseline-transient-pattern-matrix
   (dolist
       (text

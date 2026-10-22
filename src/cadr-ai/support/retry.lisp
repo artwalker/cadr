@@ -56,8 +56,11 @@
     "subscription_sharing_user_unavailable"))
 
 (defun ascii-alphanumeric-p (character)
-  (or (alpha-char-p character)
-      (digit-char-p character)))
+  ;; /[a-z0-9]/i without the u flag. alpha-char-p and digit-char-p also
+  ;; accept é, CJK, and fullwidth digits, which do not bound a status.
+  (or (char<= #\0 character #\9)
+      (char<= #\A character #\Z)
+      (char<= #\a character #\z)))
 
 (defun retryable-http-status-text-p (text)
   ;; Same boundary as pi's (?<![a-z0-9])(?:429|...)(?![a-z0-9]).
@@ -82,29 +85,40 @@
 (defun node-fetch-request-failure-text-p (text)
   ;; node-fetch system errors from Google ADC OAuth refresh (#10996):
   ;; "request to <url> failed, reason:" with a non-empty URL.
-  (let ((needle "request to ")
-        (tail " failed, reason:"))
-    (loop for start = 0 then (1+ position)
-          for position = (search needle text :start2 start
-                                            :test #'char-equal)
-          while position
-          do (let* ((url-start (+ position (length needle)))
-                    (tail-position
-                      (search tail text :start2 url-start
-                                       :test #'char-equal)))
-               (when (and tail-position
-                          (< url-start tail-position)
-                          (not
-                           (find-if
-                            (lambda (character)
-                              (or (char= character #\Space)
-                                  (char= character #\Tab)
-                                  (char= character #\Newline)
-                                  (char= character #\Return)))
-                            text
-                            :start url-start
-                            :end tail-position)))
-                 (return-from node-fetch-request-failure-text-p t)))))
+  ;; JavaScript \S excludes /\s/ (no u flag): tab through carriage
+  ;; return, space, NBSP, and the other WhiteSpace and LineTerminator
+  ;; code points. One of those inside the URL is not this pattern.
+  (labels ((javascript-whitespace-p (character)
+             (let ((code (char-code character)))
+               (or (<= #x0009 code #x000D)
+                   (= code #x0020)
+                   (= code #x00A0)
+                   (= code #x1680)
+                   (<= #x2000 code #x200A)
+                   (= code #x2028)
+                   (= code #x2029)
+                   (= code #x202F)
+                   (= code #x205F)
+                   (= code #x3000)
+                   (= code #xFEFF)))))
+    (let ((needle "request to ")
+          (tail " failed, reason:"))
+      (loop for start = 0 then (1+ position)
+            for position = (search needle text :start2 start
+                                              :test #'char-equal)
+            while position
+            do (let* ((url-start (+ position (length needle)))
+                      (tail-position
+                        (search tail text :start2 url-start
+                                         :test #'char-equal)))
+                 (when (and tail-position
+                            (< url-start tail-position)
+                            (not
+                             (find-if #'javascript-whitespace-p
+                                      text
+                                      :start url-start
+                                      :end tail-position)))
+                   (return-from node-fetch-request-failure-text-p t))))))
   nil)
 
 (defun text-contains-any-p (text fragments)

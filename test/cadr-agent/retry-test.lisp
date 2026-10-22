@@ -73,6 +73,44 @@
       (cadr-agent::retryable-assistant-error-p
        (retry-error-message message))))))
 
+(test v140-session-status-boundary-is-ascii-and-javascript-whitespace-breaks-urls
+  ;; Same sentences as packages/ai/src/utils/retry.ts at v1.4.0.
+  ;; The session loop keeps its own copy of the pattern.
+  (dolist
+      (message
+       (list
+        (format nil "~C503" (code-char #x00E9))
+        (format nil "~C503" (code-char #x00C9))
+        "错误503"
+        (format nil "503~C" (code-char #xFF15))
+        (format nil "~C503" (code-char #xFF15))
+        "request to https://oauth2.googleapis.com/token failed, reason:"
+        "Request To https://oauth2.googleapis.com/token Failed, Reason:"))
+    (is
+     (cadr-agent::retryable-assistant-error-p
+      (retry-error-message message))))
+  (dolist
+      (message
+       '("503a" "a503" "503A" "A503" "5035" "5503"))
+    (is
+     (not
+      (cadr-agent::retryable-assistant-error-p
+       (retry-error-message message)))))
+  (dolist
+      (code
+       '(#x0009 #x000A #x000B #x000C #x000D #x0020
+         #x00A0 #x1680
+         #x2000 #x2001 #x2002 #x2003 #x2004 #x2005
+         #x2006 #x2007 #x2008 #x2009 #x200A
+         #x2028 #x2029 #x202F #x205F #x3000 #xFEFF))
+    (is
+     (not
+      (cadr-agent::retryable-assistant-error-p
+       (retry-error-message
+        (format nil
+                "request to https://oauth2.googleapis.com/to~Cken failed, reason:"
+                (code-char code))))))))
+
 (test transient-assistant-errors-retry-and-report-recovery
   (let ((*responses*
           (list
