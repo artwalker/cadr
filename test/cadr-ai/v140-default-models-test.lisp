@@ -110,6 +110,21 @@
     (is (= 0.2d0 (cadr-ai:model-cost-tier-cache-read-price tier)))
     (is (= 5d0 (cadr-ai:model-cost-tier-cache-write-price tier)))))
 
+(test v140-github-copilot-omits-reasoning-when-off
+  (dolist (id '("gpt-6.1-sol" "gpt-6-sol"))
+    (multiple-value-bind (provider model)
+        (cadr-ai:instantiate-provider
+         :github-copilot
+         :api-key "fixture-key"
+         :model-id id)
+      (let ((payload
+              (request-spec-payload
+               (build-request
+                provider model (sample-context)
+                :stream-p t
+                :reasoning nil))))
+        (is (not (cadr-ai::json-present-p payload "reasoning")))))))
+
 (test v140-nvidia-nemotron-3.5-matches-published-catalog
   (let ((metadata
           (cadr-ai:find-model-metadata

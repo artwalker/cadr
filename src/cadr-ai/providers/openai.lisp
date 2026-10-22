@@ -437,8 +437,9 @@
        (json-put
         payload "include"
         (json-array "reasoning.encrypted_content")))
-      ((or (not (model-thinking-level-present-p model :off))
-           (model-thinking-level-value model :off))
+      ((and (not (eq (model-provider model) :github-copilot))
+            (or (not (model-thinking-level-present-p model :off))
+                (model-thinking-level-value model :off)))
        (json-put
         payload "reasoning"
         (json-object
