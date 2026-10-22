@@ -95,9 +95,9 @@ absent or incomplete.
 | GAP-24 | Windows external editor | `externalEditor`, else `VISUAL`, else `EDITOR`, else Notepad on Windows and `nano` elsewhere. | `packages/coding-agent/src/modes/interactive/extension-editor.ts` | Fallback is always `nano`. | `settings-external-editor-command` in `src/cadr-cli/bootstrap/settings.lisp` | 部分 | A | S |
 | GAP-25 | Windows and WSL key defaults | `useWindowsKeybindings` changes undo, model back, follow-up, dequeue, paste image, prompt jump, and search. | `packages/coding-agent/src/core/keybindings.ts`, `docs/keybindings.md` | Global map uses the Unix chords. Tree fold is `#+darwin` at compile time. | `src/cadr-tui/keybindings.lisp`, `src/cadr-cli/interactive/selectors/tree.lisp` | 没有 | A | M |
 | GAP-26 | Windows open URL | `rundll32 url.dll,FileProtocolHandler`. The pi comment says `cmd /c start` re-parses metacharacters. | `packages/coding-agent/src/utils/open-browser.ts` | `#+win32` uses `cmd /c start "" url`. | `src/cadr-cli/interactive/controller.lisp` | 部分 | A | S |
-| GAP-27 | Windows VT input | `enableVirtualTerminalInput` so Shift+Tab is not Tab. | `packages/tui/src/terminal.ts` | No virtual-terminal-input setup under `src/cadr-tui`. | `src/cadr-tui/terminal.lisp` | 没有 | A | S |
+| GAP-27 | Windows VT input | `enableVirtualTerminalInput` so Shift+Tab is not Tab. | `packages/tui/src/terminal.ts` | `virtual-terminal` is an in-memory screen buffer. No Windows console VT-input enable. | `src/cadr-tui/renderer/virtual-terminal.lisp`, `src/cadr-tui/terminal.lisp` | 没有 | A | S |
 | GAP-28 | Windows right-click paste | Button 2 pastes, except when `TERM_PROGRAM` is `vscode`. | `packages/tui/src/tui-alt-screen.ts` | Mouse handler acts on the left button. | `src/cadr-tui/renderer/lifecycle-input.lisp` | 没有 | A | S |
-| GAP-29 | `SIGHUP` | Exit on `SIGHUP` except on win32. `SIGTERM` always. | `packages/coding-agent/src/modes/interactive/interactive-mode.ts` | No `SIGHUP` handler under `src/cadr-cli`. | interactive startup in `src/cadr-cli/` | 没有 | A | S |
+| GAP-29 | `SIGHUP` | Exit on `SIGHUP` except on win32. `SIGTERM` always. | `packages/coding-agent/src/modes/interactive/interactive-mode.ts` | `call-with-cli-signal-handlers` enables `SIGTERM` (exit 143) and, except on win32, `SIGHUP` (exit 129). The FiveAM test throws the catch tag. It does not raise the signal. | `src/cadr-cli/bootstrap/commands.lisp`, `test/cadr-cli/goal28-exit-and-auth-test.lisp` | 有但没测试 | A | S |
 | GAP-30 | tmux keyboard warning | If `TMUX` is set, `tmux show -gv` and a warning. | `interactive-mode.ts` | No `tmux show` under `src/cadr-cli`. | same | 没有 | A | S |
 | GAP-31 | Self `SIGWINCH` | POSIX process signals itself to refresh size. Skipped on win32. | `packages/tui/src/terminal.ts` | Incoming `SIGWINCH` is handled. No self-signal. | `src/cadr-tui/terminal.lisp` | 没有 | A | S |
 | GAP-32 | `#` autocomplete | Default triggers are `@` and `#`. | `packages/tui/src/components/editor.ts` | `@` and `/` are wired. The interactive provider leaves trigger characters nil. | `src/cadr-tui/autocomplete.lisp`, `src/cadr-cli/interactive/autocomplete.lisp` | 部分 | A | S |
@@ -133,10 +133,14 @@ The summary was not updated. That is stale bookkeeping, not 75 missing
 features.
 
 The 73 deletions are the experimental client, server, mini worker, and
-plugin tree. v1.4.0 does not contain `packages/server`, `packages/client`,
-or `packages/coding-agent/src/experimental/`. `docs/source-parity.md`
-still marks 38 of those paths `intentional difference` with evidence text
-`PENDING ADJUDICATION`. Porting them would restore a tree pi removed.
+plugin tree. v1.4.0 has no `packages/server` and no `packages/client`.
+`packages/coding-agent/src/experimental/` contains one file,
+`source-resolver.ts`, a Node preload that applies tsconfig path aliases.
+That is the same class as the jiti exclusion in section 3. The deleted
+client, server, mini worker, and plugin files are not in the tag.
+`docs/source-parity.md` still marks 38 of those old paths
+`intentional difference` with evidence text `PENDING ADJUDICATION`.
+Porting them would restore a tree pi removed.
 
 `docs/source-parity.md` prints `3 missing` in a summary and has no verdict
 cell that says `missing`. The two files Goal 22 once called missing are
@@ -208,14 +212,14 @@ Thirteen parts. Every GAP row is in one of them. Order is dependency.
 
 | Part | Gaps | Why this order |
 |---|---|---|
-| P1. Lock what already runs | GAP-44, GAP-45, GAP-46, GAP-47, GAP-48, GAP-49, GAP-20 | These rows are behavior that exists. Tests come before the ports so a later part cannot "fix" a green suite by moving the assertion. GAP-20 ends as either a locked alias or a hook change. |
+| P1. Lock what already runs | GAP-20, GAP-29, GAP-44, GAP-45, GAP-46, GAP-47, GAP-48, GAP-49 | These rows are behavior that exists. Tests come before the ports so a later part cannot "fix" a green suite by moving the assertion. GAP-20 ends as either a locked alias or a hook change. GAP-29 needs a test that raises `SIGHUP`, not only the catch tag. |
 | P2. Image catalog | GAP-17 | Regenerate `src/cadr-ai/image-models.generated.lisp` from the same pi-ai 1.4.0 tarball PR #874 used for chat. Later provider tests should see the current image ids. |
 | P3. Provider auth | GAP-07, GAP-08, GAP-09, GAP-11, GAP-12, GAP-15, GAP-16 | Meta, ChatGPT sign-in, TypeSafe key, Anthropic federation, Azure env, callback host, and a `pi-ai`-equivalent list/login entry. Independent of MCP. |
 | P4. Provider requests and classifiers | GAP-10, GAP-13, GAP-14 | `openai-decisions`, `llama-cpp-classify`, service tier, reasoning summary, verbosity, Mistral prompt mode, cache-retention env on every adapter that pi honors. Uses the auth from P3 when a live check is required. Fixture tests do not wait on credentials. |
 | P5. MCP | GAP-01, GAP-02, GAP-03, GAP-04, the mcp factory in GAP-06 | Config, names, and truncation already exist. This part connects, reads resources, logs in, and exposes `cadr mcp`. |
 | P6. Codemode | GAP-05, the codemode and tool-search factories in GAP-06 | The sandbox, the worker limit, the settings keys, and script calls including `models.classify`. Scripts that call MCP tools need P5. |
 | P7. Session, hooks, settings, chrome | GAP-18, GAP-19, GAP-21, GAP-22, GAP-23, GAP-37, GAP-38, GAP-39 | JSONL export, warming hook, virtual-model extension registration, compaction overrides, retry caps, `--mode text` on a TTY, `/share` copy, 3D egg. Remove `daxnuts` only as part of matching the logo pi ships, in the same part, because the old egg is the behavior being replaced. |
-| P8. Terminal, keys, shell env | GAP-24, GAP-25, GAP-26, GAP-27, GAP-28, GAP-29, GAP-30, GAP-31, GAP-32, GAP-33, GAP-34, GAP-35, GAP-36 | Windows and Unix edges, `#` completion, shell child environment, bug-report origin, write log, and the two `PI_` names renamed to `CADR_`. cadr already has `#+win32` branches, so Windows is a supported target. |
+| P8. Terminal, keys, shell env | GAP-24, GAP-25, GAP-26, GAP-27, GAP-28, GAP-30, GAP-31, GAP-32, GAP-33, GAP-34, GAP-35, GAP-36 | Windows and Unix edges, `#` completion, shell child environment, bug-report origin, write log, and the two `PI_` names renamed to `CADR_`. cadr already has `#+win32` branches, so Windows is a supported target. |
 | P9. Chord | GAP-40 | Durable and pi-env depend on it. The `pi` binary does not. |
 | P10. Telemetry contracts | GAP-43 | No-op default. pi-ai and durable call it when a host passes a span. No `pi.dev` ping. |
 | P11. Durable | GAP-41 | Conversations, documents, tasks, storage, coding tools. Uses P9 and P10. |
