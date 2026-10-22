@@ -626,7 +626,7 @@
    (cadr-ai:find-model-metadata :fireworks id)))
 
 (test goal24-fireworks-messages-replay-unsigned-thinking-and-send-effort
-  (let* ((id "accounts/fireworks/models/deepseek-v4-flash-0731")
+  (let* ((id "accounts/fireworks/models/deepseek-v4p1-flash")
          (model (fireworks-catalog-model id))
          (provider (make-anthropic-provider :api-key "key"))
          (context
@@ -663,7 +663,7 @@
              "content")
             0))
          (kimi (fireworks-catalog-model
-                "accounts/fireworks/models/kimi-k2p6")))
+                "accounts/fireworks/models/inkling")))
     (is (eq t (getf (cadr-ai::model-compat model)
                     :allow-empty-signature)))
     (is (eq t (getf (cadr-ai::model-compat model)
@@ -673,8 +673,7 @@
     (is (equal '(:off :low :high :max)
                (cadr-ai:supported-thinking-levels model)))
     (dolist (sibling
-             '("accounts/fireworks/models/deepseek-v4-flash-vision-exp"
-               "accounts/fireworks/models/deepseek-v4-pro-0813"))
+             '("accounts/fireworks/models/deepseek-v4p1-flash-1017"))
       (is (equal '(:off :low :high :max)
                  (cadr-ai:supported-thinking-levels
                   (fireworks-catalog-model sibling)))))
@@ -707,11 +706,6 @@
                "accounts/fireworks/models/qwen3p8-2p4t-a95b")))))
 
 (test goal24-fireworks-drops-aliased-effort-levels
-  (dolist (id '("accounts/fireworks/models/glm-5p2"
-                "accounts/fireworks/routers/glm-5p2-fast"))
-    (is (equal '(:off :high :max)
-               (cadr-ai:supported-thinking-levels
-                (fireworks-catalog-model id)))))
   (dolist (id '("accounts/fireworks/models/kimi-k3"
                 "accounts/fireworks/routers/kimi-k3-fast"))
     (is (equal '(:low :high :max)

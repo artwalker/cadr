@@ -1,6 +1,6 @@
 (in-package #:cadr-ai)
 
-(defconstant +model-data-schema-version+ 3)
+(defconstant +model-data-schema-version+ 6)
 (defparameter +model-data-manifest-file+ ".manifest.json")
 
 (defparameter +models-dev-thinking-levels+
@@ -106,9 +106,6 @@
     (unless (hash-table-p value)
       (problem "~A/~A must be an object" provider-id model-id)
       (return-from validate-model-data-value errors))
-    (unless (equal model-id (field "id"))
-      (problem "~A/~A has id ~S, expected ~S"
-               provider-id model-id (field "id") model-id))
     (unless (equal provider-id (field "provider"))
       (problem "~A/~A has provider ~S, expected ~S"
                provider-id model-id (field "provider") provider-id))
@@ -119,8 +116,33 @@
       (problem "~A/~A has no model name" provider-id model-id))
     (unless (stringp (field "baseUrl"))
       (problem "~A/~A has no baseUrl string" provider-id model-id))
-    (unless (typep (field "reasoning") 'boolean)
-      (problem "~A/~A has no reasoning boolean" provider-id model-id))
+    (let ((type (field "type"))
+          (id (field "id")))
+      (unless (and (member type '("chat" "image" "classifier") :test #'string=)
+                   (stringp id)
+                   (string= model-id (format nil "~A:~A" type id)))
+        (problem "~A/~A key does not match type ~S and id ~S"
+                 provider-id model-id type id))
+      (cond
+        ((string= type "chat")
+         (unless (typep (field "reasoning") 'boolean)
+           (problem "~A/~A has no reasoning boolean" provider-id model-id))
+         (unless (model-data-positive-number-p (field "contextWindow"))
+           (problem "~A/~A has invalid contextWindow" provider-id model-id))
+         (unless (model-data-positive-number-p (field "maxTokens"))
+           (problem "~A/~A has invalid maxTokens" provider-id model-id)))
+        ((string= type "classifier")
+         (unless (model-data-positive-number-p (field "contextWindow"))
+           (problem "~A/~A has invalid contextWindow" provider-id model-id)))
+        ((string= type "image")
+         (let ((output (field "output")))
+           (unless (and (vectorp output)
+                        (plusp (length output))
+                        (every (lambda (entry)
+                                 (member entry '("text" "image") :test #'string=))
+                               output))
+             (problem "~A/~A has invalid output modalities"
+                      provider-id model-id))))))
     (let ((input (field "input")))
       (unless
           (and (vectorp input)
@@ -129,10 +151,6 @@
                         (member entry '("text" "image") :test #'string=))
                       input))
         (problem "~A/~A has invalid input modalities" provider-id model-id)))
-    (unless (model-data-positive-number-p (field "contextWindow"))
-      (problem "~A/~A has invalid contextWindow" provider-id model-id))
-    (unless (model-data-positive-number-p (field "maxTokens"))
-      (problem "~A/~A has invalid maxTokens" provider-id model-id))
     (let ((cost (field "cost")))
       (if (not (hash-table-p cost))
           (problem "~A/~A has invalid cost metadata" provider-id model-id)

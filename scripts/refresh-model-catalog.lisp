@@ -66,6 +66,8 @@
      . :supports-mid-convo-system-messages)
     ("supportsMidConvoToolAdditions"
      . :supports-mid-convo-tool-additions)
+    ("supportsMidConvoToolChanges"
+     . :supports-mid-convo-tool-changes)
     ("supportsOpenAIGrammarTools"
      . :supports-openai-grammar-tools)
     ("supportsReasoningEffort" . :supports-reasoning-effort)
@@ -178,6 +180,50 @@
       (coerce value 'double-float)
       0d0))
 
+(defun prompt-cache-plist (object)
+  (when (hash-table-p object)
+    (append
+     (when (numberp (json-get object "short"))
+       (list :short (json-get object "short")))
+     (when (numberp (json-get object "long"))
+       (list :long (json-get object "long"))))))
+
+(defun resize-limits-plist (object)
+  (when (hash-table-p object)
+    (list :jpeg-quality (json-get object "jpegQuality")
+          :max-bytes (json-get object "maxBytes")
+          :max-height (json-get object "maxHeight")
+          :max-width (json-get object "maxWidth"))))
+
+(defun input-limits-plist (object)
+  (when (hash-table-p object)
+    (let ((images (json-get object "images"))
+          (limits nil))
+      (when (numberp (json-get object "maxRequestBytes"))
+        (setf limits
+              (list :max-request-bytes
+                    (json-get object "maxRequestBytes"))))
+      (when (hash-table-p images)
+        (let ((image-limits nil))
+          (when (numberp (json-get images "maxPerMessage"))
+            (setf image-limits
+                  (list :max-per-message
+                        (json-get images "maxPerMessage"))))
+          (when (numberp (json-get images "maxPerRequest"))
+            (setf image-limits
+                  (append image-limits
+                          (list :max-per-request
+                                (json-get images "maxPerRequest")))))
+          (when (hash-table-p (json-get images "resize"))
+            (setf image-limits
+                  (append image-limits
+                          (list :resize
+                                (resize-limits-plist
+                                 (json-get images "resize"))))))
+          (setf limits
+                (append limits (list :images image-limits)))))
+      limits)))
+
 (defun image-input-p (model)
   (let ((input (json-get model "input")))
     (and (vectorp input)
@@ -218,6 +264,8 @@
      (thinking-level-map (json-get model "thinkingLevelMap"))
      :headers (header-alist (json-get model "headers"))
      :compat (compat-plist (json-get model "compat"))
+     :prompt-cache (prompt-cache-plist (json-get model "promptCache"))
+     :input-limits (input-limits-plist (json-get model "inputLimits"))
      :input-price (number-or-zero (json-get cost "input"))
      :output-price (number-or-zero (json-get cost "output"))
      :cache-read-price (number-or-zero (json-get cost "cacheRead"))
@@ -225,7 +273,7 @@
      (number-or-zero (json-get cost "cacheWrite"))
      :cost-tiers (cost-tiers cost))))
 
-(defun catalog-rows ()
+(defun chat-catalog-rows (&key provider-filter)
   (loop for path in
         (sort
          (remove-if-not
@@ -238,19 +286,38 @@
          #'string<
          :key #'namestring)
         for provider = (pathname-name path)
-        for catalog =
-        (cadr-ai::parse-json
-         (uiop:read-file-string path :external-format :utf-8))
-        append
-        (loop for api in (sorted-json-keys catalog)
-              for models = (json-get catalog api)
-              append
-              (loop for id in (sorted-json-keys models)
-                    collect
-                    (model-row provider (json-get models id))))))
+        when (or (null provider-filter)
+                 (funcall provider-filter provider))
+          append
+          (let ((catalog
+                  (cadr-ai::parse-json
+                   (uiop:read-file-string path :external-format :utf-8))))
+            (loop for api in (sorted-json-keys catalog)
+                  for models = (json-get catalog api)
+                  append
+                  (loop for id in (sorted-json-keys models)
+                        for model = (json-get models id)
+                        when (string= "chat" (or (json-get model "type") ""))
+                          collect (model-row provider model))))))
 
-(let* ((rows (catalog-rows))
+(defparameter *radius-generated-path*
+  (merge-pathnames
+   "src/cadr-ai/providers/radius.models.generated.lisp"
+   *root*))
+
+(let* ((chat-rows
+         (chat-catalog-rows
+          :provider-filter
+          (lambda (provider)
+            (not (string= provider "radius")))))
+       (radius-rows
+         (chat-catalog-rows
+          :provider-filter
+          (lambda (provider) (string= provider "radius"))))
        (generated-at (catalog-generation-timestamp))
+       (radius-sha
+         (cadr-ai::model-data-file-hash
+          (merge-pathnames "radius.json" *catalog-directory*)))
        (*print-pretty* t)
        (*print-right-margin* 88))
   (with-open-file
@@ -260,22 +327,43 @@
               :if-does-not-exist :create
               :external-format :utf-8)
     (write-line
-     ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.85.1 catalog snapshot."
+     ";; Generated by scripts/refresh-model-catalog.lisp from the pi-ai 1.4.0 catalog snapshot."
      stream)
     (write-line
-     ";; Runtime use is offline and deterministic."
+     ";; Runtime use is offline and deterministic. Radius stays in its own public catalog."
      stream)
     (write-line "(in-package #:cadr-ai)" stream)
     (terpri stream)
     (format stream "(setf *generated-model-data-generated-at* ~S)~%~%"
             generated-at)
     (write-string "(defparameter *generated-model-metadata* '" stream)
-    (pprint rows stream)
+    (pprint chat-rows stream)
     (write-line ")" stream)
     (terpri stream)
     (write-line
      "(register-generated-models *generated-model-metadata*)"
      stream))
+  (with-open-file
+      (stream *radius-generated-path*
+              :direction :output
+              :if-exists :supersede
+              :if-does-not-exist :create
+              :external-format :utf-8)
+    (format stream
+            ";; Generated by scripts/refresh-model-catalog.lisp from pi-ai 1.4.0 radius.json.~%")
+    (format stream ";; sha256 ~A~%" radius-sha)
+    (write-line
+     ";; Not registered into *model-catalog*; Radius keeps a separate public catalog."
+     stream)
+    (write-line "(in-package #:cadr-ai)" stream)
+    (terpri stream)
+    (write-string "(defparameter *radius-public-model-metadata* '" stream)
+    (pprint radius-rows stream)
+    (write-line ")" stream)
+    (terpri stream))
   (format t "Updated ~A with ~D models.~%"
           (namestring *generated-path*)
-          (length rows)))
+          (length chat-rows))
+  (format t "Updated ~A with ~D models.~%"
+          (namestring *radius-generated-path*)
+          (length radius-rows)))

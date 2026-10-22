@@ -97,7 +97,7 @@
        model (image-context) :stream-p nil))))
 
 (test static-model-catalog-calculates-cost
-  (let* ((metadata (cadr-ai:find-model-metadata :deepseek "deepseek-v4-flash"))
+  (let* ((metadata (cadr-ai:find-model-metadata :deepseek "deepseek-flash"))
          (usage (cadr-ai:make-usage :input 1000000
                                   :output 2000000
                                   :cache-read 500000)))
@@ -139,17 +139,17 @@
             :cache-read 72000 :cache-write 1)))
     (cadr-ai:calculate-usage-cost short metadata)
     (cadr-ai:calculate-usage-cost long metadata)
-    (is (= 1d0
+    (is (= 0.8d0
            (cadr-ai:cost-input (cadr-ai:usage-cost short))))
-    (is (= 3d0
-           (cadr-ai:cost-output (cadr-ai:usage-cost short))))
     (is (= 2d0
+           (cadr-ai:cost-output (cadr-ai:usage-cost short))))
+    (is (= 1.6d0
            (cadr-ai:cost-input (cadr-ai:usage-cost long))))
-    (is (= 4.5d0
+    (is (= 3d0
            (cadr-ai:cost-output (cadr-ai:usage-cost long))))
     (is (<
          (abs
-          (- 0.0000125d0
+          (- 0.00001d0
              (cadr-ai:cost-cache-write
               (cadr-ai:usage-cost long))))
          1d-16))))
@@ -166,6 +166,6 @@
     (is (equal '(:medium :high :xhigh)
                (levels :openai "gpt-5.5-pro")))
     (is (equal '(:off :low :high :max)
-               (levels :deepseek "deepseek-v4-flash")))
+               (levels :deepseek "deepseek-flash")))
     (is (equal '(:low :high :max)
                (levels :kimi-coding "k3")))))
