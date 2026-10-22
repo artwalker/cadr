@@ -125,26 +125,190 @@
    "type" "configuration_update"
    "reasoning" (json-object "effort" effort)))
 
+(defvar *provider-request-transcript* nil
+  "Transcript captured before request coercion. Responses reads tool history from it.")
+
+(defvar *responses-omit-leading-system-text* nil
+  "Codex puts the leading system text in instructions, not in input.")
+
+(defun responses-instruction-role (model)
+  (if (responses-developer-role-p model) "developer" "system"))
+
+(defun responses-tool-support (model)
+  ;; additional_tools items accumulate and cannot replace a top-level tool
+  ;; or remove a tool. That transport is :changes only when a later system
+  ;; message can carry the item. Tool search can only add.
+  (cond
+    ((and (model-compat-value model :supports-mid-convo-system-messages nil)
+          (model-compat-value model :supports-additional-tools nil))
+     :changes)
+    ((model-compat-value model :supports-tool-search nil)
+     :additions)
+    (t :none)))
+
+(defun responses-tool-change-name (item)
+  (etypecase item
+    (tool-reference (tool-reference-name item))
+    (tool (tool-name item))
+    (string item)))
+
+(defun responses-true-removals (message)
+  (let ((added (make-hash-table :test #'equal)))
+    (dolist (tool (system-message-tools-added message))
+      (setf (gethash (tool-name tool) added) t))
+    (loop for item in (system-message-tools-removed message)
+          for name = (responses-tool-change-name item)
+          unless (gethash name added)
+            collect name)))
+
+(defparameter +incremental-tools-notice+
+  "This is an incremental tools update. Previously declared tools remain available unless explicitly marked unavailable. A tool declared again here is available again, and its latest definition replaces the earlier one.")
+
+(defun render-incremental-tools-notice (unavailable)
+  (if unavailable
+      (format nil "~A~%Still unavailable: ~{~A~^, ~}."
+              +incremental-tools-notice+ unavailable)
+      +incremental-tools-notice+))
+
+(defun render-tool-removal-notice (names)
+  (format nil "The following tools are no longer available. Do not call them:~%~{- ~A~^~%~}"
+          names))
+
+(defun responses-without-names (unavailable names)
+  (if names
+      (remove-if (lambda (name) (member name names :test #'string=))
+                 unavailable)
+      unavailable))
+
+(defun responses-system-input-items
+    (model message &key leading-p anchor-p include-text-p tool-support
+                      declared-p unavailable seed tool-options)
+  (let ((items nil)
+        (added (system-message-tools-added message)))
+    (when anchor-p
+      (setf unavailable
+            (responses-without-names
+             unavailable (mapcar #'tool-name added)))
+      (when added
+        (cond
+          ((eq tool-support :changes)
+           (when declared-p
+             (push (json-object
+                    "role" (responses-instruction-role model)
+                    "content" (render-incremental-tools-notice unavailable))
+                   items))
+           (setf declared-p t)
+           (push (json-object
+                  "type" "additional_tools"
+                  "role" "developer"
+                  "tools" (openai-tools model added :options tool-options))
+                 items))
+          ((eq tool-support :additions)
+           (let* ((names (mapcar #'tool-name added))
+                  (call-id
+                    (format nil "cadr_tool_load_~A"
+                            (short-hash
+                             (format nil "~A:~{~A~^,~}" seed names)))))
+             (push (json-object
+                    "type" "tool_search_call"
+                    "call_id" call-id
+                    "execution" "client"
+                    "status" "completed"
+                    "arguments"
+                    (json-object "query" (format nil "~{~A~^ ~}" names)
+                                 "limit" (length names)))
+                   items)
+             (push (json-object
+                    "type" "tool_search_output"
+                    "call_id" call-id
+                    "execution" "client"
+                    "status" "completed"
+                    "tools"
+                    (openai-tools model added
+                                  :defer-loading-p t
+                                  :options tool-options))
+                   items))))))
+    (when include-text-p
+      (let* ((parts
+               (list (if leading-p
+                         (get-system-message-text message)
+                         (render-system-message-update message))))
+             (removed (and anchor-p (responses-true-removals message))))
+        (when removed
+          (setf parts
+                (append parts (list (render-tool-removal-notice removed))))
+          (dolist (name removed)
+            (unless (member name unavailable :test #'string=)
+              (setf unavailable (append unavailable (list name))))))
+        (let ((text
+                (format nil "~{~A~^~%~%~}"
+                        (remove-if (lambda (part) (zerop (length part)))
+                                   parts))))
+          (when (plusp (length text))
+            (push (json-object
+                   "role" (responses-instruction-role model)
+                   "content" text)
+                  items)))))
+    (values (nreverse items) declared-p unavailable)))
+
 (defun openai-input-items
     (model context &key grammar-properties deferred-tools deferred-tools-mode
-                        tool-options configuration-update-effort)
+                        tool-options configuration-update-effort
+                        transcript-tools)
   (let ((items nil)
         (message-index 0)
-        (loaded-tool-names (make-hash-table :test #'equal)))
-    (when (non-empty-string-p (context-system-prompt context))
-      (push (json-object "role"
-                         (if (responses-developer-role-p model)
-                             "developer"
-                             "system")
-                         "content" (context-system-prompt context))
-            items))
+        (source-index 0)
+        (system-index 0)
+        (declared-additional-p nil)
+        (unavailable-tools nil)
+        (loaded-tool-names (make-hash-table :test #'equal))
+        (tool-support (and transcript-tools (responses-tool-support model))))
+    (unless transcript-tools
+      (when (non-empty-string-p (context-system-prompt context))
+        (push (json-object "role"
+                           (responses-instruction-role model)
+                           "content" (context-system-prompt context))
+              items)))
     (dolist (message
              (prepare-messages-for-model
-              (context-messages context)
+              (if transcript-tools
+                  (transcript-context-messages
+                   (resolve-transcript *provider-request-transcript* t))
+                  (context-messages context))
               model
               #'normalize-provider-id
               #'responses-normalize-tool-call-id))
-      (cond
+      (let ((leading-system-p
+              (and transcript-tools
+                   (zerop source-index)
+                   (system-message-p message))))
+        (incf source-index)
+        (cond
+          ((and transcript-tools (system-message-p message))
+           (let ((anchor-p
+                   (>= system-index
+                       (transcript-tools-folded-system-messages
+                        transcript-tools))))
+             (incf system-index)
+             (multiple-value-bind (emitted declared unavailable)
+                 (responses-system-input-items
+                  model message
+                  :leading-p leading-system-p
+                  :anchor-p anchor-p
+                  :include-text-p
+                  (or (not leading-system-p)
+                      (not *responses-omit-leading-system-text*))
+                  :tool-support tool-support
+                  :declared-p declared-additional-p
+                  :unavailable unavailable-tools
+                  :seed (format nil "system:~D" message-index)
+                  :tool-options tool-options)
+               (dolist (item emitted)
+                 (push item items))
+               (setf declared-additional-p declared
+                     unavailable-tools unavailable))))
+          (t
+           (cond
         ((typep message 'user-message)
          (let* ((source (user-message-content message))
                 (content
@@ -356,8 +520,9 @@
                       (json-object
                        "type" "input_image"
                        "image_url" (data-url block)))))
-            items)))))
-      (incf message-index))
+            items)))))))
+        (unless leading-system-p
+          (incf message-index))))
     (when configuration-update-effort
       (push (configuration-update-item configuration-update-effort)
             items))
@@ -474,15 +639,39 @@
                             sampling-params
                             &allow-other-keys)
   (declare (ignore metadata))
-  (ensure-supported-content model context)
-  (let* ((oauth-token (provider-oauth-access-token provider))
+  ;; Models without mid-conversation system messages still receive one
+  ;; folded developer prompt and the current tool list. Callers that
+  ;; pass a raw context keep those facts on the system messages, so
+  ;; project the transcript before the request is built.
+  (let ((context
+          (if (and *provider-request-transcript*
+                   (not (model-compat-value
+                         model :supports-mid-convo-system-messages nil)))
+              (coerce-provider-request-context
+               model *provider-request-transcript*)
+              context)))
+    (ensure-supported-content model context)
+    (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
          (account-id (provider-oauth-account-id provider))
          (configuration-update-effort
            (openai-configuration-update-effort model reasoning key))
+         (transcript-tools
+           (when (and *provider-request-transcript*
+                      (model-compat-value
+                       model :supports-mid-convo-system-messages nil))
+             (resolve-transcript-tools
+              (transcript-context-messages
+               (resolve-transcript *provider-request-transcript* t))
+              (responses-tool-support model))))
          (deferred-tools-mode
-           ;; Baseline buildParams: additional-tools beats tool-search.
+           ;; Tool results still carry added-tool-names for transports
+           ;; that have no mid-conversation system message to anchor.
+           ;; With mid-conversation system messages, the transcript
+           ;; declares tools in place and the top-level list must not
+           ;; be rewritten on every later load.
            (cond
+             (transcript-tools nil)
              ((model-compat-value model :supports-additional-tools nil)
               :additional-tools)
              ((model-compat-value model :supports-tool-search nil)
@@ -501,7 +690,10 @@
             "stream" (and stream-p t)
             "store" nil)))
     (multiple-value-setq (immediate-tools deferred-tools)
-      (split-deferred-tools context (not (null deferred-tools-mode))))
+      (if transcript-tools
+          (values (transcript-tools-request-tools transcript-tools)
+                  (make-hash-table :test #'equal))
+          (split-deferred-tools context (not (null deferred-tools-mode)))))
     (json-put
      payload "input"
      (openai-input-items
@@ -510,6 +702,7 @@
       :deferred-tools deferred-tools
       :deferred-tools-mode deferred-tools-mode
       :configuration-update-effort configuration-update-effort
+      :transcript-tools transcript-tools
       :tool-options
       (list
        :supports-strict-mode
@@ -601,7 +794,7 @@
       (model-headers model))
      :payload payload
      :stream-p stream-p
-     :provider (model-provider model))))
+     :provider (model-provider model)))))
 
 (defun parse-openai-output (output)
   (loop for item across (or output #())

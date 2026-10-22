@@ -208,32 +208,54 @@ current tools. The structured section trail stays in the transcript."
             (setf (gethash name declared) tool)))))
     nil))
 
-(defun has-non-additive-tool-changes (messages)
-  (let ((declared (make-hash-table :test #'equal)))
-    (dolist (message messages)
-      (when (system-message-p message)
-        (when (system-message-tools-removed message)
-          (return-from has-non-additive-tool-changes t))
-        (dolist (tool (system-message-tools-added message))
-          (let ((name (tool-name tool)))
-            (when (gethash name declared)
-              (return-from has-non-additive-tool-changes t))
-            (setf (gethash name declared) t)))))
-    nil))
+(defun last-non-additive-tool-change-index (system-messages)
+  ;; A name stays declared after removal. Kimi K3 ignores a removed tool
+  ;; that a later tool message declares again, so that re-add is a change.
+  (let ((declared (make-hash-table :test #'equal))
+        (last -1))
+    (loop for message in system-messages
+          for index from 0
+          do (when (plusp (length (system-message-tools-removed message)))
+               (setf last index))
+             (dolist (tool (system-message-tools-added message))
+               (let ((name (tool-name tool)))
+                 (when (gethash name declared)
+                   (setf last index))
+                 (setf (gethash name declared) t))))
+    last))
 
-(defun resolve-transcript-tools (messages supports-tool-additions)
-  (let ((anchors-additions
-          (and supports-tool-additions
-               (not (has-non-additive-tool-changes messages)))))
-    (make-transcript-tools
-     :request-tools
-     (if anchors-additions
-         (copy-list
-          (or (let ((initial (get-initial-system-message messages)))
-                (and initial (system-message-tools-added initial)))
-              '()))
-         (get-current-tools messages))
-     :anchors-additions (and anchors-additions t))))
+(defun has-non-additive-tool-changes (messages)
+  (>= (last-non-additive-tool-change-index
+       (remove-if-not #'system-message-p messages))
+      0))
+
+(defun resolve-transcript-tools (messages support)
+  ;; :none keeps the current tools in the top-level list.
+  ;; :changes leaves that list empty: an in-place declaration can replace
+  ;; an earlier in-place one, but not a top-level tool, and nothing can
+  ;; remove a tool on the wire.
+  ;; :additions moves the top-level list once, at the last removal or
+  ;; same-name redeclaration, and anchors later additions.
+  (let ((system-messages (remove-if-not #'system-message-p messages)))
+    (cond
+      ((eq support :none)
+       (make-transcript-tools
+        :request-tools (get-current-tools system-messages)
+        :folded-system-messages (length system-messages)))
+      ((eq support :changes)
+       (make-transcript-tools
+        :request-tools nil
+        :folded-system-messages 0))
+      ((eq support :additions)
+       (let ((folded
+               (max (if (get-initial-system-message messages) 1 0)
+                    (1+ (last-non-additive-tool-change-index
+                         system-messages)))))
+         (make-transcript-tools
+          :request-tools (get-current-tools (subseq system-messages 0 folded))
+          :folded-system-messages folded)))
+      (t
+       (error "Unknown transcript tool support ~S." support)))))
 
 (defun get-system-message-text (message)
   (let ((parts '()))

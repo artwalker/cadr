@@ -62,8 +62,11 @@
 
 (defmethod build-request :around
     ((provider provider) model context &rest args)
-  (let* ((request-context
-           (coerce-provider-request-context model context))
+  (let ((*provider-request-transcript*
+          (or *provider-request-transcript*
+              (ensure-transcript-context context))))
+    (let* ((request-context
+             (coerce-provider-request-context model context))
          (resolved-model (cloudflare-model provider model))
          (request
            (apply #'call-next-method
@@ -100,7 +103,7 @@
                           oauth-token)))))))
     (setf (request-spec-headers request) headers
           (request-spec-provider request) provider-id)
-    request))
+    request)))
 
 (defun normalized-url-authority (parsed)
   (format nil "~A://~A~@[:~D~]"

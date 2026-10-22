@@ -548,27 +548,36 @@ NIL means that the caller must send the original, uncompressed body."
 (defmethod build-request :around
     ((provider openai-codex-provider) model context
      &rest args &key &allow-other-keys)
-  (let* ((request-context
-           (coerce-provider-request-context model context))
-         (request
-           (apply #'call-next-method
-                  provider model request-context args))
-         (payload (request-spec-payload request))
-         (input (json-get payload "input" #()))
-         (first (and (plusp (length input)) (aref input 0))))
-    (when (and first
-               (member (json-get first "role") '("system" "developer")
-                       :test #'string=))
-      (json-put payload "input" (subseq input 1)))
-    (json-put payload "instructions"
-              (or (context-system-prompt request-context)
-                  "You are a helpful assistant."))
+  (let ((*provider-request-transcript* (ensure-transcript-context context))
+        (*responses-omit-leading-system-text* t))
+    (let* ((request-context
+             (coerce-provider-request-context model context))
+           (request
+             (apply #'call-next-method
+                    provider model request-context args))
+           (payload (request-spec-payload request))
+           (input (json-get payload "input" #()))
+           (first (and (plusp (length input)) (aref input 0)))
+           (initial
+             (get-initial-system-message
+              (transcript-context-messages *provider-request-transcript*)))
+           (initial-text
+             (and initial (get-system-message-text initial))))
+      (when (and first
+                 (not (json-present-p first "type"))
+                 (member (json-get first "role") '("system" "developer")
+                         :test #'string=))
+        (json-put payload "input" (subseq input 1)))
+      (json-put payload "instructions"
+                (or (and (non-empty-string-p initial-text) initial-text)
+                    (context-system-prompt request-context)
+                    "You are a helpful assistant."))
     (json-put payload "text" (json-object "verbosity" "low"))
     (json-put payload "include" (json-array "reasoning.encrypted_content"))
     (unless (json-present-p payload "tool_choice")
       (json-put payload "tool_choice" "auto"))
     (json-put payload "parallel_tool_calls" t)
-    request))
+    request)))
 
 (defmethod try-provider-websocket-stream
     ((provider openai-codex-provider) model context request state emit

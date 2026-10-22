@@ -199,7 +199,10 @@
 
 (defstruct transcript-tools
   (request-tools nil :type list)
-  (anchors-additions nil :type boolean))
+  (anchors-additions nil :type boolean)
+  ;; How many leading system messages are already represented by
+  ;; request-tools. Later system messages carry their own tool changes.
+  (folded-system-messages 0 :type integer))
 
 (defstruct image-model
   (id "" :type string)
