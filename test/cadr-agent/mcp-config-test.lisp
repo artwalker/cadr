@@ -273,17 +273,32 @@
         (is (search "auth.provider must be a provider name" (second errors)))
         (is (search "auth is only allowed in the global mcp.json" (third errors)))))))
 
+(defun mcp-config-servers-object (path)
+  ;; Parser that does not strip a leading U+FEFF, matching JSON.parse.
+  (nth-value 0
+             (cadr-agent::mcp-get
+              (cadr-agent::read-mcp-json-object
+               (uiop:read-file-string path :external-format :utf-8))
+              "mcpServers")))
+
 (test mcp-config-reads-and-edits-utf8-bom
   ;; pi@4a080252f packages/coding-agent/test/mcp-extension.test.ts
   ;; "reads and edits mcp.json files that start with a UTF-8 BOM" (#11191).
-  ;; stripBom drops one leading U+FEFF before JSON.parse. The rewrite does
-  ;; not put it back, so a parser that rejects U+FEFF still reads the file.
+  ;; addMcpServerConfig("other", {command:"other-cmd"}) returns false.
+  ;; CHANGELOG: the same strip makes `pi mcp remove` succeed. A missing
+  ;; name does not rewrite, so the BOM stays. A removed name is gone and
+  ;; the rewrite has no BOM.
   (let* ((root (mcp-config-root))
          (agent (merge-pathnames "agent/" root))
          (cwd (merge-pathnames "project/" root))
          (global (merge-pathnames "mcp.json" agent))
          (project (merge-pathnames ".pi/mcp.json" cwd))
-         (bom (string (code-char #xfeff))))
+         (missing (merge-pathnames "missing.json" agent))
+         (bom (string (code-char #xfeff)))
+         (demo-and-other
+           '(:json-object
+             "demo" (:json-object "command" "echo" "enabled" nil)
+             "other" (:json-object "command" "other-cmd"))))
     (mcp-config-write
      global
      (concatenate
@@ -303,18 +318,34 @@
                                  (cadr-agent:mcp-server-entry-scope entry)))
                          (cadr-agent:loaded-mcp-config-servers loaded))
                  '(("demo" :global) ("local" :project)))))
-    (cadr-agent:update-mcp-server-config global "demo" '(:enabled t))
+    (is (not (cadr-agent:add-mcp-server-config
+              global "other" '(:command "other-cmd"))))
     (let ((raw (uiop:read-file-string global :external-format :utf-8)))
       (is (and (plusp (length raw))
                (char/= (char raw 0) (code-char #xfeff))))
-      (is (equal (nth-value 0
-                            (cadr-agent::mcp-get
-                             (nth-value 0
-                                        (cadr-agent::mcp-get
-                                         (cadr-agent::read-mcp-json-object raw)
-                                         "mcpServers"))
-                             "demo"))
-                 '(:json-object "command" "echo"))))))
+      (is (equal (mcp-config-servers-object global) demo-and-other)))
+    (is (cadr-agent:add-mcp-server-config
+         global "other" '(:command "other-cmd")))
+    (is (equal (mcp-config-servers-object global) demo-and-other))
+    (let ((before (uiop:read-file-string project :external-format :utf-8)))
+      (is (not (cadr-agent:remove-mcp-server-config project "absent")))
+      (is (string= before
+                   (uiop:read-file-string project :external-format :utf-8))))
+    (is (cadr-agent:remove-mcp-server-config project "local"))
+    (let ((raw (uiop:read-file-string project :external-format :utf-8)))
+      (is (and (plusp (length raw))
+               (char/= (char raw 0) (code-char #xfeff))))
+      (is (equal (mcp-config-servers-object project) '(:json-object))))
+    (is (not (cadr-agent:remove-mcp-server-config project "local")))
+    (is (not (cadr-agent:remove-mcp-server-config missing "demo")))
+    (is (not (uiop:file-exists-p missing)))
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (null (cadr-agent:loaded-mcp-config-errors loaded)))
+      (is (equal (mapcar (lambda (entry)
+                           (list (cadr-agent:mcp-server-entry-name entry)
+                                 (cadr-agent:mcp-server-entry-scope entry)))
+                         (cadr-agent:loaded-mcp-config-servers loaded))
+                 '(("demo" :global) ("other" :global)))))))
 
 (defun mcp-hex-suffix-p (name)
   (and (>= (length name) 9)

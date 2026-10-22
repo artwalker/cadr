@@ -680,7 +680,8 @@
            (progn
              (loop for (key item) on pairs by #'cddr
                    for first-p = t then nil
-                   do (write-char #\Newline stream)
+                   do (unless first-p (write-char #\, stream))
+                      (write-char #\Newline stream)
                       (dotimes (depth (1+ level))
                         (write-string indent stream))
                       (cadr-ai::write-json-string key stream)
@@ -690,7 +691,7 @@
              (dotimes (depth level)
                (write-string indent stream))
              (write-char #\} stream)))))
-    ((and (typep value 'sequence) (not (stringp value)))
+    ((and value (typep value 'sequence) (not (stringp value)))
      (write-char #\[ stream)
      (if (zerop (length value))
          (write-char #\] stream)
@@ -733,6 +734,37 @@
                                  :external-format :utf-8)
               (write-mcp-json next out indent 0)
               (write-char #\Newline out))))))))
+
+(defun add-mcp-server-config (path name config)
+  ;; pi@4a080252f addMcpServerConfig. A missing file is created.
+  ;; True means an entry with this name was replaced.
+  (let ((replaced nil))
+    (edit-mcp-servers
+     path
+     (lambda (servers parsed)
+       (let ((servers (or servers '(:json-object))))
+         (setf replaced (nth-value 1 (mcp-get servers name)))
+         (mcp-put parsed
+                  "mcpServers"
+                  (mcp-put servers name (mcp-normalize config))))))
+    replaced))
+
+(defun remove-mcp-server-config (path name)
+  ;; pi@4a080252f removeMcpServerConfig. False when the file is missing
+  ;; or does not define the name. A miss does not rewrite the file.
+  (unless (uiop:file-exists-p path)
+    (return-from remove-mcp-server-config nil))
+  (let ((removed nil))
+    (edit-mcp-servers
+     path
+     (lambda (servers parsed)
+       (if (and (mcp-object-p servers)
+                (nth-value 1 (mcp-get servers name)))
+           (progn
+             (setf removed t)
+             (mcp-put parsed "mcpServers" (mcp-delete servers name)))
+           nil)))
+    removed))
 
 (defun update-mcp-server-config (path name patch &key override)
   (edit-mcp-servers

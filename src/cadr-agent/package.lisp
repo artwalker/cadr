@@ -221,6 +221,8 @@
    #:mcp-tool-exposure
    #:mcp-namespace
    #:load-mcp-config
+   #:add-mcp-server-config
+   #:remove-mcp-server-config
    #:update-mcp-server-config
    #:loaded-mcp-config-servers
    #:loaded-mcp-config-errors
