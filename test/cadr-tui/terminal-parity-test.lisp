@@ -321,6 +321,128 @@
            (ignore-errors (cadr-tui:terminal-stop terminal)))
          (cadr-tui::disarm-terminal-exit-restore terminal))))))
 
+(test refresh-terminal-dimensions-matches-v140
+  ;; pi@4a080252f packages/tui/src/terminal.ts refreshTerminalDimensions
+  ;; and packages/tui/test/regression-sigwinch-kill-eacces.test.ts.
+  ;; POSIX and a positive pid: kill(pid, SIGWINCH). win32 and pid <= 0
+  ;; do not call kill. EACCES, EPERM, and any other kill error are ignored.
+  (let ((calls nil))
+    (cadr-tui::refresh-terminal-dimensions
+     :windows-p nil
+     :pid 4242
+     :kill-function
+     (lambda (pid signal)
+       (push (list pid signal) calls)))
+    (is (equal (list (list 4242 sb-posix:sigwinch)) calls)))
+  (dolist (pid '(0 -1))
+    (let ((calls 0))
+      (cadr-tui::refresh-terminal-dimensions
+       :windows-p nil
+       :pid pid
+       :kill-function
+       (lambda (pid signal)
+         (declare (ignore pid signal))
+         (incf calls)))
+      (is (zerop calls) "pid ~A must not be signaled" pid)))
+  (let ((calls 0))
+    (cadr-tui::refresh-terminal-dimensions
+     :windows-p t
+     :pid 4242
+     :kill-function
+     (lambda (pid signal)
+       (declare (ignore pid signal))
+       (incf calls)))
+    (is (zerop calls)))
+  (dolist (reason '("kill EACCES" "kill EPERM"))
+    (let ((calls 0))
+      (finishes
+        (cadr-tui::refresh-terminal-dimensions
+         :windows-p nil
+         :pid 7
+         :kill-function
+         (lambda (pid signal)
+           (declare (ignore pid signal))
+           (incf calls)
+           (error reason))))
+      (is (= 1 calls) "~A must reach kill and then be ignored" reason)))
+  (unless (uiop:os-windows-p)
+    (finishes
+      (cadr-tui::refresh-terminal-dimensions
+       :windows-p nil
+       :pid (sb-posix:getpid)))))
+
+(test process-terminal-start-self-sigwinch-after-raw-mode
+  ;; pi@4a080252f terminal.ts start() calls refreshTerminalDimensions
+  ;; after setRawMode and before enableWindowsVTInput.
+  (call-with-pty-input
+   (lambda (input)
+     (let ((output (make-string-output-stream))
+           (order nil)
+           (raw-at-refresh nil)
+           (terminal nil))
+       (setf terminal
+             (cadr-tui:make-process-terminal
+              :input input
+              :output output
+              :dimensions-refresh-function
+              (lambda ()
+                (let* ((fd
+                         (cadr-tui::process-terminal-input-fd
+                          terminal))
+                       (lflag
+                         (sb-posix:termios-lflag
+                          (sb-posix:tcgetattr fd))))
+                  (setf raw-at-refresh
+                        (and fd
+                             (zerop (logand lflag sb-posix:icanon))
+                             (zerop (logand lflag sb-posix:echo)))))
+                (push :sigwinch order)
+                (cadr-tui::refresh-terminal-dimensions
+                 :windows-p nil
+                 :pid 5150
+                 :kill-function
+                 (lambda (pid signal)
+                   (push (list :kill pid signal) order))))
+              :windows-vt-input-function
+              (lambda ()
+                (push :vt order))))
+       (unwind-protect
+            (progn
+              (cadr-tui:terminal-start terminal)
+              (is (equal t raw-at-refresh))
+              (is (equal
+                   (list :sigwinch
+                         (list :kill 5150 sb-posix:sigwinch)
+                         :vt)
+                   (nreverse order)))
+              (is (cadr-tui::process-terminal-started-p terminal)))
+         (when (cadr-tui::process-terminal-started-p terminal)
+           (ignore-errors (cadr-tui:terminal-stop terminal)))
+         (cadr-tui::disarm-terminal-exit-restore terminal)))))
+  (call-with-pty-input
+   (lambda (input)
+     (let* ((output (make-string-output-stream))
+            (terminal
+              (cadr-tui:make-process-terminal
+               :input input
+               :output output
+               :dimensions-refresh-function
+               (lambda ()
+                 (cadr-tui::refresh-terminal-dimensions
+                  :windows-p nil
+                  :pid 9
+                  :kill-function
+                  (lambda (pid signal)
+                    (declare (ignore pid signal))
+                    (error "kill EACCES")))))))
+       (unwind-protect
+            (progn
+              (finishes (cadr-tui:terminal-start terminal))
+              (is (cadr-tui::process-terminal-started-p terminal)))
+         (when (cadr-tui::process-terminal-started-p terminal)
+           (ignore-errors (cadr-tui:terminal-stop terminal)))
+         (cadr-tui::disarm-terminal-exit-restore terminal))))))
+
 (test terminal-dimensions-use-environment-before-defaults
   (flet ((lookup (name)
            (cdr (assoc name

@@ -309,6 +309,35 @@
    #'read-windows-stdin-console-mode
    #'write-windows-stdin-console-mode))
 
+#+sbcl
+(defun refresh-terminal-dimensions
+    (&key
+       (windows-p (uiop:os-windows-p))
+       (pid nil pid-supplied-p)
+       (kill-function
+         (lambda (pid signal)
+           (sb-posix:kill pid signal))))
+  ;; pi@4a080252f packages/tui/src/terminal.ts refreshTerminalDimensions.
+  ;; SIGWINCH is lost while the process is stopped, so startup signals
+  ;; this process. win32 and a non-positive pid skip the signal. EACCES
+  ;; and every other kill(2) failure skip the refresh instead of crashing.
+  (unless windows-p
+    (let ((resolved
+            (if pid-supplied-p
+                pid
+                (sb-posix:getpid))))
+      (when (and (integerp resolved) (plusp resolved))
+        (handler-case
+            (funcall kill-function resolved sb-posix:sigwinch)
+          (condition () nil)))))
+  nil)
+
+#-sbcl
+(defun refresh-terminal-dimensions
+    (&key windows-p pid kill-function)
+  (declare (ignore windows-p pid kill-function))
+  nil)
+
 (defclass process-terminal (terminal)
   ((input
     :initarg :input
@@ -392,6 +421,10 @@
     :initarg :windows-vt-input-function
     :initform #'enable-windows-virtual-terminal-input
     :reader process-terminal-windows-vt-input-function)
+   (dimensions-refresh-function
+    :initarg :dimensions-refresh-function
+    :initform #'refresh-terminal-dimensions
+    :reader process-terminal-dimensions-refresh-function)
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
@@ -434,7 +467,9 @@
        (native-modifier-function
          #'is-native-modifier-pressed)
        (windows-vt-input-function
-         #'enable-windows-virtual-terminal-input))
+         #'enable-windows-virtual-terminal-input)
+       (dimensions-refresh-function
+         #'refresh-terminal-dimensions))
   (multiple-value-bind (columns rows)
       (terminal-dimensions nil nil)
     (make-instance
@@ -445,6 +480,7 @@
      :apple-terminal-function apple-terminal-function
      :native-modifier-function native-modifier-function
      :windows-vt-input-function windows-vt-input-function
+     :dimensions-refresh-function dimensions-refresh-function
      :columns columns
      :rows rows)))
 
@@ -718,8 +754,13 @@
       (sb-posix:tcsetattr
        fd sb-posix:tcsanow
        (raw-termios original))
-      ;; pi@4a080252f terminal.ts start(): ENABLE_VIRTUAL_TERMINAL_INPUT
-      ;; is applied after setRawMode, which resets console mode flags.
+      ;; pi@4a080252f terminal.ts start(): self SIGWINCH after raw mode
+      ;; and the resize listener, before enableWindowsVTInput.
+      (funcall
+       (process-terminal-dimensions-refresh-function
+        terminal))
+      ;; ENABLE_VIRTUAL_TERMINAL_INPUT is applied after setRawMode,
+      ;; which resets console mode flags.
       (funcall
        (process-terminal-windows-vt-input-function terminal))
       (setf (process-terminal-started-p terminal) t)
