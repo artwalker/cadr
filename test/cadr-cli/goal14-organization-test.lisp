@@ -1248,7 +1248,10 @@
     ;; +1 extension resource source labels.
     ;; +2 Goal 26: context-transform-message-p and valid-boundary-draft-p.
     ;; +1 Goal 24: extension-schema-registration-path (registration.lisp).
-    (is (= 267 definition-count)
+    ;; +3 Goal 26 dialog stack: extension-ui-promise, fulfill, and
+    ;; call-when so a confirm opened on the TUI input thread returns
+    ;; before the next key (v1.4.0 showExtensionConfirm).
+    (is (= 270 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))

@@ -385,6 +385,39 @@
      :message "UI timeout-ms must be a non-negative integer or NIL"))
   timeout-ms)
 
+(defstruct (extension-ui-promise
+            (:constructor %make-extension-ui-promise)
+            (:predicate extension-ui-promise-p))
+  (mutex (sb-thread:make-mutex :name "cadr-ui-promise"))
+  (done-p nil :type boolean)
+  result
+  (callbacks nil :type list))
+
+(defun fulfill-extension-ui-promise (promise result)
+  (let ((callbacks nil))
+    (sb-thread:with-mutex ((extension-ui-promise-mutex promise))
+      (unless (extension-ui-promise-done-p promise)
+        (setf (extension-ui-promise-result promise) result
+              (extension-ui-promise-done-p promise) t
+              callbacks
+              (nreverse (extension-ui-promise-callbacks promise))
+              (extension-ui-promise-callbacks promise) nil)))
+    (dolist (callback callbacks)
+      (funcall callback result)))
+  promise)
+
+(defun call-when-extension-ui-promise (promise function)
+  (let ((run-now nil)
+        (value nil))
+    (sb-thread:with-mutex ((extension-ui-promise-mutex promise))
+      (if (extension-ui-promise-done-p promise)
+          (setf run-now t
+                value (extension-ui-promise-result promise))
+          (push function (extension-ui-promise-callbacks promise))))
+    (when run-now
+      (funcall function value)))
+  promise)
+
 (defun invoke-extension-ui (context method arguments)
   (assert-active-extension-context context)
   (let* ((host (%extension-context-host context))
@@ -409,19 +442,33 @@
       (setf (extension-host-active-ui-prompt host)
             (list :kind kind :title title))
       (emit-ui-prompt-event host :ui-prompt-start kind title))
-    (unwind-protect
-         (funcall thunk)
-      (when (plusp (extension-host-ui-prompt-depth host))
-        (decf (extension-host-ui-prompt-depth host)))
-      (when (zerop (extension-host-ui-prompt-depth host))
-        (let ((prompt
-                (or (extension-host-active-ui-prompt host)
-                    (list :kind kind :title title))))
-          (setf (extension-host-active-ui-prompt host) nil)
-          (emit-ui-prompt-event
-           host :ui-prompt-end
-           (getf prompt :kind)
-           (getf prompt :title)))))))
+    ;; pi@4a080252f runner.ts withUIPrompt: the call returns the Promise
+    ;; immediately, and ui_prompt_end runs when that Promise settles.
+    (flet ((finish ()
+             (when (plusp (extension-host-ui-prompt-depth host))
+               (decf (extension-host-ui-prompt-depth host)))
+             (when (zerop (extension-host-ui-prompt-depth host))
+               (let ((prompt
+                       (or (extension-host-active-ui-prompt host)
+                           (list :kind kind :title title))))
+                 (setf (extension-host-active-ui-prompt host) nil)
+                 (emit-ui-prompt-event
+                  host :ui-prompt-end
+                  (getf prompt :kind)
+                  (getf prompt :title))))))
+      (let ((deferred-p nil))
+        (unwind-protect
+             (let ((result (funcall thunk)))
+               (when (extension-ui-promise-p result)
+                 (setf deferred-p t)
+                 (call-when-extension-ui-promise
+                  result
+                  (lambda (value)
+                    (declare (ignore value))
+                    (finish))))
+               result)
+          (unless deferred-p
+            (finish)))))))
 
 (defun emit-ui-prompt-event (host type kind title)
   (ignore-errors
@@ -464,15 +511,27 @@
      :message "confirm requires string title and message values"))
   (validate-extension-ui-signal signal)
   (validate-extension-timeout timeout-ms)
-  (not
-   (null
-    (invoke-extension-ui
-     context :confirm
-     (list
-      :title title
-      :message message
-      :signal signal
-      :timeout-ms timeout-ms)))))
+  (let ((result
+          (invoke-extension-ui
+           context :confirm
+           (list
+            :title title
+            :message message
+            :signal signal
+            :timeout-ms timeout-ms))))
+    ;; A confirm opened from the TUI input thread returns immediately,
+    ;; the same way showExtensionConfirm returns a Promise. Coerce to
+    ;; boolean when that Promise settles. Other threads still block
+    ;; inside the UI call and get the boolean here.
+    (if (extension-ui-promise-p result)
+        (let ((coerced (%make-extension-ui-promise)))
+          (call-when-extension-ui-promise
+           result
+           (lambda (value)
+             (fulfill-extension-ui-promise
+              coerced (not (null value)))))
+          coerced)
+        (not (null result)))))
 
 (defun extension-context-input
     (context title &key placeholder signal timeout-ms)

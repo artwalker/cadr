@@ -522,6 +522,10 @@ interactive-mode.ts:5956-5960).")
          ;; closing it shows the previous one. Each entry keeps its
          ;; own result, so a buried dialog can still settle.
          (extension-dialogs nil)
+         ;; Overlay custom (ui.showOverlay) is not an editor-slot dialog.
+         ;; An inline dialog may cover it; closing that dialog restores
+         ;; this state so the overlay keeps the screen and the keys.
+         (remembered-overlay-custom nil)
          (extension-ui-root nil)
          (active-session-path current-session-path)
          (active-theme-mode nil)
@@ -600,6 +604,13 @@ interactive-mode.ts:5956-5960).")
          (render-now ()
            (let ((work-rendered-p nil))
              (sb-thread:with-mutex (lock)
+               (let ((floating-overlay
+                       (and remembered-overlay-custom
+                            (not (eq overlay remembered-overlay-custom))
+                            (not
+                             (extension-custom-ui-state-done-p
+                              remembered-overlay-custom))
+                            remembered-overlay-custom)))
                (multiple-value-bind
                      (lines cursor-row cursor-column editor-origin)
                    (render-tui-state
@@ -619,20 +630,24 @@ interactive-mode.ts:5956-5960).")
                     :now (funcall clock-function)
                     :spinner-frame
                     (tui-status-animation-frame
-                     status-animation))
+                     status-animation)
+                    :floating-overlay floating-overlay)
                  (cadr-tui:render-frame
                   renderer lines
                   :cursor-row cursor-row
                   :cursor-column cursor-column
                   :overlay-active-p
-                  (and
-                   (extension-custom-ui-state-p overlay)
-                   (extension-custom-ui-state-overlay-p overlay)
-                   (extension-custom-ui-visible-p overlay)))
+                  (or (and floating-overlay
+                           (extension-custom-ui-visible-p
+                            floating-overlay))
+                      (and
+                       (extension-custom-ui-state-p overlay)
+                       (extension-custom-ui-state-overlay-p overlay)
+                       (extension-custom-ui-visible-p overlay))))
                  (setf
                   list-mouse-origin editor-origin
                   work-rendered-p pending-work-render-p
-                  pending-work-render-p nil)))
+                  pending-work-render-p nil))))
              (when (and work-rendered-p
                         work-rendered-function)
                (funcall work-rendered-function))))
@@ -993,6 +1008,22 @@ interactive-mode.ts:5956-5960).")
                       (setf active-custom-ui-state nil)))
                 (set-program-status-blocked
                  "extension-dialog" (getf top :blocked)))
+               ((and remembered-overlay-custom
+                     (extension-custom-ui-state-p
+                      remembered-overlay-custom)
+                     (not
+                      (extension-custom-ui-state-done-p
+                       remembered-overlay-custom)))
+                ;; pi@4a080252f tui.ts setFocusInternal: the inline
+                ;; dialog unmounted, so the blocked overlay custom
+                ;; takes focus again. Keys must not fall through to
+                ;; the editor.
+                (setf overlay remembered-overlay-custom
+                      overlay-kind :extension-custom
+                      active-custom-ui-state
+                      remembered-overlay-custom)
+                (set-program-status-blocked
+                 "extension-dialog" nil))
                (t
                 (when (eq overlay-kind :extension-custom)
                   (setf overlay nil
@@ -1119,93 +1150,121 @@ interactive-mode.ts:5956-5960).")
                            (push-extension-dialog-locked
                             component blocked))
                      (setf overlay-kind :extension-custom
-                           overlay component)))
+                           overlay component
+                           remembered-overlay-custom
+                           (if (and
+                                (extension-custom-ui-state-p
+                                 component)
+                                (extension-custom-ui-state-overlay-p
+                                 component))
+                               component
+                               remembered-overlay-custom))))
                (request-render)
                (when extension-overlay-opened-function
                  (funcall extension-overlay-opened-function)))
-             (let* ((deadline
-                      (and timeout-ms
-                           (+ (get-internal-real-time)
-                              (ceiling
-                               (* timeout-ms
-                                  internal-time-units-per-second)
-                               1000))))
-                    (monitor
-                      (and
-                       (or signal deadline)
-                       (sb-thread:make-thread
-                        (lambda ()
-                          ;; LOOP WHEN/DO would skip the abort check
-                          ;; whenever the countdown test is false.
-                          (loop with last-countdown = nil
-                            do
-                            (when
-                                (and deadline
-                                     (framed-select-state-p component))
-                              (let ((remaining
-                                      (max
-                                       0
-                                       (ceiling
-                                        (/ (- deadline
-                                              (get-internal-real-time))
-                                           internal-time-units-per-second)))))
-                                (unless (eql remaining last-countdown)
-                                  (setf last-countdown remaining)
-                                  (request-render))))
-                            (when
-                                (or
-                                 (and tracked-state
-                                      (extension-custom-ui-state-done-p
-                                       tracked-state))
-                                 (and entry (getf entry :done-p)))
-                              (return))
-                            (when
-                                (or
-                                 (and signal
-                                      (cadr-agent::extension-cancellation-aborted-p
-                                       signal))
-                                 (and deadline
-                                      (>= (get-internal-real-time)
-                                          deadline)))
-                              (if tracked-state
-                                  (finish-custom-ui-state
-                                   tracked-state nil)
-                                  (settle-stacked-extension-dialog
-                                   component nil))
-                              (return))
-                            (sleep 0.01)))
-                        :name "cadr-extension-ui-timeout")))
-                    (result
-                      (sb-thread:with-mutex (custom-ui-lock)
-                        (loop until
-                              (or
-                               (and tracked-state
-                                    (extension-custom-ui-state-done-p
-                                     tracked-state))
-                               (and entry (getf entry :done-p))
-                               (and (not stack-p)
-                                    (not tracked-state)
-                                    custom-ui-done-p))
-                              do
-                              (sb-thread:condition-wait
-                               custom-ui-condition
-                               custom-ui-lock))
-                        (cond
-                          (tracked-state
-                           (extension-custom-ui-state-result
-                            tracked-state))
-                          (entry (getf entry :result))
-                          (t custom-ui-result)))))
-               (when monitor
-                 (stop-thread-for-cleanup monitor))
-               (sb-thread:with-mutex (lock)
-                 (when (extension-dialog-entry component)
-                   (uncover-extension-dialog-locked component))
-                 (when (eq overlay component)
-                   (setf overlay nil
-                         overlay-kind nil)))
-               (request-render)
-               result)))
+             (labels
+                 ((overlay-settled-p ()
+                    (or
+                     (and tracked-state
+                          (extension-custom-ui-state-done-p
+                           tracked-state))
+                     (and entry (getf entry :done-p))
+                     (and (not stack-p)
+                          (not tracked-state)
+                          custom-ui-done-p)))
+                  (await-extension-overlay ()
+                    (let* ((deadline
+                             (and timeout-ms
+                                  (+ (get-internal-real-time)
+                                     (ceiling
+                                      (* timeout-ms
+                                         internal-time-units-per-second)
+                                      1000))))
+                           (monitor
+                             (and
+                              (or signal deadline)
+                              (sb-thread:make-thread
+                               (lambda ()
+                                 ;; LOOP WHEN/DO would skip the abort check
+                                 ;; whenever the countdown test is false.
+                                 (loop with last-countdown = nil
+                                       do
+                                       (when
+                                           (and deadline
+                                                (framed-select-state-p
+                                                 component))
+                                         (let ((remaining
+                                                 (max
+                                                  0
+                                                  (ceiling
+                                                   (/ (- deadline
+                                                         (get-internal-real-time))
+                                                      internal-time-units-per-second)))))
+                                           (unless (eql remaining
+                                                        last-countdown)
+                                             (setf last-countdown remaining)
+                                             (request-render))))
+                                       (when (overlay-settled-p)
+                                         (return))
+                                       (when
+                                           (or
+                                            (and signal
+                                                 (cadr-agent::extension-cancellation-aborted-p
+                                                  signal))
+                                            (and deadline
+                                                 (>= (get-internal-real-time)
+                                                     deadline)))
+                                         (if tracked-state
+                                             (finish-custom-ui-state
+                                              tracked-state nil)
+                                             (settle-stacked-extension-dialog
+                                              component nil))
+                                         (return))
+                                       (sleep 0.01)))
+                               :name "cadr-extension-ui-timeout")))
+                           (result
+                             (sb-thread:with-mutex (custom-ui-lock)
+                               (loop until (overlay-settled-p)
+                                     do
+                                     (sb-thread:condition-wait
+                                      custom-ui-condition
+                                      custom-ui-lock))
+                               (cond
+                                 (tracked-state
+                                  (extension-custom-ui-state-result
+                                   tracked-state))
+                                 (entry (getf entry :result))
+                                 (t custom-ui-result)))))
+                      (when monitor
+                        (stop-thread-for-cleanup monitor))
+                      (sb-thread:with-mutex (lock)
+                        (when (extension-dialog-entry component)
+                          (uncover-extension-dialog-locked component))
+                        (when (eq remembered-overlay-custom component)
+                          (setf remembered-overlay-custom nil))
+                        (when (eq overlay component)
+                          (setf overlay nil
+                                overlay-kind nil)))
+                      (request-render)
+                      result)))
+               (if (and (tui-input-thread-p)
+                        (not (overlay-settled-p)))
+                   ;; pi@4a080252f showExtensionConfirm returns a Promise
+                   ;; before the next key. Waiting here would hold the
+                   ;; thread that reads Escape.
+                   (let ((promise
+                           (cadr-agent::%make-extension-ui-promise)))
+                     (sb-thread:make-thread
+                      (lambda ()
+                        (handler-case
+                            (cadr-agent::fulfill-extension-ui-promise
+                             promise (await-extension-overlay))
+                          (error ()
+                            (cadr-agent::fulfill-extension-ui-promise
+                             promise nil))))
+                      :name "cadr-extension-ui-await")
+                     promise)
+                   (await-extension-overlay)))))
          (show-custom-ui
              (factory overlay-p overlay-options)
            (let ((own-state nil)

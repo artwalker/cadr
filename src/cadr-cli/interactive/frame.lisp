@@ -57,7 +57,8 @@
        full-document-p
        (now (tui-monotonic-seconds))
        (spinner-frame
-         (aref +tui-spinner-frames+ 0)))
+         (aref +tui-spinner-frames+ 0))
+       floating-overlay)
   (when (and (extension-custom-ui-state-p overlay)
              (extension-custom-ui-state-overlay-p overlay))
     (return-from render-tui-state
@@ -291,16 +292,57 @@
                   (+ entry-origin (second hit))
                   (+ entry-origin (third hit))))
           entry-hits)))
-      (values
-       (nconc visible
-              pending-message-lines
-              status-indicator
-              widget-above-lines
-              active-editor-lines
-              widget-below-lines
-       footer-lines)
-       cursor-row
-       (if overlay
-           overlay-column
-           editor-column)
-       editor-origin)))))
+      (let ((frame
+              (nconc visible
+                     pending-message-lines
+                     status-indicator
+                     widget-above-lines
+                     active-editor-lines
+                     widget-below-lines
+                     footer-lines)))
+        (when (and floating-overlay
+                   (extension-custom-ui-visible-p floating-overlay))
+          (let ((options
+                  (or (extension-overlay-options floating-overlay)
+                      nil)))
+            (multiple-value-bind (overlay-width ignored-row
+                                  ignored-column ignored-max-height)
+                (cadr-tui:resolve-overlay-layout
+                 width rows 0
+                 :width (getf options :width)
+                 :min-width (getf options :min-width)
+                 :max-height (getf options :max-height)
+                 :anchor (or (getf options :anchor) :center)
+                 :offset-x (or (getf options :offset-x) 0)
+                 :offset-y (or (getf options :offset-y) 0)
+                 :row (getf options :row)
+                 :col (getf options :col)
+                 :margin (getf options :margin))
+              (declare (ignore ignored-row ignored-column
+                               ignored-max-height))
+              (setf frame
+                    (cadr-tui:composite-overlay-frame
+                     frame
+                     (list
+                      (cadr-tui:make-overlay-placement
+                       :lines
+                       (render-extension-custom-ui
+                        floating-overlay overlay-width)
+                       :width (getf options :width)
+                       :min-width (getf options :min-width)
+                       :max-height (getf options :max-height)
+                       :anchor (or (getf options :anchor) :center)
+                       :offset-x (or (getf options :offset-x) 0)
+                       :offset-y (or (getf options :offset-y) 0)
+                       :row (getf options :row)
+                       :col (getf options :col)
+                       :margin (getf options :margin)
+                       :visible-p t))
+                     width rows)))))
+        (values
+         frame
+         cursor-row
+         (if overlay
+             overlay-column
+             editor-column)
+         editor-origin))))))
