@@ -703,3 +703,38 @@
               (:id "device_code"
                :label "Device code login (headless)"))))
           (nreverse prompts)))))))
+
+(test login-openai-chatgpt-uses-the-subscription-flow
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (storage (cadr-cli:make-file-auth-storage path))
+           (registry
+             (cadr-cli:make-model-registry
+              :path (merge-pathnames "models.json" directory)
+              :credentials storage))
+           (prompts nil))
+      (let ((cadr-ai::*oauth-login-device-id*
+              "e61bbe28-07ef-466d-8e5d-a344f94ab305")
+            (cadr-ai::*oauth-browser-open-function*
+              (lambda (url) (declare (ignore url))))
+            (cadr-ai::*oauth-flow-request-function*
+              (lambda (&rest args)
+                (declare (ignore args))
+                (error "token endpoint must not be called"))))
+        (signals cadr-ai:authentication-cancelled
+          (cadr-cli::handle-native-auth-command
+           registry "/login openai chatgpt"
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (push (list :message (getf prompt :message)
+                          :url (getf prompt :url))
+                    prompts)
+              nil))
+           :output (make-string-output-stream))))
+      (is (string=
+           "Complete login in your browser, or paste the final redirect URL here:"
+           (getf (first prompts) :message)))
+      (is (search "agent_name_hint=Cadr" (getf (first prompts) :url)))
+      (is (search "client_id=dynamic_agent_client"
+                  (getf (first prompts) :url))))))

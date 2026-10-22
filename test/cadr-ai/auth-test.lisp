@@ -23,8 +23,8 @@
 
 (test openai-codex-browser-login-uses-the-caller-name
   ;; pi@4a080252f #10433. The Codex browser authorize URL takes the
-  ;; caller's name. Omitting it stays cadr. Sign in with ChatGPT's
-  ;; agent_name_hint is not in this tree.
+  ;; caller's name. Omitting it stays cadr. Sign in with ChatGPT uses
+  ;; agent_name_hint and is locked in openai-chatgpt-oauth-test.lisp.
   (let ((named
           (cadr-ai:openai-authorization-url
            "challenge" "state-1" "my-app"))

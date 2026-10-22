@@ -551,7 +551,7 @@
               :supports-long-cache-retention t)))
          (request
            (build-request
-            (make-openai-provider :api-key "key")
+            (make-openai-provider :api-key "sk-proj-test")
             model
             (sample-context)
             :stream-p t

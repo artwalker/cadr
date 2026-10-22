@@ -57,10 +57,14 @@
          (command (first parts))
          (provider
            (and (second parts)
-                (or
-                 (ignore-errors
-                   (parse-auth-provider (second parts)))
-                 (provider-symbol-from-key (second parts)))))
+                (if (and (third parts)
+                         (string-equal (second parts) "openai")
+                         (string-equal (third parts) "chatgpt"))
+                    :openai
+                    (or
+                     (ignore-errors
+                       (parse-auth-provider (second parts)))
+                     (provider-symbol-from-key (second parts))))))
          (runtime
            (and registry
                 (model-registry-native-runtime registry)))

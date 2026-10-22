@@ -78,6 +78,7 @@
      :output nil
      :error-output nil)))
 (defparameter *oauth-login-agent-name* nil)
+(defparameter *oauth-login-device-id* nil)
 
 (defparameter +sha256-constants+
   #(#x428a2f98 #x71374491 #xb5c0fbcf #xe9b5dba5

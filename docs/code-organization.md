@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=305 lines=129858 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=149 in-progress=0 done=156 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=306 lines=130311 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=150 in-progress=0 done=156 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -127,6 +127,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | 15 | Implement GitHub Copilot device login, token exchange, refresh, and model filtering. | pass | no-rewrite | RFC 8628 code lists at :117-118 are wire tokens; the single-owner fix belongs to oauth-poll-token defaults, not this file. | 20 |
 | `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | 6 | Implement Kimi Coding device login and credential refresh. | pass | no-rewrite | Poll vocabulary at :43-44 is wire constants; owner fix lives in oauth-poll-token (xai.lisp:91), not here. | 20 |
 | `src/cadr-ai/oauth/providers/meta.lisp` | 200 | 21 | Implement Meta Muse device login and the 24-hour Model API key mint. | pass | no-rewrite | Failure-message alist and mint status classes are the wire contract; polling reuses poll-device-authorization. | 27 |
+| `src/cadr-ai/oauth/providers/openai-chatgpt.lisp` | 453 | 37 | Implement ChatGPT subscription login, refresh, and callback completion. | pass | no-rewrite | Authorize, token, and callback checks are the OpenAI wire contract; PKCE and the callback page stay shared. | 27 |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | 7 | Implement OpenAI Codex device authorization, polling, and runtime login selection. | pass | no-rewrite | string= on OpenAI wire error codes at :116-123 is the baseline-verbatim contract; cancellation via dynamic binding is already Lisp-native. | 20 |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | 7 | Implement OpenRouter PKCE login, key exchange, and refresh. | pass | no-rewrite | Empty-string-as-null at :42-43 is forced by the shared auth.json round-trip contract. | 20 |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | 7 | Implement Radius browser/device login and gateway-scoped credential refresh. | pass | done | parse-device-authorization. I0: fourth copy gone. | 20 |

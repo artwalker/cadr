@@ -147,6 +147,7 @@ which auth strategies are structured."
      (lambda (interaction)
        (login-kimi-oauth interaction environment)))
     (:meta #'login-meta-oauth)
+    (:openai-chatgpt #'login-openai-chatgpt-oauth)
     (:openai-device #'login-openai-runtime-oauth)
     (:openrouter #'login-openrouter-oauth)
     (:radius
@@ -164,6 +165,7 @@ which auth strategies are structured."
      (lambda (credential)
        (refresh-kimi-oauth-credential credential environment)))
     (:meta #'refresh-meta-oauth-credential)
+    (:openai-chatgpt #'refresh-openai-chatgpt-oauth-credential)
     (:openai-device #'refresh-openai-oauth-credential)
     (:openrouter #'refresh-openrouter-oauth-credential)
     (:radius
@@ -186,6 +188,13 @@ which auth strategies are structured."
                 (find (model-id model) available :test #'string=))
               models)
              models))))
+    (:hide-classifiers-for-oauth
+     (lambda (models credential)
+       (if (typep credential 'oauth-credential)
+           (remove-if
+            (lambda (model) (typep model 'classifier-model))
+            models)
+           models)))
     (otherwise nil)))
 
 (defun built-in-provider-options (environment)

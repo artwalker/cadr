@@ -706,7 +706,8 @@
       ],
       "baseUrl": "https://api.openai.com/v1",
       "authTypes": [
-        "api-key"
+        "api-key",
+        "oauth"
       ],
       "defaultModel": "gpt-5.5",
       "keyEnvironment": "OPENAI_API_KEY",
@@ -720,11 +721,17 @@
         "OPENAI_API_KEY"
       ],
       "apiKeyAuthStrategy": "environment",
-      "oauthLoginStrategy": null,
-      "oauthRefreshStrategy": null,
-      "oauthToAuthStrategy": null,
-      "modelFilterStrategy": null,
-      "oauthMetadata": null
+      "oauthLoginStrategy": "openai-chatgpt",
+      "oauthRefreshStrategy": "openai-chatgpt",
+      "oauthToAuthStrategy": "access-token",
+      "modelFilterStrategy": "hide-classifiers-for-oauth",
+      "oauthMetadata": {
+        "providerName": "OpenAI",
+        "methodName": "OpenAI (ChatGPT subscription)",
+        "loginLabel": "Sign in with ChatGPT",
+        "authUrlInstructions": "Complete sign-in in your browser. If the callback does not complete, paste the final redirect URL here.",
+        "manualInputMessage": "Complete login in your browser, or paste the final redirect URL here:"
+      }
     },
     {
       "id": "openai-codex",

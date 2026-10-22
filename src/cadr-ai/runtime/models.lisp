@@ -599,6 +599,32 @@
              nil)))
      providers)))
 
+(defun models-runtime-available-classifiers
+    (runtime &optional provider-id)
+  "Authenticated classifier models. OpenAI OAuth drops classifier models."
+  (let ((providers
+          (if provider-id
+              (let ((provider
+                      (models-runtime-provider runtime provider-id)))
+                (if provider (list provider) nil))
+              (models-runtime-providers runtime))))
+    (mapcan
+     (lambda (provider)
+       (let ((id (runtime-provider-id provider)))
+         (when (models-runtime-check-auth runtime id)
+           (let ((models (list-classifier-models id)))
+             (if (eq id :openai)
+                 (let ((filter
+                         (runtime-provider-filter-function provider)))
+                   (if filter
+                       (copy-list
+                        (funcall
+                         filter models
+                         (runtime-credential runtime id)))
+                       (copy-list models)))
+                 (copy-list models))))))
+     providers)))
+
 (defun make-model-store-view (runtime provider-id)
   (lambda (operation &optional value)
     (ecase operation

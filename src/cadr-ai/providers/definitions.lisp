@@ -555,7 +555,7 @@
      :protocol :openai-responses
      :protocols (:openai-responses)
      :base-url "https://api.openai.com/v1"
-     :auth-types (:api-key)
+     :auth-types (:api-key :oauth)
      :default-model "gpt-5.5"
      :key-environment "OPENAI_API_KEY"
      :required-environment nil
@@ -563,14 +563,14 @@
      :supports-images-p nil
      :supports-tools-p t
      :reasoning-p nil
-     :oauth-metadata nil
+     :oauth-metadata ,+openai-chatgpt-oauth-metadata+
      :api-key-name "OpenAI API key"
      :environment-names ("OPENAI_API_KEY")
      :api-key-auth-strategy :environment
-     :oauth-login-strategy nil
-     :oauth-refresh-strategy nil
-     :oauth-to-auth-strategy nil
-     :model-filter-strategy nil)
+     :oauth-login-strategy :openai-chatgpt
+     :oauth-refresh-strategy :openai-chatgpt
+     :oauth-to-auth-strategy :access-token
+     :model-filter-strategy :hide-classifiers-for-oauth)
     (:id :openai-codex
      :baseline-source "packages/ai/src/providers/openai-codex.ts:8"
      :name "OpenAI Codex"

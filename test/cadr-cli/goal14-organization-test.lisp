@@ -1442,7 +1442,8 @@
     ;; +1 Goal 26 #11016: request-size-overflow-text-p (support/overflow.lisp).
     ;; +4 Goal 26 v1.4.0 retry: status-code boundary and the node-fetch
     ;; request-failure matcher in support/retry.lisp.
-    (is (= 295 definition-count)
+    ;; +1 Goal 27 GAP-08: models-runtime-available-classifiers.
+    (is (= 296 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

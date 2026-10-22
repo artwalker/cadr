@@ -2126,8 +2126,13 @@ interactive-mode.ts:5956-5960).")
                         (oauth-selector-option-name
                          option))))
               (start-work
-               (format nil "/login ~(~A~)"
-                       (oauth-selector-option-id option))))
+               (if (and (eq :openai
+                            (oauth-selector-option-id option))
+                        (eq :oauth
+                            (oauth-selector-option-auth-type option)))
+                   "/login openai chatgpt"
+                   (format nil "/login ~(~A~)"
+                           (oauth-selector-option-id option)))))
              ((oauth-selector-option-structured-login-p option)
               ;; Baseline showApiKeyLoginDialog: structured API key flows
               ;; (Bedrock, Vertex) run inside the login dialog through the

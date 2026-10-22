@@ -652,8 +652,19 @@
                model *provider-request-transcript*)
               context)))
     (ensure-supported-content model context)
-    (let* ((oauth-token (provider-oauth-access-token provider))
-         (key (or oauth-token (require-api-key provider)))
+    (let* ((stored-oauth (provider-oauth-access-token provider))
+         (key
+           (if (non-empty-string-p stored-oauth)
+               stored-oauth
+               (require-api-key provider)))
+         ;; A ChatGPT subscription token is a bearer on /v1/responses.
+         ;; Codex account headers and /codex/responses stay for any other
+         ;; OAuth token.
+         (chatgpt-p (openai-chatgpt-sign-in-p model key))
+         (oauth-token
+           (and (not chatgpt-p)
+                (non-empty-string-p stored-oauth)
+                stored-oauth))
          (account-id (provider-oauth-account-id provider))
          (configuration-update-effort
            (openai-configuration-update-effort model reasoning key))
@@ -722,23 +733,25 @@
                 (clamp-openai-cache-key session-id)))
           (when cache-key
             (json-put payload "prompt_cache_key" cache-key))))
-      (cond
-        (explicit-p
-         (cond
-           ((eq retention :none)
-            (json-put payload "prompt_cache_options"
-                      (json-object "mode" "explicit")))
-           ((and (eq retention :long) long-p)
-            (json-put payload "prompt_cache_options"
-                      (json-object "ttl" "30m")))))
-        ((and (eq retention :long) long-p)
-         (json-put payload "prompt_cache_retention" "24h"))))
-    (when (and max-tokens
-               (model-compat-value
-                model :supports-max-output-tokens t))
-      (json-put payload "max_output_tokens" (max 16 max-tokens)))
-    (when (not (null temperature))
-      (json-put payload "temperature" temperature))
+      (unless chatgpt-p
+        (cond
+          (explicit-p
+           (cond
+             ((eq retention :none)
+              (json-put payload "prompt_cache_options"
+                        (json-object "mode" "explicit")))
+             ((and (eq retention :long) long-p)
+              (json-put payload "prompt_cache_options"
+                        (json-object "ttl" "30m")))))
+          ((and (eq retention :long) long-p)
+           (json-put payload "prompt_cache_retention" "24h")))))
+    (unless chatgpt-p
+      (when (and max-tokens
+                 (model-compat-value
+                  model :supports-max-output-tokens t))
+        (json-put payload "max_output_tokens" (max 16 max-tokens)))
+      (when (not (null temperature))
+        (json-put payload "temperature" temperature)))
     (when immediate-tools
       (json-put payload "tools"
                 (openai-tools model immediate-tools)))

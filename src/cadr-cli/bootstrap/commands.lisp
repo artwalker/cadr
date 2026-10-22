@@ -1532,19 +1532,32 @@
               (list :name name :path nil))))
          (handle-command (line)
            (or
-            (handle-native-auth-command
-             model-registry line
-             (runtime-auth-interaction)
-             :output frontend-output
-             :on-change #'refresh-auth)
-            (handle-auth-command
-             line
-             :output frontend-output
-             :auth-url-function
-             auth-url-consumer
-             :auth-prompt-function
-             auth-prompt-consumer
-             :on-change #'refresh-auth)
+            (let ((cadr-ai::*oauth-login-device-id*
+                    (when
+                        (and
+                         (stringp line)
+                         (let ((trimmed
+                                 (string-left-trim
+                                  '(#\Space #\Tab)
+                                  line)))
+                           (or (string= trimmed "/login")
+                               (uiop:string-prefix-p
+                                "/login " trimmed))))
+                      (settings-device-id settings-manager))))
+              (or
+               (handle-native-auth-command
+                model-registry line
+                (runtime-auth-interaction)
+                :output frontend-output
+                :on-change #'refresh-auth)
+               (handle-auth-command
+                line
+                :output frontend-output
+                :auth-url-function
+                auth-url-consumer
+                :auth-prompt-function
+                auth-prompt-consumer
+                :on-change #'refresh-auth)))
             (handle-session-command
              line agent
              :directory session-directory

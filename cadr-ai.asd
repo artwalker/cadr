@@ -73,6 +73,7 @@
                                            (:file "openrouter")
                                            (:file "radius")
                                            (:file "openai-device")
+                                           (:file "openai-chatgpt")
                                            (:file "anthropic")))
                              (:file "images")
                              (:module "providers"
@@ -152,6 +153,7 @@
                              (:file "goal12-auth-test")
                              (:file "goal18-auth-test")
                              (:file "meta-oauth-test")
+                             (:file "openai-chatgpt-oauth-test")
                              (:file "goal12-model-data-test")
                              (:file "goal12-codex-websocket-test")
                              (:file "goal20-websocket-test")

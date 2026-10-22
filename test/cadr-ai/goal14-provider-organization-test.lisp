@@ -12,6 +12,7 @@
     "src/cadr-ai/oauth/providers/openrouter.lisp"
     "src/cadr-ai/oauth/providers/radius.lisp"
     "src/cadr-ai/oauth/providers/openai-device.lisp"
+    "src/cadr-ai/oauth/providers/openai-chatgpt.lisp"
     "src/cadr-ai/oauth/providers/anthropic.lisp"
     "src/cadr-ai/oauth/pkce.lisp"
     "src/cadr-ai/oauth/callback.lisp"

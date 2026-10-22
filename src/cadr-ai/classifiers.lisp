@@ -621,6 +621,16 @@
              ("~typesafe/jev-latest" "TypeSafe: Jev Latest" (:text :image) 0.042d0 0d0 262144)))
     (destructuring-bind (id name input price cache-read window) row
       (register-openrouter-classifier
-       id name input price cache-read window))))
+       id name input price cache-read window)))
+  (register-classifier-model
+   (make-classifier-model
+    :id "gpt-6-luna"
+    :name "GPT-6 Luna"
+    :provider :openai
+    :api :openai-decisions
+    :base-url "https://api.openai.com/v1"
+    :input '(:text :image)
+    :context-window 922000
+    :input-price 0.1d0)))
 
 (register-builtin-classifier-models)
