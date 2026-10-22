@@ -596,3 +596,123 @@
         (is (not (header-present-p
                   (getf call :headers)
                   "typesafe-danger-zone-images")))))))
+
+(defun detailed-classifier-user-agent ()
+  ;; pi@4a080252f identity.ts formatUserAgent detailed form, cadr product
+  ;; and SBCL runtime. Locked here so the classifier assertion does not
+  ;; read the implementation back.
+  (format nil "cadr/~A (~(~A~); sbcl/~A; ~(~A~))"
+          (cadr-ai::cadr-version)
+          (software-type)
+          (lisp-implementation-version)
+          (machine-type)))
+
+(test cloudflare-classifier-sends-the-detailed-user-agent
+  ;; pi@4a080252f classifier-shared.ts requestHeaders spreads
+  ;; getIdentityHeaders. CHANGELOG 1.4.0: classifier requests send the
+  ;; User-Agent. Cloudflare classification goes through classify-system-one.
+  (multiple-value-bind (http calls)
+      (capture-classifier-http
+       (cadr-ai::stringify-json (cloudflare-envelope *clef-output*)))
+    (let* ((*http-request-function* http))
+      (cadr-ai:classify-model
+       (cadr-ai:find-classifier-model
+        :cloudflare-workers-ai "@cf/cloudflare/clef")
+       (classifier-sample-context)
+       :api-key "cf-key"
+       :environment (cloudflare-auth-env))
+      (is (string=
+           (detailed-classifier-user-agent)
+           (cdr (header-present-p
+                 (getf (first (funcall calls)) :headers)
+                 "User-Agent")))))))
+
+(test classifier-headers-override-and-delete-the-identity
+  ;; providerHeadersToRecord: model headers then caller headers. null deletes.
+  (multiple-value-bind (http calls)
+      (capture-classifier-http
+       (cadr-ai::stringify-json (cloudflare-envelope *clef-output*)))
+    (let* ((*http-request-function* http)
+           (model
+             (cadr-ai::copy-classifier-model
+              (cadr-ai:find-classifier-model
+               :cloudflare-workers-ai "@cf/cloudflare/clef"))))
+      (setf (cadr-ai::classifier-model-headers model)
+            '(("User-Agent" . "GitHubCopilotChat/0.35.0")))
+      (cadr-ai:classify-model
+       model (classifier-sample-context)
+       :api-key "cf-key"
+       :environment (cloudflare-auth-env)
+       :identity (cadr-ai::client-identity :user-agent :short))
+      (cadr-ai:classify-model
+       model (classifier-sample-context)
+       :api-key "cf-key"
+       :environment (cloudflare-auth-env)
+       :headers '(("User-Agent" . nil)))
+      (let* ((recorded (funcall calls))
+             (impersonated (getf (first recorded) :headers))
+             (removed (getf (second recorded) :headers)))
+        (is (string=
+             "GitHubCopilotChat/0.35.0"
+             (cdr (header-present-p impersonated "User-Agent"))))
+        (is (not (header-present-p removed "User-Agent")))
+        (is (string=
+             "Bearer cf-key"
+             (cdr (header-present-p removed "authorization"))))))))
+
+(test classifier-attribution-is-off-until-the-identity-asks
+  ;; pi-ai sends no attribution unless identity.attribution is set.
+  ;; A null caller header still removes one name and leaves the rest.
+  (multiple-value-bind (http calls)
+      (capture-classifier-http (cadr-ai::stringify-json *typesafe-answers*))
+    (let* ((*http-request-function* http)
+           (model
+             (cadr-ai:make-classifier-model
+              :id "typesafe/jev-1.14"
+              :name "Jev 1.14"
+              :provider :openrouter
+              :api :typesafe-system-one
+              :base-url "https://openrouter.ai/api/v1"
+              :context-window 32000)))
+      (cadr-ai:classify-model
+       model (classifier-sample-context) :api-key "secret")
+      (cadr-ai:classify-model
+       model (classifier-sample-context)
+       :api-key "secret"
+       :identity (cadr-ai::client-identity
+                  :attribution cadr-ai::+cadr-attribution+))
+      (cadr-ai:classify-model
+       model (classifier-sample-context)
+       :api-key "secret"
+       :identity (cadr-ai::client-identity
+                  :user-agent '(:custom "acme/1.0")
+                  :attribution cadr-ai::+cadr-attribution+)
+       :headers '(("HTTP-Referer" . nil)
+                  ("X-OpenRouter-Title" . "kept")))
+      (let* ((recorded (funcall calls))
+             (plain (getf (first recorded) :headers))
+             (attributed (getf (second recorded) :headers))
+             (overridden (getf (third recorded) :headers)))
+        (is (string=
+             (detailed-classifier-user-agent)
+             (cdr (header-present-p plain "User-Agent"))))
+        (is (not (header-present-p plain "HTTP-Referer")))
+        (is (string=
+             "https://github.com/artwalker/cadr"
+             (cdr (header-present-p attributed "HTTP-Referer"))))
+        (is (string=
+             "cadr"
+             (cdr (header-present-p attributed "X-OpenRouter-Title"))))
+        (is (string=
+             "cli-agent"
+             (cdr (header-present-p attributed "X-OpenRouter-Categories"))))
+        (is (not (header-present-p overridden "HTTP-Referer")))
+        (is (string=
+             "kept"
+             (cdr (header-present-p overridden "X-OpenRouter-Title"))))
+        (is (string=
+             "acme/1.0"
+             (cdr (header-present-p overridden "User-Agent"))))
+        (is (string=
+             "cli-agent"
+             (cdr (header-present-p overridden "X-OpenRouter-Categories"))))))))

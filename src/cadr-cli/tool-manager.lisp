@@ -147,8 +147,7 @@
                  (list "curl" "-sS" "-D" "-"
                        "-o" (if (uiop:os-windows-p) "NUL" "/dev/null")
                        "--max-time" "10"
-                       "-A" (format nil "~A-coding-agent"
-                                    (cadr-ai::cadr-product-slug))
+                       "-A" (cadr-user-agent (cadr-ai::cadr-version))
                        (format nil "https://github.com/~A/releases/latest"
                                repository)))
       (declare (ignore stderr))

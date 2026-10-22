@@ -929,7 +929,18 @@
           manager :environment "false")))
     (is (null
          (cadr-cli::install-telemetry-enabled-p
-          manager :environment ""))))
+          manager :environment "")))
+    ;; pi@4a080252f settings-defaults.ts enableInstallTelemetry is true.
+    ;; sdk-client-identity.test.ts expects attribution when PI_TELEMETRY
+    ;; is unset. nil here is that unset variable.
+    (is (eq t
+            (cadr-cli::install-telemetry-enabled-p
+             manager :environment nil)))
+    (is (eq cadr-ai::+cadr-attribution+
+            (getf (cadr-cli::coding-agent-client-identity
+                   (cadr-cli::install-telemetry-enabled-p
+                    manager :environment nil))
+                  :attribution))))
   (let ((seen nil))
     (funcall
      (cadr-cli::make-extension-aware-stream-function

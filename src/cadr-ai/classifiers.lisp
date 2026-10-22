@@ -106,13 +106,30 @@
         (progn (setf (cdr found) value) headers)
         (append headers (list (cons name value))))))
 
-(defun classifier-request-headers (model api-key extra)
-  (let ((headers
-          (list (cons "content-type" "application/json")
-                (cons "authorization"
-                      (format nil "Bearer ~A" api-key)))))
-    (dolist (pair (append (classifier-model-headers model) extra) headers)
-      (setf headers (upsert-header headers (car pair) (cdr pair))))))
+(defun classifier-request-headers (model api-key extra &optional identity)
+  ;; pi@4a080252f classifier-shared.ts requestHeaders. Identity is the
+  ;; bottom layer. Bearer auth, model headers, then caller headers win.
+  ;; A null value removes that name, matching providerHeadersToRecord.
+  (let ((merged nil))
+    (labels ((apply-source (source)
+               (dolist (pair source)
+                 (let ((name (car pair))
+                       (value (cdr pair)))
+                   (setf merged (delete-named-header merged name))
+                   (unless (header-removal-p value)
+                     (setf merged (acons name value merged)))))))
+      (apply-source
+       (identity-header-list
+        (classifier-model-provider model)
+        (classifier-model-base-url model)
+        identity))
+      (apply-source
+       (list (cons "content-type" "application/json")
+             (cons "authorization"
+                   (format nil "Bearer ~A" api-key))))
+      (apply-source (classifier-model-headers model))
+      (apply-source extra))
+    (nreverse merged)))
 
 (defun copy-json-object (object)
   (let ((copy (make-hash-table :test #'equal)))
@@ -413,7 +430,9 @@
        (if input-cell (cdr input-cell) detected-input)
        (if header-cell (cdr header-cell) detected-header)))))
 
-(defun classify-system-one (transport model context api-key headers environment)
+(defun classify-system-one
+    (transport model context api-key headers environment
+     &optional identity)
   (unless (eq (classifier-model-api model)
               (system-one-transport-api transport))
     (error "Unsupported classifier API: ~A"
@@ -449,7 +468,7 @@
               (join-endpoint base (system-one-transport-endpoint transport))
               (funcall (system-one-transport-wrap-payload transport)
                        model request)
-              (classifier-request-headers model api-key extra)
+              (classifier-request-headers model api-key extra identity)
               api-key))
            (output
              (funcall (system-one-transport-unwrap-output transport) body)))
@@ -468,7 +487,7 @@
     :provider (classifier-model-provider model))))
 
 (defun classify-model
-    (model context &key api-key headers environment)
+    (model context &key api-key headers environment identity)
   (let ((result
           (make-classifier-result
            :api (classifier-model-api model)
@@ -483,7 +502,8 @@
                             (classifier-model-api model))))))
           (multiple-value-bind (output)
               (classify-system-one
-               transport model context api-key headers environment)
+               transport model context api-key headers environment
+               identity)
             (let ((usage
                     (parse-classifier-usage
                      (json-get output "usage") model)))
