@@ -100,7 +100,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-24 Windows external editor | `packages/coding-agent/src/modes/interactive/extension-editor.ts` → `settings-external-editor-command` in `src/cadr-cli/bootstrap/settings.lisp` | done：未配置 externalEditor、VISUAL、EDITOR 时，Windows 用 notepad，darwin 与 linux 用 nano；已配置命令和这两个环境变量仍然优先。 |
+| GAP-24 Windows external editor | `packages/coding-agent/src/modes/interactive/extension-editor.ts` → `settings-external-editor-command` in `src/cadr-cli/bootstrap/settings.lisp` | done：未配置 externalEditor、VISUAL、EDITOR 时，Windows 用 notepad，darwin 与 linux 用 nano；已配置命令和这两个环境变量仍然优先。；review: pass（g27d 线验收，2026-10-23） |
 | GAP-25 Windows and WSL key defaults | `packages/coding-agent/src/core/keybindings.ts`，`docs/keybindings.md` → `src/cadr-tui/keybindings.lisp`，`src/cadr-cli/interactive/selectors/tree.lisp` | open |
 | GAP-26 Windows open URL | `packages/coding-agent/src/utils/open-browser.ts` → `src/cadr-cli/interactive/controller.lisp` | open |
 | GAP-27 Windows VT input | `packages/tui/src/terminal.ts` → `src/cadr-tui/renderer/virtual-terminal.lisp`，`src/cadr-tui/terminal.lisp` | open |
