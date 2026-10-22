@@ -24,7 +24,7 @@
 
 ## 队列
 
-50 行。`open` 46 行。`proposal` 4 行（GAP-40、GAP-41、GAP-42、GAP-43）。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
+50 行。`open` 45 行。`done` 1 行。`proposal` 4 行（GAP-40、GAP-41、GAP-42、GAP-43）。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
 
 ### P1. Lock what already runs
 
@@ -69,7 +69,7 @@
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-01 MCP client | `packages/mcp/src/client.ts`，`packages/coding-agent/src/extensions/mcp/runtime.ts` → `src/cadr-agent/extensions/mcp-config.lisp` | open |
+| GAP-01 MCP client | `packages/mcp/src/client.ts`，`packages/coding-agent/src/extensions/mcp/runtime.ts` → `src/cadr-agent/extensions/mcp-config.lisp` | done：stdio 或 Streamable HTTP 连上后能 `tools/list`（空 `nextCursor` 结束分页）和 `tools/call`（含 structuredContent）；progress 会续上超时，abort 和超时会发 `notifications/cancelled`，initialize 超时不发。 |
 | GAP-02 MCP resources | `packages/mcp/src/client.ts`，`packages/coding-agent/src/extensions/mcp/resources.ts` → `src/cadr-agent/extensions/mcp-config.lisp` | open |
 | GAP-03 `pi mcp` CLI | `packages/coding-agent/src/extensions/mcp/cli.ts` → `src/cadr-cli/arguments.lisp`（清单：has `--no-mcp` only） | open |
 | GAP-04 MCP OAuth | `packages/mcp/src/oauth/`，`packages/coding-agent/src/extensions/mcp/oauth.ts` → `mcp-config.lisp`，`test/cadr-agent/mcp-config-test.lisp` | open |

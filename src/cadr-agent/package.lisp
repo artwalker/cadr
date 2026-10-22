@@ -242,6 +242,68 @@
    #:registered-mcp-server-name
    #:registered-mcp-server-config
    #:registered-mcp-server-extension-path
+   #:+mcp-latest-protocol-version+
+   #:mcp-error
+   #:mcp-error-code
+   #:mcp-error-data
+   #:mcp-error-data-p
+   #:mcp-error-message
+   #:mcp-connection-closed-error
+   #:mcp-timeout-error
+   #:mcp-timeout-error-timeout-ms
+   #:mcp-abort-error
+   #:mcp-http-error
+   #:mcp-http-error-status
+   #:mcp-http-error-body
+   #:mcp-auth-required-error
+   #:mcp-auth-required-www-authenticate
+   #:mcp-session-expired-error
+   #:make-mcp-abort
+   #:mcp-abort
+   #:mcp-abort-aborted-p
+   #:mcp-abort-reason
+   #:make-mcp-client
+   #:mcp-client-connect
+   #:mcp-client-close
+   #:mcp-client-state
+   #:mcp-client-protocol-version
+   #:mcp-client-server-info
+   #:mcp-client-server-capabilities
+   #:mcp-client-instructions
+   #:mcp-list-tools
+   #:mcp-call-tool
+   #:mcp-client-ping
+   #:mcp-client-request
+   #:mcp-client-notify
+   #:mcp-client-on-notification
+   #:mcp-client-on-error
+   #:mcp-client-on-close
+   #:mcp-client-set-request-handler
+   #:make-mcp-memory-pair
+   #:mcp-memory-emit-error
+   #:mcp-to-llm-content
+   #:make-mcp-stdio-transport
+   #:mcp-stdio-pid
+   #:mcp-stdio-stderr
+   #:consume-mcp-sse
+   #:make-mcp-http-transport
+   #:mcp-http-session-id
+   #:open-mcp-server
+   #:mcp-server-call-tool
+   #:mcp-server-close
+   #:mcp-server-state
+   #:mcp-server-tools
+   #:mcp-server-error
+   #:mcp-server-instructions
+   #:mcp-progress-text
+   #:mcp-expand-home
+   #:mcp-path-to-file-url
+   #:mcp-transport-start
+   #:mcp-transport-send
+   #:mcp-transport-close
+   #:mcp-transport-on-message
+   #:mcp-transport-on-error
+   #:mcp-transport-on-close
    #:extension-context
    #:extension-context-cwd
    #:extension-context-agent
