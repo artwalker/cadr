@@ -49,7 +49,7 @@
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-07 Meta provider | `packages/ai/src/providers/meta.ts`，`packages/ai/src/auth/oauth/meta.ts` → `src/cadr-ai/providers/definitions.lisp` | done：`META_API_KEY` 或 Muse 订阅设备码登录后，向 `https://api.meta.ai/muse-code/key` 兑换一把 24 小时 Model API key；六个 muse 模型走 Responses API（`https://api.meta.ai/v1`），默认模型 `muse-spark-1.3`。 |
+| GAP-07 Meta provider | `packages/ai/src/providers/meta.ts`，`packages/ai/src/auth/oauth/meta.ts` → `src/cadr-ai/providers/definitions.lisp` | done：`META_API_KEY` 或 Muse 订阅设备码登录后，向 `https://api.meta.ai/muse-code/key` 兑换一把 24 小时 Model API key；六个 muse 模型走 Responses API（`https://api.meta.ai/v1`），默认模型 `muse-spark-1.3`。；review: pass（g27b 线验收，2026-10-23） |
 | GAP-08 ChatGPT sign-in | `packages/ai/src/auth/oauth/openai-chatgpt.ts` → `src/cadr-ai/providers/definitions.lisp`，`src/cadr-ai/providers/openai.lisp` | open |
 | GAP-09 TypeSafe credentials | `packages/ai/src/providers/typesafe.ts` → `src/cadr-ai/classifiers.lisp` | open |
 | GAP-11 Anthropic federation | `packages/ai/src/providers/anthropic.ts` → `src/cadr-ai/oauth/providers/anthropic.lisp` | open |
