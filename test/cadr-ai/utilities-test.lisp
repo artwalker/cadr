@@ -111,6 +111,15 @@ second" (cadr-ai:content-text content)))
         (utility-error-message
          "OpenAI API error (429): {\"code\":\"subscription_sharing_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
 
+(test chatgpt-business-workspace-usage-limit-is-not-retryable
+  ;; pi@4a080252f packages/ai/test/retry.test.ts
+  ;; "keeps the ChatGPT Business workspace usage limit non-retryable".
+  ;; The 429 in the formatted message must not win.
+  (is (not
+       (cadr-ai:retryable-assistant-error-p
+        (utility-error-message
+         "OpenAI API error (429): {\"code\":\"subscription_sharing_workplace_individual_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
+
 (test goal17-retry-classifier-matches-the-baseline-transient-pattern-matrix
   (dolist
       (text

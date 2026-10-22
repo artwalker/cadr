@@ -653,7 +653,8 @@ string. Returns the buffer to store back. Per-delta
     (setf (assistant-message-stop-reason message)
           (if (typep condition 'request-aborted) :aborted :error)
           (assistant-message-error-message message)
-          (condition-text condition provider))
+          (annotate-chatgpt-workspace-limit-message
+           model (condition-text condition provider)))
     message))
 
 (defun check-abort (abort-p)
@@ -1066,7 +1067,8 @@ string. Returns the buffer to store back. Per-delta
                     :error)))
           (setf (assistant-message-stop-reason message) reason
               (assistant-message-error-message message)
-              (condition-text condition provider))
+              (annotate-chatgpt-workspace-limit-message
+               model (condition-text condition provider)))
           (when (and (eq reason :error)
                      (typep provider 'bedrock-provider))
             (append-bedrock-failure-diagnostic

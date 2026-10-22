@@ -9,7 +9,11 @@
     "out of budget"
     "quota exceeded"
     "billing"
-    "subscription_sharing_usage_limit_exceeded"))
+    "subscription_sharing_usage_limit_exceeded"
+    ;; ChatGPT Business workspace cap. The personal usage-limit code is
+    ;; not a substring of this one, so a 429 that names only this code
+    ;; would otherwise match the retryable "429".
+    "subscription_sharing_workplace_individual_usage_limit_exceeded"))
 
 (defparameter +retryable-assistant-error-patterns+
   '("overloaded" "server_busy" "servers are currently busy"

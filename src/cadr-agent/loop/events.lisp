@@ -8,7 +8,7 @@
 
 (defparameter +non-retryable-assistant-error-pattern+
   (cl-ppcre:create-scanner
-   "(GoUsageLimitError|FreeUsageLimitError|Monthly usage limit reached|available balance|insufficient_quota|out of budget|quota exceeded|billing|subscription_sharing_usage_limit_exceeded)"
+   "(GoUsageLimitError|FreeUsageLimitError|Monthly usage limit reached|available balance|insufficient_quota|out of budget|quota exceeded|billing|subscription_sharing_usage_limit_exceeded|subscription_sharing_workplace_individual_usage_limit_exceeded)"
    :case-insensitive-mode t))
 
 (defparameter +retryable-assistant-error-pattern+

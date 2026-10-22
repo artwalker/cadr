@@ -84,6 +84,25 @@
 ;; thinking level (pi@4a080252f openai-responses.ts).
 (defparameter +configuration-update-request-effort+ "medium")
 
+;; pi@4a080252f openai-responses.ts. Only the workspace admin can raise this.
+(defparameter +chatgpt-workspace-limit-hint+
+  "You've reached your ChatGPT workspace's usage limit. Ask your workspace admin to increase it at admin.openai.com → Workspace → Usage limits.")
+
+(defun annotate-chatgpt-workspace-limit-message (model text)
+  ;; The personal code is checked first upstream and is not a substring
+  ;; of the workplace code. complete() is stream().result().
+  (if (and (eq (model-api model) :openai-responses)
+           (stringp text)
+           (not (search "subscription_sharing_usage_limit_exceeded" text))
+           (search
+            "subscription_sharing_workplace_individual_usage_limit_exceeded"
+            text))
+      (concatenate 'string
+                   text
+                   (string #\Newline)
+                   +chatgpt-workspace-limit-hint+)
+      text))
+
 (defun openai-chatgpt-sign-in-p (model api-key)
   ;; Baseline isChatGPTSignIn: openai + api.openai.com/v1 + non-sk- key.
   (and (eq (model-provider model) :openai)

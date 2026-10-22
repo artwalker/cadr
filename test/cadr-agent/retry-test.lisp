@@ -42,6 +42,15 @@
      (retry-error-message
       "OpenAI API error (429): {\"code\":\"subscription_sharing_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
 
+(test chatgpt-business-workspace-limit-is-not-retried-by-the-session-loop
+  ;; Same sentence as packages/ai/test/retry.test.ts at v1.4.0.
+  ;; The session loop keeps its own copy of the non-retryable set.
+  (is
+   (not
+    (cadr-agent::retryable-assistant-error-p
+     (retry-error-message
+      "OpenAI API error (429): {\"code\":\"subscription_sharing_workplace_individual_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")))))
+
 (test transient-assistant-errors-retry-and-report-recovery
   (let ((*responses*
           (list
