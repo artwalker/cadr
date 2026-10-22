@@ -273,6 +273,49 @@
         (is (search "auth.provider must be a provider name" (second errors)))
         (is (search "auth is only allowed in the global mcp.json" (third errors)))))))
 
+(test mcp-config-reads-and-edits-utf8-bom
+  ;; pi@4a080252f packages/coding-agent/test/mcp-extension.test.ts
+  ;; "reads and edits mcp.json files that start with a UTF-8 BOM" (#11191).
+  ;; stripBom drops one leading U+FEFF before JSON.parse. The rewrite does
+  ;; not put it back, so a parser that rejects U+FEFF still reads the file.
+  (let* ((root (mcp-config-root))
+         (agent (merge-pathnames "agent/" root))
+         (cwd (merge-pathnames "project/" root))
+         (global (merge-pathnames "mcp.json" agent))
+         (project (merge-pathnames ".pi/mcp.json" cwd))
+         (bom (string (code-char #xfeff))))
+    (mcp-config-write
+     global
+     (concatenate
+      'string bom
+      "{\"mcpServers\":{\"demo\":{\"command\":\"echo\",\"enabled\":false}}}"
+      (string #\Newline)))
+    (mcp-config-write
+     project
+     (concatenate
+      'string bom
+      "{\"mcpServers\":{\"local\":{\"command\":\"local-cmd\"}}}"
+      (string #\Newline)))
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (null (cadr-agent:loaded-mcp-config-errors loaded)))
+      (is (equal (mapcar (lambda (entry)
+                           (list (cadr-agent:mcp-server-entry-name entry)
+                                 (cadr-agent:mcp-server-entry-scope entry)))
+                         (cadr-agent:loaded-mcp-config-servers loaded))
+                 '(("demo" :global) ("local" :project)))))
+    (cadr-agent:update-mcp-server-config global "demo" '(:enabled t))
+    (let ((raw (uiop:read-file-string global :external-format :utf-8)))
+      (is (and (plusp (length raw))
+               (char/= (char raw 0) (code-char #xfeff))))
+      (is (equal (nth-value 0
+                            (cadr-agent::mcp-get
+                             (nth-value 0
+                                        (cadr-agent::mcp-get
+                                         (cadr-agent::read-mcp-json-object raw)
+                                         "mcpServers"))
+                             "demo"))
+                 '(:json-object "command" "echo"))))))
+
 (defun mcp-hex-suffix-p (name)
   (and (>= (length name) 9)
        (char= (char name (- (length name) 9)) #\_)

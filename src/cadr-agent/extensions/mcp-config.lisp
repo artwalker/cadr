@@ -511,13 +511,21 @@
       (setf (mcp-config-state-servers state)
             (nconc (mcp-config-state-servers state) (list entry))))))
 
+(defun mcp-strip-utf8-bom (text)
+  ;; pi@4a080252f utils/text.ts stripBom. One leading U+FEFF only.
+  (if (and (plusp (length text))
+           (char= (char text 0) (code-char #xfeff)))
+      (subseq text 1)
+      text))
+
 (defun read-mcp-config-file (path scope state)
   (unless (uiop:file-exists-p path)
     (return-from read-mcp-config-file nil))
   (let ((parsed
           (handler-case
               (read-mcp-json-object
-               (uiop:read-file-string path :external-format :utf-8))
+               (mcp-strip-utf8-bom
+                (uiop:read-file-string path :external-format :utf-8)))
             (error (condition)
               (mcp-config-push-error
                state
@@ -705,7 +713,8 @@
 (defun edit-mcp-servers (path edit)
   (let* ((text
            (when (uiop:file-exists-p path)
-             (uiop:read-file-string path :external-format :utf-8)))
+             (mcp-strip-utf8-bom
+              (uiop:read-file-string path :external-format :utf-8))))
          (parsed
            (if text
                (read-mcp-json-object text)
