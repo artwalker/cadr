@@ -244,6 +244,9 @@
    (started-p
     :initform nil
     :accessor process-terminal-started-p)
+   (keyboard-protocol-pushed-p
+    :initform nil
+    :accessor process-terminal-keyboard-protocol-pushed-p)
    (keyboard-negotiator
     :initform
     (make-keyboard-protocol-negotiator)
@@ -475,6 +478,137 @@
      1)
     raw))
 
+(defvar *armed-terminal-exits* nil)
+
+(defun ensure-terminal-exit-hook ()
+  (unless (member 'run-terminal-exit-restores
+                  sb-ext:*exit-hooks*)
+    (push 'run-terminal-exit-restores sb-ext:*exit-hooks*)))
+
+(defun disarm-terminal-exit-restore (terminal)
+  (setf *armed-terminal-exits*
+        (remove terminal *armed-terminal-exits* :test #'eq))
+  terminal)
+
+(defun arm-terminal-exit-restore (terminal)
+  (disarm-terminal-exit-restore terminal)
+  (push terminal *armed-terminal-exits*)
+  (ensure-terminal-exit-hook)
+  terminal)
+
+(defun terminal-exit-restore-base-prefix (terminal)
+  (format nil "~A~C[?25h"
+          (if (process-terminal-color-scheme-notifications-enabled-p
+               terminal)
+              (format nil "~C[?2031l" #\Escape)
+              "")
+          #\Escape))
+
+(defun terminal-exit-restore-prefix (terminal)
+  (let ((renderer (terminal-exit-renderer terminal))
+        (base (terminal-exit-restore-base-prefix terminal)))
+    (if (and renderer
+             (terminal-renderer-alt-screen-p renderer)
+             (terminal-renderer-alt-screen-active-p renderer))
+        (concatenate
+         'string
+         +synchronized-update-end+
+         (if (terminal-renderer-mouse-p renderer)
+             +mouse-disable+
+             "")
+         +autowrap-enable+
+         base)
+        base)))
+
+(defun terminal-exit-restore-suffix (terminal)
+  ;; Kitty keyboard flags are per screen, so the pop is written
+  ;; before the alternate screen is left.
+  (let ((renderer (terminal-exit-renderer terminal)))
+    (if (and renderer
+             (terminal-renderer-alt-screen-p renderer)
+             (terminal-renderer-alt-screen-active-p renderer))
+        (concatenate 'string
+                     +alt-screen-exit+
+                     (format nil "~C[?25h" #\Escape))
+        "")))
+
+(defun terminal-exit-pop-keyboard-p (terminal)
+  (or (process-terminal-keyboard-protocol-pushed-p terminal)
+      (eq :kitty
+          (keyboard-protocol-negotiator-mode
+           (process-terminal-keyboard-negotiator terminal)))))
+
+(defun terminal-exit-disable-modify-other-keys-p (terminal)
+  (eq :modify-other-keys
+      (keyboard-protocol-negotiator-mode
+       (process-terminal-keyboard-negotiator terminal))))
+
+(defun process-terminal-exit-restore-sequence
+    (terminal before after)
+  (concatenate
+   'string
+   before
+   (if (process-terminal-progress-active-p terminal)
+       +terminal-progress-clear-sequence+
+       "")
+   (format nil "~C[?2004l" #\Escape)
+   (if (terminal-exit-pop-keyboard-p terminal)
+       (format nil "~C[<u" #\Escape)
+       "")
+   (if (terminal-exit-disable-modify-other-keys-p terminal)
+       +modify-other-keys-disable+
+       "")
+   after))
+
+(defun write-octets-to-fd (fd octets)
+  (let ((total (length octets)))
+    (sb-sys:with-pinned-objects (octets)
+      (let ((base (sb-sys:vector-sap octets))
+            (offset 0))
+        (loop
+          (unless (< offset total)
+            (return))
+          (let ((wrote
+                  (sb-posix:write
+                   fd
+                   (sb-sys:sap+ base offset)
+                   (- total offset))))
+            (when (zerop wrote)
+              (return))
+            (incf offset wrote)))))))
+
+(defun write-terminal-exit-bytes (terminal sequence)
+  ;; A buffered stream write can still be sitting in the Lisp buffer
+  ;; when the exit hook runs. Flush that first, then write the reset
+  ;; itself with write(2) so it reaches the terminal before the process
+  ;; is gone.
+  (let ((output (process-terminal-output terminal)))
+    (handler-case
+        (finish-output output)
+      (serious-condition () nil))
+    (let ((fd (stream-file-descriptor output :output)))
+      (if fd
+          (write-octets-to-fd
+           fd
+           (sb-ext:string-to-octets sequence))
+          (progn
+            (write-string sequence output)
+            (finish-output output))))))
+
+(defun terminal-restore-on-exit (terminal)
+  (write-terminal-exit-bytes
+   terminal
+   (process-terminal-exit-restore-sequence
+    terminal
+    (terminal-exit-restore-prefix terminal)
+    (terminal-exit-restore-suffix terminal))))
+
+(defun run-terminal-exit-restores ()
+  (dolist (terminal (copy-list *armed-terminal-exits*))
+    (handler-case
+        (terminal-restore-on-exit terminal)
+      (serious-condition () nil))))
+
 (defmethod terminal-start ((terminal process-terminal))
   #+sbcl
   (let ((fd
@@ -497,6 +631,11 @@
        fd sb-posix:tcsanow
        (raw-termios original))
       (setf (process-terminal-started-p terminal) t)
+      (setf
+       (process-terminal-keyboard-protocol-pushed-p
+        terminal)
+       t)
+      (arm-terminal-exit-restore terminal)
       (refresh-terminal-size terminal)
       (let ((program-status-query
               (if (configure-program-status-support
@@ -531,6 +670,8 @@
 
 (defmethod terminal-stop ((terminal process-terminal))
   (when (process-terminal-started-p terminal)
+    (disarm-terminal-exit-restore terminal)
+    (clear-terminal-exit-renderer terminal)
     (unwind-protect
          (ignore-errors
            (when (process-terminal-progress-active-p
@@ -567,6 +708,9 @@
            (process-terminal-saved-termios terminal))))
       (setf
        (process-terminal-started-p terminal) nil
+       (process-terminal-keyboard-protocol-pushed-p
+        terminal)
+       nil
        (process-terminal-saved-termios terminal) nil
        (process-terminal-progress-active-p terminal) nil
        (process-terminal-progress-next-keepalive-at terminal)
@@ -1048,6 +1192,7 @@
          (funcall function))
     (unwind-protect
          (progn
+           (disarm-terminal-exit-restore terminal)
            (when before-stop
              (funcall before-stop))
            (terminal-stop terminal))

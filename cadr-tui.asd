@@ -102,6 +102,7 @@
                              (:file "composition-test")
                              (:file "renderer-test")
                              (:file "alt-screen-test")
+                             (:file "exit-restore-test")
                              (:file "latex-reference-cases")
                              (:file "latex-test")
                              (:file "markdown-pi140-test")
