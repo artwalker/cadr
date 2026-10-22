@@ -651,6 +651,23 @@
      (write-string ",\"isError\":" stream)
      (cadr-ai::write-json-value
       (cadr-ai:tool-result-message-is-error message) stream)
+     (when (integerp
+            (cadr-ai:tool-result-message-duration-ms message))
+       (write-string ",\"durationMs\":" stream)
+       (cadr-ai::write-json-value
+        (cadr-ai:tool-result-message-duration-ms message)
+        stream))
+     (when (cadr-ai:tool-result-message-nested-calls message)
+       (write-string ",\"nestedCalls\":" stream)
+       (cadr-ai::write-json-value
+        (nested-tool-calls-to-json
+         (cadr-ai:tool-result-message-nested-calls message))
+        stream))
+     (when (cadr-ai:tool-result-message-usage message)
+       (write-string ",\"usage\":" stream)
+       (write-export-json-usage
+        stream
+        (cadr-ai:tool-result-message-usage message)))
      (write-string ",\"timestamp\":" stream)
      (cadr-ai::write-json-value
       (cadr-ai:tool-result-message-timestamp message) stream)
@@ -676,8 +693,16 @@
         (write-export-json-message
          stream (session-entry-message entry))
         (write-char #\} stream))
-      (cadr-ai::write-json-value
-       (session-entry-to-json entry) stream)))
+      (let ((object (session-entry-to-json entry)))
+        (when (eq :context-edit (session-entry-type entry))
+          (remhash "content" object)
+          (cadr-ai::json-put
+           object "replacement"
+           (if (eq :omit (session-entry-data entry))
+               'null
+               (cadr-ai::json-object
+                "content" (session-entry-data entry)))))
+        (cadr-ai::write-json-value object stream))))
 
 (defun stringify-export-html-session (session)
   (let ((cadr-ai::*json-sort-object-keys* nil))

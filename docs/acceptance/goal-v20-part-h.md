@@ -13806,12 +13806,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **317 files / 152,979 lines**
+Denominator: **317 files / 153,004 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 118,345 | 77.4% | `no worse than baseline` is falsifiable |
+| `paired` | 244 | 118,370 | 77.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 26 | 9,187 | 6.0% | single reference vs previous cadr |
 | `covered-as-callee` | 41 | 22,766 | 14.9% | on a named paired thunk; no own bench |
 | `needs-pair` | 6 | 2,681 | 1.8% | must get an H pair; not a file-level idle bench |
@@ -13869,7 +13869,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,464 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 497 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
-| `src/cadr-agent/session/export-html.lisp` | 744 | `session_export_html.to_html` |
+| `src/cadr-agent/session/export-html.lisp` | 769 | `session_export_html.to_html` |
 | `src/cadr-agent/session/journal.lisp` | 848 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 3,020 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |

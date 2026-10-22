@@ -513,6 +513,8 @@
              "--body-bg: #18181e;"
              html))))))
 
+;; pi@4a080252f session-manager.ts ContextEditEntry and export template.js
+;; consume replacement, display, durationMs, usage, and nestedCalls.
 (test session-html-export-preserves-renderer-entry-shapes
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
