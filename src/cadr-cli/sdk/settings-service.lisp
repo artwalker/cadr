@@ -263,8 +263,10 @@
        :max-retries (field "maxRetries" 3)
        :base-delay-ms (field "baseDelayMs" 2000)
        :max-retry-delay-ms
-       (field "maxRetryDelayMs" 60000)
-       :timeout-ms (field "timeoutMs" nil)))))
+       (retry-provider-number
+        provider "maxRetryDelayMs" 60000)
+       :timeout-ms
+       (retry-provider-number provider "timeoutMs" nil)))))
 
 (defun sdk-settings-http-idle-timeout-ms
     (manager)

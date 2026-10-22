@@ -215,7 +215,42 @@
                    (plusp (length directories)))
               (setf (gethash "skills" result) directories)
               (remhash "skills" result)))))
+    ;; pi@4a080252f settings-manager.ts migrateSettings:
+    ;; retry.maxDelayMs moves to retry.provider.maxRetryDelayMs unless
+    ;; that field is already a value, then the legacy key is removed.
+    (let ((retry (gethash "retry" result)))
+      (when (hash-table-p retry)
+        (let ((delay (gethash "maxDelayMs" retry))
+              (provider (gethash "provider" retry)))
+          (when (numberp delay)
+            (let ((provider-table
+                    (and (hash-table-p provider) provider)))
+              (multiple-value-bind (existing present-p)
+                  (if provider-table
+                      (gethash "maxRetryDelayMs" provider-table)
+                      (values nil nil))
+                (when (or (not present-p)
+                          (cadr-ai::json-null-p existing))
+                  (let ((next
+                          (if provider-table
+                              (cadr-ai::copy-json-value
+                               provider-table)
+                              (empty-json-object))))
+                    (setf (gethash "maxRetryDelayMs" next) delay
+                          (gethash "provider" retry) next))))))
+          (remhash "maxDelayMs" retry))))
     result))
+
+(defun retry-provider-number (provider key default)
+  ;; pi@4a080252f getProviderRetrySettings. JSON null matches a missing
+  ;; key. Zero is a configured value.
+  (if (hash-table-p provider)
+      (let ((value (cadr-ai::json-get provider key :absent)))
+        (if (or (eq value :absent)
+                (cadr-ai::json-null-p value))
+            default
+            value))
+      default))
 
 (defun read-settings-object (path)
   (if (not (probe-file path))

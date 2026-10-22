@@ -243,13 +243,34 @@
 (defun stream-function-with-http-idle-timeout
     (stream-function timeout-ms-function)
   (lambda (provider model context on-event &rest options)
-    (let ((request-options (copy-list options)))
+    (let* ((request-options (copy-list options))
+           (explicit-p
+             (member :timeout-ms request-options :test #'eq))
+           (explicit
+             (and explicit-p
+                  (getf request-options :timeout-ms)))
+           (idle (funcall timeout-ms-function)))
+      ;; pi@4a080252f sdk.ts buildRequestOptions. Request timeoutMs, then
+      ;; retry.provider.timeoutMs, then httpIdleTimeoutMs. Idle 0 becomes
+      ;; 2147483647. A numeric 0 is a real timeout.
+      (unless (and explicit-p (numberp explicit))
+        (setf (getf request-options :timeout-ms)
+              (if (and (integerp idle) (zerop idle))
+                  2147483647
+                  idle))
+        (setf explicit nil
+              explicit-p nil))
       (unless (member :read-timeout request-options :test #'eq)
-        (let ((timeout-ms (funcall timeout-ms-function)))
-          (setf (getf request-options :read-timeout)
-                (and (integerp timeout-ms)
-                     (plusp timeout-ms)
-                     (/ timeout-ms 1000)))))
+        (setf (getf request-options :read-timeout)
+              (cond
+                ((and explicit-p (realp explicit) (plusp explicit))
+                 (/ explicit 1000))
+                ((and explicit-p (numberp explicit))
+                 nil)
+                (t
+                 (and (integerp idle)
+                      (plusp idle)
+                      (/ idle 1000))))))
       (apply stream-function
              provider model context on-event request-options))))
 
@@ -276,8 +297,10 @@
        :max-retries (field "maxRetries" 3)
        :base-delay-ms (field "baseDelayMs" 2000)
        :max-retry-delay-ms
-       (field "maxRetryDelayMs" 60000)
-       :timeout-ms (field "timeoutMs" nil)))))
+       (retry-provider-number
+        provider "maxRetryDelayMs" 60000)
+       :timeout-ms
+       (retry-provider-number provider "timeoutMs" nil)))))
 
 (defun stream-function-with-provider-retry
     (stream-function retry-settings-function)
@@ -290,9 +313,10 @@
       (unless (member :max-retry-delay-ms request-options :test #'eq)
         (setf (getf request-options :max-retry-delay-ms)
               (getf settings :max-retry-delay-ms)))
-      (unless (member :timeout-ms request-options :test #'eq)
-        (setf (getf request-options :timeout-ms)
-              (getf settings :timeout-ms)))
+      (let ((timeout-ms (getf settings :timeout-ms)))
+        (when (and (not (member :timeout-ms request-options :test #'eq))
+                   (numberp timeout-ms))
+          (setf (getf request-options :timeout-ms) timeout-ms)))
       (apply stream-function
              provider model context on-event request-options))))
 
