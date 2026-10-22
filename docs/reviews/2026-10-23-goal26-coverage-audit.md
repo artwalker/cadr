@@ -28,8 +28,8 @@ Changelogs read at `4a080252` from `packages/ai/CHANGELOG.md`,
 section `## [1.4.0]`.
 
 A queue row that says done or N/A counts as covered. A commit is a gap
-when some user-visible, in-scope effect has no row. Counts: covered 38,
-out of scope 9, gaps 3.
+when some user-visible, in-scope effect has no row. Counts: covered 37,
+out of scope 9, gaps 4.
 
 ## Commit table
 
@@ -59,7 +59,7 @@ out of scope 9, gaps 3.
 | `2ed3118b00cc` | fix(tui): stop unclosed display math from swallowing Markdown tables | covered | Math and CJK row. `#11159`. |
 | `396ecd7b8f3a` | feat(tui): enable Kitty images for Rex | covered | Rex row. Turns images on after `0ed1b0431444` left them off. |
 | `fdce48eb404e` | fix(ai): drop Codex models rejected for ChatGPT accounts | covered | openai-codex catalog row. `#11173`. Drops `gpt-5.5` and `gpt-5.3-codex-spark` from `openai-codex` only. |
-| `26293e74f664` | fix(coding-agent): render CJK emphasis in HTML export | covered | HTML CJK row. `#11168` `#3353` `#10154`. |
+| `26293e74f664` | fix(coding-agent): render CJK emphasis in HTML export | gap | The CJK cases are the HTML CJK row. The same commit replaces vendored marked 18.0.5 with 18.0.11. No row describes that parser change. See Gaps. |
 | `fbc456d827d7` | fix(ai): expect xhigh thinking for Grok 4.3 and Grok 4.5 | covered | xAI xhigh row. Test plus changelog. Generated `xai` rows in `src/cadr-ai/models.generated.lisp` map `:XHIGH` to `"xhigh"`. `grok-4.3` still has `:OFF . "none"`. `grok-4.5` has `:OFF` with no `"none"`. |
 | `a731ba8b80ac` | docs(tui): add changelog entry for CJK emphasis fix | out of scope | Docs. The render change is `b2d0da6fe3de`. |
 | `b2d0da6fe3de` | fix(tui): render CJK emphasis next to punctuation | covered | Math and CJK row. `#10730`. Lockfile churn in the same commit is build metadata. |
@@ -128,7 +128,7 @@ coding-agent repeats the ai and tui bullets. Those repeats use the same class.
 | NVIDIA default `nvidia/nemotron-3.5-super-vl-120b-a12b` | `95364a54efb8` | covered, default model |
 | Xiaomi default `mimo-v2.6-pro` | `90d863f7c118` | covered, default model |
 | `pi update` BOM on `managed-install.json` | `ea25697e91db` | covered, N/A |
-| HTML export CJK emphasis | `26293e74f664` | covered, HTML CJK |
+| HTML export CJK emphasis | `26293e74f664` | the bullet is the HTML CJK row. The marked 18.0.11 bump in that commit is a gap |
 | Stack extension dialogs | `38847563f4b0` | covered, dialogs |
 | Clipboard helpers leave the process group | `f8ab362cca0f` | covered, Ctrl+Z |
 | Extension loader exposes `@earendil-works/pi-ai/models` | `22dc6c26f3c5` | covered, N/A |
@@ -142,7 +142,7 @@ coding-agent repeats the ai and tui bullets. Those repeats use the same class.
 
 The first queue row, the gate going green for 41 extension events and the HTML export summary, has no new upstream event or HTML structure in this range. `packages/coding-agent/src/core/extensions/types.ts` does not change. The HTML diff in range is the CJK export. That row repairs cadr against behavior already at the v1.4.0 pin. It is not a missing upstream delta.
 
-No changelog bullet is itself a gap. The three gap commits below never received a 1.4.0 bullet, except the Copilot default sentence inside `e5fe9777b965`.
+No changelog bullet is itself a gap. Four commits are gaps. `e5fe9777b965` also carries the Copilot default sentence, which the default-model row covers. `26293e74f664` also carries the HTML CJK sentence, which that row covers.
 
 ## Gaps
 
@@ -175,4 +175,12 @@ Upstream. `482c1381a00d` changes `packages/ai/test/zai-coding-plan-models.test.t
 
 cadr now. `:PROVIDER :ZAI-CODING-CN :ID "glm-4.6v"` near line 9902 still has `:CACHE-READ-PRICE 0.0d0`, `:INPUT-PRICE 0.3d0`, `:OUTPUT-PRICE 0.9d0`. No other provider in this file has id `glm-4.6v`.
 
-Suggestion. Port. Set that cache read price to `0.05`. Cost estimates for this model are what the user sees. A later full regeneration of `models.generated.lisp` would absorb this and the retired ids together. These three commits are the v1.3.0 to v1.4.0 slice, so a full regeneration is not required to close them.
+Suggestion. Port. Set that cache read price to `0.05`. Cost estimates for this model are what the user sees. A later full regeneration of `models.generated.lisp` would absorb this and the retired ids together. These catalog commits are the v1.3.0 to v1.4.0 slice, so a full regeneration is not required to close them.
+
+### HTML export marked 18.0.11
+
+Upstream. `26293e74f664` vendors `packages/coding-agent/src/core/export-html/vendor/marked.min.js` from marked 18.0.5 to 18.0.11. The changelog line is only the CJK emphasis fix. In the link tokenizer, a non-image link whose label already emitted an inner link returns no token. The outer link is dropped. v1.3.0's `be()` always returned the outer link after `inlineTokens`.
+
+cadr now. `src/cadr-agent/export-html/vendor/marked.min.js` is marked 18.0.11. Its sha256 is `438eedfcf932a414d0d0bfeea32dc365c063563b8ca713b4687fc8f8b501e5e4`, the same as v1.4.0 `packages/coding-agent/src/core/export-html/vendor/marked.min.js`. The `linkEmitted` early return is in that file. `test/cadr-agent/session-v2-test.lisp` locks the version string `marked v18.0.11`.
+
+Suggestion. N/A. The HTML CJK row ported the vendor file and never named the tokenizer change, so the queue does not cover it. The bytes already match v1.4.0, so there is nothing left to port.
