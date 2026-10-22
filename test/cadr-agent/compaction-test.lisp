@@ -517,15 +517,19 @@
             (cadr-agent:session-entries session)))))))))
 
 (test branch-summary-output-cap-matches-baseline-4096
-  ;; Baseline branch-summarization.test.ts #8845: min(4096, model.maxTokens).
+  ;; v1.4.0 branch-summarization.ts #9512: the request sets no maxTokens.
+  ;; stream-chat then uses the model output limit, reduced only so the
+  ;; summary still fits the context window. The old min(4096, model max)
+  ;; cap is gone, including when the model max itself is 1024.
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
-    (flet ((observe (model-max)
-             (let* ((observed nil)
+    (flet ((observe (model-max window)
+             (let* ((observed :unset)
+                    (sized nil)
                     (session
                       (cadr-agent:create-session
                        :directory sessions :cwd cwd
-                       :id (format nil "branch-cap-~A" model-max)))
+                       :id (format nil "branch-cap-~A-~A" model-max window)))
                     (_entry
                       (cadr-agent:session-append-message
                        session
@@ -534,25 +538,40 @@
                       (cadr-ai:make-model
                        :id "cap" :provider :openai :api :openai-responses
                        :base-url "https://example.invalid"
-                       :max-tokens model-max :context-window 100000))
+                       :max-tokens model-max :context-window window))
                     (agent
                       (cadr-agent:make-agent
                        :provider :mock :model model :session session
+                       :compaction-reserve-tokens 16384
                        :stream-function
                        (lambda (provider request-model context on-event
                                 &key max-tokens abort-p cache-retention
                                      session-id)
                          (declare
-                          (ignore provider request-model context on-event
-                                  abort-p cache-retention session-id))
+                          (ignore provider on-event abort-p
+                                  cache-retention session-id))
                          (setf observed max-tokens)
+                         (setf sized
+                               (cadr-ai::clamp-max-tokens-to-context
+                                request-model context
+                                (or max-tokens
+                                    (cadr-ai:model-max-tokens
+                                     request-model))))
                          (compaction-test-response "summary" :stop)))))
                (declare (ignore _entry))
                (cadr-agent:generate-branch-summary
-                agent (cadr-agent:session-entries session))
-               observed)))
-      (is (= 4096 (observe 32000)))
-      (is (= 1024 (observe 1024))))))
+                agent (cadr-agent:session-entries session)
+                :reserve-tokens 500000)
+               (values observed sized))))
+      (multiple-value-bind (passed sized) (observe 32000 1000000)
+        (is (null passed))
+        (is (= 32000 sized)))
+      (multiple-value-bind (passed sized) (observe 1024 1000000)
+        (is (null passed))
+        (is (= 1024 sized)))
+      (multiple-value-bind (passed sized) (observe 32000 8000)
+        (is (null passed))
+        (is (< sized 32000))))))
 
 (test aborted-branch-summary-cancels-without-moving-the-session
   (with-session-directories (sessions cwd other-cwd)
@@ -1311,7 +1330,7 @@
                  (find :compaction-end events
                        :key #'cadr-agent:agent-event-type)))
           (is (= 2 (length *contexts*)))
-          (is (equal '(16 10) (nreverse max-token-values)))
+          (is (equal '(nil nil) (nreverse max-token-values)))
           (is (string= expected (getf result :summary)))
           (is (string= kept-id (getf result :first-kept-entry-id)))
           (is (= 637 (cadr-ai:usage-input usage)))
@@ -1326,6 +1345,9 @@
           (is (null *responses*)))))))
 
 (test goal17-small-windows-use-unmodified-reserve-and-eighty-percent-summary-budget
+  ;; v1.4.0 #9512: reserveTokens still starts compaction at
+  ;; contextWindow - reserveTokens. It no longer caps the summary at
+  ;; floor(0.8 * reserveTokens), which was 13107 for the default 16384.
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
     (let* ((session
@@ -1351,7 +1373,7 @@
               session
               (cadr-ai:make-user-message
                :content (make-string 81000 :initial-element #\x))))
-           (observed-max-tokens nil)
+           (observed-max-tokens :unset)
            (model
              (cadr-ai:make-model
               :id "small" :provider :openai :api :openai-responses
@@ -1371,7 +1393,209 @@
       (declare (ignore _old-user _old-assistant _tail))
       (is-true
        (cadr-agent:compact-agent agent :reason :threshold))
-      (is (= 13107 observed-max-tokens)))))
+      (is (null observed-max-tokens)))))
+
+(test v140-reserve-tokens-only-starts-compaction
+  ;; v1.4.0 compaction.md: reserveTokens is the free-context threshold.
+  ;; About 22500 tokens stays under a 100000 window with reserve 16384,
+  ;; and crosses it once reserve is 99999. The summary request still
+  ;; carries no maxTokens.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "v140-reserve-threshold"))
+           (_user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "old context")))
+           (_assistant
+             (cadr-agent:session-append-message
+              session
+              (compaction-test-response "old answer" :stop)))
+           (_tail
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content (make-string 90000 :initial-element #\x))))
+           (calls 0)
+           (model
+             (cadr-ai:make-model
+              :id "wide" :provider :openai :api :openai-responses
+              :base-url "https://example.invalid"
+              :max-tokens 128000 :context-window 100000))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock :model model :session session
+              :compaction-reserve-tokens 16384
+              :stream-function
+              (lambda (provider request-model context on-event
+                       &key max-tokens abort-p cache-retention session-id)
+                (declare
+                 (ignore provider request-model context on-event abort-p
+                         cache-retention session-id max-tokens))
+                (incf calls)
+                (compaction-test-response "summary" :stop)))))
+      (declare (ignore _user _assistant _tail))
+      (is-false
+       (cadr-agent:compact-agent agent :reason :threshold))
+      (is (zerop calls))
+      (setf (cadr-agent::agent-compaction-reserve-tokens agent) 99999)
+      (let ((observed :unset))
+        (setf (cadr-agent::agent-stream-function agent)
+              (lambda (provider request-model context on-event
+                       &key max-tokens abort-p cache-retention session-id)
+                (declare
+                 (ignore provider request-model context on-event abort-p
+                         cache-retention session-id))
+                (setf observed max-tokens)
+                (compaction-test-response "summary" :stop)))
+        (is-true
+         (cadr-agent:compact-agent agent :reason :threshold))
+        (is (null observed))))))
+
+(test v140-summary-requests-use-the-model-output-limit
+  ;; v1.4.0 #9512 / compaction-summary-reasoning.test.ts: a reserve of
+  ;; 500000 used to request floor(0.8 * reserve) and then clamp to the
+  ;; model max. The summary request now omits maxTokens. The provider
+  ;; sizes that omission to the model output limit when the summary
+  ;; still fits, and below that limit when the window is tight.
+  (let* ((observed :unset)
+         (sized nil)
+         (model
+           (cadr-ai:make-model
+            :id "large" :provider :openai :api :openai-responses
+            :base-url "https://example.invalid"
+            :max-tokens 128000 :context-window 1000000))
+         (agent
+           (cadr-agent:make-agent
+            :provider :mock :model model
+            :stream-function
+            (lambda (provider request-model context on-event
+                     &key max-tokens abort-p cache-retention session-id)
+              (declare
+               (ignore provider on-event abort-p cache-retention
+                       session-id))
+              (setf observed max-tokens)
+              (setf sized
+                    (cadr-ai::clamp-max-tokens-to-context
+                     request-model context
+                     (or max-tokens
+                         (cadr-ai:model-max-tokens request-model))))
+              (compaction-test-response "summary" :stop)))))
+    (cadr-agent::generate-compaction-summary
+     agent
+     (list (cadr-ai:make-user-message :content "keep this"))
+     500000)
+    (is (null observed))
+    (is (= 128000 sized)))
+  (let* ((sized nil)
+         (model
+           (cadr-ai:make-model
+            :id "tight" :provider :openai :api :openai-responses
+            :base-url "https://example.invalid"
+            :max-tokens 128000 :context-window 8000))
+         (agent
+           (cadr-agent:make-agent
+            :provider :mock :model model
+            :stream-function
+            (lambda (provider request-model context on-event
+                     &key max-tokens abort-p cache-retention session-id)
+              (declare
+               (ignore provider on-event abort-p cache-retention
+                       session-id))
+              (setf sized
+                    (cadr-ai::clamp-max-tokens-to-context
+                     request-model context
+                     (or max-tokens
+                         (cadr-ai:model-max-tokens request-model))))
+              (compaction-test-response "summary" :stop)))))
+    (cadr-agent::generate-turn-prefix-summary
+     agent
+     (list (cadr-ai:make-user-message :content "prefix"))
+     500000
+     :manual)
+    (is (< sized 128000))
+    (is (plusp sized))))
+
+(test v140-compact-instructions-reach-a-split-turn-prefix
+  ;; v1.4.0 #11058 compaction-summary-reasoning.test.ts: when compaction
+  ;; splits a turn and that prefix is the only new content, the
+  ;; /compact instructions are still appended as "Additional focus".
+  ;; They also reach the prefix when older history is summarized too.
+  ;; An empty instruction does not add the line.
+  (flet ((summarize (history instructions)
+           (let* ((contexts nil)
+                  (max-tokens-seen nil)
+                  (model
+                    (cadr-ai:make-model
+                     :id "split" :provider :openai :api :openai-responses
+                     :base-url "https://example.invalid"
+                     :max-tokens 128000 :context-window 200000))
+                  (agent
+                    (cadr-agent:make-agent
+                     :provider :mock :model model
+                     :stream-function
+                     (lambda (provider request-model context on-event
+                              &key max-tokens abort-p cache-retention
+                                   session-id)
+                       (declare
+                        (ignore provider request-model on-event abort-p
+                                cache-retention session-id))
+                       (push context contexts)
+                       (push max-tokens max-tokens-seen)
+                       (compaction-test-response "summary" :stop)))))
+             (cadr-agent::generate-prepared-compaction-summary
+              agent nil
+              (list :messages-to-summarize history
+                    :turn-prefix-messages
+                    (list
+                     (cadr-ai:make-user-message
+                      :content "migrate the schema"))
+                    :is-split-turn-p t
+                    :previous-summary "previous checkpoint"
+                    :file-ops nil)
+              2000
+              instructions
+              :manual)
+             (values (nreverse contexts)
+                     (nreverse max-tokens-seen)))))
+    (multiple-value-bind (contexts caps)
+        (summarize nil "keep migration decisions")
+      (is (= 1 (length contexts)))
+      (is (equal '(nil) caps))
+      (is (context-contains-text-p
+           (first contexts)
+           "Additional focus: keep migration decisions"))
+      (is (context-contains-text-p
+           (first contexts)
+           "PREFIX of a turn")))
+    (multiple-value-bind (contexts caps)
+        (summarize
+         (list (cadr-ai:make-user-message :content "older work"))
+         "keep migration decisions")
+      (is (= 2 (length contexts)))
+      (is (equal '(nil nil) caps))
+      (is (every
+           (lambda (context)
+             (context-contains-text-p
+              context
+              "Additional focus: keep migration decisions"))
+           contexts))
+      (is (context-contains-text-p
+           (first contexts)
+           "NEW conversation messages"))
+      (is (context-contains-text-p
+           (second contexts)
+           "PREFIX of a turn")))
+    (multiple-value-bind (contexts caps)
+        (summarize nil "")
+      (declare (ignore caps))
+      (is (= 1 (length contexts)))
+      (is (not (context-contains-text-p
+                (first contexts)
+                "Additional focus:"))))))
 
 (test goal17-threshold-compaction-runs-after-the-completing-agent-run
   (with-session-directories (sessions cwd other-cwd)

@@ -50,7 +50,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | xAI Grok 4.3 / 4.5 增加 `xhigh` | v1.4.0 changelog | done：`xai` 的 `grok-4.3` 可选档是 off、low、medium、high、xhigh，`grok-4.5` 是 low、medium、high、xhigh。选中 `xhigh` 时 Responses 请求的 `reasoning.effort` 写成 `xhigh` |
 | 默认模型：Copilot `gpt-6.1-sol`，NVIDIA nemotron 3.5，Xiaomi `mimo-v2.6-pro` | v1.4.0 changelog | done：未指定模型时，`github-copilot` 选 `gpt-6.1-sol`（上下文 1050000，`off` 不写成 `none`），`nvidia` 选 `nvidia/nemotron-3.5-super-vl-120b-a12b`，`xiaomi` 和三个 Xiaomi Token Plan 选 `mimo-v2.6-pro` |
 | ChatGPT Business 用量上限不重试 | v1.4.0 changelog | open |
-| 折叠和分支摘要用模型输出上限；`reserveTokens` 只决定何时开始；`/compact` 指令在被切开的回合开头仍生效 | v1.4.0 #9512 #9075 #11058 | open |
+| 折叠和分支摘要用模型输出上限；`reserveTokens` 只决定何时开始；`/compact` 指令在被切开的回合开头仍生效 | v1.4.0 #9512 #9075 #11058 | done：折叠、切开回合的前缀和分支摘要请求都不写 `maxTokens`。provider 用模型输出上限，窗口不够时再收紧。`reserveTokens` 只决定自动折叠何时开始。`/compact` 指令在被切开的回合开头仍以 `Additional focus` 生效，哪怕这段前缀是上次折叠后的唯一新内容 |
 | 客户端身份、`User-Agent`、OpenRouter / NIM / OpenCode attribution | v1.4.0 `identity.ts` | open |
 | 只含空白的工具输出改成和空输出一样的占位 | v1.4.0 #8720 | done：`""`、`\r\n`、空格加换行加 tab 在 OpenAI Responses 和 Completions 上写成 `(no tool output)`，在 Google 上写成空字符串。有可见文字的结果仍原文送出 |
 | 重试认更多上游失败、Vertex 令牌刷新、Codex 代理断流；请求号里的数字不当成 HTTP 状态 | v1.4.0 #10920 #11057 #10996 | open |

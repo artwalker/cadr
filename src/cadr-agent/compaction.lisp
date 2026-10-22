@@ -367,6 +367,9 @@ Keep each section concise. Preserve exact file paths, function names, and error 
     (agent messages max-output-tokens
      &optional custom-instructions (reason :manual)
                previous-summary)
+  ;; v1.4.0 #9512: reserveTokens is unused here. The provider sizes
+  ;; output from the model limit and the actual summary request.
+  (declare (ignore max-output-tokens))
   (let* ((conversation
            (serialize-conversation
             (convert-agent-messages-to-llm messages)))
@@ -401,9 +404,7 @@ Keep each section concise. Preserve exact file paths, function names, and error 
              (list
               (cadr-ai:make-user-message :content prompt))
              :tools nil)
-            (min (floor (* 4 max-output-tokens) 5)
-                 (cadr-ai:model-max-tokens
-                  (agent-model agent)))
+            nil
             :compaction
             :reason reason))
          (summary
@@ -441,13 +442,23 @@ Summarize the prefix to provide context for the retained suffix:
 Be concise. Focus on what's needed to understand the kept suffix.")
 
 (defun generate-turn-prefix-summary
-    (agent messages max-output-tokens reason)
+    (agent messages max-output-tokens reason
+     &optional custom-instructions)
+  ;; v1.4.0 #9512: same omitted output cap as the history summary.
+  ;; #11058: /compact instructions still apply to this prefix.
+  (declare (ignore max-output-tokens))
   (let* ((prompt
            (format
             nil "<conversation>~%~A~%</conversation>~%~%~A"
             (serialize-conversation
              (convert-agent-messages-to-llm messages))
             +turn-prefix-summarization-prompt+))
+         (prompt
+           (if (and custom-instructions
+                    (plusp (length custom-instructions)))
+               (format nil "~A~%~%Additional focus: ~A"
+                       prompt custom-instructions)
+               prompt))
          (response
            (complete-summarization
             agent
@@ -457,9 +468,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
              :messages
              (list (cadr-ai:make-user-message :content prompt))
              :tools nil)
-            (min (floor max-output-tokens 2)
-                 (cadr-ai:model-max-tokens
-                  (agent-model agent)))
+            nil
             :compaction
             :reason reason))
          (summary
@@ -665,7 +674,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                 (generate-turn-prefix-summary
                  agent
                  (getf preparation :turn-prefix-messages)
-                 reserve reason)
+                 reserve reason custom-instructions)
               (values
                (format
                 nil
