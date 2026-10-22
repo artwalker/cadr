@@ -1037,14 +1037,22 @@ Be concise. Focus on what's needed to understand the kept suffix.")
             (string-downcase
              (cadr-ai:assistant-message-error-message
               message))))
-      (some
-       (lambda (needle)
-         (search needle text))
-       '("context_length_exceeded"
-         "context length"
-         "context window"
-         "maximum context"
-         "too many tokens"
-         "prompt is too long"
-         "input is too long"
-         "exceeds the context")))))
+      (or
+       (some
+        (lambda (needle)
+          (search needle text))
+        '("context_length_exceeded"
+          "context length"
+          "context window"
+          "maximum context"
+          "too many tokens"
+          "prompt is too long"
+          "input is too long"
+          "exceeds the context"))
+       ;; pi@4a080252f #11016. HTTP 413 is overflow for every provider.
+       ;; context-overflow-p still rejects non-overflow text such as
+       ;; rate limits that happen to mention 413.
+       (and
+        (cadr-ai::request-size-overflow-text-p
+         (cadr-ai:assistant-message-error-message message))
+        (cadr-ai:context-overflow-p message))))))

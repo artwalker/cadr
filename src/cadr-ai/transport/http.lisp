@@ -746,9 +746,21 @@
            :message
            (redact-request-text
             request
-            (if (and (= status 429) terminal-p)
-                (format nil "~A: ~A" status display-body)
-                extracted)))))
+            (cond
+              ((and (= status 429) terminal-p)
+               (format nil "~A: ~A" status display-body))
+              ;; pi@4a080252f openai-responses.ts formatProviderError.
+              ;; Copilot's 413 body is "failed to parse request" with no
+              ;; overflow phrase, so the status has to be in the text.
+              ((= status 413)
+               (format nil "~A API error (413): ~A"
+                       (if (eq (request-spec-provider request) :openai)
+                           "OpenAI"
+                           (string-downcase
+                            (symbol-name
+                             (request-spec-provider request))))
+                       (or display-body extracted "")))
+              (t extracted))))))
 
 (defun signal-http-timeout (cause)
   (error

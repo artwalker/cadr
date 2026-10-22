@@ -1429,7 +1429,8 @@
     ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
     ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
     ;; +2 Goal 26: faux-system-line and faux-message-line.
-    (is (= 290 definition-count)
+    ;; +1 Goal 26 #11016: request-size-overflow-text-p (support/overflow.lisp).
+    (is (= 291 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

@@ -252,22 +252,28 @@ second" (cadr-ai:content-text content)))
      (cadr-ai:context-overflow-p
       (utility-error-message text)
       200000)))
-  (dolist
-      (text
-       '("400 status code (no body)"
-         "413 status code (no body)"))
+  ;; pi@4a080252f #9482. Bodyless HTTP 400 is overflow only for Cerebras.
+  ;; pi@4a080252f #11016. Bodyless HTTP 413 is overflow for every provider.
+  (let ((bodyless-400 "400 status code (no body)"))
     (is-true
      (cadr-ai:context-overflow-p
       (cadr-ai:make-assistant-message
        :provider :cerebras
        :stop-reason :error
-       :error-message text)))
+       :error-message bodyless-400)))
     (is-false
      (cadr-ai:context-overflow-p
       (cadr-ai:make-assistant-message
        :provider :opencode-go
        :stop-reason :error
-       :error-message text))))
+       :error-message bodyless-400))))
+  (dolist (provider '(:cerebras :opencode-go :github-copilot))
+    (is-true
+     (cadr-ai:context-overflow-p
+      (cadr-ai:make-assistant-message
+       :provider provider
+       :stop-reason :error
+       :error-message "413 status code (no body)"))))
   (is-true
    (cadr-ai:context-overflow-p
     (cadr-ai:make-assistant-message
@@ -282,6 +288,100 @@ second" (cadr-ai:content-text content)))
      :stop-reason :length
      :usage (cadr-ai:make-usage :input 1000 :output 4096))
     200000)))
+
+(test http-413-is-request-size-overflow-for-every-provider
+  ;; pi@4a080252f packages/ai/test/overflow.test.ts. Zero usage and a
+  ;; large window still overflow: the limit is bytes, not tokens.
+  (dolist
+      (text
+       '("github-copilot API error (413): {\"message\":\"failed to parse request\",\"code\":\"\"}"
+         "custom-provider API error (413): Payload Too Large"
+         "413 {\"error\":{\"message\":\"failed to parse request\",\"code\":\"\"}}"
+         "413"))
+    (let ((message (utility-error-message text)))
+      (is-true (cadr-ai:context-overflow-p message 1000000))
+      (is-true (cadr-ai:context-overflow-p message))))
+  (dolist
+      (text
+       '("github-copilot API error (400): {\"message\":\"failed to parse request\",\"code\":\"\"}"
+         "custom-provider API error (429): Too many requests"
+         "github-copilot API error (400): {\"message\":\"failed to parse request: invalid value 413\"}"
+         "custom-provider API error (400): upstream mentioned OpenAI API error (413): invalid input"
+         "custom-provider API error (4130): invalid input"
+         "4130 failed to parse request"))
+    (is-false
+     (cadr-ai:context-overflow-p
+      (utility-error-message text))))
+  (let ((message
+          (utility-error-message
+           "OpenAI API error (413): {\"message\":\"failed to parse request\"}")))
+    (is-false
+     (cadr-ai:context-overflow-p
+      (utility-error-message
+       (cadr-ai:assistant-message-error-message message)
+       :aborted)))
+    (is-false
+     (cadr-ai:context-overflow-p
+      (utility-error-message
+       (cadr-ai:assistant-message-error-message message)
+       :stop)))))
+
+(defun copilot-413-http-body (nested-p)
+  (if nested-p
+      "{\"error\":{\"message\":\"failed to parse request\",\"code\":\"\"}}"
+      "{\"message\":\"failed to parse request\",\"code\":\"\"}"))
+
+(test github-copilot-http-413-stream-is-context-overflow
+  ;; pi@4a080252f packages/ai/test/github-copilot-request-size-overflow.test.ts
+  (dolist
+      (case
+       '((413 t t) (413 nil t) (400 t nil)))
+    (destructuring-bind (status nested-p overflow-p) case
+      (let ((calls 0))
+        (multiple-value-bind (provider model)
+            (cadr-ai:instantiate-provider
+             :github-copilot
+             :model-id "copilot-test-model"
+             :api-key "test-key"
+             :base-url "https://copilot.invalid")
+          (let* ((*http-request-function*
+                   (lambda (url &rest arguments)
+                     (declare (ignore url arguments))
+                     (incf calls)
+                     (values
+                      (make-string-input-stream
+                       (copilot-413-http-body nested-p))
+                      status
+                      '(("content-type" . "application/json")))))
+                 (message
+                   (cadr-ai:stream-chat
+                    provider model
+                    (cadr-ai:make-context
+                     :messages
+                     (list
+                      (cadr-ai:make-user-message
+                       :content "Continue"
+                       :timestamp 0)))
+                    (lambda (event) (declare (ignore event)))
+                    :max-retries 0)))
+            (is (= 1 calls))
+            (is (eq :github-copilot
+                    (cadr-ai:assistant-message-provider message)))
+            (is (eq :error
+                    (cadr-ai:assistant-message-stop-reason message)))
+            (is (= 0
+                   (cadr-ai:usage-total
+                    (cadr-ai:assistant-message-usage message))))
+            (is (search
+                 "failed to parse request"
+                 (cadr-ai:assistant-message-error-message message)))
+            (when (= status 413)
+              (is (search
+                   "(413)"
+                   (cadr-ai:assistant-message-error-message message))))
+            (is (eq overflow-p
+                    (cadr-ai:context-overflow-p
+                     message 1000000)))))))))
 
 (test grammar-input-json-deltas-are-append-only
   (let ((buffer (cadr-ai:make-grammar-json-buffer)))

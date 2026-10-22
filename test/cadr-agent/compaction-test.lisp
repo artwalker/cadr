@@ -951,6 +951,121 @@
                         entry)))))
                   entries))))))))
 
+(test copilot-http-413-compacts-once-and-retries
+  ;; pi@4a080252f #11016. The formatted Copilot 413 is overflow, so the
+  ;; session compacts and retries instead of stopping on the API error.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "copilot-413"))
+           (_old-user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content
+               (concatenate
+                'string "old overflow context "
+                (make-string 100 :initial-element #\x)))))
+           (_old-assistant
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text "old response"))
+               :api :openai-responses
+               :provider :github-copilot
+               :model "faux-copilot"
+               :stop-reason :stop)))
+           (copilot-413
+             "github-copilot API error (413): {\"message\":\"failed to parse request\",\"code\":\"\"}")
+           (*responses*
+             (list
+              (cadr-ai:make-assistant-message
+               :api :openai-responses
+               :provider :github-copilot
+               :model "faux-copilot"
+               :stop-reason :error
+               :error-message copilot-413
+               :usage (cadr-ai:make-usage))
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text "The old images have been reviewed. Continue with the recent task."))
+               :api :openai-responses
+               :provider :github-copilot
+               :model "faux-copilot"
+               :stop-reason :stop)
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text "prefix"))
+               :api :openai-responses
+               :provider :github-copilot
+               :model "faux-copilot"
+               :stop-reason :stop)
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text "Continued after compaction"))
+               :api :openai-responses
+               :provider :github-copilot
+               :model "faux-copilot"
+               :stop-reason :stop)))
+           (*contexts* nil)
+           (events nil)
+           (model
+             (cadr-ai:make-model
+              :id "faux-copilot"
+              :provider :github-copilot
+              :api :openai-responses
+              :base-url "https://copilot.invalid"
+              :max-tokens 32
+              :context-window 1000000))
+           (agent
+             (cadr-agent:make-agent
+              :provider :current-provider
+              :model model
+              :session session
+              :auto-compact-p nil
+              :compaction-keep-recent-tokens 4
+              :on-event (lambda (event) (push event events))
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare
+       (ignore _old-user _old-assistant)
+       (special *responses* *contexts*))
+      (let ((result
+              (cadr-agent:agent-prompt
+               agent "Continue the task using the recent notes.")))
+        (is (string=
+             "Continued after compaction"
+             (cadr-ai:text-content-text
+              (first
+               (cadr-ai:assistant-message-content result)))))
+        (let ((start
+                (find :compaction-start events
+                      :key #'cadr-agent:agent-event-type)))
+          (is (eq :overflow
+                  (cadr-agent:agent-event-reason start))))
+        (let ((end
+                (find :compaction-end events
+                      :key #'cadr-agent:agent-event-type)))
+          (is (eq :overflow
+                  (cadr-agent:agent-event-reason end)))
+          (is-true (cadr-agent:agent-event-will-retry end)))
+        (is (null *responses*))
+        (is (not
+             (context-contains-text-p
+              (first *contexts*)
+              "failed to parse request")))))))
+
 (defun goal17-compaction-fixture (id stream-function on-event)
   (let* ((root (uiop:ensure-directory-pathname
                 (merge-pathnames
