@@ -132,25 +132,44 @@
      (coerce text 'string)
      (nreverse images))))
 
-(defun call-with-cli-signal-handlers (agent function)
+(defun call-with-cli-signal-handlers
+    (agent function &key interactive-p)
+  ;; pi@4a080252 interactive-mode.ts registerSignalHandlers and
+  ;; shutdown({fromSignal:true}). SIGTERM always; SIGHUP except win32.
+  ;; The handler stays installed through cleanup and a second signal is
+  ;; a no-op. Interactive shutdown kills detached children, emits
+  ;; session_shutdown, then throws so terminal restore runs after that
+  ;; hook, and returns 0. Print and RPC return 129/143; their own
+  ;; unwind-protect emits session_shutdown.
   #+sbcl
-  (catch 'cadr-cli-signal
-    (sb-sys:with-interrupt-bindings
-      (flet ((exit-on-signal (exit-code)
-               (lambda (signal code context)
-                 (declare (ignore signal code context))
-                 (cadr-agent:agent-abort agent)
-                 (throw 'cadr-cli-signal exit-code))))
-        (sb-sys:enable-interrupt
-         sb-unix:sigterm
-         (exit-on-signal 143))
-        #-win32
-        (sb-sys:enable-interrupt
-         sb-unix:sighup
-         (exit-on-signal 129)))
-      (funcall function)))
+  (let ((shutting-down (list nil)))
+    (catch 'cadr-cli-signal
+      (sb-sys:with-interrupt-bindings
+        (flet ((exit-on-signal (exit-code)
+                 (lambda (signal code context)
+                   (declare (ignore signal code context))
+                   (unless (car shutting-down)
+                     (setf (car shutting-down) t)
+                     (kill-tracked-detached-children)
+                     (cadr-agent:agent-abort agent)
+                     (when interactive-p
+                       (run-session-lifecycle
+                        agent :session-shutdown
+                        :reason :quit))
+                     (throw 'cadr-cli-signal
+                            (if interactive-p 0 exit-code))))))
+          (sb-sys:enable-interrupt
+           sb-unix:sigterm
+           (exit-on-signal 143))
+          #-win32
+          (sb-sys:enable-interrupt
+           sb-unix:sighup
+           (exit-on-signal 129)))
+        (funcall function))))
   #-sbcl
-  (funcall function))
+  (progn
+    (declare (ignore interactive-p))
+    (funcall function)))
 
 (defun model-scope-startup-line
     (scoped-model-entries keybindings
@@ -3064,4 +3083,5 @@
                 (settings-shell-path
                  settings-manager))))
               (when warmer
-                (cache-warmer-cancel warmer))))))))))
+                (cache-warmer-cancel warmer))))
+          :interactive-p (eq mode :tui)))))))
