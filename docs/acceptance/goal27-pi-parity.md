@@ -101,7 +101,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 | 面 | 出处 | 状态 |
 |---|---|---|
 | GAP-24 Windows external editor | `packages/coding-agent/src/modes/interactive/extension-editor.ts` → `settings-external-editor-command` in `src/cadr-cli/bootstrap/settings.lisp` | done：未配置 externalEditor、VISUAL、EDITOR 时，Windows 用 notepad，darwin 与 linux 用 nano；已配置命令和这两个环境变量仍然优先。；review: pass（g27d 线验收，2026-10-23） |
-| GAP-25 Windows and WSL key defaults | `packages/coding-agent/src/core/keybindings.ts`，`docs/keybindings.md` → `src/cadr-tui/keybindings.lisp`，`src/cadr-cli/interactive/selectors/tree.lisp` | done：win32 或带 WSL_DISTRO_NAME / WSL_INTEROP 的 linux 使用 Windows 键（撤销分别为 ctrl+z 与 alt+z，回退模型 alt+p，排队 ctrl+q，出队 alt+q，贴图 alt+v，跳转 ctrl+up/down，搜索 ctrl+f）；其它平台保持 Unix 键，提示跳转同时有 ctrl+shift 与 ctrl。darwin 的树折叠是 alt 再 ctrl，运行时判断。原生 Windows 的 app.suspend 没有默认键。 |
+| GAP-25 Windows and WSL key defaults | `packages/coding-agent/src/core/keybindings.ts`，`docs/keybindings.md` → `src/cadr-tui/keybindings.lisp`，`src/cadr-cli/interactive/selectors/tree.lisp` | done：win32 或带 WSL_DISTRO_NAME / WSL_INTEROP 的 linux 使用 Windows 键（撤销分别为 ctrl+z 与 alt+z，回退模型 alt+p，排队 ctrl+q，出队 alt+q，贴图 alt+v，跳转 ctrl+up/down，搜索 ctrl+f）；其它平台保持 Unix 键，提示跳转同时有 ctrl+shift 与 ctrl。darwin 的树折叠是 alt 再 ctrl，运行时判断。原生 Windows 的 app.suspend 没有默认键。；review: pass（g27d 线验收，2026-10-23） |
 | GAP-26 Windows open URL | `packages/coding-agent/src/utils/open-browser.ts` → `src/cadr-cli/interactive/controller.lisp` | open |
 | GAP-27 Windows VT input | `packages/tui/src/terminal.ts` → `src/cadr-tui/renderer/virtual-terminal.lisp`，`src/cadr-tui/terminal.lisp` | open |
 | GAP-28 Windows right-click paste | `packages/tui/src/tui-alt-screen.ts` → `src/cadr-tui/renderer/lifecycle-input.lisp` | open |
