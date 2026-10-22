@@ -185,10 +185,16 @@
       (uiop:delete-directory-tree
        directory :validate t :if-does-not-exist :ignore))))
 
-(defun windows-tar-command ()
-  (let* ((root (or (uiop:getenv "SystemRoot") (uiop:getenv "WINDIR")))
-         (path (and root (format nil "~A\\System32\\tar.exe" root))))
-    (if (and path (probe-file path)) path "tar.exe")))
+(defun windows-tar-command
+    (&key (environment-function #'uiop:getenv)
+          (path-exists-function #'probe-file))
+  (let* ((root (non-empty-environment-value
+                environment-function "SystemRoot"))
+         (path (and root
+                    (windows-path-join root "System32" "tar.exe"))))
+    (if (and path (funcall path-exists-function path))
+        path
+        "tar.exe")))
 
 (defun tool-extraction-commands (asset archive extract platform)
   (cond

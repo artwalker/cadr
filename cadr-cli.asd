@@ -260,6 +260,7 @@
                              (:file "search-tools-test")
                              (:file "bash-test")
                              (:file "powershell-test")
+                             (:file "goal26-windows-shell-test")
                              (:file "tool-result-parity-test")
                              (:file "execution-policy-test")
                              (:file "config-auth-test")
