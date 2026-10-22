@@ -864,7 +864,10 @@
                  :session-id
                  (and session
                       (cadr-agent:session-id
-                       session)))
+                       session))
+                 :telemetry-p
+                 (install-telemetry-enabled-p
+                  settings-manager))
                 (lambda ()
                   (settings-thinking-budgets
                    settings-manager)))

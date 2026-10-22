@@ -512,7 +512,8 @@
 
 (defun bedrock-request-headers (provider model stream-p)
   (let ((headers
-          `(("content-type" . "application/json")
+          `(("User-Agent" . ,(bedrock-identity-user-agent))
+            ("content-type" . "application/json")
             ("accept" .
              ,(if stream-p
                   "application/vnd.amazon.eventstream"

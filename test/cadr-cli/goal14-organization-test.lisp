@@ -445,7 +445,9 @@
     ;; (bootstrap/settings.lisp).
     ;; +2 Goal 26 #11062: explicitly-named-tool-names and
     ;; tool-allowlist-filters-mcp-names-p (bootstrap/tools.lisp).
-    (is (= 190 definition-count)
+    ;; +1 Goal 26 client identity: install-telemetry-enabled-p
+    ;; (bootstrap/settings.lisp).
+    (is (= 191 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -873,7 +875,9 @@
     ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
     ;; +3 Goal 24 WezTerm Kitty clear: clear-frame-row, wezterm-session-p,
     ;; wezterm-kitty-clear-before-draw-p (renderer/main-screen.lisp).
-    (is (= 364 definition-count)
+    ;; +30 Goal 26 markdown: unclosed math tables and CJK emphasis
+    ;; (components/markdown.lisp).
+    (is (= 394 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

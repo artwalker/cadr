@@ -533,19 +533,7 @@
                :base-url (model-base-url model)
                :session-id session-id)
               (model-headers model))))
-       (if (eq (model-provider model) :kimi-coding)
-           (progn
-             ;; Baseline anthropic-messages.ts mergeClientHeaders: the
-             ;; kimi-coding endpoint is pinned to the OS-describing
-             ;; product UA, so any inherited user-agent is dropped first.
-             (setf headers
-                   (delete-if
-                    (lambda (pair)
-                      (string-equal (car pair) "user-agent"))
-                    headers))
-             (append headers
-                     (list (cons "User-Agent" (cadr-os-user-agent)))))
-           headers))
+       headers)
      :payload payload
      :stream-p stream-p
      :provider :anthropic)))

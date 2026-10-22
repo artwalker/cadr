@@ -77,12 +77,10 @@
           (t (return (if (string< a b) -1 1))))))))
 
 (defun cadr-user-agent (version)
-  (format nil "~A/~A (~(~A~); sbcl/~A; ~(~A~))"
-          (cadr-ai::cadr-product-slug)
-          version
-          (software-type)
-          (lisp-implementation-version)
-          (machine-type)))
+  (cadr-ai::format-user-agent
+   (cadr-ai::client-identity
+    :user-agent :detailed
+    :version version)))
 
 (defun git-source-safe-part-p (value &key allow-slash-p)
   (handler-case

@@ -696,10 +696,9 @@
      :url (chat-completions-url (model-base-url model))
      :headers
      (append
-      ;; pi@4a080252f openai-completions.ts createClient: product UA first,
-      ;; then model.headers may override.
-      `(("User-Agent" . ,(cadr-os-user-agent))
-        ("content-type" . "application/json")
+      ;; User-Agent and attribution come from the client identity, under
+      ;; these headers and model.headers.
+      `(("content-type" . "application/json")
         ("accept" . ,(if stream-p
                          "text/event-stream"
                          "application/json")))

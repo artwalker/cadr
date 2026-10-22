@@ -863,16 +863,13 @@
           (opencode-go-ephemeral
             (cadr-cli::provider-attribution-headers
              :provider :opencode-go)))
-      (is (string= "https://github.com/artwalker/cadr"
-                   (header "HTTP-Referer" openrouter)))
-      (is (string= "cadr"
-                   (header "X-OpenRouter-Title" openrouter)))
-      (is (string= "cadr"
-                   (header "X-BILLING-INVOKE-ORIGIN" nvidia)))
-      (is (string= "cadr-coding-agent"
-                   (header "User-Agent" cloudflare)))
-      (is (string= "cadr"
-                   (header "x-opencode-client" opencode)))
+      ;; Attribution headers are not in this merge. The extension hook
+      ;; sees the session header and not the client, referer, or NIM origin.
+      (is (null (header "HTTP-Referer" openrouter)))
+      (is (null (header "X-OpenRouter-Title" openrouter)))
+      (is (null (header "X-BILLING-INVOKE-ORIGIN" nvidia)))
+      (is (null (header "User-Agent" cloudflare)))
+      (is (null (header "x-opencode-client" opencode)))
       (is (string= "session"
                    (header "x-opencode-session" opencode)))
       (is (null
@@ -910,7 +907,42 @@
                  :websocket-connect-timeout-ms)))
     (is (= 3
            (getf (getf options :retry)
-                 :maximum-retries)))))
+                 :maximum-retries))))
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (enabled (cadr-cli::coding-agent-client-identity t))
+         (disabled (cadr-cli::coding-agent-client-identity nil)))
+    (is (eq :detailed (getf enabled :user-agent)))
+    (is (string= (cadr-ai::cadr-version) (getf enabled :version)))
+    (is (eq cadr-ai::+cadr-attribution+ (getf enabled :attribution)))
+    (is (eq :off (getf disabled :attribution)))
+    (is (eq t
+            (cadr-cli::install-telemetry-enabled-p
+             manager :environment "1")))
+    (is (eq t
+            (cadr-cli::install-telemetry-enabled-p
+             manager :environment "YES")))
+    (is (null
+         (cadr-cli::install-telemetry-enabled-p
+          manager :environment "0")))
+    (is (null
+         (cadr-cli::install-telemetry-enabled-p
+          manager :environment "false")))
+    (is (null
+         (cadr-cli::install-telemetry-enabled-p
+          manager :environment ""))))
+  (let ((seen nil))
+    (funcall
+     (cadr-cli::make-extension-aware-stream-function
+      nil
+      :telemetry-p nil
+      :stream-function
+      (lambda (provider model context on-event &rest options)
+        (declare (ignore provider model context on-event))
+        (setf seen options)))
+     nil nil nil nil
+     :identity (cadr-ai::client-identity :user-agent :short))
+    (is (eq :short (getf (getf seen :identity) :user-agent)))
+    (is (eq :off (getf (getf seen :identity) :attribution)))))
 
 (test compare-package-versions-walks-tokens-not-nth
   (is (> (cadr-cli::compare-package-versions "5.0.0-beta.20"

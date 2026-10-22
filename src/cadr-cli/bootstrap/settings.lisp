@@ -49,6 +49,27 @@
      '("y" "yes")
      :test #'string=)))
 
+(defun install-telemetry-enabled-p
+    (manager &key (environment :unset))
+  ;; pi@4a080252f isInstallTelemetryEnabled. CADR_TELEMETRY wins when the
+  ;; variable is set, including an empty string. Unset falls through to
+  ;; enableInstallTelemetry. The value check stays inline so it does not
+  ;; replace tool-manager's truthy-env-flag-p, which reads a variable name.
+  (let ((env
+          (if (eq environment :unset)
+              (uiop:getenv "CADR_TELEMETRY")
+              environment)))
+    (if (null env)
+        (settings-boolean-value
+         manager "enableInstallTelemetry" t)
+        (and (stringp env)
+             (plusp (length env))
+             (or (string= env "1")
+                 (member (string-downcase env)
+                         '("true" "yes")
+                         :test #'string=))
+             t))))
+
 (defun settings-boolean-value
     (manager key default &optional nested-key)
   (let ((value

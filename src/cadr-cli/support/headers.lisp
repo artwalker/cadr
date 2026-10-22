@@ -20,47 +20,24 @@
     (&key provider base-url telemetry-p
        session-id provider-headers
        request-headers)
-  (let* ((defaults
-           (when telemetry-p
-             (cond
-               ((or (eq provider :openrouter)
-                    (search "openrouter.ai"
-                            (or base-url "")))
-                `(("HTTP-Referer" .
-                   ,(cadr-ai::cadr-canonical-repository-url))
-                  ("X-OpenRouter-Title" .
-                   ,(cadr-ai::cadr-product-slug))
-                  ("X-OpenRouter-Categories" . "cli-agent")))
-               ((or (eq provider :nvidia)
-                    (search "integrate.api.nvidia.com"
-                            (or base-url "")))
-                `(("X-BILLING-INVOKE-ORIGIN" .
-                   ,(cadr-ai::cadr-product-slug))))
-               ((or
-                 (member provider
-                         '(:cloudflare-workers-ai
-                           :cloudflare-ai-gateway))
-                 (search "api.cloudflare.com"
-                         (or base-url ""))
-                 (search "gateway.ai.cloudflare.com"
-                         (or base-url "")))
-                `(("User-Agent" .
-                   ,(format nil "~A-coding-agent"
-                            (cadr-ai::cadr-product-slug))))))))
-         (opencode-p
-           (or (member provider
-                       '(:opencode :opencode-go))
-               (search "opencode.ai"
-                       (or base-url ""))))
-         (session
-           (when (and opencode-p
-                      (cadr-ai::non-empty-string-p session-id))
-             `(("x-opencode-session" . ,session-id)
-               ("x-opencode-client" .
-                ,(cadr-ai::cadr-product-slug))))))
-    (merge-header-sources
-     session defaults provider-headers
-     request-headers)))
+  (declare (ignore telemetry-p))
+  ;; OpenRouter, NVIDIA NIM, and OpenCode client attribution are applied
+  ;; under these headers by the client identity, after this merge, so an
+  ;; extension before_provider_headers hook does not see them.
+  (merge-header-sources
+   (cadr-ai::opencode-session-headers
+    provider base-url session-id)
+   provider-headers
+   request-headers))
+
+(defun coding-agent-client-identity (telemetry-p)
+  (cadr-ai::client-identity
+   :user-agent :detailed
+   :version (cadr-ai::cadr-version)
+   :attribution
+   (if telemetry-p
+       cadr-ai::+cadr-attribution+
+       nil)))
 
 (defparameter +stream-setting-defaults+
   '((:timeout-ms . :http-idle-timeout-ms)

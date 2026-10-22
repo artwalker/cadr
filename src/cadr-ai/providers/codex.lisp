@@ -33,12 +33,10 @@
                   collect (cons name value))))
     (setf headers
           (codex-set-header
-           (codex-set-header
-            (codex-delete-header
-             (codex-delete-header headers "originator")
-             "user-agent")
-            "originator" +openai-originator+)
-           "User-Agent" (cadr-os-user-agent)))
+           (codex-delete-header
+            (codex-delete-header headers "originator")
+            "user-agent")
+           "originator" +openai-originator+))
     (setf headers
           (codex-apply-header-entries
            headers (model-headers model)))

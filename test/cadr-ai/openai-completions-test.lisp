@@ -516,8 +516,9 @@
   (is (null (opencode-completion-header nil "x-opencode-client")))
   (is (string= "sess-1"
                (opencode-completion-header "sess-1" "x-opencode-session")))
-  (is (string= "cadr"
-               (opencode-completion-header "sess-1" "x-opencode-client"))))
+  ;; v1.4.0: x-opencode-client is attribution, not part of the session header.
+  (is (null
+       (opencode-completion-header "sess-1" "x-opencode-client"))))
 
 (defun feed-completions-deltas (model deltas)
   (let* ((provider

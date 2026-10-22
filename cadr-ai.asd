@@ -24,6 +24,7 @@
                                            (:file "grammar-coercion")
                                            (:file "transcript")
                                            (:file "uuid")
+                                           (:file "identity")
                                            (:file "attribution")))
                              (:module "capabilities"
                               :serial t
@@ -134,6 +135,7 @@
                              (:file "minimax-m31-flash-test")
                              (:file "xai-grok-xhigh-test")
                              (:file "v140-default-models-test")
+                             (:file "client-identity-test")
                              (:file "faux-provider-test")
                              (:file "assistant-duration-test")
                              (:file "openai-completions-test")

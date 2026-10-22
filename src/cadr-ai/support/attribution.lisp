@@ -1,15 +1,10 @@
 (in-package #:cadr-ai)
 
 (defun opencode-host-p (provider base-url)
-  (or (member provider '(:opencode :opencode-go))
-      (and (stringp base-url)
-           (search "opencode.ai" base-url))))
+  (opencode-target-p provider base-url))
 
 (defun opencode-request-headers
     (&key provider base-url session-id)
-  ;; pi getSessionHeaders / withOpenCodeSessionHeader: no session id
-  ;; means no OpenCode routing headers. Do not invent an id.
-  (when (and (opencode-host-p provider base-url)
-             (non-empty-string-p session-id))
-    `(("x-opencode-session" . ,session-id)
-      ("x-opencode-client" . ,(cadr-product-slug)))))
+  ;; Session routing only. x-opencode-client is attribution and is added
+  ;; with the client identity, including when there is no session.
+  (opencode-session-headers provider base-url session-id))

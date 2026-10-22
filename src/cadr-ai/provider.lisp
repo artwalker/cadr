@@ -121,8 +121,32 @@
     (provider model context
      &key stream-p max-tokens temperature reasoning cache-retention
        session-id tool-choice metadata thinking-budgets headers
-       sampling-params
+       sampling-params identity
      &allow-other-keys))
+
+(defun suppress-client-identity-p (provider)
+  ;; Anthropic OAuth sends Claude Code headers instead of the client identity.
+  (and (typep provider 'anthropic-provider)
+       (non-empty-string-p (provider-oauth-access-token provider))))
+
+(defmethod build-request :around
+    (provider model context &rest args &key identity headers
+     &allow-other-keys)
+  (let ((*build-request-identity* identity))
+    (let ((request
+            (apply #'call-next-method provider model context args)))
+      (unless (or (suppress-client-identity-p provider)
+                  (typep provider 'bedrock-provider))
+        (setf (request-spec-headers request)
+              (apply-client-identity-headers
+               (request-spec-headers request)
+               (model-provider model)
+               (model-base-url model)
+               identity
+               :caller-headers headers
+               :overlay-caller-p
+               (not (typep provider 'openai-codex-provider)))))
+      request)))
 
 (defgeneric parse-complete-response (provider model response))
 
@@ -705,7 +729,8 @@ string. Returns the buffer to store back. Per-delta
                (provider-retry-delay condition retry-index)))))))
 
 (defun apply-provider-request-callbacks
-    (request model on-payload transform-headers)
+    (request model on-payload transform-headers
+     &key identity provider)
   (when on-payload
     (multiple-value-bind
           (replacement supplied-p)
@@ -721,12 +746,20 @@ string. Returns the buffer to store back. Per-delta
     (let ((replacement
             (funcall
              transform-headers
-             (copy-tree
-              (request-spec-headers request)))))
+             (strip-default-attribution
+              (copy-tree (request-spec-headers request))
+              (model-provider model)
+              (model-base-url model)
+              identity))))
       (when replacement
-        (setf
-         (request-spec-headers request)
-         replacement))))
+        (setf (request-spec-headers request) replacement))))
+  (unless (and provider (suppress-client-identity-p provider))
+    (setf (request-spec-headers request)
+          (restore-attribution-headers
+           (request-spec-headers request)
+           (model-provider model)
+           (model-base-url model)
+           identity)))
   request)
 
 (defun notify-provider-response
@@ -778,14 +811,15 @@ string. Returns the buffer to store back. Per-delta
                       &key max-tokens temperature reasoning cache-retention
                         session-id tool-choice metadata abort-p
                         on-payload transform-headers on-response
-                        thinking-budgets headers sampling-params
+                        thinking-budgets headers sampling-params identity
                         max-retries max-retry-delay-ms timeout-ms
                         (read-timeout nil read-timeout-supplied-p)
                       &allow-other-keys)
   (handler-case
       (progn
         (check-abort abort-p)
-        (let* ((transcript (ensure-transcript-context context))
+        (let* ((*identity-deleted-header-names* (list nil))
+               (transcript (ensure-transcript-context context))
                (max-tokens
                  (clamp-max-tokens-to-context
                   model transcript
@@ -801,11 +835,14 @@ string. Returns the buffer to store back. Per-delta
                                        :metadata metadata
                                        :thinking-budgets thinking-budgets
                                        :headers headers
-                                       :sampling-params sampling-params))
+                                       :sampling-params sampling-params
+                                       :identity identity))
                (_prepared
                  (apply-provider-request-callbacks
                   request model
-                  on-payload transform-headers))
+                  on-payload transform-headers
+                  :identity identity
+                  :provider provider))
                (timeout-seconds
                  (and (integerp timeout-ms) (plusp timeout-ms)
                       (/ timeout-ms 1000)))
@@ -901,7 +938,7 @@ string. Returns the buffer to store back. Per-delta
                       on-provider-stream-event
                       transport
                       websocket-connect-timeout-ms http-proxy
-                      thinking-budgets headers sampling-params
+                      thinking-budgets headers sampling-params identity
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
@@ -909,7 +946,8 @@ string. Returns the buffer to store back. Per-delta
     (error "Virtual model ~A/~A must be routed before streaming"
            (string-downcase (symbol-name (model-provider model)))
            (model-id model)))
-  (let* ((*assistant-stream-started-wall* (unix-milliseconds))
+  (let* ((*identity-deleted-header-names* (list nil))
+         (*assistant-stream-started-wall* (unix-milliseconds))
          (*assistant-stream-started-mono* (get-internal-real-time))
          (*assistant-stream-closed-p* nil)
          (transcript (ensure-transcript-context context))
@@ -949,13 +987,16 @@ string. Returns the buffer to store back. Per-delta
                                       :thinking-budgets thinking-budgets
                                       :headers headers
                                       :sampling-params sampling-params
+                                      :identity identity
                                       :disable-preferred-strict-tools
                                       disable-preferred-strict-p))
                      (preferred-strict-p
                        *anthropic-preferred-strict-sent-p*))
                 (apply-provider-request-callbacks
                  request model
-                 on-payload transform-headers)
+                 on-payload transform-headers
+                 :identity identity
+                 :provider provider)
                 (multiple-value-bind (handled-p websocket-message)
                     (try-provider-websocket-stream
                      provider model transcript request state on-event

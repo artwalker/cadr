@@ -487,9 +487,7 @@
   (let ((headers nil))
     (maphash
      (lambda (name value)
-       (when value
-         (push (cons name value)
-               headers)))
+       (push (cons name value) headers))
      table)
     (nreverse headers)))
 
@@ -567,6 +565,10 @@
                  (null (getf request-options :session-id)))
         (setf (getf request-options :session-id)
               session-id))
+      (setf (getf request-options :identity)
+            (cadr-ai::merge-client-identity
+             (coding-agent-client-identity telemetry-p)
+             (getf request-options :identity)))
       (apply
        stream-function
        provider model context on-event
