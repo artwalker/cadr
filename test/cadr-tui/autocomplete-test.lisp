@@ -255,6 +255,71 @@
               (cadr-tui:autocomplete-suggestions-items
                hidden))))))))
 
+(test autocomplete-treats-regex-metacharacters-as-literal
+  ;; pi@4a080252f autocomplete.ts #10972. fd compiles the query as a
+  ;; regex, so [ and ( are literal characters.
+  (is (string= "\\[id"
+               (cadr-tui::autocomplete-fd-path-query "[id")))
+  (is (string= "pages[\\\\/]\\["
+               (cadr-tui::autocomplete-fd-path-query "pages/[")))
+  (is (string= "pages[\\\\/]\\(group\\)"
+               (cadr-tui::autocomplete-fd-path-query
+                "pages/(group)")))
+  (let* ((root
+           (merge-pathnames
+            (format nil "cadr-fd-meta-~36R/"
+                    (random (expt 36 8)))
+            (uiop:temporary-directory)))
+         (fd
+           (uiop:parse-native-namestring
+            (string-right-trim
+             '(#\Newline #\Return)
+             (uiop:run-program
+              '("sh" "-c" "command -v fd")
+              :output :string)))))
+    (unwind-protect
+         (progn
+           (ensure-directories-exist
+            (merge-pathnames "pages/" root))
+           (dolist (name
+                    '("pages/[id].tsx"
+                      "pages/index.tsx"
+                      "pages/(group).ts"))
+             (with-open-file
+                 (stream
+                  (sb-ext:parse-native-namestring
+                   (concatenate
+                    'string
+                    (uiop:native-namestring
+                     (uiop:ensure-directory-pathname root))
+                    name))
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create)
+               (write-string "x" stream)))
+           (let ((provider
+                   (cadr-tui:make-autocomplete-provider
+                    :base-path root :fd-path fd)))
+             (dolist (pair
+                      '(("@pages/[" "@pages/[id].tsx")
+                        ("@pages/(" "@pages/(group).ts")
+                        ("@[id" "@pages/[id].tsx")))
+               (let* ((line (first pair))
+                      (suggestions
+                        (cadr-tui:autocomplete-get-suggestions
+                         provider (list line) 0 (length line)))
+                      (values
+                        (mapcar
+                         #'cadr-tui:autocomplete-item-value
+                         (cadr-tui:autocomplete-suggestions-items
+                          suggestions))))
+                 (is (equal (list (second pair)) values))))))
+      (uiop:run-program
+       (list "rm" "-rf"
+             (uiop:native-namestring
+              (uiop:ensure-directory-pathname root)))
+       :ignore-error-status t))))
+
 (test autocomplete-quoted-completion-does-not-duplicate-closing-quote
   (with-autocomplete-tree
    (lambda (root)

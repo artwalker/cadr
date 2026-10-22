@@ -334,6 +334,38 @@
                      (autocomplete-item-label right))
                     left-dir-p)))))))
 
+(defun autocomplete-escape-regex (value)
+  (with-output-to-string (output)
+    (loop for character across value
+          do (when (find character ".*+?^${}()|[]\\")
+               (write-char #\\ output))
+             (write-char character output))))
+
+(defun autocomplete-fd-path-query (query)
+  ;; pi@4a080252f autocomplete.ts buildFdPathQuery. fd treats the
+  ;; query as a regex, so a literal [ or ( must be escaped.
+  (let ((normalized (autocomplete-display-path query)))
+    (unless (find #\/ normalized)
+      (return-from autocomplete-fd-path-query
+        (autocomplete-escape-regex normalized)))
+    (let* ((trailing-p
+             (and (plusp (length normalized))
+                  (char= (char normalized (1- (length normalized)))
+                         #\/)))
+           (trimmed (string-trim '(#\/) normalized)))
+      (when (zerop (length trimmed))
+        (return-from autocomplete-fd-path-query normalized))
+      (let ((pattern
+              (format nil "~{~A~^[\\\\/]~}"
+                      (mapcar #'autocomplete-escape-regex
+                              (remove ""
+                                      (uiop:split-string
+                                       trimmed :separator "/")
+                                      :test #'string=)))))
+        (if trailing-p
+            (concatenate 'string pattern "[/\\\\]")
+            pattern)))))
+
 (defun run-fd-autocomplete
     (provider query &key base max-depth)
   (let ((fd (autocomplete-provider-fd-path provider))
@@ -359,10 +391,10 @@
                   (when max-depth
                     (list "--max-depth"
                           (princ-to-string max-depth)))
-                  (when (find #\/ query)
+                  (when (find #\/ (autocomplete-display-path query))
                     '("--full-path"))
                   (when (plusp (length query))
-                    (list query))))
+                    (list (autocomplete-fd-path-query query)))))
                (output
                  (uiop:run-program
                   arguments

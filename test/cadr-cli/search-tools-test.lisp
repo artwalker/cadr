@@ -61,6 +61,31 @@
         (is (search "Needle 42" (result-text content)))
         (is (= 1 (getf details :match-limit-reached)))))))
 
+(test grep-ignores-ripgrep-config-path
+  ;; pi@4a080252f grep.ts #11203. A user config that forces
+  ;; --fixed-strings must not turn a regex search into a literal one.
+  (with-test-directory (directory)
+    (write-text (merge-pathnames "note.txt" directory) "ab")
+    (write-text
+     (merge-pathnames "rg.conf" directory)
+     "--fixed-strings")
+    (let ((tool (make-grep-tool directory))
+          (previous (uiop:getenv "RIPGREP_CONFIG_PATH")))
+      (unwind-protect
+           (progn
+             (setf (uiop:getenv "RIPGREP_CONFIG_PATH")
+                   (namestring
+                    (merge-pathnames "rg.conf" directory)))
+             (multiple-value-bind (content details)
+                 (invoke-tool
+                  tool
+                  (args "pattern" "a." "path" "." "limit" 10))
+               (declare (ignore details))
+               (is (search "note.txt" (result-text content)))))
+        (if previous
+            (setf (uiop:getenv "RIPGREP_CONFIG_PATH") previous)
+            (sb-posix:unsetenv "RIPGREP_CONFIG_PATH"))))))
+
 (test glob-and-grep-follow-parseable-gitignore-rules
   (with-test-directory (directory)
     ;; Ripgrep follows .gitignore only inside a repository. The fixed baseline
