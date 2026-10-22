@@ -4,7 +4,7 @@
 
 ;;; Locked to pi@4a080252f packages/mcp tests: client, content,
 ;;; stdio, and the streamable HTTP cases for connect, tools, progress,
-;;; and cancellation. Resources and OAuth token exchange are other gaps.
+;;; and cancellation. OAuth token exchange is another gap.
 
 (defun mcp-json-equal (left right)
   (cond

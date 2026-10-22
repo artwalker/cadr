@@ -242,6 +242,9 @@
   error
   (tools nil :type list)
   instructions
+  ;; Present when initialize advertised resources. Listing waits for a
+  ;; resource tool: a large drive can make resources/list slow.
+  (has-resources nil :type boolean)
   client
   stderr-tail
   (closed-p nil :type boolean)
@@ -372,8 +375,9 @@
             (unless (string= (mcp-client-state client) "connected")
               (error "connection closed during setup"))
             (setf (mcp-server-connection-client connection) client
-                  (mcp-server-connection-tools connection) tools
-                  (mcp-server-connection-instructions connection)
+                  (mcp-server-connection-tools connection) tools)
+            (mcp-connection-note-resources connection client)
+            (setf (mcp-server-connection-instructions connection)
                   (let ((text (mcp-client-instructions client)))
                     (when (stringp text)
                       (let ((trimmed
@@ -446,6 +450,87 @@
                    :abort abort
                    :timeout-ms (or timeout-ms (mcp-connection-timeout-ms connection))
                    :on-progress on-progress)))
+
+(defun mcp-server-has-resources (connection)
+  (mcp-server-connection-has-resources connection))
+
+(defun mcp-connection-note-resources (connection client)
+  (setf (mcp-server-connection-has-resources connection)
+        (and (nth-value 1
+                       (mcp-get (mcp-client-server-capabilities client)
+                                "resources"))
+             t))
+  connection)
+
+(defun mcp-call-read-only (thunk)
+  ;; pi@4a080252f withClient readOnly. Resource reads and lists retry once
+  ;; after a transient HTTP error. Tool calls do not: the server may have
+  ;; already run them.
+  (loop for attempt from 1
+        do (handler-case
+               (return (funcall thunk))
+             (mcp-http-error (condition)
+               (when (or (> attempt 1)
+                         (not (mcp-transient-connect-error-p condition)))
+                 (error condition))
+               (sleep (/ (first +mcp-connect-retry-delays-ms+) 1000.0))))))
+
+(defun mcp-without-templates (thunk empty)
+  ;; Servers that do not implement resources/templates/list have no templates.
+  (handler-case
+      (funcall thunk)
+    (mcp-error (condition)
+      (if (= (mcp-error-code condition) +mcp-method-not-found+)
+          empty
+          (error condition)))))
+
+(defun mcp-server-read-resource (connection uri &key abort timeout-ms)
+  (mcp-call-read-only
+   (lambda ()
+     (mcp-read-resource
+      (mcp-server-client connection) uri
+      :abort abort
+      :timeout-ms (or timeout-ms (mcp-connection-timeout-ms connection))))))
+
+(defun mcp-server-resources-page (connection &optional cursor
+                                  &key abort timeout-ms)
+  (mcp-call-read-only
+   (lambda ()
+     (mcp-list-resources-page
+      (mcp-server-client connection) cursor
+      :abort abort
+      :timeout-ms (or timeout-ms (mcp-connection-timeout-ms connection))))))
+
+(defun mcp-server-all-resources (connection &key abort timeout-ms)
+  (mcp-call-read-only
+   (lambda ()
+     (mcp-list-resources
+      (mcp-server-client connection)
+      :abort abort
+      :timeout-ms (or timeout-ms (mcp-connection-timeout-ms connection))))))
+
+(defun mcp-server-resource-templates-page
+    (connection &optional cursor &key abort timeout-ms)
+  (mcp-call-read-only
+   (lambda ()
+     (mcp-without-templates
+      (lambda ()
+        (mcp-list-resource-templates-page
+         (mcp-server-client connection) cursor
+         :abort abort
+         :timeout-ms (or timeout-ms (mcp-connection-timeout-ms connection))))
+      (mcp-obj "resourceTemplates" #())))))
+
+(defun mcp-server-all-resource-templates (connection &key abort timeout-ms)
+  (mcp-call-read-only
+   (lambda ()
+     (mcp-without-templates
+      (lambda ()
+        (mcp-list-resource-templates
+         (mcp-server-client connection)
+         :abort abort
+         :timeout-ms (or timeout-ms (mcp-connection-timeout-ms connection))))
+      nil))))
 
 (defun mcp-server-close (connection)
   (mcp-abort (mcp-server-connection-shutdown connection))

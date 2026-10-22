@@ -271,6 +271,11 @@
    #:mcp-client-server-capabilities
    #:mcp-client-instructions
    #:mcp-list-tools
+   #:mcp-list-resources
+   #:mcp-list-resources-page
+   #:mcp-list-resource-templates
+   #:mcp-list-resource-templates-page
+   #:mcp-read-resource
    #:mcp-call-tool
    #:mcp-client-ping
    #:mcp-client-request
@@ -290,6 +295,28 @@
    #:mcp-http-session-id
    #:open-mcp-server
    #:mcp-server-call-tool
+   #:mcp-server-has-resources
+   #:mcp-connection-note-resources
+   #:mcp-server-read-resource
+   #:mcp-server-resources-page
+   #:mcp-server-all-resources
+   #:mcp-server-resource-templates-page
+   #:mcp-server-all-resource-templates
+   #:mcp-call-read-only
+   #:create-mcp-resource-tools
+   #:mcp-resource-tool-name
+   #:mcp-resource-tool-description
+   #:mcp-resource-tool-exposure
+   #:mcp-resource-tool-annotations
+   #:mcp-resource-tool-parameters
+   #:mcp-resource-tool-output-schema
+   #:mcp-resource-tool-executor
+   #:mcp-resource-call-result-content
+   #:mcp-resource-call-result-details
+   #:mcp-resource-call-result-structured-content
+   #:mcp-client-resource-server
+   #:mcp-connection-resource-server
+   #:mcp-widest-resource-exposure
    #:mcp-server-close
    #:mcp-server-state
    #:mcp-server-tools

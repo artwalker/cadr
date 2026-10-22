@@ -1,7 +1,7 @@
 (in-package #:cadr-agent)
 
 ;;; pi@4a080252f McpClient. One state string and one pending-request
-;;; table own the session. Resources stay out; that is a separate gap.
+;;; table own the session. Resource lists reuse that pager.
 
 (defparameter +mcp-default-request-timeout-ms+ 30000)
 (defparameter +mcp-max-list-pages+ 1000)
@@ -589,7 +589,10 @@
           do (unless (and (mcp-object-p item) (funcall predicate item))
                (mcp-invalid (format nil "Invalid entry in MCP ~A result" method))))
     (multiple-value-bind (cursor present) (mcp-get value "nextCursor")
+      ;; Parsed JSON null is cadr-ai's null. An in-image null is this
+      ;; package's. Either one, or "", ends the page.
       (when (or (not present)
+                (cadr-ai::json-null-p cursor)
                 (eq cursor 'null)
                 (and (stringp cursor) (zerop (length cursor))))
         (return-from mcp-validate-list-page
@@ -633,6 +636,83 @@
 (defun mcp-list-tools (client &key abort timeout-ms on-progress)
   (mcp-list-all client "tools/list" "tools" #'mcp-tool-p
                 :abort abort :timeout-ms timeout-ms :on-progress on-progress))
+
+(defun mcp-resource-p (item)
+  (and (stringp (mcp-get item "uri"))
+       (or (not (nth-value 1 (mcp-get item "name")))
+           (stringp (mcp-get item "name")))))
+
+(defun mcp-resource-template-p (item)
+  (and (stringp (mcp-get item "uriTemplate"))
+       (or (not (nth-value 1 (mcp-get item "name")))
+           (stringp (mcp-get item "name")))))
+
+(defun mcp-ensure-name (item fallback-key)
+  ;; pi@4a080252f toResource. Some servers omit name; the URI stands in.
+  (multiple-value-bind (name present) (mcp-get item "name")
+    (if (and present (stringp name))
+        item
+        (mcp-put item "name" (mcp-get item fallback-key)))))
+
+(defun mcp-page-object (key items next)
+  (let ((object (mcp-obj key (coerce items 'vector))))
+    (if next
+        (mcp-put object "nextCursor" next)
+        object)))
+
+(defun mcp-list-resources (client &key abort timeout-ms on-progress)
+  (mapcar (lambda (item) (mcp-ensure-name item "uri"))
+          (mcp-list-all client "resources/list" "resources" #'mcp-resource-p
+                        :abort abort :timeout-ms timeout-ms
+                        :on-progress on-progress)))
+
+(defun mcp-list-resources-page (client &optional cursor
+                                &key abort timeout-ms on-progress)
+  (let ((page (mcp-list-page client "resources/list" "resources" #'mcp-resource-p
+                             cursor
+                             :abort abort :timeout-ms timeout-ms
+                             :on-progress on-progress)))
+    (mcp-page-object "resources"
+                     (mapcar (lambda (item) (mcp-ensure-name item "uri"))
+                             (getf page :items))
+                     (getf page :next))))
+
+(defun mcp-list-resource-templates (client &key abort timeout-ms on-progress)
+  (mapcar (lambda (item) (mcp-ensure-name item "uriTemplate"))
+          (mcp-list-all client "resources/templates/list" "resourceTemplates"
+                        #'mcp-resource-template-p
+                        :abort abort :timeout-ms timeout-ms
+                        :on-progress on-progress)))
+
+(defun mcp-list-resource-templates-page
+    (client &optional cursor &key abort timeout-ms on-progress)
+  (let ((page (mcp-list-page client "resources/templates/list" "resourceTemplates"
+                             #'mcp-resource-template-p cursor
+                             :abort abort :timeout-ms timeout-ms
+                             :on-progress on-progress)))
+    (mcp-page-object "resourceTemplates"
+                     (mapcar (lambda (item)
+                               (mcp-ensure-name item "uriTemplate"))
+                             (getf page :items))
+                     (getf page :next))))
+
+(defun mcp-validate-read-resource (value)
+  (let ((contents (and (mcp-object-p value) (mcp-get value "contents"))))
+    (unless (and (mcp-object-p value) (mcp-json-sequence-p contents))
+      (mcp-invalid "Invalid MCP resources/read result"))
+    (loop for item across (coerce contents 'vector)
+          do (unless (and (mcp-object-p item)
+                          (stringp (mcp-get item "uri"))
+                          (or (stringp (mcp-get item "text"))
+                              (stringp (mcp-get item "blob"))))
+               (mcp-invalid "Invalid contents in MCP resources/read result"))))
+  value)
+
+(defun mcp-read-resource (client uri &key abort timeout-ms on-progress)
+  (mcp-validate-read-resource
+   (mcp-client-request client "resources/read" (mcp-obj "uri" uri)
+                       :abort abort :timeout-ms timeout-ms
+                       :on-progress on-progress)))
 
 (defun mcp-validate-tool-result (value)
   (unless (mcp-object-p value)

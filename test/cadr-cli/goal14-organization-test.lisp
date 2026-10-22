@@ -1301,9 +1301,10 @@
       ;; #:remove-mcp-server-config between #:load-mcp-config and
       ;; #:update-mcp-server-config. Parent freeze was
       ;; f52b974189f593b4abc2d46ce05885345f743663a8ea1498958daceef3764cb1.
+      ;; MCP client and resource exports sit in the same span.
       (is (and exports
                (string=
-                "04a231e373e1e3d3fb1a4bf618fd8c4d1d3eaa710bffb48ca6c006d819578993"
+                "5ee2540df7db49a20ad75a53cb3e305306134819752d20577cb3b17b31e790e6"
                 (goal14-sha256 exports)))
           "B9 changed the frozen extension export text")
       (is (and events
