@@ -22,6 +22,9 @@
   bash-request-id
   shell-command-prefix
   shell-path
+  resources
+  scoped-models
+  settings
   (closing-p nil :type boolean)
   (id-counter 0 :type (integer 0 *)))
 

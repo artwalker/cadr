@@ -224,3 +224,71 @@
                      (length levels))
                 levels)))
         (rpc-set-thinking-level agent next)))))
+
+(defun rpc-cycle-model (state)
+  ;; pi@4a080252f agent-session.ts cycleModel. One model returns no
+  ;; selection. A missing current model is treated as index 0, then
+  ;; the cycle steps forward. A non-empty --models scope does not fall
+  ;; through to the full catalog.
+  (labels ((same-model-p (left right)
+             (and
+              (eq (cadr-ai:model-provider left)
+                  (cadr-ai:model-provider right))
+              (string=
+               (cadr-ai:model-id left)
+               (cadr-ai:model-id right)))))
+    (let* ((agent (rpc-state-agent state))
+           (available (rpc-available-models state))
+           (scoped (rpc-state-scoped-models state))
+           (scoped-p (not (null scoped)))
+           (pool
+             (if scoped-p
+                 (remove-if-not
+                  (lambda (entry)
+                    (find
+                     (getf entry :model)
+                     available
+                     :test #'same-model-p))
+                  scoped)
+                 available)))
+      (when (<= (length pool) 1)
+        (return-from rpc-cycle-model nil))
+      (labels ((item-model (item)
+                 (if scoped-p (getf item :model) item)))
+        (let* ((current (cadr-agent:agent-model agent))
+               (index
+                 (position-if
+                  (lambda (item)
+                    (and current
+                         (same-model-p
+                          (item-model item)
+                          current)))
+                  pool))
+               (next
+                 (nth
+                  (mod (1+ (or index 0)) (length pool))
+                  pool))
+               (model (item-model next))
+               (explicit
+                 (and scoped-p (getf next :thinking)))
+               (selected
+                 (rpc-set-model
+                  state
+                  (string-downcase
+                   (symbol-name
+                    (cadr-ai:model-provider model)))
+                  (cadr-ai:model-id model)
+                  :cycle))
+               (settings (rpc-state-settings state)))
+          (values
+           selected
+           (rpc-set-thinking-level
+            agent
+            (or explicit
+                (if settings
+                    (cli-thinking-level-for-model-switch
+                     agent settings model)
+                    (or (cadr-agent::agent-thinking-level
+                         agent)
+                        +default-thinking-level+))))
+           scoped-p))))))

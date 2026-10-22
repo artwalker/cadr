@@ -3086,7 +3086,10 @@
                  settings-manager)
                 :shell-path
                 (settings-shell-path
-                 settings-manager))))
+                 settings-manager)
+                :resource-loader resource-loader
+                :scoped-models scoped-model-entries
+                :settings settings-manager)))
               (when warmer
                 (cache-warmer-cancel warmer))))
           :interactive-p (eq mode :tui)))))))

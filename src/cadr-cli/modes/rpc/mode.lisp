@@ -62,7 +62,10 @@
        (output *standard-output*)
        (error-output *error-output*)
        shell-command-prefix
-       shell-path)
+       shell-path
+       resource-loader
+       scoped-models
+       settings)
   (let ((state
           (%make-rpc-state
            :agent agent
@@ -71,7 +74,10 @@
            :output output
            :error-output error-output
            :shell-command-prefix shell-command-prefix
-           :shell-path shell-path)))
+           :shell-path shell-path
+           :resources resource-loader
+           :scoped-models scoped-models
+           :settings settings)))
     (setf
      (cadr-agent::extension-host-ui-function
       (cli-extension-manager-host

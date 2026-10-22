@@ -451,7 +451,10 @@
     ;; settings-show-hardware-cursor-p (bootstrap/settings.lisp).
     ;; +2 GAP-30: tmux-show-option-output and
     ;; tmux-keyboard-setup-warning (bootstrap/commands.lisp).
-    (is (= 195 definition-count)
+    ;; +3 GAP-47: rpc-cycle-model (modes/rpc/models.lisp),
+    ;; rpc-resource-source-info (modes/rpc/commands.lisp),
+    ;; rpc-context-usage (modes/rpc/sessions.lisp).
+    (is (= 198 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

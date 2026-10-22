@@ -7,17 +7,9 @@
     (t (error "Invalid ~A mode: ~A" noun mode))))
 
 (defun rpc-last-assistant-text (agent)
-  (let ((message
-          (find-if
-           (lambda (candidate)
-             (typep candidate
-                    'cadr-ai:assistant-message))
-           (cadr-agent:agent-messages agent)
-           :from-end t)))
-    (and message
-         (format
-          nil "~{~A~^~%~}"
-          (assistant-text-content message)))))
+  ;; Same walk as /copy: skip an aborted empty assistant, concatenate
+  ;; text blocks, and drop a whitespace-only result.
+  (last-assistant-text agent))
 
 (defun rpc-command-list (state)
   (let* ((snapshot
@@ -67,7 +59,86 @@
          (cadr-agent::extension-definition-origin
           definition)))
        commands))
+    (let ((loader (rpc-state-resources state)))
+      (when loader
+        (let ((snapshot
+                (default-resource-loader-snapshot loader)))
+          (dolist (template
+                   (and snapshot
+                        (resource-snapshot-prompts snapshot)))
+            (push
+             (cadr-ai::json-object
+              "name"
+              (cadr-agent:prompt-template-name template)
+              "description"
+              (or (cadr-agent:prompt-template-description
+                   template)
+                  "")
+              "source" "prompt"
+              "sourceInfo"
+              (rpc-resource-source-info
+               loader
+               (cadr-agent:prompt-template-file-path
+                template)
+               :prompt))
+             commands))
+          (dolist (skill
+                   (and snapshot
+                        (resource-snapshot-skills snapshot)))
+            (push
+             (cadr-ai::json-object
+              "name"
+              (format nil "skill:~A"
+                      (cadr-agent:skill-name skill))
+              "description"
+              (or (cadr-agent:skill-description skill) "")
+              "source" "skill"
+              "sourceInfo"
+              (rpc-resource-source-info
+               loader
+               (cadr-agent:skill-file-path skill)
+               :skill))
+             commands)))))
     (coerce (nreverse commands) 'vector)))
+
+(defun rpc-resource-source-info (loader path kind)
+  ;; pi@4a080252f skills.ts createSkillSourceInfo and
+  ;; prompt-templates.ts getSourceInfo. User and project files are
+  ;; local; a skill's baseDir is its own directory, a prompt's is the
+  ;; prompts root.
+  (let* ((file (namestring path))
+         (agent
+           (uiop:ensure-directory-pathname
+            (default-resource-loader-agent-directory loader)))
+         (project
+           (uiop:ensure-directory-pathname
+            (cadr-core:project-config-directory
+             (default-resource-loader-cwd loader))))
+         (folder (if (eq kind :skill) "skills/" "prompts/"))
+         (agent-root (merge-pathnames folder agent))
+         (project-root (merge-pathnames folder project))
+         (scope "temporary")
+         (base
+           (uiop:pathname-directory-pathname
+            (pathname file))))
+    (cond
+      ((resource-path-under-p file agent-root)
+       (setf scope "user")
+       (unless (eq kind :skill)
+         (setf base agent-root)))
+      ((resource-path-under-p file project-root)
+       (setf scope "project")
+       (unless (eq kind :skill)
+         (setf base project-root))))
+    (cadr-ai::json-object
+     "path" file
+     "source" "local"
+     "scope" scope
+     "origin" "top-level"
+     "baseDir"
+     (string-right-trim
+      "/"
+      (namestring base)))))
 
 (defun rpc-handle-command (state object)
   (require-rpc-object object)
@@ -175,50 +246,15 @@
            object "modelId")
           :set))))
       ((string= type "cycle_model")
-       (let* ((models
-                (rpc-available-models state))
-              (current
-                (position-if
-                 (lambda (model)
-                   (and
-                    (eq
-                     (cadr-ai:model-provider model)
-                     (cadr-ai:model-provider
-                      (cadr-agent:agent-model
-                       agent)))
-                    (string=
-                     (cadr-ai:model-id model)
-                     (cadr-ai:model-id
-                      (cadr-agent:agent-model
-                       agent)))))
-                 models))
-              (next
-                (and models
-                     (nth
-                      (mod
-                       (1+ (or current -1))
-                       (length models))
-                      models))))
+       (multiple-value-bind (model level scoped-p)
+           (rpc-cycle-model state)
          (rpc-success
           id type
-          (if next
-              (let ((selected
-                      (rpc-set-model
-                       state
-                       (string-downcase
-                        (symbol-name
-                         (cadr-ai:model-provider
-                          next)))
-                       (cadr-ai:model-id next)
-                       :cycle)))
-                (cadr-ai::json-object
-                 "model"
-                 (model-to-rpc-json selected)
-                 "thinkingLevel"
-                 (rpc-symbol-name
-                  (cadr-agent::agent-thinking-level
-                   agent))
-                 "isScoped" nil))
+          (if model
+              (cadr-ai::json-object
+               "model" (model-to-rpc-json model)
+               "thinkingLevel" (rpc-symbol-name level)
+               "isScoped" (not (null scoped-p)))
               'null))))
       ((string= type "get_available_models")
        (rpc-success
@@ -275,17 +311,31 @@
          "follow-up"))
        (rpc-success id type))
       ((string= type "compact")
+       (unless (cadr-agent:agent-model agent)
+         (error "~A" (format-no-model-selected-message)))
        (let ((result
                (cadr-agent:compact-agent
                 agent :force-p t
                 :custom-instructions
                 (cadr-ai::json-get
                  object "customInstructions"))))
+         (unless result
+           (let ((branch
+                   (cadr-agent::session-path-entries
+                    session)))
+             (error
+              "~A"
+              (if
+                  (and
+                   branch
+                   (eq :compaction
+                       (cadr-agent:session-entry-type
+                        (car (last branch)))))
+                  "Already compacted"
+                  "Nothing to compact (session too small)"))))
          (rpc-success
           id type
-          (if result
-              (compaction-result-to-json result)
-              'null))))
+          (compaction-result-to-json result))))
       ((string= type "set_auto_compaction")
        (setf
         (cadr-agent::agent-auto-compact-p agent)
@@ -310,22 +360,29 @@
       ((string= type "get_session_stats")
        (rpc-success
         id type
-        (rpc-session-stats session)))
+        (rpc-session-stats session agent)))
       ((string= type "export_html")
-       (let ((path
-               (pathname
-                (or
-                 (cadr-ai::json-get
-                  object "outputPath")
-                 (format nil "~A.html"
-                         (cadr-agent:session-id
-                          session))))))
-         (cadr-agent:export-session-html
-          session path)
-         (rpc-success
-          id type
-          (cadr-ai::json-object
-           "path" (namestring path)))))
+       (let ((session-file
+               (cadr-agent:session-path session)))
+         (unless session-file
+           (error
+            "Cannot export in-memory session to HTML"))
+         (unless (probe-file session-file)
+           (error
+            "Nothing to export yet - start a conversation first"))
+         (let ((path
+                 (or
+                  (cadr-ai::json-get
+                   object "outputPath")
+                  (format nil "cadr-session-~A.html"
+                          (pathname-name
+                           (pathname session-file))))))
+           (cadr-agent:export-session-html
+            session path)
+           (rpc-success
+            id type
+            (cadr-ai::json-object
+             "path" path)))))
       ((string= type "switch_session")
        (rpc-success
         id type
