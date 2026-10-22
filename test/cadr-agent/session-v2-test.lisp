@@ -426,12 +426,16 @@
        "916782b1184a9597527605ad751e2b3af30fcea23ba2194002969cd217a06881"
        (export-test-sha256
         cadr-agent::+export-html-template+)))
+  ;; pi@4a080252f template.css, byte-for-byte.
   (is (string=
-       "28c16e3827c23a62eef8283cac316b478f946e023093adad25ff9c9b891d41af"
+       "8ee19851f8e583277ed396cbb76496687aa556707fdfc1f78d1118bff87c740a"
        (export-test-sha256
         cadr-agent::+export-html-template-css+)))
+  ;; pi@4a080252f template.js with pi-share:v1:sidebar-width rewritten to
+  ;; cadr-share, and without the markedCjkFriendly tokenizer. That
+  ;; tokenizer is the only template.js delta from 71023aec to v1.4.0.
   (is (string=
-       "456d2b31c701384809f26b6e501e3f6011e634a6c0dd3912c007f37623423eb3"
+       "afe0ab70834fa5d4504e359fa50d2e7cf43886ff3017f3181064bf721255497b"
        (export-test-sha256
         cadr-agent::+export-html-template-js+)))
   (is (search
@@ -440,6 +444,33 @@
   (is (not (search
             "pi-share:v1:sidebar-width"
             cadr-agent::+export-html-template-js+)))
+  ;; pi@4a080252f template.js / template.css. Hidden custom messages stay
+  ;; hidden until H. context_edit is a tree row. nestedCalls render under
+  ;; the parent tool. Modifier keys do not toggle the viewer.
+  (is (search
+       "hook-message-hidden"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "H toggle hidden messages"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "e.ctrlKey || e.metaKey || e.altKey"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "[context ${entry.replacement === null ? 'omit' : 'replace'}: ${escapeHtml(entry.targetId)}]"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "const nested = result?.nestedCalls;"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "setThinkingExpanded(thinkingExpanded);"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "body:not(.show-hidden-messages) .hook-message-hidden"
+       cadr-agent::+export-html-template-css+))
+  (is (search
+       ".header-toggle-btn[aria-pressed=\"true\"]"
+       cadr-agent::+export-html-template-css+))
   (is (search
        "marked v18.0.5 - a markdown parser"
        cadr-agent::+export-html-marked-js+))
