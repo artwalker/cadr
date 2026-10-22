@@ -88,12 +88,12 @@
 
 (defvar *tool-result-image-normalize-function* nil
   "When bound, called with a tool result's content blocks to
-normalize image blocks entering session history (pi@71023aec1
+normalize image blocks entering session history (pi@4a080252f
 core/agent-session.ts:517-520).  Bound by cadr-cli, where the image
 pipeline lives.")
 
 (defun attach-nested-tool-record (outcome)
-  ;; pi@71023aec1 agent-session.ts records ctx.executeTool calls on the
+  ;; pi@4a080252f agent-session.ts records ctx.executeTool calls on the
   ;; model-issued result after the after-hook. Nested results stay bare.
   (when (and *nested-tool-call-runner*
              (not *nested-tool-caller-id*))

@@ -404,7 +404,7 @@
   model-id)
 
 (defun add-persisted-default-to-non-empty-scope (manager model)
-  ;; pi@71023aec1 agent-session.ts _addPersistedDefaultToNonEmptyScope:
+  ;; pi@4a080252f agent-session.ts _addPersistedDefaultToNonEmptyScope:
   ;; a Ctrl+S default joins a non-empty enabledModels list so the
   ;; saved default stays selectable after restart.
   (let ((enabled (settings-enabled-models manager)))

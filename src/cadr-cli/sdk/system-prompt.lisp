@@ -135,7 +135,7 @@
    selected-tools))
 
 (defun system-prompt-skill-reader (selected-tools declared-tools)
-  ;; pi@71023aec1 #10343. A hidden reader is still reachable through
+  ;; pi@4a080252f #10343. A hidden reader is still reachable through
   ;; another tool, so skills stay, and the hint names no tool.
   (cond
     ((member "read" declared-tools :test #'string=) :read)

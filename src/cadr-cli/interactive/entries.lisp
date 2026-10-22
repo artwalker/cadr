@@ -45,7 +45,7 @@
                    (cadr-tui:wrap-text line width))))))
 
 (defun replace-tui-entries (state entries &key renderer)
-  ;; pi@71023aec1 #10567. Session switches and other full transcript
+  ;; pi@4a080252f #10567. Session switches and other full transcript
   ;; replacements go through here. Only the fullscreen renderer has
   ;; the selection that would highlight the new text.
   (when (and renderer
@@ -323,14 +323,14 @@
           #\Escape (code-char 7)))
 
 (defun auth-url-click-label (&optional (platform (cli-platform)))
-  ;; pi@71023aec1 AuthUrlComponent: macOS uses Cmd+click.
+  ;; pi@4a080252f AuthUrlComponent: macOS uses Cmd+click.
   (if (eq platform :darwin)
       "Cmd+click to open"
       "Ctrl+click to open"))
 
 (defun render-auth-url-lines
     (url width &key copy-hint-p status (platform (cli-platform)))
-  ;; pi@71023aec1 auth-url.ts. The click hint stays; copy replaces only
+  ;; pi@4a080252f auth-url.ts. The click hint stays; copy replaces only
   ;; the suffix after the bullet.
   (let* ((linked
            (cadr-tui:theme-foreground

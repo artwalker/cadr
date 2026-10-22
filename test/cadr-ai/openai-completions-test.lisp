@@ -586,7 +586,7 @@
           :test #'string=)))
 
 (test completions-same-delta-puts-thinking-before-text
-  ;; pi@71023aec1 openai-completions.ts #10926.
+  ;; pi@4a080252f openai-completions.ts #10926.
   (let ((model
           (cadr-ai:make-model
            :id "proxy-model"
@@ -853,7 +853,7 @@
     :sampling-params sampling-params)))
 
 (test sampling-params-follow-the-effective-thinking-level
-  ;; pi@71023aec1 simple-options.ts resolveSamplingParams (#9776).
+  ;; pi@4a080252f simple-options.ts resolveSamplingParams (#9776).
   ;; low is present with a null map value, so the request clamps to
   ;; high. Level params override the model defaults, and request
   ;; params override the level. Named temperature is written first,

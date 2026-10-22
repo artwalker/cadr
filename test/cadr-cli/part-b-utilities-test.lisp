@@ -21,7 +21,7 @@
   (signals type-error (cadr-cli::strip-ansi 42)))
 
 (test bash-output-strips-ansi-split-across-chunks
-  ;; pi@71023aec1 #10504. A color or OSC sequence split across bash
+  ;; pi@4a080252f #10504. A color or OSC sequence split across bash
   ;; chunks stays out of the streamed text. A sequence longer than the
   ;; hold window is emitted immediately, with the escape byte removed.
   (labels ((chunks (parts)
@@ -429,7 +429,7 @@
       (is (null calls)))))
 
 (test session-share-destination-gist-skips-radius
-  ;; pi@71023aec1 session-share.test.ts #10870
+  ;; pi@4a080252f session-share.test.ts #10870
   (with-test-directory (root)
     (let ((session
             (share-test-session root "force-gist" "SHARE-GIST"))
@@ -1040,7 +1040,7 @@
        1)))))
 
 (test gif-image-detection-requires-a-complete-signature
-  ;; pi@71023aec1 mime.ts — "GIF" alone is text, not an image (#9755).
+  ;; pi@4a080252f mime.ts — "GIF" alone is text, not an image (#9755).
   (flet ((bytes (text)
            (map '(vector (unsigned-byte 8)) #'char-code text)))
     (is (string=

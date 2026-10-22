@@ -42,7 +42,7 @@
     "arguments" (stringify-json (tool-call-arguments call)))))
 
 (defun openai-reasoning-detail-p (detail)
-  ;; pi@71023aec1 openai-completions.ts isOpenAIReasoningDetail.
+  ;; pi@4a080252f openai-completions.ts isOpenAIReasoningDetail.
   (and (hash-table-p detail)
        (let ((type (json-get detail "type")))
          (and (stringp type)
@@ -311,7 +311,7 @@
     (list-json-array (nreverse messages))))
 
 (defun completions-strict-mode-p (model)
-  ;; pi@71023aec1 openai-completions.ts detectCompat defaults
+  ;; pi@4a080252f openai-completions.ts detectCompat defaults
   ;; supportsStrictMode to false. Built-in catalogs still advertise
   ;; the capability. An unknown provider id must not inherit it.
   (model-compat-value
@@ -426,7 +426,7 @@
            (string-downcase (symbol-name reasoning)))))
 
 (defun resolve-chat-template-args (model reasoning values)
-  ;; pi@71023aec1 api/openai-completions.ts:892-940 — each entry
+  ;; pi@4a080252f api/openai-completions.ts:892-940 — each entry
   ;; resolves a scalar verbatim or a $var reference to the current
   ;; thinking state; omitWhenOff drops the entry with no reasoning
   ;; active; an empty result omits the request field entirely.
@@ -540,7 +540,7 @@
          (when (stringp value)
            (json-put payload "thinking" value))))
       (:baseten
-       ;; pi@71023aec1 api/openai-completions.ts:779-793 — chat
+       ;; pi@4a080252f api/openai-completions.ts:779-793 — chat
        ;; template args carry the thinking toggle, and reasoning_effort
        ;; follows only when the model supports it.
        (let ((args
@@ -598,7 +598,7 @@
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
-         ;; pi@71023aec1: kimi Coding mid-convo tool additions, or the
+         ;; pi@4a080252f: kimi Coding mid-convo tool additions, or the
          ;; explicit deferred-tools-mode :kimi catalog override.
          (deferred-mode
            (cond
@@ -647,13 +647,13 @@
     (when active-tools
       (json-put payload "tools"
                 (openai-chat-tools model active-tools)))
-    ;; pi@71023aec1 openai-completions.ts:838 — omit tool_choice when
+    ;; pi@4a080252f openai-completions.ts:838 — omit tool_choice when
     ;; the request has no tools (#8607). Compaction no longer passes
     ;; toolChoice: "none" (6b36eb592).
     (when (and tool-choice active-tools)
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
-    ;; pi@71023aec1 api/openai-completions.ts:847-866 — vLLM caps
+    ;; pi@4a080252f api/openai-completions.ts:847-866 — vLLM caps
     ;; reasoning with a top-level thinking_token_budget, independent of
     ;; thinkingFormat; reasoning and the answer share max_tokens, so an
     ;; uncapped reasoning phase can consume the whole response.  The
@@ -696,7 +696,7 @@
      :url (chat-completions-url (model-base-url model))
      :headers
      (append
-      ;; pi@71023aec1 openai-completions.ts createClient: product UA first,
+      ;; pi@4a080252f openai-completions.ts createClient: product UA first,
       ;; then model.headers may override.
       `(("User-Agent" . ,(cadr-os-user-agent))
         ("content-type" . "application/json")
@@ -1008,7 +1008,7 @@
                  (completions-thinking-signature
                   (assistant-message-provider message)
                   field))))
-            ;; pi@71023aec1 #10926. reasoning_details are replay metadata.
+            ;; pi@4a080252f #10926. reasoning_details are replay metadata.
             ;; A proxy can put them in the same delta as content; the
             ;; thinking block has to exist before the text block.
             (let ((details (json-get delta "reasoning_details")))

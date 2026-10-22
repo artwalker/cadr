@@ -75,7 +75,7 @@
                 :red red :green green :blue blue)))))))))
 
 (defun parse-osc-color-response (data)
-  ;; pi@71023aec1 parseOscColorResponse: OSC 10, 11, or 4.
+  ;; pi@4a080252f parseOscColorResponse: OSC 10, 11, or 4.
   (multiple-value-bind (match registers)
       (cl-ppcre:scan-to-strings
        (format nil

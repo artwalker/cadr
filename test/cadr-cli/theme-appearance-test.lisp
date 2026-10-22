@@ -22,7 +22,7 @@
     object))
 
 (test theme-appearance-and-oklch-colors
-  ;; pi@71023aec1 theme-schema.ts appearance and colors.ts parseColor.
+  ;; pi@4a080252f theme-schema.ts appearance and colors.ts parseColor.
   (is (string= "#ffffff"
                (cadr-tui:normalize-theme-color "oklch(100% 0.3 150)")))
   (is (string= "#000000"

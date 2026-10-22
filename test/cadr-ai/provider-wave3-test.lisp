@@ -163,7 +163,7 @@
           collect (cadr-ai::json-get (aref messages index) "role"))))
 
 (test azure-completions-use-the-foundry-endpoint-and-deployment-map
-  ;; pi@71023aec1 azure-openai-completions.test.ts
+  ;; pi@4a080252f azure-openai-completions.test.ts
   (multiple-value-bind (provider model)
       (cadr-ai:instantiate-provider
        :azure :model-id "deepseek-v4-pro" :api-key "test-key"

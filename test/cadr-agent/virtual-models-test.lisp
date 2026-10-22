@@ -18,7 +18,7 @@
      (:max . nil))))
 
 (test virtual-model-routes-one-request-and-holds-the-selection
-  ;; pi@71023aec1 virtual-models.ts. The selected model stays virtual.
+  ;; pi@4a080252f virtual-models.ts. The selected model stays virtual.
   ;; The provider call sees the physical model the router returned.
   (let ((cadr-agent::*virtual-models*
           (make-hash-table :test #'equal))

@@ -1,7 +1,7 @@
 (in-package #:cadr-ai)
 
 (defun login-anthropic-copy-code-oauth (interaction)
-  ;; pi@71023aec1 anthropic.ts #10194. The copy-code page shows the
+  ;; pi@4a080252f anthropic.ts #10194. The copy-code page shows the
   ;; authorization code, so a browser on another machine can finish
   ;; login without the localhost callback.
   (multiple-value-bind (verifier challenge)

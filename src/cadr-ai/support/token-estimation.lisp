@@ -14,7 +14,7 @@
         sum (if (> (char-code character) #xffff) 2 1)))
 
 (defun estimate-chars-as-tokens (chars)
-  ;; pi@71023aec1 estimate.ts #10497. 3.5 characters per token, so a
+  ;; pi@4a080252f estimate.ts #10497. 3.5 characters per token, so a
   ;; large input leaves less room for the output limit.
   (ceiling (* chars 2) 7))
 
@@ -175,7 +175,7 @@
       (estimate-message-list context-or-messages)))
 
 (defun clamp-max-tokens-to-context (model context max-tokens)
-  ;; pi@71023aec1 simple-options.ts clampMaxTokensToContext.
+  ;; pi@4a080252f simple-options.ts clampMaxTokensToContext.
   (if (<= (model-context-window model) 0)
       (max 1 max-tokens)
       (min max-tokens

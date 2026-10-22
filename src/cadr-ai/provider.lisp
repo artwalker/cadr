@@ -220,7 +220,7 @@ completed assistant message."))
       "high"))
 
 (defun anthropic-off-null-p (model)
-  ;; pi@71023aec1 thinkingLevelMap.off === null means the model rejects
+  ;; pi@4a080252f thinkingLevelMap.off === null means the model rejects
   ;; thinking: {type: "disabled"}. A missing off entry does not.
   (and (model-thinking-level-present-p model :off)
        (null (model-thinking-level-value model :off))))
@@ -234,7 +234,7 @@ completed assistant message."))
 (defun mid-convo-thinking-level (model reasoning &optional api-key)
   ;; Anthropic adaptive thinking stamps an effort unless this request
   ;; turns thinking off. OpenAI GPT-6 configuration_update only stamps
-  ;; when getConfigurationUpdateEffort would (pi@71023aec1) — requires a
+  ;; when getConfigurationUpdateEffort would (pi@4a080252f) — requires a
   ;; thinking level and not ChatGPT sign-in.
   (when (and (model-compat-value model :supports-mid-convo-effort nil)
              (not (anthropic-thinking-disabled-p model reasoning)))
@@ -338,7 +338,7 @@ string. Returns the buffer to store back. Per-delta
   "(image attached after the tool results)")
 
 (defun replace-images-with-placeholder (content placeholder)
-  ;; pi@71023aec1 transform-messages.ts. One note covers a run of images.
+  ;; pi@4a080252f transform-messages.ts. One note covers a run of images.
   (let ((result nil)
         (previous-placeholder-p nil))
     (loop for block across (coerce content 'vector)
@@ -355,7 +355,7 @@ string. Returns the buffer to store back. Per-delta
     (nreverse result)))
 
 (defun split-error-tool-result-images (message)
-  ;; pi@71023aec1 #10794. Anthropic and Claude on Bedrock reject images
+  ;; pi@4a080252f #10794. Anthropic and Claude on Bedrock reject images
   ;; inside an error tool result. The text result keeps a placeholder;
   ;; the images follow every tool result of the turn.
   (let ((content (tool-result-message-content message)))
@@ -421,7 +421,7 @@ string. Returns the buffer to store back. Per-delta
        :signature (and same-model-p
                        (text-content-signature block)))))
     ((typep block 'thinking-content)
-     ;; pi@71023aec1 transform-messages.ts — thinking from another model
+     ;; pi@4a080252f transform-messages.ts — thinking from another model
      ;; is dropped, not rewritten as visible text. Signatures/redacted
      ;; blocks stay only for the same model (replay / encrypted reasoning).
      (cond
@@ -599,7 +599,7 @@ string. Returns the buffer to store back. Per-delta
   "True after this assistant stream has already emitted done or error.")
 
 (defun stamp-assistant-stream-duration (message)
-  ;; pi@71023aec1 event-stream.ts AssistantMessageEventStream.#time.
+  ;; pi@4a080252f event-stream.ts AssistantMessageEventStream.#time.
   ;; The monotonic clock starts with the stream. A message that already
   ;; has durationMs, or whose timestamp is earlier than the stream, was
   ;; started elsewhere and stays untimed. A later terminal event does
@@ -1029,7 +1029,7 @@ string. Returns the buffer to store back. Per-delta
                        :timeout-ms timeout-ms)
                       (return))
                   (api-error (condition)
-                    ;; pi@71023aec1 #10409. Downgrade prefer-strict tools
+                    ;; pi@4a080252f #10409. Downgrade prefer-strict tools
                     ;; only when the request itself was rejected.
                     (unless (and (not saw-provider-event-p)
                                  (not disable-preferred-strict-p)

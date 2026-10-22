@@ -3,7 +3,7 @@
 (in-suite cadr-ai-suite)
 
 (defparameter +goal14-provider-baseline-commit+
-  "71023aec1546d6d677a65669c5665c0927ce0dd0")
+  "4a080252f06caf63a525d7873c5d94d3c23887e0")
 
 (defparameter +goal14-provider-owner-files+
   '("src/cadr-ai/oauth/providers/xai.lisp"

@@ -356,7 +356,7 @@
          :key #'cadr-agent:session-entry-type))))))
 
 (test g21-session-compact-failed-notifies-extensions-on-auto-compaction-failure
-  ;; pi@71023aec1 agent-session-compaction.test.ts notifies extensions when
+  ;; pi@4a080252f agent-session-compaction.test.ts notifies extensions when
   ;; auto-compaction fails.
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
@@ -1216,7 +1216,7 @@
       (cadr-agent::truncate-summary-tool-result text)))))
 
 (test goal17-summary-tool-result-truncates-by-javascript-utf16-code-units
-  ;; pi@71023aec1 compaction/utils.ts:88-99 uses String.length and slice,
+  ;; pi@4a080252f compaction/utils.ts:88-99 uses String.length and slice,
   ;; whose unit is UTF-16 rather than Unicode scalar values.
   (let* ((emoji (string (code-char #x1f642)))
          (text
@@ -1858,7 +1858,7 @@
       (is (null (cadr-agent::agent-compaction-cancellation agent))))))
 
 (test projected-context-tokens-count-tool-declarations-without-usage
-  ;; pi@71023aec1 estimateProjectedContextTokens. Tools count only
+  ;; pi@4a080252f estimateProjectedContextTokens. Tools count only
   ;; when a system message carries them. Bare history stays on its text.
   (let* ((tool
            (cadr-ai:make-tool

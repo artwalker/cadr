@@ -185,7 +185,7 @@
     copy))
 
 (defun personalize-openrouter-catalog (catalog status body)
-  ;; pi@71023aec1 openrouter.ts personalizeOpenRouterCatalog #10672.
+  ;; pi@4a080252f openrouter.ts personalizeOpenRouterCatalog #10672.
   (when (member status '(401 403 404))
     (return-from personalize-openrouter-catalog catalog))
   (unless (and (integerp status) (<= 200 status 299))

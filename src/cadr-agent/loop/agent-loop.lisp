@@ -40,7 +40,7 @@
               (emit-agent-end agent)
               (return-from run-agent-loop
                 final-message))))
-        ;; pi@71023aec1 agent-loop.ts #8782: compact before the next
+        ;; pi@4a080252f agent-loop.ts #8782: compact before the next
         ;; provider request once a turn has already completed, so
         ;; threshold compaction runs between tool rounds.
         (when (> turn 1)
@@ -96,7 +96,7 @@
                turn-hook-messages
                :message-id message-entry-id
                :result-ids tool-result-entry-ids)
-              ;; pi@71023aec1 agent-session.ts finishTurn wrapper:
+              ;; pi@4a080252f agent-session.ts finishTurn wrapper:
               ;; turn_end entries commit first. :end still wins.
               ;; :continue or a valid boundary continue asks for one
               ;; more provider turn when tools and steering would not.
@@ -548,7 +548,7 @@
    :details (getf message :details)))
 
 (defun prepare-custom-agent-prompt (agent message)
-  ;; pi@71023aec1 agent-session.ts _prepareRun. An idle triggerTurn
+  ;; pi@4a080252f agent-session.ts _prepareRun. An idle triggerTurn
   ;; custom message is the run's starting message. The hook sees that
   ;; message and no user prompt.
   (let* ((prompt-options

@@ -168,7 +168,7 @@
   (nth-value 1 (sb-bsd-sockets:socket-name socket)))
 
 (defun open-anthropic-oauth-callback-socket ()
-  ;; pi@71023aec1 #10571. 53692 stays preferred so a forwarded port
+  ;; pi@4a080252f #10571. 53692 stays preferred so a forwarded port
   ;; still works. Anthropic accepts any loopback port, so a taken
   ;; preferred port falls back to one the OS chooses. No listener
   ;; means login continues with the pasted redirect URL.

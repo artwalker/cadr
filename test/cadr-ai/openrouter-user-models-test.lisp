@@ -21,7 +21,7 @@
     (cadr-ai::model (cadr-ai::model-id item))))
 
 (test openrouter-user-list-keeps-the-keys-chat-models
-  ;; pi@71023aec1 openrouter.ts personalizeOpenRouterCatalog #10672.
+  ;; pi@4a080252f openrouter.ts personalizeOpenRouterCatalog #10672.
   (let* ((image
            (cadr-ai::make-model
             :id "image"

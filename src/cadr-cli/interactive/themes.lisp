@@ -212,7 +212,7 @@
       (/ (reduce #'+ samples) (length samples)))))
 
 (defun detect-theme-appearance (overrides)
-  ;; pi@71023aec1 detectAppearance: background lighter than the text is a
+  ;; pi@4a080252f detectAppearance: background lighter than the text is a
   ;; light theme. Palette indexes 0-15 are ignored.
   (let ((foreground (theme-average-lightness overrides nil))
         (background (theme-average-lightness overrides t)))
@@ -274,7 +274,7 @@
              (gethash "thinkingXhigh" colors)
              variables))
            overrides))
-       ;; pi@71023aec1 theme.ts:326-332 — optional scrollbarThumb
+       ;; pi@4a080252f theme.ts:326-332 — optional scrollbarThumb
        ;; falls back to selectedBg; scrollbarTrack falls back to muted.
        (unless
            (nth-value 1
@@ -299,7 +299,7 @@
                 (gethash "dim" colors))
             variables))
           overrides))
-       ;; v1.3.0: the search-match colors fall back to selectedBg/text.
+       ;; v1.4.0: the search-match colors fall back to selectedBg/text.
        (unless
            (nth-value 1
                       (gethash "searchMatchBg"

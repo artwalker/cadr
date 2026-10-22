@@ -359,13 +359,13 @@
   row)
 
 (defun apply-azure-provider-id (row)
-  ;; pi@71023aec1 generate-models.ts publishes these rows as provider "azure".
+  ;; pi@4a080252f generate-models.ts publishes these rows as provider "azure".
   (when (eq (getf row :provider) :azure-openai-responses)
     (setf (getf row :provider) :azure))
   row)
 
 (defun opencode-inference-base-url (url)
-  ;; pi@71023aec1 generate-models.ts: Zen and Go left /zen for /inference.
+  ;; pi@4a080252f generate-models.ts: Zen and Go left /zen for /inference.
   ;; Replace the /go host first so a later /zen rewrite cannot eat it.
   (cond
     ((not (stringp url)) url)
@@ -382,7 +382,7 @@
     (t url)))
 
 (defun anthropic-disabled-thinking-model-p (model-id)
-  ;; pi@71023aec1 ANTHROPIC_DISABLED_THINKING_MODELS. Dated snapshots
+  ;; pi@4a080252f ANTHROPIC_DISABLED_THINKING_MODELS. Dated snapshots
   ;; and an OpenRouter anthropic/ prefix do not change the decision.
   (let* ((lower (string-downcase model-id))
          (stripped
@@ -413,7 +413,7 @@
     (:max)))
 
 (defun apply-xiaomi-thinking-toggle (row)
-  ;; pi@71023aec1 #10818. MiMo Chat Completions documents only
+  ;; pi@4a080252f #10818. MiMo Chat Completions documents only
   ;; thinking.type enabled/disabled and rejects reasoning_effort
   ;; "minimal". Every effort level is treated the same, so the catalog
   ;; exposes off and high and the request omits reasoning_effort.
@@ -461,7 +461,7 @@
   row)
 
 (defun register-azure-deepseek-model ()
-  ;; pi@71023aec1 generate-models.ts azureDeepSeekModels. Foundry rejects
+  ;; pi@4a080252f generate-models.ts azureDeepSeekModels. Foundry rejects
   ;; DeepSeek's thinking field and prompt-cache parameters, and it keeps
   ;; mid-conversation system messages.
   (let ((source (find-model-metadata :deepseek "deepseek-v4-pro")))
@@ -510,7 +510,7 @@
     ((string= id "gpt-6-luna") "GPT-6 Luna")))
 
 (defun gpt-6-official-thinking-map (id codex-p)
-  ;; pi@71023aec1 applyThinkingLevelMetadata. Astra and GPT-6.1 Sol reject
+  ;; pi@4a080252f applyThinkingLevelMetadata. Astra and GPT-6.1 Sol reject
   ;; reasoning.effort "none". Codex remaps minimal to "low" for xhigh models.
   (list
    (cons :off
@@ -592,7 +592,7 @@
             (round-model-cost (* cache-write 2d0))))))))))
 
 (defun register-gpt-6-official-models ()
-  ;; pi@71023aec1 #10840. These ids are an explicit catalog, not a
+  ;; pi@4a080252f #10840. These ids are an explicit catalog, not a
   ;; models.dev import. Codex reports 500k only for gpt-6.1-sol.
   (dolist (id '("gpt-6.1-sol" "gpt-6-sol" "gpt-6-luna"))
     (dolist (provider '(:openai :openai-codex :azure))
@@ -706,7 +706,7 @@
         (setf (model-metadata-context-window metadata) 1000000)))))
 
 (defun register-github-copilot-pin-models ()
-  ;; pi@71023aec1 generate-models.ts. Copilot advertised these before
+  ;; pi@4a080252f generate-models.ts. Copilot advertised these before
   ;; models.dev did. The extended-context ids are 1_000_000 even when an
   ;; import reports a larger window.
   (register-github-copilot-opus-5-5)

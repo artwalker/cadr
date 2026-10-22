@@ -46,7 +46,7 @@
                   (tool-path-file-url text cwd)))))))
 
 (defun tool-read-finite-line-number (value)
-  ;; pi@71023aec1 render-utils.ts parseLineNumber. Numeric strings
+  ;; pi@4a080252f render-utils.ts parseLineNumber. Numeric strings
   ;; count. Empty, partial, and non-finite values do not.
   (cond
     ((integerp value) value)
@@ -80,7 +80,7 @@
   (or (null value) (cadr-ai::json-null-p value)))
 
 (defun format-read-line-range (offset limit)
-  ;; pi@71023aec1 formatReadLineRange. A malformed bound drops the
+  ;; pi@4a080252f formatReadLineRange. A malformed bound drops the
   ;; whole range. JSON null is an omitted argument. A zero end is
   ;; omitted, so :1 with limit 0 stays ":1".
   (when (read-line-bound-absent-p offset)

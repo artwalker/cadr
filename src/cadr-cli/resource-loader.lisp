@@ -404,7 +404,7 @@ Returns the deduped list and a list of collision records
         (return path)))))
 
 (defun find-shadowed-context-file (cwd)
-  ;; pi@71023aec1 resource-loader.ts findShadowedContextFile. A nested
+  ;; pi@4a080252f resource-loader.ts findShadowedContextFile. A nested
   ;; linked worktree and its main repo share one logical scope. The
   ;; shadowed path is the main repo root plus the worktree file's name,
   ;; not the file's real path: a symlink still names the worktree copy.
@@ -433,7 +433,7 @@ Returns the deduped list and a list of collision records
                    (file-namestring file)))))))))))
 
 (defun load-project-context-files (&key cwd agent-directory)
-  ;; pi@71023aec1 core/resource-loader.ts. Global agent-dir context
+  ;; pi@4a080252f core/resource-loader.ts. Global agent-dir context
   ;; first, then cwd→root ancestors rootward-first. A nested worktree
   ;; drops only the main repo file of the same name.
   (let* ((ancestors nil)

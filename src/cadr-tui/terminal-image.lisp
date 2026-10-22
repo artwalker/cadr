@@ -161,7 +161,7 @@
     (and value (plusp (length value)))))
 
 (defun parse-boolean-capability-override (value)
-  ;; pi@71023aec1 terminal-image.ts:139-141 — only "1" and "0" override;
+  ;; pi@4a080252f terminal-image.ts:139-141 — only "1" and "0" override;
   ;; "auto" and anything else leave detection in place.
   (cond
     ((not (stringp value)) :unset)
@@ -255,7 +255,7 @@
                :images nil
                :true-color-p (not (null true-color-hint-p))
                :hyperlinks-p nil))
-             ;; pi@71023aec1 #10774. Herdr speaks Kitty graphics and OSC 8.
+             ;; pi@4a080252f #10774. Herdr speaks Kitty graphics and OSC 8.
              ;; Check it before KITTY_WINDOW_ID: that variable leaks into
              ;; Herdr panes and would force true color on the Kitty branch.
              ((string= term-program "herdr")
@@ -323,7 +323,7 @@
   (setf *terminal-capabilities* nil))
 
 (defun set-capability-overrides (overrides)
-  ;; pi@71023aec1 terminal-image.ts:179-189 — skip work when the three
+  ;; pi@4a080252f terminal-image.ts:179-189 — skip work when the three
   ;; override fields are unchanged; otherwise drop the cached detection.
   (unless (equal overrides *capability-overrides*)
     (setf *capability-overrides* (copy-list overrides)

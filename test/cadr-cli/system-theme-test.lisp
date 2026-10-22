@@ -31,7 +31,7 @@
    (first rgb) (second rgb) (third rgb)))
 
 (test system-theme-follows-the-terminal
-  ;; pi@71023aec1 system-theme.test.ts.
+  ;; pi@4a080252f system-theme.test.ts.
   (let* ((dracula-bg (system-rgb "#282a36"))
          (dracula-fg (system-rgb "#f8f8f2"))
          (solarized-bg (system-rgb "#fdf6e3"))

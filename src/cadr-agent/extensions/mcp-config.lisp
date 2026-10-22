@@ -1,6 +1,6 @@
 (in-package #:cadr-agent)
 
-;;; pi@71023aec1 core/mcp-servers.ts and extensions/mcp/config.ts.
+;;; pi@4a080252f core/mcp-servers.ts and extensions/mcp/config.ts.
 ;;; Validates mcp.json entries and merges a trusted project's overrides.
 ;;; Codemode execution stays out; `autoEnableCodemode` is only stored.
 
@@ -785,7 +785,7 @@
             do (format out "~(~2,'0x~)" (aref digest index))))))
 
 (defun create-mcp-tool-name (server tool &optional (taken (constantly nil)))
-  ;; pi@71023aec1 createMcpToolName. Provider names are 64 characters of
+  ;; pi@4a080252f createMcpToolName. Provider names are 64 characters of
   ;; [A-Za-z0-9_]. A collision or a longer name keeps a sha256 suffix.
   (let ((name (mcp-sanitize-name (format nil "mcp__~A__~A" server tool))))
     (if (and (<= (length name) 64)
@@ -865,7 +865,7 @@
                         lines)))))
 
 (defun render-mcp-servers-section (servers)
-  ;; pi@71023aec1 renderServersSection. Direct-only servers stay out.
+  ;; pi@4a080252f renderServersSection. Direct-only servers stay out.
   ;; Descriptions shrink, then the last servers are counted in the
   ;; closing line, so the section stays within 4096 characters.
   (let* ((listed

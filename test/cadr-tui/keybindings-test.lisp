@@ -141,7 +141,7 @@
        disabled "app.model.cycleBackward")))))
 
 (test fullscreen-home-and-end-stay-on-the-editor
-  ;; pi@71023aec1 keybindings.ts #10314.
+  ;; pi@4a080252f keybindings.ts #10314.
   (let ((manager (cadr-tui:make-keybindings-manager))
         (home (format nil "~COH" #\Escape))
         (end (format nil "~C[F" #\Escape))

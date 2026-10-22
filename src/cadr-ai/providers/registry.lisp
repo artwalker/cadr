@@ -29,7 +29,7 @@
            :oauth-account-id oauth-account-id
            :provider-id provider-id
            :options effective-options)))
-    ;; pi@71023aec1 azure.ts: both APIs stay on the Azure provider so the
+    ;; pi@4a080252f azure.ts: both APIs stay on the Azure provider so the
     ;; endpoint and deployment name are resolved before dispatch.
     (when (eq provider-id :azure)
       (return-from make-protocol-provider

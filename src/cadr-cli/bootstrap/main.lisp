@@ -224,7 +224,7 @@
 (defun main (&optional
                (argv
                  (uiop:command-line-arguments)))
-  ;; pi@71023aec1 cli.ts:13-15 — the running agent publishes its
+  ;; pi@4a080252f cli.ts:13-15 — the running agent publishes its
   ;; identity to child processes (bash tool, hooks, extensions); cadr
   ;; publishes its own names per the product-identity contract.
   (sb-posix:setenv "CADR_CODING_AGENT" "true" 1)

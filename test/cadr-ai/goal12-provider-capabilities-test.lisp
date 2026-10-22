@@ -198,7 +198,7 @@
                   "name")))))
 
 (test goal26-kimi-coding-uses-openai-completions-v1
-  ;; pi@71023aec1 kimi-coding.ts + createKimiCodingModels: Chat Completions
+  ;; pi@4a080252f kimi-coding.ts + createKimiCodingModels: Chat Completions
   ;; at https://api.kimi.com/coding/v1 (was Anthropic Messages without /v1).
   (let* ((definition (cadr-ai:find-provider-definition :kimi-coding))
          (catalog-ids

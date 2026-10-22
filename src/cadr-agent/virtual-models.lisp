@@ -40,7 +40,7 @@
   (cons (virtual-model-provider-name provider) id))
 
 (defun virtual-model-p (model)
-  ;; pi@71023aec1 virtual-models.ts isVirtualModel. Failed routing
+  ;; pi@4a080252f virtual-models.ts isVirtualModel. Failed routing
   ;; leaves api pi-virtual on the assistant message.
   (typecase model
     (cadr-ai:model
@@ -225,7 +225,7 @@
           return entry))
 
 (defun branch-selection (branch get-model)
-  ;; pi@71023aec1 getBranchSelection. A virtual model_change holds
+  ;; pi@4a080252f getBranchSelection. A virtual model_change holds
   ;; across later physical responses while that virtual model stays
   ;; registered. The last model_change itself always wins.
   (loop for index from (1- (length branch)) downto 0

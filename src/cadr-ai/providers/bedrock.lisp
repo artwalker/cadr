@@ -99,7 +99,7 @@
     (t "high")))
 
 (defun bedrock-openai-request-fields (model reasoning)
-  ;; pi@71023aec1 bedrock-converse-stream.ts #9331. OpenAI models on
+  ;; pi@4a080252f bedrock-converse-stream.ts #9331. OpenAI models on
   ;; Bedrock take reasoning.effort. gpt-oss takes a flat
   ;; reasoning_effort and only low, medium, or high.
   (when (and reasoning

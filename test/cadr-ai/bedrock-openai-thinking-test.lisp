@@ -24,7 +24,7 @@
      "additionalModelRequestFields")))
 
 (test bedrock-openai-thinking-level-reaches-the-request
-  ;; pi@71023aec1 bedrock-converse-stream.ts #9331.
+  ;; pi@4a080252f bedrock-converse-stream.ts #9331.
   (dolist (pair '((:minimal . "low")
                   (:low . "low")
                   (:medium . "medium")

@@ -22,7 +22,7 @@
     (is (not (search "originator=pi" url)))))
 
 (test openai-codex-browser-login-uses-the-caller-name
-  ;; pi@71023aec1 #10433. The Codex browser authorize URL takes the
+  ;; pi@4a080252f #10433. The Codex browser authorize URL takes the
   ;; caller's name. Omitting it stays cadr. Sign in with ChatGPT's
   ;; agent_name_hint is not in this tree.
   (let ((named
@@ -178,7 +178,7 @@
     (is (search "state=state-1" url))))
 
 (test anthropic-oauth-uses-a-free-port-when-53692-is-taken
-  ;; pi@71023aec1 #10571. The authorize URL, paste placeholder, and
+  ;; pi@4a080252f #10571. The authorize URL, paste placeholder, and
   ;; token exchange all use the listener that actually bound.
   (let ((blocker (cadr-ai::open-oauth-callback-socket 53692)))
     (unwind-protect
@@ -731,7 +731,7 @@
                              :test #'string-equal))))))
 
 (test codex-caller-headers-override-originator-and-user-agent
-  ;; pi@71023aec1 #10429. Model headers, then caller headers, replace
+  ;; pi@4a080252f #10429. Model headers, then caller headers, replace
   ;; the Codex originator and User-Agent. Authorization and the
   ;; account id stay on the credential. A null caller value removes
   ;; the name.
@@ -1162,7 +1162,7 @@
         "https://gateway.example" "challenge" "state"))))
 
 (test anthropic-runtime-login-offers-copy-code
-  ;; pi@71023aec1 anthropic.ts #10194.
+  ;; pi@4a080252f anthropic.ts #10194.
   (let* ((prompts nil)
          (events nil)
          (requests nil)

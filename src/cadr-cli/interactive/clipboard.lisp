@@ -178,7 +178,7 @@
                 (not termux-p)
                 (not wayland-display-p)
                 (not x11-display-p)))
-         ;; pi@71023aec1 clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1
+         ;; pi@4a080252f clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1
          ;; is a remote client that left no SSH markers, so OSC 52 follows
          ;; a successful local write.
          (session-remote-p

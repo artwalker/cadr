@@ -5,7 +5,7 @@
 (defvar *goal26-extension-notifications* nil)
 
 (test goal26-extension-hook-table-includes-provider-and-mcp-events
-  ;; pi@71023aec1 ExtensionAPI on(provider_stream_event / mcp_servers_change)
+  ;; pi@4a080252f ExtensionAPI on(provider_stream_event / mcp_servers_change)
   (dolist (event '(:provider-stream-event :mcp-servers-change))
     (is (member event cadr-agent::+extension-hook-events+))
     (is (member

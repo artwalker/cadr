@@ -36,7 +36,7 @@
     (member provider names :test #'string-equal)))
 
 (test model-reference-prefers-usable-providers-over-catalog-order
-  ;; pi@71023aec1 model-resolver.ts resolveModelReference (#10160).
+  ;; pi@4a080252f model-resolver.ts resolveModelReference (#10160).
   (let ((cases
           '((:name "exact id" :text "claude-sonnet-4-5"
              :model "anthropic/claude-sonnet-4-5")

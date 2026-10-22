@@ -324,7 +324,7 @@
             for supports-strict =
               (model-compat-value model :supports-strict-tools nil)
             for prefer-p = (anthropic-preferred-strict-p tool)
-            ;; pi@71023aec1 anthropic-messages.ts #10409. A prefer tool
+            ;; pi@4a080252f anthropic-messages.ts #10409. A prefer tool
             ;; that was sent strict can be retried with its original schema.
             ;; require stays strict.
             for strict =

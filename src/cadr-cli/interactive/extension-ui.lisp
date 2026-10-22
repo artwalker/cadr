@@ -12,7 +12,7 @@
   result)
 
 (defun complete-extension-custom-ui (state result active-state)
-  ;; pi@71023aec1 interactive-mode.ts showExtensionCustom: done() hides
+  ;; pi@4a080252f interactive-mode.ts showExtensionCustom: done() hides
   ;; this overlay's handle. A newer overlay above it stays up, and its
   ;; promise keeps waiting.
   (unless (extension-custom-ui-state-done-p state)

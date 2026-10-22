@@ -110,7 +110,7 @@
       (is (null pastes)))))
 
 (test stdin-buffer-keeps-delayed-terminal-replies-out-of-keyboard-input
-  ;; pi@71023aec1 #10256. A recognized reply stays buffered across
+  ;; pi@4a080252f #10256. A recognized reply stays buffered across
   ;; flushes until its terminator. CAN/SUB and a later escape drop the
   ;; unfinished reply. A short control prefix is still an Alt key, and
   ;; flushing it reparses the batched tail.

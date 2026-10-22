@@ -6,7 +6,7 @@
           #o777))
 
 (test output-file-is-private-and-exclusive
-  ;; pi@71023aec1 output-files.ts: mode #o600 and wx, so a planted symlink
+  ;; pi@4a080252f output-files.ts: mode #o600 and wx, so a planted symlink
   ;; is not followed.
   (let ((path (cadr-cli::write-output-file "cadr-output" ".txt" "secret")))
     (unwind-protect
@@ -89,7 +89,7 @@
         (delete-file path)))))
 
 (test mcp-content-over-the-byte-budget-is-cut-in-the-middle
-  ;; pi@71023aec1 limitMcpContent / truncateMiddle.
+  ;; pi@4a080252f limitMcpContent / truncateMiddle.
   (let ((short
           (list (list :type :text :text "ok")
                 (list :type :image :data "img"))))

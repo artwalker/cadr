@@ -232,7 +232,7 @@
   message)
 
 (defun flush-pending-custom-messages (host)
-  ;; pi@71023aec1 agent-session.ts #8537: context-only custom messages
+  ;; pi@4a080252f agent-session.ts #8537: context-only custom messages
   ;; queued during a run land after the turn's tool results.
   (unless host
     (return-from flush-pending-custom-messages nil))

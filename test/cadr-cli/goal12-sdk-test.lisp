@@ -655,7 +655,7 @@
      (cadr-cli::agent-session-agent session)))))
 
 (test goal12-sdk-tool-modifiers-adjust-default-selection
-  ;; pi@71023aec1 settings-manager.ts applyToolModifiers / sdk.ts +name/-name
+  ;; pi@4a080252f settings-manager.ts applyToolModifiers / sdk.ts +name/-name
   (is (equal
        '("read" "bash" "edit" "write" "grep")
        (cadr-cli::apply-tool-modifiers
@@ -688,7 +688,7 @@
       (cadr-cli::agent-session-dispose session))))
 
 (test goal12-sdk-resume-restores-transcript-active-tools
-  ;; pi@71023aec1 agent-session.ts _restoreToolsFromTranscript / #10785
+  ;; pi@4a080252f agent-session.ts _restoreToolsFromTranscript / #10785
   (with-test-directory (temporary)
     (let* ((directory
              (merge-pathnames "sessions/" temporary))

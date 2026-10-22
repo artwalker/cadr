@@ -444,7 +444,7 @@
    5))
 
 (test transcript-rebuild-drops-fullscreen-selection
-  ;; pi@71023aec1 #10567. Replacing the transcript must drop the
+  ;; pi@4a080252f #10567. Replacing the transcript must drop the
   ;; highlight and the multi-click word. A main-screen renderer has
   ;; no such selection.
   (let* ((terminal

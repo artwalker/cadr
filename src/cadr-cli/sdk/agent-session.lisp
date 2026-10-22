@@ -271,7 +271,7 @@
 
 (defun sdk-resolve-selected-tool-names
     (tools no-tools default-tool-names)
-  ;; pi@71023aec1 sdk.ts selectedToolNames / defaultToolNames
+  ;; pi@4a080252f sdk.ts selectedToolNames / defaultToolNames
   (let* ((defaults
            (if no-tools
                '()
@@ -285,7 +285,7 @@
 
 (defun sdk-explicit-tool-allowlist
     (tools no-tools selected-tool-names)
-  ;; pi@71023aec1 sdk.ts allowedToolNames
+  ;; pi@4a080252f sdk.ts allowedToolNames
   (let ((modifiers (tool-modifiers tools)))
     (if modifiers
         (and (eq no-tools :all) selected-tool-names)
@@ -436,7 +436,7 @@
            (sdk-explicit-tool-allowlist
             tools no-tools selected-tool-names))
          (uses-default-tools-p
-           ;; pi@71023aec1 sdk.ts usesDefaultTools
+           ;; pi@4a080252f sdk.ts usesDefaultTools
            (and (or (null tools) modifiers)
                 (null no-tools)))
          (tool-filter

@@ -1183,7 +1183,7 @@
    :executor executor))
 
 (test nested-execute-tool-records-calls-on-the-parent-result
-  ;; pi@71023aec1 nested-tool-calls.ts. A tool's ctx.executeTool calls
+  ;; pi@4a080252f nested-tool-calls.ts. A tool's ctx.executeTool calls
   ;; are kept on the calling result, not on the nested result.
   (let* ((events nil)
          (inner

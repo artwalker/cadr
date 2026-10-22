@@ -86,7 +86,7 @@
 
 (let ((scanner nil))
   (defun unfinished-ansi-at-end-scanner ()
-    ;; pi@71023aec1 ansi.ts unfinishedAnsiAtEndRegex. An OSC without
+    ;; pi@4a080252f ansi.ts unfinishedAnsiAtEndRegex. An OSC without
     ;; its terminator, or a CSI without its final byte, at the end.
     (or scanner
         (setf scanner
@@ -124,7 +124,7 @@
                  :end-anchor))))))
 
 (defun split-incomplete-ansi-suffix (value)
-  ;; pi@71023aec1 ansi.ts splitIncompleteAnsiSuffix
+  ;; pi@4a080252f ansi.ts splitIncompleteAnsiSuffix
   (unless (and (stringp value)
                (or (find #\Escape value)
                    (find (code-char #x9b) value)))
@@ -646,7 +646,7 @@
        (refresh #'radius-share-refresh)
        (http #'cadr-ai:request-json)
        (destination "auto"))
-  ;; pi@71023aec1 session-share.ts shareSession + sessionShareDestination
+  ;; pi@4a080252f session-share.ts shareSession + sessionShareDestination
   (let* ((destination
            (if (member destination '("auto" "gist" "radius")
                        :test #'string=)

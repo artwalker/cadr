@@ -467,7 +467,7 @@
              (cadr-core:project-config-directory cwd))
             :project-trusted-p project-trusted-p))
          (_use-theme-override
-           ;; Baseline v1.3.0 main.ts: --use-theme applies a runtime
+           ;; Baseline v1.4.0 main.ts: --use-theme applies a runtime
            ;; (non-persisted) settings override for this invocation.
            (when (cli-arguments-use-theme command)
              (settings-override-runtime-value
@@ -483,7 +483,7 @@
             (make-file-auth-storage
              (default-auth-path))))
          (image-normalizer
-           ;; pi@71023aec1 utils/tool-result-images.ts via
+           ;; pi@4a080252f utils/tool-result-images.ts via
            ;; agent-session.ts:517-520.
            (progn
              (setf
@@ -788,7 +788,7 @@
             (settings-default-tools settings-manager)
             +default-coding-tool-names+))
          (cli-uses-default-tools-p
-           ;; pi@71023aec1 sdk.ts usesDefaultTools; --no-tools and
+           ;; pi@4a080252f sdk.ts usesDefaultTools; --no-tools and
            ;; --no-builtin-tools both map to a noTools mode.
            (and
             (or (null cli-tools-option) cli-tool-modifiers)
@@ -822,7 +822,7 @@
                     (cli-tools-option cli-tools-option)
                     (t
                      (append
-                      ;; Baseline v1.3.0 sdk.ts: the defaultTools setting
+                      ;; Baseline v1.4.0 sdk.ts: the defaultTools setting
                       ;; overrides the built-in default selection.
                       cli-default-tool-names
                       (mapcar
@@ -1055,7 +1055,7 @@
            (let ((provider
                    (provider-config-provider config)))
              (or
-              ;; pi@71023aec1 footer.ts:139-141 — Kimi Coding is
+              ;; pi@4a080252f footer.ts:139-141 — Kimi Coding is
               ;; subscription-backed despite API-key authentication.
               (string-equal
                (provider-key
@@ -1358,7 +1358,7 @@
            (refresh-auth provider :logout)
            (values
             provider
-            ;; pi@71023aec1 model-runtime.ts:532 — non-nil when the
+            ;; pi@4a080252f model-runtime.ts:532 — non-nil when the
             ;; credential was removed but the local snapshot did not
             ;; sync.
             (model-registry-error model-registry)))
@@ -1636,7 +1636,7 @@
          (refresh-model-catalogs ()
            ;; Worker side of the selector-open catalog refresh: re-read
            ;; the registry without holding the TUI lock.  Baseline
-           ;; v1.3.0 model-catalog-refresh.ts: a second caller while one
+           ;; v1.4.0 model-catalog-refresh.ts: a second caller while one
            ;; refresh is in flight shares that run's result.
            (sb-thread:with-mutex (catalog-refresh-lock)
              (when catalog-refresh-in-flight-p
@@ -1890,7 +1890,7 @@
               status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
-           ;; v1.3.0: the selector opens even with an empty catalog; the
+           ;; v1.4.0: the selector opens even with an empty catalog; the
            ;; baseline dropped the "No models available" early exit.
            (make-scoped-models-selector-state
             :all-models available-models
@@ -2880,7 +2880,7 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           ;; pi@71023aec1 interactive-mode.ts:611-612 — the CLI flag
+           ;; pi@4a080252f interactive-mode.ts:611-612 — the CLI flag
            ;; wins over the tuiMode setting; default fullscreen.
            (eq :fullscreen
                (or (cli-arguments-tui-mode command)

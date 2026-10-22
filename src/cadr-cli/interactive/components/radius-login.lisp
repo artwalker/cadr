@@ -1,4 +1,4 @@
-;;; pi@71023aec1 radius-login-selector.ts. The selected "Sign in with
+;;; pi@4a080252f radius-login-selector.ts. The selected "Sign in with
 ;;; Radius" label cycles the four logo colors. Mixing is sRGB, then
 ;;; smoothstep between adjacent bands.
 (in-package #:cadr-cli)

@@ -2,7 +2,7 @@
 (in-suite cadr-cli-suite)
 
 (test radius-login-shimmers-the-selected-option
-  ;; pi@71023aec1 radius-login-selector.ts: elapsed 0 sits on the first
+  ;; pi@4a080252f radius-login-selector.ts: elapsed 0 sits on the first
   ;; logo color; one second later the first character has moved 10 cells.
   (let* ((theme (cadr-tui:current-theme))
          (mode (cadr-tui:terminal-theme-color-mode theme)))

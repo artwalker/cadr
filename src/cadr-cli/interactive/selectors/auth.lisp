@@ -63,7 +63,7 @@
          (eq :oauth (oauth-selector-option-auth-type value)))))
 
 (defun login-method-note-radius-frame (state)
-  ;; pi@71023aec1 redraws the shimmer every 50ms while Radius is selected.
+  ;; pi@4a080252f redraws the shimmer every 50ms while Radius is selected.
   (let ((now (get-internal-real-time))
         (last (or (login-method-selector-state-radius-frame state) 0)))
     (when (>= (- now last)

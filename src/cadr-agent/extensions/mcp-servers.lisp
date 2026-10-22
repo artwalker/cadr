@@ -1,6 +1,6 @@
 (in-package #:cadr-agent)
 
-;;; MCP server registrations (pi@71023aec1 mcp-servers.ts).
+;;; MCP server registrations (pi@4a080252f mcp-servers.ts).
 ;;; Core only validates and stores; the extension that handles
 ;;; mcp_servers_change connects them.
 
@@ -36,7 +36,7 @@
   (report-unhandled-mcp-servers host))
 
 (defun report-unhandled-mcp-servers (host)
-  ;; pi@71023aec1 reportUnhandledMcpServers: when nothing handles
+  ;; pi@4a080252f reportUnhandledMcpServers: when nothing handles
   ;; mcp_servers_change, registered servers will never connect.
   (when (extension-host-has-hook-p host :mcp-servers-change)
     (return-from report-unhandled-mcp-servers nil))

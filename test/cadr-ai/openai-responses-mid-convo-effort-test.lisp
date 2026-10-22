@@ -60,7 +60,7 @@
    "reasoning" (cadr-ai::json-object "effort" effort)))
 
 (test openai-mid-convo-keeps-reasoning-effort-and-appends-updates
-  ;; pi@71023aec1 openai-responses-mid-convo-effort.test.ts
+  ;; pi@4a080252f openai-responses-mid-convo-effort.test.ts
   (let* ((model (openai-mid-convo-model))
          (history (list (openai-mid-convo-user "one")))
          (first
@@ -337,7 +337,7 @@
           (cadr-ai:find-model-metadata :openai-codex "gpt-6-astra")))))
 
 (test github-copilot-lists-gpt-6-and-opus-5-5-at-one-million
-  ;; pi@71023aec1 generate-models.ts. Copilot's catalog adds these when
+  ;; pi@4a080252f generate-models.ts. Copilot's catalog adds these when
   ;; models.dev omits them, and the extended-context ids are 1_000_000.
   (dolist (case
            '(("gpt-6-sol" :openai-responses

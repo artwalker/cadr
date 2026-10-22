@@ -227,7 +227,7 @@
           (code-char 7)))
 
 (test terminal-color-query-assembles-foreground-and-palette
-  ;; pi@71023aec1 parseOscColorResponse / consumeTerminalColorResponse.
+  ;; pi@4a080252f parseOscColorResponse / consumeTerminalColorResponse.
   (multiple-value-bind (target rgb matched-p)
       (cadr-tui:parse-osc-color-response
        (osc-color-reply :foreground "#112233"))

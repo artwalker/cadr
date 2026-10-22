@@ -27,7 +27,7 @@
    :stop-reason :tool-use))
 
 (test anthropic-error-tool-images-follow-the-turn
-  ;; pi@71023aec1 anthropic-messages.ts #10794.
+  ;; pi@4a080252f anthropic-messages.ts #10794.
   (let* ((model
            (cadr-ai:make-model
             :id "claude-test"

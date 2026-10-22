@@ -62,7 +62,7 @@
           '(:direct :model-only)))
 
 (defun active-hidden-tool-names (agent)
-  ;; pi@71023aec1 #10343. Hidden tools stay callable through another
+  ;; pi@4a080252f #10343. Hidden tools stay callable through another
   ;; tool, so the prompt still knows they exist, but they are not
   ;; declared to the model.
   (let ((host (agent-extension-host agent))
@@ -87,7 +87,7 @@
                 host
                 (extension-host-active-tools-overridden-p
                  host))
-               ;; pi@71023aec1: setActiveTools / resume restore pick
+               ;; pi@4a080252f: setActiveTools / resume restore pick
                ;; from the full registry, not the defaultTools filter.
                ;; Intersecting with the filter dropped transcript tools
                ;; like grep that are builtin but outside the defaults.
@@ -186,7 +186,7 @@
                  (agent-tool-registry agent))))))
         (when initial
           ;; Persist the seeded toolsAdded declaration so resume can
-          ;; restore the active loadout (pi@71023aec1 #10785). Agent
+          ;; restore the active loadout (pi@4a080252f #10785). Agent
           ;; messages alone are not enough: declare-tool-changes treats
           ;; in-memory tools as already declared and skips the session.
           (when (agent-session agent)
@@ -302,7 +302,7 @@
                      effective-call
                      (or reason "Tool execution was blocked")
                      appended-messages)))
-              ;; pi@71023aec1 agent-loop.ts:637-640 — a before-hook
+              ;; pi@4a080252f agent-loop.ts:637-640 — a before-hook
               ;; terminate on a blocked call marks the result so the
               ;; batch termination rule can stop the agent.
               (when (and terminate-supplied-p

@@ -2,7 +2,7 @@
 (in-suite cadr-cli-suite)
 
 (test pi-logo-follows-color-mode-and-apple-fallback
-  ;; pi@71023aec1 pi-logo.ts. Capable terminals get the half-block mark.
+  ;; pi@4a080252f pi-logo.ts. Capable terminals get the half-block mark.
   ;; Apple Terminal gets the colored wordmark instead.
   (let* ((theme (cadr-tui:current-theme))
          (mode (cadr-tui:terminal-theme-color-mode theme)))

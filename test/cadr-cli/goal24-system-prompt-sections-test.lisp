@@ -70,7 +70,7 @@ Implementation allowed.
        :sections '(("preamble" . "x"))))))
 
 (test hidden-tools-leave-the-prompt-list-rules-and-reader-name
-  ;; pi@71023aec1 #10343. Declared tools are the selected tools minus
+  ;; pi@4a080252f #10343. Declared tools are the selected tools minus
   ;; hidden ones. Skills stay when the reader is only hidden, and the
   ;; hint names no tool. A hidden name is not put back on the registry.
   (let* ((skill

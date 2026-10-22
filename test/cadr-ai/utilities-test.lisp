@@ -25,7 +25,7 @@ second" (cadr-ai:content-text content)))
 
 (test token-estimation-counts-javascript-utf16-code-units
   ;; JavaScript length counts non-BMP characters as two UTF-16 code units.
-  ;; pi@71023aec1 divides those units by 3.5.
+  ;; pi@4a080252f divides those units by 3.5.
   (is (= 2 (cadr-ai:estimate-text-tokens "abc🙂")))
   (is (= 2 (cadr-ai::estimate-content-tokens "abc🙂")))
   (is (= 2
@@ -88,7 +88,7 @@ second" (cadr-ai:content-text content)))
            (nreverse events))))))
 
 (test assistant-retry-matches-v130-transient-and-limit-wording
-  ;; pi@71023aec1 packages/ai/src/utils/retry.ts
+  ;; pi@4a080252f packages/ai/src/utils/retry.ts
   ;; #10965, #10920, #10379, #9627. A 429 that names the ChatGPT
   ;; subscription limit stays terminal.
   (dolist
@@ -129,7 +129,7 @@ second" (cadr-ai:content-text content)))
       (utility-error-message text)))))
 
 (test context-token-estimation-rejects-usage-older-than-a-prefix-message
-  ;; pi@71023aec1 packages/ai/src/utils/estimate.ts:63-84 treats a newer
+  ;; pi@4a080252f packages/ai/src/utils/estimate.ts:63-84 treats a newer
   ;; prefix message (for example, a compaction summary) as invalidating usage
   ;; reported by an older assistant response.
   (let* ((old

@@ -21,7 +21,7 @@
 
 (defun apply-codex-header-overrides
     (headers model caller-headers token account-id)
-  ;; pi@71023aec1 #10429. Defaults go on first. Model headers, then
+  ;; pi@4a080252f #10429. Defaults go on first. Model headers, then
   ;; caller headers, replace them. A null caller value removes the
   ;; name. Authorization and the account id are written last.
   (let ((locked

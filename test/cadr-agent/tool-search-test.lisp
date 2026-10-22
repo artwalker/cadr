@@ -26,7 +26,7 @@
           (cadr-agent:tool-search-rank query documents limit)))
 
 (test tool-search-tokenizes-and-ranks-like-the-pin
-  ;; pi@71023aec1 extensions/tool-search/tool.ts tokenize and Bm25Ranker.
+  ;; pi@4a080252f extensions/tool-search/tool.ts tokenize and Bm25Ranker.
   (is (equal (cadr-agent:tool-search-tokenize
               "listIssues for the GitHub_repo")
              '("list" "issue" "git" "hub" "repo")))
@@ -78,7 +78,7 @@
     (is (plusp (cadr-agent:tool-search-match-score (first matches))))))
 
 (test tool-search-loads-deferred-tools-for-the-next-call
-  ;; pi@71023aec1 searchAndLoad: deferred and codemode tools stay out of
+  ;; pi@4a080252f searchAndLoad: deferred and codemode tools stay out of
   ;; the declaration until tool_search activates them.
   (let* ((schema (tool-search-object (make-hash-table :test #'equal)))
          (bundle

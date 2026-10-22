@@ -1,4 +1,4 @@
-;;; pi@71023aec1 utils/output-files.ts. Truncated tool output can contain
+;;; pi@4a080252f utils/output-files.ts. Truncated tool output can contain
 ;;; private data, so the file is created mode #o600 and O_EXCL. O_EXCL fails
 ;;; when the name already exists, including when that name is a symlink.
 (in-package #:cadr-cli)
@@ -102,7 +102,7 @@
    :external-format :utf-8))
 
 (defun truncate-mcp-middle (content max-bytes)
-  ;; pi@71023aec1 truncateMiddle: keep half the byte budget at each end and
+  ;; pi@4a080252f truncateMiddle: keep half the byte budget at each end and
   ;; mark the omitted code points. Cuts only on UTF-8 character boundaries.
   (let* ((octets (cadr-ai::utf8-octets content))
          (total (length octets))
@@ -135,7 +135,7 @@
 (defun limit-mcp-content
     (blocks &key (max-bytes (* 20 1024))
                  (save-output #'write-mcp-output-file))
-  ;; pi@71023aec1 limitMcpContent: text over the byte budget becomes one
+  ;; pi@4a080252f limitMcpContent: text over the byte budget becomes one
   ;; warning block plus the saved original. Image blocks stay after it.
   (let ((combined (mcp-content-text blocks)))
     (multiple-value-bind (text truncated removed total lines)

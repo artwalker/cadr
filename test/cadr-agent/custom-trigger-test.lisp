@@ -35,7 +35,7 @@
     agent))
 
 (test custom-trigger-turn-keeps-the-custom-message
-  ;; pi@71023aec1 #10739. Idle triggerTurn reports the custom message
+  ;; pi@4a080252f #10739. Idle triggerTurn reports the custom message
   ;; and does not also send that text as a user prompt.
   (let ((seen nil)
         (busy-during-hook nil)

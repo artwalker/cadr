@@ -482,7 +482,7 @@
     (is (= 256 (hash-table-count by-id)))))
 
 (test compaction-checkpoint-keeps-folded-system-message
-  ;; pi@71023aec1 session-manager.ts appendCompaction /
+  ;; pi@4a080252f session-manager.ts appendCompaction /
   ;; sessionEntryToContextMessages. Entries before firstKeptEntryId
   ;; leave the projection, so the folded system message is stored on
   ;; the compaction entry and leads the context after the cut.

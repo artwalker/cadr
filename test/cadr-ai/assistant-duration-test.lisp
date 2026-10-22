@@ -12,7 +12,7 @@
    :duration-ms duration-ms))
 
 (test assistant-stream-times-only-a-message-from-this-stream
-  ;; pi@71023aec1 event-stream.ts AssistantMessageEventStream.#time
+  ;; pi@4a080252f event-stream.ts AssistantMessageEventStream.#time
   (let ((cadr-ai::*assistant-stream-started-wall* 1000)
         (cadr-ai::*assistant-stream-started-mono*
           (get-internal-real-time))

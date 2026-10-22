@@ -123,7 +123,7 @@
             (list :messages after-context)))
          (final-messages
            (or (getf system-result :messages) after-context))
-         ;; pi@71023aec1 agent-loop.ts:295 converts agent-level
+         ;; pi@4a080252f agent-loop.ts:295 converts agent-level
          ;; messages to LLM messages when building the provider
          ;; context (config.convertToLlm).  Without the conversion,
          ;; bash-execution/custom/branch-summary/compaction-summary
@@ -162,7 +162,7 @@
                (agent-aborted-p agent)))
            (message
              (if (agent-aborted-p agent)
-                 ;; pi@71023aec1 — an abort already pending when the
+                 ;; pi@4a080252f — an abort already pending when the
                  ;; turn reaches the provider call (the escape-during-
                  ;; tool-execution case) ends the turn with the
                  ;; AbortError text and never invokes the provider;
@@ -209,7 +209,7 @@
                    ;; abort-p is a keyword on the stream call, not a
                    ;; one-field plist built to be read back (TS
                    ;; object-literal leftover).
-                   ;; pi@71023aec1 prepareRequest routes a virtual
+                   ;; pi@4a080252f prepareRequest routes a virtual
                    ;; model for this request only. The selection stays
                    ;; on the agent.
                    (multiple-value-bind

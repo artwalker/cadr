@@ -713,7 +713,7 @@
                     "[compaction: 42k tokens]")))
                (goal13-note-semantic-probe
                 seen (first probe) (second probe) (third probe))))
-           ;; v1.3.0 search highlight tokens style the alt-screen find bar.
+           ;; v1.4.0 search highlight tokens style the alt-screen find bar.
            (goal13-note-semantic-probe
             seen :search-match-bg
             (cadr-tui::style-search-match-text "find" nil)
@@ -1107,7 +1107,7 @@
             "Obsolete ledger count remains: ~A" obsolete)))
     (is
      (search
-      "GOAL13_PRESENTATION_LEDGER baseline=71023aec1546d6d677a65669c5665c0927ce0dd0 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
+      "GOAL13_PRESENTATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
       presentation))
     (is
      (search
@@ -1343,7 +1343,7 @@
    "/tmp"))
 
 (test read-line-range-accepts-numeric-strings-and-drops-malformed-bounds
-  ;; pi@71023aec1 formatReadLineRange.
+  ;; pi@4a080252f formatReadLineRange.
   (is (string= "a.txt:2-4" (goal13-read-summary 2 3)))
   (is (string= "a.txt:2-4" (goal13-read-summary "2" "3")))
   (is (string= "a.txt:8-9" (goal13-read-summary "  8 " "2")))
@@ -1363,7 +1363,7 @@
   (is (string= "a.txt:1-13" (goal13-read-summary 'null "13"))))
 
 (test session-tree-uses-the-shared-read-line-range
-  ;; pi@71023aec1 #10938. String bounds are numbers, not concatenation.
+  ;; pi@4a080252f #10938. String bounds are numbers, not concatenation.
   ;; JSON null is an omitted argument. A bad bound drops the range.
   (labels ((label (offset limit)
              (cadr-cli::tree-selector-format-tool-call

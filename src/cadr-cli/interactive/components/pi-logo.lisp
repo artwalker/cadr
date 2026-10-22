@@ -1,4 +1,4 @@
-;;; pi@71023aec1 components/pi-logo.ts. The half-block mark keeps the pin's
+;;; pi@4a080252f components/pi-logo.ts. The half-block mark keeps the pin's
 ;;; coral, blue, and yellow. The text fallback spells cadr, in the same
 ;;; coral-then-yellow split the pin uses for "Pi".
 (in-package #:cadr-cli)

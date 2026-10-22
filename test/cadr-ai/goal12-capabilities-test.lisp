@@ -32,7 +32,7 @@
           (cadr-ai:parse-streaming-json "not-json")))))
 
 (test finished-tool-arguments-keep-invalid-unicode-and-reject-partial-json
-  ;; pi@71023aec1 json-parse.ts (#10868, #10897).
+  ;; pi@4a080252f json-parse.ts (#10868, #10897).
   (let ((parsed
           (cadr-ai:parse-streaming-json
            "{\"path\":\"a.tex\",\"content\":\"\\usepackage{x}\",\"mode\":\"w\"}")))

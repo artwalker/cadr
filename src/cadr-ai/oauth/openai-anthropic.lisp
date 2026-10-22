@@ -315,7 +315,7 @@
        (open-browser *oauth-browser-open-function*)
        auth-url-function
        auth-prompt-function)
-  ;; pi@71023aec1 #10571. Bind the callback before the authorize URL
+  ;; pi@4a080252f #10571. Bind the callback before the authorize URL
   ;; so the URL, the paste placeholder, and the token exchange share
   ;; the port that actually listened.
   (let* ((socket (open-anthropic-oauth-callback-socket))

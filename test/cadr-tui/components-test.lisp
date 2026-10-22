@@ -150,7 +150,7 @@
     (is (search "Took 59.9s" (screen "bash" 0d0 59.94d0)))))
 
 (test recorded-tool-duration-replaces-the-wall-clock
-  ;; pi@71023aec1 render-utils.ts toolTimerText. A stored duration
+  ;; pi@4a080252f render-utils.ts toolTimerText. A stored duration
   ;; wins over the renderer's clock, including after a reload that
   ;; has no start time.
   (let ((recorded
@@ -364,7 +364,7 @@
     (is (search
          (format nil "~C[1m" #\Escape)
          (format nil "~{~A~^~%~}" lines)))
-    ;; pi@71023aec1 packages/tui/src/components/markdown.ts:807-851
+    ;; pi@4a080252f packages/tui/src/components/markdown.ts:807-851
     ;; emits table borders as literal box glyphs.  Only inline cell content
     ;; and the header receive theme styling.
     (is (char= #\┌ (char (first lines) 0)))
@@ -1111,7 +1111,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-autocomplete-unselected-description-owns-the-column-gap
-  ;; Fixed pi@71023aec1 select-list.ts:139-171 keeps the unselected prefix
+  ;; Fixed pi@4a080252f select-list.ts:139-171 keeps the unselected prefix
   ;; and primary label plain, then starts the dim description span at the
   ;; entire inter-column gap.  This locks the span boundary independently of
   ;; a terminal screen diff.

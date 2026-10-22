@@ -42,18 +42,18 @@
     (cadr-agent:make-tool-search-tool))))
 
 (defun tool-modifier-p (entry)
-  ;; pi@71023aec1 settings-manager.ts isToolModifier
+  ;; pi@4a080252f settings-manager.ts isToolModifier
   (and (stringp entry)
        (plusp (length entry))
        (or (char= (char entry 0) #\+)
            (char= (char entry 0) #\-))))
 
 (defun tool-modifiers (tools)
-  ;; pi@71023aec1 sdk.ts: tools?.some(isToolModifier) ? tools : undefined
+  ;; pi@4a080252f sdk.ts: tools?.some(isToolModifier) ? tools : undefined
   (and tools (find-if #'tool-modifier-p tools) tools))
 
 (defun tool-list-error (entries)
-  ;; pi@71023aec1 settings-manager.ts getToolListError
+  ;; pi@4a080252f settings-manager.ts getToolListError
   (let ((modifiers
           (remove-if-not #'tool-modifier-p entries)))
     (cond
@@ -72,7 +72,7 @@
       (t nil))))
 
 (defun apply-tool-modifiers (base entries)
-  ;; pi@71023aec1 settings-manager.ts applyToolModifiers
+  ;; pi@4a080252f settings-manager.ts applyToolModifiers
   (let ((tools (copy-list base)))
     (dolist (entry entries tools)
       (when (tool-modifier-p entry)
@@ -91,7 +91,7 @@
                     (subseq tools (1+ index)))))))))))
 
 (defun resolve-default-tools (entries)
-  ;; pi@71023aec1 settings-manager.ts resolveDefaultTools
+  ;; pi@4a080252f settings-manager.ts resolveDefaultTools
   (let ((plain (remove-if #'tool-modifier-p entries)))
     (apply-tool-modifiers
      (if (or plain (null entries))
@@ -101,7 +101,7 @@
 
 (defun restore-active-tools-from-transcript
     (agent &key (modifiers '()) exclude-tools)
-  ;; pi@71023aec1 agent-session.ts _restoreToolsFromTranscript
+  ;; pi@4a080252f agent-session.ts _restoreToolsFromTranscript
   (let ((system
           (cadr-ai:get-current-system-message
            (cadr-agent:agent-messages agent))))

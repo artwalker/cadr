@@ -123,7 +123,7 @@
     (is (string= normalized-id
                  (cadr-ai::json-get function-response "id")))
     (is (null (cadr-ai::json-get function-part "thoughtSignature")))
-    ;; pi@71023aec1 #10995 / #11000 — foreign thinking is dropped, not
+    ;; pi@4a080252f #10995 / #11000 — foreign thinking is dropped, not
     ;; sent as plain text. Visible text and the tool call remain.
     (is (string= "Calling now."
                  (cadr-ai::json-get (aref assistant-parts 0) "text")))
@@ -134,7 +134,7 @@
          (aref assistant-parts 1) "functionCall"))))
 
 (test cross-model-thinking-is-dropped-not-sent-as-text
-  ;; pi@71023aec1 transform-messages-cross-model-thinking.test.ts / #11000
+  ;; pi@4a080252f transform-messages-cross-model-thinking.test.ts / #11000
   (let* ((normalize (lambda (id &rest _) (declare (ignore _)) id))
          (target
            (make-model

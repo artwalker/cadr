@@ -623,7 +623,7 @@
                                   (assistant-text-content
                                    last))
                                (format output "~A~%" text))
-                             ;; pi@71023aec1 print-mode.ts #10799. Partial
+                             ;; pi@4a080252f print-mode.ts #10799. Partial
                              ;; text still prints; length is a failed run.
                              (when
                                  (eq

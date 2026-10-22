@@ -63,7 +63,7 @@
                    :type hash-table)
   (event-lock (sb-thread:make-mutex
                :name "cadr-extension-events"))
-  ;; pi@71023aec1 McpServerRegistry: servers registered via
+  ;; pi@4a080252f McpServerRegistry: servers registered via
   ;; registerMcpServer; change listener emits mcp_servers_change.
   (mcp-servers (make-hash-table :test #'equal)
                :type hash-table)
@@ -400,7 +400,7 @@
              (funcall function method arguments)))))
 
 (defun call-with-extension-ui-prompt (host kind title thunk)
-  ;; pi@71023aec1 extensions/runner.ts withUIPrompt: nest prompts, emit
+  ;; pi@4a080252f extensions/runner.ts withUIPrompt: nest prompts, emit
   ;; ui_prompt_start/end only on the outermost wait.
   (let ((outer-p
           (zerop (extension-host-ui-prompt-depth host))))

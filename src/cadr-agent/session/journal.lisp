@@ -400,7 +400,7 @@
     :message message)))
 
 (defun compaction-checkpoint-system-message (session timestamp)
-  ;; pi@71023aec1 session-manager.ts appendCompaction. The kept path
+  ;; pi@4a080252f session-manager.ts appendCompaction. The kept path
   ;; drops system messages before firstKeptEntryId, so the folded
   ;; prompt and tools are stored on the compaction entry. The
   ;; checkpoint timestamp is the compaction entry's, not the first
@@ -420,7 +420,7 @@
     (session-failure
      (session-path session) nil
      "Compaction summary must be a string"))
-  ;; pi@71023aec1 session-manager.ts appendCompaction — a null keep
+  ;; pi@4a080252f session-manager.ts appendCompaction — a null keep
   ;; boundary stores this compaction entry's own id.
   (let ((id (make-session-entry-id (session-by-id session))))
     (cond

@@ -35,7 +35,7 @@
           "device code copy must not use the retired status-line phrasing"))))
 
 (test goal17-login-dialog-auth-url-copies-on-message-copy
-  ;; pi@71023aec1 auth-url.ts + login-dialog.ts: showAuth offers the
+  ;; pi@4a080252f auth-url.ts + login-dialog.ts: showAuth offers the
   ;; platform click hint and app.message.copy, then replaces the suffix.
   (let ((plain
           (mapcar #'cadr-tui::strip-ansi

@@ -321,7 +321,7 @@
     (if (member value '(60 80 120)) value 60)))
 
 (defun settings-clear-on-shrink-p (manager)
-  ;; pi@71023aec1 settings-manager.ts:1093-1099 gives an explicit setting
+  ;; pi@4a080252f settings-manager.ts:1093-1099 gives an explicit setting
   ;; precedence over the environment and defaults to false.
   (settings-boolean-value
    manager "terminal"
@@ -345,7 +345,7 @@
         default)))
 
 (defun settings-tui-mode (manager)
-  ;; pi@71023aec1 settings-manager.ts:1256-1257 — only the exact string
+  ;; pi@4a080252f settings-manager.ts:1256-1257 — only the exact string
   ;; "regular" selects regular; everything else (including unset) is
   ;; SETTINGS_DEFAULTS.tuiMode, which is fullscreen since v1.0.0.
   (if (string= (settings-value manager "tuiMode" "") "regular")
@@ -353,7 +353,7 @@
       :fullscreen))
 
 (defun parse-default-tools-setting (value)
-  ;; pi@71023aec1 settings-manager.ts getDefaultTools / resolveDefaultTools:
+  ;; pi@4a080252f settings-manager.ts getDefaultTools / resolveDefaultTools:
   ;; a string array resolves plain names and +name/-name overlays; else absent.
   (and (vectorp value)
        (every #'stringp value)
@@ -364,33 +364,33 @@
    (settings-value manager "defaultTools")))
 
 (defun settings-fullscreen-scrollbar (manager)
-  ;; pi@71023aec1 settings-manager.ts:1138-1141 — "always"/"hidden" pass
+  ;; pi@4a080252f settings-manager.ts:1138-1141 — "always"/"hidden" pass
   ;; through; everything else falls back to "auto".  No effect in
   ;; regular TUI mode.
   (settings-choice-value
    manager "fullscreenScrollbar" '("auto" "always" "hidden") "auto"))
 
 (defun settings-session-share-destination (manager)
-  ;; pi@71023aec1 settings-manager.ts getSessionShareDestination
+  ;; pi@4a080252f settings-manager.ts getSessionShareDestination
   (settings-choice-value
    manager "sessionShareDestination"
    '("auto" "gist" "radius") "auto"))
 
 (defun settings-fullscreen-exit-output (manager)
-  ;; Baseline v1.3.0 settings-manager.ts getFullscreenExitOutput.
+  ;; Baseline v1.4.0 settings-manager.ts getFullscreenExitOutput.
   (if (string= (settings-value manager "fullscreenExitOutput" "")
                "resume-hint")
       :resume-hint
       :transcript))
 
 (defun settings-fullscreen-copy-on-select-p (manager)
-  ;; pi@71023aec1 settings-manager.ts getFullscreenCopyOnSelect: default true.
+  ;; pi@4a080252f settings-manager.ts getFullscreenCopyOnSelect: default true.
   (let ((value
           (settings-value manager "fullscreenCopyOnSelect" t)))
     (not (eq value nil))))
 
 (defun settings-fullscreen-wheel-scroll-lines (manager)
-  ;; pi@71023aec1 settings-manager.ts getFullscreenWheelScrollLines (#9758).
+  ;; pi@4a080252f settings-manager.ts getFullscreenWheelScrollLines (#9758).
   (let ((value
           (settings-value
            manager "fullscreenWheelScrollLines" "auto")))
@@ -412,7 +412,7 @@
       (t :auto))))
 
 (defun settings-terminal-capability-overrides (manager)
-  ;; pi@71023aec1 settings-manager.ts getTerminalCapabilityOverrides.
+  ;; pi@4a080252f settings-manager.ts getTerminalCapabilityOverrides.
   (let ((terminal
           (settings-value manager "terminal"))
         (overrides nil))
@@ -442,7 +442,7 @@
     overrides))
 
 (defun settings-mermaid-rendering-mode (manager)
-  ;; pi@71023aec1 settings-manager.ts:1252-1255 — markdown.mermaid is
+  ;; pi@4a080252f settings-manager.ts:1252-1255 — markdown.mermaid is
   ;; nested; "off"/"final" pass through, anything else is "streaming".
   (let ((mode
           (settings-nested-value
@@ -893,7 +893,7 @@
               settings-manager
               "hideThinkingBlock" nil)
             :values (list t nil))
-           ;; pi@71023aec1 settings-selector.ts:539-546
+           ;; pi@4a080252f settings-selector.ts:539-546
            (make-settings-option
             :id "mermaid-rendering"
             :label "Mermaid diagrams"
@@ -1041,7 +1041,7 @@
                (model-thinking-overrides-summary
                 settings-manager))
              :submenu :model-thinking)
-           ;; pi@71023aec1 settings-selector.ts:634-646
+           ;; pi@4a080252f settings-selector.ts:634-646
            (make-settings-option
             :id "tui-mode"
             :label "TUI mode"
@@ -1201,7 +1201,7 @@
            "markdown" "mermaid" value
            :scope :global))
          ((string= id "tui-mode")
-          ;; pi@71023aec1 interactive-mode.ts:4557-4567: switch the
+          ;; pi@4a080252f interactive-mode.ts:4557-4567: switch the
           ;; running renderer first, persist only on success.
           (if *tui-mode-switch-hook*
               (when (funcall *tui-mode-switch-hook* value)

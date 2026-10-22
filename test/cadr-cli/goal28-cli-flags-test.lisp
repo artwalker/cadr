@@ -95,7 +95,7 @@
     (is (cadr-cli::cli-arguments-no-mcp-p arguments))))
 
 (test goal28-no-mcp-disables-builtin-mcp-factory
-  ;; pi@71023aec1 main.ts disabledBuiltinExtensions: ["mcp"]
+  ;; pi@4a080252f main.ts disabledBuiltinExtensions: ["mcp"]
   (with-test-directory (temporary)
     (let* ((mcp-factory
              (list :name "mcp" :factory (lambda (&rest _) nil) :hidden-p t))

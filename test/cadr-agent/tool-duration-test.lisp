@@ -18,7 +18,7 @@
    :arguments (make-hash-table :test #'equal)))
 
 (test executed-tool-records-duration-ms
-  ;; pi@71023aec1 agent-loop.ts executePreparedToolCall. The clock
+  ;; pi@4a080252f agent-loop.ts executePreparedToolCall. The clock
   ;; covers execute only. A thrown execute still carries that time.
   (let* ((outcome
            (cadr-agent::execute-prepared-tool

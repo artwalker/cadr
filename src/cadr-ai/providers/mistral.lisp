@@ -1,7 +1,7 @@
 (in-package #:cadr-ai)
 
 (defun mistral-header-timeout-ms (timeout-ms)
-  ;; pi@71023aec1 mistral-conversations.ts. Headers wait at most this
+  ;; pi@4a080252f mistral-conversations.ts. Headers wait at most this
   ;; long. The body is not on the same clock.
   (if (and (integerp timeout-ms) (>= timeout-ms 0))
       timeout-ms
@@ -109,7 +109,7 @@
      :provider :mistral)))
 
 (defun apply-mistral-finish-reason (message reason)
-  ;; pi@71023aec1 mistral-conversations.ts mapChatStopReason. #10487
+  ;; pi@4a080252f mistral-conversations.ts mapChatStopReason. #10487
   ;; puts "server error" in the error finish so the retry classifier
   ;; treats a transient Mistral stop as retryable.
   (cond

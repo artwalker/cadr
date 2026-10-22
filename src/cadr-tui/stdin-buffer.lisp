@@ -112,7 +112,7 @@
          (return-from kitty-graphics-reply-header-p nil))))))
 
 (defun terminal-reply-header-p (text)
-  ;; pi@71023aec1 stdin-buffer.ts. OSC 10/11, palette 4, program
+  ;; pi@4a080252f stdin-buffer.ts. OSC 10/11, palette 4, program
   ;; status 7501, XTVERSION, and Kitty graphics replies. A shorter
   ;; prefix can still be a batched legacy Alt key.
   (unless (control-string-introducer-p text)
@@ -322,7 +322,7 @@
     (values sequences pastes events)))
 
 (defun stdin-buffer-flush (buffer)
-  ;; pi@71023aec1 #10256. A recognized reply waits for its terminator.
+  ;; pi@4a080252f #10256. A recognized reply waits for its terminator.
   ;; A longer control string that never became one is a legacy Alt key
   ;; plus the keys that were batched behind it.
   (let ((text (stdin-buffer-buffer buffer)))

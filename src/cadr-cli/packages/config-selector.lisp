@@ -138,7 +138,7 @@
       (namestring (user-homedir-pathname))))
 
 (defun config-expand-pattern-tilde (value)
-  ;; pi@71023aec1 normalizePath. Only a leading ~ or ~/ is home.
+  ;; pi@4a080252f normalizePath. Only a leading ~ or ~/ is home.
   ;; String pasting keeps * and ? for the glob that follows.
   (let ((home (string-right-trim "/\\" (config-pattern-home))))
     (cond

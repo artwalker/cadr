@@ -1050,7 +1050,7 @@
         :eof)))
 
 (test mistral-timeout-covers-response-headers-only
-  ;; pi@71023aec1 #10609
+  ;; pi@4a080252f #10609
   (is (= 60000 (cadr-ai::mistral-header-timeout-ms nil)))
   (is (= 30 (cadr-ai::mistral-header-timeout-ms 30)))
   (multiple-value-bind (provider model)
@@ -1091,7 +1091,7 @@
       (is (string= "ok" (first-text message))))))
 
 (test mistral-finish-reason-error-is-a-retryable-server-error
-  ;; pi@71023aec1 #10487
+  ;; pi@4a080252f #10487
   (multiple-value-bind (provider model)
       (provider-case :mistral)
     (flet ((finish (reason)

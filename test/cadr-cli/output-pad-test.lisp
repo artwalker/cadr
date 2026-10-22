@@ -30,7 +30,7 @@
                zero))))
 
 (test output-pad-applies-to-transcript-blocks
-  ;; pi@71023aec1 #10557. Bash, tools, an edit error, and a compaction
+  ;; pi@4a080252f #10557. Bash, tools, an edit error, and a compaction
   ;; summary take the transcript pad. 0 has no leading space. 1 adds one.
   (cadr-tui:set-current-theme :dark)
   (let ((entries

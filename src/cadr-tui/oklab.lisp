@@ -1,6 +1,6 @@
 (in-package #:cadr-tui)
 
-;; pi@71023aec1 packages/tui/src/oklab.ts and the color parsing in colors.ts.
+;; pi@4a080252f packages/tui/src/oklab.ts and the color parsing in colors.ts.
 ;; Oklab and OKHSL follow Bjorn Ottosson's reference implementation.
 
 (defparameter +linear-srgb-to-lms+

@@ -147,7 +147,7 @@
 
 (defun login-dialog-copy-auth-url
     (state &key (copy-function *auth-url-copy-function*))
-  ;; pi@71023aec1 login-dialog.ts: app.message.copy copies the sign-in URL.
+  ;; pi@4a080252f login-dialog.ts: app.message.copy copies the sign-in URL.
   (let ((section (login-dialog-auth-url-section state)))
     (unless section
       (return-from login-dialog-copy-auth-url nil))

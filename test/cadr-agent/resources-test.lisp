@@ -285,7 +285,7 @@
            (cadr-ai:user-message-content plain-message))))))
 
 (test empty-quoted-prompt-arguments-keep-their-position
-  ;; pi@71023aec1 prompt-templates.ts parseCommandArgs (#10867).
+  ;; pi@4a080252f prompt-templates.ts parseCommandArgs (#10867).
   (is (equal
        '("" " ")
        (cadr-agent::parse-command-args "\"\" \" \"")))

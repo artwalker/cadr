@@ -22,7 +22,7 @@
 
 (defun model-registry-sort-predicate (left right)
   ;; One owner for /model and --list-models order
-  ;; (pi@71023aec1 model registry provider then id).
+  ;; (pi@4a080252f model registry provider then id).
   (let ((left-provider
           (provider-key (cadr-ai:model-provider left)))
         (right-provider
@@ -434,7 +434,7 @@
 
 (defun model-registry-find
     (registry provider model)
-  ;; pi@71023aec1 withVirtualModels. A registered virtual model hides
+  ;; pi@4a080252f withVirtualModels. A registered virtual model hides
   ;; a physical chat model with the same id.
   (or (cadr-agent:registered-virtual-model provider model)
       (model-registry-find-physical registry provider model)))

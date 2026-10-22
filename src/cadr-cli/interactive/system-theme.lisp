@@ -1,6 +1,6 @@
 (in-package #:cadr-cli)
 
-;; pi@71023aec1 system-theme.ts. Colors come from the terminal palette and
+;; pi@4a080252f system-theme.ts. Colors come from the terminal palette and
 ;; background. With no background, tokens are ANSI indexes and faint neutrals.
 
 (defparameter +system-families+

@@ -30,7 +30,7 @@ class ToolResultDiffGateTest(unittest.TestCase):
         manifest = TOOL_DIFF.load_manifest(self.manifest_path)
         self.assertEqual(
             manifest["baselineCommit"],
-            "71023aec1546d6d677a65669c5665c0927ce0dd0",
+            "4a080252f06caf63a525d7873c5d94d3c23887e0",
         )
         self.assertEqual(
             manifest["builtinTools"],

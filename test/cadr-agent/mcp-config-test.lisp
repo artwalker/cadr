@@ -26,7 +26,7 @@
           (cadr-agent:loaded-mcp-config-servers loaded)))
 
 (test mcp-config-merges-validates-and-resolves-exposure
-  ;; pi@71023aec1 extensions/mcp/config.ts loadMcpConfig.
+  ;; pi@4a080252f extensions/mcp/config.ts loadMcpConfig.
   (let* ((root (mcp-config-root))
          (agent (merge-pathnames "agent/" root))
          (cwd (merge-pathnames "project/" root)))
@@ -281,7 +281,7 @@
               (subseq name (- (length name) 8)))))
 
 (test mcp-tool-names-and-servers-section
-  ;; pi@71023aec1 createMcpToolName and renderServersSection.
+  ;; pi@4a080252f createMcpToolName and renderServersSection.
   (is (string= "mcp__docs__search"
                (cadr-agent:create-mcp-tool-name "docs" "search")))
   (is (string= "mcp__my_server__get_item_v2"

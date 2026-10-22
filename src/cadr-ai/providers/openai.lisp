@@ -81,7 +81,7 @@
         (values signature nil))))
 
 ;; Fixed reasoning.effort while configuration_update items carry the
-;; thinking level (pi@71023aec1 openai-responses.ts).
+;; thinking level (pi@4a080252f openai-responses.ts).
 (defparameter +configuration-update-request-effort+ "medium")
 
 (defun openai-chatgpt-sign-in-p (model api-key)
@@ -235,7 +235,7 @@
                         (json-put item "namespace" namespace)))
                     (push item output))))))
            (when output
-             ;; pi@71023aec1: configuration_update before each same-model
+             ;; pi@4a080252f: configuration_update before each same-model
              ;; reply that recorded providerThinkingLevel, so earlier
              ;; input never changes when the level changes.
              (when (and configuration-update-effort
