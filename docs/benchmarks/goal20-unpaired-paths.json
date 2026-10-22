@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 317,
-    "lines": 153004
+    "files": 319,
+    "lines": 155897
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -1326,6 +1326,16 @@
       "prefix": "src/cadr-ai/support/transcript.lisp",
       "class": "needs-pair",
       "hole": "ai_transcript_replay"
+    },
+    {
+      "prefix": "src/cadr-ai/classifiers.lisp",
+      "class": "needs-pair",
+      "hole": "ai_classifiers"
+    },
+    {
+      "prefix": "src/cadr-ai/support/identity.lisp",
+      "class": "needs-pair",
+      "hole": "ai_client_identity"
     },
     {
       "prefix": "src/cadr-server/",
