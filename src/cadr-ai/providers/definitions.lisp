@@ -270,7 +270,7 @@
      :protocols (:anthropic-messages :openai-completions :openai-responses)
      :base-url "https://api.individual.githubcopilot.com"
      :auth-types (:api-key :oauth)
-     :default-model "gpt-5.4"
+     :default-model "gpt-6.1-sol"
      :key-environment "COPILOT_GITHUB_TOKEN"
      :required-environment nil
      :dynamic-models-p nil
@@ -512,7 +512,7 @@
      :protocols (:openai-completions)
      :base-url "https://integrate.api.nvidia.com/v1"
      :auth-types (:api-key)
-     :default-model "nvidia/nemotron-3-super-120b-a12b"
+     :default-model "nvidia/nemotron-3.5-super-vl-120b-a12b"
      :key-environment "NVIDIA_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -800,7 +800,7 @@
      :protocols (:openai-completions)
      :base-url "https://api.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -822,7 +822,7 @@
      :protocols (:openai-completions)
      :base-url "https://token-plan-ams.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_TOKEN_PLAN_AMS_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -844,7 +844,7 @@
      :protocols (:openai-completions)
      :base-url "https://token-plan-cn.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_TOKEN_PLAN_CN_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -866,7 +866,7 @@
      :protocols (:openai-completions)
      :base-url "https://token-plan-sgp.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_TOKEN_PLAN_SGP_API_KEY"
      :required-environment nil
      :dynamic-models-p nil

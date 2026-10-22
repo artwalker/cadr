@@ -121,4 +121,4 @@
     xiaomi-provider-matches-fixed-catalog
     :xiaomi :openai-completions
     "https://api.xiaomimimo.com/v1"
-    "XIAOMI_API_KEY" "mimo-v2.5-pro" 3)
+    "XIAOMI_API_KEY" "mimo-v2.6-pro" 4)

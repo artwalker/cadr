@@ -767,6 +767,121 @@
           :cache-read-price (getf row :cache-read-price)
           :cache-write-price (getf row :cache-write-price)))))))
 
+(defun copy-catalog-thinking-map (map)
+  (mapcar (lambda (entry) (cons (car entry) (cdr entry))) map))
+
+(defun register-github-copilot-gpt-6.1-sol ()
+  ;; pi@4a080252f defaultModelPerProvider and pi-ai@1.4.0
+  ;; github-copilot chat:gpt-6.1-sol. Astra and GPT-6.1 Sol reject
+  ;; reasoning.effort "none", and this id is outside the 1_000_000
+  ;; extended-context set, so the published window stays 1_050_000.
+  (when (gethash
+         (model-catalog-key :github-copilot "gpt-6.1-sol")
+         *model-catalog*)
+    (return-from register-github-copilot-gpt-6.1-sol nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :github-copilot
+    :id "gpt-6.1-sol"
+    :name (gpt-6-official-name "gpt-6.1-sol")
+    :api :openai-responses
+    :base-url "https://api.individual.githubcopilot.com"
+    :context-window 1050000
+    :max-output-tokens 128000
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :thinking-level-map (gpt-6-official-thinking-map "gpt-6.1-sol" nil)
+    :headers (copy-tree +github-copilot-catalog-headers+)
+    :compat '(:supports-additional-tools t
+              :supports-mid-convo-system-messages t
+              :supports-openai-grammar-tools t)
+    :input-price 2d0
+    :output-price 10d0
+    :cache-read-price 0.1d0
+    :cache-write-price 2.5d0
+    :cost-tiers
+    (github-copilot-long-context-tiers 2d0 10d0 0.1d0 2.5d0))))
+
+(defun register-nvidia-nemotron-3.5 ()
+  ;; pi@4a080252f #10910. pi-ai@1.4.0 nvidia chat catalog.
+  (when (gethash
+         (model-catalog-key
+          :nvidia "nvidia/nemotron-3.5-super-vl-120b-a12b")
+         *model-catalog*)
+    (return-from register-nvidia-nemotron-3.5 nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :nvidia
+    :id "nvidia/nemotron-3.5-super-vl-120b-a12b"
+    :name "Nemotron 3.5 Super VL 120B A12B"
+    :api :openai-completions
+    :base-url "https://integrate.api.nvidia.com/v1"
+    :context-window 1048576
+    :max-output-tokens 8192
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :headers '(("NVCF-POLL-SECONDS" . "3600"))
+    :compat '(:max-tokens-field :max-tokens
+              :supports-developer-role nil
+              :supports-long-cache-retention nil
+              :supports-reasoning-effort nil
+              :supports-store nil
+              :supports-strict-mode nil)
+    :input-price 0d0
+    :output-price 0d0
+    :cache-read-price 0d0
+    :cache-write-price 0d0)))
+
+(defparameter +xiaomi-mimo-v26-pro-rows+
+  '((:xiaomi "https://api.xiaomimimo.com/v1"
+     0.435d0 0.87d0 0.0036d0 0d0)
+    (:xiaomi-token-plan-cn "https://token-plan-cn.xiaomimimo.com/v1"
+     0d0 0d0 0d0 0d0)
+    (:xiaomi-token-plan-ams "https://token-plan-ams.xiaomimimo.com/v1"
+     0d0 0d0 0d0 0d0)
+    (:xiaomi-token-plan-sgp "https://token-plan-sgp.xiaomimimo.com/v1"
+     0d0 0d0 0d0 0d0)))
+
+(defun register-xiaomi-mimo-v26-pro ()
+  ;; pi@4a080252f model-resolver.ts. mimo-v2.5-pro left the Xiaomi
+  ;; catalogs; the published replacement is mimo-v2.6-pro.
+  (dolist (row +xiaomi-mimo-v26-pro-rows+)
+    (destructuring-bind
+        (provider base-url input output cache-read cache-write)
+        row
+      (unless (gethash
+               (model-catalog-key provider "mimo-v2.6-pro")
+               *model-catalog*)
+        (register-model-metadata
+         (make-model-metadata
+          :provider provider
+          :id "mimo-v2.6-pro"
+          :name "MiMo-V2.6-Pro"
+          :api :openai-completions
+          :base-url base-url
+          :context-window 1048576
+          :max-output-tokens 131072
+          :supports-images-p t
+          :supports-tools-p t
+          :reasoning-p t
+          :thinking-level-map
+          (copy-catalog-thinking-map +xiaomi-thinking-level-map+)
+          :compat '(:requires-reasoning-content-on-assistant-messages t
+                    :supports-reasoning-effort nil
+                    :supports-strict-mode t
+                    :thinking-format :deepseek)
+          :input-price input
+          :output-price output
+          :cache-read-price cache-read
+          :cache-write-price cache-write))))))
+
+(defun register-v140-default-models ()
+  (register-github-copilot-gpt-6.1-sol)
+  (register-nvidia-nemotron-3.5)
+  (register-xiaomi-mimo-v26-pro))
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
@@ -794,4 +909,5 @@
   (register-azure-deepseek-model)
   (register-gpt-6-official-models)
   (register-github-copilot-pin-models)
-  (register-minimax-m31-flash))
+  (register-minimax-m31-flash)
+  (register-v140-default-models))

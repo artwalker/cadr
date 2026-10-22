@@ -48,7 +48,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | 门禁回绿：test-cl.sh 的 cadr-agent 扩展事件数 41 对 39、HTML 导出摘要不一致（钉 v1.4.0 后的既有失败；先查是 v1.4.0 行为变化还是回归，按上游修，不改断言迁就实现） | 既有门禁失败 | done：扩展钩子与 v1.4.0 的 41 个 `ExtensionAPI.on` 事件对齐，`tool_call` / `tool_result` 仍拆成 before、after、error，且不含 `cache_warming_decision`。HTML 导出重新带上隐藏消息开关、`context_edit` 树节点和 `nestedCalls`，样式表与 v1.4.0 逐字节相同 |
 | MiniMax-M3.1-Flash，thinking low–max，不能关 | v1.4.0 `models` #11121 | done：`minimax` 与 `minimax-cn` 的 `MiniMax-M3.1-Flash` 可选档是 low、medium、high、xhigh、max。省略思考时不写 `thinking.type=disabled`，选中的档位写入 `output_config.effort`。M2、M2.1、M2.5、M2.5-highspeed 仍不在这两个目录里 |
 | xAI Grok 4.3 / 4.5 增加 `xhigh` | v1.4.0 changelog | done：`xai` 的 `grok-4.3` 可选档是 off、low、medium、high、xhigh，`grok-4.5` 是 low、medium、high、xhigh。选中 `xhigh` 时 Responses 请求的 `reasoning.effort` 写成 `xhigh` |
-| 默认模型：Copilot `gpt-6.1-sol`，NVIDIA nemotron 3.5，Xiaomi `mimo-v2.6-pro` | v1.4.0 changelog | open |
+| 默认模型：Copilot `gpt-6.1-sol`，NVIDIA nemotron 3.5，Xiaomi `mimo-v2.6-pro` | v1.4.0 changelog | done：未指定模型时，`github-copilot` 选 `gpt-6.1-sol`（上下文 1050000，`off` 不写成 `none`），`nvidia` 选 `nvidia/nemotron-3.5-super-vl-120b-a12b`，`xiaomi` 和三个 Xiaomi Token Plan 选 `mimo-v2.6-pro` |
 | ChatGPT Business 用量上限不重试 | v1.4.0 changelog | open |
 | 折叠和分支摘要用模型输出上限；`reserveTokens` 只决定何时开始；`/compact` 指令在被切开的回合开头仍生效 | v1.4.0 #9512 #9075 #11058 | open |
 | 客户端身份、`User-Agent`、OpenRouter / NIM / OpenCode attribution | v1.4.0 `identity.ts` | open |
