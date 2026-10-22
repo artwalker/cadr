@@ -130,6 +130,7 @@
                              (:file "bedrock-openai-thinking-test")
                              (:file "models-runtime-test")
                              (:file "opencode-inference-test")
+                             (:file "minimax-m31-flash-test")
                              (:file "faux-provider-test")
                              (:file "assistant-duration-test")
                              (:file "openai-completions-test")

@@ -137,8 +137,20 @@
          (mapcar #'tool-estimate-object tools))))
       0))
 
+(defun transcript-as-estimate-context (transcript)
+  (let* ((messages (transcript-context-messages transcript))
+         (prompt (get-current-system-prompt messages)))
+    (make-context
+     :system-prompt (when (plusp (length prompt)) prompt)
+     :messages (without-initial-system-message messages)
+     :tools (get-current-tools messages))))
+
 (defun estimate-context-tokens (context-or-messages)
-  (if (typep context-or-messages 'context)
+  (cond
+    ((typep context-or-messages 'transcript-context)
+     (estimate-context-tokens
+      (transcript-as-estimate-context context-or-messages)))
+    ((typep context-or-messages 'context)
       (let* ((context context-or-messages)
              (messages (context-messages context))
              (estimate (estimate-message-list messages))
@@ -171,8 +183,8 @@
               prefix-tokens)
         (incf (context-usage-estimate-trailing-tokens estimate)
               prefix-tokens)
-        estimate)
-      (estimate-message-list context-or-messages)))
+        estimate))
+    (t (estimate-message-list context-or-messages))))
 
 (defun clamp-max-tokens-to-context (model context max-tokens)
   ;; pi@4a080252f simple-options.ts clampMaxTokensToContext.

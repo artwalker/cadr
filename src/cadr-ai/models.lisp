@@ -714,6 +714,59 @@
   (register-github-copilot-gpt-6 "gpt-6-luna" 0.1d0 0.5d0 0.01d0 0.125d0)
   (apply-github-copilot-extended-context))
 
+(defparameter +minimax-m31-flash-thinking-level-map+
+  '((:off)
+    (:minimal)
+    (:low . "low")
+    (:medium . "medium")
+    (:high . "high")
+    (:xhigh . "xhigh")
+    (:max . "max")))
+
+(defparameter +minimax-m31-flash-rows+
+  '((:provider :minimax
+     :base-url "https://api.minimax.io/anthropic"
+     :input-price 0.15d0
+     :output-price 0.6d0
+     :cache-read-price 0.015d0
+     :cache-write-price 0d0)
+    (:provider :minimax-cn
+     :base-url "https://api.minimaxi.com/anthropic"
+     :input-price 0.1494d0
+     :output-price 0.5976d0
+     :cache-read-price 0.0149d0
+     :cache-write-price 0d0)))
+
+(defun register-minimax-m31-flash ()
+  ;; pi@4a080252f generate-models.ts #11121. Effort values with no "none"
+  ;; leave off null, so the model rejects thinking.type "disabled". The
+  ;; request sends the selected level as output_config.effort.
+  (dolist (row +minimax-m31-flash-rows+)
+    (let ((provider (getf row :provider)))
+      (unless (gethash
+               (model-catalog-key provider "MiniMax-M3.1-Flash")
+               *model-catalog*)
+        (register-model-metadata
+         (make-model-metadata
+          :provider provider
+          :id "MiniMax-M3.1-Flash"
+          :name "MiniMax-M3.1-Flash"
+          :api :anthropic-messages
+          :base-url (getf row :base-url)
+          :context-window 1000000
+          :max-output-tokens 524288
+          :supports-images-p t
+          :supports-tools-p t
+          :reasoning-p t
+          :thinking-level-map
+          (mapcar (lambda (entry) (cons (car entry) (cdr entry)))
+                  +minimax-m31-flash-thinking-level-map+)
+          :compat '(:force-adaptive-thinking t)
+          :input-price (getf row :input-price)
+          :output-price (getf row :output-price)
+          :cache-read-price (getf row :cache-read-price)
+          :cache-write-price (getf row :cache-write-price)))))))
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
@@ -740,4 +793,5 @@
        (apply #'make-model-metadata copy))))
   (register-azure-deepseek-model)
   (register-gpt-6-official-models)
-  (register-github-copilot-pin-models))
+  (register-github-copilot-pin-models)
+  (register-minimax-m31-flash))

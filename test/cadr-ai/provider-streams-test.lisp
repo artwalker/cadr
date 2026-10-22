@@ -775,7 +775,8 @@
   (let ((events nil)
         (state
           (cadr-ai::make-provider-stream-state
-           :message (cadr-ai::empty-assistant-message model))))
+           :message (cadr-ai::empty-assistant-message model)
+           :model model)))
     (dolist (data
              (thinking-matrix-event-data
               (cadr-ai:model-api model) thinking-p))

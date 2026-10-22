@@ -45,7 +45,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| MiniMax-M3.1-Flash，thinking low–max，不能关 | v1.4.0 `models` #11121 | open |
+| MiniMax-M3.1-Flash，thinking low–max，不能关 | v1.4.0 `models` #11121 | done：`minimax` 与 `minimax-cn` 的 `MiniMax-M3.1-Flash` 可选档是 low、medium、high、xhigh、max。省略思考时不写 `thinking.type=disabled`，选中的档位写入 `output_config.effort`。M2、M2.1、M2.5、M2.5-highspeed 仍不在这两个目录里 |
 | xAI Grok 4.3 / 4.5 增加 `xhigh` | v1.4.0 changelog | open |
 | 默认模型：Copilot `gpt-6.1-sol`，NVIDIA nemotron 3.5，Xiaomi `mimo-v2.6-pro` | v1.4.0 changelog | open |
 | ChatGPT Business 用量上限不重试 | v1.4.0 changelog | open |

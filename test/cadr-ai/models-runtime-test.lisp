@@ -246,7 +246,7 @@
     (is (= 40
            (length
             (cadr-ai:models-runtime-providers runtime))))
-    (is (= 1381
+    (is (= 1396
            (length
             (cadr-ai:models-runtime-models runtime))))
     (is (eq :api-key

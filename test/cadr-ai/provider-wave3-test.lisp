@@ -29,8 +29,8 @@
     (:groq . 7)
     (:huggingface . 71)
     (:kimi-coding . 4)
-    (:minimax . 3)
-    (:minimax-cn . 3)
+    (:minimax . 4)
+    (:minimax-cn . 4)
     (:mistral . 32)
     (:moonshotai . 10)
     (:moonshotai-cn . 10)
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1367 (length (cadr-ai:list-model-metadata))))
+  (is (= 1369 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
