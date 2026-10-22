@@ -58,7 +58,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | GitHub Copilot HTTP 413 算上下文溢出 | v1.4.0 #11016 | open |
 | openai-codex 目录去掉 `gpt-5.5` 和 `gpt-5.3-codex-spark` | v1.4.0 #11173 | open |
 | Cloudflare 分类器价格和上下文；分类器图片输入 | v1.4.0 changelog | open。codemode `models.classify()` 不 port |
-| Rex 终端：OSC 8、truecolor、行内图 | v1.4.0 #11131 | open |
+| Rex 终端：OSC 8、truecolor、行内图 | v1.4.0 #11131 | done：`TERM_PROGRAM=rex` 启用 OSC 8、truecolor 和 Kitty 行内图，没有 `COLORTERM` 提示也一样。泄漏的 `KITTY_WINDOW_ID` 不改变这三项。`CADR_HYPERLINKS=0` 只关掉超链接 |
 | 未闭合 `$$` 不再吞掉后面的表；CJK 标点旁的粗体和斜体 | v1.4.0 #11159 #10730 | open |
 | 进程没调用 `stop` 就退出时恢复终端模式 | v1.4.0 #11170 | open |
 | `@` 补全的查询含正则元字符时仍有结果 | v1.4.0 #10972 | done：fd 查询按字面转义。`@pages/[`、`@pages/(`、`@[id` 命中对应文件，不把 `[` 和 `(` 当字符类 |

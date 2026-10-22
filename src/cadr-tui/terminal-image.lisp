@@ -263,6 +263,15 @@
                :images :kitty
                :true-color-p (not (null true-color-hint-p))
                :hyperlinks-p t))
+             ;; pi@4a080252f #11131. Rex speaks OSC 8, truecolor, and
+             ;; enough of the Kitty graphics protocol for inline images.
+             ;; Check it before KITTY_WINDOW_ID and the other outer
+             ;; terminal variables, which leak into Rex panes.
+             ((string= term-program "rex")
+              (make-terminal-capabilities
+               :images :kitty
+               :true-color-p t
+               :hyperlinks-p t))
              ((or (truthy-environment-p "KITTY_WINDOW_ID"
                                         environment)
                   (string= term-program "kitty")
