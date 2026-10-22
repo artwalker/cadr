@@ -513,6 +513,138 @@
              "--body-bg: #18181e;"
              html))))))
 
+(test session-html-export-preserves-renderer-entry-shapes
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "renderer-entry-shapes"))
+           (omitted-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "omit")))
+           (replaced-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "replace")))
+           (nested
+             (cadr-agent::make-nested-tool-calls
+              :complete t
+              :calls
+              (list
+               (cadr-agent::make-nested-tool-call-record
+                :id "parent/1"
+                :name "inner"
+                :status :ok
+                :duration-ms 3
+                :arguments
+                (cadr-ai::json-object "value" 7)))))
+           (path
+             (merge-pathnames "renderer-entry-shapes.html"
+                              sessions)))
+      (cadr-agent::session-append-custom-message
+       session "hidden" "private" :display-p nil)
+      (cadr-agent:session-append-context-edit
+       session omitted-id nil)
+      (cadr-agent:session-append-context-edit
+       session replaced-id "replacement")
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-tool-result-message
+        :tool-call-id "parent"
+        :tool-name "outer"
+        :content
+        (list (cadr-ai:make-text-content :text "done"))
+        :duration-ms 9
+        :nested-calls nested
+        :usage
+        (cadr-ai:make-usage :input 1 :output 2 :total 3)))
+      (cadr-agent:export-session-html session path)
+      (let* ((html
+               (uiop:read-file-string
+                path :external-format :utf-8))
+             (data (exported-session-data html))
+             (entries (cadr-ai::json-get data "entries"))
+             (hidden
+               (find
+                "custom_message" entries
+                :test #'string=
+                :key
+                (lambda (entry)
+                  (cadr-ai::json-get entry "type"))))
+             (edits
+               (loop for entry across entries
+                     when
+                     (string=
+                      "context_edit"
+                      (cadr-ai::json-get entry "type"))
+                       collect entry))
+             (tool-entry
+               (find-if
+                (lambda (entry)
+                  (and
+                   (string=
+                    "message"
+                    (cadr-ai::json-get entry "type"))
+                   (string=
+                    "toolResult"
+                    (cadr-ai::json-get
+                     (cadr-ai::json-get entry "message")
+                     "role"))))
+                entries))
+             (tool-message
+               (cadr-ai::json-get tool-entry "message"))
+             (nested-json
+               (cadr-ai::json-get tool-message "nestedCalls")))
+        (multiple-value-bind (display present-p)
+            (gethash "display" hidden)
+          (is (not (null present-p)))
+          (is (null display)))
+        (is (= 2 (length edits)))
+        (is (eq 'null
+                (cadr-ai::json-get
+                 (first edits) "replacement")))
+        (is (equal
+             "replacement"
+             (let ((replacement
+                     (cadr-ai::json-get
+                      (second edits) "replacement")))
+               (and
+                (hash-table-p replacement)
+                (cadr-ai::json-get
+                 replacement "content")))))
+        (dolist (edit edits)
+          (multiple-value-bind (content present-p)
+              (gethash "content" edit)
+            (declare (ignore content))
+            (is (not present-p))))
+        (is (eql 9
+                 (cadr-ai::json-get
+                  tool-message "durationMs")))
+        (let ((usage
+                (cadr-ai::json-get tool-message "usage")))
+          (is (hash-table-p usage))
+          (when (hash-table-p usage)
+            (is (eql 3
+                     (cadr-ai::json-get usage "total")))))
+        (is (hash-table-p nested-json))
+        (when (hash-table-p nested-json)
+          (is (eq t
+                  (cadr-ai::json-get nested-json "complete")))
+          (let ((calls (cadr-ai::json-get nested-json "calls")))
+            (is (and (vectorp calls) (= 1 (length calls))))
+            (when (and (vectorp calls) (= 1 (length calls)))
+              (let ((nested-call (aref calls 0)))
+                (is (string=
+                     "inner"
+                     (cadr-ai::json-get nested-call "name")))
+                (is (= 7
+                       (cadr-ai::json-get
+                        (cadr-ai::json-get
+                         nested-call "arguments")
+                        "value")))))))))))
+
 (test session-html-export-resolves-custom-theme-and-never-rereads-assets
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
