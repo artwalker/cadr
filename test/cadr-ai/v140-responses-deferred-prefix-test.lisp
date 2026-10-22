@@ -386,6 +386,81 @@ new rules
                                    (or (cadr-ai::json-get item "type") ""))
                        append (v140-input-names item))))))
 
+(defun v140-kimi-k3-model ()
+  (cadr-ai::model-from-metadata
+   (cadr-ai:find-model-metadata :kimi-coding "k3")))
+
+(defun v140-completions-payload (model messages)
+  (request-spec-payload
+   (build-request
+    (cadr-ai:make-openai-completions-provider :api-key "test-key")
+    model
+    (make-context :messages messages)
+    :stream-p t)))
+
+(defun v140-chat-function-names (tools)
+  (when tools
+    (loop for tool across tools
+          collect (cadr-ai::json-get
+                   (cadr-ai::json-get tool "function")
+                   "name"))))
+
+(defun v140-chat-tool-names (payload)
+  (v140-chat-function-names (cadr-ai::json-get payload "tools")))
+
+(defun v140-chat-message-projection (payload)
+  (loop for message across (cadr-ai::json-get payload "messages")
+        collect (list (cadr-ai::json-get message "role")
+                      (cadr-ai::json-get message "content")
+                      (v140-chat-function-names
+                       (cadr-ai::json-get message "tools")))))
+
+(test v140-kimi-keeps-the-prefix-across-loads-after-a-removal
+  ;; pi@4a080252f transcript-tool-changes.test.ts
+  ;; "keeps the Kimi prefix across loads after a removal"
+  ;; getModel("kimi-coding", "k3"): removal rewrites the top-level list
+  ;; once, and the two loads after that stay a prefix of each other.
+  (let* ((model (v140-kimi-k3-model))
+         (base (v140-deferred-tool "base_tool"))
+         (drop (v140-deferred-tool "drop_tool"))
+         (messages
+           (list (v140-system "base prompt"
+                              :tools-added (list base drop)
+                              :timestamp 0)))
+         (steps
+           (list
+            (list (make-user-message :content "first" :timestamp 1))
+            (list (v140-system "" :tools-removed '("drop_tool") :timestamp 2)
+                  (make-user-message :content "after removal" :timestamp 3))
+            (list (v140-system ""
+                              :tools-added (list (v140-deferred-tool "late_tool"))
+                              :timestamp 4)
+                  (make-user-message :content "after first load" :timestamp 5))
+            (list (v140-system ""
+                              :tools-added (list (v140-deferred-tool "later_tool"))
+                              :timestamp 6)
+                  (make-user-message :content "after second load" :timestamp 7))))
+         (payloads nil))
+    (dolist (step steps)
+      (setf messages (append messages step))
+      (push (v140-completions-payload model messages) payloads))
+    (setf payloads (nreverse payloads))
+    (is (equal '("base_tool" "drop_tool")
+               (v140-chat-tool-names (first payloads))))
+    (dolist (payload (rest payloads))
+      (is (equal '("base_tool") (v140-chat-tool-names payload))))
+    (let ((projections
+            (mapcar #'v140-chat-message-projection (rest payloads))))
+      (loop for previous in projections
+            for current in (rest projections)
+            do (is (v140-prefix-p previous current))))
+    (is (equal '("late_tool" "later_tool")
+               (loop for message
+                       in (v140-chat-message-projection
+                           (car (last payloads)))
+                     when (third message)
+                       append (third message))))))
+
 (test v140-resolve-transcript-tools-moves-the-boundary-once
   (let* ((base (v140-deferred-tool "base_tool"))
          (drop (v140-deferred-tool "drop_tool"))

@@ -217,32 +217,67 @@
           (setf (gethash name names) t))))
     names))
 
+(defun completions-instruction-role (model)
+  (if (and (model-reasoning-p model)
+           (completions-developer-role-p model))
+      "developer"
+      "system"))
+
 (defun openai-chat-messages
     (model context &key (normalize-id #'normalize-provider-id)
-                       deferred-tools-mode)
+                       deferred-tools-mode transcript transcript-tools)
+  ;; pi@4a080252f openai-completions.ts convertMessages: an additions
+  ;; transport reads toolsAdded off each system message. Messages at or
+  ;; after foldedSystemMessages carry those tools in place; earlier ones
+  ;; are already the top-level list, so a later load does not rewrite it.
   (let ((messages nil)
-        (loaded-tool-names (make-hash-table :test #'equal)))
-    (when (non-empty-string-p (context-system-prompt context))
-      (push
-       (json-object "role"
-                    (if (and (model-reasoning-p model)
-                             (completions-developer-role-p model))
-                        "developer"
-                        "system")
-                    "content" (context-system-prompt context))
-       messages))
-    (dolist
-        (message
-         (prepare-messages-for-model
-          (context-messages context)
-          model
-          normalize-id))
+        (loaded-tool-names (make-hash-table :test #'equal))
+        (anchored-p (and transcript transcript-tools))
+        (system-index 0))
+    (unless anchored-p
+      (when (non-empty-string-p (context-system-prompt context))
+        (push
+         (json-object "role" (completions-instruction-role model)
+                      "content" (context-system-prompt context))
+         messages)))
+    (loop for message
+            in (prepare-messages-for-model
+                (if anchored-p
+                    (transcript-context-messages transcript)
+                    (context-messages context))
+                model
+                normalize-id)
+          for index from 0
+          do
       (cond
         ((typep message 'system-message)
-         (let ((text (get-system-message-text message)))
-           (when (non-empty-string-p text)
-             (push (json-object "role" "system" "content" text)
-                   messages))))
+         (when (and anchored-p
+                    (>= system-index
+                        (transcript-tools-folded-system-messages
+                         transcript-tools)))
+           (let ((added (system-message-tools-added message)))
+             (when added
+               (push
+                (json-object
+                 "role" "system"
+                 "tools" (openai-chat-tools model added))
+                messages))))
+         (incf system-index)
+         (let ((text
+                 (if (and anchored-p (plusp index))
+                     (render-system-message-update message)
+                     (get-system-message-text message))))
+           (when (if anchored-p
+                     (plusp (length text))
+                     (non-empty-string-p text))
+             (push
+              (json-object
+               "role"
+               (if anchored-p
+                   (completions-instruction-role model)
+                   "system")
+               "content" text)
+              messages))))
         ((typep message 'user-message)
          (let ((content
                  (openai-chat-user-content
@@ -598,35 +633,56 @@
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
-         ;; pi@4a080252f: kimi Coding mid-convo tool additions, or the
-         ;; explicit deferred-tools-mode :kimi catalog override.
+         ;; pi@4a080252f openai-completions.ts buildParams: mid-conversation
+         ;; tool additions anchor on the transcript. A removal rewrites
+         ;; the top-level list once; later loads stay on that prefix.
+         ;; The :kimi override still moves tool-result added names for
+         ;; catalogs that do not speak system-message tool changes.
+         (additions-p
+           (and (model-compat-value
+                 model :supports-mid-convo-system-messages nil)
+                (model-compat-value
+                 model :supports-mid-convo-tool-additions nil)))
+         (transcript
+           (when (and additions-p *provider-request-transcript*)
+             (resolve-transcript *provider-request-transcript* t)))
+         (transcript-tools
+           (when transcript
+             (resolve-transcript-tools
+              (transcript-context-messages transcript)
+              :additions)))
          (deferred-mode
-           (cond
-             ((eq (model-compat-value model :deferred-tools-mode nil)
+           (if transcript-tools
+               nil
+               (cond
+                 ((eq (model-compat-value model :deferred-tools-mode nil)
+                      :kimi)
                   :kimi)
-              :kimi)
-             ((and (model-compat-value
-                    model :supports-mid-convo-system-messages nil)
-                   (model-compat-value
-                    model :supports-mid-convo-tool-additions nil))
-              :kimi)
-             (t
-              (model-compat-value model :deferred-tools-mode nil))))
+                 (additions-p :kimi)
+                 (t
+                  (model-compat-value model :deferred-tools-mode nil)))))
          (deferred-names
            (and (eq deferred-mode :kimi)
                 (deferred-tool-names (context-messages context))))
          (active-tools
-           (if deferred-names
-               (remove-if
-                (lambda (tool) (gethash (tool-name tool) deferred-names))
-                (context-tools context))
+           (cond
+             (transcript-tools
+              (transcript-tools-request-tools transcript-tools))
+             (deferred-names
+              (remove-if
+               (lambda (tool) (gethash (tool-name tool) deferred-names))
                (context-tools context)))
+             (t
+              (context-tools context))))
          (payload
            (json-object
             "model" (model-id model)
             "messages"
             (openai-chat-messages
-             model context :deferred-tools-mode deferred-mode)
+             model context
+             :deferred-tools-mode deferred-mode
+             :transcript transcript
+             :transcript-tools transcript-tools)
             "stream" (and stream-p t))))
     (when (and stream-p
                (model-compat-value

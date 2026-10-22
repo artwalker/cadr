@@ -236,13 +236,18 @@
          model :supports-mid-convo-system-messages nil))
     (is (cadr-ai::model-compat-value
          model :supports-mid-convo-tool-additions nil))
-    (is (= 1 (length (cadr-ai::json-get payload "tools"))))
-    (is (string= "read"
-                 (cadr-ai::json-get
-                  (cadr-ai::json-get
-                   (aref (cadr-ai::json-get payload "tools") 0)
-                   "function")
-                  "name")))
+    ;; pi@4a080252f: kimi-for-coding declares context tools on the
+    ;; initial system message. added-tool-names is not a Chat
+    ;; Completions signal, so both tools stay in the top-level list.
+    (is (equal '("read" "write")
+               (loop for tool across (cadr-ai::json-get payload "tools")
+                     collect (cadr-ai::json-get
+                              (cadr-ai::json-get tool "function")
+                              "name"))))
+    (is (not (find-if
+              (lambda (message)
+                (cadr-ai::json-present-p message "tools"))
+              (cadr-ai::json-get payload "messages"))))
     (is (string= (cadr-ai::cadr-os-user-agent) ua))))
 
 (defun goal13-emit-json-event (provider state emit payload)
