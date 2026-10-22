@@ -61,6 +61,7 @@
                                            (:file "device-code")
                                            (:file "github-copilot")
                                            (:file "radius-cloudflare")))
+                             (:file "classifiers")
                              (:module "oauth-providers"
                               :pathname "oauth/providers"
                               :serial t
@@ -138,6 +139,7 @@
                              (:file "openai-completions-test")
                              (:file "image-model-test")
                              (:file "image-generation-test")
+                             (:file "cloudflare-classifier-test")
                              (:file "auth-test")
                              (:file "openrouter-user-models-test")
                              (:file "goal12-capabilities-test")

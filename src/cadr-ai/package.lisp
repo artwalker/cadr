@@ -533,7 +533,32 @@
    #:parse-complete-response
    #:complete-chat
    #:stream-chat
-   #:generate-images))
+   #:generate-images
+   #:classifier-model
+   #:make-classifier-model
+   #:classifier-model-id
+   #:classifier-model-name
+   #:classifier-model-api
+   #:classifier-model-provider
+   #:classifier-model-base-url
+   #:classifier-model-input
+   #:classifier-model-context-window
+   #:classifier-model-input-price
+   #:classifier-model-output-price
+   #:classifier-model-compat
+   #:classifier-context
+   #:make-classifier-context
+   #:classifier-context-state
+   #:classifier-context-questions
+   #:classifier-context-images
+   #:classifier-result
+   #:classifier-result-stop-reason
+   #:classifier-result-answers
+   #:classifier-result-error-message
+   #:classifier-result-usage
+   #:find-classifier-model
+   #:list-classifier-models
+   #:classify-model))
 
 (in-package #:cadr-ai)
 

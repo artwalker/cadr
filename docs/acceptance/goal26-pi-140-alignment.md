@@ -57,7 +57,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | Responses 在删过工具之后继续加载 deferred 工具时不改写前缀 | v1.4.0 #10940 | open |
 | GitHub Copilot HTTP 413 算上下文溢出 | v1.4.0 #11016 | open |
 | openai-codex 目录去掉 `gpt-5.5` 和 `gpt-5.3-codex-spark` | v1.4.0 #11173 | open |
-| Cloudflare 分类器价格和上下文；分类器图片输入 | v1.4.0 changelog | open。codemode `models.classify()` 不 port |
+| Cloudflare 分类器价格和上下文；分类器图片输入 | v1.4.0 changelog | done：`cloudflare-workers-ai` 上 Clef 输入价是每百万 token $0.24、上下文 65536，Clef Flash 是 $0.038 和 24576，Clef Omni 是 $0.15 和 64000，Jev 与 Jev 1.14 是 $0.042 和 32000。分类请求里 Clef 用最多四张 data URL，Jev 用 System One assets，OpenRouter 把 `image_url` 放进 state；`compat` 的 `imageInput` 和 `sendImageOptInHeader` 按字段盖过自动判断。codemode 的 `models.classify()` 不在这次 |
 | Rex 终端：OSC 8、truecolor、行内图 | v1.4.0 #11131 | done：`TERM_PROGRAM=rex` 启用 OSC 8、truecolor 和 Kitty 行内图，没有 `COLORTERM` 提示也一样。泄漏的 `KITTY_WINDOW_ID` 不改变这三项。`CADR_HYPERLINKS=0` 只关掉超链接 |
 | 未闭合 `$$` 不再吞掉后面的表；CJK 标点旁的粗体和斜体 | v1.4.0 #11159 #10730 | done：未闭合的 `$$` 或 `\[` 后面如果出现 GFM 表，表仍画成框，不再被公式块吞掉；闭合的多行公式后面的表照常渲染。`**这是测试。**后面`、`*斜体。*后面`、`字**「引用」**字` 会把标点包进粗体或斜体，`**end.**Then next` 仍保持字面量 |
 | 进程没调用 `stop` 就退出时恢复终端模式 | v1.4.0 #11170 | open |
