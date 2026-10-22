@@ -284,10 +284,20 @@
     index))
 
 (defun latex-looks-like-pending-math-p (source)
-  ;; /\\[A-Za-z]+|[_^=+*/<>()[\]|+-...]/ character probe.
-  (or (cl-ppcre:scan "\\[A-Za-z]+" source)
-      (cl-ppcre:scan "[_^=+*/<>()\[\]|\u00b1\u2264\u2265\u2260\u2248\u2208\u2192\u21d2\u221e\u222b\u2211\u221a-]"
-                     source)))
+  ;; looksLikePendingDollarMath at v1.4.0 markdown.ts:
+  ;; /\\[A-Za-z]+|[_^=+*/<>()[\]|±≤≥≠≈∈→⇒∞∫∑√-]/
+  ;; The operator inventory is a string. A regex class written with
+  ;; Lisp string escapes closes at the first "]" and drops the rest.
+  (or (loop for index from 0 below (1- (length source))
+            for next = (char source (1+ index))
+            thereis (and (char= (char source index) #\\)
+                         (or (char<= #\A next #\Z)
+                             (char<= #\a next #\z))))
+      (find-if (lambda (character)
+                 (find character
+                       "_^=+*/<>()[]|±≤≥≠≈∈→⇒∞∫∑√-"
+                       :test #'char=))
+               source)))
 
 (defun markdown-latex-inline-span
     (line start)

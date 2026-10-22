@@ -77,6 +77,43 @@
       (cadr-tui:theme-bold text :enabled-p t)
       (cadr-tui:theme-italic text :enabled-p t)))
 
+(defparameter +pi140-pending-math-markers+
+  ;; Character class of looksLikePendingDollarMath at
+  ;; packages/tui/src/components/markdown.ts v1.4.0 (4a080252).
+  '("-" "|" "]" "±" "≤" "≥" "≠" "≈" "∈" "→" "⇒" "∞" "∫" "∑" "√"
+    "[" "(" "*" "_" "^" "=" "+" "/" "<" ">" ")"))
+
+(test pi140-pending-dollar-math-matches-upstream-probe
+  ;; /\\[A-Za-z]+|[_^=+*/<>()[\]|±≤≥≠≈∈→⇒∞∫∑√-]/
+  (dolist (marker +pi140-pending-math-markers+)
+    (is (cadr-tui::latex-looks-like-pending-math-p marker)
+        "pending probe should accept ~S" marker))
+  (is (cadr-tui::latex-looks-like-pending-math-p "\\alpha"))
+  (is (cadr-tui::latex-looks-like-pending-math-p
+       (format nil "---~%not a table")))
+  (dolist (text '("a" "not a table" "1" "." "\\" "\\1" "hello"))
+    (is (not (cadr-tui::latex-looks-like-pending-math-p text))
+        "pending probe should reject ~S" text)))
+
+(test pi140-unclosed-dollar-math-stays-raw-without-a-table
+  ;; Pending latexBlock renders latexToken.raw.trim() and does not
+  ;; reparse the body. A following fence stays literal, so its body
+  ;; is not indented. --- is not a thematic break.
+  (is (equal '("$$" "---" "not a table")
+             (pi140-markdown-plain-lines
+              (format nil "$$~%---~%not a table"))))
+  (dolist (marker +pi140-pending-math-markers+)
+    (is (equal (list "$$" marker "```" "code" "```")
+               (pi140-markdown-plain-lines
+                (format nil "$$~%~A~%```~%code~%```" marker)))
+        "pending raw for ~S" marker))
+  (is (equal '("$$" "\\alpha" "```" "code" "```")
+             (pi140-markdown-plain-lines
+              (format nil "$$~%\\alpha~%```~%code~%```"))))
+  (is (equal (append '("$$" "-" "") +pi140-rendered-table+)
+             (pi140-markdown-plain-lines
+              (format nil "$$~%-~%~%| A | B |~%|---|---|~%| 1 | 2 |")))))
+
 (test pi140-cjk-emphasis-beside-punctuation
   ;; Locked to packages/tui/test/markdown.test.ts "CJK emphasis" at v1.4.0.
   (is (string= (concatenate 'string
